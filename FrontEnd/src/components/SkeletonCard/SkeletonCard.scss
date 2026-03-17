@@ -2,16 +2,17 @@
   width: 100%;
   max-width: 220px;
   height: 300px;
-  background: #fff;
-  border-radius: 12px;
+  background: var(--surface);
+  border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
   animation: pulse 1.5s ease-in-out infinite;
 
   .skeleton-image {
     width: 100%;
     height: 180px;
-    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background: linear-gradient(90deg, #f1e8dd 25%, #e7ded3 50%, #f1e8dd 75%);
     background-size: 200% 100%;
     animation: loading 1.5s infinite;
   }
@@ -22,7 +23,7 @@
     .skeleton-title {
       height: 20px;
       width: 80%;
-      background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+      background: linear-gradient(90deg, #f1e8dd 25%, #e7ded3 50%, #f1e8dd 75%);
       background-size: 200% 100%;
       border-radius: 6px;
       margin-bottom: 8px;
@@ -32,7 +33,7 @@
     .skeleton-price {
       height: 18px;
       width: 50%;
-      background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+      background: linear-gradient(90deg, #f1e8dd 25%, #e7ded3 50%, #f1e8dd 75%);
       background-size: 200% 100%;
       border-radius: 6px;
       animation: loading 1.5s infinite;
@@ -58,3 +59,5 @@
     opacity: 0.8;
   }
 }
+
+

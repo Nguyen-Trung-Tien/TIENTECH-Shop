@@ -1,16 +1,17 @@
 .order-history-page {
   min-height: 90vh;
-  background: #f8f9fa;
+  background: var(--bg-light);
 
   .order-history-header {
-    background-color: #fff;
+    background-color: var(--surface);
     border-radius: 16px;
     padding: 1rem;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
 
     h3 {
       font-size: 1.5rem;
-      color: #2563eb;
+      color: var(--primary-color);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -24,11 +25,11 @@
 
   .product-name:hover {
     cursor: pointer;
-    color: #4facfe;
+    color: var(--primary-color);
   }
 
   .btn-orange {
-    background-color: orange;
+    background-color: var(--secondary-color);
     color: white;
     border: none;
   }
@@ -42,30 +43,32 @@
       border-radius: 6px;
       margin: 0 2px;
       padding: 0.5rem 0.75rem;
-      color: #495057;
-      border: 1px solid #dee2e6;
+      color: var(--text-color);
+      border: 1px solid var(--border-color);
       transition: all 0.2s;
 
       &:hover {
-        background-color: #e9ecef;
-        border-color: #adb5bd;
+        background-color: rgba(15, 118, 110, 0.08);
+        border-color: var(--primary-color);
       }
 
       &:focus {
-        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        box-shadow: 0 0 0 0.2rem rgba(15, 118, 110, 0.2);
       }
     }
 
     .page-item.active .page-link {
-      background-color: #007bff;
-      border-color: #007bff;
+      background-color: var(--primary-color);
+      border-color: var(--primary-color);
       color: white;
       font-weight: 600;
     }
 
     .page-item.disabled .page-link {
-      color: #6c757d;
+      color: var(--text-light);
       opacity: 0.6;
     }
   }
 }
+
+

@@ -1,5 +1,5 @@
 .modern-register {
-  background: #fff !important;
+  background: var(--bg-light) !important;
   min-height: 100vh;
   display: flex;
   align-items: center;
@@ -10,7 +10,7 @@
 }
 .lead {
   font-weight: 600;
-  color: #000;
+  color: var(--text-color);
 }
 .main-logo {
   max-width: 560px;
@@ -24,22 +24,23 @@
 }
 
 .register-card-modern {
-  background: #fff;
+  background: var(--surface);
   border-radius: 1.2rem;
   width: 100%;
   max-width: 420px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-md);
   padding: 2.5rem;
 }
 
 .btn-gradient {
-  background: linear-gradient(90deg, #0072ff, #6f42c1);
+  background: var(--accent-gradient);
   border: none;
   transition: all 0.3s ease;
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(13, 110, 253, 0.25);
+    box-shadow: 0 8px 20px rgba(15, 118, 110, 0.25);
   }
 }
 
@@ -50,7 +51,9 @@
   transform: translateY(-50%);
   background: transparent;
   border: none;
-  color: #6c757d;
+  color: var(--text-muted);
   z-index: 10;
   cursor: pointer;
 }
+
+

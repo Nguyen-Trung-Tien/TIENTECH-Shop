@@ -102,7 +102,7 @@ const getPaymentById = async (id) => {
   }
 };
 
-const createPayment = async (data) => {
+const createPayment = async (data, actor = null) => {
   const t = await db.sequelize.transaction();
   try {
     const { orderId, userId, amount, method, note } = data;
@@ -115,6 +115,13 @@ const createPayment = async (data) => {
     if (!order) {
       await t.rollback();
       return { errCode: 3, errMessage: "Order not found" };
+    }
+
+    if (actor && actor.role !== "admin") {
+      if (order.userId !== actor.id) {
+        await t.rollback();
+        return { errCode: 403, errMessage: "Forbidden", status: 403 };
+      }
     }
 
     // Nếu Order đã thanh toán hoặc hoàn tất, không tạo payment mới
@@ -148,7 +155,7 @@ const createPayment = async (data) => {
     payment = await db.Payment.create(
       {
         orderId,
-        userId: userId || order.userId,
+        userId: actor && actor.role !== "admin" ? actor.id : userId || order.userId,
         amount,
         method,
         note,

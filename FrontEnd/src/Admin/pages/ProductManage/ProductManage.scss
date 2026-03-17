@@ -9,7 +9,7 @@
     gap: 8px;
 
     svg {
-      color: #3498db;
+      color: var(--primary-color);
     }
   }
 
@@ -188,10 +188,10 @@
   }
 
   .btn-primary {
-    background: linear-gradient(135deg, #007bff, #0056b3);
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
     border: none;
     &:hover {
-      background: linear-gradient(135deg, #0056b3, #004085);
+      background: linear-gradient(135deg, var(--primary-hover), var(--primary-hover));
     }
   }
 
@@ -226,3 +226,5 @@
     }
   }
 }
+
+

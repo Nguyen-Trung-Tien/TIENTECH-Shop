@@ -7,7 +7,7 @@
   cursor: pointer;
 
   .button-inner {
-    background: #1890ff;
+    background: var(--primary-color);
     width: 56px;
     height: 56px;
     border-radius: 50%;
@@ -20,7 +20,7 @@
     transition: background 0.2s;
 
     &:hover {
-      background: #40a9ff;
+      background: var(--primary-color);
     }
   }
 }
@@ -51,7 +51,7 @@
 
 /* Header */
 .header {
-  background: #1890ff !important;
+  background: var(--primary-color) !important;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -175,7 +175,7 @@
   background: #f5f5f5;
 
   .action {
-    background: #1890ff;
+    background: var(--primary-color);
     color: #fff;
     border-radius: 12px;
     padding: 6px 10px;
@@ -184,7 +184,7 @@
     transition: background 0.2s;
 
     &:hover {
-      background: #40a9ff;
+      background: var(--primary-color);
     }
   }
 }
@@ -209,7 +209,7 @@
       font-size: 14px;
 
       &:focus {
-        border-color: #1890ff;
+        border-color: var(--primary-color);
       }
     }
 
@@ -239,7 +239,7 @@
 
   button {
     margin-left: 8px;
-    background: #1890ff;
+    background: var(--primary-color);
     color: #fff;
     border: none;
     border-radius: 12px;
@@ -254,7 +254,7 @@
     }
 
     &:hover:not(:disabled) {
-      background: #40a9ff;
+      background: var(--primary-color);
     }
   }
 }
@@ -268,3 +268,5 @@
     max-height: 80vh;
   }
 }
+
+

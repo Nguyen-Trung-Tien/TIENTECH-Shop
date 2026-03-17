@@ -1,5 +1,5 @@
 .blog-section {
-  background: #f8f9fa;
+  background: var(--bg-light);
   padding: 60px 0;
 
   .blog-card {
@@ -8,7 +8,7 @@
 
     &:hover {
       transform: translateY(-6px);
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+      box-shadow: var(--shadow-md);
     }
 
     .image-wrap {
@@ -27,9 +27,11 @@
     }
 
     .read-more {
-      color: #0d6efd;
+      color: var(--primary-color);
       font-weight: 600;
       cursor: pointer;
     }
   }
 }
+
+

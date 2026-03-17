@@ -1,10 +1,10 @@
 .cart-skeleton {
   .skeleton-item {
-    border: 1px solid #f0f0f0;
+    border: 1px solid var(--border-color);
     transition: all 0.2s ease;
 
     &:hover {
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+      box-shadow: var(--shadow-sm) !important;
     }
   }
 
@@ -18,7 +18,7 @@
   }
 
   [class^="skeleton-"] {
-    background: linear-gradient(90deg, #f5f5f5 25%, #e0e0e0 50%, #f5f5f5 75%);
+    background: linear-gradient(90deg, #f1e8dd 25%, #e7ded3 50%, #f1e8dd 75%);
     background-size: 200px 100%;
     animation: shimmer 1.5s infinite;
     position: relative;
@@ -77,3 +77,5 @@
     }
   }
 }
+
+

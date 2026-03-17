@@ -49,8 +49,8 @@ const handleUpdateOrderStatus = async (req, res) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
-    const result = await OrderService.updateOrderStatus(id, status);
-    return res.status(200).json(result);
+    const result = await OrderService.updateOrderStatus(id, status, req.user);
+    return res.status(result.status || 200).json(result);
   } catch (e) {
     console.error(e);
     return res.status(500).json({
@@ -95,6 +95,13 @@ const handleGetOrdersByUserId = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
 
+    if (req.user.role !== "admin" && String(req.user.id) !== String(userId)) {
+      return res.status(403).json({
+        errCode: 403,
+        errMessage: "Forbidden",
+      });
+    }
+
     const result = await OrderService.getOrdersByUserId(userId, page, limit);
     return res.status(200).json(result);
   } catch (e) {
@@ -109,6 +116,13 @@ const getActiveOrdersByUserId = async (req, res) => {
   try {
     const userId = req.params.userId;
     const { page = 1, limit = 10 } = req.query;
+
+    if (req.user.role !== "admin" && String(req.user.id) !== String(userId)) {
+      return res.status(403).json({
+        errCode: 403,
+        errMessage: "Forbidden",
+      });
+    }
 
     const result = await OrderService.getActiveOrdersByUserId(
       userId,

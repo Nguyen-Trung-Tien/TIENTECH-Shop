@@ -1,5 +1,5 @@
 .order-detail-page {
-  background: #f4f6f9;
+  background: var(--bg-light);
   min-height: 100vh;
 
   .order-title {
@@ -16,18 +16,18 @@
     &__text {
       margin: 0;
       font-weight: 700;
-      color: #1d3557;
+      color: var(--text-color);
       letter-spacing: 0.3px;
     }
 
     &__id {
-      color: #0d6efd;
+      color: var(--primary-color);
     }
 
     &__sub {
       margin: 0;
       font-size: 0.85rem;
-      color: #6c757d;
+      color: var(--text-muted);
     }
   }
 
@@ -38,7 +38,7 @@
   .section-title {
     font-weight: 600;
     margin-bottom: 12px;
-    color: #1d3557;
+    color: var(--text-color);
   }
 
   .info-card {
@@ -52,7 +52,7 @@
     font-size: 0.9rem;
 
     span {
-      color: #6c757d;
+      color: var(--text-muted);
     }
   }
 
@@ -60,7 +60,7 @@
     display: flex;
     justify-content: space-between;
     padding: 12px;
-    background: #f8f9fa;
+    background: var(--surface-elevated);
     border-radius: 12px;
     font-size: 1rem;
   }
@@ -83,12 +83,14 @@
 
     .product-name {
       font-weight: 600;
-      color: #212529;
+      color: var(--text-color);
       text-decoration: none;
 
       &:hover {
-        color: #0d6efd;
+        color: var(--primary-color);
       }
     }
   }
 }
+
+

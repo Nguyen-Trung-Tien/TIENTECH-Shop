@@ -9,7 +9,7 @@ const {
 router.get(
   "/get-all-orders",
   authenticateToken,
-  authorizeRole(["admin", "customer"]),
+  authorizeRole(["admin"]),
   OrderController.handleGetAllOrders
 );
 router.get(
@@ -39,13 +39,13 @@ router.put(
 router.delete(
   "/delete-order/:id",
   authenticateToken,
-  authorizeRole(["admin", "customer"]),
+  authorizeRole(["admin"]),
   OrderController.handleDeleteOrder
 );
 router.put(
   "/update-payment-status/:id",
   authenticateToken,
-  authorizeRole(["admin", "customer"]),
+  authorizeRole(["admin"]),
   OrderController.handleUpdatePaymentStatus
 );
 router.get(

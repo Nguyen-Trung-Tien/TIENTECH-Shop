@@ -1,13 +1,18 @@
 .hero-ttshop {
-  background: linear-gradient(135deg, #0d6efd, #6f42c1);
+  background:
+    radial-gradient(640px 360px at 10% 10%, rgba(231, 111, 81, 0.35), transparent 60%),
+    radial-gradient(520px 300px at 90% 0%, rgba(15, 118, 110, 0.4), transparent 60%),
+    linear-gradient(135deg, #0f766e, #0b5a53);
   padding: 90px 0;
   position: relative;
   overflow: hidden;
+  color: #fff;
 }
 
 /* Badge */
 .hero-badge {
-  background: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   padding: 6px 16px;
   border-radius: 20px;
   font-size: 0.9rem;
@@ -21,30 +26,30 @@
   line-height: 1.2;
 
   span {
-    color: #ffd43b;
+    color: #ffe1b4;
   }
 }
 
 /* Description */
 .hero-desc {
   font-size: 1.15rem;
-  color: #e8ecff;
+  color: rgba(255, 255, 255, 0.8);
   line-height: 1.6;
 }
 
 /* Buttons */
 .hero-btn-primary {
-  background: #fff;
-  color: #0d6efd;
+  background: var(--secondary-color);
+  color: #fff;
   border: none;
   border-radius: 999px;
   font-weight: 600;
   transition: all 0.25s ease;
 
   &:hover {
-    background: #f1f4ff;
+    background: #d95f44;
     transform: translateY(-2px);
-    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.24);
   }
 }
 
@@ -52,7 +57,7 @@
 .hero-image {
   max-width: 100%;
   border-radius: 20px;
-  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.35);
 }
 
 /* Mobile */
@@ -65,3 +70,5 @@
     font-size: 1rem;
   }
 }
+
+

@@ -1,14 +1,14 @@
 /* --- OFFCANVAS WRAPPER --- */
 .offcanvas {
   max-width: 330px !important;
-  border-right: 1px solid #eee;
+  border-right: 1px solid var(--border-color);
 }
 
 .filter-section h6 {
   font-weight: 600;
   font-size: 0.95rem;
   margin-bottom: 8px;
-  color: #333;
+  color: var(--text-color);
 }
 
 .brand-logos {
@@ -18,8 +18,8 @@
 }
 
 .brand-logos .item {
-  background: #f8f9fa;
-  border: 1px solid #e6e6e6;
+  background: var(--surface-elevated);
+  border: 1px solid var(--border-color);
   border-radius: 10px;
   padding: 8px 4px;
   display: flex;
@@ -32,14 +32,14 @@
 }
 
 .brand-logos .item:hover {
-  border-color: #0d6efd;
+  border-color: var(--primary-color);
   transform: translateY(-2px);
 }
 
 .brand-logos .item.active {
-  background: #e7f1ff;
-  border-color: #0d6efd;
-  box-shadow: 0 0 4px rgba(13, 110, 253, 0.3);
+  background: rgba(15, 118, 110, 0.12);
+  border-color: var(--primary-color);
+  box-shadow: 0 0 6px rgba(15, 118, 110, 0.25);
 }
 
 .category-grid {
@@ -49,7 +49,7 @@
 }
 
 .category-item {
-  background: #f5f5f5;
+  background: var(--surface-elevated);
   padding: 8px 10px;
   border-radius: 8px;
   cursor: pointer;
@@ -59,13 +59,13 @@
 }
 
 .category-item:hover {
-  border-color: #0d6efd;
-  background: #e8f1ff;
+  border-color: var(--primary-color);
+  background: rgba(15, 118, 110, 0.12);
 }
 
 .category-item.active {
-  background: #dce9ff;
-  border-color: #0d6efd;
+  background: rgba(15, 118, 110, 0.18);
+  border-color: var(--primary-color);
   font-weight: 600;
 }
 
@@ -74,5 +74,7 @@
 }
 
 .apply-buttons {
-  border-top: 1px solid #eee;
+  border-top: 1px solid var(--border-color);
 }
+
+

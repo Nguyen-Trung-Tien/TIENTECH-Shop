@@ -375,7 +375,7 @@ const ProductManage = () => {
 
       if (res.errCode === 0) {
         toast.success(
-          editProduct ? "Cập nhật thành công!" : "Tạo sản phẩm thành công!"
+          editProduct ? "Cập nhật thành công!" : "Tạo sản phẩm thành công!",
         );
         fetchProducts(page, searchTerm);
         handleCloseModal();
@@ -1041,7 +1041,7 @@ const ProductManage = () => {
         centered
       >
         <Modal.Header closeButton className="bg-warning text-dark">
-          <Modal.Title>Xác nhẨn xóa</Modal.Title>
+          <Modal.Title>Xác nhận xóa</Modal.Title>
         </Modal.Header>
         <Modal.Body>Bạn có chắc muốn xóa sản phẩm này không?</Modal.Body>
         <Modal.Footer>
@@ -1052,7 +1052,7 @@ const ProductManage = () => {
             Hủy
           </Button>
           <Button variant="danger" onClick={handleConfirmDelete}>
-            Xác nhẨn
+            Xác nhận
           </Button>
         </Modal.Footer>
       </Modal>

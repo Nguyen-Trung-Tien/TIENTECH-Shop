@@ -1,9 +1,9 @@
 .checkout-card {
   padding: 24px;
   border-radius: 20px;
-  border: none;
-  background: var(--white);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--border-color);
+  background: var(--surface);
+  box-shadow: var(--shadow-md);
 }
 
 .checkout-title {
@@ -25,7 +25,7 @@
 
 .checkout-card input:focus {
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(0, 114, 255, 0.15);
+  box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.2);
 }
 
 .payment-card {
@@ -40,7 +40,7 @@
   cursor: pointer;
   height: 56px;
   transition: 0.25s;
-  background: var(--white);
+  background: var(--surface);
 }
 
 .payment-card svg {
@@ -52,7 +52,7 @@
 }
 
 .payment-card.active {
-  background: #f0f8ff; /* Light primary tint */
+  background: rgba(15, 118, 110, 0.08); /* Light primary tint */
   border-color: var(--primary-color);
   color: var(--primary-color);
 }
@@ -75,7 +75,7 @@
 
 .checkout-btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(0, 114, 255, 0.4);
+  box-shadow: 0 6px 16px rgba(15, 118, 110, 0.4);
 }
 
 .checkout-action {
@@ -97,3 +97,5 @@
     padding: 20px;
   }
 }
+
+

@@ -104,12 +104,19 @@ const handleUpdateUser = async (req, res) => {
       });
     }
 
+    if (req.user.role !== "admin" && String(req.user.id) !== String(id)) {
+      return res.status(403).json({
+        errCode: 403,
+        errMessage: "Forbidden",
+      });
+    }
+
     const updateData = {};
     if (username) updateData.username = username.trim();
     if (email) updateData.email = email.trim();
     if (phone) updateData.phone = phone.trim();
     if (address) updateData.address = address.trim();
-    if (role) updateData.role = role;
+    if (role && req.user.role === "admin") updateData.role = role;
     if (avatar) updateData.avatar = avatar;
 
     const result = await UserService.updateUser(id, updateData);
@@ -149,6 +156,13 @@ const handleGetUserById = async (req, res) => {
       return res.status(400).json({
         errCode: 1,
         errMessage: "User ID is required",
+      });
+    }
+
+    if (req.user.role !== "admin" && String(req.user.id) !== String(userId)) {
+      return res.status(403).json({
+        errCode: 403,
+        errMessage: "Forbidden",
       });
     }
 
@@ -215,7 +229,8 @@ const handleLogout = async (req, res) => {
 };
 
 const handleChangePassword = async (req, res) => {
-  const { userId, oldPassword, newPassword } = req.body;
+  const { oldPassword, newPassword } = req.body;
+  const userId = req.user?.id;
   if (!userId || !oldPassword || !newPassword) {
     return res.status(400).json({
       errCode: 1,

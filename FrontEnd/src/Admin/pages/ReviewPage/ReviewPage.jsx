@@ -127,7 +127,7 @@ const ReviewPage = () => {
   return (
     <div className="review-page container-fluid">
       <h3 className="fw-semibold mb-4">
-        <FilterSquare className="me-2" color="#0d6efd" size={28} />
+        <FilterSquare className="me-2" color="var(--primary-color)" size={28} />
         Quản lý đánh giá
       </h3>
 

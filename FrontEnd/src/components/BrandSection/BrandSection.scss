@@ -8,9 +8,9 @@
 .brand-card-upgraded {
   width: 90px;
   height: 42px;
-  background: #fff;
+  background: var(--surface);
   border-radius: 10px;
-  border: 1px solid #e4e4e4;
+  border: 1px solid var(--border-color);
 
   display: flex;
   align-items: center;
@@ -21,7 +21,7 @@
 }
 
 .brand-card-upgraded:hover {
-  border-color: #0d6efd;
+  border-color: var(--primary-color);
   transform: translateY(-3px);
 }
 
@@ -30,3 +30,5 @@
   height: 28px;
   object-fit: contain;
 }
+
+

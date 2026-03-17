@@ -23,7 +23,20 @@ const handleGetReviewsByProduct = async (req, res) => {
 
 const handleCreateReview = async (req, res) => {
   try {
-    const data = await ReviewService.createReview(req.body);
+    const { productId, rating, comment } = req.body;
+    if (!productId || !rating || !comment) {
+      return res.status(400).json({
+        errCode: 1,
+        errMessage: "Missing required fields",
+      });
+    }
+
+    const data = await ReviewService.createReview({
+      userId: req.user.id,
+      productId,
+      rating,
+      comment,
+    });
     return res.status(200).json(data);
   } catch (e) {
     console.error(e);

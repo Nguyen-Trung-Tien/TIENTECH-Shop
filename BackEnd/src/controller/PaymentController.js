@@ -47,8 +47,8 @@ const handleGetPaymentById = async (req, res) => {
 
 const handleCreatePayment = async (req, res) => {
   try {
-    const result = await PaymentService.createPayment(req.body);
-    return res.status(201).json(result);
+    const result = await PaymentService.createPayment(req.body, req.user);
+    return res.status(result.status || 201).json(result);
   } catch (e) {
     console.error(e);
     return res.status(500).json({

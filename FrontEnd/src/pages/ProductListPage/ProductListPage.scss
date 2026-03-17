@@ -13,7 +13,7 @@
       transform: translateX(-50%);
       width: 100px;
       height: 5px;
-      background: linear-gradient(90deg, #3498db, #2980b9);
+      background: linear-gradient(90deg, var(--primary-color), var(--primary-hover));
       border-radius: 3px;
     }
   }
@@ -27,3 +27,5 @@
     }
   }
 }
+
+

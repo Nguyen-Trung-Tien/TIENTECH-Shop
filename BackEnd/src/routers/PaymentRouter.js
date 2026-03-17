@@ -39,13 +39,13 @@ router.put(
 router.put(
   "/payment-complete/:id/complete",
   authenticateToken,
-  authorizeRole(["admin", "customer"]),
+  authorizeRole(["admin"]),
   PaymentController.handleCompletePayment
 );
 router.put(
   "/payment-refund/:id/refund",
   authenticateToken,
-  authorizeRole(["admin", "customer"]),
+  authorizeRole(["admin"]),
   PaymentController.handleRefundPayment
 );
 

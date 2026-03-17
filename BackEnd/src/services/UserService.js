@@ -47,7 +47,8 @@ const createNewUser = async (data) => {
       password: hashedPassword,
       phone: data.phone || null,
       address: data.address || null,
-      role: data.role || "customer",
+      // Prevent privilege escalation: role is always "customer" on self-signup.
+      role: "customer",
       avatar: data.avatar || null,
       isActive: true,
     });

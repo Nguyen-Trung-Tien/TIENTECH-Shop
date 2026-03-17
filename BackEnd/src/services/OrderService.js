@@ -254,7 +254,6 @@ const createOrder = async (data) => {
   try {
     const {
       userId,
-      totalPrice,
       shippingAddress,
       paymentMethod,
       note,
@@ -271,19 +270,63 @@ const createOrder = async (data) => {
 
     const orderCode = `ORD${Date.now()}`;
 
-    const formattedItems = orderItems.map((item) => ({
-      productId: item.productId,
-      productName: item.productName,
-      quantity: item.quantity,
-      price: item.price,
-      subtotal: item.subtotal,
-    }));
+    const formattedItems = [];
+    let calculatedTotal = 0;
+
+    for (const item of orderItems) {
+      if (!item.productId || !item.quantity) {
+        await t.rollback();
+        return {
+          errCode: 2,
+          errMessage: "Invalid order item data",
+        };
+      }
+
+      const product = await db.Product.findByPk(item.productId, {
+        transaction: t,
+        lock: t.LOCK.UPDATE,
+      });
+
+      if (!product || !product.isActive) {
+        await t.rollback();
+        return {
+          errCode: 3,
+          errMessage: `Product ${item.productId} not found`,
+        };
+      }
+
+      const quantity = Number(item.quantity);
+      if (!Number.isFinite(quantity) || quantity <= 0) {
+        await t.rollback();
+        return {
+          errCode: 4,
+          errMessage: "Invalid quantity",
+        };
+      }
+
+      const basePrice = Number(product.price) || 0;
+      const discount = Number(product.discount) || 0;
+      const unitPrice = Number(
+        (basePrice * (1 - discount / 100)).toFixed(2)
+      );
+      const subtotal = Number((unitPrice * quantity).toFixed(2));
+
+      calculatedTotal += subtotal;
+
+      formattedItems.push({
+        productId: product.id,
+        productName: product.name,
+        quantity,
+        price: unitPrice,
+        subtotal,
+      });
+    }
 
     const order = await db.Order.create(
       {
         orderCode,
         userId,
-        totalPrice,
+        totalPrice: calculatedTotal,
         shippingAddress,
         paymentMethod,
         note: note || "",
@@ -325,15 +368,62 @@ const createOrder = async (data) => {
   }
 };
 
-const updateOrderStatus = async (id, status) => {
+const updateOrderStatus = async (id, status, user = null) => {
   const t = await db.sequelize.transaction();
   try {
+    const validStatuses = [
+      "pending",
+      "confirmed",
+      "processing",
+      "shipped",
+      "delivered",
+      "cancelled",
+    ];
+    if (!validStatuses.includes(status)) {
+      await t.rollback();
+      return { errCode: 2, errMessage: "Invalid status", status: 400 };
+    }
+
     const order = await db.Order.findByPk(id, {
       include: [{ model: db.OrderItem, as: "orderItems" }],
       transaction: t,
     });
 
-    if (!order) return { errCode: 1, errMessage: "Order not found" };
+    if (!order) {
+      await t.rollback();
+      return { errCode: 1, errMessage: "Order not found", status: 404 };
+    }
+
+    if (user && user.role !== "admin") {
+      if (String(order.userId) !== String(user.id)) {
+        await t.rollback();
+        return { errCode: 403, errMessage: "Forbidden", status: 403 };
+      }
+
+      // Customer can only cancel pending orders or confirm delivery of shipped orders.
+      if (status === "cancelled" && order.status !== "pending") {
+        await t.rollback();
+        return {
+          errCode: 3,
+          errMessage: "Cannot cancel this order",
+          status: 400,
+        };
+      }
+
+      if (status === "delivered" && order.status !== "shipped") {
+        await t.rollback();
+        return {
+          errCode: 4,
+          errMessage: "Cannot confirm delivery for this order",
+          status: 400,
+        };
+      }
+
+      if (!["cancelled", "delivered"].includes(status)) {
+        await t.rollback();
+        return { errCode: 403, errMessage: "Forbidden", status: 403 };
+      }
+    }
 
     const prevStatus = order.status;
 

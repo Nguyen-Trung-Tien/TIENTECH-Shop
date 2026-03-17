@@ -235,9 +235,9 @@ const ChartCard = ({ token }) => {
                   <Line
                     type="monotone"
                     dataKey="value"
-                    stroke="#0d6efd"
+                    stroke="var(--primary-color)"
                     strokeWidth={3}
-                    dot={{ fill: "#0d6efd", r: 5 }}
+                    dot={{ fill: "var(--primary-color)", r: 5 }}
                     activeDot={{ r: 8, stroke: "#fff", strokeWidth: 3 }}
                     animationDuration={800}
                   />

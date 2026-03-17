@@ -8,15 +8,15 @@
     h3 {
       font-size: 22px;
       font-weight: 700;
-      color: #222;
+      color: var(--text-color);
     }
   }
 }
 
 .test-card {
-  border: none;
-  border-radius: 12px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  box-shadow: var(--shadow-sm);
   height: 100%;
 
   .card-body {
@@ -33,7 +33,7 @@
       height: 48px;
       border-radius: 50%;
       object-fit: cover;
-      border: 1px solid #eee;
+      border: 1px solid var(--border-color);
     }
 
     h6 {
@@ -43,7 +43,7 @@
     }
 
     .stars {
-      color: #f59e0b; // vàng TGDD
+      color: #f4b740;
       font-size: 13px;
       line-height: 1;
     }
@@ -52,7 +52,7 @@
   .content {
     margin-top: 12px;
     font-size: 14px;
-    color: #444;
+    color: var(--text-muted);
     line-height: 1.5;
   }
 }
@@ -67,3 +67,5 @@
     font-size: 13px;
   }
 }
+
+

@@ -41,7 +41,7 @@
       background: #f8f9fa;
       padding: 10px 12px;
       border-radius: 10px;
-      border-left: 4px solid #0d6efd;
+      border-left: 4px solid var(--primary-color);
     }
 
     .review-date {
@@ -72,3 +72,5 @@
     }
   }
 }
+
+

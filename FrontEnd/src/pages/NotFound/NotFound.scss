@@ -1,7 +1,7 @@
 .notfound-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-  color: #333;
+  background: linear-gradient(135deg, #f7efe6, #f4ede4);
+  color: var(--text-color);
   text-align: center;
   padding: 60px 20px;
   animation: fadeIn 0.8s ease-in-out;
@@ -27,7 +27,7 @@
     font-size: 1.1rem;
     max-width: 500px;
     margin: 0 auto 25px;
-    color: #6c757d;
+    color: var(--text-muted);
   }
 
   .btn {
@@ -37,7 +37,7 @@
 
     &:hover {
       transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0, 123, 255, 0.25);
+      box-shadow: 0 4px 12px rgba(15, 118, 110, 0.25);
     }
   }
 
@@ -64,3 +64,5 @@
     }
   }
 }
+
+

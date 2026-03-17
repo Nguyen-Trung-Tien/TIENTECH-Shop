@@ -49,11 +49,12 @@
   .mission-card {
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     border-radius: 16px;
-    background-color: #fff;
+    background-color: var(--surface);
+    border: 1px solid var(--border-color);
 
     &:hover {
       transform: translateY(-6px);
-      box-shadow: 0 10px 20px rgba(0, 123, 255, 0.1);
+      box-shadow: var(--shadow-md);
     }
   }
 
@@ -79,7 +80,7 @@
   .section-line {
     width: 80px;
     height: 4px;
-    background: #007bff;
+    background: var(--accent-gradient);
     border-radius: 2px;
   }
 
@@ -103,3 +104,5 @@
     }
   }
 }
+
+

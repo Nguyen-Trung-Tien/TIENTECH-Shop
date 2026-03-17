@@ -1,15 +1,16 @@
 .checkout-failed-page {
-  background: linear-gradient(135deg, #fff1f2, #ffffff);
+  background: linear-gradient(135deg, #fbeae3, #ffffff);
 }
 
 .failed-card {
-  background: #ffffff;
+  background: var(--surface);
   max-width: 520px;
   width: 100%;
   padding: 40px 32px;
   border-radius: 24px;
   text-align: center;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-md);
 }
 
 .failed-icon {
@@ -26,7 +27,7 @@
 
 .failed-desc {
   font-size: 0.95rem;
-  color: #6b7280;
+  color: var(--text-muted);
   line-height: 1.6;
   margin-bottom: 28px;
 
@@ -50,3 +51,5 @@
     font-weight: 500;
   }
 }
+
+

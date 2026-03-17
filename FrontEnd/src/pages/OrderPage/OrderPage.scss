@@ -1,20 +1,21 @@
 .order-page {
-  background-color: #f8fafc;
+  background-color: var(--bg-light);
   min-height: 90vh;
 
   .order-header {
-    background-color: #fff;
+    background-color: var(--surface);
     border-radius: 16px;
     padding: 1rem 1.2rem;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
 
     .order-header-icon {
-      color: #0072ff;
+      color: var(--primary-color);
     }
 
     .order-header-title {
       font-size: 1.25rem;
-      color: #2563eb;
+      color: var(--text-color);
     }
 
     .order-history-btn {
@@ -24,9 +25,9 @@
       transition: all 0.2s;
 
       &:hover {
-        background: #0072ff;
+        background: var(--primary-color);
         color: #fff;
-        border-color: #0072ff;
+        border-color: var(--primary-color);
       }
     }
   }
@@ -37,12 +38,12 @@
       transition: all 0.2s ease;
       &:hover {
         transform: translateY(-2px);
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        box-shadow: var(--shadow-md);
       }
 
       .product-name {
         &:hover {
-          color: #007bff;
+          color: var(--primary-color);
         }
       }
     }
@@ -55,3 +56,5 @@
     }
   }
 }
+
+
