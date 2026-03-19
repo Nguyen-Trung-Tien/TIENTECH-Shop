@@ -3,12 +3,34 @@ import { Link } from "react-router-dom";
 import { FaBox, FaShoppingCart, FaDollarSign, FaUsers } from "react-icons/fa";
 import StatsCard from "../../components/StatsCardComponent/StatsCard";
 import ChartCard from "../../components/ChartCardComponent/ChartCard";
-import { getDashboard } from "../../../api/adminApi";
+import AIInsightsWidget from "../../components/AIInsightsWidget/AIInsightsWidget";
+import { getDashboard, exportRevenue } from "../../../api/adminApi";
+import { toast } from "react-toastify";
 
 const Dashboard = () => {
   const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState(false);
   const [stats, setStats] = useState([]);
   const [error, setError] = useState(null);
+
+  const handleExport = async () => {
+    setExporting(true);
+    try {
+      const blob = await exportRevenue();
+      const url = window.URL.createObjectURL(new Blob([blob]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `Bao-cao-doanh-thu-${new Date().toLocaleDateString("vi-VN")}.xlsx`);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+      toast.success("Xuất báo cáo thành công!");
+    } catch (err) {
+      toast.error("Lỗi khi xuất báo cáo.");
+    } finally {
+      setExporting(false);
+    }
+  };
 
   useEffect(() => {
     const fetchDashboard = async () => {
@@ -79,7 +101,7 @@ const Dashboard = () => {
   }, []);
 
   return (
-    <div className="space-y-10 p-4 md:p-8 max-w-[1600px] mx-auto">
+    <div className="space-y-10 p-4 md:p-8 max-w-[1600px] mx-auto text-slate-900">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
           <h1 className="text-3xl font-black text-slate-900 tracking-tight mb-2">Bảng điều khiển</h1>
@@ -89,8 +111,12 @@ const Dashboard = () => {
         </div>
         
         <div className="flex items-center gap-4">
-           <button className="px-6 py-2.5 bg-white border border-slate-200 rounded-2xl text-xs font-black uppercase tracking-widest text-slate-600 hover:border-primary hover:text-primary transition-all shadow-sm">
-             Xuất báo cáo
+           <button 
+             onClick={handleExport}
+             disabled={exporting}
+             className="px-6 py-2.5 bg-white border border-slate-200 rounded-2xl text-xs font-black uppercase tracking-widest text-slate-600 hover:border-primary hover:text-primary transition-all shadow-sm disabled:opacity-50"
+           >
+             {exporting ? "Đang xử lý..." : "Xuất báo cáo"}
            </button>
            <Link 
              to="/admin/products" 
@@ -121,6 +147,9 @@ const Dashboard = () => {
               </Link>
             ))}
           </div>
+
+          {/* AI Insights Section */}
+          <AIInsightsWidget />
 
           {/* Charts Area */}
           <div className="bg-white rounded-[40px] border border-slate-100 shadow-soft overflow-hidden p-8 md:p-10">

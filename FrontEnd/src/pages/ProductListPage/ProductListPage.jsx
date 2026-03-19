@@ -23,7 +23,8 @@ const ProductListPage = () => {
 
   const [appliedFilters, setAppliedFilters] = useState({});
   const brandIdParam = searchParams.get("brandId") || "";
-  const categoryIdParam = searchParams.get("category") || "";
+  const categoryIdParam = searchParams.get("categoryId") || "";
+  const searchQueryParam = searchParams.get("search") || "";
 
   const limit = 12;
 
@@ -48,6 +49,7 @@ const ProductListPage = () => {
         const res = await filterProductsApi({
           brandId: filters.brand || brandIdParam || "",
           categoryId: filters.category || categoryIdParam || "",
+          search: searchQueryParam || "",
           minPrice: filters.price?.[0] ?? 0,
           maxPrice: filters.price?.[1] ?? 100000000,
           sort: filters.sort || "",
@@ -72,8 +74,13 @@ const ProductListPage = () => {
         setLoadingMore(false);
       }
     },
-    [categoryIdParam, brandIdParam],
+    [categoryIdParam, brandIdParam, searchQueryParam],
   );
+
+  const initialFilters = React.useMemo(() => ({
+    brand: brandIdParam,
+    category: categoryIdParam,
+  }), [brandIdParam, categoryIdParam]);
 
   useEffect(() => {
     fetchProducts(1, appliedFilters, false);
@@ -104,8 +111,12 @@ const ProductListPage = () => {
                      <FiChevronRight />
                      <span className="text-primary">Tất cả sản phẩm</span>
                   </nav>
-                  <h1 className="text-4xl md:text-6xl font-black text-slate-900 tracking-tighter mb-4">
-                     KHÁM PHÁ <br/> <span className="text-primary">CÔNG NGHỆ</span>
+                  <h1 className="text-4xl md:text-6xl font-black text-slate-900 tracking-tighter mb-4 uppercase">
+                     {searchQueryParam ? (
+                        <>Kết quả: <span className="text-primary italic">"{searchQueryParam}"</span></>
+                     ) : (
+                        <>KHÁM PHÁ <br/> <span className="text-primary">CÔNG NGHỆ</span></>
+                     )}
                   </h1>
                   <p className="text-slate-500 font-medium">Hệ thống phân phối linh kiện máy tính & giải pháp công nghệ hàng đầu.</p>
                </div>
@@ -129,6 +140,7 @@ const ProductListPage = () => {
               <ProductFilter 
                 isSidebar={true} 
                 onFilterChange={handleFilterChange} 
+                initialFilters={initialFilters}
               />
            </aside>
 
@@ -137,6 +149,7 @@ const ProductListPage = () => {
              onFilterChange={handleFilterChange} 
              onClose={() => setShowMobileFilter(false)} 
              show={showMobileFilter}
+             initialFilters={initialFilters}
            />
 
            {/* Product Content Area */}

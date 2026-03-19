@@ -249,6 +249,8 @@ const getActiveOrdersByUserId = async (userId, page = 1, limit = 10) => {
   }
 };
 
+const VoucherService = require("./VoucherService");
+
 const createOrder = async (data) => {
   const t = await db.sequelize.transaction();
   try {
@@ -258,30 +260,21 @@ const createOrder = async (data) => {
       paymentMethod,
       note,
       orderItems = [],
+      voucherCode,
     } = data;
 
     if (!userId || !shippingAddress || !orderItems.length) {
       return {
         errCode: 1,
-        errMessage:
-          "Missing required fields (userId, shippingAddress, orderItems)",
+        errMessage: "Missing required fields (userId, shippingAddress, orderItems)",
       };
     }
 
     const orderCode = `ORD${Date.now()}`;
-
     const formattedItems = [];
     let calculatedTotal = 0;
 
     for (const item of orderItems) {
-      if (!item.productId || !item.quantity) {
-        await t.rollback();
-        return {
-          errCode: 2,
-          errMessage: "Invalid order item data",
-        };
-      }
-
       const product = await db.Product.findByPk(item.productId, {
         transaction: t,
         lock: t.LOCK.UPDATE,
@@ -289,26 +282,13 @@ const createOrder = async (data) => {
 
       if (!product || !product.isActive) {
         await t.rollback();
-        return {
-          errCode: 3,
-          errMessage: `Product ${item.productId} not found`,
-        };
+        return { errCode: 3, errMessage: `Sản phẩm ${item.productId} không tồn tại.` };
       }
 
       const quantity = Number(item.quantity);
-      if (!Number.isFinite(quantity) || quantity <= 0) {
-        await t.rollback();
-        return {
-          errCode: 4,
-          errMessage: "Invalid quantity",
-        };
-      }
-
       const basePrice = Number(product.price) || 0;
       const discount = Number(product.discount) || 0;
-      const unitPrice = Number(
-        (basePrice * (1 - discount / 100)).toFixed(2)
-      );
+      const unitPrice = Number((basePrice * (1 - discount / 100)).toFixed(2));
       const subtotal = Number((unitPrice * quantity).toFixed(2));
 
       calculatedTotal += subtotal;
@@ -322,11 +302,32 @@ const createOrder = async (data) => {
       });
     }
 
+    let discountAmount = 0;
+    let appliedVoucher = null;
+
+    if (voucherCode) {
+      const voucherRes = await VoucherService.checkVoucher(voucherCode, calculatedTotal);
+      if (voucherRes.errCode === 0) {
+        appliedVoucher = await db.Voucher.findOne({ where: { code: voucherCode }, transaction: t });
+        discountAmount = voucherRes.data.discountAmount;
+        
+        // Tăng lượt dùng voucher
+        await appliedVoucher.increment("usedCount", { by: 1, transaction: t });
+      } else {
+        await t.rollback();
+        return voucherRes; // Trả về lỗi voucher nếu không hợp lệ
+      }
+    }
+
+    const finalTotal = Math.max(0, calculatedTotal - discountAmount);
+
     const order = await db.Order.create(
       {
         orderCode,
         userId,
-        totalPrice: calculatedTotal,
+        totalPrice: finalTotal,
+        discountAmount,
+        voucherCode: voucherCode || null,
         shippingAddress,
         paymentMethod,
         note: note || "",
@@ -340,26 +341,16 @@ const createOrder = async (data) => {
       }
     );
 
-    const cartItemIds = orderItems
-      .map((item) => item.cartItemId)
-      .filter(Boolean);
-
+    const cartItemIds = orderItems.map((item) => item.cartItemId).filter(Boolean);
     if (cartItemIds.length) {
-      await db.CartItem.destroy({
-        where: { id: cartItemIds },
-        transaction: t,
-      });
+      await db.CartItem.destroy({ where: { id: cartItemIds }, transaction: t });
     }
 
     await t.commit();
-
     return {
       errCode: 0,
       errMessage: "Order created successfully",
-      data: {
-        id: order.id,
-        orderCode: order.orderCode,
-      },
+      data: { id: order.id, orderCode: order.orderCode },
     };
   } catch (e) {
     await t.rollback();

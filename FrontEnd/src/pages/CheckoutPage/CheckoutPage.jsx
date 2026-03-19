@@ -7,6 +7,7 @@ import { createOrder } from "../../api/orderApi";
 import { createPayment } from "../../api/paymentApi";
 import { getAllCartItems } from "../../api/cartApi";
 import { createVnpayPayment } from "../../api/paymentApi";
+import { checkVoucherApi } from "../../api/voucherApi";
 import { setCartItems, removeCartItem } from "../../redux/cartSlice";
 import { resetCheckout } from "../../redux/checkoutSlice";
 import CheckoutForm from "./CheckoutForm";
@@ -29,6 +30,8 @@ const CheckoutPage = () => {
   const [loading, setLoading] = useState(
     !isSingleProduct && cartItems.length === 0,
   );
+  const [discount, setDiscount] = useState(0);
+  const [appliedVoucher, setAppliedVoucher] = useState("");
 
   useEffect(() => {
     const fetchCart = async () => {
@@ -59,16 +62,40 @@ const CheckoutPage = () => {
       ]
     : cartItems.filter((item) => checkoutState.selectedIds.includes(item.id));
 
-  const total = selectedItems.reduce((acc, item) => {
+  const subtotal = selectedItems.reduce((acc, item) => {
     const price = item.product?.discount
       ? (item.product.price * (100 - item.product.discount)) / 100
       : item.product?.price || 0;
     return acc + price * (item.quantity || 0);
   }, 0);
 
+  const finalTotal = Math.max(0, subtotal - discount);
+
+  const handleApplyVoucher = async (code) => {
+    try {
+      const res = await checkVoucherApi(code, subtotal);
+      if (res.errCode === 0) {
+        setDiscount(res.data.discountAmount);
+        setAppliedVoucher(res.data.code);
+        toast.success(res.message);
+      } else {
+        setDiscount(0);
+        setAppliedVoucher("");
+        toast.error(res.errMessage);
+      }
+    } catch (error) {
+      toast.error("Lỗi áp dụng mã giảm giá");
+    }
+  };
+
   const handleOrderComplete = async (orderData, paypalDetails = null) => {
     try {
-      const orderRes = await createOrder(orderData);
+      const finalOrderData = {
+        ...orderData,
+        voucherCode: appliedVoucher || null
+      };
+
+      const orderRes = await createOrder(finalOrderData);
       if (orderRes.errCode !== 0) {
         toast.error(orderRes.errMessage || "Lỗi khi tạo đơn hàng!");
         return;
@@ -79,7 +106,7 @@ const CheckoutPage = () => {
       if (orderData.paymentMethod === "vnpay") {
         const paymentUrl = await createVnpayPayment({
           orderCode,
-          amount: Math.round(total),
+          amount: Math.round(finalTotal),
         });
 
         window.location.href = paymentUrl;
@@ -90,7 +117,7 @@ const CheckoutPage = () => {
         {
           orderId,
           userId: user.id,
-          amount: total,
+          amount: finalTotal,
           method: orderData.paymentMethod,
           paymentStatus: paypalDetails ? "paid" : "unpaid",
           status: paypalDetails ? "completed" : "pending",
@@ -182,7 +209,14 @@ const CheckoutPage = () => {
 
           {/* Sidebar Section */}
           <aside className="lg:col-span-4 sticky top-24">
-            <OrderSummary selectedItems={selectedItems} total={total} />
+            <OrderSummary 
+              selectedItems={selectedItems} 
+              subtotal={subtotal} 
+              discount={discount}
+              finalTotal={finalTotal}
+              onApplyVoucher={handleApplyVoucher}
+              appliedVoucher={appliedVoucher}
+            />
           </aside>
         </div>
       </div>

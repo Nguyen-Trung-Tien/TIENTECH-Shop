@@ -16,6 +16,7 @@ import { useDispatch } from "react-redux";
 import { toast } from "react-toastify";
 import { useCurrentUser } from "../../../hooks/useUser";
 import logoImage from "../../../assets/Tien-Tech Shop.png";
+import NotificationBell from "../../../components/HeaderComponent/NotificationBell";
 
 const HeaderAdmin = ({ toggleSidebar, isCollapsed }) => {
   const dispatch = useDispatch();
@@ -99,10 +100,8 @@ const HeaderAdmin = ({ toggleSidebar, isCollapsed }) => {
           <span>Trang chủ</span>
         </button>
 
-        <button className="relative flex h-10 w-10 items-center justify-center rounded-xl text-slate-500 hover:bg-slate-50 transition-colors">
-          <FiBell className="text-lg" />
-          <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-rose-500 ring-2 ring-white"></span>
-        </button>
+        {/* Notifications */}
+        <NotificationBell />
 
         <div className="h-8 w-[1px] bg-slate-200 mx-1"></div>
 

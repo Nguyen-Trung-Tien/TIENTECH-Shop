@@ -75,6 +75,14 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.DATE,
         allowNull: true,
       },
+      voucherCode: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      discountAmount: {
+        type: DataTypes.DECIMAL(10, 2),
+        defaultValue: 0,
+      },
       note: {
         type: DataTypes.TEXT,
         allowNull: true,

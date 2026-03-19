@@ -5,16 +5,29 @@ import { getImage } from "../../utils/decodeImage";
 import { FiFilter, FiX, FiCheck, FiChevronDown, FiRotateCcw } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
 
-function ProductFilter({ onFilterChange, isSidebar = false, onClose }) {
+function ProductFilter({ onFilterChange, isSidebar = false, onClose, initialFilters }) {
   const [brands, setBrands] = useState([]);
   const [categories, setCategories] = useState([]);
 
   const [filters, setFilters] = useState({
-    brand: "",
-    category: "",
-    price: [0, 100000000],
-    sort: "",
+    brand: initialFilters?.brand || "",
+    category: initialFilters?.category || "",
+    price: initialFilters?.price || [0, 100000000],
+    sort: initialFilters?.sort || "",
   });
+
+  // Update local filters if initialFilters change (e.g. navigation)
+  useEffect(() => {
+    if (initialFilters) {
+      setFilters(prev => ({
+        ...prev,
+        brand: initialFilters.brand || prev.brand,
+        category: initialFilters.category || prev.category,
+        price: initialFilters.price || prev.price,
+        sort: initialFilters.sort || prev.sort,
+      }));
+    }
+  }, [initialFilters]);
 
   useEffect(() => {
     const fetchData = async () => {

@@ -1,6 +1,18 @@
 const db = require("../models");
 const { Op } = require("sequelize");
 const { getLuckyColorsByYear } = require("../utils/fortuneUtils");
+const NodeCache = require("node-cache");
+
+const productCache = new NodeCache({ stdTTL: 600, checkperiod: 120 });
+
+const clearProductCache = () => {
+  const keys = productCache.keys();
+  keys.forEach(key => {
+    if (key.startsWith("products_")) {
+      productCache.del(key);
+    }
+  });
+};
 
 const createProduct = async (data, imageRecords = []) => {
   const t = await db.sequelize.transaction();
@@ -17,6 +29,7 @@ const createProduct = async (data, imageRecords = []) => {
     }
 
     await t.commit();
+    clearProductCache();
     return { errCode: 0, product };
   } catch (e) {
     await t.rollback();
@@ -26,6 +39,13 @@ const createProduct = async (data, imageRecords = []) => {
 };
 
 const getAllProducts = async (categoryId, page = 1, limit = 10) => {
+  const cacheKey = `products_${categoryId || 'all'}_${page}_${limit}`;
+  const cachedData = productCache.get(cacheKey);
+  
+  if (cachedData) {
+    return cachedData;
+  }
+
   const offset = (page - 1) * limit;
   const whereCondition = categoryId ? { categoryId } : {};
 
@@ -41,13 +61,16 @@ const getAllProducts = async (categoryId, page = 1, limit = 10) => {
     order: [["createdAt", "DESC"]],
   });
 
-  return {
+  const result = {
     errCode: 0,
     products: rows.map((p) => ({ ...p.toJSON(), image: p.image || null })),
     totalItems: count,
     currentPage: page,
     totalPages: Math.ceil(count / limit),
   };
+
+  productCache.set(cacheKey, result);
+  return result;
 };
 
 const getProductById = async (id) => {

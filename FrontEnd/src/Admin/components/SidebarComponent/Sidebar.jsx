@@ -27,6 +27,7 @@ const MENU_ITEMS = [
   { to: "/admin/payment", icon: <FiDollarSign />, label: "Thanh toán" },
   { to: "/admin/products", icon: <FiBox />, label: "Sản phẩm" },
   { to: "/admin/users", icon: <FiUsers />, label: "Người dùng" },
+  { to: "/admin/vouchers", icon: <FiTag />, label: "Mã giảm giá" },
   { to: "/admin/brands", icon: <FiTag />, label: "Thương hiệu" },
   { to: "/admin/categories", icon: <FiLayers />, label: "Danh mục" },
   { to: "/admin/reviews", icon: <FiHelpCircle />, label: "Phản hồi" },

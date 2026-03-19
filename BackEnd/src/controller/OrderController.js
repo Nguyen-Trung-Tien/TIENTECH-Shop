@@ -1,4 +1,5 @@
 const OrderService = require("../services/OrderService");
+const NotificationService = require("../services/NotificationService");
 
 const handleGetAllOrders = async (req, res) => {
   try {
@@ -35,6 +36,23 @@ const handleGetOrderById = async (req, res) => {
 const handleCreateOrder = async (req, res) => {
   try {
     const result = await OrderService.createOrder(req.body);
+    if (result.errCode === 0) {
+      const io = req.app.get("io");
+      
+      // 1. Lưu thông báo cho Admin vào DB
+      await NotificationService.createNotification({
+        title: "Đơn hàng mới!",
+        message: `Đơn hàng #${result.data.orderCode} vừa được tạo.`,
+        type: "order",
+        link: `/admin/orders`
+      });
+
+      // 2. Gửi real-time tới Admin
+      io.to("admin_room").emit("new_order", {
+        message: "Có đơn hàng mới!",
+        order: result.data,
+      });
+    }
     return res.status(201).json(result);
   } catch (e) {
     console.error(e);
@@ -50,9 +68,31 @@ const handleUpdateOrderStatus = async (req, res) => {
     const { id } = req.params;
     const { status } = req.body;
     const result = await OrderService.updateOrderStatus(id, status, req.user);
+    
+    if (result.errCode === 0) {
+      const io = req.app.get("io");
+      const order = result.data;
+
+      // 1. Lưu thông báo cho User vào DB
+      await NotificationService.createNotification({
+        userId: order.userId,
+        title: "Cập nhật đơn hàng",
+        message: `Đơn hàng #${order.orderCode} của bạn đã chuyển sang trạng thái: ${status}`,
+        type: "order",
+        link: `/orders-detail/${id}`
+      });
+
+      // 2. Gửi real-time tới User (room được đặt theo userId)
+      io.to(`user_${order.userId}`).emit("order_status_updated", {
+        orderId: id,
+        status: status,
+        message: `Đơn hàng #${id} của bạn đã chuyển sang trạng thái: ${status}`
+      });
+    }
+    
     return res.status(result.status || 200).json(result);
-  } catch (e) {
-    console.error(e);
+  } catch (error) {
+    console.error(error);
     return res.status(500).json({
       errCode: -1,
       errMessage: "Internal server error",
@@ -112,6 +152,7 @@ const handleGetOrdersByUserId = async (req, res) => {
     });
   }
 };
+
 const getActiveOrdersByUserId = async (req, res) => {
   try {
     const userId = req.params.userId;
@@ -139,6 +180,7 @@ const getActiveOrdersByUserId = async (req, res) => {
     });
   }
 };
+
 module.exports = {
   handleGetAllOrders,
   handleGetOrderById,

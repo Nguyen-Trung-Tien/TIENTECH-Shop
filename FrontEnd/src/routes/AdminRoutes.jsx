@@ -14,6 +14,7 @@ import OrdersReturnPage from "../Admin/pages/OrdersReturnPage/OrdersReturnPage";
 import PaymentPage from "../Admin/pages/Payment/PaymentPage";
 import ReviewPage from "../Admin/pages/ReviewPage/ReviewPage";
 import BrandManage from "../Admin/pages/BrandManage/BrandManage";
+import VoucherManage from "../Admin/pages/VoucherManage/VoucherManage";
 
 const AdminRoutes = () => {
   return (
@@ -35,6 +36,7 @@ const AdminRoutes = () => {
           <Route path="payment" element={<PaymentPage />} />
           <Route path="reviews" element={<ReviewPage />} />
           <Route path="brands" element={<BrandManage />} />
+          <Route path="vouchers" element={<VoucherManage />} />
         </Route>
       </Route>
     </Routes>

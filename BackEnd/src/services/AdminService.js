@@ -1,26 +1,103 @@
 const db = require("../models");
 const { Op } = require("sequelize");
 
+/**
+ * Tính toán phần trăm thay đổi
+ * @param {number} current Giá trị hiện tại
+ * @param {number} previous Giá trị kỳ trước
+ * @returns {number} Phần trăm thay đổi
+ */
+const calculateChange = (current, previous) => {
+  if (previous === 0) return current > 0 ? 100 : 0;
+  return Math.round(((current - previous) / previous) * 100);
+};
+
 const getDashboardData = async () => {
   try {
-    const totalProducts = await db.Product.count();
-    const startOfDay = new Date();
-    startOfDay.setHours(0, 0, 0, 0);
+    const now = new Date();
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const startOfYesterday = new Date(startOfToday);
+    startOfYesterday.setDate(startOfYesterday.getDate() - 1);
 
-    const todayOrders = await db.Order.count({
+    const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
+
+    // 1. Sản phẩm: Tổng số và tăng trưởng tháng này vs tháng trước
+    const totalProducts = await db.Product.count();
+    const productsThisMonth = await db.Product.count({
+      where: { createdAt: { [Op.gte]: startOfThisMonth } },
+    });
+    const productsLastMonth = await db.Product.count({
       where: {
         createdAt: {
-          [Op.gte]: startOfDay,
+          [Op.gte]: startOfLastMonth,
+          [Op.lt]: startOfThisMonth,
         },
       },
     });
-    const totalRevenue = await db.Order.sum("totalPrice");
-    const totalUsers = await db.User.count();
+
+    // 2. Đơn hàng: Hôm nay và tăng trưởng hôm nay vs hôm qua
+    const todayOrders = await db.Order.count({
+      where: { createdAt: { [Op.gte]: startOfToday } },
+    });
+    const yesterdayOrders = await db.Order.count({
+      where: {
+        createdAt: {
+          [Op.gte]: startOfYesterday,
+          [Op.lt]: startOfToday,
+        },
+      },
+    });
+
+    // 3. Doanh thu: Tổng và tăng trưởng tháng này vs tháng trước (Chỉ tính đơn đã thanh toán hoặc đã giao)
+    const revenueStatus = ["paid", "delivered"];
+    const totalRevenueResult = await db.Order.sum("totalPrice", {
+      where: {
+        [Op.or]: [
+          { paymentStatus: "paid" },
+          { status: "delivered" }
+        ]
+      }
+    });
+    const totalRevenue = totalRevenueResult || 0;
+
+    const revenueThisMonthResult = await db.Order.sum("totalPrice", {
+      where: {
+        createdAt: { [Op.gte]: startOfThisMonth },
+        [Op.or]: [{ paymentStatus: "paid" }, { status: "delivered" }]
+      }
+    });
+    const revenueThisMonth = revenueThisMonthResult || 0;
+
+    const revenueLastMonthResult = await db.Order.sum("totalPrice", {
+      where: {
+        createdAt: { [Op.gte]: startOfLastMonth, [Op.lt]: startOfThisMonth },
+        [Op.or]: [{ paymentStatus: "paid" }, { status: "delivered" }]
+      }
+    });
+    const revenueLastMonth = revenueLastMonthResult || 0;
+
+    // 4. Người dùng: Tổng và tăng trưởng người mới tháng này vs tháng trước
+    const totalUsers = await db.User.count({ where: { role: "customer" } });
+    const usersThisMonth = await db.User.count({
+      where: {
+        role: "customer",
+        createdAt: { [Op.gte]: startOfThisMonth }
+      },
+    });
+    const usersLastMonth = await db.User.count({
+      where: {
+        role: "customer",
+        createdAt: { [Op.gte]: startOfLastMonth, [Op.lt]: startOfThisMonth }
+      },
+    });
+
     const change = {
-      products: 8,
-      orders: 5,
-      revenue: -3,
-      users: 2,
+      products: calculateChange(productsThisMonth, productsLastMonth),
+      orders: calculateChange(todayOrders, yesterdayOrders),
+      revenue: calculateChange(revenueThisMonth, revenueLastMonth),
+      users: calculateChange(usersThisMonth, usersLastMonth),
     };
 
     return {
@@ -31,11 +108,78 @@ const getDashboardData = async () => {
       change,
     };
   } catch (error) {
-    console.error("Error from service!", error);
+    console.error("Error from AdminService.getDashboardData:", error);
+    throw error;
+  }
+};
+
+const ExcelJS = require("exceljs");
+
+const exportRevenueExcel = async () => {
+  try {
+    const orders = await db.Order.findAll({
+      where: {
+        [Op.or]: [{ paymentStatus: "paid" }, { status: "delivered" }],
+      },
+      include: [
+        { model: db.User, as: "user", attributes: ["username", "email", "phone"] },
+        { model: db.OrderItem, as: "orderItems", attributes: ["productName", "quantity", "price"] },
+      ],
+      order: [["createdAt", "DESC"]],
+    });
+
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Bao-Cao-Doanh-Thu");
+
+    // HEADER
+    worksheet.columns = [
+      { header: "MÃ ĐƠN HÀNG", key: "orderCode", width: 25 },
+      { header: "KHÁCH HÀNG", key: "username", width: 20 },
+      { header: "SẢN PHẨM", key: "items", width: 40 },
+      { header: "TỔNG CỘNG (₫)", key: "totalPrice", width: 20 },
+      { header: "GIẢM GIÁ (₫)", key: "discountAmount", width: 20 },
+      { header: "NGÀY ĐẶT", key: "createdAt", width: 20 },
+      { header: "TRẠNG THÁI", key: "status", width: 15 },
+    ];
+
+    // STYLE HEADER
+    worksheet.getRow(1).font = { bold: true };
+    worksheet.getRow(1).fill = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: "FF1E293B" },
+    };
+    worksheet.getRow(1).font = { color: { argb: "FFFFFFFF" }, bold: true };
+
+    // DATA
+    orders.forEach((order) => {
+      const items = order.orderItems.map((i) => `${i.productName} (x${i.quantity})`).join(", ");
+      worksheet.addRow({
+        orderCode: order.orderCode,
+        username: order.user?.username || "Ẩn danh",
+        items: items,
+        totalPrice: Number(order.totalPrice),
+        discountAmount: Number(order.discountAmount || 0),
+        createdAt: new Date(order.createdAt).toLocaleDateString("vi-VN"),
+        status: order.status === "delivered" ? "Hoàn tất" : "Đã thanh toán",
+      });
+    });
+
+    // TOTAL ROW
+    const totalRevenue = orders.reduce((sum, o) => sum + Number(o.totalPrice), 0);
+    worksheet.addRow({});
+    worksheet.addRow({ orderCode: "TỔNG DOANH THU", totalPrice: totalRevenue });
+    worksheet.lastRow.font = { bold: true, size: 12 };
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    return buffer;
+  } catch (error) {
+    console.error("Excel Export Error:", error);
     throw error;
   }
 };
 
 module.exports = {
   getDashboardData,
+  exportRevenueExcel,
 };

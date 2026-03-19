@@ -11,7 +11,7 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 const handleFengShuiChat = async (req, res) => {
   try {
-    const { birthYear, message, brandId, categoryId, minPrice, maxPrice } =
+    const { birthYear, message, brandId, categoryId, minPrice, maxPrice, history = [] } =
       req.body;
 
     if (!birthYear || !message)
@@ -43,35 +43,67 @@ const handleFengShuiChat = async (req, res) => {
 
     let dbContext = `Mệnh: ${element}\nMàu may mắn: ${luckyColors.join(", ")}`;
     if (products.length) {
-      dbContext += "\nSản phẩm gợi ý:\n";
+      dbContext += "\nSản phẩm gợi ý trong kho:\n";
       products.forEach((p) => {
-        const price = p.price * (1 - p.discount / 100);
-        dbContext += `- ${p.name}: ${price.toLocaleString()} ₫, kho: ${
-          p.stock > 0 ? p.stock : "Hết hàng"
-        }\n`;
+        const currentPrice = p.price * (1 - p.discount / 100);
+        dbContext += `- ID: ${p.id}, Tên: ${p.name}, Giá: ${currentPrice.toLocaleString()} ₫, Kho: ${p.stock}\n`;
       });
-    } else dbContext += "\nHiện chưa có sản phẩm phù hợp.";
+    }
 
     const systemPrompt = `
-Bạn là trợ lý AI tư vấn phong thủy shop TienTech.
-Dữ liệu người dùng và sản phẩm: ${dbContext}
-Trả lời bằng tiếng Việt, thân thiện, rõ ràng, gợi ý sản phẩm phù hợp.
+Bạn là chuyên gia phong thủy của TienTech Shop.
+Nhiệm vụ: Tư vấn chọn sản phẩm công nghệ theo bản mệnh, màu sắc may mắn của khách hàng.
+
+THÔNG TIN PHONG THỦY & KHO:
+${dbContext}
+
+YÊU CẦU PHẢN HỒI:
+1. Trả lời bằng tiếng Việt, giọng điệu chuyên gia nhưng gần gũi.
+2. Giải thích tại sao sản phẩm/màu sắc đó lại hợp với mệnh ${element}.
+3. Trả về định dạng JSON THUẦN:
+{
+  "reply": "Nội dung tư vấn của bạn",
+  "recommendedProducts": [id1, id2] // Mảng ID các sản phẩm hợp mệnh nhất (tối đa 3)
+}
+4. Không markdown, không giải thích ngoài JSON.
 `;
+
+    const messages = [
+      { role: "system", content: systemPrompt },
+      ...history.slice(-6).map(msg => ({
+        role: msg.role === "user" ? "user" : "assistant",
+        content: typeof msg.content === 'string' ? msg.content : JSON.stringify(msg.content)
+      })),
+      { role: "user", content: message }
+    ];
 
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: message },
-      ],
+      messages: messages,
       temperature: 0.7,
-      max_tokens: 400,
+      max_tokens: 500,
+      response_format: { type: "json_object" }
     });
 
-    res.json({ reply: completion.choices[0].message.content });
+    const result = JSON.parse(completion.choices[0].message.content);
+
+    // Lấy thông tin chi tiết của các sản phẩm được đề xuất
+    let finalRecommended = [];
+    if (result.recommendedProducts && result.recommendedProducts.length > 0) {
+      finalRecommended = await Product.findAll({
+        where: { id: { [Op.in]: result.recommendedProducts }, isActive: true },
+        attributes: ['id', 'name', 'price', 'discount', 'image']
+      });
+    }
+
+    res.json({ 
+      reply: result.reply,
+      recommendedProducts: finalRecommended
+    });
+
   } catch (error) {
-    console.error("Lỗi chatbot:", error);
-    res.status(500).json({ error: "Lỗi xử lý AI." });
+    console.error("Lỗi chatbot phong thủy:", error);
+    res.status(500).json({ error: "Lỗi xử lý AI phong thủy." });
   }
 };
 

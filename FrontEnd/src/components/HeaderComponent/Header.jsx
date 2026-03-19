@@ -24,6 +24,7 @@ import { useCurrentUser } from "../../hooks/useUser";
 import { debounce } from "lodash";
 import logoImage from "../../assets/Tien-Tech Shop.png";
 import { toast } from "react-toastify";
+import NotificationBell from "./NotificationBell";
 
 function Header() {
   const dispatch = useDispatch();
@@ -148,7 +149,7 @@ function Header() {
   const onSearchSubmit = (e) => {
     e.preventDefault();
     if (searchInput.trim()) {
-      navigate(`/products?search=${encodeURIComponent(searchInput.trim())}`);
+      navigate(`/product-list?search=${encodeURIComponent(searchInput.trim())}`);
       setShowSuggestions(false);
     }
   };
@@ -163,8 +164,8 @@ function Header() {
     <header 
       className={`sticky top-0 z-[100] w-full transition-all duration-500 ${
         isScrolled 
-          ? "bg-white/90 backdrop-blur-xl shadow-md py-2" 
-          : "bg-white py-4"
+          ? "bg-white/90 dark:bg-dark-bg/90 backdrop-blur-xl shadow-md py-2" 
+          : "bg-white dark:bg-dark-bg py-4"
       }`}
     >
       <div className="container-custom flex items-center justify-between gap-10">
@@ -180,11 +181,11 @@ function Header() {
               key={link.path}
               to={link.path}
               className={`text-[13px] font-bold uppercase tracking-[0.15em] transition-all relative group ${
-                location.pathname === link.path ? "text-primary" : "text-slate-500 hover:text-slate-900"
+                location.pathname === link.path ? "text-primary dark:text-brand" : "text-slate-500 dark:text-dark-text-secondary hover:text-slate-900 dark:hover:text-white"
               }`}
             >
               {link.name}
-              <span className={`absolute -bottom-1 left-0 h-0.5 bg-primary transition-all duration-300 ${location.pathname === link.path ? "w-full" : "w-0 group-hover:w-full"}`}></span>
+              <span className={`absolute -bottom-1 left-0 h-0.5 bg-primary dark:bg-brand transition-all duration-300 ${location.pathname === link.path ? "w-full" : "w-0 group-hover:w-full"}`}></span>
             </Link>
           ))}
         </nav>
@@ -192,19 +193,19 @@ function Header() {
         {/* Search Bar */}
         <div className="hidden lg:block flex-1 max-w-lg relative" ref={searchRef}>
           <form onSubmit={onSearchSubmit} className="relative group">
-            <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" />
+            <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary dark:group-focus-within:text-brand transition-colors" />
             <input
               type="text"
               placeholder="Tìm kiếm sản phẩm công nghệ..."
               value={searchInput}
               onChange={onSearchChange}
-              className="w-full h-11 bg-slate-100 border-2 border-transparent rounded-2xl pl-12 pr-10 text-[14px] font-medium focus:bg-white focus:border-primary/10 focus:ring-4 focus:ring-primary/5 outline-none transition-all"
+              className="w-full h-11 bg-slate-100 dark:bg-dark-surface border-2 border-transparent rounded-2xl pl-12 pr-10 text-[14px] font-medium focus:bg-white dark:focus:bg-dark-bg focus:border-primary/10 dark:focus:border-brand/20 focus:ring-4 focus:ring-primary/5 dark:focus:ring-brand/5 outline-none transition-all dark:text-white"
             />
             {searchInput && (
               <button 
                 type="button"
                 onClick={() => { setSearchInput(""); setShowSuggestions(false); }}
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-200 rounded-lg transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-200 dark:hover:bg-dark-surface rounded-lg transition-colors"
               >
                 <FiX />
               </button>
@@ -218,12 +219,12 @@ function Header() {
                 initial={{ opacity: 0, y: 15, scale: 0.98 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 10, scale: 0.98 }}
-                className="absolute top-full left-0 w-full mt-3 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden z-50 p-3"
+                className="absolute top-full left-0 w-full mt-3 bg-white dark:bg-dark-surface rounded-2xl shadow-xl border border-slate-100 dark:border-dark-border overflow-hidden z-50 p-3"
               >
                 {["keywords", "products", "brands", "categories"].map((type) => (
                   suggestions[type]?.length > 0 && (
                     <div key={type} className="mb-3 last:mb-0">
-                      <p className="px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 bg-slate-50 rounded-lg mb-1">
+                      <p className="px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-dark-text-secondary bg-slate-50 dark:bg-dark-bg/50 rounded-lg mb-1">
                         {type === "keywords" ? "Gợi ý" : type === "products" ? "Sản phẩm" : type === "brands" ? "Thương hiệu" : "Danh mục"}
                       </p>
                       <div className="space-y-1">
@@ -232,15 +233,15 @@ function Header() {
                             key={item.id || item}
                             onClick={() => {
                                 if (type === "products") navigate(`/product-detail/${item.id}`);
-                                else if (type === "brands") navigate(`/product-list?brand=${item.id}`);
-                                else if (type === "categories") navigate(`/product-list?category=${item.id}`);
-                                else navigate(`/products?search=${encodeURIComponent(item)}`);
+                                else if (type === "brands") navigate(`/product-list?brandId=${item.id}`);
+                                else if (type === "categories") navigate(`/product-list?categoryId=${item.id}`);
+                                else navigate(`/product-list?search=${encodeURIComponent(item)}`);
                                 setShowSuggestions(false);
                             }}
-                            className="flex items-center gap-4 w-full px-3 py-2.5 text-[14px] text-slate-600 hover:bg-slate-50 hover:text-primary rounded-xl transition-all text-left"
+                            className="flex items-center gap-4 w-full px-3 py-2.5 text-[14px] text-slate-600 dark:text-dark-text-secondary hover:bg-slate-50 dark:hover:bg-dark-bg hover:text-primary dark:hover:text-brand rounded-xl transition-all text-left"
                           >
                             {type === "products" && (
-                              <div className="w-12 h-12 flex-shrink-0 bg-white rounded-xl border border-slate-100 p-1.5 shadow-sm">
+                              <div className="w-12 h-12 flex-shrink-0 bg-white dark:bg-dark-bg rounded-xl border border-slate-100 dark:border-dark-border p-1.5 shadow-sm">
                                 <img src={getImage(item.image)} alt="" className="w-full h-full object-contain" />
                               </div>
                             )}
@@ -258,14 +259,17 @@ function Header() {
 
         {/* Actions */}
         <div className="flex items-center gap-3">
+          {/* Notifications */}
+          <NotificationBell />
+
           {/* Cart */}
           <Link 
             to="/cart" 
-            className="group relative flex items-center justify-center w-11 h-11 rounded-2xl text-slate-700 hover:bg-slate-100 hover:text-primary transition-all"
+            className="group relative flex items-center justify-center w-11 h-11 rounded-2xl text-slate-700 dark:text-dark-text-secondary hover:bg-slate-100 dark:hover:bg-dark-surface hover:text-primary dark:hover:text-brand transition-all"
           >
             <FiShoppingCart className="text-[22px] group-hover:scale-110 transition-transform" />
             {cartItemCount > 0 && (
-              <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-rose-500 text-[10px] font-black text-white ring-2 ring-white shadow-lg shadow-rose-500/20">
+              <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-rose-500 text-[10px] font-black text-white ring-2 ring-white dark:ring-dark-bg shadow-lg shadow-rose-500/20">
                 {cartItemCount}
               </span>
             )}
@@ -276,11 +280,11 @@ function Header() {
             <div className="relative">
               <button
                 onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                className="flex items-center gap-3 p-1.5 pr-3 rounded-2xl hover:bg-slate-100 transition-all border border-transparent hover:border-slate-200"
+                className="flex items-center gap-3 p-1.5 pr-3 rounded-2xl hover:bg-slate-100 dark:hover:bg-dark-surface transition-all border border-transparent hover:border-slate-200 dark:hover:border-dark-border"
               >
                 <div className="relative">
                   <img src={avatarUrl} alt="Avatar" className="w-8 h-8 rounded-xl object-cover ring-2 ring-primary/10" />
-                  <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full"></div>
+                  <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 border-2 border-white dark:border-dark-bg rounded-full"></div>
                 </div>
                 <FiChevronDown className={`text-slate-400 transition-transform duration-300 ${isUserMenuOpen ? "rotate-180" : ""}`} />
               </button>
@@ -291,32 +295,32 @@ function Header() {
                     initial={{ opacity: 0, scale: 0.95, y: 15 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                    className="absolute right-0 mt-3 w-64 bg-white rounded-3xl shadow-xl border border-slate-100 p-3 z-50"
+                    className="absolute right-0 mt-3 w-64 bg-white dark:bg-dark-surface rounded-3xl shadow-xl border border-slate-100 dark:border-dark-border p-3 z-50"
                   >
-                    <div className="px-4 py-3 bg-slate-50 rounded-2xl mb-2">
-                      <p className="text-[13px] font-black text-slate-900 truncate">{user.username || user.email}</p>
-                      <p className="text-[9px] uppercase font-black text-primary tracking-widest mt-0.5">{user.role}</p>
+                    <div className="px-4 py-3 bg-slate-50 dark:bg-dark-bg rounded-2xl mb-2">
+                      <p className="text-[13px] font-black text-slate-900 dark:text-white truncate">{user.username || user.email}</p>
+                      <p className="text-[9px] uppercase font-black text-primary dark:text-brand tracking-widest mt-0.5">{user.role}</p>
                     </div>
 
                     <div className="space-y-1">
                       {user.role === "admin" && (
-                        <Link to="/admin/dashboard" className="flex items-center gap-3 px-4 py-2.5 text-[14px] font-semibold text-slate-600 hover:bg-slate-50 hover:text-primary rounded-xl transition-all">
+                        <Link to="/admin/dashboard" className="flex items-center gap-3 px-4 py-2.5 text-[14px] font-semibold text-slate-600 dark:text-dark-text-secondary hover:bg-slate-50 dark:hover:bg-dark-bg hover:text-primary dark:hover:text-brand rounded-xl transition-all">
                           <FiBox className="text-lg" /> Dashboard Quản trị
                         </Link>
                       )}
                       
-                      <Link to="/profile" className="flex items-center gap-3 px-4 py-2.5 text-[14px] font-semibold text-slate-600 hover:bg-slate-50 hover:text-primary rounded-xl transition-all">
+                      <Link to="/profile" className="flex items-center gap-3 px-4 py-2.5 text-[14px] font-semibold text-slate-600 dark:text-dark-text-secondary hover:bg-slate-50 dark:hover:bg-dark-bg hover:text-primary dark:hover:text-brand rounded-xl transition-all">
                         <FiUser className="text-lg" /> Thông tin cá nhân
                       </Link>
-                      <Link to="/orders" className="flex items-center gap-3 px-4 py-2.5 text-[14px] font-semibold text-slate-600 hover:bg-slate-50 hover:text-primary rounded-xl transition-all">
+                      <Link to="/orders" className="flex items-center gap-3 px-4 py-2.5 text-[14px] font-semibold text-slate-600 dark:text-dark-text-secondary hover:bg-slate-50 dark:hover:bg-dark-bg hover:text-primary dark:hover:text-brand rounded-xl transition-all">
                         <FiShoppingBag className="text-lg" /> Đơn mua của tôi
                       </Link>
                       
-                      <div className="my-2 border-t border-slate-100 mx-2"></div>
+                      <div className="my-2 border-t border-slate-100 dark:border-dark-border mx-2"></div>
                       
                       <button
                         onClick={handleLogout}
-                        className="flex w-full items-center gap-3 px-4 py-2.5 text-[14px] font-bold text-rose-500 hover:bg-rose-50 rounded-xl transition-all"
+                        className="flex w-full items-center gap-3 px-4 py-2.5 text-[14px] font-bold text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-xl transition-all"
                       >
                         <FiLogOut className="text-lg" /> Đăng xuất
                       </button>
@@ -328,7 +332,7 @@ function Header() {
           ) : (
             <Link 
               to="/login" 
-              className="flex items-center gap-2 px-6 py-2.5 bg-slate-900 text-white rounded-2xl text-[13px] font-black hover:bg-primary hover:shadow-xl hover:shadow-primary/20 transition-all active:scale-95"
+              className="flex items-center gap-2 px-6 py-2.5 bg-slate-900 dark:bg-brand text-white rounded-2xl text-[13px] font-black hover:bg-primary dark:hover:bg-brand-dark hover:shadow-xl hover:shadow-primary/20 transition-all active:scale-95"
             >
               <FiUser className="text-lg" />
               <span className="hidden sm:inline">ĐĂNG NHẬP</span>
@@ -338,7 +342,7 @@ function Header() {
           {/* Mobile Menu Toggle */}
           <button 
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="lg:hidden flex items-center justify-center w-11 h-11 rounded-2xl bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors"
+            className="lg:hidden flex items-center justify-center w-11 h-11 rounded-2xl bg-slate-100 dark:bg-dark-surface text-slate-700 dark:text-white hover:bg-slate-200 dark:hover:bg-dark-border transition-colors"
           >
             {isMobileMenuOpen ? <FiX className="text-xl" /> : <FiMenu className="text-xl" />}
           </button>
@@ -352,7 +356,7 @@ function Header() {
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            className="lg:hidden bg-white border-t border-slate-100 overflow-hidden"
+            className="lg:hidden bg-white dark:bg-dark-bg border-t border-slate-100 dark:border-dark-border overflow-hidden"
           >
             <div className="container-custom py-6 space-y-4">
               {/* Mobile Search */}
@@ -363,7 +367,7 @@ function Header() {
                   placeholder="Tìm kiếm..."
                   value={searchInput}
                   onChange={onSearchChange}
-                  className="w-full h-11 bg-slate-50 border border-slate-100 rounded-xl pl-11 text-sm focus:ring-2 focus:ring-primary/20 outline-none"
+                  className="w-full h-11 bg-slate-50 dark:bg-dark-surface border border-slate-100 dark:border-dark-border rounded-xl pl-11 text-sm focus:ring-2 focus:ring-primary/20 outline-none dark:text-white"
                 />
               </form>
               
@@ -372,7 +376,7 @@ function Header() {
                   <Link
                     key={link.path}
                     to={link.path}
-                    className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-700 hover:bg-slate-50 hover:text-primary transition-all font-bold"
+                    className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-700 dark:text-dark-text-secondary hover:bg-slate-50 dark:hover:bg-dark-surface hover:text-primary dark:hover:text-brand transition-all font-bold"
                   >
                     <span className="text-lg">{link.icon}</span>
                     {link.name}
