@@ -1,12 +1,12 @@
-import React from 'react';
+import React from "react";
 
 const Card = ({
   children,
-  className = '',
-  padding = 'p-5',
-  shadow = 'shadow-sm',
-  rounded = 'rounded-xl',
-  border = 'border border-neutral-200/70',
+  className = "",
+  padding = "p-5",
+  shadow = "shadow-sm",
+  rounded = "rounded-xl",
+  border = "border border-neutral-200/70",
   ...props
 }) => {
   return (

@@ -3,9 +3,15 @@ const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
   class VoucherUsage extends Model {
     static associate(models) {
-      VoucherUsage.belongsTo(models.Voucher, { foreignKey: "voucherId", as: "voucher" });
+      VoucherUsage.belongsTo(models.Voucher, {
+        foreignKey: "voucherId",
+        as: "voucher",
+      });
       VoucherUsage.belongsTo(models.User, { foreignKey: "userId", as: "user" });
-      VoucherUsage.belongsTo(models.Order, { foreignKey: "orderId", as: "order" });
+      VoucherUsage.belongsTo(models.Order, {
+        foreignKey: "orderId",
+        as: "order",
+      });
     }
   }
 
@@ -38,7 +44,7 @@ module.exports = (sequelize, DataTypes) => {
       modelName: "VoucherUsage",
       tableName: "VoucherUsages",
       timestamps: true,
-    }
+    },
   );
 
   return VoucherUsage;

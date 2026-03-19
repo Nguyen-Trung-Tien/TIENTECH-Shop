@@ -3,8 +3,14 @@ const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
   class StockReservation extends Model {
     static associate(models) {
-      StockReservation.belongsTo(models.Order, { foreignKey: "orderId", as: "order" });
-      StockReservation.belongsTo(models.Product, { foreignKey: "productId", as: "product" });
+      StockReservation.belongsTo(models.Order, {
+        foreignKey: "orderId",
+        as: "order",
+      });
+      StockReservation.belongsTo(models.Product, {
+        foreignKey: "productId",
+        as: "product",
+      });
     }
   }
   StockReservation.init(
@@ -35,7 +41,7 @@ module.exports = (sequelize, DataTypes) => {
       modelName: "StockReservation",
       tableName: "StockReservations",
       timestamps: true,
-    }
+    },
   );
   return StockReservation;
 };

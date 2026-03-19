@@ -1,20 +1,20 @@
-import React from 'react';
-import Button from '../../components/UI/Button';
-import Input from '../../components/UI/Input';
-import Card from '../../components/UI/Card';
-import Table from '../../components/UI/Table';
+import React from "react";
+import Button from "../../components/UI/Button";
+import Input from "../../components/UI/Input";
+import Card from "../../components/UI/Card";
+import Table from "../../components/UI/Table";
 
 const styleTableData = [
-  { id: '1', name: 'Áo thun', price: 120000, status: 'Còn hàng' },
-  { id: '2', name: 'Tai nghe', price: 850000, status: 'Hết hàng' },
-  { id: '3', name: 'Laptop', price: 22500000, status: 'Còn hàng' },
+  { id: "1", name: "Áo thun", price: 120000, status: "Còn hàng" },
+  { id: "2", name: "Tai nghe", price: 850000, status: "Hết hàng" },
+  { id: "3", name: "Laptop", price: 22500000, status: "Còn hàng" },
 ];
 
 const styleColumns = [
-  { header: 'ID', accessor: 'id' },
-  { header: 'Tên Sản Phẩm', accessor: 'name' },
-  { header: 'Giá', cell: (row) => row.price.toLocaleString('vi-VN') + ' ₫' },
-  { header: 'Tình trạng', accessor: 'status' },
+  { header: "ID", accessor: "id" },
+  { header: "Tên Sản Phẩm", accessor: "name" },
+  { header: "Giá", cell: (row) => row.price.toLocaleString("vi-VN") + " ₫" },
+  { header: "Tình trạng", accessor: "status" },
 ];
 
 const StyleGuide = () => {

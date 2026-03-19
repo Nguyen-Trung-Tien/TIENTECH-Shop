@@ -49,29 +49,41 @@ describe("OrderService stock reservation", () => {
     expect(createResult.errCode).toBe(0);
     orderId = createResult.data.id;
 
-    const reservation = await db.StockReservation.findOne({ where: { orderId } });
+    const reservation = await db.StockReservation.findOne({
+      where: { orderId },
+    });
     expect(reservation).toBeTruthy();
     expect(reservation.status).toBe("reserved");
 
     const productAfterCreate = await db.Product.findByPk(product.id);
     expect(productAfterCreate.stock).toBe(10);
 
-    const paymentUpdate = await OrderService.updatePaymentStatus(orderId, "paid");
+    const paymentUpdate = await OrderService.updatePaymentStatus(
+      orderId,
+      "paid",
+    );
     expect(paymentUpdate.errCode).toBe(0);
 
     const productAfterPaid = await db.Product.findByPk(product.id);
     expect(productAfterPaid.stock).toBe(5);
 
-    const reservationAfterPaid = await db.StockReservation.findOne({ where: { orderId } });
+    const reservationAfterPaid = await db.StockReservation.findOne({
+      where: { orderId },
+    });
     expect(reservationAfterPaid.status).toBe("committed");
 
-    const cancelResult = await OrderService.updateOrderStatus(orderId, "cancelled");
+    const cancelResult = await OrderService.updateOrderStatus(
+      orderId,
+      "cancelled",
+    );
     expect(cancelResult.errCode).toBe(0);
 
     const productAfterCancel = await db.Product.findByPk(product.id);
     expect(productAfterCancel.stock).toBe(10);
 
-    const reservationFinal = await db.StockReservation.findOne({ where: { orderId } });
+    const reservationFinal = await db.StockReservation.findOne({
+      where: { orderId },
+    });
     expect(["released", "committed"]).toContain(reservationFinal.status);
   });
 });

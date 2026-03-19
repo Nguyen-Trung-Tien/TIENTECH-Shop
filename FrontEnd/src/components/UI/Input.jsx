@@ -1,6 +1,6 @@
-import React from 'react';
+import React from "react";
 
-const Input = ({ label, error, className = '', ...props }) => {
+const Input = ({ label, error, className = "", ...props }) => {
   return (
     <div className={`w-full ${className}`}>
       {label && (
@@ -9,10 +9,12 @@ const Input = ({ label, error, className = '', ...props }) => {
         </label>
       )}
       <input
-        className={`input-base ${error ? 'border-danger focus:ring-danger/10 focus:border-danger' : ''}`}
+        className={`input-base ${error ? "border-danger focus:ring-danger/10 focus:border-danger" : ""}`}
         {...props}
       />
-      {error && <p className="mt-1 text-xs text-danger font-medium ml-0.5">{error}</p>}
+      {error && (
+        <p className="mt-1 text-xs text-danger font-medium ml-0.5">{error}</p>
+      )}
     </div>
   );
 };
