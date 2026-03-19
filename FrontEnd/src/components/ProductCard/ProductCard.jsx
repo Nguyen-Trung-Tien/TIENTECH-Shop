@@ -1,19 +1,19 @@
 import React, { useState, useMemo } from "react";
-import { Card, Button, Spinner, Badge } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useSelector, useDispatch } from "react-redux";
+import { motion } from "framer-motion";
 import { addCart, getAllCarts, createCart } from "../../api/cartApi";
 import { addCartItem } from "../../redux/cartSlice";
 import { getImage } from "../../utils/decodeImage";
 import {
-  CartPlus,
-  CreditCard,
-  Star,
-  StarFill,
-  StarHalf,
-} from "react-bootstrap-icons";
-import "./ProductCard.scss";
+  FiShoppingCart,
+  FiStar,
+  FiTruck,
+} from "react-icons/fi";
+import { FaStar, FaStarHalfAlt, FaRegStar } from "react-icons/fa";
+import Button from "../UI/Button";
+import Badge from "../UI/Badge";
 
 const ProductCard = ({ product }) => {
   const navigate = useNavigate();
@@ -23,7 +23,6 @@ const ProductCard = ({ product }) => {
   const token = user?.accessToken;
 
   const [loadingCart, setLoadingCart] = useState(false);
-  const [loadingBuy, setLoadingBuy] = useState(false);
 
   const {
     id,
@@ -37,15 +36,14 @@ const ProductCard = ({ product }) => {
     reviews = [],
   } = product;
 
-  /* ===== Rating ===== */
+  /* ===== Rating Calculation ===== */
   const { avgRating, totalReviews } = useMemo(() => {
     if (!reviews.length) return { avgRating: 0, totalReviews: 0 };
-    const avg =
-      reviews.reduce((sum, r) => sum + (r.rating || 0), 0) / reviews.length;
+    const avg = reviews.reduce((sum, r) => sum + (r.rating || 0), 0) / reviews.length;
     return { avgRating: avg, totalReviews: reviews.length };
   }, [reviews]);
 
-  /* ===== Price ===== */
+  /* ===== Price Calculation ===== */
   const { rawPrice, finalPrice, hasDiscount } = useMemo(() => {
     const p = Number(price) || 0;
     const discounted = discount > 0 ? p * (1 - discount / 100) : p;
@@ -56,14 +54,12 @@ const ProductCard = ({ product }) => {
     };
   }, [price, discount]);
 
-  const formatVND = (v) =>
-    v.toLocaleString("vi-VN", { maximumFractionDigits: 0 }) + " đ";
+  const formatVND = (v) => v.toLocaleString("vi-VN") + " ₫";
 
-  /* ===== Actions ===== */
   const handleAddToCart = async (e) => {
     e.stopPropagation();
-    if (!userId) return toast.warn("Bạn cần đăng nhập!");
-    if (!isActive || stock < 1) return toast.error("Sản phẩm không khả dụng!");
+    if (!userId) return toast.warn("Vui lòng đăng nhập!");
+    if (!isActive || stock < 1) return toast.error("Sản phẩm tạm thời hết hàng!");
 
     setLoadingCart(true);
     try {
@@ -75,117 +71,116 @@ const ProductCard = ({ product }) => {
         cart = newCartRes.data;
       }
 
-      const res = await addCart(
-        { cartId: cart.id, productId: id, quantity: 1 },
-        token
-      );
+      const res = await addCart({ cartId: cart.id, productId: id, quantity: 1 }, token);
 
-      dispatch(
-        addCartItem({
-          id: res.data.id,
-          product: res.data.product,
-          quantity: res.data.quantity,
-        })
-      );
+      dispatch(addCartItem({
+        id: res.data.id,
+        product: res.data.product,
+        quantity: res.data.quantity,
+      }));
 
-      toast.success(`Đã thêm "${name}" vào giỏ hàng`);
-    } catch {
-      toast.error("Thêm vào giỏ thất bại!");
+      toast.success(`Đã thêm vào giỏ hàng`);
+    } catch (err) {
+      console.error(err);
+      toast.error("Không thể thêm vào giỏ hàng");
     } finally {
       setLoadingCart(false);
     }
   };
 
-  const handleBuyNow = (e) => {
-    e.stopPropagation();
-    if (!userId) return toast.warn("Vui lòng đăng nhập!");
-    if (!isActive || stock < 1) return toast.error("Sản phẩm không khả dụng!");
-    setLoadingBuy(true);
-    navigate("/checkout", { state: { product, quantity: 1 } });
-  };
-
   return (
-    <Card
-      className={`product-card-v2 ${!isActive ? "disabled" : ""}`}
+    <motion.div
+      initial={{ opacity: 0, y: 15 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.4 }}
+      className={`group card-ecommerce h-full flex flex-col bg-white border border-surface-200/60 hover:shadow-2xl hover:border-primary/20 cursor-pointer ${
+        !isActive ? "opacity-60 grayscale pointer-events-none" : ""
+      }`}
       onClick={() => navigate(`/product-detail/${id}`)}
     >
-      {/* IMAGE */}
-      <div className="image-box">
-        <img src={getImage(image)} alt={name} />
-        {hasDiscount && <Badge className="discount-badge">-{discount}%</Badge>}
+      {/* Visual Area */}
+      <div className="relative aspect-[4/5] overflow-hidden bg-surface-50">
+        <img
+          src={getImage(image)}
+          alt={name}
+          className="w-full h-full object-contain p-6 mix-blend-multiply transition-transform duration-700 group-hover:scale-110"
+        />
+        
+        {/* Badges Overlay */}
+        <div className="absolute top-4 left-4 flex flex-col gap-2 z-10">
+          {hasDiscount && (
+            <Badge variant="brand" className="shadow-lg shadow-brand/20">
+              -{discount}%
+            </Badge>
+          )}
+          {finalPrice >= 1000000 && (
+            <Badge variant="success" className="shadow-lg shadow-success/20">
+              <FiTruck className="mr-1" /> Free Ship
+            </Badge>
+          )}
+        </div>
+
+        {/* Action Overlay */}
+        <div className="absolute inset-x-0 bottom-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 z-20 bg-gradient-to-t from-white via-white/80 to-transparent">
+          <Button 
+            className="w-full"
+            variant="primary"
+            size="md"
+            icon={FiShoppingCart}
+            onClick={handleAddToCart}
+            loading={loadingCart}
+          >
+            THÊM GIỎ HÀNG
+          </Button>
+        </div>
       </div>
 
-      <Card.Body className="content">
-        {/* NAME */}
-        <h6 className="product-name" title={name}>
+      {/* Info Area */}
+      <div className="p-5 flex flex-col flex-1">
+        {/* Category / Brand (Mock for design) */}
+        <p className="text-[10px] font-black text-surface-400 uppercase tracking-widest mb-1">
+          Tien-Tech Official
+        </p>
+
+        {/* Product Title */}
+        <h3 className="text-[14px] md:text-[15px] font-bold text-surface-900 line-clamp-2 leading-tight mb-3 h-10 group-hover:text-primary transition-colors">
           {name}
-        </h6>
+        </h3>
 
-        {/* PRICE */}
-        <div className="price">
-          {hasDiscount && (
-            <span className="old-price">{formatVND(rawPrice)}</span>
-          )}
-          <span className="final-price">{formatVND(finalPrice)}</span>
-        </div>
-
-        {/* META */}
-        <div className="meta">
-          <span>{stock > 0 ? `Còn ${stock}` : "Hết hàng"}</span>
-          {sold !== undefined && <span>Đã bán {sold}</span>}
-        </div>
-
-        {/* RATING */}
-        {totalReviews > 0 && (
-          <div className="rating">
+        {/* Ratings */}
+        <div className="flex items-center gap-1 mb-4">
+          <div className="flex text-amber-400 text-[10px]">
             {Array.from({ length: 5 }).map((_, i) => {
               const star = i + 1;
-              return avgRating >= star ? (
-                <StarFill key={i} />
-              ) : avgRating >= star - 0.5 ? (
-                <StarHalf key={i} />
-              ) : (
-                <Star key={i} />
-              );
+              if (avgRating >= star) return <FaStar key={i} />;
+              if (avgRating >= star - 0.5) return <FaStarHalfAlt key={i} />;
+              return <FaRegStar key={i} />;
             })}
-            <span>({totalReviews})</span>
           </div>
-        )}
-
-        {/* FREE SHIP */}
-        {finalPrice >= 500000 && (
-          <span className="free-ship">Miễn phí vận chuyển</span>
-        )}
-
-        {/* ACTIONS */}
-        <div className="actions">
-          <Button
-            variant="outline-primary"
-            disabled={!isActive || stock < 1 || loadingCart}
-            onClick={handleAddToCart}
-          >
-            {loadingCart ? <Spinner size="sm" /> : <CartPlus size={20} />}
-          </Button>
-
-          <Button
-            variant="outline-success"
-            disabled={!isActive || stock < 1 || loadingBuy}
-            onClick={handleBuyNow}
-          >
-            {loadingBuy ? (
-              <Spinner size="sm" />
-            ) : (
-              <>
-                <CreditCard size={20} />
-                <span style={{ fontSize: "0.85rem", marginLeft: 4 }}>
-                  Mua ngay
-                </span>
-              </>
-            )}
-          </Button>
+          {totalReviews > 0 && (
+            <span className="text-[11px] text-surface-400 font-medium">({totalReviews})</span>
+          )}
         </div>
-      </Card.Body>
-    </Card>
+
+        {/* Pricing */}
+        <div className="mt-auto pt-4 border-t border-surface-100/60 flex flex-col">
+          {hasDiscount && (
+            <span className="text-[12px] text-surface-400 line-through mb-1">
+              {formatVND(rawPrice)}
+            </span>
+          )}
+          <div className="flex items-center justify-between">
+            <span className="text-[18px] font-black text-surface-900 tracking-tight">
+              {formatVND(finalPrice)}
+            </span>
+            {sold > 0 && (
+              <span className="text-[11px] text-surface-400">Đã bán {sold}</span>
+            )}
+          </div>
+        </div>
+      </div>
+    </motion.div>
   );
 };
 

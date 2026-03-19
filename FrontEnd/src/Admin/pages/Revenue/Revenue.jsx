@@ -6,28 +6,18 @@ import React, {
   useCallback,
 } from "react";
 import {
-  Container,
-  Row,
-  Col,
-  Card,
-  Table,
-  Badge,
-  Spinner,
-  Form,
-  Button,
-  InputGroup,
-} from "react-bootstrap";
-import {
-  BarChart,
-  PieChart,
-  GraphUp,
-  BoxSeam,
-  Funnel,
-  ArrowClockwise,
-  CurrencyDollar,
-  Cart,
-  People,
-} from "react-bootstrap-icons";
+  FiBarChart,
+  FiPieChart,
+  FiTrendingUp,
+  FiBox,
+  FiFilter,
+  FiRefreshCw,
+  FiDollarSign,
+  FiShoppingCart,
+  FiUsers,
+  FiChevronDown,
+  FiSearch,
+} from "react-icons/fi";
 import {
   CartesianGrid,
   XAxis,
@@ -40,29 +30,21 @@ import {
   Cell,
   ResponsiveContainer,
 } from "recharts";
-import "./Revenue.scss";
 import { getAllOrders } from "../../../api/orderApi";
 import { getAllOrderItems } from "../../../api/orderItemApi";
 import { getDashboard } from "../../../api/adminApi";
 import AppPagination from "../../../components/Pagination/Pagination";
 import { useSelector } from "react-redux";
+import { motion } from "framer-motion";
 
-const COLORS = ["#4361ee", "#3a0ca3", "#7209b7", "#f72585", "#ff006e"];
-const STATUS_COLORS = {
-  pending: "warning",
-  confirmed: "info",
-  processing: "primary",
-  shipped: "secondary",
-  delivered: "success",
-  cancelled: "danger",
-};
+const COLORS = ["#2563eb", "#7c3aed", "#db2777", "#ea580c", "#059669"];
 const STATUS_LABELS = {
-  pending: "Chờ xử lý",
-  confirmed: "Đã xác nhận",
-  processing: "Đang xử lý",
-  shipped: "Đã gửi",
-  delivered: "Đã giao",
-  cancelled: "Đã hủy",
+  pending: { text: "Chờ xử lý", class: "bg-amber-50 text-amber-600 border-amber-100" },
+  confirmed: { text: "Đã xác nhận", class: "bg-blue-50 text-blue-600 border-blue-100" },
+  processing: { text: "Đang xử lý", class: "bg-indigo-50 text-indigo-600 border-indigo-100" },
+  shipped: { text: "Đã gửi", class: "bg-slate-50 text-slate-600 border-slate-200" },
+  delivered: { text: "Đã giao", class: "bg-emerald-50 text-emerald-600 border-emerald-100" },
+  cancelled: { text: "Đã hủy", class: "bg-rose-50 text-rose-600 border-rose-100" },
 };
 
 const Revenue = () => {
@@ -82,11 +64,7 @@ const Revenue = () => {
   const tableTopRef = useRef(null);
 
   const formatCurrency = (value) =>
-    new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: "VND",
-      maximumFractionDigits: 0,
-    }).format(value);
+    Number(value).toLocaleString("vi-VN") + " ₫";
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -109,20 +87,7 @@ const Revenue = () => {
           name: item.day || item.date || "N/A",
           value: parseFloat(item.revenue || 0),
         }));
-        setRevenueData(
-          backendData.sort((a, b) => new Date(a.name) - new Date(b.name)),
-        );
-      } else {
-        const revenueMap = {};
-        orderList.forEach((order) => {
-          const date = new Date(order.createdAt).toISOString().split("T")[0];
-          const total = parseFloat(order.totalPrice || 0);
-          revenueMap[date] = (revenueMap[date] || 0) + total;
-        });
-        const revenueArray = Object.entries(revenueMap)
-          .map(([day, value]) => ({ name: day, value }))
-          .sort((a, b) => new Date(a.name) - new Date(b.name));
-        setRevenueData(revenueArray);
+        setRevenueData(backendData.sort((a, b) => new Date(a.name) - new Date(b.name)));
       }
 
       if (orderItemsRes?.errCode === 0 && Array.isArray(orderItemsRes.data)) {
@@ -138,14 +103,6 @@ const Revenue = () => {
           .slice(0, 5);
         setProductsData(productArray);
       }
-
-      const statusMap = {};
-      orderList.forEach((order) => {
-        const status = order.status || "unknown";
-        statusMap[status] = (statusMap[status] || 0) + 1;
-      });
-      // ordersByStatus logic removed in previous step, ensuring this block is clean or consistent
-      // Note: Previous edit removed setOrdersByStatus logic. Ensuring valid structure here.
     } catch (error) {
       console.error("Error:", error);
     } finally {
@@ -162,326 +119,198 @@ const Revenue = () => {
     let filtered = [...orders];
     const now = new Date();
     const daysMap = { "7days": 7, "30days": 30, all: 3650 };
-
     if (dateFilter !== "all") {
       const cutoff = new Date(now.setDate(now.getDate() - daysMap[dateFilter]));
       filtered = filtered.filter((o) => new Date(o.createdAt) >= cutoff);
     }
-
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
-      filtered = filtered.filter(
-        (o) =>
-          o.id.toString().includes(term) ||
-          o.user?.username?.toLowerCase().includes(term),
-      );
+      filtered = filtered.filter((o) => o.id.toString().includes(term) || o.user?.username?.toLowerCase().includes(term));
     }
-
     return filtered;
   }, [orders, dateFilter, searchTerm]);
 
   const stats = useMemo(() => {
-    const totalRevenue = filteredOrders.reduce(
-      (sum, o) => sum + parseFloat(o.totalPrice || 0),
-      0,
-    );
+    const totalRevenue = filteredOrders.reduce((sum, o) => sum + parseFloat(o.totalPrice || 0), 0);
     const totalOrders = filteredOrders.length;
     const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
-    const deliveredCount = filteredOrders.filter(
-      (o) => o.status === "delivered",
-    ).length;
-
+    const deliveredCount = filteredOrders.filter((o) => o.status === "delivered").length;
     return { totalRevenue, totalOrders, avgOrderValue, deliveredCount };
   }, [filteredOrders]);
 
   useEffect(() => {
     const total = filteredOrders.length;
-    const calculatedTotalPages = Math.ceil(total / limit) || 1;
-    setTotalPages(calculatedTotalPages);
-
-    if (page > calculatedTotalPages) {
-      setPage(1);
-    }
-  }, [filteredOrders, limit, page]);
+    setTotalPages(Math.ceil(total / limit) || 1);
+  }, [filteredOrders, limit]);
 
   const paginatedOrders = useMemo(() => {
     const start = (page - 1) * limit;
-    const end = start + limit;
-    return filteredOrders.slice(start, end);
+    return filteredOrders.slice(start, start + limit);
   }, [filteredOrders, page, limit]);
 
   return (
-    <div className="revenue-page">
-      <Container fluid className="p-4">
-        <div className="d-flex align-items-center justify-content-between mb-4">
-          <h3 className="m-0 d-flex align-items-center gap-2">
-            <GraphUp className="text-success" /> Thống kê doanh thu
-          </h3>
-          <Button
-            variant="outline-primary"
-            size="sm"
-            onClick={fetchData}
-            disabled={loading}
-          >
-            <ArrowClockwise className={loading ? "spin" : ""} /> Làm mới
-          </Button>
+    <div className="space-y-10 p-4 md:p-8 max-w-[1600px] mx-auto">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div>
+          <h1 className="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+             <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center shadow-sm">
+                <FiTrendingUp />
+             </div>
+             Báo cáo & Doanh thu
+          </h1>
+          <p className="text-slate-500 font-bold text-xs uppercase tracking-widest mt-2 ml-15">
+             Thống kê hiệu suất kinh doanh chi tiết
+          </p>
+        </div>
+        <button
+          onClick={fetchData}
+          disabled={loading}
+          className="flex items-center gap-2 px-6 py-2.5 bg-white border border-slate-200 rounded-2xl text-xs font-black uppercase tracking-widest text-slate-600 hover:border-primary hover:text-primary transition-all shadow-sm"
+        >
+          <FiRefreshCw className={loading ? "animate-spin" : ""} />
+          Làm mới dữ liệu
+        </button>
+      </div>
+
+      {/* Quick Stats Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+        {[
+          { label: "Doanh thu", value: formatCurrency(stats.totalRevenue), icon: <FiDollarSign />, color: "bg-blue-600 shadow-blue-500/20" },
+          { label: "Đơn hàng", value: stats.totalOrders, icon: <FiShoppingCart />, color: "bg-emerald-600 shadow-emerald-500/20" },
+          { label: "Đã hoàn tất", value: stats.deliveredCount, icon: <FiBox />, color: "bg-indigo-600 shadow-indigo-500/20" },
+          { label: "Trung bình/Đơn", value: formatCurrency(stats.avgOrderValue), icon: <FiUsers />, color: "bg-amber-500 shadow-amber-500/20" },
+        ].map((item, i) => (
+          <div key={i} className="bg-white p-6 rounded-3xl border border-slate-100 shadow-soft flex items-center gap-6 group hover:border-primary/20 transition-all">
+             <div className={`w-14 h-14 ${item.color} rounded-2xl flex items-center justify-center text-white text-xl shadow-lg group-hover:scale-110 transition-transform`}>
+                {item.icon}
+             </div>
+             <div>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{item.label}</p>
+                <h4 className="text-xl font-black text-slate-900 tracking-tight leading-none">{item.value}</h4>
+             </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Filter & Search Bar */}
+      <div className="bg-white p-4 rounded-[32px] border border-slate-100 shadow-soft flex flex-wrap items-center gap-4">
+        <div className="relative min-w-[200px] flex-1 md:flex-none">
+           <FiFilter className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+           <select 
+             value={dateFilter}
+             onChange={(e) => { setDateFilter(e.target.value); setPage(1); }}
+             className="w-full h-12 bg-slate-50 border border-slate-100 rounded-2xl pl-12 pr-10 text-xs font-black uppercase tracking-widest outline-none appearance-none"
+           >
+              <option value="7days">7 ngày gần nhất</option>
+              <option value="30days">30 ngày gần nhất</option>
+              <option value="all">Toàn bộ thời gian</option>
+           </select>
+           <FiChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400" />
         </div>
 
-        <Row className="mb-4 g-3">
-          <Col md={3}>
-            <Card className="stat-card border-0 shadow-sm h-100">
-              <Card.Body className="d-flex align-items-center">
-                <div className="stat-icon bg-primary">
-                  <CurrencyDollar />
-                </div>
-                <div className="ms-3">
-                  <small className="text-muted">Tổng doanh thu</small>
-                  <h5 className="mb-0">{formatCurrency(stats.totalRevenue)}</h5>
-                </div>
-              </Card.Body>
-            </Card>
-          </Col>
-          <Col md={3}>
-            <Card className="stat-card border-0 shadow-sm h-100">
-              <Card.Body className="d-flex align-items-center">
-                <div className="stat-icon bg-success">
-                  <Cart />
-                </div>
-                <div className="ms-3">
-                  <small className="text-muted">Tổng đơn hàng</small>
-                  <h5 className="mb-0">{stats.totalOrders}</h5>
-                </div>
-              </Card.Body>
-            </Card>
-          </Col>
-          <Col md={3}>
-            <Card className="stat-card border-0 shadow-sm h-100">
-              <Card.Body className="d-flex align-items-center">
-                <div className="stat-icon bg-info">
-                  <BoxSeam />
-                </div>
-                <div className="ms-3">
-                  <small className="text-muted">Đã giao</small>
-                  <h5 className="mb-0">{stats.deliveredCount}</h5>
-                </div>
-              </Card.Body>
-            </Card>
-          </Col>
-          <Col md={3}>
-            <Card className="stat-card border-0 shadow-sm h-100">
-              <Card.Body className="d-flex align-items-center">
-                <div className="stat-icon bg-warning">
-                  <People />
-                </div>
-                <div className="ms-3">
-                  <small className="text-muted">Giá trị trung bình</small>
-                  <h5 className="mb-0">
-                    {formatCurrency(stats.avgOrderValue)}
-                  </h5>
-                </div>
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
+        <div className="relative flex-1 min-w-[300px] group">
+           <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary" />
+           <input
+             placeholder="Tìm mã đơn, tên khách hàng..."
+             value={searchTerm}
+             onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
+             className="w-full h-12 bg-slate-50 border border-slate-100 rounded-2xl pl-12 pr-4 text-sm font-bold outline-none focus:bg-white focus:ring-4 focus:ring-primary/5 transition-all"
+           />
+        </div>
+      </div>
 
-        {/* Filter */}
-        <Card className="mb-4 shadow-sm">
-          <Card.Body>
-            <Row className="align-items-center g-3">
-              <Col md={4}>
-                <InputGroup size="sm">
-                  <InputGroup.Text>
-                    <Funnel />
-                  </InputGroup.Text>
-                  <Form.Select
-                    value={dateFilter}
-                    onChange={(e) => {
-                      setDateFilter(e.target.value);
-                      setPage(1);
-                    }}
-                  >
-                    <option value="7days">7 ngày gần nhất</option>
-                    <option value="30days">30 ngày gần nhất</option>
-                    <option value="all">Toàn bộ</option>
-                  </Form.Select>
-                </InputGroup>
-              </Col>
-              <Col md={4}>
-                <InputGroup size="sm">
-                  <InputGroup.Text>Search</InputGroup.Text>
-                  <Form.Control
-                    placeholder="Mã đơn, khách hàng..."
-                    value={searchTerm}
-                    onChange={(e) => {
-                      setSearchTerm(e.target.value);
-                      setPage(1);
-                    }}
-                  />
-                </InputGroup>
-              </Col>
-            </Row>
-          </Card.Body>
-        </Card>
+      {/* Charts Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div className="lg:col-span-7 bg-white rounded-[40px] border border-slate-100 shadow-soft p-8">
+           <h3 className="text-lg font-black text-slate-900 tracking-tight mb-8 flex items-center gap-2">
+              <FiBarChart className="text-primary" /> Doanh thu theo thời gian
+           </h3>
+           <div className="h-[300px]">
+              {chartLoading ? (
+                <div className="h-full flex items-center justify-center"><FiRefreshCw className="animate-spin text-2xl text-slate-200" /></div>
+              ) : (
+                <ResponsiveContainer width="100%" height="100%">
+                  <RechartsBarChart data={revenueData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#94a3b8', fontWeight: 600 }} dy={10} />
+                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#94a3b8', fontWeight: 600 }} />
+                    <Tooltip contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }} />
+                    <Bar dataKey="value" fill="#2563eb" radius={[6, 6, 0, 0]} barSize={20} />
+                  </RechartsBarChart>
+                </ResponsiveContainer>
+              )}
+           </div>
+        </div>
 
-        {/* Charts */}
-        <Row className="mb-4">
-          <Col md={6}>
-            <Card className="h-100 shadow-sm">
-              <Card.Body>
-                <h5 className="d-flex align-items-center gap-2">
-                  <BarChart className="text-primary" /> Doanh thu theo ngày
-                </h5>
-                {chartLoading ? (
-                  <div className="text-center py-5">
-                    <Spinner animation="border" variant="primary" />
-                  </div>
-                ) : (
-                  <ResponsiveContainer width="100%" height={280}>
-                    <RechartsBarChart data={revenueData}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis
-                        dataKey="name"
-                        angle={-45}
-                        textAnchor="end"
-                        height={80}
-                      />
-                      <YAxis />
-                      <Tooltip formatter={(v) => formatCurrency(v)} />
-                      <Bar
-                        dataKey="value"
-                        fill="#4361ee"
-                        radius={[8, 8, 0, 0]}
-                      />
-                    </RechartsBarChart>
-                  </ResponsiveContainer>
-                )}
-              </Card.Body>
-            </Card>
-          </Col>
+        <div className="lg:col-span-5 bg-white rounded-[40px] border border-slate-100 shadow-soft p-8">
+           <h3 className="text-lg font-black text-slate-900 tracking-tight mb-8 flex items-center gap-2">
+              <FiPieChart className="text-emerald-500" /> Top 5 Sản phẩm bán chạy
+           </h3>
+           <div className="h-[300px]">
+              {chartLoading ? (
+                <div className="h-full flex items-center justify-center"><FiRefreshCw className="animate-spin text-2xl text-slate-200" /></div>
+              ) : (
+                <ResponsiveContainer width="100%" height="100%">
+                  <RechartsPieChart>
+                    <Pie data={productsData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} innerRadius={50} paddingAngle={5}>
+                      {productsData.map((_, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />)}
+                    </Pie>
+                    <Tooltip />
+                  </RechartsPieChart>
+                </ResponsiveContainer>
+              )}
+           </div>
+        </div>
+      </div>
 
-          <Col md={6}>
-            <Card className="h-100 shadow-sm">
-              <Card.Body>
-                <h5 className="d-flex align-items-center gap-2">
-                  <PieChart className="text-success" /> Top 5 sản phẩm bán chạy
-                </h5>
-                {chartLoading ? (
-                  <div className="text-center py-5">
-                    <Spinner animation="border" variant="primary" />
-                  </div>
-                ) : productsData.length > 0 ? (
-                  <ResponsiveContainer width="100%" height={280}>
-                    <RechartsPieChart>
-                      <Pie
-                        data={productsData}
-                        dataKey="value"
-                        nameKey="name"
-                        cx="50%"
-                        cy="50%"
-                        outerRadius={90}
-                        label={({ name, percent }) =>
-                          `${name} (${(percent * 100).toFixed(0)}%)`
-                        }
-                      >
-                        {productsData.map((entry, index) => (
-                          <Cell
-                            key={`cell-${index}`}
-                            fill={COLORS[index % COLORS.length]}
-                          />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                    </RechartsPieChart>
-                  </ResponsiveContainer>
-                ) : (
-                  <div className="text-center text-muted py-5">
-                    Chưa có dữ liệu
-                  </div>
-                )}
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
-
-        {/* Orders Table */}
-        <Card className="shadow-sm">
-          <Card.Body>
-            <h5 className="d-flex align-items-center gap-2 mb-3">
-              <BoxSeam className="text-info" /> Danh sách đơn hàng
-            </h5>
-            <div ref={tableTopRef}>
-              <div className="table-responsive">
-                <Table striped bordered hover>
-                  <thead className="table-light">
-                    <tr>
-                      <th>#</th>
-                      <th>Mã đơn</th>
-                      <th>Khách hàng</th>
-                      <th>Ngày</th>
-                      <th>Tổng tiền</th>
-                      <th>Trạng thái</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {loading ? (
-                      <tr>
-                        <td colSpan="6" className="text-center py-5">
-                          <Spinner animation="border" variant="primary" />
-                        </td>
-                      </tr>
-                    ) : paginatedOrders.length === 0 ? (
-                      <tr>
-                        <td colSpan="6" className="text-center text-muted py-4">
-                          Không có đơn hàng
-                        </td>
-                      </tr>
-                    ) : (
-                      paginatedOrders.map((order, idx) => {
-                        const displayIndex = (page - 1) * limit + idx + 1;
-                        return (
-                          <tr key={order.id}>
-                            <td>{displayIndex}</td>
-                            <td>
-                              <strong>DH{order.id}</strong>
-                            </td>
-                            <td>{order.user?.username || "Ẩn danh"}</td>
-                            <td>
-                              {new Date(order.createdAt).toLocaleDateString(
-                                "vi-VN",
-                              )}
-                            </td>
-                            <td className="fw-bold text-danger">
-                              {formatCurrency(order.totalPrice)}
-                            </td>
-                            <td>
-                              <Badge
-                                bg={STATUS_COLORS[order.status] || "secondary"}
-                                className="px-3 py-2 rounded-pill text-uppercase"
-                              >
-                                {STATUS_LABELS[order.status] || "N/A"}
-                              </Badge>
-                            </td>
-                          </tr>
-                        );
-                      })
-                    )}
-                  </tbody>
-                </Table>
-              </div>
-
-              <AppPagination
-                page={page}
-                totalPages={totalPages}
-                loading={loading}
-                onPageChange={(p) => {
-                  setPage(p);
-                  tableTopRef.current?.scrollIntoView({ behavior: "smooth" });
-                }}
-              />
-            </div>
-          </Card.Body>
-        </Card>
-      </Container>
+      {/* Table Section */}
+      <div className="bg-white rounded-[40px] border border-slate-100 shadow-soft overflow-hidden" ref={tableTopRef}>
+        <div className="p-8 border-b border-slate-50">
+           <h3 className="text-lg font-black text-slate-900 tracking-tight">Chi tiết đơn hàng</h3>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-slate-50/50">
+                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400">STT</th>
+                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400">Mã đơn</th>
+                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400">Khách hàng</th>
+                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400">Thời gian</th>
+                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 text-right">Tổng tiền</th>
+                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">Trạng thái</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-50">
+              {loading ? (
+                <tr><td colSpan="6" className="py-20 text-center"><FiRefreshCw className="animate-spin inline-block text-2xl text-slate-200" /></td></tr>
+              ) : paginatedOrders.map((order, idx) => (
+                <tr key={order.id} className="hover:bg-slate-50/50 transition-colors">
+                  <td className="px-8 py-5 text-sm font-bold text-slate-400">{(page - 1) * limit + idx + 1}</td>
+                  <td className="px-8 py-5 text-sm font-black text-slate-900">DH{order.id}</td>
+                  <td className="px-8 py-5 text-sm font-bold text-slate-600">{order.user?.username || "Ẩn danh"}</td>
+                  <td className="px-8 py-5 text-sm font-medium text-slate-400">{new Date(order.createdAt).toLocaleDateString("vi-VN")}</td>
+                  <td className="px-8 py-5 text-sm font-black text-rose-600 text-right">{formatCurrency(order.totalPrice)}</td>
+                  <td className="px-8 py-5 text-center">
+                    <span className={`inline-flex px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border ${STATUS_LABELS[order.status]?.class || "bg-slate-100"}`}>
+                       {STATUS_LABELS[order.status]?.text || order.status}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div className="p-8 bg-slate-50/50 flex flex-col md:flex-row items-center justify-between gap-6">
+           <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Hiển thị {paginatedOrders.length} đơn hàng</p>
+           <AppPagination 
+             page={page} 
+             totalPages={totalPages} 
+             loading={loading} 
+             onPageChange={(p) => { setPage(p); tableTopRef.current?.scrollIntoView({ behavior: "smooth" }); }} 
+           />
+        </div>
+      </div>
     </div>
   );
 };

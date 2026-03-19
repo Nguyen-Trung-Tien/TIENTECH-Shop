@@ -1,6 +1,4 @@
 import { useEffect, useState } from "react";
-import { Container } from "react-bootstrap";
-import "./HomePage.scss";
 import HeroSection from "../../components/HomePageComponent/HeroSection";
 import CategorySection from "../../components/HomePageComponent/CategorySection";
 import ProductSection from "../../components/HomePageComponent/ProductSection";
@@ -13,6 +11,7 @@ import Testimonials from "../../components/Testimonials/Testimonials";
 import BlogSection from "../../components/BlogSection/BlogSection";
 import Newsletter from "../../components/Newsletter/Newsletter";
 import BrandSection from "../../components/BrandSection/BrandSection";
+import { motion } from "framer-motion";
 
 const HomePage = () => {
   const [categories, setCategories] = useState([]);
@@ -33,53 +32,58 @@ const HomePage = () => {
   }, []);
 
   return (
-    <>
-      <Container fluid className="homepage">
-        <ChatBot />
-        <HeroSection />
-        <div className="my-3">
+    <div className="bg-white">
+      <ChatBot />
+      
+      {/* Hero with full width */}
+      <HeroSection />
+
+      <main className="space-y-0">
+        {/* Brand Logos - Subtle Divider */}
+        <div className="bg-slate-50 py-10 border-y border-slate-100">
           <BrandSection />
         </div>
-        <div className="my-3">
-          <CategorySection
-            categories={categories}
-            loading={loadingCategories}
-          />
-        </div>
-        <div className="my-1">
-          <SmallBanner />
+
+        {/* Categories Section */}
+        <CategorySection
+          categories={categories}
+          loading={loadingCategories}
+        />
+
+        {/* Banner with high impact */}
+        <div className="container-custom py-8">
+          <div className="rounded-[40px] overflow-hidden shadow-2xl transition-transform hover:scale-[1.01] duration-500">
+            <SmallBanner />
+          </div>
         </div>
 
-        <div className="my-3">
-          <FlashSale />
-        </div>
+        {/* Flash Sale - High Energy */}
+        <FlashSale />
 
-        <div className="my-3">
-          <ProductSection
-            categories={categories}
-            loadingCategories={loadingCategories}
-          />
-        </div>
+        {/* Recommended Products */}
+        <ProductSection
+          categories={categories}
+          loadingCategories={loadingCategories}
+        />
 
-        <div className="my-3">
+        {/* Main Product Feed */}
+        <div className="py-16 bg-white">
           <AllProducts
             categories={categories}
             loadingCategories={loadingCategories}
           />
         </div>
 
-        <div className="my-4">
+        {/* Social Proof & Content */}
+        <div className="bg-slate-50 py-20 space-y-24">
           <Testimonials />
-        </div>
-        <div className="my-4">
           <BlogSection />
         </div>
 
-        <div className="my-4">
-          <Newsletter />
-        </div>
-      </Container>
-    </>
+        {/* Final CTA */}
+        <Newsletter />
+      </main>
+    </div>
   );
 };
 

@@ -1,83 +1,128 @@
-import React, { useEffect } from "react";
-import { Container, Button } from "react-bootstrap";
-import { CheckCircleFill, HouseDoor, Receipt } from "react-bootstrap-icons";
+import React, { useEffect, useState } from "react";
+import { FiCheckCircle, FiHome, FiShoppingBag, FiArrowRight } from "react-icons/fi";
 import { useNavigate, useParams } from "react-router-dom";
-import { motion } from "framer-motion"; // eslint-disable-line no-unused-vars
-import "./CheckoutSuccess.scss";
+import { motion } from "framer-motion";
+import Button from "../../components/UI/Button";
 
 const CheckoutSuccess = () => {
   const navigate = useNavigate();
   const { orderId } = useParams();
+  const [countdown, setCountdown] = useState(5);
 
   useEffect(() => {
-    const timer = setTimeout(() => navigate("/orders"), 5000);
-    return () => clearTimeout(timer);
+    const timer = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          navigate("/orders");
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
   }, [navigate]);
 
   return (
-    <div className="checkout-success-page">
-      <Container className="d-flex justify-content-center align-items-center min-vh-100">
+    <div className="min-h-screen bg-surface-50 flex items-center justify-center p-6 relative overflow-hidden">
+      {/* Background Decorations */}
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-emerald-500/5 rounded-full blur-[100px] -z-0"></div>
+      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-primary/5 rounded-full blur-[80px] -z-0"></div>
+
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="relative z-10 w-full max-w-xl bg-white rounded-[40px] shadow-2xl border border-surface-200 p-10 md:p-16 text-center"
+      >
+        {/* SUCCESS ICON */}
         <motion.div
-          className="success-card"
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ type: "spring", stiffness: 200, delay: 0.2 }}
+          className="w-24 h-24 bg-emerald-500 rounded-3xl flex items-center justify-center text-white mx-auto mb-10 shadow-xl shadow-emerald-500/30"
         >
-          {/* ICON */}
-          <motion.div
-            className="success-icon"
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ type: "spring", stiffness: 120 }}
-          >
-            <CheckCircleFill />
-          </motion.div>
-
-          {/* TITLE */}
-          <h2 className="success-title">Thanh toán thành công</h2>
-
-          {/* DESCRIPTION */}
-          <p className="success-desc">
-            Cảm ơn bạn đã mua hàng tại <span className="brand">TienTech</span>.
-            Đơn hàng của bạn đang được xử lý và sẽ sớm được giao.
-          </p>
-
-          {/* ORDER CODE */}
-          <div className="order-box">
-            <span>Mã đơn hàng</span>
-            <strong>
-              #
-              {orderId
-                ? `DH${orderId}`
-                : `TS${Math.floor(Math.random() * 1000000)}`}
-            </strong>
-          </div>
-
-          {/* ACTIONS */}
-          <div className="action-group">
-            <Button
-              variant="primary"
-              className="btn-main"
-              onClick={() => navigate("/")}
-            >
-              <HouseDoor /> Trang chủ
-            </Button>
-
-            <Button
-              variant="outline-secondary"
-              className="btn-sub"
-              onClick={() => navigate("/orders")}
-            >
-              <Receipt /> Đơn hàng
-            </Button>
-          </div>
-
-          {/* AUTO REDIRECT */}
-          <p className="redirect-text">
-            Tự động chuyển đến <strong>đơn hàng</strong> sau <span>5 giây</span>
-          </p>
+          <FiCheckCircle size={48} />
         </motion.div>
-      </Container>
+
+        {/* TITLE */}
+        <h1 className="text-3xl md:text-4xl font-display font-bold text-surface-900 mb-4">
+          Thanh toán thành công!
+        </h1>
+
+        {/* DESCRIPTION */}
+        <p className="text-surface-500 text-lg mb-10 leading-relaxed max-w-md mx-auto">
+          Cảm ơn bạn đã tin tưởng mua sắm tại <span className="text-primary font-black italic">Tien-Tech</span>. Đơn hàng của bạn đang được chuẩn bị để giao đến bạn sớm nhất.
+        </p>
+
+        {/* ORDER INFO */}
+        <div className="bg-surface-50 rounded-[2.5rem] p-8 mb-12 border border-surface-100 relative group overflow-hidden">
+           <div className="absolute top-0 left-0 w-2 h-full bg-emerald-500"></div>
+           <div className="flex flex-col items-center">
+              <span className="text-[11px] font-black text-surface-400 uppercase tracking-[0.3em] mb-2">Mã đơn hàng của bạn</span>
+              <strong className="text-3xl font-black text-surface-900 tracking-tight">
+                #DH{orderId?.toString().slice(-6).toUpperCase() || "CHECKOUT"}
+              </strong>
+           </div>
+        </div>
+
+        {/* ACTIONS */}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-10">
+          <Button
+            variant="primary"
+            size="lg"
+            className="w-full sm:w-auto min-w-[180px] shadow-xl shadow-primary/20"
+            icon={FiHome}
+            onClick={() => navigate("/")}
+          >
+            VỀ TRANG CHỦ
+          </Button>
+
+          <Button
+            variant="secondary"
+            size="lg"
+            className="w-full sm:w-auto min-w-[180px]"
+            icon={FiShoppingBag}
+            onClick={() => navigate("/orders")}
+          >
+            XEM ĐƠN HÀNG
+          </Button>
+        </div>
+
+        {/* AUTO REDIRECT */}
+        <div className="flex items-center justify-center gap-2 text-surface-400 font-medium text-sm">
+           <div className="flex items-center gap-1 text-primary font-bold">
+              <span>Tự động chuyển tiếp sau {countdown}s</span>
+              <FiArrowRight />
+           </div>
+        </div>
+      </motion.div>
+      
+      {/* Confetti-like decoration (Visual only) */}
+      {[...Array(12)].map((_, i) => (
+        <motion.div
+          key={i}
+          initial={{ opacity: 0 }}
+          animate={{ 
+            opacity: [0, 1, 0],
+            y: [0, -100 - Math.random() * 200],
+            x: [0, (Math.random() - 0.5) * 400],
+            scale: [0, 1, 0]
+          }}
+          transition={{ 
+            duration: 2 + Math.random() * 2,
+            repeat: Infinity,
+            delay: Math.random() * 5
+          }}
+          className={`absolute w-3 h-3 rounded-full -z-0 ${
+            ['bg-primary', 'bg-emerald-400', 'bg-amber-400', 'bg-blue-400'][i % 4]
+          }`}
+          style={{ 
+            left: `${10 + Math.random() * 80}%`, 
+            bottom: '0' 
+          }}
+        />
+      ))}
     </div>
   );
 };

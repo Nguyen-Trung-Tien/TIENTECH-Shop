@@ -1,23 +1,10 @@
 import { useEffect, useState, useCallback } from "react";
-import {
-  Container,
-  Row,
-  Col,
-  Button,
-  Image,
-  Form,
-  Spinner,
-} from "react-bootstrap";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import {
-  ArrowLeftCircle,
-  CartPlus,
-  CreditCard,
-  Star,
-  StarFill,
-} from "react-bootstrap-icons";
+import { FiArrowLeft, FiShoppingCart, FiCreditCard, FiStar, FiZap, FiChevronLeft, FiChevronRight, FiPlus, FiMinus, FiBox } from "react-icons/fi";
+import { FaStar, FaStarHalfAlt, FaRegStar } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
+import { motion } from "framer-motion";
 import {
   getProductByIdApi,
   getRecommendedProductsApi,
@@ -26,7 +13,6 @@ import { addCart, getAllCarts, createCart } from "../../api/cartApi";
 import { createReviewApi, getReviewsByProductApi } from "../../api/reviewApi";
 import ProductCard from "../../components/ProductCard/ProductCard";
 import { getImage } from "../../utils/decodeImage";
-import "./ProductDetailPage.scss";
 import { addCartItem } from "../../redux/cartSlice";
 import ChatBot from "../../components/ChatBot/ChatBot";
 import ReviewForm from "../../components/ReviewComponent/ReviewForm";
@@ -34,6 +20,9 @@ import ReviewList from "../../components/ReviewComponent/ReviewList";
 import PricePredictionModal from "../../components/PricePredictionModal/PricePredictionModal";
 import { predictPrice } from "../../api/chatApi";
 import LoadMoreButton from "../../components/LoadMoreButton/LoadMoreButton";
+import SkeletonCard from "../../components/SkeletonCard/SkeletonCard";
+import Button from "../../components/UI/Button";
+import Badge from "../../components/UI/Badge";
 
 const ProductDetailPage = () => {
   const user = useSelector((state) => state.user.user);
@@ -93,7 +82,8 @@ const ProductDetailPage = () => {
         const primary =
           p.images?.find((i) => i.isPrimary)?.imageUrl ||
           p.image ||
-          (p.images?.[0]?.imageUrl || null);
+          p.images?.[0]?.imageUrl ||
+          null;
         setSelectedImage(primary);
         const initialIndex =
           primary && p.images?.length
@@ -101,7 +91,8 @@ const ProductDetailPage = () => {
             : 0;
         setSelectedIndex(initialIndex >= 0 ? initialIndex : 0);
         if (p.variants && p.variants.length > 0) {
-          const firstActive = p.variants.find((v) => v.isActive) || p.variants[0];
+          const firstActive =
+            p.variants.find((v) => v.isActive) || p.variants[0];
           setSelectedVariantId(firstActive?.id || null);
           if (firstActive?.imageUrl) setSelectedImage(firstActive.imageUrl);
         } else {
@@ -278,8 +269,9 @@ const ProductDetailPage = () => {
 
   if (loading)
     return (
-      <div className="text-center py-5">
-        <Spinner animation="border" variant="primary" />
+      <div className="flex flex-col items-center justify-center min-h-screen bg-surface-50 gap-4">
+        <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+        <p className="text-surface-400 font-bold uppercase tracking-widest text-[11px]">Đang tải thông tin sản phẩm...</p>
       </div>
     );
 
@@ -342,9 +334,13 @@ const ProductDetailPage = () => {
   };
 
   const activePrice =
-    selectedVariant?.price != null ? Number(selectedVariant.price) : product.price;
+    selectedVariant?.price != null
+      ? Number(selectedVariant.price)
+      : product.price;
   const activeStock =
-    selectedVariant?.stock != null ? Number(selectedVariant.stock) : product.stock;
+    selectedVariant?.stock != null
+      ? Number(selectedVariant.stock)
+      : product.stock;
 
   const discountedPrice = Math.round(
     product.discount > 0
@@ -378,230 +374,179 @@ const ProductDetailPage = () => {
       : product.description;
 
   return (
-    <div className="product-detail-page mh-100">
-      <Container>
-        <PricePredictionModal
-          show={showPredict}
-          onHide={() => setShowPredict(false)}
-          result={predictResult}
-        />
-        <ChatBot />
+    <div className="bg-slate-50 min-h-screen pb-20">
+      <PricePredictionModal
+        show={showPredict}
+        onHide={() => setShowPredict(false)}
+        result={predictResult}
+      />
+      <ChatBot />
 
-        {/* Back */}
-        <div className="text-left">
-          <Link
-            to={"/"}
-            className="btn btn-outline-primary rounded-pill px-2 py-1 fw-semibold"
-            style={{ fontSize: "0.85rem" }}
-          >
-            <ArrowLeftCircle size={14} className="me-1" />
-            Quay lại
+      <div className="container-custom pt-8">
+        {/* Breadcrumb / Back */}
+        <nav className="flex mb-8 items-center gap-2 text-sm font-medium text-slate-500">
+          <Link to="/" className="hover:text-primary transition-colors">
+            Trang chủ
           </Link>
-        </div>
+          <span className="text-slate-300">/</span>
+          <span className="text-slate-900 truncate max-w-[200px]">
+            {product.name}
+          </span>
+        </nav>
 
-        <Row className="gy-4 align-items-center">
-          {/* Image */}
-          <Col md={6} className="text-center">
-            <div className="product-image-wrapper shadow-lg rounded-4 bg-white p-3 position-relative">
-              {gallery.length > 1 && (
-                <button
-                  type="button"
-                  className="img-nav prev"
-                  onClick={goPrev}
-                  aria-label="Previous image"
-                >
-                  ‹
-                </button>
-              )}
-              <Image
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+          {/* Image Gallery */}
+          <div className="lg:col-span-6 space-y-6">
+            <div className="relative aspect-square rounded-[40px] bg-white shadow-xl-soft border border-slate-100 overflow-hidden flex items-center justify-center p-8 group">
+              <motion.img
+                key={selectedImage}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.3 }}
                 src={getImage(selectedImage || product.image)}
                 alt={product.name}
-                fluid
-                className="product-image"
+                className="max-h-full max-w-full object-contain"
               />
+
               {gallery.length > 1 && (
-                <button
-                  type="button"
-                  className="img-nav next"
-                  onClick={goNext}
-                  aria-label="Next image"
-                >
-                  ›
-                </button>
+                <>
+                  <button
+                    onClick={goPrev}
+                    className="absolute left-6 top-1/2 -translate-y-1/2 w-12 h-12 rounded-2xl bg-white/80 backdrop-blur-md shadow-lg flex items-center justify-center text-slate-900 opacity-0 group-hover:opacity-100 transition-all hover:bg-white active:scale-90"
+                  >
+                    <ArrowLeftCircle size={24} />
+                  </button>
+                  <button
+                    onClick={goNext}
+                    className="absolute right-6 top-1/2 -translate-y-1/2 w-12 h-12 rounded-2xl bg-white/80 backdrop-blur-md shadow-lg flex items-center justify-center text-slate-900 opacity-0 group-hover:opacity-100 transition-all hover:bg-white active:scale-90 rotate-180"
+                  >
+                    <ArrowLeftCircle size={24} />
+                  </button>
+                </>
               )}
+
               {product.discount > 0 && (
-                <span className="discount-badge">-{product.discount}%</span>
+                <div className="absolute top-8 left-8">
+                  <span className="bg-rose-500 text-white text-sm font-black px-4 py-2 rounded-2xl shadow-lg shadow-rose-500/20">
+                    -{product.discount}%
+                  </span>
+                </div>
               )}
             </div>
 
             {gallery.length > 1 && (
-              <div className="product-thumbs mt-3 d-flex flex-wrap gap-2 justify-content-center">
+              <div className="flex flex-wrap gap-4 justify-center">
                 {gallery.map((url, idx) => (
                   <button
                     key={`${url}-${idx}`}
-                    type="button"
-                    className={`thumb-btn ${
-                      (selectedImage || product.image) === url ? "active" : ""
-                    }`}
                     onClick={() => {
                       setSelectedIndex(idx);
                       setSelectedImage(url);
                     }}
+                    className={`w-20 h-20 rounded-2xl overflow-hidden border-2 transition-all p-2 bg-white ${
+                      (selectedImage || product.image) === url
+                        ? "border-primary shadow-lg shadow-primary/10"
+                        : "border-transparent opacity-60 hover:opacity-100"
+                    }`}
                   >
-                    <Image src={getImage(url)} alt="" className="thumb-img" />
+                    <img
+                      src={getImage(url)}
+                      alt=""
+                      className="w-full h-full object-contain"
+                    />
                   </button>
                 ))}
               </div>
             )}
-          </Col>
+          </div>
 
-          {/* Info */}
-          <Col md={6}>
-            <div className="product-info rounded-4 shadow-sm">
-              <h2 className="fw-bold mb-2">{product.name}</h2>
-
-              <div className="mb-2">
-                <span className="text-muted">Thương hiệu: </span>
-                <strong>{product.brand?.name}</strong>
-              </div>
-              <div className="mb-2">
-                <span className="text-muted">Danh mục: </span>
-                <strong>{product.category?.name}</strong>
-              </div>
-
-              <div className="mb-2">
-                <span className="text-muted">SKU: </span>
-                <strong>{selectedVariant?.sku || product.sku}</strong> |
-                <span className="text-muted ms-2">Đã bán: </span>
-                <strong>{product.sold}</strong> |
-                <span className="text-muted ms-2">Còn hàng: </span>
-                <strong>{activeStock}</strong>
-              </div>
-
-              {/* Price */}
-              <div className="price mb-2  bg-light rounded-4">
-                <div>
-                  {product.discount > 0 && (
-                    <>
-                      {/* Giá gốc gạch ngang */}
-                      <div className="text-muted text-decoration-line-through">
-                        {formatVND(activePrice)}
-                      </div>
-
-                      {/* Giảm giá trực tiếp */}
-                      <div className="text-success fw-semibold">
-                        Giảm giá: {parseFloat(product.discount).toFixed(2)}%
-                      </div>
-                    </>
-                  )}
-
-                  {/* Giá sau giảm */}
-                  <div className="fw-bold text-danger fs-5">
-                    {formatVND(discountedPrice)}
-                  </div>
-                </div>
-
-                {reviews.length > 0 ? (
-                  <div className="d-flex align-items-center mt-2 mb-2">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <span key={star}>
-                        {star <= Math.floor(avgRating) ? (
-                          <StarFill color="gold" />
-                        ) : avgRating >= star - 0.5 ? (
-                          <Star color="gold" />
-                        ) : (
-                          <Star color="lightgray" />
-                        )}
-                      </span>
-                    ))}
-                    <span className="ms-2 text-muted small">
-                      {avgRating.toFixed(1)} / 5 ({reviews.length} đánh giá)
+          {/* Product Info */}
+          <div className="lg:col-span-6 flex flex-col h-full">
+            <div className="bg-white rounded-[40px] p-8 md:p-10 shadow-xl-soft border border-slate-100 flex-1">
+              <div className="mb-6 flex flex-wrap items-center gap-3">
+                <span className="px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-[10px] font-bold uppercase tracking-widest">
+                  {product.brand?.name}
+                </span>
+                <span className="px-3 py-1 rounded-full bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-widest">
+                  {product.category?.name}
+                </span>
+                {reviews.length > 0 && (
+                  <div className="flex items-center gap-1.5 ml-auto">
+                    <div className="flex text-amber-400 gap-0.5">
+                      {Array.from({ length: 5 }).map((_, i) => {
+                        const star = i + 1;
+                        if (avgRating >= star) return <FaStar key={i} size={14} />;
+                        if (avgRating >= star - 0.5) return <FaStarHalfAlt key={i} size={14} />;
+                        return <FaRegStar key={i} size={14} className="text-slate-200" />;
+                      })}
+                    </div>
+                    <span className="text-xs font-bold text-slate-400">
+                      ({reviews.length} đánh giá)
                     </span>
                   </div>
-                ) : (
-                  <p className="text-muted small mb-2">Chưa có đánh giá</p>
                 )}
               </div>
 
-              {/* Specs */}
-              {(product.color ||
-                product.ram ||
-                product.rom ||
-                product.screen ||
-                product.cpu ||
-                product.battery ||
-                product.weight ||
-                product.connectivity ||
-                product.os ||
-                product.extra) && (
-                <div className="product-specs mb-2">
-                  {product.color && (
-                    <div>
-                      <strong>Màu sắc:</strong> {product.color}
-                    </div>
-                  )}
-                  {product.ram && (
-                    <div>
-                      <strong>RAM:</strong> {product.ram}
-                    </div>
-                  )}
-                  {product.rom && (
-                    <div>
-                      <strong>ROM:</strong> {product.rom}
-                    </div>
-                  )}
-                  {product.screen && (
-                    <div>
-                      <strong>Màn hình:</strong> {product.screen}
-                    </div>
-                  )}
-                  {product.cpu && (
-                    <div>
-                      <strong>CPU:</strong> {product.cpu}
-                    </div>
-                  )}
-                  {product.battery && (
-                    <div>
-                      <strong>Pin:</strong> {product.battery}
-                    </div>
-                  )}
-                  {product.weight && (
-                    <div>
-                      <strong>Trọng lượng:</strong> {product.weight}
-                    </div>
-                  )}
-                  {product.connectivity && (
-                    <div>
-                      <strong>Kết nối:</strong> {product.connectivity}
-                    </div>
-                  )}
-                  {product.os && (
-                    <div>
-                      <strong>OS:</strong> {product.os}
-                    </div>
-                  )}
-                  {product.extra && (
-                    <div>
-                      <strong>Thông tin thêm:</strong> {product.extra}
-                    </div>
+              <h1 className="text-3xl md:text-4xl font-black text-slate-900 leading-tight mb-4">
+                {product.name}
+              </h1>
+
+              <div className="flex items-center gap-4 mb-8 text-sm font-medium text-slate-500">
+                <span className="flex items-center gap-1">
+                  <span className="text-slate-300">SKU:</span>{" "}
+                  {selectedVariant?.sku || product.sku}
+                </span>
+                <span className="w-1 h-1 bg-slate-300 rounded-full"></span>
+                <span>Đã bán {product.sold}</span>
+                <span className="w-1 h-1 bg-slate-300 rounded-full"></span>
+                <span
+                  className={`${activeStock > 0 ? "text-emerald-500" : "text-rose-500"}`}
+                >
+                  {activeStock > 0 ? `Còn hàng (${activeStock})` : "Hết hàng"}
+                </span>
+              </div>
+
+              {/* Price Card */}
+              <div className="bg-slate-50 rounded-3xl p-6 mb-8 border border-slate-100">
+                <div className="flex items-baseline gap-4">
+                  <span className="text-4xl font-black text-primary">
+                    {formatVND(discountedPrice)}
+                  </span>
+                  {product.discount > 0 && (
+                    <span className="text-xl font-medium text-slate-400 line-through">
+                      {formatVND(activePrice)}
+                    </span>
                   )}
                 </div>
-              )}
+                {product.discount > 0 && (
+                  <p className="mt-2 text-sm font-bold text-emerald-600 flex items-center gap-1">
+                    <FiZap className="fill-current" />
+                    Tiết kiệm {formatVND(activePrice - discountedPrice)} (
+                    {parseFloat(product.discount).toFixed(2)}%)
+                  </p>
+                )}
+              </div>
 
+              {/* Variants */}
               {Object.keys(variantAttributes).length > 0 && (
-                <div className="variant-select mb-3">
+                <div className="space-y-6 mb-8">
                   {Object.entries(variantAttributes).map(([key, values]) => (
-                    <div key={key} className="variant-group">
-                      <div className="variant-label">{key}</div>
-                      <div className="variant-options">
+                    <div key={key}>
+                      <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">
+                        {key}
+                      </p>
+                      <div className="flex flex-wrap gap-2">
                         {values.map((val) => {
                           const active = selectedAttributes?.[key] === val;
                           return (
                             <button
                               key={`${key}-${val}`}
-                              type="button"
-                              className={`variant-btn ${active ? "active" : ""}`}
                               onClick={() => applyAttribute(key, val)}
+                              className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${
+                                active
+                                  ? "bg-primary text-white shadow-lg shadow-primary/20 ring-2 ring-primary ring-offset-2"
+                                  : "bg-white border border-slate-200 text-slate-600 hover:border-primary/40 hover:bg-slate-50"
+                              }`}
                             >
                               {val}
                             </button>
@@ -613,174 +558,242 @@ const ProductDetailPage = () => {
                 </div>
               )}
 
-              {/* Description */}
-              <div className="product-description mb-2">
-                <p
-                  className={`text-secondary ${
-                    !showFullDesc ? "description-collapse" : ""
-                  }`}
-                >
-                  {showFullDesc ? product.description : shortDescription}
-                </p>
-                {product.description?.length > 250 && (
+              {/* Specs Grid */}
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-6 mb-8 pt-8 border-t border-slate-100">
+                {product.cpu && (
+                  <div>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">
+                      CPU
+                    </p>
+                    <p className="text-sm font-bold text-slate-700">
+                      {product.cpu}
+                    </p>
+                  </div>
+                )}
+                {product.ram && (
+                  <div>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">
+                      RAM
+                    </p>
+                    <p className="text-sm font-bold text-slate-700">
+                      {product.ram}
+                    </p>
+                  </div>
+                )}
+                {product.rom && (
+                  <div>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">
+                      ROM
+                    </p>
+                    <p className="text-sm font-bold text-slate-700">
+                      {product.rom}
+                    </p>
+                  </div>
+                )}
+                {product.screen && (
+                  <div>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">
+                      Màn hình
+                    </p>
+                    <p className="text-sm font-bold text-slate-700">
+                      {product.screen}
+                    </p>
+                  </div>
+                )}
+                {product.battery && (
+                  <div>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">
+                      Pin
+                    </p>
+                    <p className="text-sm font-bold text-slate-700">
+                      {product.battery}
+                    </p>
+                  </div>
+                )}
+                {product.os && (
+                  <div>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">
+                      OS
+                    </p>
+                    <p className="text-sm font-bold text-slate-700">
+                      {product.os}
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Quantity & Actions */}
+              <div className="space-y-6">
+                <div className="flex items-center gap-4">
+                  <span className="text-sm font-bold text-slate-700">
+                    Số lượng:
+                  </span>
+                  <div className="flex items-center bg-slate-100 rounded-xl p-1">
+                    <button
+                      onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                      className="w-8 h-8 flex items-center justify-center font-bold text-slate-600 hover:text-primary transition-colors"
+                    >
+                      -
+                    </button>
+                    <input
+                      type="number"
+                      min={1}
+                      max={activeStock}
+                      value={quantity}
+                      onChange={(e) =>
+                        setQuantity(
+                          Math.max(
+                            1,
+                            Math.min(Number(e.target.value), activeStock),
+                          ),
+                        )
+                      }
+                      className="w-12 text-center bg-transparent border-none text-sm font-bold focus:ring-0"
+                    />
+                    <button
+                      onClick={() =>
+                        setQuantity(Math.min(activeStock, quantity + 1))
+                      }
+                      className="w-8 h-8 flex items-center justify-center font-bold text-slate-600 hover:text-primary transition-colors"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <button
-                    className="btn btn-link p-0 mt-2 fw-semibold"
-                    onClick={() => setShowFullDesc(!showFullDesc)}
-                  >
-                    {showFullDesc ? "Thu gọn ▲" : "Xem thêm ▼"}
-                  </button>
-                )}
-              </div>
-
-              {/* Quantity */}
-              <div className="d-flex align-items-center gap-3 mb-4">
-                <Form.Label className="fw-semibold mb-0">Số lượng:</Form.Label>
-                <Form.Control
-                  type="number"
-                  min={1}
-                  max={activeStock}
-                  value={quantity}
-                  onChange={(e) => {
-                    const input = e.target.value;
-                    if (input === "") {
-                      setQuantity("");
-                      return;
+                    onClick={handleAddToCart}
+                    disabled={
+                      addingCart || activeStock < 1 || !product.isActive
                     }
-                    const val = Number(input);
-                    if (isNaN(val)) return;
-                    setQuantity(Math.max(1, Math.min(val, activeStock)));
-                  }}
-                  style={{ width: "90px" }}
-                />
-              </div>
-
-              {/* Buttons */}
-              <div className="d-flex flex-column flex-sm-row gap-3">
-                <Button
-                  variant="danger"
-                  size="lg"
-                  className="rounded-pill shadow-sm flex-fill d-flex align-items-center justify-content-center"
-                  onClick={handleAddToCart}
-                  disabled={
-                    addingCart || activeStock < 1 || !product.isActive
-                  }
-                >
-                  {addingCart ? (
-                    <>
-                      <Spinner
-                        animation="border"
-                        size="sm"
-                        className="me-2"
-                        variant="primary"
-                      />
-                      Đang thêm...
-                    </>
-                  ) : (
-                    <>
-                      <CartPlus className="me-2" size={22} /> Thêm vào giỏ hàng
-                    </>
-                  )}
-                </Button>
-
-                {activeStock > 0 && (
-                  <Button
-                    variant="success"
-                    size="lg"
-                    className="rounded-pill shadow-sm flex-fill d-flex align-items-center justify-content-center"
-                    onClick={handleBuyNow}
+                    className="h-14 rounded-2xl bg-white border-2 border-primary text-primary font-black hover:bg-primary/5 transition-all flex items-center justify-center gap-3 disabled:opacity-50 active:scale-95"
                   >
-                    <CreditCard className="me-2" size={22} /> Mua hàng ngay
-                  </Button>
-                )}
+                    {addingCart ? (
+                      <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <FiShoppingCart size={24} />
+                    )}
+                    THÊM VÀO GIỎ
+                  </button>
 
-                <Button
-                  variant="warning"
-                  size="lg"
-                  className="rounded-pill shadow-sm flex-fill d-flex align-items-center justify-content-center"
+                  <button
+                    onClick={handleBuyNow}
+                    disabled={activeStock < 1 || !product.isActive}
+                    className="h-14 rounded-2xl bg-primary text-white font-black hover:bg-primary-hover transition-all shadow-xl shadow-primary/20 flex items-center justify-center gap-3 disabled:opacity-50 active:scale-95"
+                  >
+                    <FiCreditCard size={24} />
+                    MUA NGAY
+                  </button>
+                </div>
+
+                <button
                   onClick={handlePricePredict}
                   disabled={loadingPredict}
+                  className="w-full h-12 rounded-2xl bg-amber-50 text-amber-600 font-bold border border-amber-200 hover:bg-amber-100 transition-all flex items-center justify-center gap-2 active:scale-95"
                 >
                   {loadingPredict ? (
-                    <>
-                      <Spinner
-                        animation="border"
-                        size="sm"
-                        variant="primary"
-                        className="me-2"
-                      />{" "}
-                      Đang dự đoán...
-                    </>
+                    <div className="w-4 h-4 border-2 border-amber-600 border-t-transparent rounded-full animate-spin" />
                   ) : (
-                    <>🔮 Đoán giá tương lai</>
+                    "🔮 DỰ ĐOÁN GIÁ TƯƠNG LAI BẰNG AI"
                   )}
-                </Button>
+                </button>
               </div>
             </div>
-          </Col>
-        </Row>
-
-        {/* Reviews */}
-        <div className="reviews-section mt-3 pt-3 border-top">
-          <h4 className="fw-bold mb-3">Đánh giá sản phẩm</h4>
-          <ReviewForm
-            newReview={newReview}
-            setNewReview={setNewReview}
-            onSubmit={handleSubmitReview}
-          />
-          <ReviewList
-            reviews={reviews}
-            page={page}
-            pagination={pagination}
-            onPageChange={(newPage) => {
-              setPage(newPage);
-              fetchReviews(product.id, newPage);
-            }}
-            user={user}
-          />
+          </div>
         </div>
 
-        {/* Recommended */}
-        <div className="recommended-products mt-5 pt-4 border-top">
-          <h4 className="fw-bold mb-3">Sản phẩm phù hợp với bạn</h4>
-
-          {loadingRecommended ? (
-            <div className="text-center py-3">
-              <Spinner animation="border" variant="primary" />
+        {/* Sections: Description, Reviews, Recommended */}
+        <div className="mt-20 space-y-20">
+          {/* Description */}
+          <section>
+            <div className="flex items-center gap-4 mb-8">
+              <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tight">
+                Mô tả sản phẩm
+              </h2>
+              <div className="h-[2px] flex-1 bg-slate-100"></div>
             </div>
-          ) : recommended.length > 0 ? (
-            <>
-              <Row className="g-4">
-                {recommended.map((p) => (
-                  <Col key={p.id} lg={2} md={3} sm={6} xs={12}>
-                    <ProductCard product={p} />
-                  </Col>
+            <div
+              className={`prose prose-slate max-w-none text-slate-600 leading-relaxed ${!showFullDesc ? "line-clamp-[10]" : ""}`}
+            >
+              {product.description}
+            </div>
+            {product.description?.length > 500 && (
+              <button
+                onClick={() => setShowFullDesc(!showFullDesc)}
+                className="mt-6 text-primary font-bold hover:underline transition-all"
+              >
+                {showFullDesc ? "Thu gọn nội dung ▲" : "Xem toàn bộ mô tả ▼"}
+              </button>
+            )}
+          </section>
+
+          {/* Reviews */}
+          <section className="bg-white rounded-[40px] p-8 md:p-12 shadow-xl-soft border border-slate-100">
+            <div className="flex items-center gap-4 mb-10">
+              <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tight">
+                Đánh giá khách hàng
+              </h2>
+              <div className="h-[2px] flex-1 bg-slate-100"></div>
+            </div>
+            <ReviewForm
+              newReview={newReview}
+              setNewReview={setNewReview}
+              onSubmit={handleSubmitReview}
+            />
+            <ReviewList
+              reviews={reviews}
+              page={page}
+              pagination={pagination}
+              onPageChange={(newPage) => {
+                setPage(newPage);
+                fetchReviews(product.id, newPage);
+              }}
+              user={user}
+            />
+          </section>
+
+          {/* Recommended */}
+          <section>
+            <div className="flex items-center gap-4 mb-10">
+              <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tight">
+                Sản phẩm tương tự
+              </h2>
+              <div className="h-[2px] flex-1 bg-slate-100"></div>
+            </div>
+
+            {loadingRecommended ? (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+                {Array.from({ length: 6 }).map((_, idx) => (
+                  <SkeletonCard key={idx} />
                 ))}
-              </Row>
-
-              {/* Nút Load More */}
-              {loadingMoreRecommended && (
-                <div className="text-center my-3">
-                  <Spinner animation="border" variant="primary" />
+              </div>
+            ) : recommended.length > 0 ? (
+              <div className="space-y-12">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+                  {recommended.map((p) => (
+                    <ProductCard key={p.id} product={p} />
+                  ))}
                 </div>
-              )}
-
-              {recommendedPage < recommendedTotalPages &&
-                !loadingMoreRecommended && (
-                  <LoadMoreButton
-                    page={recommendedPage}
-                    totalPages={recommendedTotalPages}
-                    loadingMore={loadingMoreRecommended}
-                    onLoadMore={handleLoadMoreRecommended}
-                  />
+                {recommendedPage < recommendedTotalPages && (
+                  <div className="flex justify-center">
+                    <LoadMoreButton
+                      page={recommendedPage}
+                      totalPages={recommendedTotalPages}
+                      loadingMore={loadingMoreRecommended}
+                      onLoadMore={handleLoadMoreRecommended}
+                    />
+                  </div>
                 )}
-            </>
-          ) : (
-            <p className="text-muted fst-italic">
-              Không có sản phẩm gợi ý nào.
-            </p>
-          )}
+              </div>
+            ) : (
+              <p className="text-slate-400 italic text-center py-10">
+                Không tìm thấy sản phẩm tương tự.
+              </p>
+            )}
+          </section>
         </div>
-      </Container>
+      </div>
     </div>
   );
 };

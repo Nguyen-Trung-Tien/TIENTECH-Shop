@@ -1,6 +1,5 @@
-﻿import React, { useEffect, useState, useCallback } from "react";
-import { Container, Card, Button, Badge, Spinner } from "react-bootstrap";
-import { Eye } from "react-bootstrap-icons";
+import React, { useEffect, useState, useCallback } from "react";
+import { FiEye, FiShoppingBag, FiClock, FiCheckCircle } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { getOrdersByUserId } from "../../api/orderApi";
@@ -9,7 +8,8 @@ import { getImage } from "../../utils/decodeImage";
 import { paymentStatusMap, statusMap } from "../../utils/StatusMap";
 import { StatusBadge } from "../../utils/StatusBadge";
 import ClickableText from "../../components/ClickableText/ClickableText";
-import "./OrderHistory.scss";
+import Button from "../../components/UI/Button";
+import Badge from "../../components/UI/Badge";
 
 const OrderHistoryPage = () => {
   const navigate = useNavigate();
@@ -45,109 +45,163 @@ const OrderHistoryPage = () => {
   const formatDate = (dateStr) =>
     dateStr ? new Date(dateStr).toLocaleDateString("vi-VN") : "-";
 
-  const filteredOrders = orders;
-
   return (
-    <Container className="py-3 order-history-page">
-      <div className="order-history-header text-center mb-4 py-3 px-2 shadow-sm rounded-3 bg-white">
-        <h3 className="mb-0 fw-bold d-flex justify-content-center align-items-center gap-2">
-          <span className="header-icon">🧾</span>
-          Lịch sử đơn hàng
-        </h3>
-      </div>
-
-      {loading ? (
-        <div className="text-center py-5">
-          <Spinner animation="border" variant="primary" />
+    <div className="min-h-screen bg-surface-50 py-12">
+      <div className="container-custom">
+        {/* Header Section */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10">
+          <div>
+            <h1 className="text-3xl font-display font-bold text-surface-900 mb-2">
+              Lịch sử đơn hàng
+            </h1>
+            <p className="text-surface-500 font-medium">
+              Quản lý và theo dõi trạng thái các đơn hàng của bạn.
+            </p>
+          </div>
+          <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-2xl border border-surface-200 shadow-sm">
+            <FiClock className="text-primary" />
+            <span className="text-sm font-bold text-surface-700">
+              Tổng số: {orders.length} đơn hàng
+            </span>
+          </div>
         </div>
-      ) : filteredOrders.length === 0 ? (
-        <div className="text-center text-muted py-5">Bạn chưa có đơn hàng nào.</div>
-      ) : (
-        filteredOrders.map((o) => (
-          <Card key={o.id} className="mb-3 shadow-sm">
-            <Card.Body>
-              <div className="d-flex justify-content-between align-items-center mb-2">
-                <div className="fw-bold">Sản phẩm</div>
-                <div className="text-muted small">{formatDate(o.createdAt)}</div>
-              </div>
 
-              {o.orderItems?.map((i) => {
-                const p = i.product;
-                return (
-                  <div key={i.id} className="d-flex gap-3 mb-2">
-                    <img
-                      src={getImage(p?.image) || "/images/no-image.png"}
-                      alt={p?.name || i.productName}
-                      width={60}
-                      height={60}
-                      className="rounded"
-                    />
-                    <div className="flex-grow-1">
-                      <ClickableText
-                        className="fw-semibold product-name"
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-24 gap-4">
+            <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+            <p className="text-surface-400 font-bold uppercase tracking-widest text-[11px]">Đang tải dữ liệu...</p>
+          </div>
+        ) : orders.length === 0 ? (
+          <div className="bg-white rounded-[32px] border border-surface-200 p-16 text-center shadow-sm">
+            <div className="w-20 h-20 bg-surface-50 rounded-full flex items-center justify-center mx-auto mb-6">
+              <FiShoppingBag className="text-3xl text-surface-300" />
+            </div>
+            <h3 className="text-xl font-bold text-surface-900 mb-2">Chưa có đơn hàng nào</h3>
+            <p className="text-surface-500 mb-8 max-w-sm mx-auto">
+              Có vẻ như bạn chưa thực hiện giao dịch nào. Hãy khám phá các sản phẩm công nghệ mới nhất của chúng tôi.
+            </p>
+            <Button onClick={() => navigate("/")}>BẮT ĐẦU MUA SẮM</Button>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {orders.map((o) => (
+              <div 
+                key={o.id} 
+                className="group bg-white rounded-3xl border border-surface-200 shadow-sm hover:shadow-soft hover:border-primary/20 transition-all duration-300 overflow-hidden"
+              >
+                {/* Order Top Bar */}
+                <div className="px-6 py-4 bg-surface-50/50 border-b border-surface-100 flex flex-wrap items-center justify-between gap-4">
+                  <div className="flex items-center gap-4">
+                    <span className="text-[12px] font-black text-surface-900 uppercase tracking-wider bg-white px-3 py-1 rounded-lg border border-surface-200">
+                      #{o.id.toString().slice(-6).toUpperCase()}
+                    </span>
+                    <span className="text-sm text-surface-400 font-medium">
+                      Ngày đặt: {formatDate(o.createdAt)}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <StatusBadge map={statusMap} status={o.status} />
+                    <StatusBadge map={paymentStatusMap} status={o.paymentStatus} />
+                  </div>
+                </div>
+
+                {/* Order Items */}
+                <div className="p-6">
+                  <div className="space-y-4">
+                    {o.orderItems?.map((i) => {
+                      const p = i.product;
+                      return (
+                        <div key={i.id} className="flex gap-4 md:gap-6">
+                          <div className="w-20 h-20 md:w-24 md:h-24 bg-surface-50 rounded-2xl border border-surface-100 p-2 flex-shrink-0 group-hover:border-primary/10 transition-colors">
+                            <img
+                              src={getImage(p?.image) || "/images/no-image.png"}
+                              alt={p?.name || i.productName}
+                              className="w-full h-full object-contain mix-blend-multiply"
+                            />
+                          </div>
+                          <div className="flex-grow min-w-0 py-1">
+                            <ClickableText
+                              className="text-base md:text-lg font-bold text-surface-900 line-clamp-1 hover:text-primary transition-colors cursor-pointer"
+                              onClick={() => navigate(`/orders-detail/${o.id}`)}
+                            >
+                              {p?.name || i.productName}
+                            </ClickableText>
+                            <div className="flex items-center gap-3 mt-1">
+                              <span className="text-sm text-surface-500 font-medium">Số lượng: {i.quantity}</span>
+                              <div className="w-1 h-1 bg-surface-300 rounded-full"></div>
+                              <span className="text-sm text-surface-500 font-medium">Phân loại: {p?.category?.name || "Điện tử"}</span>
+                            </div>
+                            <div className="flex items-center gap-2 mt-2">
+                              {p?.discount > 0 && (
+                                <span className="text-sm text-surface-400 line-through">
+                                  {formatCurrency(p.price)}
+                                </span>
+                              )}
+                              <span className="text-lg font-black text-surface-900">
+                                {formatCurrency(i.price)}
+                              </span>
+                              {p?.discount > 0 && (
+                                <Badge variant="danger" className="scale-90 origin-left">
+                                  -{p.discount}%
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Order Footer */}
+                  <div className="mt-8 pt-6 border-t border-surface-100 flex flex-col sm:flex-row items-center justify-between gap-6">
+                    <div className="flex flex-col items-center sm:items-start">
+                      <p className="text-[11px] font-black text-surface-400 uppercase tracking-widest mb-1">Tổng cộng đơn hàng</p>
+                      <span className="text-2xl font-black text-primary tracking-tight">
+                        {formatCurrency(o.totalPrice)}
+                      </span>
+                    </div>
+                    
+                    <div className="flex items-center gap-3 w-full sm:w-auto">
+                      <Button
+                        variant="secondary"
+                        size="md"
+                        className="flex-1 sm:flex-none"
+                        icon={FiEye}
                         onClick={() => navigate(`/orders-detail/${o.id}`)}
                       >
-                        {p?.name || i.productName}
-                      </ClickableText>
-                      <div className="text-muted small">SL: {i.quantity}</div>
-                      <div className="d-flex align-items-center gap-2">
-                        {p?.discount > 0 && (
-                          <small className="text-decoration-line-through text-muted">
-                            {formatCurrency(p.price)}
-                          </small>
-                        )}
-                        <span className="fw-semibold text-danger">{formatCurrency(i.price)}</span>
-                        {p?.discount > 0 && <Badge bg="danger">-{p.discount}%</Badge>}
-                      </div>
+                        CHI TIẾT
+                      </Button>
+                      {o.status === "delivered" && (
+                        <Button
+                          variant="primary"
+                          size="md"
+                          className="flex-1 sm:flex-none"
+                          icon={FiCheckCircle}
+                          onClick={() => navigate(`/product-detail/${o.orderItems[0]?.product?.id}`)}
+                        >
+                          ĐÁNH GIÁ
+                        </Button>
+                      )}
                     </div>
                   </div>
-                );
-              })}
-
-              <div className="d-flex justify-content-between align-items-center mt-3">
-                <div>
-                  <span className="me-2">
-                    <StatusBadge map={statusMap} status={o.status} />
-                  </span>
-                  <StatusBadge map={paymentStatusMap} status={o.paymentStatus} />
                 </div>
-                <div className="fw-bold text-success">{formatCurrency(o.totalPrice)}</div>
               </div>
+            ))}
+          </div>
+        )}
 
-              <div className="d-flex gap-2 mt-2 flex-wrap">
-                <Button
-                  size="sm"
-                  variant="outline-primary"
-                  onClick={() => navigate(`/orders-detail/${o.id}`)}
-                >
-                  <Eye className="me-1" /> Chi tiết
-                </Button>
-                {o.status === "delivered" && (
-                  <Button
-                    size="sm"
-                    className="btn-primary"
-                    onClick={() => navigate(`/product-detail/${o.orderItems[0]?.product?.id}`)}
-                  >
-                    Đánh giá
-                  </Button>
-                )}
-              </div>
-            </Card.Body>
-          </Card>
-        ))
-      )}
-
-      {totalPages > 1 && (
-        <div className="mt-3 d-flex justify-content-center">
-          <AppPagination
-            page={page}
-            totalPages={totalPages}
-            onPageChange={setPage}
-            loading={loading}
-          />
-        </div>
-      )}
-    </Container>
+        {totalPages > 1 && (
+          <div className="mt-12 flex justify-center">
+            <AppPagination
+              page={page}
+              totalPages={totalPages}
+              onPageChange={setPage}
+              loading={loading}
+            />
+          </div>
+        )}
+      </div>
+    </div>
   );
 };
 

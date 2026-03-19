@@ -1,18 +1,13 @@
 import React, { useState } from "react";
 import {
-  Navbar,
-  Container,
-  Form,
-  FormControl,
-  Button,
-  Dropdown,
-} from "react-bootstrap";
-import {
-  Search,
-  PersonCircle,
-  BoxArrowRight,
-  House,
-} from "react-bootstrap-icons";
+  FiSearch,
+  FiUser,
+  FiLogOut,
+  FiHome,
+  FiMenu,
+  FiX,
+  FiBell,
+} from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import { logoutUserApi } from "../../../api/userApi";
 import { removeUser } from "../../../redux/userSlice";
@@ -21,16 +16,15 @@ import { useDispatch } from "react-redux";
 import { toast } from "react-toastify";
 import { useCurrentUser } from "../../../hooks/useUser";
 import logoImage from "../../../assets/Tien-Tech Shop.png";
-import "./HeaderAdmin.scss";
 
-const HeaderAdmin = () => {
+const HeaderAdmin = ({ toggleSidebar, isCollapsed }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { data: resUser } = useCurrentUser();
   const user = resUser?.data;
 
   const [searchQuery, setSearchQuery] = useState("");
-  const [showSearch, setShowSearch] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
 
   const displayName =
@@ -42,7 +36,6 @@ const HeaderAdmin = () => {
     e.preventDefault();
     if (searchQuery.trim()) {
       navigate(`/admin/search?q=${encodeURIComponent(searchQuery.trim())}`);
-      setShowSearch(false);
     }
   };
 
@@ -59,106 +52,114 @@ const HeaderAdmin = () => {
       toast.success("Đăng xuất thành công!");
     } catch (err) {
       console.error("Logout error:", err);
-      toast.error("Đăng xuất thất bại. Vui lòng thử lại!");
+      toast.error("Đăng xuất thất bại!");
     } finally {
       setLoggingOut(false);
+      setShowProfileMenu(false);
     }
   };
 
   return (
-    <Navbar bg="white" expand="lg" className="shadow-sm px-3 sticky-top">
-      <Container
-        fluid
-        className="d-flex justify-content-between align-items-center"
-      >
-        <Navbar.Brand
-          className="fw-bold text-primary fs-4 d-flex align-items-center gap-2 cursor-pointer"
-          onClick={() => navigate("/admin/dashboard")}
+    <header className="sticky top-0 z-40 flex h-16 w-full items-center justify-between border-b border-slate-200 bg-white px-4 shadow-sm md:px-6">
+      <div className="flex items-center gap-4">
+        {/* Toggle Sidebar Button */}
+        <button
+          onClick={toggleSidebar}
+          className="flex h-10 w-10 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 transition-colors"
+          title={isCollapsed ? "Mở rộng" : "Thu gọn"}
         >
-          <img src={logoImage} alt="Logo" className="header-logo" />
-          Admin Dashboard
-        </Navbar.Brand>
+          <FiMenu className="text-xl" />
+        </button>
 
-        <Button
-          variant="outline-secondary"
-          className="d-md-none me-2"
-          onClick={() => setShowSearch(!showSearch)}
-        >
-          <Search size={18} />
-        </Button>
-
-        <Form
-          className={`d-${
-            showSearch ? "flex" : "none d-md-flex"
-          } align-items-center flex-grow-1 mx-3`}
-          onSubmit={handleSearch}
-          style={{ maxWidth: "400px" }}
-        >
-          <div className="input-group w-100">
-            <span className="input-group-text bg-light border-end-0">
-              <Search size={18} />
-            </span>
-            <FormControl
-              type="search"
-              placeholder="Tìm kiếm..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="border-start-0"
-            />
-            {searchQuery && (
-              <Button
-                variant="light"
-                className="btn-clear"
-                onClick={() => setSearchQuery("")}
-              >
-                ×
-              </Button>
-            )}
-          </div>
-        </Form>
-
-        <div className="d-flex align-items-center gap-3">
-          <Button
-            variant="outline-primary"
-            size="sm"
-            onClick={() => navigate("/")}
-            title="Về trang chủ"
-            className="d-flex align-items-center gap-1"
-          >
-            <House size={18} />
-            <span className="d-none d-xl-inline">Home</span>
-          </Button>
-
-          <Dropdown align="end">
-            <Dropdown.Toggle
-              variant="outline-secondary"
-              className="d-flex align-items-center gap-2"
-              id="user-dropdown"
-            >
-              <PersonCircle />
-              <span className="fw-semibold d-none d-sm-inline">
-                {displayName}
-              </span>
-            </Dropdown.Toggle>
-
-            <Dropdown.Menu>
-              <Dropdown.Item onClick={() => navigate("/profile")}>
-                <PersonCircle className="me-2" /> Hồ sơ
-              </Dropdown.Item>
-              <Dropdown.Divider />
-              <Dropdown.Item
-                className="text-danger"
-                onClick={handleLogout}
-                disabled={loggingOut}
-              >
-                <BoxArrowRight className="me-2" />
-                {loggingOut ? "Đang đăng xuất..." : "Đăng xuất"}
-              </Dropdown.Item>
-            </Dropdown.Menu>
-          </Dropdown>
+        {/* Brand / Title (Mobile) */}
+        <div className="flex items-center gap-2 md:hidden">
+           <img src={logoImage} alt="Logo" className="h-8 w-auto" />
         </div>
-      </Container>
-    </Navbar>
+
+        {/* Search Bar (Desktop) */}
+        <form onSubmit={handleSearch} className="hidden md:flex relative group">
+          <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" />
+          <input
+            type="text"
+            placeholder="Tìm kiếm hệ thống..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="h-10 w-64 rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-4 text-sm outline-none focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10 transition-all"
+          />
+        </form>
+      </div>
+
+      <div className="flex items-center gap-2 md:gap-4">
+        {/* Quick Actions */}
+        <button 
+          onClick={() => navigate("/")}
+          className="hidden sm:flex h-10 items-center gap-2 rounded-xl border border-slate-200 px-4 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors"
+        >
+          <FiHome />
+          <span>Trang chủ</span>
+        </button>
+
+        <button className="relative flex h-10 w-10 items-center justify-center rounded-xl text-slate-500 hover:bg-slate-50 transition-colors">
+          <FiBell className="text-lg" />
+          <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-rose-500 ring-2 ring-white"></span>
+        </button>
+
+        <div className="h-8 w-[1px] bg-slate-200 mx-1"></div>
+
+        {/* Profile Dropdown */}
+        <div className="relative">
+          <button
+            onClick={() => setShowProfileMenu(!showProfileMenu)}
+            className="flex items-center gap-3 rounded-xl p-1 pr-3 hover:bg-slate-50 transition-colors"
+          >
+            <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+              <FiUser className="text-lg" />
+            </div>
+            <div className="hidden text-left sm:block">
+              <p className="text-xs font-semibold text-slate-900 leading-tight">{displayName}</p>
+              <p className="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Quản trị viên</p>
+            </div>
+          </button>
+
+          {showProfileMenu && (
+            <>
+              <div 
+                className="fixed inset-0 z-10" 
+                onClick={() => setShowProfileMenu(false)}
+              ></div>
+              <div className="absolute right-0 mt-2 w-56 origin-top-right rounded-2xl border border-slate-200 bg-white p-2 shadow-xl ring-1 ring-black/5 z-20">
+                <div className="px-3 py-2 border-b border-slate-100 mb-1">
+                   <p className="text-sm font-bold text-slate-900">{user?.username || "Admin"}</p>
+                   <p className="text-xs text-slate-500 truncate">{user?.email}</p>
+                </div>
+                
+                <button
+                  onClick={() => {
+                    navigate("/profile");
+                    setShowProfileMenu(false);
+                  }}
+                  className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-primary transition-all"
+                >
+                  <FiUser className="text-lg" />
+                  Hồ sơ cá nhân
+                </button>
+                
+                <div className="my-1 border-t border-slate-100"></div>
+                
+                <button
+                  onClick={handleLogout}
+                  disabled={loggingOut}
+                  className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-rose-500 hover:bg-rose-50 transition-all"
+                >
+                  <FiLogOut className="text-lg" />
+                  {loggingOut ? "Đang xử lý..." : "Đăng xuất"}
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    </header>
   );
 };
 

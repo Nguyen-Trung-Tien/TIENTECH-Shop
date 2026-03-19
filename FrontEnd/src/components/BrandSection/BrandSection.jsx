@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
 import { getAllBrandApi } from "../../api/brandApi";
-import { Spinner } from "react-bootstrap";
-import "./BrandSection.scss";
 import { getImage } from "../../utils/decodeImage";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 
 const BrandSection = () => {
   const [brands, setBrands] = useState([]);
@@ -32,26 +31,30 @@ const BrandSection = () => {
 
   if (loading)
     return (
-      <div className="brand-section-loading text-center py-4">
-        <Spinner animation="border" variant="primary" />
+      <div className="flex items-center justify-center py-12">
+        <div className="w-8 h-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
       </div>
     );
 
   return (
-    <div className="brand-section container my-4">
-      <div className="brand-grid">
-        {brands.map((brand) => (
-          <div
+    <div className="container-custom my-12">
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
+        {brands.map((brand, index) => (
+          <motion.div
             key={brand.id}
-            className="brand-card-upgraded"
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: index * 0.05 }}
+            className="group cursor-pointer bg-white p-6 rounded-2xl border border-surface-200/60 hover:border-primary/20 hover:shadow-soft transition-all duration-300 flex items-center justify-center aspect-[3/2]"
             onClick={() => navigate(`/product-list?brandId=${brand.id}`)}
           >
             <img
               src={getImage(brand.image)}
               alt={brand.name}
-              className="brand-logo"
+              className="max-h-12 w-auto object-contain grayscale group-hover:grayscale-0 transition-all duration-500 opacity-60 group-hover:opacity-100 group-hover:scale-110"
             />
-          </div>
+          </motion.div>
         ))}
       </div>
     </div>

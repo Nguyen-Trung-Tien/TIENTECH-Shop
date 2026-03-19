@@ -30,11 +30,15 @@ const LayoutComponent = ({
   );
 
   return (
-    <div className="app-shell">
+    <div className="flex flex-col min-h-screen bg-slate-50/50 selection:bg-primary/10 selection:text-primary">
       {isShowHeader && <Header />}
-      <main className="app-main" style={{ minHeight: "80vh" }}>
-        {children}
+      
+      <main className="flex-grow pb-20">
+        <div className="animate-in fade-in duration-700">
+          {children}
+        </div>
       </main>
+
       {isShowFooter && !shouldHideFooter && <Footer />}
     </div>
   );

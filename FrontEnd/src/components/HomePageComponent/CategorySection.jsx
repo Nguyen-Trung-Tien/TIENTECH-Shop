@@ -1,7 +1,6 @@
 import React from "react";
-import { Container, Row, Col } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import "./CategorySection.scss";
+import { motion } from "framer-motion";
 import SkeletonCard from "../SkeletonCard/SkeletonCard";
 
 const CategorySection = React.memo(({ categories = [], loading }) => {
@@ -9,30 +8,55 @@ const CategorySection = React.memo(({ categories = [], loading }) => {
 
   if (loading) {
     return (
-      <Container className="categories my-2">
-        <h2 className="section-title text-center mb-2">✨Danh Mục✨</h2>
-        <Row className="g-2 justify-content-center">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <Col key={i} lg={2} md={3} sm={4} xs={6}>
-              <SkeletonCard />
-            </Col>
-          ))}
-        </Row>
-      </Container>
+      <section className="py-12 bg-white">
+        <div className="container-custom">
+          <div className="flex flex-col items-center mb-10 text-center">
+            <h2 className="text-3xl font-black text-slate-900 tracking-tight uppercase">Khám Phá Danh Mục</h2>
+            <div className="h-1 w-20 bg-primary mt-2 rounded-full"></div>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <SkeletonCard key={i} />
+            ))}
+          </div>
+        </div>
+      </section>
     );
   }
 
   return (
-    <Container className="categories my-3">
-      <h2 className="section-title text-center mb-3">✨Danh Mục✨</h2>
-      <Row className="g-3 justify-content-center">
-        {categories.map((cat) => (
-          <Col key={cat.id} lg={2} md={3} sm={4} xs={6}>
-            <div
-              className="category-card"
+    <section className="py-16 bg-white overflow-hidden">
+      <div className="container-custom">
+        <div className="flex flex-col items-center mb-12 text-center">
+          <motion.h2 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight uppercase"
+          >
+            Danh Mục Nổi Bật
+          </motion.h2>
+          <motion.div 
+            initial={{ width: 0 }}
+            whileInView={{ width: 80 }}
+            viewport={{ once: true }}
+            className="h-1.5 bg-primary mt-4 rounded-full"
+          ></motion.div>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-6">
+          {categories.map((cat, index) => (
+            <motion.div
+              key={cat.id}
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: index * 0.05 }}
+              whileHover={{ y: -8 }}
               onClick={() => navigate(`/product-list?category=${cat.id}`)}
+              className="group cursor-pointer"
             >
-              <div className="image-wrapper">
+              <div className="relative aspect-square rounded-[32px] overflow-hidden bg-slate-50 border border-slate-100 shadow-sm transition-all duration-300 group-hover:shadow-xl group-hover:border-primary/20">
                 <img
                   src={
                     cat.imageUrl ||
@@ -41,18 +65,23 @@ const CategorySection = React.memo(({ categories = [], loading }) => {
                       : "/images/default-category.jpg")
                   }
                   alt={cat.name}
-                  className="img-fluid"
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                   loading="lazy"
                 />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity"></div>
+                
+                <div className="absolute inset-x-0 bottom-0 p-4 text-center">
+                   <h3 className="text-white font-bold text-sm md:text-base tracking-wide uppercase transition-transform duration-300 group-hover:translate-y-[-4px]">
+                      {cat.name}
+                   </h3>
+                   <div className="h-0.5 w-0 bg-primary mx-auto group-hover:w-10 transition-all duration-300 rounded-full mt-1"></div>
+                </div>
               </div>
-              <div className="overlay">
-                <h6 className="category-name">{cat.name}</h6>
-              </div>
-            </div>
-          </Col>
-        ))}
-      </Row>
-    </Container>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 });
 

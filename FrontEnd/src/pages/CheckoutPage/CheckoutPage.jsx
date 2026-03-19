@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
-import { Container, Row, Col, Card, Spinner } from "react-bootstrap";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { ArrowLeftCircle, CreditCard } from "react-bootstrap-icons";
+import { FiArrowLeft, FiCreditCard, FiChevronRight, FiCheckCircle } from "react-icons/fi";
 import { useSelector, useDispatch } from "react-redux";
 import { toast } from "react-toastify";
 import { createOrder } from "../../api/orderApi";
@@ -12,7 +11,7 @@ import { setCartItems, removeCartItem } from "../../redux/cartSlice";
 import { resetCheckout } from "../../redux/checkoutSlice";
 import CheckoutForm from "./CheckoutForm";
 import OrderSummary from "./OrderSummary";
-import "./CheckoutPage.scss";
+import { motion } from "framer-motion";
 
 const CheckoutPage = () => {
   const location = useLocation();
@@ -121,37 +120,59 @@ const CheckoutPage = () => {
 
   if (loading)
     return (
-      <div className="text-center py-5">
-        <Spinner animation="border" variant="primary" />
-        <p className="text-muted mt-2">Đang tải sản phẩm...</p>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-surface-50">
+        <div className="w-12 h-12 border-4 border-primary/10 border-t-primary rounded-full animate-spin mb-4"></div>
+        <p className="text-surface-500 font-medium">Đang chuẩn bị đơn hàng của bạn...</p>
       </div>
     );
 
   if (!selectedItems.length)
     return (
-      <div className="text-center py-5">
-        <h5 className="fw-semibold text-muted mb-3">
-          Không có sản phẩm nào để thanh toán!
-        </h5>
-        <Link to={isSingleProduct ? "/" : "/cart"} className="btn btn-primary">
-          <ArrowLeftCircle size={18} className="me-1" /> Quay lại
+      <div className="min-h-screen flex flex-col items-center justify-center bg-surface-50 p-6 text-center">
+        <div className="w-20 h-20 bg-surface-100 rounded-full flex items-center justify-center mb-6">
+          <FiCreditCard size={32} className="text-surface-300" />
+        </div>
+        <h2 className="text-2xl font-display text-surface-900 mb-2">Không có sản phẩm thanh toán</h2>
+        <p className="text-surface-500 max-w-sm mb-8">
+          Vui lòng quay lại giỏ hàng và chọn ít nhất một sản phẩm để tiến hành thanh toán.
+        </p>
+        <Link 
+          to={isSingleProduct ? "/" : "/cart"} 
+          className="inline-flex items-center gap-2 px-8 py-3 bg-surface-900 text-white font-bold rounded-2xl hover:bg-primary transition-all shadow-xl shadow-surface-900/10"
+        >
+          <FiArrowLeft /> QUAY LẠI
         </Link>
       </div>
     );
 
   return (
-    <div className="checkout-page py-4">
-      <Container>
-        {
-          <div className="checkout-back mb-3">
-            <Link to="/cart" className="btn checkout-back-btn">
-              <ArrowLeftCircle size={16} />
-              <span>Quay lại giỏ hàng</span>
-            </Link>
+    <div className="min-h-screen bg-surface-50 py-8">
+      <div className="container-custom">
+        {/* Breadcrumbs & Header */}
+        <div className="mb-8">
+          <div className="flex items-center gap-2 text-surface-400 mb-2">
+            <Link to="/" className="hover:text-primary transition-colors">Trang chủ</Link>
+            <FiChevronRight size={14} />
+            <Link to="/cart" className="hover:text-primary transition-colors">Giỏ hàng</Link>
+            <FiChevronRight size={14} />
+            <span className="text-surface-900 font-bold">Thanh toán</span>
           </div>
-        }
-        <Row className="gy-4 align-items-start">
-          <Col lg={8}>
+          
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+             <h1 className="text-3xl font-display text-surface-900">Tiến hành thanh toán</h1>
+             <div className="flex items-center gap-4 text-sm font-black text-surface-400 uppercase tracking-widest">
+                <span className="flex items-center gap-2 text-emerald-500"><FiCheckCircle /> Giỏ hàng</span>
+                <span className="w-8 h-[2px] bg-emerald-500/20"></span>
+                <span className="text-primary font-black">Thông tin</span>
+                <span className="w-8 h-[2px] bg-surface-200"></span>
+                <span>Hoàn tất</span>
+             </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          {/* Main Checkout Section */}
+          <div className="lg:col-span-8">
             <CheckoutForm
               user={user}
               total={total}
@@ -159,14 +180,17 @@ const CheckoutPage = () => {
               onOrderComplete={handleOrderComplete}
               isSingleProduct={isSingleProduct}
             />
-          </Col>
-          <Col lg={4}>
+          </div>
+
+          {/* Sidebar Section */}
+          <aside className="lg:col-span-4 sticky top-24">
             <OrderSummary selectedItems={selectedItems} total={total} />
-          </Col>
-        </Row>
-      </Container>
+          </aside>
+        </div>
+      </div>
     </div>
   );
 };
 
 export default CheckoutPage;
+

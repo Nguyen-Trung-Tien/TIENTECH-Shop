@@ -1,31 +1,19 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
-  Container,
-  Card,
-  Table,
-  Button,
-  Modal,
-  Form,
-  Image,
-  Spinner,
-  Badge,
-  Pagination,
-  Row,
-  Col,
-} from "react-bootstrap";
-import {
-  Plus,
-  Pencil,
-  Trash3,
-  Image as ImageIcon,
-  Tag,
-  Calendar3,
-  ExclamationCircle,
-  ChevronLeft,
-  ChevronRight,
-  ChevronDoubleLeft,
-  ChevronDoubleRight,
-} from "react-bootstrap-icons";
+  FiPlus,
+  FiEdit2,
+  FiTrash2,
+  FiImage,
+  FiTag,
+  FiCalendar,
+  FiAlertCircle,
+  FiX,
+  FiLayers,
+  FiSearch,
+  FiChevronLeft,
+  FiChevronRight
+} from "react-icons/fi";
+import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "react-toastify";
 import {
   getAllCategoryApi,
@@ -33,8 +21,8 @@ import {
   updateCategoryApi,
   deleteCategoryApi,
 } from "../../../api/categoryApi";
-import "./Categories.scss";
 import { useSelector } from "react-redux";
+import AppPagination from "../../../components/Pagination/Pagination";
 
 const Categories = () => {
   const token = useSelector((state) => state.user.token);
@@ -51,13 +39,11 @@ const Categories = () => {
   const [preview, setPreview] = useState(null);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const limit = 10;
+  const limit = 8;
 
   // Modal xóa
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deletingCategory, setDeletingCategory] = useState(null);
-
-  const tableTopRef = useRef(null);
 
   const generateSlug = (name) => {
     if (!name) return "";
@@ -75,15 +61,6 @@ const Categories = () => {
       toast.warning("Tên danh mục không được để trống");
       return false;
     }
-    if (editingCategory) {
-      const exists = categories.some(
-        (c) => c.name === formData.name && c.id !== editingCategory.id,
-      );
-      if (exists) {
-        toast.warning("Tên danh mục đã tồn tại");
-        return false;
-      }
-    }
     return true;
   };
 
@@ -92,16 +69,13 @@ const Categories = () => {
     try {
       const res = await getAllCategoryApi(token);
       if (res.errCode === 0) {
-        const data = res.data || [];
-        setCategories(data);
+        setCategories(res.data || []);
       } else {
         toast.error(res.errMessage || "Lỗi tải danh mục");
-        setCategories([]);
       }
     } catch (err) {
       toast.error("Không thể kết nối server");
       console.error(err);
-      setCategories([]);
     } finally {
       setLoading(false);
     }
@@ -109,14 +83,8 @@ const Categories = () => {
 
   useEffect(() => {
     const total = categories.length;
-    const calculatedTotalPages = Math.ceil(total / limit) || 1;
-    setTotalPages(calculatedTotalPages);
-    if (page > calculatedTotalPages && calculatedTotalPages > 0) {
-      setPage(calculatedTotalPages);
-    } else if (page === 0 && calculatedTotalPages > 0) {
-      setPage(1);
-    }
-  }, [categories, limit, page]);
+    setTotalPages(Math.ceil(total / limit) || 1);
+  }, [categories, limit]);
 
   useEffect(() => {
     fetchCategories();
@@ -130,9 +98,7 @@ const Categories = () => {
         description: category.description || "",
         image: category.image || "",
       });
-      setPreview(
-        category.image ? `data:image/jpeg;base64,${category.image}` : null,
-      );
+      setPreview(category.image ? `data:image/jpeg;base64,${category.image}` : null);
     } else {
       setFormData({ name: "", description: "", image: "" });
       setPreview(null);
@@ -143,18 +109,12 @@ const Categories = () => {
   const handleCloseModal = () => {
     setShowModal(false);
     setEditingCategory(null);
-    setFormData({ name: "", description: "", image: "" });
-    setPreview(null);
   };
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
-
-    if (file.size > 2 * 1024 * 1024) {
-      toast.warning("Ảnh không được quá 2MB");
-      return;
-    }
+    if (file.size > 2 * 1024 * 1024) return toast.warning("Ảnh không được quá 2MB");
 
     const reader = new FileReader();
     reader.onload = () => {
@@ -165,410 +125,275 @@ const Categories = () => {
     reader.readAsDataURL(file);
   };
 
-  const handleSave = async () => {
+  const handleSave = async (e) => {
+    e.preventDefault();
     if (!validateForm()) return;
-
     const slug = generateSlug(formData.name);
-    if (!slug) {
-      toast.warning("Tên danh mục không hợp lệ để tạo slug");
-      return;
-    }
-
     const payload = { ...formData, slug };
 
+    setSaving(true);
     try {
-      setSaving(true);
       if (editingCategory) {
         await updateCategoryApi(editingCategory.id, payload, token);
-        toast.success("Cập nhật danh mục thành công!");
+        toast.success("Cập nhật thành công!");
       } else {
         await createCategoryApi(payload, token);
-        toast.success("Thêm danh mục thành công!");
+        toast.success("Thêm mới thành công!");
       }
-      await fetchCategories();
+      fetchCategories();
       handleCloseModal();
     } catch (err) {
-      const msg = err.response?.data?.errMessage || "Lỗi khi lưu danh mục";
-      toast.error(msg);
+      toast.error("Thao tác thất bại");
     } finally {
       setSaving(false);
     }
   };
 
-  // Mở modal xóa
-  const handleShowDeleteModal = (category) => {
-    setDeletingCategory(category);
-    setShowDeleteModal(true);
-  };
-
-  // Đóng modal xóa
-  const handleCloseDeleteModal = () => {
-    setDeletingCategory(null);
-    setShowDeleteModal(false);
-  };
-
-  // Xác nhận xóa
   const confirmDelete = async () => {
     if (!deletingCategory) return;
-
     try {
       setLoading(true);
       await deleteCategoryApi(deletingCategory.id, token);
-      toast.success("Xóa danh mục thành công!");
-      await fetchCategories();
+      toast.success("Đã xóa danh mục!");
+      fetchCategories();
     } catch (err) {
-      console.error(err);
-      toast.error("Không thể xóa (có thể đang có sản phẩm liên kết)");
+      toast.error("Không thể xóa danh mục này");
     } finally {
       setLoading(false);
-      handleCloseDeleteModal();
+      setShowDeleteModal(false);
     }
   };
 
-  const handlePageChange = (newPage) => {
-    if (newPage < 1 || newPage > totalPages || newPage === page) return;
-    setPage(newPage);
-    tableTopRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  const paginatedCategories = categories.slice(
-    (page - 1) * limit,
-    page * limit,
-  );
-
-  const renderPagination = () => {
-    if (totalPages <= 1) return null;
-
-    const items = [];
-    const neighbours = 1;
-    const start = Math.max(1, page - neighbours);
-    const end = Math.min(totalPages, page + neighbours);
-
-    if (start > 1) {
-      items.push(
-        <Pagination.First key="first" onClick={() => handlePageChange(1)}>
-          <ChevronDoubleLeft />
-        </Pagination.First>,
-      );
-    }
-    if (page > 1) {
-      items.push(
-        <Pagination.Prev key="prev" onClick={() => handlePageChange(page - 1)}>
-          <ChevronLeft />
-        </Pagination.Prev>,
-      );
-    }
-
-    for (let i = start; i <= end; i++) {
-      items.push(
-        <Pagination.Item
-          key={i}
-          active={i === page}
-          onClick={() => handlePageChange(i)}
-        >
-          {i}
-        </Pagination.Item>,
-      );
-    }
-
-    if (page < totalPages) {
-      items.push(
-        <Pagination.Next key="next" onClick={() => handlePageChange(page + 1)}>
-          <ChevronRight />
-        </Pagination.Next>,
-      );
-    }
-    if (end < totalPages) {
-      items.push(
-        <Pagination.Last
-          key="last"
-          onClick={() => handlePageChange(totalPages)}
-        >
-          <ChevronDoubleRight />
-        </Pagination.Last>,
-      );
-    }
-
-    return (
-      <Pagination className="justify-content-center mt-4">{items}</Pagination>
-    );
-  };
+  const paginatedCategories = categories.slice((page - 1) * limit, page * limit);
 
   return (
-    <Container className="py-4 categories-page">
-      <div className="d-flex align-items-center justify-content-between mb-4">
-        <h3 className="m-0 d-flex align-items-center gap-2">
-          <Tag className="text-primary" /> Quản lý danh mục
-        </h3>
-        <Button
-          variant="success"
+    <div className="space-y-6">
+      {/* Header Area */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary text-xl">
+              <FiLayers />
+            </div>
+            Quản lý danh mục
+          </h1>
+          <p className="text-sm text-slate-500 font-medium mt-1 ml-13">Phân loại sản phẩm theo các nhóm chức năng.</p>
+        </div>
+        
+        <button 
           onClick={() => handleShowModal()}
-          className="d-flex align-items-center gap-1"
+          className="btn-modern-primary group"
         >
-          <Plus /> Thêm danh mục
-        </Button>
+          <FiPlus className="text-lg group-hover:rotate-90 transition-transform duration-300" />
+          <span>Tạo danh mục mới</span>
+        </button>
       </div>
 
-      <Card className="shadow-sm border-0">
-        <Card.Body>
-          <Row className="mb-3">
-            <Col className="text-end">
-              <Badge bg="info" className="fs-6">
-                {categories.length} danh mục
-              </Badge>
-            </Col>
-          </Row>
+      {/* Table Area */}
+      <div className="card-modern">
+        <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/30">
+           <div className="flex items-center gap-2 px-4 py-2 bg-white rounded-xl border border-slate-200 shadow-sm">
+              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Thống kê:</span>
+              <span className="text-xs font-bold text-primary">{categories.length} Danh mục</span>
+           </div>
+        </div>
 
-          <div ref={tableTopRef}>
-            <Table
-              striped
-              bordered
-              hover
-              responsive
-              className="align-middle text-center"
-            >
-              <thead className="table-light">
-                <tr>
-                  <th>ID</th>
-                  <th>
-                    <ImageIcon className="me-1" /> Hình ảnh
-                  </th>
-                  <th>Tên danh mục</th>
-                  <th>Slug</th>
-                  <th>Mô tả</th>
-                  <th>
-                    <Calendar3 className="me-1" /> Ngày tạo
-                  </th>
-                  <th>Hành động</th>
-                </tr>
-              </thead>
-              <tbody>
-                {loading ? (
-                  <tr>
-                    <td colSpan="7" className="text-center text-primary py-5">
-                      <Spinner animation="border" variant="primary" />
-                    </td>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse min-w-[800px]">
+            <thead>
+              <tr className="bg-slate-50/50">
+                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Hình ảnh</th>
+                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Thông tin danh mục</th>
+                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Slug</th>
+                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Ngày khởi tạo</th>
+                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 text-right">Thao tác</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {loading ? (
+                Array(limit).fill(0).map((_, i) => (
+                  <tr key={i} className="animate-pulse">
+                    <td colSpan={5} className="px-6 py-6"><div className="h-10 bg-slate-100 rounded-xl w-full"></div></td>
                   </tr>
-                ) : categories.length === 0 ? (
-                  <tr>
-                    <td colSpan="7" className="text-center text-muted py-4">
-                      <ExclamationCircle className="me-2" />
-                      Chưa có danh mục nào
+                ))
+              ) : paginatedCategories.length > 0 ? (
+                paginatedCategories.map((cat) => (
+                  <tr key={cat.id} className="hover:bg-slate-50/50 transition-colors group">
+                    <td className="px-6 py-4">
+                       <div className="w-14 h-14 rounded-2xl border border-slate-200 bg-white p-1 flex-shrink-0 group-hover:shadow-md transition-all">
+                          {cat.image ? (
+                            <img src={`data:image/jpeg;base64,${cat.image}`} alt={cat.name} className="w-full h-full object-cover rounded-xl" />
+                          ) : (
+                            <div className="w-full h-full bg-slate-50 rounded-xl flex items-center justify-center text-slate-300"><FiImage /></div>
+                          )}
+                       </div>
                     </td>
-                  </tr>
-                ) : (
-                  paginatedCategories.map((cat) => (
-                    <tr key={cat.id}>
-                      <td>
-                        <strong>#{cat.id}</strong>
-                      </td>
-                      <td>
-                        {cat.image ? (
-                          <Image
-                            src={`data:image/jpeg;base64,${cat.image}`}
-                            alt={cat.name}
-                            rounded
-                            style={{
-                              width: 50,
-                              height: 50,
-                              objectFit: "cover",
-                            }}
-                          />
-                        ) : (
-                          <div
-                            className="bg-light border rounded d-flex align-items-center justify-content-center"
-                            style={{ width: 50, height: 50 }}
-                          >
-                            <ImageIcon size={20} className="text-muted" />
-                          </div>
-                        )}
-                      </td>
-                      <td className="fw-semibold text-primary">{cat.name}</td>
-                      <td>
-                        <code className="text-success small">
-                          {cat.slug || "—"}
-                        </code>
-                      </td>
-                      <td className="text-start">
-                        {cat.description ? (
-                          <span
-                            style={{
-                              display: "-webkit-box",
-                              WebkitLineClamp: 2,
-                              WebkitBoxOrient: "vertical",
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                            }}
-                            title={cat.description}
-                          >
-                            {cat.description}
-                          </span>
-                        ) : (
-                          "—"
-                        )}
-                      </td>
-                      <td>
-                        {new Date(cat.createdAt).toLocaleDateString("vi-VN")}
-                      </td>
-                      <td>
-                        <div className="d-flex gap-1 justify-content-center">
-                          <Button
-                            size="sm"
-                            variant="outline-warning"
+                    <td className="px-6 py-4">
+                       <p className="text-sm font-bold text-slate-900">{cat.name}</p>
+                       <p className="text-[10px] font-medium text-slate-400 mt-1 line-clamp-1 max-w-xs">{cat.description || "Chưa có mô tả"}</p>
+                    </td>
+                    <td className="px-6 py-4">
+                       <code className="text-[10px] font-black bg-slate-100 px-2 py-1 rounded-lg text-emerald-600">/{cat.slug}</code>
+                    </td>
+                    <td className="px-6 py-4">
+                       <p className="text-xs font-bold text-slate-500 flex items-center gap-2"><FiCalendar className="text-slate-400" /> {new Date(cat.createdAt).toLocaleDateString("vi-VN")}</p>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                       <div className="flex items-center justify-end gap-1.5">
+                          <button 
                             onClick={() => handleShowModal(cat)}
-                            title="Chỉnh sửa"
-                            className="d-flex align-items-center"
+                            className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-400 hover:bg-white hover:text-primary hover:shadow-md border border-transparent hover:border-slate-100 transition-all"
+                            title="Sửa"
                           >
-                            <Pencil size={14} />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline-danger"
-                            onClick={() => handleShowDeleteModal(cat)}
+                            <FiEdit2 />
+                          </button>
+                          <button 
+                            onClick={() => { setDeletingCategory(cat); setShowDeleteModal(true); }}
+                            className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-400 hover:bg-rose-50 hover:text-rose-500 transition-all"
                             title="Xóa"
-                            className="d-flex align-items-center"
                           >
-                            <Trash3 size={14} />
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </Table>
-          </div>
+                            <FiTrash2 />
+                          </button>
+                       </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={5} className="px-6 py-20 text-center text-slate-400 font-bold text-sm italic">Dữ liệu trống</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
 
-          {renderPagination()}
-        </Card.Body>
-      </Card>
+        <div className="p-6 border-t border-slate-100 bg-slate-50/20">
+           <AppPagination
+            page={page}
+            totalPages={totalPages}
+            onPageChange={(p) => setPage(p)}
+           />
+        </div>
+      </div>
 
-      {/* Modal Thêm / Sửa */}
-      <Modal
-        show={showModal}
-        onHide={handleCloseModal}
-        size="lg"
-        centered
-        backdrop="static"
-      >
-        <Modal.Header closeButton>
-          <Modal.Title className="d-flex align-items-center gap-2">
-            <Tag className="text-primary" />
-            {editingCategory ? "Chỉnh sửa danh mục" : "Thêm danh mục mới"}
-          </Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form>
-            <Row className="g-3">
-              <Col md={6}>
-                <Form.Label>
-                  Tên danh mục <span className="text-danger">*</span>
-                </Form.Label>
-                <Form.Control
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, name: e.target.value })
-                  }
-                  placeholder="Ví dụ: Điện thoại, Laptop..."
-                />
-                <Form.Text className="text-muted">
-                  Slug: <strong>{generateSlug(formData.name) || "—"}</strong>
-                </Form.Text>
-              </Col>
-
-              <Col md={6}>
-                <Form.Label>Mô tả</Form.Label>
-                <Form.Control
-                  as="textarea"
-                  rows={3}
-                  value={formData.description}
-                  onChange={(e) =>
-                    setFormData({ ...formData, description: e.target.value })
-                  }
-                  placeholder="Mô tả ngắn gọn về danh mục..."
-                />
-              </Col>
-
-              <Col md={12}>
-                <Form.Label>
-                  <ImageIcon className="me-1" /> Ảnh danh mục
-                </Form.Label>
-                <Form.Control
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                />
-                {preview && (
-                  <div className="mt-3 text-center">
-                    <Image
-                      src={preview}
-                      alt="Preview"
-                      rounded
-                      style={{
-                        maxWidth: 120,
-                        maxHeight: 120,
-                        objectFit: "cover",
-                        border: "2px solid #4361ee",
-                      }}
-                    />
+      {/* Form Modal */}
+      <AnimatePresence>
+        {showModal && (
+          <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={handleCloseModal}
+              className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative w-full max-w-xl bg-white rounded-3xl shadow-2xl overflow-hidden"
+            >
+               <div className="px-8 py-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                  <div>
+                     <h3 className="text-xl font-black text-slate-900 tracking-tight">
+                        {editingCategory ? "Chỉnh sửa danh mục" : "Tạo danh mục mới"}
+                     </h3>
+                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Cấu hình nhóm phân loại sản phẩm</p>
                   </div>
-                )}
-              </Col>
-            </Row>
-          </Form>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button
-            variant="secondary"
-            onClick={handleCloseModal}
-            disabled={saving}
-          >
-            Hủy
-          </Button>
-          <Button
-            variant="primary"
-            onClick={handleSave}
-            disabled={saving}
-            className="d-flex align-items-center gap-1"
-          >
-            {saving ? (
-              <>
-                <Spinner animation="border" size="sm" variant="primary" /> Đang
-                lưu...
-              </>
-            ) : (
-              <>
-                <Tag /> Lưu danh mục
-              </>
-            )}
-          </Button>
-        </Modal.Footer>
-      </Modal>
+                  <button onClick={handleCloseModal} className="w-10 h-10 rounded-xl flex items-center justify-center text-slate-400 hover:bg-white hover:text-slate-900 hover:shadow-md transition-all">
+                    <FiX className="text-xl" />
+                  </button>
+               </div>
 
-      <Modal
-        show={showDeleteModal}
-        onHide={handleCloseDeleteModal}
-        centered
-        backdrop="static"
-      >
-        <Modal.Header closeButton className="bg-warning text-dark">
-          <Modal.Title>Xác nhận xóa</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          Bạn có chắc chắn muốn xóa danh mục{" "}
-          <strong>{deletingCategory?.name}</strong>? Dữ liệu sẽ mất vĩnh viễn.
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={handleCloseDeleteModal}>
-            Hủy
-          </Button>
-          <Button variant="danger" onClick={confirmDelete}>
-            Xóa
-          </Button>
-        </Modal.Footer>
-      </Modal>
-    </Container>
+               <form onSubmit={handleSave} className="p-8 space-y-6">
+                  <div className="space-y-1.5">
+                     <label className="text-[11px] font-black uppercase tracking-widest text-slate-400 ml-1">Tên danh mục *</label>
+                     <input 
+                      className="input-modern font-bold" 
+                      placeholder="Ví dụ: Gaming Gear, Laptop Office..."
+                      value={formData.name}
+                      onChange={(e) => setFormData({...formData, name: e.target.value})}
+                      required 
+                     />
+                     <p className="text-[9px] font-bold text-emerald-500 uppercase tracking-widest ml-1">Slug: /{generateSlug(formData.name) || "—"}</p>
+                  </div>
+
+                  <div className="space-y-1.5">
+                     <label className="text-[11px] font-black uppercase tracking-widest text-slate-400 ml-1">Mô tả ngắn</label>
+                     <textarea 
+                      className="input-modern resize-none h-24" 
+                      placeholder="Thông tin giới thiệu về nhóm sản phẩm này..."
+                      value={formData.description}
+                      onChange={(e) => setFormData({...formData, description: e.target.value})}
+                     />
+                  </div>
+
+                  <div className="space-y-3">
+                     <label className="text-[11px] font-black uppercase tracking-widest text-slate-400 ml-1">Hình ảnh đại diện</label>
+                     <div className="flex items-center gap-6">
+                        <div className="w-24 h-24 rounded-2xl bg-slate-50 border-2 border-dashed border-slate-200 flex items-center justify-center overflow-hidden shrink-0">
+                           {preview ? (
+                             <img src={preview} alt="Preview" className="w-full h-full object-cover p-1 rounded-2xl" />
+                           ) : (
+                             <FiImage className="text-2xl text-slate-300" />
+                           )}
+                        </div>
+                        <div className="flex-1 space-y-2">
+                           <input 
+                            type="file" 
+                            accept="image/*" 
+                            onChange={handleImageChange}
+                            className="block w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-[11px] file:font-black file:uppercase file:tracking-widest file:bg-primary/10 file:text-primary hover:file:bg-primary/20 transition-all cursor-pointer"
+                           />
+                           <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-relaxed">Định dạng JPG, PNG, WEBP. Tối đa 2MB.</p>
+                        </div>
+                     </div>
+                  </div>
+
+                  <div className="flex items-center justify-end gap-3 mt-10">
+                     <button type="button" onClick={handleCloseModal} className="btn-modern-white px-8">Hủy bỏ</button>
+                     <button type="submit" className="btn-modern-primary px-10">
+                        {saving ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> : (editingCategory ? "Cập nhật" : "Tạo mới")}
+                     </button>
+                  </div>
+               </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Delete Confirmation Modal */}
+      <AnimatePresence>
+        {showDeleteModal && (
+          <div className="fixed inset-0 z-[1100] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowDeleteModal(false)}
+              className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="relative w-full max-w-sm bg-white rounded-3xl shadow-2xl p-8 text-center"
+            >
+              <div className="w-16 h-16 bg-rose-50 text-rose-500 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-6">
+                <FiTrash2 />
+              </div>
+              <h3 className="text-xl font-black text-slate-900 mb-2">Xác nhận xóa?</h3>
+              <p className="text-sm text-slate-500 mb-8 font-medium">Bạn có chắc chắn muốn xóa danh mục <strong>{deletingCategory?.name}</strong>? Toàn bộ dữ liệu liên quan sẽ bị ảnh hưởng.</p>
+              
+              <div className="grid grid-cols-2 gap-3">
+                 <button onClick={() => setShowDeleteModal(false)} className="btn-modern-white">Hủy</button>
+                 <button onClick={confirmDelete} className="btn-modern bg-rose-500 text-white hover:bg-rose-600 shadow-lg shadow-rose-500/20">Xác nhận xóa</button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 };
 

@@ -1,20 +1,12 @@
 import React, { useState } from "react";
-import { Modal, Button, Form, Spinner, InputGroup } from "react-bootstrap";
 import { toast } from "react-toastify";
+import { motion, AnimatePresence } from "framer-motion";
+import { FiMail, FiShield, FiKey, FiArrowLeft, FiRefreshCw, FiEye, FiEyeOff, FiX } from "react-icons/fi";
 import {
   forgotPasswordApi,
   resetPasswordApi,
   verifyResetTokenApi,
 } from "../../api/userApi";
-import {
-  EnvelopeAtFill,
-  ShieldLockFill,
-  KeyFill,
-  ArrowLeft,
-  ArrowClockwise,
-  EyeFill,
-  EyeSlashFill,
-} from "react-bootstrap-icons";
 
 const ForgotPasswordModal = ({ show, onClose }) => {
   const [step, setStep] = useState(1);
@@ -101,233 +93,190 @@ const ForgotPasswordModal = ({ show, onClose }) => {
     }
   };
 
-  const renderFooter = () => {
-    switch (step) {
-      case 1:
-        return (
-          <>
-            <Button variant="secondary" onClick={handleClose}>
-              Hủy
-            </Button>
-            <Button
-              variant="primary"
-              onClick={handleSendEmail}
-              disabled={loading}
-            >
-              {loading ? (
-                <Spinner animation="border" size="sm" />
-              ) : (
-                "Gửi mã xác nhận"
-              )}
-            </Button>
-          </>
-        );
-      case 2:
-        return (
-          <>
-            <Button
-              variant="outline-secondary"
-              onClick={() => setStep(1)}
-              disabled={loading}
-            >
-              <ArrowLeft className="me-1" /> Quay lại
-            </Button>
-            <Button
-              variant="primary"
-              onClick={handleVerifyToken}
-              disabled={loading}
-            >
-              {loading ? (
-                <Spinner animation="border" size="sm" />
-              ) : (
-                "Xác thực mã"
-              )}
-            </Button>
-          </>
-        );
-      case 3:
-        return (
-          <>
-            <Button
-              variant="outline-secondary"
-              onClick={() => setStep(2)}
-              disabled={loading}
-            >
-              <ArrowLeft className="me-1" /> Quay lại
-            </Button>
-            <Button
-              variant="success"
-              onClick={handleResetPassword}
-              disabled={loading}
-            >
-              {loading ? (
-                <Spinner animation="border" size="sm" />
-              ) : (
-                "Đổi mật khẩu"
-              )}
-            </Button>
-          </>
-        );
-      default:
-        return null;
-    }
-  };
+  if (!show) return null;
 
   return (
-    <Modal show={show} onHide={handleClose} centered size="md">
-      <Modal.Header closeButton className="border-0 pb-0">
-        <Modal.Title className="fw-bold text-primary">
-          {step === 1 && (
-            <>
-              <EnvelopeAtFill className="me-2" /> Khôi phục mật khẩu
-            </>
-          )}
-          {step === 2 && (
-            <>
-              <ShieldLockFill className="me-2" /> Nhập mã xác nhận
-            </>
-          )}
-          {step === 3 && (
-            <>
-              <KeyFill className="me-2" /> Đặt mật khẩu mới
-            </>
-          )}
-        </Modal.Title>
-      </Modal.Header>
+    <AnimatePresence>
+      <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+        {/* Backdrop */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={handleClose}
+          className="absolute inset-0 bg-surface-900/60 backdrop-blur-sm"
+        />
 
-      <Modal.Body className="pt-3">
-        {step === 1 && <FormStepEmail email={email} setEmail={setEmail} />}
-        {step === 2 && (
-          <FormStepToken
-            email={email}
-            token={token}
-            setToken={setToken}
-            onResend={handleSendEmail}
-          />
-        )}
-        {step === 3 && (
-          <FormStepNewPassword
-            newPassword={newPassword}
-            setNewPassword={setNewPassword}
-            confirmPassword={confirmPassword}
-            setConfirmPassword={setConfirmPassword}
-          />
-        )}
-      </Modal.Body>
+        {/* Modal Content */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.95, y: 20 }}
+          className="relative w-full max-w-md bg-white rounded-[2rem] shadow-2xl overflow-hidden"
+        >
+          {/* Header */}
+          <div className="px-8 pt-8 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary">
+                {step === 1 && <FiMail size={20} />}
+                {step === 2 && <FiShield size={20} />}
+                {step === 3 && <FiKey size={20} />}
+              </div>
+              <div>
+                <h3 className="text-xl font-display text-surface-900 leading-none">
+                  {step === 1 && "Quên mật khẩu"}
+                  {step === 2 && "Xác thực"}
+                  {step === 3 && "Mật khẩu mới"}
+                </h3>
+              </div>
+            </div>
+            <button
+              onClick={handleClose}
+              className="p-2 text-surface-400 hover:text-surface-900 hover:bg-surface-100 rounded-xl transition-all"
+            >
+              <FiX size={20} />
+            </button>
+          </div>
 
-      <Modal.Footer className="border-0">{renderFooter()}</Modal.Footer>
-    </Modal>
+          {/* Body */}
+          <div className="p-8">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={step}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.2 }}
+              >
+                {step === 1 && (
+                  <div className="space-y-4">
+                    <p className="text-surface-500 text-sm font-medium">
+                      Nhập email đã đăng ký để nhận mã khôi phục mật khẩu.
+                    </p>
+                    <div className="space-y-1.5">
+                      <label className="text-[12px] font-bold text-surface-900 uppercase tracking-wider ml-1">Email</label>
+                      <div className="relative group">
+                        <FiMail className="absolute left-4 top-1/2 -translate-y-1/2 text-surface-400 group-focus-within:text-primary transition-colors" />
+                        <input
+                          type="email"
+                          placeholder="name@example.com"
+                          className="w-full h-12 pl-11 pr-4 bg-surface-50 border-2 border-transparent rounded-xl text-sm font-medium focus:bg-white focus:border-primary/20 outline-none transition-all"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value.trim())}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {step === 2 && (
+                  <div className="space-y-4">
+                    <p className="text-surface-500 text-sm font-medium leading-relaxed">
+                      Mã xác nhận đã gửi đến <span className="text-surface-900 font-bold">{email}</span>. Vui lòng kiểm tra hộp thư.
+                    </p>
+                    <div className="space-y-1.5">
+                      <label className="text-[12px] font-bold text-surface-900 uppercase tracking-wider ml-1">Mã xác nhận</label>
+                      <div className="flex gap-2">
+                        <div className="relative flex-1 group">
+                          <FiShield className="absolute left-4 top-1/2 -translate-y-1/2 text-surface-400 group-focus-within:text-primary transition-colors" />
+                          <input
+                            placeholder="Nhập 6 ký tự..."
+                            className="w-full h-12 pl-11 pr-4 bg-surface-50 border-2 border-transparent rounded-xl text-sm font-bold tracking-widest focus:bg-white focus:border-primary/20 outline-none transition-all"
+                            value={token}
+                            onChange={(e) => setToken(e.target.value.trim())}
+                          />
+                        </div>
+                        <button 
+                          onClick={handleSendEmail}
+                          disabled={loading}
+                          className="px-4 bg-surface-100 text-surface-600 hover:bg-surface-200 rounded-xl transition-all disabled:opacity-50"
+                        >
+                          <FiRefreshCw className={loading ? "animate-spin" : ""} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {step === 3 && (
+                  <div className="space-y-4">
+                    <p className="text-surface-500 text-sm font-medium">
+                      Tạo mật khẩu mạnh để bảo vệ tài khoản của bạn.
+                    </p>
+                    <div className="space-y-3">
+                      <PasswordField
+                        label="Mật khẩu mới"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                      />
+                      <PasswordField
+                        label="Xác nhận mật khẩu"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                )}
+              </motion.div>
+            </AnimatePresence>
+          </div>
+
+          {/* Footer */}
+          <div className="p-8 pt-0 flex gap-3">
+            {step > 1 && (
+              <button
+                onClick={() => setStep(step - 1)}
+                disabled={loading}
+                className="flex-1 h-12 bg-surface-100 text-surface-600 font-bold rounded-xl hover:bg-surface-200 transition-all disabled:opacity-50"
+              >
+                Quay lại
+              </button>
+            )}
+            <button
+              onClick={step === 1 ? handleSendEmail : step === 2 ? handleVerifyToken : handleResetPassword}
+              disabled={loading}
+              className={`flex-[2] h-12 font-bold rounded-xl transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2 ${
+                step === 3 ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/20 hover:bg-emerald-600" : "bg-surface-900 text-white hover:bg-primary shadow-lg shadow-surface-900/10"
+              }`}
+            >
+              {loading ? (
+                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+              ) : (
+                step === 1 ? "Gửi mã" : step === 2 ? "Xác thực mã" : "Đổi mật khẩu"
+              )}
+            </button>
+          </div>
+        </motion.div>
+      </div>
+    </AnimatePresence>
   );
 };
 
-const FormStepEmail = ({ email, setEmail }) => (
-  <>
-    <p className="text-muted mb-3">
-      Nhập email bạn đã đăng ký để nhận mã xác nhận khôi phục mật khẩu.
-    </p>
-    <Form.Group>
-      <Form.Label className="fw-semibold">Email</Form.Label>
-      <Form.Control
-        type="email"
-        placeholder="nhập email của bạn..."
-        value={email}
-        onChange={(e) => setEmail(e.target.value.trim())}
-      />
-    </Form.Group>
-  </>
-);
-
-const FormStepToken = ({ email, token, setToken, onResend }) => (
-  <>
-    <p className="text-muted">
-      Mã xác nhận đã được gửi tới: <strong>{email}</strong>
-    </p>
-    <Form.Group className="mb-2">
-      <Form.Label className="fw-semibold">Mã xác nhận</Form.Label>
-      <InputGroup>
-        <Form.Control
-          placeholder="Nhập mã khôi phục..."
-          value={token}
-          onChange={(e) => setToken(e.target.value.trim())}
-        />
-        <Button variant="outline-info" onClick={onResend}>
-          <ArrowClockwise className="me-1" /> Gửi lại
-        </Button>
-      </InputGroup>
-      <Form.Text className="text-muted">
-        Mã có hiệu lực trong 15 phút. Kiểm tra hộp thư hoặc spam.
-      </Form.Text>
-    </Form.Group>
-  </>
-);
-
-const FormStepNewPassword = ({
-  newPassword,
-  setNewPassword,
-  confirmPassword,
-  setConfirmPassword,
-}) => {
-  const [showPassword, setShowPassword] = useState({
-    newPassword: false,
-    confirmPassword: false,
-  });
-
-  const toggleShowPassword = (field) => {
-    setShowPassword((prev) => ({
-      ...prev,
-      [field]: !prev[field],
-    }));
-  };
-
+const PasswordField = ({ label, value, onChange }) => {
+  const [show, setShow] = useState(false);
   return (
-    <>
-      <Form.Group className="mb-3">
-        <Form.Label className="fw-semibold">Mật khẩu mới</Form.Label>
-        <InputGroup>
-          <Form.Control
-            type={showPassword.newPassword ? "text" : "password"}
-            placeholder="Nhập mật khẩu mới..."
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-          />
-          <Button
-            variant="light"
-            className="border-0"
-            onClick={() => toggleShowPassword("newPassword")}
-          >
-            {showPassword.newPassword ? (
-              <EyeSlashFill className="text-secondary" />
-            ) : (
-              <EyeFill className="text-secondary" />
-            )}
-          </Button>
-        </InputGroup>
-      </Form.Group>
-
-      <Form.Group>
-        <Form.Label className="fw-semibold">Xác nhận mật khẩu</Form.Label>
-        <InputGroup>
-          <Form.Control
-            type={showPassword.confirmPassword ? "text" : "password"}
-            placeholder="Nhập lại mật khẩu mới..."
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-          />
-          <Button
-            variant="light"
-            className="border-0"
-            onClick={() => toggleShowPassword("confirmPassword")}
-          >
-            {showPassword.confirmPassword ? (
-              <EyeSlashFill className="text-secondary" />
-            ) : (
-              <EyeFill className="text-secondary" />
-            )}
-          </Button>
-        </InputGroup>
-      </Form.Group>
-    </>
+    <div className="space-y-1.5">
+      <label className="text-[12px] font-bold text-surface-900 uppercase tracking-wider ml-1">{label}</label>
+      <div className="relative group">
+        <FiKey className="absolute left-4 top-1/2 -translate-y-1/2 text-surface-400 group-focus-within:text-primary transition-colors" />
+        <input
+          type={show ? "text" : "password"}
+          className="w-full h-12 pl-11 pr-12 bg-surface-50 border-2 border-transparent rounded-xl text-sm font-medium focus:bg-white focus:border-primary/20 outline-none transition-all"
+          value={value}
+          onChange={onChange}
+          placeholder="••••••••"
+        />
+        <button
+          type="button"
+          onClick={() => setShow(!show)}
+          className="absolute right-4 top-1/2 -translate-y-1/2 text-surface-400 hover:text-surface-900 transition-colors"
+        >
+          {show ? <FiEyeOff size={18} /> : <FiEye size={18} />}
+        </button>
+      </div>
+    </div>
   );
 };
 
 export default ForgotPasswordModal;
+

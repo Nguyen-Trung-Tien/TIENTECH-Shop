@@ -1,13 +1,12 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { Container, Row, Col, Button, Alert } from "react-bootstrap";
 import { toast } from "react-toastify";
 import { useSelector } from "react-redux";
 import { useSearchParams } from "react-router-dom";
 import ProductCard from "../../components/ProductCard/ProductCard";
 import SkeletonCard from "../SkeletonCard/SkeletonCard";
 import { getAllProductApi, searchProductsApi } from "../../api/productApi";
-import "./AllProducts.scss";
 import LoadMoreButton from "../LoadMoreButton/LoadMoreButton";
+import { FiRefreshCw, FiAlertCircle, FiSearch } from "react-icons/fi";
 
 const AllProducts = React.memo(() => {
   const [products, setProducts] = useState([]);
@@ -74,81 +73,79 @@ const AllProducts = React.memo(() => {
   };
 
   const renderSkeletons = (count = 10) => (
-    <Row className="g-3 justify-content-center">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
       {Array.from({ length: count }).map((_, i) => (
-        <Col
-          key={`skeleton-${i}`}
-          lg={2}
-          md={3}
-          sm={6}
-          xs={12}
-          className="d-flex justify-content-center"
-        >
-          <SkeletonCard />
-        </Col>
+        <SkeletonCard key={`skeleton-${i}`} />
       ))}
-    </Row>
+    </div>
   );
 
   return (
-    <section className="all-products-section py-3 bg-light">
-      <Container>
-        <h2 className="section-title text-center mb-3 fw-bold fs-3">
-          {searchQuery
-            ? `✨Kết quả tìm kiếm✨: "${searchQuery}"`
-            : "✨Tất cả sản phẩm✨"}
-        </h2>
+    <section className="py-12 bg-surface-50 min-h-screen">
+      <div className="container-custom">
+        {/* Header Section */}
+        <div className="flex flex-col items-center mb-12 text-center">
+          <div className="inline-flex items-center justify-center w-12 h-12 bg-primary/10 rounded-2xl text-primary mb-4">
+             <FiSearch className="text-2xl" />
+          </div>
+          <h2 className="text-2xl md:text-3xl font-display font-bold text-surface-900 tracking-tight">
+            {searchQuery
+              ? `Kết quả tìm kiếm: "${searchQuery}"`
+              : "Tất cả sản phẩm công nghệ"}
+          </h2>
+          <div className="mt-2 h-1 w-20 bg-primary rounded-full"></div>
+        </div>
 
+        {/* Error State */}
         {error && (
-          <Alert variant="danger" className="text-center">
-            Đã có lỗi xảy ra. Vui lòng tải lại trang.
-            <Button
-              variant="link"
-              size="sm"
-              className="ms-2 p-0"
+          <div className="max-w-md mx-auto p-6 bg-rose-50 border border-rose-100 rounded-2xl text-center">
+            <FiAlertCircle className="w-10 h-10 text-rose-500 mx-auto mb-3" />
+            <p className="text-rose-900 font-bold mb-4">Đã có lỗi xảy ra khi tải sản phẩm.</p>
+            <button
               onClick={() => fetchProducts(1, false)}
+              className="inline-flex items-center gap-2 px-6 py-2 bg-rose-500 text-white font-bold rounded-xl hover:bg-rose-600 transition-colors shadow-lg shadow-rose-500/20"
             >
-              Thử lại
-            </Button>
-          </Alert>
+              <FiRefreshCw /> Thử lại
+            </button>
+          </div>
         )}
 
-        {loading && !products.length && !error && renderSkeletons()}
+        {/* Loading State */}
+        {loading && !products.length && !error && renderSkeletons(12)}
 
+        {/* Empty State */}
         {!loading && !error && products.length === 0 && (
-          <Alert variant="warning" className="text-center">
-            Không tìm thấy sản phẩm nào phù hợp.
-          </Alert>
+          <div className="max-w-md mx-auto p-12 bg-white rounded-3xl border border-surface-200 text-center shadow-soft">
+             <div className="w-20 h-20 bg-surface-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <FiSearch className="text-3xl text-surface-400" />
+             </div>
+             <h3 className="text-lg font-bold text-surface-900 mb-2">Không tìm thấy sản phẩm</h3>
+             <p className="text-surface-500 text-sm">Chúng tôi không tìm thấy kết quả phù hợp với từ khóa của bạn. Vui lòng thử lại với từ khóa khác.</p>
+          </div>
         )}
 
+        {/* Product Grid */}
         {!loading && !error && products.length > 0 && (
-          <>
-            <Row className="g-3 justify-content-center">
+          <div className="space-y-12">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
               {products.map((product) => (
-                <Col
-                  key={product.id}
-                  lg={2}
-                  md={3}
-                  sm={6}
-                  xs={12}
-                  className="d-flex justify-content-center"
-                >
-                  <ProductCard product={product} userId={userId} />
-                </Col>
+                <ProductCard key={product.id} product={product} />
               ))}
-            </Row>
+            </div>
 
-            {loadingMore && renderSkeletons(5)}
+            {loadingMore && renderSkeletons(6)}
 
-            <LoadMoreButton
-              currentPage={page}
-              totalPages={totalPages}
-              loading={loadingMore}
-              onLoadMore={handleLoadMore}
-            />
-          </>
+            <div className="flex justify-center pt-8">
+              <LoadMoreButton
+                currentPage={page}
+                totalPages={totalPages}
+                loading={loadingMore}
+                onLoadMore={handleLoadMore}
+              />
+            </div>
+          </div>
         )}
-      </Container>
+      </div>
     </section>
   );
 });

@@ -1,26 +1,18 @@
 import React, { useEffect, useState } from "react";
-import { Container, Row, Col, Alert, Button } from "react-bootstrap";
 import { toast } from "react-toastify";
-import { useSelector, useDispatch } from "react-redux";
+import { motion } from "framer-motion";
 import { getDiscountedProductsApi } from "../../api/productApi";
-import { addCart, createCart, getAllCarts } from "../../api/cartApi";
-import { addCartItem } from "../../redux/cartSlice";
 import { getImage } from "../../utils/decodeImage";
 import ProductCard from "../../components/ProductCard/ProductCard";
 import SkeletonCard from "../SkeletonCard/SkeletonCard";
 import LoadMoreButton from "../LoadMoreButton/LoadMoreButton";
+import { FiZap, FiClock } from "react-icons/fi";
 
 const FlashSale = () => {
-  const dispatch = useDispatch();
-  const user = useSelector((state) => state.user.user);
-  const userId = user?.id;
-  const token = user?.accessToken;
-
   const [timeLeft, setTimeLeft] = useState(3600);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [addingId, setAddingId] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
@@ -33,23 +25,27 @@ const FlashSale = () => {
     return () => clearInterval(timer);
   }, []);
 
-  const formatTime = (t) =>
-    `${String(Math.floor(t / 3600)).padStart(2, "0")}:${String(
-      Math.floor((t % 3600) / 60)
-    ).padStart(2, "0")}:${String(t % 60).padStart(2, "0")}`;
+  const formatTimeParts = (t) => {
+    const h = Math.floor(t / 3600);
+    const m = Math.floor((t % 3600) / 60);
+    const s = t % 60;
+    return {
+        h: String(h).padStart(2, "0"),
+        m: String(m).padStart(2, "0"),
+        s: String(s).padStart(2, "0")
+    };
+  };
+
+  const { h, m, s } = formatTimeParts(timeLeft);
 
   const fetchFlashSale = async (page = 1, append = false) => {
     try {
       if (append) setLoadingMore(true);
       else setLoading(true);
 
-      const res = await getDiscountedProductsApi(page, 10);
+      const res = await getDiscountedProductsApi(page, 12);
       if (res?.errCode === 0) {
-        const mapped = res.products.map((p) => ({
-          ...p,
-          image: getImage(p.image),
-        }));
-        setProducts((prev) => (append ? [...prev, ...mapped] : mapped));
+        setProducts((prev) => (append ? [...prev, ...res.products] : res.products));
         setCurrentPage(res.currentPage);
         setTotalPages(res.totalPages);
       } else {
@@ -68,34 +64,6 @@ const FlashSale = () => {
     fetchFlashSale(1);
   }, []);
 
-  const handleAddToCart = async (product, quantity = 1) => {
-    if (!userId) {
-      toast.warn("Bạn cần đăng nhập để thêm sản phẩm vào giỏ hàng!");
-      return;
-    }
-    setAddingId(product.id);
-    try {
-      let cart = (await getAllCarts(token)).data.find(
-        (c) => c.userId === userId
-      );
-      if (!cart) cart = (await createCart(token, userId)).data;
-
-      const res = await addCart(
-        { cartId: cart.id, productId: product.id, quantity },
-        token
-      );
-      if (res.errCode === 0) {
-        dispatch(addCartItem({ ...product, quantity }));
-        toast.success(`Đã thêm "${product.name}" vào giỏ hàng`);
-      } else toast.error(res.errMessage || "Thêm vào giỏ hàng thất bại!");
-    } catch (err) {
-      console.error(err);
-      toast.error("Lỗi khi thêm vào giỏ hàng!");
-    } finally {
-      setAddingId(null);
-    }
-  };
-
   const handleLoadMore = () => {
     if (currentPage < totalPages) {
       fetchFlashSale(currentPage + 1, true);
@@ -103,78 +71,82 @@ const FlashSale = () => {
   };
 
   return (
-    <section className="flash-sale-section py-3 bg-light">
-      <Container>
+    <section className="py-20 bg-white">
+      <div className="container-custom">
         {/* Header */}
-        <div className="d-flex justify-content-between align-items-center mb-2">
-          <h2 className="fs-3 fw-bold">🔥 Flash Sale</h2>
-          <span className="countdown fs-5">{formatTime(timeLeft)}</span>
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12 border-b border-slate-100 pb-8">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-rose-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-rose-500/20 animate-pulse">
+               <FiZap className="text-2xl fill-current" />
+            </div>
+            <div>
+               <h2 className="text-3xl font-black text-slate-900 uppercase tracking-tight">Flash Sale</h2>
+               <p className="text-slate-400 text-sm font-medium">Ưu đãi cực hời, săn ngay kẻo lỡ!</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4">
+             <span className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                <FiClock /> Kết thúc sau
+             </span>
+             <div className="flex gap-2">
+                {[h, m, s].map((unit, idx) => (
+                    <React.Fragment key={idx}>
+                        <div className="w-12 h-12 bg-slate-900 rounded-xl flex items-center justify-center text-white font-black text-xl shadow-xl">
+                            {unit}
+                        </div>
+                        {idx < 2 && <span className="text-2xl font-black text-slate-300 self-center">:</span>}
+                    </React.Fragment>
+                ))}
+             </div>
+          </div>
         </div>
 
         {/* Product Grid */}
         {loading && !loadingMore ? (
-          <Row className="g-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-6">
             {Array.from({ length: 6 }).map((_, idx) => (
-              <Col
-                key={idx}
-                xs={12}
-                sm={6}
-                md={4}
-                lg={2}
-                className="d-flex justify-content-center"
-              >
-                <SkeletonCard />
-              </Col>
+              <SkeletonCard key={idx} />
             ))}
-          </Row>
+          </div>
         ) : products.length > 0 ? (
-          <>
-            <Row className="g-3">
-              {products.map((product) => {
-                const discountedPrice =
-                  product.price * (1 - product.discount / 100);
-                return (
-                  <Col
-                    key={product.id}
-                    xs={12}
-                    sm={6}
-                    md={4}
-                    lg={2}
-                    className="d-flex justify-content-center"
-                  >
-                    <ProductCard
-                      product={{
-                        ...product,
-                        discountedPrice,
-                        badge:
-                          product.discount > 0
-                            ? `${product.discount}% OFF`
-                            : null,
-                      }}
-                      onAddToCart={() => handleAddToCart(product, 1)}
-                      adding={addingId === product.id}
-                    />
-                  </Col>
-                );
-              })}
-            </Row>
+          <div className="space-y-12">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-6">
+              {products.map((product, index) => (
+                <motion.div
+                  key={product.id}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index % 6 * 0.05 }}
+                >
+                  <ProductCard product={product} />
+                </motion.div>
+              ))}
+            </div>
 
             {/* Load More */}
             {currentPage < totalPages && (
-              <LoadMoreButton
-                currentPage={currentPage}
-                totalPages={totalPages}
-                loading={loadingMore}
-                onLoadMore={handleLoadMore}
-              />
+              <div className="flex justify-center pt-8">
+                <LoadMoreButton
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  loading={loadingMore}
+                  onLoadMore={handleLoadMore}
+                />
+              </div>
             )}
-          </>
+          </div>
         ) : (
-          <Alert variant="warning" className="text-center">
-            Chưa có sản phẩm Flash Sale!
-          </Alert>
+          <div className="py-20 bg-slate-50 rounded-[40px] flex flex-col items-center justify-center text-center px-6">
+            <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-sm mb-6">
+                <FiZap className="text-3xl text-slate-300" />
+            </div>
+            <h3 className="text-xl font-bold text-slate-900 mb-2">Chưa có chương trình Flash Sale</h3>
+            <p className="text-slate-500 max-w-sm">Hãy quay lại sau để săn những deal công nghệ cực hời từ Tien-Tech Shop nhé!</p>
+          </div>
         )}
-      </Container>
+      </div>
     </section>
   );
 };

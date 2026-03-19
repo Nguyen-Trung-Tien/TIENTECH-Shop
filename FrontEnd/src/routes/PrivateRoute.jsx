@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Navigate, Outlet } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { jwtDecode } from "jwt-decode";
-import { Spinner } from "react-bootstrap";
+import { FiRefreshCw } from "react-icons/fi";
 
 const PrivateRoute = ({ requiredRole }) => {
   const user = useSelector((state) => state.user.user);
@@ -43,10 +43,10 @@ const PrivateRoute = ({ requiredRole }) => {
 
   if (checking) {
     return (
-      <div className="d-flex justify-content-center align-items-center vh-100 text-muted">
-        <div className="text-center">
-          <Spinner animation="border" size="sm" variant="primary" />
-          <p>Đang xác thực phiên đăng nhập...</p>
+      <div className="flex flex-col items-center justify-center min-h-screen bg-surface-50">
+        <div className="flex flex-col items-center gap-4 p-8 bg-white rounded-3xl shadow-soft border border-surface-100">
+          <FiRefreshCw className="animate-spin text-4xl text-primary" />
+          <p className="text-sm font-bold text-surface-600 uppercase tracking-widest">Đang xác thực phiên đăng nhập...</p>
         </div>
       </div>
     );

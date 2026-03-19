@@ -1,14 +1,18 @@
-import React, { useState, useEffect, useMemo } from "react";
-import {
-  Navbar,
-  Nav,
-  Container,
-  NavDropdown,
-  Badge,
-  Image,
-} from "react-bootstrap";
-import { Link, useNavigate } from "react-router-dom";
-import { Cart, PersonCircle, Search, XLg } from "react-bootstrap-icons";
+import React, { useState, useEffect, useMemo, useRef } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { 
+  FiSearch, 
+  FiShoppingCart, 
+  FiUser, 
+  FiLogOut, 
+  FiChevronDown, 
+  FiX, 
+  FiMenu,
+  FiBox,
+  FiShoppingBag,
+  FiCompass
+} from "react-icons/fi";
+import { motion, AnimatePresence } from "framer-motion";
 import { useSelector, useDispatch } from "react-redux";
 import { removeUser } from "../../redux/userSlice";
 import { clearCart, setCartItems } from "../../redux/cartSlice";
@@ -18,13 +22,14 @@ import { getAllCarts } from "../../api/cartApi";
 import { getImage } from "../../utils/decodeImage";
 import { useCurrentUser } from "../../hooks/useUser";
 import { debounce } from "lodash";
-import "./Header.scss";
 import logoImage from "../../assets/Tien-Tech Shop.png";
 import { toast } from "react-toastify";
 
 function Header() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
+  const searchRef = useRef(null);
 
   const [searchInput, setSearchInput] = useState("");
   const [suggestions, setSuggestions] = useState({
@@ -34,6 +39,9 @@ function Header() {
     categories: [],
   });
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
 
   const { data: resUser } = useCurrentUser();
   const user = resUser?.data;
@@ -48,16 +56,39 @@ function Header() {
     ? user.avatar
     : "/default-avatar.png";
 
+  // Scroll handler
+  useEffect(() => {
+    const handleScroll = () => setIsScrolled(window.scrollY > 10);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // Close menus on route change
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+    setIsUserMenuOpen(false);
+    setShowSuggestions(false);
+  }, [location.pathname]);
+
+  // Click outside search suggestions
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   // Fetch Cart
   useEffect(() => {
     let isMounted = true;
     const fetchCart = async () => {
       if (!user?.id || !token) return;
-
       try {
         const res = await getAllCarts(token);
         const userCart = res.data.find((c) => c.userId === user.id);
-
         if (isMounted) {
           if (userCart?.items) dispatch(setCartItems(userCart.items));
           else dispatch(clearCart());
@@ -66,11 +97,8 @@ function Header() {
         console.error("Fetch cart error:", err);
       }
     };
-
     fetchCart();
-    return () => {
-      isMounted = false;
-    };
+    return () => { isMounted = false; };
   }, [user?.id, token, dispatch]);
 
   // Search Suggestion Debounce
@@ -78,12 +106,7 @@ function Header() {
     () =>
       debounce(async (query) => {
         if (!query.trim()) {
-          setSuggestions({
-            products: [],
-            keywords: [],
-            brands: [],
-            categories: [],
-          });
+          setSuggestions({ products: [], keywords: [], brands: [], categories: [] });
           setShowSuggestions(false);
           return;
         }
@@ -97,12 +120,6 @@ function Header() {
       }, 300),
     [],
   );
-
-  useEffect(() => {
-    return () => {
-      fetchSuggestions.cancel();
-    };
-  }, [fetchSuggestions]);
 
   const handleLogout = async () => {
     try {
@@ -120,11 +137,9 @@ function Header() {
   const onSearchChange = (e) => {
     const value = e.target.value;
     setSearchInput(value);
-
     if (value.trim() === "") {
       fetchSuggestions.cancel();
       setShowSuggestions(false);
-      navigate("/");
       return;
     }
     fetchSuggestions(value);
@@ -138,194 +153,237 @@ function Header() {
     }
   };
 
-  return (
-    <Navbar
-      expand="lg"
-      sticky="top"
-      bg="light"
-      variant="light"
-      className="header shadow-sm py-2"
-    >
-      <Container>
-        <Navbar.Brand as={Link} to="/" className="navbar-brand ">
-          <img
-            className="header-logo"
-            src={logoImage}
-            alt="Tien-Tech Shop Logo"
-          />
-        </Navbar.Brand>
-        <Navbar.Toggle aria-controls="navbar-nav" />
-        <Navbar.Collapse id="navbar-nav" className="justify-content-between">
-          <Nav className="me-auto">
-            <Nav.Link as={Link} to="/" className="header__link">
-              Trang chủ
-            </Nav.Link>
-            <Nav.Link as={Link} to="/fortune-products" className="header__link">
-              Phong thủy
-            </Nav.Link>
-            <Nav.Link as={Link} to="/about" className="header__link">
-              Giới thiệu
-            </Nav.Link>
-          </Nav>
+  const navLinks = [
+    { name: "Trang chủ", path: "/", icon: <FiCompass /> },
+    { name: "Phong thủy", path: "/fortune-products", icon: <FiBox /> },
+    { name: "Giới thiệu", path: "/about", icon: <FiShoppingBag /> },
+  ];
 
-          {/* Search */}
-          <form
-            onSubmit={onSearchSubmit}
-            className="search-wrapper position-relative d-flex align-items-center w-50"
-          >
-            <Search className="search-icon" />
+  return (
+    <header 
+      className={`sticky top-0 z-[100] w-full transition-all duration-500 ${
+        isScrolled 
+          ? "bg-white/90 backdrop-blur-xl shadow-md py-2" 
+          : "bg-white py-4"
+      }`}
+    >
+      <div className="container-custom flex items-center justify-between gap-10">
+        {/* Logo */}
+        <Link to="/" className="flex-shrink-0 transition-transform hover:scale-105">
+          <img src={logoImage} alt="Logo" className="h-9 w-auto md:h-11" />
+        </Link>
+
+        {/* Desktop Nav Links */}
+        <nav className="hidden xl:flex items-center gap-10">
+          {navLinks.map((link) => (
+            <Link
+              key={link.path}
+              to={link.path}
+              className={`text-[13px] font-bold uppercase tracking-[0.15em] transition-all relative group ${
+                location.pathname === link.path ? "text-primary" : "text-slate-500 hover:text-slate-900"
+              }`}
+            >
+              {link.name}
+              <span className={`absolute -bottom-1 left-0 h-0.5 bg-primary transition-all duration-300 ${location.pathname === link.path ? "w-full" : "w-0 group-hover:w-full"}`}></span>
+            </Link>
+          ))}
+        </nav>
+
+        {/* Search Bar */}
+        <div className="hidden lg:block flex-1 max-w-lg relative" ref={searchRef}>
+          <form onSubmit={onSearchSubmit} className="relative group">
+            <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" />
             <input
               type="text"
-              placeholder="Tìm sản phẩm..."
+              placeholder="Tìm kiếm sản phẩm công nghệ..."
               value={searchInput}
               onChange={onSearchChange}
-              className="form-control search-input"
+              className="w-full h-11 bg-slate-100 border-2 border-transparent rounded-2xl pl-12 pr-10 text-[14px] font-medium focus:bg-white focus:border-primary/10 focus:ring-4 focus:ring-primary/5 outline-none transition-all"
             />
-            {searchInput.length > 0 && (
-              <button
+            {searchInput && (
+              <button 
                 type="button"
-                className="btn-clear"
-                onClick={() => {
-                  setSearchInput("");
-                  setShowSuggestions(false);
-                  navigate("/");
-                }}
+                onClick={() => { setSearchInput(""); setShowSuggestions(false); }}
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-200 rounded-lg transition-colors"
               >
-                <XLg size={16} />
+                <FiX />
               </button>
-            )}
-
-            {showSuggestions && (
-              <div className="search-suggestion-box shadow-sm">
-                {["keywords", "products", "brands", "categories"].map(
-                  (type) =>
-                    suggestions[type]?.length > 0 && (
-                      <div key={type} className="suggest-section">
-                        <div className="suggest-title">
-                          {type === "keywords"
-                            ? "Gợi ý tìm kiếm"
-                            : type === "products"
-                              ? "Sản phẩm phù hợp"
-                              : type === "brands"
-                                ? "Thương hiệu"
-                                : "Danh mục"}
-                        </div>
-                        {suggestions[type].map((item) => {
-                          const label =
-                            type === "products" ? item.name : item.name || item;
-                          const clickHandler = () => {
-                            if (type === "products")
-                              navigate(`/product-detail/${item.id}`);
-                            else if (type === "brands")
-                              navigate(`/product-list?brand=${item.id}`);
-                            else if (type === "categories")
-                              navigate(`/product-list?category=${item.id}`);
-                            else
-                              navigate(
-                                `/products?search=${encodeURIComponent(item)}`,
-                              );
-                            setShowSuggestions(false);
-                          };
-                          return (
-                            <div
-                              key={item.id || item}
-                              className={
-                                type === "products"
-                                  ? "suggest-product-item"
-                                  : "suggest-item"
-                              }
-                              onClick={clickHandler}
-                            >
-                              {type === "products" && (
-                                <img
-                                  src={getImage(item.image)}
-                                  alt=""
-                                  className="suggest-img"
-                                />
-                              )}
-                              <span>{label}</span>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    ),
-                )}
-              </div>
             )}
           </form>
 
-          {/* User & Cart */}
-          <Nav className="header__actions align-items-center">
-            <Nav.Link
-              as={Link}
-              to="/cart"
-              className="header__icon-link position-relative"
-            >
-              <Cart size={20} className="me-1" /> Giỏ hàng
-              {cartItemCount > 0 && (
-                <Badge bg="danger" pill className="cart-badge">
-                  {cartItemCount}
-                </Badge>
-              )}
-            </Nav.Link>
-
-            {user ? (
-              <>
-                {user.role === "admin" && (
-                  <NavDropdown title="Quản lý" id="admin-dropdown">
-                    <NavDropdown.Item as={Link} to="/admin/dashboard">
-                      Dashboard
-                    </NavDropdown.Item>
-                    <NavDropdown.Item as={Link} to="/admin/orders">
-                      Đơn hàng
-                    </NavDropdown.Item>
-                    <NavDropdown.Item as={Link} to="/admin/products">
-                      Sản phẩm
-                    </NavDropdown.Item>
-                  </NavDropdown>
-                )}
-                <NavDropdown
-                  align="end"
-                  title={
-                    <div className="d-flex align-items-center">
-                      <Image
-                        src={avatarUrl}
-                        roundedCircle
-                        width="32"
-                        height="32"
-                        className="me-2"
-                      />
-                      <span className="fw-semibold">
-                        {user.username || user.email}
-                      </span>
-                    </div>
-                  }
-                  id="user-dropdown"
-                >
-                  <NavDropdown.Item onClick={() => navigate("/profile")}>
-                    Thông tin cá nhân
-                  </NavDropdown.Item>
-                  <NavDropdown.Item onClick={() => navigate("/orders")}>
-                    Đơn mua
-                  </NavDropdown.Item>
-                  <NavDropdown.Item onClick={handleLogout}>
-                    Đăng xuất
-                  </NavDropdown.Item>
-                </NavDropdown>
-              </>
-            ) : (
-              <Nav.Link
-                as={Link}
-                to="/login"
-                className="header__icon-link ms-2"
+          {/* Suggestions Dropdown */}
+          <AnimatePresence>
+            {showSuggestions && (
+              <motion.div
+                initial={{ opacity: 0, y: 15, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 10, scale: 0.98 }}
+                className="absolute top-full left-0 w-full mt-3 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden z-50 p-3"
               >
-                <PersonCircle size={22} className="me-1" /> Đăng nhập
-              </Nav.Link>
+                {["keywords", "products", "brands", "categories"].map((type) => (
+                  suggestions[type]?.length > 0 && (
+                    <div key={type} className="mb-3 last:mb-0">
+                      <p className="px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 bg-slate-50 rounded-lg mb-1">
+                        {type === "keywords" ? "Gợi ý" : type === "products" ? "Sản phẩm" : type === "brands" ? "Thương hiệu" : "Danh mục"}
+                      </p>
+                      <div className="space-y-1">
+                        {suggestions[type].map((item) => (
+                          <button
+                            key={item.id || item}
+                            onClick={() => {
+                                if (type === "products") navigate(`/product-detail/${item.id}`);
+                                else if (type === "brands") navigate(`/product-list?brand=${item.id}`);
+                                else if (type === "categories") navigate(`/product-list?category=${item.id}`);
+                                else navigate(`/products?search=${encodeURIComponent(item)}`);
+                                setShowSuggestions(false);
+                            }}
+                            className="flex items-center gap-4 w-full px-3 py-2.5 text-[14px] text-slate-600 hover:bg-slate-50 hover:text-primary rounded-xl transition-all text-left"
+                          >
+                            {type === "products" && (
+                              <div className="w-12 h-12 flex-shrink-0 bg-white rounded-xl border border-slate-100 p-1.5 shadow-sm">
+                                <img src={getImage(item.image)} alt="" className="w-full h-full object-contain" />
+                              </div>
+                            )}
+                            <span className="font-semibold truncate">{type === "products" ? item.name : item.name || item}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )
+                ))}
+              </motion.div>
             )}
-          </Nav>
-        </Navbar.Collapse>
-      </Container>
-    </Navbar>
+          </AnimatePresence>
+        </div>
+
+        {/* Actions */}
+        <div className="flex items-center gap-3">
+          {/* Cart */}
+          <Link 
+            to="/cart" 
+            className="group relative flex items-center justify-center w-11 h-11 rounded-2xl text-slate-700 hover:bg-slate-100 hover:text-primary transition-all"
+          >
+            <FiShoppingCart className="text-[22px] group-hover:scale-110 transition-transform" />
+            {cartItemCount > 0 && (
+              <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-rose-500 text-[10px] font-black text-white ring-2 ring-white shadow-lg shadow-rose-500/20">
+                {cartItemCount}
+              </span>
+            )}
+          </Link>
+
+          {/* User Menu */}
+          {user ? (
+            <div className="relative">
+              <button
+                onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                className="flex items-center gap-3 p-1.5 pr-3 rounded-2xl hover:bg-slate-100 transition-all border border-transparent hover:border-slate-200"
+              >
+                <div className="relative">
+                  <img src={avatarUrl} alt="Avatar" className="w-8 h-8 rounded-xl object-cover ring-2 ring-primary/10" />
+                  <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full"></div>
+                </div>
+                <FiChevronDown className={`text-slate-400 transition-transform duration-300 ${isUserMenuOpen ? "rotate-180" : ""}`} />
+              </button>
+
+              <AnimatePresence>
+                {isUserMenuOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95, y: 15 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                    className="absolute right-0 mt-3 w-64 bg-white rounded-3xl shadow-xl border border-slate-100 p-3 z-50"
+                  >
+                    <div className="px-4 py-3 bg-slate-50 rounded-2xl mb-2">
+                      <p className="text-[13px] font-black text-slate-900 truncate">{user.username || user.email}</p>
+                      <p className="text-[9px] uppercase font-black text-primary tracking-widest mt-0.5">{user.role}</p>
+                    </div>
+
+                    <div className="space-y-1">
+                      {user.role === "admin" && (
+                        <Link to="/admin/dashboard" className="flex items-center gap-3 px-4 py-2.5 text-[14px] font-semibold text-slate-600 hover:bg-slate-50 hover:text-primary rounded-xl transition-all">
+                          <FiBox className="text-lg" /> Dashboard Quản trị
+                        </Link>
+                      )}
+                      
+                      <Link to="/profile" className="flex items-center gap-3 px-4 py-2.5 text-[14px] font-semibold text-slate-600 hover:bg-slate-50 hover:text-primary rounded-xl transition-all">
+                        <FiUser className="text-lg" /> Thông tin cá nhân
+                      </Link>
+                      <Link to="/orders" className="flex items-center gap-3 px-4 py-2.5 text-[14px] font-semibold text-slate-600 hover:bg-slate-50 hover:text-primary rounded-xl transition-all">
+                        <FiShoppingBag className="text-lg" /> Đơn mua của tôi
+                      </Link>
+                      
+                      <div className="my-2 border-t border-slate-100 mx-2"></div>
+                      
+                      <button
+                        onClick={handleLogout}
+                        className="flex w-full items-center gap-3 px-4 py-2.5 text-[14px] font-bold text-rose-500 hover:bg-rose-50 rounded-xl transition-all"
+                      >
+                        <FiLogOut className="text-lg" /> Đăng xuất
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          ) : (
+            <Link 
+              to="/login" 
+              className="flex items-center gap-2 px-6 py-2.5 bg-slate-900 text-white rounded-2xl text-[13px] font-black hover:bg-primary hover:shadow-xl hover:shadow-primary/20 transition-all active:scale-95"
+            >
+              <FiUser className="text-lg" />
+              <span className="hidden sm:inline">ĐĂNG NHẬP</span>
+            </Link>
+          )}
+
+          {/* Mobile Menu Toggle */}
+          <button 
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="lg:hidden flex items-center justify-center w-11 h-11 rounded-2xl bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors"
+          >
+            {isMobileMenuOpen ? <FiX className="text-xl" /> : <FiMenu className="text-xl" />}
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile Menu */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="lg:hidden bg-white border-t border-slate-100 overflow-hidden"
+          >
+            <div className="container-custom py-6 space-y-4">
+              {/* Mobile Search */}
+              <form onSubmit={onSearchSubmit} className="relative">
+                <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Tìm kiếm..."
+                  value={searchInput}
+                  onChange={onSearchChange}
+                  className="w-full h-11 bg-slate-50 border border-slate-100 rounded-xl pl-11 text-sm focus:ring-2 focus:ring-primary/20 outline-none"
+                />
+              </form>
+              
+              <div className="grid grid-cols-1 gap-2">
+                {navLinks.map((link) => (
+                  <Link
+                    key={link.path}
+                    to={link.path}
+                    className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-700 hover:bg-slate-50 hover:text-primary transition-all font-bold"
+                  >
+                    <span className="text-lg">{link.icon}</span>
+                    {link.name}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </header>
   );
 }
 

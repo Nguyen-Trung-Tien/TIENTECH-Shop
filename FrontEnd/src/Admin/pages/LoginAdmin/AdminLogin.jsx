@@ -1,14 +1,5 @@
 import React, { useState } from "react";
-import {
-  Container,
-  Row,
-  Col,
-  Form,
-  Button,
-  Card,
-  Spinner,
-} from "react-bootstrap";
-import { Eye, EyeSlash } from "react-bootstrap-icons";
+import { FiEye, FiEyeOff, FiArrowLeft, FiRefreshCw, FiLock, FiMail } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { toast } from "react-toastify";
@@ -16,7 +7,6 @@ import { loginUser } from "../../../api/userApi";
 import { setUser } from "../../../redux/userSlice";
 import logoImage from "../../../assets/Tien-Tech Shop.png";
 import ForgotPasswordModal from "../../../components/ForgotPasswordModal/ForgotPasswordModal";
-import "./AdminLogin.scss";
 
 const AdminLogin = () => {
   const [email, setEmail] = useState("");
@@ -31,34 +21,24 @@ const AdminLogin = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (loading) return;
     setLoading(true);
     try {
       const res = await loginUser(email, password);
-
       if (res.errCode === 0 && res.data) {
         const { user, accessToken, refreshToken } = res.data;
-
         if (user.role !== "admin") {
           toast.error("Bạn không có quyền admin!");
+          setLoading(false);
           return;
         }
-
         const minimalUser = {
-          id: user.id,
-          email: user.email,
-          username: user.username,
-          role: user.role,
-          phone: user.phone,
-          address: user.address,
+          id: user.id, email: user.email, username: user.username,
+          role: user.role, phone: user.phone, address: user.address,
         };
-
-        dispatch(
-          setUser({ user: minimalUser, token: accessToken, refreshToken })
-        );
-
+        dispatch(setUser({ user: minimalUser, token: accessToken, refreshToken }));
         if (accessToken) localStorage.setItem("accessToken", accessToken);
         if (refreshToken) localStorage.setItem("refreshToken", refreshToken);
-
         toast.success("Đăng nhập thành công!");
         navigate("/admin/dashboard");
       } else {
@@ -73,124 +53,102 @@ const AdminLogin = () => {
   };
 
   return (
-    <div className="admin-login-page modern-login vh-100 d-flex align-items-center">
-      <Container fluid className="h-100 p-0">
-        <Row className="h-100 g-0">
-          {/* Left Side */}
-          <Col
-            lg={5}
-            className="d-none d-lg-flex align-items-center justify-content-center position-relative overflow-hidden bg-gradient-left"
-          >
-            <div className="left-overlay"></div>
-            <div className="text-center text-white z-2 position-relative px-5">
-              <img src={logoImage} alt="Logo" className="main-logo mb-4" />
-              <p className="lead mb-5 opacity-85">
-                Quản lý hệ thống cửa hàng dễ dàng
-              </p>
+    <div className="min-h-screen bg-surface-50 flex items-center justify-center p-4">
+      <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-12 bg-white rounded-[40px] shadow-soft overflow-hidden border border-slate-100">
+        
+        {/* Left Side: Branding */}
+        <div className="hidden lg:flex lg:col-span-5 relative bg-slate-950 items-center justify-center p-12 overflow-hidden">
+          <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] bg-primary/20 rounded-full blur-[120px]"></div>
+          <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] bg-brand/10 rounded-full blur-[120px]"></div>
+          <div className="relative z-10 text-center">
+            <img src={logoImage} alt="Logo" className="w-48 mx-auto mb-10 brightness-0 invert opacity-90" />
+            <h2 className="text-3xl font-black text-white mb-4 tracking-tight leading-tight">Quản Trị Hệ Thống</h2>
+            <p className="text-slate-400 text-sm font-medium tracking-wide max-w-[280px] mx-auto">Truy cập trung tâm điều khiển Tien-Tech.</p>
+          </div>
+        </div>
+
+        {/* Right Side: Form */}
+        <div className="col-span-1 lg:col-span-7 flex flex-col items-center justify-center p-8 md:p-16 bg-white">
+          <div className="w-full max-w-md">
+            <div className="mb-10">
+              <h1 className="text-3xl font-black text-slate-900 tracking-tight mb-2">Chào mừng trở lại!</h1>
+              <p className="text-slate-500 font-bold text-xs uppercase tracking-widest text-label">Vui lòng đăng nhập</p>
             </div>
-          </Col>
 
-          {/* Right Side */}
-          <Col
-            lg={7}
-            className="d-flex align-items-center justify-content-center bg-light"
-          >
-            <Card className="login-card-modern shadow-lg border-0 p-3">
-              <Card.Body>
-                <div className="text-center">
-                  <img src={logoImage} alt="Logo" className="mobile-logo" />
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="space-y-2">
+                <label htmlFor="email" className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Email Address</label>
+                <div className="relative">
+                  <FiMail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    autoComplete="email"
+                    placeholder="admin@tientech.vn"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className="w-full h-14 bg-slate-50 border border-slate-200 rounded-2xl px-12 text-sm font-bold focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none"
+                  />
                 </div>
+              </div>
 
-                <h4 className="text-center mb-3 fw-semibold text-dark">
-                  Chào mừng Admin!
-                </h4>
-
-                <Form onSubmit={handleSubmit}>
-                  <Form.Floating className="mb-3">
-                    <Form.Control
-                      id="floatingEmail"
-                      type="email"
-                      placeholder="Email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required
-                    />
-                    <label htmlFor="floatingEmail">Email</label>
-                  </Form.Floating>
-
-                  <Form.Floating className="mb-3 position-relative">
-                    <Form.Control
-                      id="floatingPassword"
-                      type={showPassword ? "text" : "password"}
-                      placeholder="Mật khẩu"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                    />
-                    <label htmlFor="floatingPassword">Mật khẩu</label>
-                    <button
-                      type="button"
-                      className="btn toggle-password-modern"
-                      onClick={() => setShowPassword(!showPassword)}
-                    >
-                      {showPassword ? (
-                        <EyeSlash size={20} />
-                      ) : (
-                        <Eye size={20} />
-                      )}
-                    </button>
-                  </Form.Floating>
-
-                  <div className="d-flex justify-content-between align-items-center mb-4">
-                    <Form.Check
-                      type="checkbox"
-                      id="rememberMe"
-                      label="Ghi nhớ tôi"
-                      checked={rememberMe}
-                      onChange={() => setRememberMe(!rememberMe)}
-                    />
-                    <button
-                      type="button"
-                      className="btn btn-link text-primary p-0 fw-medium"
-                      onClick={() => setShowForgotModal(true)}
-                    >
-                      Quên mật khẩu?
-                    </button>
-                  </div>
-
-                  <Button
-                    variant="primary"
-                    type="submit"
-                    className="w-100 py-3 fw-semibold btn-gradient"
-                    disabled={loading}
+              <div className="space-y-2">
+                <label htmlFor="password" className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Security Key</label>
+                <div className="relative">
+                  <FiLock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <input
+                    id="password"
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    autoComplete="current-password"
+                    placeholder="••••••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    className="w-full h-14 bg-slate-50 border border-slate-200 rounded-2xl px-12 text-sm font-bold focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary p-2"
                   >
-                    {loading ? (
-                      <Spinner animation="border" size="sm" />
-                    ) : (
-                      "Đăng nhập"
-                    )}
-                  </Button>
+                    {showPassword ? <FiEyeOff size={18} /> : <FiEye size={18} />}
+                  </button>
+                </div>
+              </div>
 
-                  <div className="text-center mt-4">
-                    <Button
-                      variant="outline-secondary"
-                      onClick={() => navigate("/")}
-                      className="px-4"
-                    >
-                      ← Quay lại trang chủ
-                    </Button>
-                  </div>
-                </Form>
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
-      </Container>
+              <div className="flex items-center justify-between">
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    className="w-5 h-5 rounded-lg border-2 border-slate-200 text-primary focus:ring-primary"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                  />
+                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Duy trì đăng nhập</span>
+                </label>
+                <button type="button" onClick={() => setShowForgotModal(true)} className="text-xs font-black text-primary uppercase tracking-widest">Quên mã?</button>
+              </div>
 
-      <ForgotPasswordModal
-        show={showForgotModal}
-        onClose={() => setShowForgotModal(false)}
-      />
+              <div className="pt-4 flex flex-col gap-4">
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full h-14 bg-primary text-white rounded-2xl text-xs font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:bg-slate-800 transition-all flex items-center justify-center gap-3 disabled:opacity-50"
+                >
+                  {loading ? <FiRefreshCw className="animate-spin text-lg" /> : "Truy cập Dashboard"}
+                </button>
+                <button type="button" onClick={() => navigate("/")} className="w-full h-14 bg-white border border-slate-200 text-slate-500 rounded-2xl text-xs font-black uppercase tracking-[0.2em] flex items-center justify-center gap-3">
+                  <FiArrowLeft /> Cổng mua sắm
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      <ForgotPasswordModal show={showForgotModal} onClose={() => setShowForgotModal(false)} />
     </div>
   );
 };

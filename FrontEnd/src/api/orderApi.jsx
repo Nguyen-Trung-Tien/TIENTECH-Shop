@@ -81,12 +81,13 @@ export const getOrdersByUserId = async (
   token,
   userId,
   page = 1,
-  limit = 10
+  limit = 10,
+  status = ""
 ) => {
   try {
     const res = await axiosClient.get(`/order/user/${userId}`, {
       headers: { Authorization: `Bearer ${token}` },
-      params: { page, limit },
+      params: { page, limit, status },
     });
     return res.data;
   } catch (err) {

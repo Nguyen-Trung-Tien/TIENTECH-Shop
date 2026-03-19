@@ -1,23 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { Container, Row, Col, Alert } from "react-bootstrap";
 import { toast } from "react-toastify";
-import { useSelector, useDispatch } from "react-redux";
+import { motion } from "framer-motion";
 import { getAllProductApi } from "../../api/productApi";
-import { addCart, createCart, getAllCarts } from "../../api/cartApi";
-import { addCartItem } from "../../redux/cartSlice";
 import { getImage } from "../../utils/decodeImage";
 import ProductCard from "../../components/ProductCard/ProductCard";
 import SkeletonCard from "../SkeletonCard/SkeletonCard";
 
 const ProductSection = () => {
-  const dispatch = useDispatch();
-  const user = useSelector((state) => state.user.user);
-  const userId = user?.id;
-  const token = user?.accessToken;
-
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [addingId, setAddingId] = useState(null);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -26,11 +17,7 @@ const ProductSection = () => {
         if (res?.errCode === 0) {
           const featured = res.products
             ?.filter((p) => p.isActive)
-            ?.slice(0, 6)
-            ?.map((p) => ({
-              ...p,
-              image: getImage(p.image),
-            }));
+            ?.slice(0, 6);
           setProducts(featured);
         } else {
           toast.error("Không thể tải sản phẩm!");
@@ -46,90 +33,72 @@ const ProductSection = () => {
     fetchProducts();
   }, []);
 
-  const handleAddToCart = async (product, quantity = 1) => {
-    if (!userId) {
-      toast.warn("Bạn cần đăng nhập để thêm sản phẩm vào giỏ hàng!");
-      return;
-    }
-
-    setAddingId(product.id);
-
-    try {
-      const cartsRes = await getAllCarts(token);
-      let cart = cartsRes.data.find((c) => c.userId === userId);
-
-      if (!cart) {
-        const newCartRes = await createCart(token, userId);
-        cart = newCartRes.data;
-      }
-
-      const res = await addCart(
-        {
-          cartId: cart.id,
-          productId: product.id,
-          quantity,
-        },
-        token
-      );
-
-      if (res.errCode === 0) {
-        dispatch(addCartItem({ ...product, quantity }));
-        toast.success(`Đã thêm "${product.name}" vào giỏ hàng`);
-      } else {
-        toast.error(res.errMessage || "Thêm vào giỏ hàng thất bại!");
-      }
-    } catch (err) {
-      console.error("Error adding cart item:", err);
-      toast.error("Lỗi khi thêm vào giỏ hàng!");
-    } finally {
-      setAddingId(null);
-    }
-  };
-
   return (
-    <section className="products py-5 bg-light">
-      <Container>
-        <h2 className="section-title text-center mb-5 fw-bold fs-3">
-          ✨ Sản phẩm nổi bật ✨
-        </h2>
+    <section className="py-20 bg-slate-50">
+      <div className="container-custom">
+        {/* Section Header */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
+          <div className="max-w-2xl">
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              className="flex items-center gap-2 text-primary font-bold text-xs uppercase tracking-[0.2em] mb-3"
+            >
+              <span className="w-8 h-[2px] bg-primary"></span>
+              Sản phẩm đề xuất
+            </motion.div>
+            <motion.h2 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="text-3xl md:text-4xl font-black text-slate-900 leading-tight"
+            >
+              ✨ SẢN PHẨM NỔI BẬT ✨
+            </motion.h2>
+          </div>
+          <motion.button
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            className="text-sm font-bold text-primary hover:text-primary-hover transition-colors flex items-center gap-2 group"
+          >
+            Xem tất cả sản phẩm
+            <span className="group-hover:translate-x-1 transition-transform">→</span>
+          </motion.button>
+        </div>
 
         {loading ? (
-          <Row xs={1} sm={2} md={3} lg={5} className="g-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
             {Array.from({ length: 6 }).map((_, idx) => (
-              <Col
-                key={idx}
-                lg={2}
-                md={3}
-                sm={6}
-                xs={12}
-                className="d-flex justify-content-center"
-              >
-                <SkeletonCard />
-              </Col>
+              <SkeletonCard key={idx} />
             ))}
-          </Row>
+          </div>
         ) : products.length > 0 ? (
-          <Row xs={1} sm={2} md={3} lg={5} className="g-3">
-            {products.map((product) => (
-              <Col
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
+            {products.map((product, index) => (
+              <motion.div
                 key={product.id}
-                className="d-flex justify-content-center"
-                style={{ flex: "0 0 16.6667%" }}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
               >
-                <ProductCard
-                  product={product}
-                  onAddToCart={() => handleAddToCart(product, 1)}
-                  adding={addingId === product.id}
-                />
-              </Col>
+                <ProductCard product={product} />
+              </motion.div>
             ))}
-          </Row>
+          </div>
         ) : (
-          <Alert variant="warning" className="text-center">
-            Không có sản phẩm nổi bật nào!
-          </Alert>
+          <div className="flex flex-col items-center justify-center py-20 bg-white rounded-[32px] border border-dashed border-slate-200">
+            <div className="w-16 h-16 bg-slate-50 text-slate-300 rounded-full flex items-center justify-center mb-4">
+               <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="box" />
+               </svg>
+            </div>
+            <p className="text-slate-500 font-medium">Hiện tại chưa có sản phẩm nổi bật nào!</p>
+          </div>
         )}
-      </Container>
+      </div>
     </section>
   );
 };

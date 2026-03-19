@@ -1,15 +1,21 @@
-import { Star, StarFill } from "react-bootstrap-icons";
+import { FaStar, FaRegStar } from "react-icons/fa";
 
 export const StarRating = ({ rating, onChange, interactive = false }) => (
-  <div className="d-flex align-items-center">
+  <div className="flex items-center gap-1">
     {[1, 2, 3, 4, 5].map((star) => (
-      <span
+      <button
         key={star}
+        type="button"
         onClick={() => interactive && onChange?.(star)}
-        style={{ cursor: interactive ? "pointer" : "default" }}
+        className={`transition-all duration-200 ${interactive ? "cursor-pointer hover:scale-125" : "cursor-default"} p-0.5`}
+        disabled={!interactive}
       >
-        {star <= rating ? <StarFill color="gold" /> : <Star color="gray" />}
-      </span>
+        {star <= rating ? (
+          <FaStar className="text-amber-400 text-lg" />
+        ) : (
+          <FaRegStar className="text-surface-300 text-lg group-hover:text-amber-200" />
+        )}
+      </button>
     ))}
   </div>
 );
