@@ -12,6 +12,41 @@ import ForgotPasswordModal from "../../components/ForgotPasswordModal/ForgotPass
 import Loading from "../../components/Loading/Loading";
 import logoImage from "../../assets/Tien-Tech Shop.png";
 
+// TÁCH FloatingInput RA NGOÀI Component chính để không bị re-mount khi gõ phím
+const FloatingInput = ({ id, value, onChange, type, label, icon: Icon, toggleIcon: ToggleIcon, onToggle }) => (
+  <div className="relative group mb-4">
+    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-surface-400 group-focus-within:text-primary transition-colors duration-200">
+      <Icon size={18} />
+    </div>
+    <input
+      id={id}
+      type={type}
+      value={value}
+      onChange={onChange}
+      required
+      placeholder=" "
+      className="peer w-full h-14 pl-12 pr-12 bg-surface-50 border-2 border-transparent rounded-2xl text-[14px] font-medium text-surface-900 focus:bg-white focus:border-primary/20 focus:ring-4 focus:ring-primary/5 outline-none transition-all placeholder-transparent"
+    />
+    <label
+      htmlFor={id}
+      className="absolute left-12 top-1/2 -translate-y-1/2 text-surface-500 text-[14px] pointer-events-none transition-all duration-200 
+                 peer-focus:top-0 peer-focus:left-4 peer-focus:text-[11px] peer-focus:font-bold peer-focus:text-primary peer-focus:bg-white peer-focus:px-2
+                 peer-[:not(:placeholder-shown)]:top-0 peer-[:not(:placeholder-shown)]:left-4 peer-[:not(:placeholder-shown)]:text-[11px] peer-[:not(:placeholder-shown)]:font-bold peer-[:not(:placeholder-shown)]:text-primary peer-[:not(:placeholder-shown)]:bg-white peer-[:not(:placeholder-shown)]:px-2"
+    >
+      {label}
+    </label>
+    {ToggleIcon && (
+      <button
+        type="button"
+        onClick={onToggle}
+        className="absolute right-4 top-1/2 -translate-y-1/2 text-surface-400 hover:text-surface-600 transition-colors"
+      >
+        <ToggleIcon size={18} />
+      </button>
+    )}
+  </div>
+);
+
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -30,7 +65,7 @@ const LoginPage = () => {
       const res = await loginUser(email, password);
 
       if (res.errCode === 0 && res.data) {
-        const { user, accessToken } = res.data;
+        const { user } = res.data;
         const minimalUser = {
           id: user.id,
           email: user.email,
@@ -40,7 +75,7 @@ const LoginPage = () => {
           address: user.address,
           avatar: getAvatarBase64(user.avatar),
         };
-        dispatch(setUser({ user: minimalUser, token: accessToken }));
+        dispatch(setUser({ user: minimalUser }));
         toast.success(res.errMessage || "Đăng nhập thành công!");
         navigate("/");
       } else {
@@ -54,46 +89,12 @@ const LoginPage = () => {
     }
   };
 
-  const FloatingInput = ({ id, value, onChange, type, label, icon: Icon, toggleIcon: ToggleIcon, onToggle }) => (
-    <div className="relative group mb-4">
-      <div className="absolute left-4 top-1/2 -translate-y-1/2 text-surface-400 group-focus-within:text-primary transition-colors duration-200">
-        <Icon size={18} />
-      </div>
-      <input
-        id={id}
-        type={type}
-        value={value}
-        onChange={onChange}
-        required
-        placeholder=" "
-        className="peer w-full h-14 pl-12 pr-12 bg-surface-50 border-2 border-transparent rounded-2xl text-[14px] font-medium text-surface-900 focus:bg-white focus:border-primary/20 focus:ring-4 focus:ring-primary/5 outline-none transition-all placeholder-transparent"
-      />
-      <label
-        htmlFor={id}
-        className="absolute left-12 top-1/2 -translate-y-1/2 text-surface-500 text-[14px] pointer-events-none transition-all duration-200 
-                   peer-focus:top-0 peer-focus:left-4 peer-focus:text-[11px] peer-focus:font-bold peer-focus:text-primary peer-focus:bg-white peer-focus:px-2
-                   peer-[:not(:placeholder-shown)]:top-0 peer-[:not(:placeholder-shown)]:left-4 peer-[:not(:placeholder-shown)]:text-[11px] peer-[:not(:placeholder-shown)]:font-bold peer-[:not(:placeholder-shown)]:text-primary peer-[:not(:placeholder-shown)]:bg-white peer-[:not(:placeholder-shown)]:px-2"
-      >
-        {label}
-      </label>
-      {ToggleIcon && (
-        <button
-          type="button"
-          onClick={onToggle}
-          className="absolute right-4 top-1/2 -translate-y-1/2 text-surface-400 hover:text-surface-600 transition-colors"
-        >
-          <ToggleIcon size={18} />
-        </button>
-      )}
-    </div>
-  );
-
   return (
     <div className="min-h-screen bg-surface-50 flex items-center justify-center p-4">
       {loading && <Loading />}
       
       <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-12 bg-white rounded-[2.5rem] shadow-2xl shadow-surface-900/10 overflow-hidden min-h-[650px]">
-        {/* Left Side - Visual (Matched with RegisterPage) */}
+        {/* Left Side - Visual */}
         <div className="hidden lg:flex lg:col-span-5 relative bg-surface-900 items-center justify-center p-12 overflow-hidden">
           <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] bg-primary/20 rounded-full blur-[120px]"></div>
           <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] bg-brand/10 rounded-full blur-[120px]"></div>
@@ -224,4 +225,3 @@ const LoginPage = () => {
 };
 
 export default LoginPage;
-

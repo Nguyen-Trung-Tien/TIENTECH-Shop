@@ -34,7 +34,6 @@ import { getAllOrders } from "../../../api/orderApi";
 import { getAllOrderItems } from "../../../api/orderItemApi";
 import { getDashboard } from "../../../api/adminApi";
 import AppPagination from "../../../components/Pagination/Pagination";
-import { useSelector } from "react-redux";
 import { motion } from "framer-motion";
 
 const COLORS = ["#2563eb", "#7c3aed", "#db2777", "#ea580c", "#059669"];
@@ -48,7 +47,6 @@ const STATUS_LABELS = {
 };
 
 const Revenue = () => {
-  const token = useSelector((state) => state.user.token);
   const [loading, setLoading] = useState(true);
   const [chartLoading, setChartLoading] = useState(false);
   const [orders, setOrders] = useState([]);
@@ -71,9 +69,9 @@ const Revenue = () => {
     setChartLoading(true);
     try {
       const [ordersRes, orderItemsRes, dashboardRes] = await Promise.all([
-        getAllOrders(1, 1000, token),
-        getAllOrderItems(token),
-        getDashboard(token),
+        getAllOrders(1, 1000),
+        getAllOrderItems(),
+        getDashboard(),
       ]);
 
       let orderList = [];
@@ -109,7 +107,7 @@ const Revenue = () => {
       setLoading(false);
       setChartLoading(false);
     }
-  }, [token]);
+  }, []);
 
   useEffect(() => {
     fetchData();

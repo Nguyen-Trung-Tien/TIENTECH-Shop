@@ -4,10 +4,8 @@ import { FaBox, FaShoppingCart, FaDollarSign, FaUsers } from "react-icons/fa";
 import StatsCard from "../../components/StatsCardComponent/StatsCard";
 import ChartCard from "../../components/ChartCardComponent/ChartCard";
 import { getDashboard } from "../../../api/adminApi";
-import { useSelector } from "react-redux";
 
 const Dashboard = () => {
-  const token = useSelector((state) => state.user.token);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState([]);
   const [error, setError] = useState(null);
@@ -136,7 +134,7 @@ const Dashboard = () => {
                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Live Updates</span>
                 </div>
              </div>
-             <ChartCard token={token} />
+             <ChartCard />
           </div>
         </div>
       )}

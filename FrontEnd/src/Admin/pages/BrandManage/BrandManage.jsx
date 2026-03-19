@@ -19,12 +19,10 @@ import {
   deleteBrandApi,
   getAllBrandApi,
 } from "../../../api/brandApi";
-import { useSelector } from "react-redux";
 import { getImage } from "../../../utils/decodeImage";
 import AppPagination from "../../../components/Pagination/Pagination";
 
 const BrandManage = () => {
-  const token = useSelector((state) => state.user.token);
   const [brands, setBrands] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [editBrand, setEditBrand] = useState(null);
@@ -114,8 +112,8 @@ const BrandManage = () => {
       if (formData.image) data.append("image", formData.image);
 
       let res = editBrand 
-        ? await updateBrandApi(editBrand.id, data, token)
-        : await createBrandApi(data, token);
+        ? await updateBrandApi(editBrand.id, data)
+        : await createBrandApi(data);
 
       if (res.errCode === 0) {
         toast.success(editBrand ? "Cập nhật thành công!" : "Tạo mới thành công!");
@@ -134,7 +132,7 @@ const BrandManage = () => {
 
   const handleConfirmDelete = async () => {
     try {
-      const res = await deleteBrandApi(confirmModal.id, token);
+      const res = await deleteBrandApi(confirmModal.id);
       if (res.errCode === 0) {
         toast.success("Đã xóa thương hiệu!");
         fetchBrands(brands.length === 1 && page > 1 ? page - 1 : page, searchTerm);

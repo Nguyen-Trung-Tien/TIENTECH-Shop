@@ -50,7 +50,6 @@ const TABS = [
 
 const OrderManage = () => {
   const user = useSelector((state) => state.user.user);
-  const token = useSelector((state) => state.user.token);
   const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -78,7 +77,6 @@ const OrderManage = () => {
           limit,
           search.trim(),
           filterStatus, // Giả định API nhận tham số status ở đây
-          token,
         );
         if (res?.errCode === 0) {
           setOrders(res.data || []);
@@ -95,7 +93,7 @@ const OrderManage = () => {
         setLoading(false);
       }
     },
-    [token, limit],
+    [limit],
   );
 
   // Initial load and tab/search change
@@ -109,7 +107,7 @@ const OrderManage = () => {
   const handleUpdateStatus = async (orderId, status) => {
     try {
       setLoadingId(orderId);
-      const res = await updateOrderStatus(orderId, status, token);
+      const res = await updateOrderStatus(orderId, status);
       if (res?.errCode === 0) {
         toast.success(`Đã chuyển sang: ${statusMap[status]?.label}`);
         fetchOrders(page, searchTerm, activeTab);
@@ -128,7 +126,7 @@ const OrderManage = () => {
     if (!selectedOrderId) return;
     try {
       setLoadingId(selectedOrderId);
-      const res = await deleteOrder(selectedOrderId, token);
+      const res = await deleteOrder(selectedOrderId);
       if (res?.errCode === 0) {
         toast.success(`Đã xóa đơn DH${selectedOrderId}`);
         fetchOrders(page, searchTerm, activeTab);

@@ -20,7 +20,6 @@ import {
   refundPayment,
 } from "../../../api/paymentApi";
 import { toast } from "react-toastify";
-import { useSelector } from "react-redux";
 import AppPagination from "../../../components/Pagination/Pagination";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -39,7 +38,6 @@ const METHOD_BADGE = {
 };
 
 const PaymentPage = () => {
-  const token = useSelector((state) => state.user.token);
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState("all");
@@ -62,8 +60,7 @@ const PaymentPage = () => {
       setLoading(true);
       try {
         const res = await getAllPayments(
-          { status: filterStatus, page, limit: pageSize, search: searchTerm },
-          token,
+          { status: filterStatus, page, limit: pageSize, search: searchTerm }
         );
         if (res.errCode === 0) {
           setPayments(res.data || []);
@@ -77,7 +74,7 @@ const PaymentPage = () => {
         setLoading(false);
       }
     },
-    [filterStatus, pageSize, searchTerm, token],
+    [filterStatus, pageSize, searchTerm],
   );
 
   useEffect(() => {
@@ -93,10 +90,10 @@ const PaymentPage = () => {
     const actionName = actionModal.actionFn === completePayment ? "Hoàn tất" : actionModal.actionFn === refundPayment ? "Hoàn tiền" : "Xóa";
     try {
       if (actionModal.actionFn === refundPayment) {
-        await actionModal.actionFn(actionModal.paymentId, refundNote, token);
+        await actionModal.actionFn(actionModal.paymentId, refundNote);
         setRefundNote("");
       } else {
-        await actionModal.actionFn(actionModal.paymentId, token);
+        await actionModal.actionFn(actionModal.paymentId);
       }
       loadPayments(currentPage);
       toast.success(`${actionName} thành công.`);

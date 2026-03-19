@@ -16,12 +16,10 @@ import { getAllOrders } from "../../../api/orderApi";
 import { processReturn } from "../../../api/orderItemApi";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { useSelector } from "react-redux";
 import AppPagination from "../../../components/Pagination/Pagination";
 import { motion, AnimatePresence } from "framer-motion";
 
 const OrdersReturnPage = () => {
-  const token = useSelector((state) => state.user.token);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadingAction, setLoadingAction] = useState(false);
@@ -69,7 +67,7 @@ const OrdersReturnPage = () => {
         (i) => i.returnStatus === "requested",
       );
       for (let item of itemsToProcess) {
-        await processReturn(item.id, status, token);
+        await processReturn(item.id, status);
       }
       toast.success(status === "approved" ? "Đã duyệt trả hàng!" : "Đã từ chối yêu cầu!");
       await fetchOrders(page);

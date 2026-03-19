@@ -40,11 +40,9 @@ import {
 import { getAllCategoryApi } from "../../../api/categoryApi";
 import { getAllBrandApi } from "../../../api/brandApi";
 import { getImage } from "../../../utils/decodeImage";
-import { useSelector } from "react-redux";
 import AppPagination from "../../../components/Pagination/Pagination";
 
 const ProductManage = () => {
-  const token = useSelector((state) => state.user.token);
 
   const [brands, setBrands] = useState([]);
   const [products, setProducts] = useState([]);
@@ -220,7 +218,7 @@ const ProductManage = () => {
   const fetchVariants = async (productId) => {
     if (!productId) return;
     try {
-      const res = await getVariantsByProduct(productId, token);
+      const res = await getVariantsByProduct(productId);
       if (res?.errCode === 0 && Array.isArray(res.data)) {
         setVariants(res.data);
       } else {
@@ -252,8 +250,8 @@ const ProductManage = () => {
       }
 
       let res = editProduct 
-        ? await updateProductApi(editProduct.id, data, token)
-        : await createProductApi(data, token);
+        ? await updateProductApi(editProduct.id, data)
+        : await createProductApi(data);
 
       if (res.errCode === 0) {
         toast.success(editProduct ? "Cập nhật thành công!" : "Tạo sản phẩm thành công!");
@@ -273,7 +271,7 @@ const ProductManage = () => {
   const handleConfirmDelete = async () => {
     if (!confirmModal.productId) return;
     try {
-      const res = await deleteProductApi(confirmModal.productId, token);
+      const res = await deleteProductApi(confirmModal.productId);
       if (res.errCode === 0) {
         toast.success("Đã xóa sản phẩm!");
         fetchProducts(products.length === 1 && page > 1 ? page - 1 : page, searchTerm);

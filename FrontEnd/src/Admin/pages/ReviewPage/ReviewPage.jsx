@@ -24,7 +24,6 @@ import AppPagination from "../../../components/Pagination/Pagination";
 import { motion, AnimatePresence } from "framer-motion";
 
 const ReviewPage = () => {
-  const token = useSelector((state) => state.user.token);
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedReview, setSelectedReview] = useState(null);
@@ -48,7 +47,6 @@ const ReviewPage = () => {
         pagination.limit,
         filters.rating,
         filters.status,
-        token,
       );
 
       setReviews(res.data || []);
@@ -66,7 +64,7 @@ const ReviewPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [pagination.page, pagination.limit, filters, token]);
+  }, [pagination.page, pagination.limit, filters]);
 
   useEffect(() => {
     fetchReviews();
@@ -74,7 +72,7 @@ const ReviewPage = () => {
 
   const handleDeleteReview = async () => {
     try {
-      await deleteReviewApi(selectedReview.id, token);
+      await deleteReviewApi(selectedReview.id);
       setShowDeleteModal(false);
       fetchReviews();
       toast.success("Đã xóa bình luận");
@@ -87,7 +85,7 @@ const ReviewPage = () => {
     const content = replyInputs[reviewId]?.trim();
     if (!content) return;
     try {
-      const res = await createReplyApi({ reviewId, comment: content }, token);
+      const res = await createReplyApi({ reviewId, comment: content });
       if (res.errCode === 0) {
         setReplies((prev) => ({
           ...prev,
@@ -103,7 +101,7 @@ const ReviewPage = () => {
 
   const handleDeleteReply = async (reviewId, replyId) => {
     try {
-      const res = await deleteReplyApi(replyId, token);
+      const res = await deleteReplyApi(replyId);
       if (res.errCode === 0) {
         setReplies((prev) => ({
           ...prev,

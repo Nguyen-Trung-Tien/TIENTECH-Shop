@@ -21,11 +21,9 @@ import {
   updateCategoryApi,
   deleteCategoryApi,
 } from "../../../api/categoryApi";
-import { useSelector } from "react-redux";
 import AppPagination from "../../../components/Pagination/Pagination";
 
 const Categories = () => {
-  const token = useSelector((state) => state.user.token);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -67,7 +65,7 @@ const Categories = () => {
   const fetchCategories = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await getAllCategoryApi(token);
+      const res = await getAllCategoryApi();
       if (res.errCode === 0) {
         setCategories(res.data || []);
       } else {
@@ -79,7 +77,7 @@ const Categories = () => {
     } finally {
       setLoading(false);
     }
-  }, [token]);
+  }, []);
 
   useEffect(() => {
     const total = categories.length;
@@ -134,10 +132,10 @@ const Categories = () => {
     setSaving(true);
     try {
       if (editingCategory) {
-        await updateCategoryApi(editingCategory.id, payload, token);
+        await updateCategoryApi(editingCategory.id, payload);
         toast.success("Cập nhật thành công!");
       } else {
-        await createCategoryApi(payload, token);
+        await createCategoryApi(payload);
         toast.success("Thêm mới thành công!");
       }
       fetchCategories();
@@ -153,7 +151,7 @@ const Categories = () => {
     if (!deletingCategory) return;
     try {
       setLoading(true);
-      await deleteCategoryApi(deletingCategory.id, token);
+      await deleteCategoryApi(deletingCategory.id);
       toast.success("Đã xóa danh mục!");
       fetchCategories();
     } catch (err) {

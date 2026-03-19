@@ -37,7 +37,6 @@ const STATUS_TABS = [
 
 const OrderPage = () => {
   const navigate = useNavigate();
-  const token = useSelector((state) => state.user.token);
   const user = useSelector((state) => state.user.user);
   const [orders, setOrders] = useState([]);
   const [activeTab, setActiveTab] = useState("all");
@@ -52,11 +51,11 @@ const OrderPage = () => {
   const limit = 10;
 
   const fetchOrders = useCallback(async (p = page, tab = activeTab) => {
-    if (!user?.id || !token) return;
+    if (!user?.id) return;
     try {
       setLoading(true);
       const filterStatus = tab === "all" ? "" : tab;
-      const res = await getOrdersByUserId(token, user.id, p, limit, filterStatus);
+      const res = await getOrdersByUserId(user.id, p, limit, filterStatus);
       if (res?.errCode === 0) {
         setOrders(res.data || []);
         setTotalPages(res.pagination?.totalPages || 1);
@@ -69,7 +68,7 @@ const OrderPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [token, user?.id, page, activeTab]);
+  }, [user?.id, page, activeTab]);
 
   useEffect(() => {
     fetchOrders(page, activeTab);
@@ -83,7 +82,7 @@ const OrderPage = () => {
   const handleReceiveOrder = async (id) => {
     setReceivingId(id);
     try {
-      const res = await updateOrderStatus(id, "delivered", token);
+      const res = await updateOrderStatus(id, "delivered");
       if (res?.errCode === 0) {
         toast.success("Xác nhận đã nhận hàng!");
         fetchOrders(page, activeTab);
@@ -99,7 +98,7 @@ const OrderPage = () => {
     if (!orderToCancel) return;
     setCancelling(true);
     try {
-      const res = await updateOrderStatus(orderToCancel.id, "cancelled", token);
+      const res = await updateOrderStatus(orderToCancel.id, "cancelled");
       if (res?.errCode === 0) {
         toast.success("Hủy đơn hàng thành công!");
         fetchOrders(page, activeTab);

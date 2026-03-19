@@ -26,7 +26,6 @@ import Badge from "../../components/UI/Badge";
 
 const ProductDetailPage = () => {
   const user = useSelector((state) => state.user.user);
-  const token = useSelector((state) => state.user.token);
   const userId = user?.id;
   const { id } = useParams();
   const navigate = useNavigate();
@@ -168,10 +167,10 @@ const ProductDetailPage = () => {
     }
     try {
       setAddingCart(true);
-      const cartsRes = await getAllCarts(token);
+      const cartsRes = await getAllCarts();
       let cart = cartsRes.data.find((c) => c.userId === userId);
       if (!cart) {
-        const newCartRes = await createCart(token, userId);
+        const newCartRes = await createCart(userId);
         cart = newCartRes.data;
       }
       const res = await addCart(
@@ -179,8 +178,7 @@ const ProductDetailPage = () => {
           cartId: cart.id,
           productId: product.id,
           quantity,
-        },
-        token,
+        }
       );
       if (res.errCode === 0) {
         dispatch(
@@ -224,7 +222,7 @@ const ProductDetailPage = () => {
     }
     try {
       const payload = { userId, productId: product.id, ...newReview };
-      const res = await createReviewApi(payload, token);
+      const res = await createReviewApi(payload);
       if (res?.errCode === 0) {
         toast.success("Gửi đánh giá thành công!");
         setNewReview({ rating: 5, comment: "" });

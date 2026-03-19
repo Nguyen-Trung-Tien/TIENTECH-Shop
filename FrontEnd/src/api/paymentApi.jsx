@@ -5,7 +5,6 @@ export const getAllPayments = async ({
   limit = 10,
   status = "all",
   search = "",
-  token,
 }) => {
   try {
     const params = new URLSearchParams({
@@ -15,90 +14,77 @@ export const getAllPayments = async ({
       ...(search && { search }),
     });
 
-    const res = await axiosClient.get(`/payment/get-all-payment?${params}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    return res.data;
+    const res = await axiosClient.get(`/payment/get-all-payment?${params}`);
+    return res;
   } catch (error) {
     console.error("Error getting all payments:", error);
     throw error;
   }
 };
 
-export const getPaymentById = async (id, token) => {
+export const getPaymentById = async (id) => {
   try {
-    const res = await axiosClient.get(`/payment/get-payment/${id}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    return res.data;
+    const res = await axiosClient.get(`/payment/get-payment/${id}`);
+    return res;
   } catch (error) {
     console.error("Error getting payment by id:", error);
     throw error;
   }
 };
 
-export const createPayment = async (data, token) => {
+export const createPayment = async (data) => {
   try {
-    const res = await axiosClient.post("/payment/create-payment", data, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    return res.data;
+    const res = await axiosClient.post("/payment/create-payment", data);
+    return res;
   } catch (error) {
     console.error("Error creating payment:", error);
     throw error;
   }
 };
 
-export const updatePayment = async (orderId, data, token) => {
+export const updatePayment = async (orderId, data) => {
   try {
     const res = await axiosClient.put(
       `/payment/update-payment/${orderId}`,
-      data,
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      }
+      data
     );
-    return res.data;
+    return res;
   } catch (error) {
     console.error("Error updating payment:", error);
     throw error;
   }
 };
 
-export const deletePayment = async (id, token) => {
+export const deletePayment = async (id) => {
   try {
-    const res = await axiosClient.delete(`/payment/delete-payment/${id}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    return res.data;
+    const res = await axiosClient.delete(`/payment/delete-payment/${id}`);
+    return res;
   } catch (error) {
     console.error("Error deleting payment:", error);
     throw error;
   }
 };
 
-export const completePayment = async (id, transactionId, token) => {
+export const completePayment = async (id, transactionId) => {
   try {
     const res = await axiosClient.put(
       `/payment/payment-complete/${id}/complete`,
-      { transactionId },
-      { headers: { Authorization: `Bearer ${token}` } }
+      { transactionId }
     );
-    return res.data;
+    return res;
   } catch (error) {
     console.error("Error completing payment:", error);
     throw error;
   }
 };
 
-export const refundPayment = async (id, note, token) => {
+export const refundPayment = async (id, note) => {
   try {
     const res = await axiosClient.put(
       `/payment/payment-refund/${id}/refund`,
-      { note },
-      { headers: { Authorization: `Bearer ${token}` } }
+      { note }
     );
-    return res.data;
+    return res;
   } catch (error) {
     console.error("Error refunding payment:", error);
     throw error;
@@ -108,7 +94,7 @@ export const refundPayment = async (id, note, token) => {
 export const createVnpayPayment = async (data) => {
   try {
     const res = await axiosClient.post("/vnpay/create-vnpay-payment", data);
-    const { errCode, errMessage, data: resData } = res.data;
+    const { errCode, errMessage, data: resData } = res;
 
     if (errCode === 0 && resData?.paymentUrl) {
       return resData.paymentUrl;

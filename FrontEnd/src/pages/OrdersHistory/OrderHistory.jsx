@@ -13,7 +13,6 @@ import Badge from "../../components/UI/Badge";
 
 const OrderHistoryPage = () => {
   const navigate = useNavigate();
-  const token = useSelector((state) => state.user.token);
   const user = useSelector((state) => state.user.user);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -22,10 +21,10 @@ const OrderHistoryPage = () => {
   const limit = 10;
 
   const fetchOrders = useCallback(async () => {
-    if (!user?.id || !token) return;
+    if (!user?.id) return;
     try {
       setLoading(true);
-      const res = await getOrdersByUserId(token, user.id, page, limit);
+      const res = await getOrdersByUserId(user.id, page, limit);
       if (res?.errCode === 0) {
         setOrders(res.data || []);
         setTotalPages(res.pagination?.totalPages || 1);
@@ -35,7 +34,7 @@ const OrderHistoryPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [user?.id, token, page]);
+  }, [user?.id, page]);
 
   useEffect(() => {
     fetchOrders();

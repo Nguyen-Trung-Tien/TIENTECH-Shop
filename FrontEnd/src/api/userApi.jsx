@@ -3,114 +3,106 @@ import axiosClient from "../utils/axiosClient";
 export const loginUser = async (email, password) => {
   try {
     const res = await axiosClient.post("/user/login", { email, password });
-    return res.data;
-  } catch (err) {
-    console.error("Login API error:", err);
-    throw err;
+    return res;
+  } catch (error) {
+    console.error("Login API error:", error);
+    throw error;
+  }
+};
+
+export const getMeApi = async () => {
+  try {
+    const res = await axiosClient.get("/user/me");
+    return res;
+  } catch (error) {
+    console.error("Get Me API error:", error);
+    throw error;
   }
 };
 
 export const registerUser = async (data) => {
   try {
     const res = await axiosClient.post("/user/create-new-user", data);
-    return res.data;
-  } catch (err) {
-    console.error("Register API error:", err);
-    throw err;
+    return res;
+  } catch (error) {
+    console.error("Register user API error:", error);
+    throw error;
   }
 };
 
-export const getUserApi = async (userId, token) => {
+export const getUserApi = async (userId) => {
   try {
-    const res = await axiosClient.get(`/user/get-user/${userId}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    return res.data;
-  } catch (err) {
-    console.error("Get User API error:", err);
+    const res = await axiosClient.get(`/user/get-user/${userId}`);
+    return res;
+  } catch (error) {
+    console.error("Get user API error:", error);
+    throw error;
   }
 };
 
-export const updateUserApi = async (data, token, isFormData = false) => {
+export const updateUserApi = async (data, isFormData = false) => {
   try {
     const res = await axiosClient.put(`/user/update-user`, data, {
       headers: {
-        Authorization: `Bearer ${token}`,
         "Content-Type": isFormData ? "multipart/form-data" : "application/json",
       },
     });
-    return res.data;
-  } catch (err) {
-    console.error("Update User API error:", err);
-    throw err;
+    return res;
+  } catch (error) {
+    console.error("Update user API error:", error);
+    throw error;
   }
 };
 
-export const getAllUsersApi = async (token, page = 1, limit = 10) => {
+export const getAllUsersApi = async (page = 1, limit = 10) => {
   try {
     const res = await axiosClient.get(
-      `/user/get-all-user?page=${page}&limit=${limit}`,
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      }
+      `/user/get-all-user?page=${page}&limit=${limit}`
     );
-    return res.data;
-  } catch (err) {
-    console.error("Get All Users API error:", err);
-    throw err;
+    return res;
+  } catch (error) {
+    console.error("Get all users API error:", error);
+    throw error;
   }
 };
 
-export const deleteUserApi = async (userId, token) => {
+export const deleteUserApi = async (userId) => {
   try {
-    const res = await axiosClient.delete(`/user/delete/${userId}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    return res.data;
-  } catch (err) {
-    console.error("Delete User API error:", err);
-    throw err;
+    const res = await axiosClient.delete(`/user/delete/${userId}`);
+    return res;
+  } catch (error) {
+    console.error("Delete user API error:", error);
+    throw error;
   }
 };
 
 export const logoutUserApi = async () => {
   try {
-    const res = await axiosClient.post(`/user/logout`, null, {
-      withCredentials: true,
-    });
-    return res.data;
-  } catch (err) {
-    console.error("Delete User API error:", err);
-    throw err;
+    const res = await axiosClient.post(`/user/logout`);
+    return res;
+  } catch (error) {
+    console.error("Logout user API error:", error);
+    throw error;
   }
 };
 
-export const updatePasswordApi = async (data, token) => {
+export const updatePasswordApi = async (data) => {
   try {
-    const res = await axiosClient.put(`/user/change-password`, data, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    });
-    return res.data;
-  } catch (err) {
-    console.error("Update Password API error:", err);
-    throw err;
+    const res = await axiosClient.put(`/user/change-password`, data);
+    return res;
+  } catch (error) {
+    console.error("Update password API error:", error);
+    throw error;
   }
 };
 
 export const forgotPasswordApi = async (email) => {
   try {
     const res = await axiosClient.post("/user/forgot-password", { email });
-    return res.data;
-  } catch (err) {
-    console.error("Forgot Password API error:", err);
-    throw err;
+    return res;
+  } catch (error) {
+    console.error("Forgot password API error:", error);
+    throw error;
   }
 };
 
@@ -120,10 +112,10 @@ export const verifyResetTokenApi = async (email, token) => {
       email,
       token,
     });
-    return res.data;
-  } catch (err) {
-    console.error("Verify Reset Token API error:", err);
-    throw err;
+    return res;
+  } catch (error) {
+    console.error("Verify reset token API error:", error);
+    throw error;
   }
 };
 
@@ -134,9 +126,9 @@ export const resetPasswordApi = async (email, token, newPassword) => {
       token,
       newPassword,
     });
-    return res.data;
-  } catch (err) {
-    console.error("Reset Password API error:", err);
-    throw err;
+    return res;
+  } catch (error) {
+    console.error("Reset password API error:", error);
+    throw error;
   }
 };

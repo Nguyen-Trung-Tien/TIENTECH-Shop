@@ -1,35 +1,41 @@
-import axios from "axios";
 import axiosClient from "../utils/axiosClient";
 
-const API = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
-  headers: {
-    "Content-Type": "application/json",
-  },
-});
-
 export const getAllCategoryApi = async () => {
-  const res = await API.get("/category/get-all-category");
-  return res.data;
+  try {
+    const res = await axiosClient.get("/category/get-all-category");
+    return res;
+  } catch (err) {
+    console.error("Get All Category API error:", err);
+    throw err;
+  }
 };
 
-export const createCategoryApi = async (data, token) => {
-  const res = await axiosClient.post("/category/create", data, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  return res.data;
+export const createCategoryApi = async (data) => {
+  try {
+    const res = await axiosClient.post("/category/create", data);
+    return res;
+  } catch (err) {
+    console.error("Create Category API error:", err);
+    throw err;
+  }
 };
 
-export const updateCategoryApi = async (id, data, token) => {
-  const res = await axiosClient.put(`/category/update/${id}`, data, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  return res.data;
+export const updateCategoryApi = async (id, data) => {
+  try {
+    const res = await axiosClient.put(`/category/update/${id}`, data);
+    return res;
+  } catch (err) {
+    console.error("Update Category API error:", err);
+    throw err;
+  }
 };
 
-export const deleteCategoryApi = async (id, token) => {
-  const res = await axiosClient.delete(`/category/delete/${id}`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  return res.data;
+export const deleteCategoryApi = async (id) => {
+  try {
+    const res = await axiosClient.delete(`/category/delete/${id}`);
+    return res;
+  } catch (err) {
+    console.error("Delete Category API error:", err);
+    throw err;
+  }
 };

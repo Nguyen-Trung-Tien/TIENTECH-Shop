@@ -18,7 +18,6 @@ const CheckoutPage = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const user = useSelector((state) => state.user.user);
-  const token = useSelector((state) => state.user.token);
 
   const cartItems = useSelector((state) => state.cart.cartItems);
   const checkoutState = useSelector((state) => state.checkout);
@@ -36,7 +35,7 @@ const CheckoutPage = () => {
       if (!isSingleProduct && cartItems.length === 0) {
         setLoading(true);
         try {
-          const res = await getAllCartItems(token);
+          const res = await getAllCartItems();
           const items = res.data || [];
           dispatch(setCartItems(items));
         } catch (err) {
@@ -48,7 +47,7 @@ const CheckoutPage = () => {
       }
     };
     fetchCart();
-  }, [isSingleProduct, cartItems.length, dispatch, token]);
+  }, [isSingleProduct, cartItems.length, dispatch]);
 
   const selectedItems = isSingleProduct
     ? [
@@ -69,7 +68,7 @@ const CheckoutPage = () => {
 
   const handleOrderComplete = async (orderData, paypalDetails = null) => {
     try {
-      const orderRes = await createOrder(orderData, token);
+      const orderRes = await createOrder(orderData);
       if (orderRes.errCode !== 0) {
         toast.error(orderRes.errMessage || "Lỗi khi tạo đơn hàng!");
         return;
@@ -96,8 +95,7 @@ const CheckoutPage = () => {
           paymentStatus: paypalDetails ? "paid" : "unpaid",
           status: paypalDetails ? "completed" : "pending",
           paypalInfo: paypalDetails,
-        },
-        token,
+        }
       );
 
       if (paymentRes.errCode !== 0) {

@@ -13,7 +13,7 @@ import Badge from "../../components/UI/Badge";
 const Profile = () => {
   const dispatch = useDispatch();
   const user = useSelector((state) => state.user.user);
-  const token = useSelector((state) => state.user.token);
+  
   const [formData, setFormData] = useState({
     username: "",
     email: "",
@@ -32,10 +32,10 @@ const Profile = () => {
 
   useEffect(() => {
     const fetchUser = async () => {
-      if (!user?.id || !token) return;
+      if (!user?.id) return;
       setLoading(true);
       try {
-        const res = await getUserApi(user.id, token);
+        const res = await getUserApi(user.id);
         if (res?.errCode === 0) {
           setFormData(res.data);
           setPreview(res.data.avatar);
@@ -47,7 +47,7 @@ const Profile = () => {
       }
     };
     fetchUser();
-  }, [user?.id, token]);
+  }, [user?.id]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -55,7 +55,7 @@ const Profile = () => {
   };
 
   const handleSave = async () => {
-    if (!user?.id || !token) return;
+    if (!user?.id) return;
     setLoading(true);
     try {
       const hasFile = formData.avatar instanceof File;
@@ -69,9 +69,9 @@ const Profile = () => {
         data.append("phone", formData.phone);
         data.append("address", formData.address);
         data.append("avatar", formData.avatar);
-        res = await updateUserApi(data, token, true);
+        res = await updateUserApi(data, true);
       } else {
-        res = await updateUserApi({ id: user.id, ...formData }, token);
+        res = await updateUserApi({ id: user.id, ...formData });
       }
 
       if (res.errCode === 0) {
@@ -105,7 +105,7 @@ const Profile = () => {
     reader.onloadend = async () => {
       const base64 = reader.result;
       try {
-        const res = await updateUserApi({ id: user.id, avatar: base64 }, token);
+        const res = await updateUserApi({ id: user.id, avatar: base64 });
         if (res.errCode === 0) {
           toast.success("Cập nhật avatar thành công!");
           setFormData((prev) => ({ ...prev, avatar: res.data.avatar }));
@@ -367,7 +367,6 @@ const Profile = () => {
         show={showPasswordModal}
         onHide={() => setShowPasswordModal(false)}
         userId={user?.id}
-        token={token}
       />
     </div>
   );

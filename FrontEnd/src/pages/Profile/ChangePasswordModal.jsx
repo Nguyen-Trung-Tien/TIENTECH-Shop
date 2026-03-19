@@ -5,7 +5,7 @@ import { toast } from "react-toastify";
 import { updatePasswordApi } from "../../api/userApi";
 import Button from "../../components/UI/Button";
 
-const ChangePasswordModal = ({ show, onHide, userId, token }) => {
+const ChangePasswordModal = ({ show, onHide, userId }) => {
   const [loading, setLoading] = useState(false);
   const [passwordData, setPasswordData] = useState({
     oldPassword: "",
@@ -43,10 +43,9 @@ const ChangePasswordModal = ({ show, onHide, userId, token }) => {
 
     try {
       setLoading(true);
-      const res = await updatePasswordApi(
-        { userId, oldPassword, newPassword },
-        token,
-      );
+      // Backend expects oldPassword and newPassword in req.body
+      // authenticateToken middleware provides userId
+      const res = await updatePasswordApi({ oldPassword, newPassword });
       if (res.errCode === 0) {
         toast.success("Đổi mật khẩu thành công!");
         setPasswordData({

@@ -33,7 +33,6 @@ import Badge from "../../components/UI/Badge";
 import { motion, AnimatePresence } from "framer-motion";
 
 const CartPage = () => {
-  const token = useSelector((state) => state.user.token);
   const cartItems = useSelector((state) => state.cart.cartItems);
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -47,10 +46,9 @@ const CartPage = () => {
 
   const fetchCart = useCallback(
     async (page = 1) => {
-      if (!token) return;
       try {
         setLoading(true);
-        const res = await getAllCartItems(token, page, 10);
+        const res = await getAllCartItems(page, 10);
         const items = Array.isArray(res?.data) ? res.data : [];
 
         if (items.length > 0) {
@@ -65,15 +63,14 @@ const CartPage = () => {
         setLoading(false);
       }
     },
-    [token, dispatch],
+    [dispatch],
   );
 
   useEffect(() => {
-    if (!token) return;
     if (cartItems.length === 0) {
       fetchCart(1);
     }
-  }, [token, cartItems.length, fetchCart]);
+  }, [cartItems.length, fetchCart]);
 
   useEffect(() => {
     if (page === 1) return;
@@ -95,7 +92,7 @@ const CartPage = () => {
 
   const handleRemove = async (id) => {
     try {
-      await removeCartItemApi(id, token);
+      await removeCartItemApi(id);
       dispatch(removeCartItem(id));
       setSelectedItems((prev) => prev.filter((itemId) => itemId !== id));
       toast.success("Đã xóa sản phẩm khỏi giỏ hàng!");
@@ -107,7 +104,7 @@ const CartPage = () => {
   const handleQtyChange = async (id, quantity) => {
     if (quantity < 1) return;
     try {
-      await updateCartItemApi(id, quantity, token);
+      await updateCartItemApi(id, quantity);
       dispatch(updateCartItemQuantity({ id, quantity }));
     } catch {
       toast.error("Cập nhật số lượng thất bại!");

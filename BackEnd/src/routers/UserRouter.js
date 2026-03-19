@@ -9,6 +9,7 @@ const {
 router.post("/login", UserController.handleLogin);
 router.post("/create-new-user", UserController.handleCreateNewUser);
 router.post("/refresh-token", UserController.handleRefreshToken);
+router.get("/me", authenticateToken, UserController.handleGetMe);
 router.get(
   "/get-all-user",
   authenticateToken,

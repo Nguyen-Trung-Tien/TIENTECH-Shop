@@ -1,12 +1,4 @@
-import axios from "axios";
 import axiosClient from "../utils/axiosClient";
-
-const API = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
-  headers: {
-    "Content-Type": "application/json",
-  },
-});
 
 const SUGGEST_TTL_MS = 10000;
 const suggestCache = new Map();
@@ -14,10 +6,10 @@ const suggestInflight = new Map();
 
 export const getAllProductApi = async (page = 1, limit = 10, search = "") => {
   try {
-    const res = await API.get(`/product/get-all-product`, {
+    const res = await axiosClient.get(`/product/get-all-product`, {
       params: { page, limit, search },
     });
-    return res.data;
+    return res;
   } catch (err) {
     console.error("Get All Product API error:", err);
     throw err;
@@ -26,50 +18,46 @@ export const getAllProductApi = async (page = 1, limit = 10, search = "") => {
 
 export const getProductByIdApi = async (id) => {
   try {
-    const res = await API.get(`/product/get-product/${id}`);
-    return res.data;
+    const res = await axiosClient.get(`/product/get-product/${id}`);
+    return res;
   } catch (err) {
     console.error("Get product by ID API error:", err);
     throw err;
   }
 };
 
-export const createProductApi = async (data, token) => {
+export const createProductApi = async (data) => {
   try {
     const res = await axiosClient.post(`/product/create-new-product`, data, {
       headers: {
-        Authorization: `Bearer ${token}`,
         "Content-Type": "multipart/form-data",
       },
     });
-    return res.data;
+    return res;
   } catch (err) {
     console.error("Create product API error:", err);
     throw err;
   }
 };
 
-export const updateProductApi = async (id, data, token) => {
+export const updateProductApi = async (id, data) => {
   try {
     const res = await axiosClient.put(`/product/update-product/${id}`, data, {
       headers: {
-        Authorization: `Bearer ${token}`,
         "Content-Type": "multipart/form-data",
       },
     });
-    return res.data;
+    return res;
   } catch (err) {
     console.error("Update product API error:", err);
     throw err;
   }
 };
 
-export const deleteProductApi = async (id, token) => {
+export const deleteProductApi = async (id) => {
   try {
-    const res = await axiosClient.delete(`/product/delete-product/${id}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    return res.data;
+    const res = await axiosClient.delete(`/product/delete-product/${id}`);
+    return res;
   } catch (err) {
     console.error("Delete product API error:", err);
     throw err;
@@ -78,19 +66,19 @@ export const deleteProductApi = async (id, token) => {
 
 export const searchProductsApi = async (query, page = 1, limit = 10) => {
   try {
-    const res = await API.get(
+    const res = await axiosClient.get(
       `/product/search?q=${encodeURIComponent(
         query
       )}&page=${page}&limit=${limit}`
     );
 
     return {
-      products: res.data.products || [],
-      suggestions: res.data.suggestions || {},
-      totalItems: res.data.totalItems || 0,
-      currentPage: res.data.currentPage || 1,
-      totalPages: res.data.totalPages || 1,
-      errCode: res.data.errCode,
+      products: res.products || [],
+      suggestions: res.suggestions || {},
+      totalItems: res.totalItems || 0,
+      currentPage: res.currentPage || 1,
+      totalPages: res.totalPages || 1,
+      errCode: res.errCode,
     };
   } catch (err) {
     console.error("Search products API error:", err);
@@ -101,7 +89,9 @@ export const searchProductsApi = async (query, page = 1, limit = 10) => {
 export const searchSuggestionsApi = async (query) => {
   const q = (query || "").trim().toLowerCase();
   if (!q) {
-    return { suggestions: { products: [], keywords: [], brands: [], categories: [] } };
+    return {
+      suggestions: { products: [], keywords: [], brands: [], categories: [] },
+    };
   }
 
   const cached = suggestCache.get(q);
@@ -112,9 +102,10 @@ export const searchSuggestionsApi = async (query) => {
   const inflight = suggestInflight.get(q);
   if (inflight) return inflight;
 
-  const req = API.get(`/product/search-suggest`, { params: { q, limit: 5 } })
+  const req = axiosClient
+    .get(`/product/search-suggest`, { params: { q, limit: 5 } })
     .then((res) => {
-      const data = res.data;
+      const data = res;
       suggestCache.set(q, { ts: Date.now(), data });
       suggestInflight.delete(q);
       return data;
@@ -130,10 +121,10 @@ export const searchSuggestionsApi = async (query) => {
 
 export const getDiscountedProductsApi = async (page = 1, limit = 6) => {
   try {
-    const res = await API.get(`/product/discounted`, {
+    const res = await axiosClient.get(`/product/discounted`, {
       params: { page, limit },
     });
-    return res.data;
+    return res;
   } catch (err) {
     console.error("Get discounted products API error:", err);
     throw err;
@@ -150,7 +141,7 @@ export const filterProductsApi = async ({
   limit = 10,
 }) => {
   try {
-    const res = await API.get("/product/filter", {
+    const res = await axiosClient.get("/product/filter", {
       params: {
         brandId,
         categoryId,
@@ -162,7 +153,7 @@ export const filterProductsApi = async ({
       },
     });
 
-    return res.data;
+    return res;
   } catch (err) {
     console.error("Filter products API error:", err);
     throw err;
@@ -175,10 +166,10 @@ export const getRecommendedProductsApi = async (
   limit = 6
 ) => {
   try {
-    const res = await API.get(`/product/recommend/${productId}`, {
+    const res = await axiosClient.get(`/product/recommend/${productId}`, {
       params: { page, limit },
     });
-    return res.data;
+    return res;
   } catch (err) {
     console.error("Get recommended products API error:", err);
     throw err;
@@ -194,8 +185,8 @@ export const fetchFortuneProducts = async ({
   page,
   limit,
 }) => {
-  const res = await API.get("/product/recommend-fortune", {
+  const res = await axiosClient.get("/product/recommend-fortune", {
     params: { birthYear, brandId, minPrice, maxPrice, categoryId, page, limit },
   });
-  return res.data;
+  return res;
 };

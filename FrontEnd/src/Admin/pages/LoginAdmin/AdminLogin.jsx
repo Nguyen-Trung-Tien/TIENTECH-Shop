@@ -26,19 +26,21 @@ const AdminLogin = () => {
     try {
       const res = await loginUser(email, password);
       if (res.errCode === 0 && res.data) {
-        const { user, accessToken, refreshToken } = res.data;
+        const { user } = res.data;
         if (user.role !== "admin") {
           toast.error("Bạn không có quyền admin!");
           setLoading(false);
           return;
         }
         const minimalUser = {
-          id: user.id, email: user.email, username: user.username,
-          role: user.role, phone: user.phone, address: user.address,
+          id: user.id,
+          email: user.email,
+          username: user.username,
+          role: user.role,
+          phone: user.phone,
+          address: user.address,
         };
-        dispatch(setUser({ user: minimalUser, token: accessToken, refreshToken }));
-        if (accessToken) localStorage.setItem("accessToken", accessToken);
-        if (refreshToken) localStorage.setItem("refreshToken", refreshToken);
+        dispatch(setUser({ user: minimalUser }));
         toast.success("Đăng nhập thành công!");
         navigate("/admin/dashboard");
       } else {

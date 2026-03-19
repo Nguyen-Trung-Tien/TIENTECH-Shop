@@ -28,7 +28,6 @@ import { useSelector } from "react-redux";
 import AppPagination from "../../../components/Pagination/Pagination";
 
 const UserManage = () => {
-  const token = useSelector((state) => state.user.token);
   const [users, setUsers] = useState([]);
   const [search, setSearch] = useState("");
 
@@ -51,7 +50,7 @@ const UserManage = () => {
     async (page = 1, searchQuery = "") => {
       setLoading(true);
       try {
-        const res = await getAllUsersApi(token, page, limit, searchQuery.trim());
+        const res = await getAllUsersApi(page, limit, searchQuery.trim());
         if (res.errCode === 0) {
           setCurrentPage(res.pagination.currentPage);
           setTotalPages(res.pagination.totalPages || 1);
@@ -77,7 +76,7 @@ const UserManage = () => {
         setLoading(false);
       }
     },
-    [token, limit],
+    [limit],
   );
 
   useEffect(() => {
@@ -134,8 +133,8 @@ const UserManage = () => {
     try {
       setLoading(true);
       const res = editUser 
-        ? await updateUserApi(data, token) 
-        : await registerUser(data, token);
+        ? await updateUserApi(data) 
+        : await registerUser(data);
 
       if (res.errCode === 0) {
         toast.success(editUser ? "Cập nhật thành công!" : "Thêm người dùng thành công!");
@@ -153,7 +152,7 @@ const UserManage = () => {
   const handleConfirmDelete = async () => {
     if (!confirmModal.userId) return;
     try {
-      const res = await deleteUserApi(confirmModal.userId, token);
+      const res = await deleteUserApi(confirmModal.userId);
       if (res.errCode === 0) {
         toast.success("Xóa người dùng thành công!");
         fetchUsers(currentPage, search);
@@ -169,7 +168,7 @@ const UserManage = () => {
     if (user.role === "admin") return toast.warn("Không thể khóa tài khoản Admin!");
     try {
       const newStatus = user.status === "active" ? false : true;
-      const res = await updateUserApi({ id: user.id, isActive: newStatus }, token);
+      const res = await updateUserApi({ id: user.id, isActive: newStatus });
       if (res.errCode === 0) {
         toast.success("Cập nhật trạng thái thành công!");
         fetchUsers(currentPage, search);

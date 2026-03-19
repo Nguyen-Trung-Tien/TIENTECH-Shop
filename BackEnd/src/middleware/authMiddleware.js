@@ -2,7 +2,12 @@ const { verifyAccessToken } = require("../services/jwtService");
 
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers["authorization"];
-  const token = authHeader && authHeader.split(" ")[1];
+  let token = authHeader && authHeader.split(" ")[1];
+
+  // Nếu không có token trong header, thử lấy từ cookie
+  if (!token) {
+    token = req.cookies?.accessToken;
+  }
 
   if (!token)
     return res
@@ -12,7 +17,7 @@ const authenticateToken = (req, res, next) => {
   const decoded = verifyAccessToken(token);
   if (!decoded)
     return res
-      .status(403)
+      .status(401)
       .json({ errCode: 2, errMessage: "Invalid or expired token" });
 
   req.user = decoded;

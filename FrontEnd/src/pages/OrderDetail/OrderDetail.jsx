@@ -63,7 +63,6 @@ const reducer = (state, action) => {
 };
 
 const OrderDetail = () => {
-  const token = useSelector((state) => state.user.token);
   const { id } = useParams();
   const [state, dispatch] = useReducer(reducer, initialState);
   const { order, loading, showReturnModal, selectedItems, returnReason, submitting } = state;
@@ -71,7 +70,7 @@ const OrderDetail = () => {
   const fetchOrderDetail = useCallback(async () => {
     try {
       dispatch({ type: "SET_LOADING", payload: true });
-      const res = await getOrderById(id, token);
+      const res = await getOrderById(id);
       if (res.errCode === 0) dispatch({ type: "SET_ORDER", payload: res.data });
       else toast.error(res.errMessage || "Lỗi tải đơn hàng");
     } catch (error) {
@@ -79,7 +78,7 @@ const OrderDetail = () => {
     } finally {
       dispatch({ type: "SET_LOADING", payload: false });
     }
-  }, [id, token]);
+  }, [id]);
 
   useEffect(() => {
     fetchOrderDetail();
@@ -92,7 +91,7 @@ const OrderDetail = () => {
 
     dispatch({ type: "SET_SUBMITTING", payload: true });
     try {
-      await Promise.all(selectedItems.map((itemId) => requestReturn(itemId, returnReason, token)));
+      await Promise.all(selectedItems.map((itemId) => requestReturn(itemId, returnReason)));
       toast.success("Gửi yêu cầu trả hàng thành công");
       dispatch({ type: "CLOSE_RETURN_MODAL" });
       fetchOrderDetail();

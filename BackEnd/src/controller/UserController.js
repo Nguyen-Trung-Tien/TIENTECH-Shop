@@ -33,10 +33,17 @@ const handleLogin = async (req, res) => {
       });
     }
 
+    res.cookie("accessToken", result.data.accessToken, {
+      httpOnly: true,
+      secure: false, // Tắt secure để chạy được trên http://localhost
+      sameSite: "Lax",
+      maxAge: 15 * 60 * 1000,
+    });
+
     res.cookie("refreshToken", result.data.refreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      secure: false, // Tắt secure để chạy được trên http://localhost
+      sameSite: "Lax",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
@@ -45,7 +52,6 @@ const handleLogin = async (req, res) => {
       errMessage: "Login successful!",
       data: {
         user: result.data.user,
-        accessToken: result.data.accessToken,
       },
     });
   } catch (e) {
@@ -72,18 +78,38 @@ const handleRefreshToken = async (req, res) => {
       return res.status(403).json(result);
     }
 
+    res.cookie("accessToken", result.data.accessToken, {
+      httpOnly: true,
+      secure: false,
+      sameSite: "Lax",
+      maxAge: 15 * 60 * 1000,
+    });
+
     res.cookie("refreshToken", result.data.refreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      secure: false,
+      sameSite: "Lax",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
     return res.status(200).json({
       errCode: 0,
       errMessage: "Access token refreshed successfully",
-      data: { accessToken: result.data.accessToken },
     });
+  } catch (e) {
+    console.error(e);
+    return res.status(500).json({
+      errCode: -1,
+      errMessage: "Internal server error",
+    });
+  }
+};
+
+const handleGetMe = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const result = await UserService.getUserById(userId);
+    return res.status(200).json(result);
   } catch (e) {
     console.error(e);
     return res.status(500).json({
@@ -209,10 +235,16 @@ const handleLogout = async (req, res) => {
       }
     }
 
+    res.clearCookie("accessToken", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "Lax",
+    });
+
     res.clearCookie("refreshToken", {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "Strict",
+      sameSite: "Lax",
     });
 
     return res.status(200).json({
@@ -319,4 +351,5 @@ module.exports = {
   handleForgotPassword,
   handleResetPassword,
   handleVerifyResetToken,
+  handleGetMe,
 };

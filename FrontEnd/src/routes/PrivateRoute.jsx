@@ -1,47 +1,40 @@
-import React, { useEffect, useState } from "react";
-import { Navigate, Outlet } from "react-router-dom";
-import { useSelector } from "react-redux";
-import { jwtDecode } from "jwt-decode";
+import React, { useEffect } from "react";
+import { Navigate, Outlet, useLocation } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
 import { FiRefreshCw } from "react-icons/fi";
+import { getMeApi } from "../api/userApi";
+import { setUser, removeUser, setInitializing } from "../redux/userSlice";
 
 const PrivateRoute = ({ requiredRole }) => {
-  const user = useSelector((state) => state.user.user);
-  const token = useSelector((state) => state.user.token);
-
-  const [checking, setChecking] = useState(true);
-  const [valid, setValid] = useState(false);
+  const { user, isAuthenticated, isInitializing } = useSelector((state) => state.user);
+  const location = useLocation();
+  const dispatch = useDispatch();
 
   useEffect(() => {
-    const verifyToken = () => {
-      if (!user || !token) {
-        setValid(false);
-        setChecking(false);
-        return;
-      }
-
-      try {
-        const decoded = jwtDecode(token);
-        const isExpired = decoded.exp < Date.now() / 1000;
-
-        if (requiredRole && user.role !== requiredRole) {
-          setValid(false);
-        } else if (!isExpired) {
-          setValid(true);
-        } else {
-          setValid(false);
+    const checkAuth = async () => {
+      // Nếu đã có user trong Redux nhưng isInitializing vẫn là true, 
+      // ta gọi API /me để xác nhận session (ví dụ khi F5 trang)
+      if (isInitializing) {
+        try {
+          const res = await getMeApi();
+          if (res.errCode === 0) {
+            dispatch(setUser(res.data));
+          } else {
+            dispatch(removeUser());
+          }
+        } catch (error) {
+          console.error("Auth check failed:", error);
+          dispatch(removeUser());
+        } finally {
+          dispatch(setInitializing(false));
         }
-      } catch (err) {
-        console.error("Token decode error:", err);
-        setValid(false);
-      } finally {
-        setChecking(false);
       }
     };
 
-    verifyToken();
-  }, [user, token, requiredRole]);
+    checkAuth();
+  }, [isInitializing, dispatch]);
 
-  if (checking) {
+  if (isInitializing) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-surface-50">
         <div className="flex flex-col items-center gap-4 p-8 bg-white rounded-3xl shadow-soft border border-surface-100">
@@ -52,13 +45,18 @@ const PrivateRoute = ({ requiredRole }) => {
     );
   }
 
-  if (!valid) {
+  if (!isAuthenticated) {
     return (
       <Navigate
         to={requiredRole === "admin" ? "/admin/login" : "/login"}
+        state={{ from: location }}
         replace
       />
     );
+  }
+
+  if (requiredRole && user?.role !== requiredRole) {
+    return <Navigate to="/" replace />;
   }
 
   return <Outlet />;
