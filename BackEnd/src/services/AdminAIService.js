@@ -3,7 +3,9 @@ const { Op } = require("sequelize");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const geminiModel = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+const geminiModel = genAI.getGenerativeModel({
+  model: "gemini-3-flash-preview",
+});
 
 const getAIInsights = async () => {
   try {
@@ -55,10 +57,13 @@ Trả về kết quả bằng tiếng Việt, súc tích, định dạng JSON:
 
     const result = await geminiModel.generateContent(context);
     const response = result.response.text();
-    
+
     // Làm sạch JSON từ response của AI
-    const cleanJson = response.replace(/```json/gi, "").replace(/```/g, "").trim();
-    
+    const cleanJson = response
+      .replace(/```json/gi, "")
+      .replace(/```/g, "")
+      .trim();
+
     return {
       errCode: 0,
       data: JSON.parse(cleanJson),

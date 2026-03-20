@@ -25,13 +25,13 @@ const FloatingInput = ({ id, value, onChange, type, label, icon: Icon, toggleIco
       onChange={onChange}
       required
       placeholder=" "
-      className="peer w-full h-14 pl-12 pr-12 bg-surface-50 border-2 border-transparent rounded-2xl text-[14px] font-medium text-surface-900 focus:bg-white focus:border-primary/20 focus:ring-4 focus:ring-primary/5 outline-none transition-all placeholder-transparent"
+      className="peer w-full h-14 pl-12 pr-12 bg-slate-50 dark:bg-dark-surface border-2 border-transparent rounded-2xl text-[14px] font-medium text-slate-900 dark:text-white focus:bg-white dark:focus:bg-dark-bg focus:border-primary/20 focus:ring-4 focus:ring-primary/5 outline-none transition-all placeholder-transparent"
     />
     <label
       htmlFor={id}
       className="absolute left-12 top-1/2 -translate-y-1/2 text-surface-500 text-[14px] pointer-events-none transition-all duration-200 
-                 peer-focus:top-0 peer-focus:left-4 peer-focus:text-[11px] peer-focus:font-bold peer-focus:text-primary peer-focus:bg-white peer-focus:px-2
-                 peer-[:not(:placeholder-shown)]:top-0 peer-[:not(:placeholder-shown)]:left-4 peer-[:not(:placeholder-shown)]:text-[11px] peer-[:not(:placeholder-shown)]:font-bold peer-[:not(:placeholder-shown)]:text-primary peer-[:not(:placeholder-shown)]:bg-white peer-[:not(:placeholder-shown)]:px-2"
+                 peer-focus:top-0 peer-focus:left-4 peer-focus:text-[11px] peer-focus:font-bold peer-focus:text-primary peer-focus:bg-white dark:peer-focus:bg-dark-bg peer-focus:px-2
+                 peer-[:not(:placeholder-shown)]:top-0 peer-[:not(:placeholder-shown)]:left-4 peer-[:not(:placeholder-shown)]:text-[11px] peer-[:not(:placeholder-shown)]:font-bold peer-[:not(:placeholder-shown)]:text-primary peer-[:not(:placeholder-shown)]:bg-white dark:peer-[:not(:placeholder-shown)]:bg-dark-bg peer-[:not(:placeholder-shown)]:px-2"
     >
       {label}
     </label>

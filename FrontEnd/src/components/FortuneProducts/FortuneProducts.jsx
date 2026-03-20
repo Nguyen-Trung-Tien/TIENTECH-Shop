@@ -86,22 +86,22 @@ const FortuneProducts = () => {
   const handleSearch = () => setPage(1);
 
   return (
-    <div className="min-h-screen bg-surface-50 py-12">
+    <div className="min-h-screen bg-[var(--bg-main)] py-12">
       <div className="container-custom">
         {/* HEADER */}
-        <div className="relative overflow-hidden bg-white rounded-[3rem] p-8 md:p-12 border border-surface-200 shadow-soft mb-10">
+        <div className="relative overflow-hidden bg-white dark:bg-dark-surface rounded-2xl p-8 md:p-10 border border-slate-200 dark:border-dark-border shadow-soft mb-10">
            <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/5 rounded-full blur-[80px] -z-0"></div>
            <div className="relative z-10">
               <Link 
                 to="/" 
-                className="inline-flex items-center gap-2 text-surface-400 hover:text-primary transition-colors mb-6 font-bold text-[13px] uppercase tracking-widest"
+                className="inline-flex items-center gap-2 text-slate-400 hover:text-primary transition-colors mb-6 font-bold text-[11px] uppercase tracking-widest"
               >
-                <FiArrowLeft size={18} /> Quay lại trang chủ
+                <FiArrowLeft size={16} /> Quay lại trang chủ
               </Link>
-              <h1 className="text-3xl md:text-5xl font-display font-black text-surface-900 mb-4 tracking-tight">
+              <h1 className="text-2xl md:text-4xl font-display font-black text-slate-900 dark:text-white mb-4 tracking-tight">
                 🔮 Gợi ý <span className="text-primary italic">Phong Thủy</span>
               </h1>
-              <p className="text-surface-500 text-lg max-w-2xl font-medium leading-relaxed">
+              <p className="text-slate-500 dark:text-slate-400 text-base max-w-2xl font-medium leading-relaxed">
                 Khám phá những thiết bị công nghệ phù hợp với bản mệnh và năm sinh của bạn để thu hút năng lượng tích cực và sự hanh thông trong công việc.
               </p>
            </div>
@@ -111,29 +111,29 @@ const FortuneProducts = () => {
           {/* LEFT: AI & FILTERS */}
           <div className="lg:col-span-4 space-y-8">
             {/* AI ASSISTANT */}
-            <div className="bg-surface-900 rounded-[2.5rem] p-8 text-white relative overflow-hidden shadow-2xl shadow-slate-900/20">
+            <div className="bg-slate-900 dark:bg-primary-dark rounded-2xl p-8 text-white relative overflow-hidden shadow-xl">
                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/20 rounded-full blur-[40px] -z-0"></div>
                <div className="relative z-10">
                   <div className="flex items-center gap-3 mb-6">
-                    <div className="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center text-primary">
+                    <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center text-white">
                       <FiCpu size={20} />
                     </div>
-                    <h3 className="text-lg font-display font-bold">Trợ lý Phong thủy AI</h3>
+                    <h3 className="text-lg font-display font-bold uppercase tracking-tight">Trợ lý Phong thủy AI</h3>
                   </div>
                   <FengShuiChat setBirthYear={setBirthYear} />
                </div>
             </div>
 
             {/* FILTERS */}
-            <div className="bg-white rounded-[2.5rem] p-8 border border-surface-200 shadow-soft space-y-6">
+            <div className="bg-white dark:bg-dark-surface rounded-2xl p-8 border border-slate-200 dark:border-dark-border shadow-soft space-y-6">
                <div className="flex items-center gap-3 mb-2">
                   <FiFilter className="text-primary" />
-                  <h3 className="text-lg font-bold text-surface-900 uppercase tracking-tight">Bộ lọc bản mệnh</h3>
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white uppercase tracking-tight">Bộ lọc bản mệnh</h3>
                </div>
 
                <div className="space-y-4">
                   <div>
-                    <label className="text-[11px] font-black text-surface-400 uppercase tracking-widest mb-2 block ml-1">Năm sinh của bạn</label>
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block ml-1">Năm sinh của bạn</label>
                     <Select
                       options={yearOptions}
                       value={birthYear ? { value: birthYear, label: birthYear } : null}
@@ -143,10 +143,25 @@ const FortuneProducts = () => {
                       styles={{
                         control: (base) => ({
                           ...base,
-                          borderRadius: '16px',
-                          padding: '4px',
+                          borderRadius: '12px',
+                          padding: '2px',
                           borderColor: '#e5e7eb',
-                          '&:hover': { borderColor: '#0071e3' }
+                          backgroundColor: 'transparent',
+                          '&:hover': { borderColor: '#2563eb' }
+                        }),
+                        singleValue: (base) => ({
+                          ...base,
+                          color: 'inherit'
+                        }),
+                        menu: (base) => ({
+                          ...base,
+                          backgroundColor: 'var(--bg-card)',
+                          borderRadius: '12px'
+                        }),
+                        option: (base, state) => ({
+                          ...base,
+                          backgroundColor: state.isFocused ? 'var(--color-primary-light)' : 'transparent',
+                          color: state.isFocused ? 'white' : 'inherit'
                         })
                       }}
                     />
@@ -154,9 +169,9 @@ const FortuneProducts = () => {
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="col-span-2">
-                      <label className="text-[11px] font-black text-surface-400 uppercase tracking-widest mb-2 block ml-1">Thương hiệu</label>
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block ml-1">Thương hiệu</label>
                       <select 
-                        className="w-full h-12 bg-surface-50 border border-surface-200 rounded-2xl px-4 text-sm font-bold outline-none focus:border-primary focus:ring-4 focus:ring-primary/5 transition-all"
+                        className="w-full h-11 bg-slate-50 dark:bg-dark-bg border border-slate-200 dark:border-dark-border rounded-xl px-4 text-sm font-bold text-slate-900 dark:text-white outline-none focus:border-primary transition-all"
                         value={brandId}
                         onChange={(e) => setBrandId(e.target.value)}
                       >
@@ -166,9 +181,9 @@ const FortuneProducts = () => {
                     </div>
 
                     <div className="col-span-2">
-                      <label className="text-[11px] font-black text-surface-400 uppercase tracking-widest mb-2 block ml-1">Danh mục</label>
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block ml-1">Danh mục</label>
                       <select 
-                        className="w-full h-12 bg-surface-50 border border-surface-200 rounded-2xl px-4 text-sm font-bold outline-none focus:border-primary focus:ring-4 focus:ring-primary/5 transition-all"
+                        className="w-full h-11 bg-slate-50 dark:bg-dark-bg border border-slate-200 dark:border-dark-border rounded-xl px-4 text-sm font-bold text-slate-900 dark:text-white outline-none focus:border-primary transition-all"
                         value={categoryId}
                         onChange={(e) => setCategoryId(e.target.value)}
                       >
@@ -178,22 +193,22 @@ const FortuneProducts = () => {
                     </div>
 
                     <div>
-                      <label className="text-[11px] font-black text-surface-400 uppercase tracking-widest mb-2 block ml-1">Giá từ</label>
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block ml-1">Giá từ</label>
                       <input 
                         type="number"
                         placeholder="₫ VNĐ"
-                        className="w-full h-12 bg-surface-50 border border-surface-200 rounded-2xl px-4 text-sm font-bold outline-none focus:border-primary transition-all"
+                        className="w-full h-11 bg-slate-50 dark:bg-dark-bg border border-slate-200 dark:border-dark-border rounded-xl px-4 text-sm font-bold text-slate-900 dark:text-white outline-none focus:border-primary transition-all"
                         value={minPrice}
                         onChange={(e) => setMinPrice(e.target.value)}
                       />
                     </div>
 
                     <div>
-                      <label className="text-[11px] font-black text-surface-400 uppercase tracking-widest mb-2 block ml-1">Đến</label>
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block ml-1">Đến</label>
                       <input 
                         type="number"
                         placeholder="₫ VNĐ"
-                        className="w-full h-12 bg-surface-50 border border-surface-200 rounded-2xl px-4 text-sm font-bold outline-none focus:border-primary transition-all"
+                        className="w-full h-11 bg-slate-50 dark:bg-dark-bg border border-slate-200 dark:border-dark-border rounded-xl px-4 text-sm font-bold text-slate-900 dark:text-white outline-none focus:border-primary transition-all"
                         value={maxPrice}
                         onChange={(e) => setMaxPrice(e.target.value)}
                       />
@@ -202,11 +217,11 @@ const FortuneProducts = () => {
 
                   <Button 
                     variant="primary" 
-                    className="w-full h-14 !rounded-2xl text-base shadow-lg shadow-primary/20" 
+                    className="w-full h-12 !rounded-xl text-sm font-black uppercase tracking-widest shadow-lg shadow-primary/20" 
                     icon={FiSearch}
                     onClick={handleSearch}
                   >
-                    TÌM SẢN PHẨM HỢP MỆNH
+                    TÌM KIẾM
                   </Button>
                </div>
             </div>
@@ -219,15 +234,15 @@ const FortuneProducts = () => {
               <motion.div 
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="bg-white p-6 rounded-[2rem] border border-surface-200 shadow-sm flex flex-wrap items-center gap-4"
+                className="bg-white dark:bg-dark-surface p-6 rounded-2xl border border-slate-200 dark:border-dark-border shadow-sm flex flex-wrap items-center gap-4"
               >
-                <div className="flex items-center gap-2 text-surface-400 font-black uppercase tracking-widest text-[11px]">
+                <div className="flex items-center gap-2 text-slate-400 font-black uppercase tracking-widest text-[10px]">
                    <FiActivity className="text-amber-500" />
-                   <span>Màu sắc mang lại may mắn:</span>
+                   <span>Màu sắc may mắn:</span>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {luckyColors.map((c, i) => (
-                    <span key={i} className="px-4 py-1.5 bg-primary/10 text-primary border border-primary/20 rounded-full text-xs font-black uppercase tracking-widest">
+                    <span key={i} className="px-4 py-1 bg-primary/10 text-primary dark:text-primary-light border border-primary/20 rounded-full text-[10px] font-black uppercase tracking-widest">
                       {c}
                     </span>
                   ))}
@@ -239,16 +254,16 @@ const FortuneProducts = () => {
             <div>
               {loading ? (
                 <div className="flex flex-col items-center justify-center py-32 gap-4">
-                  <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-                  <p className="text-surface-400 font-bold uppercase tracking-widest text-[11px]">Đang phân tích phong thủy...</p>
+                  <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+                  <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">Phân tích phong thủy...</p>
                 </div>
               ) : products.length === 0 ? (
-                <div className="bg-white rounded-[3rem] p-20 text-center border-2 border-dashed border-surface-200">
-                   <div className="w-20 h-20 bg-surface-50 rounded-full flex items-center justify-center mx-auto mb-6">
-                      <FiLayers className="text-3xl text-surface-200" />
+                <div className="bg-white dark:bg-dark-surface rounded-2xl p-20 text-center border-2 border-dashed border-slate-200 dark:border-dark-border">
+                   <div className="w-16 h-16 bg-slate-50 dark:bg-dark-bg rounded-full flex items-center justify-center mx-auto mb-6">
+                      <FiLayers className="text-2xl text-slate-200" />
                    </div>
-                   <h3 className="text-xl font-bold text-surface-900 mb-2">Chưa tìm thấy sản phẩm</h3>
-                   <p className="text-surface-500">Vui lòng nhập năm sinh hoặc điều chỉnh bộ lọc để nhận gợi ý.</p>
+                   <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">Chưa tìm thấy sản phẩm</h3>
+                   <p className="text-slate-500 dark:text-slate-400 text-sm">Vui lòng nhập năm sinh hoặc điều chỉnh bộ lọc để nhận gợi ý.</p>
                 </div>
               ) : (
                 <div className="space-y-12">
