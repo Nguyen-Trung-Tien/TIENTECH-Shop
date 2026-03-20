@@ -13,7 +13,7 @@ const uploadToCloudinary = (buffer) => {
       (error, result) => {
         if (error) return reject(error);
         resolve(result);
-      }
+      },
     );
     stream.end(buffer);
   });
@@ -43,7 +43,28 @@ const handleCreateProduct = async (req, res) => {
     const data = { ...req.body };
     if (data.brandId) data.brandId = parseInt(data.brandId);
     if (data.categoryId) data.categoryId = parseInt(data.categoryId);
-    if (data.isActive !== undefined) data.isActive = parseBoolean(data.isActive);
+    if (data.isActive !== undefined)
+      data.isActive = parseBoolean(data.isActive);
+
+    if (data.flashSaleStart) {
+      const startDate = new Date(data.flashSaleStart);
+      if (isNaN(startDate))
+        return res
+          .status(400)
+          .json({ errCode: 1, errMessage: "flashSaleStart không hợp lệ" });
+      data.flashSaleStart = startDate;
+    }
+    if (data.flashSaleEnd) {
+      const endDate = new Date(data.flashSaleEnd);
+      if (isNaN(endDate))
+        return res
+          .status(400)
+          .json({ errCode: 1, errMessage: "flashSaleEnd không hợp lệ" });
+      data.flashSaleEnd = endDate;
+    }
+    if (data.flashSalePrice !== undefined)
+      data.flashSalePrice =
+        data.flashSalePrice === "" ? null : data.flashSalePrice;
 
     const files = req.files || {};
     const primaryFile = files.image?.[0] || files.images?.[0] || null;
@@ -73,7 +94,7 @@ const handleCreateProduct = async (req, res) => {
           imageUrl: u.imageUrl,
           publicId: u.publicId,
           isPrimary: false,
-        })
+        }),
       );
     }
 
@@ -93,8 +114,16 @@ const handleGetAllProducts = async (req, res) => {
     const categoryId = req.query.categoryId;
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
+    const isFlashSale = ProductService.parseBoolean
+      ? ProductService.parseBoolean(req.query.isFlashSale)
+      : req.query.isFlashSale === "true" || req.query.isFlashSale === "1";
 
-    const result = await ProductService.getAllProducts(categoryId, page, limit);
+    const result = await ProductService.getAllProducts(
+      categoryId,
+      page,
+      limit,
+      isFlashSale,
+    );
     return res.status(200).json(result);
   } catch (e) {
     console.error("Error in handleGetAllProducts:", e);
@@ -127,7 +156,28 @@ const handleUpdateProduct = async (req, res) => {
 
     if (data.brandId) data.brandId = parseInt(data.brandId);
     if (data.categoryId) data.categoryId = parseInt(data.categoryId);
-    if (data.isActive !== undefined) data.isActive = parseBoolean(data.isActive);
+    if (data.isActive !== undefined)
+      data.isActive = parseBoolean(data.isActive);
+
+    if (data.flashSaleStart) {
+      const startDate = new Date(data.flashSaleStart);
+      if (isNaN(startDate))
+        return res
+          .status(400)
+          .json({ errCode: 1, errMessage: "flashSaleStart không hợp lệ" });
+      data.flashSaleStart = startDate;
+    }
+    if (data.flashSaleEnd) {
+      const endDate = new Date(data.flashSaleEnd);
+      if (isNaN(endDate))
+        return res
+          .status(400)
+          .json({ errCode: 1, errMessage: "flashSaleEnd không hợp lệ" });
+      data.flashSaleEnd = endDate;
+    }
+    if (data.flashSalePrice !== undefined)
+      data.flashSalePrice =
+        data.flashSalePrice === "" ? null : data.flashSalePrice;
 
     const files = req.files || {};
     const primaryFile = files.image?.[0] || null;
@@ -152,7 +202,7 @@ const handleUpdateProduct = async (req, res) => {
           imageUrl: u.imageUrl,
           publicId: u.publicId,
           isPrimary: false,
-        })
+        }),
       );
     }
 
@@ -224,6 +274,22 @@ const handleGetDiscountedProducts = async (req, res) => {
     return res.status(200).json(result);
   } catch (e) {
     console.error("Error in handleGetDiscountedProducts:", e);
+    return res.status(500).json({
+      errCode: -1,
+      errMessage: "Internal server error",
+    });
+  }
+};
+
+const handleGetFlashSaleProducts = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+
+    const result = await ProductService.getFlashSaleProducts(page, limit);
+    return res.status(200).json(result);
+  } catch (e) {
+    console.error("Error in handleGetFlashSaleProducts:", e);
     return res.status(500).json({
       errCode: -1,
       errMessage: "Internal server error",
@@ -318,6 +384,7 @@ module.exports = {
   handleSearchProducts,
   handleSearchSuggestions,
   handleGetDiscountedProducts,
+  handleGetFlashSaleProducts,
   handleFilterProducts,
   handleRecommendProducts,
   handleRecommendFortuneProducts,

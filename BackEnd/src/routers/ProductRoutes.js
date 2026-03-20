@@ -15,7 +15,7 @@ router.post(
   ]),
   authenticateToken,
   authorizeRole(["admin"]),
-  ProductController.handleCreateProduct
+  ProductController.handleCreateProduct,
 );
 router.get("/get-all-product", ProductController.handleGetAllProducts);
 router.get("/get-product/:id", ProductController.handleGetProductById);
@@ -30,21 +30,22 @@ router.put(
   ]),
   authenticateToken,
   authorizeRole(["admin"]),
-  ProductController.handleUpdateProduct
+  ProductController.handleUpdateProduct,
 );
 router.delete(
   "/delete-product/:id",
   authenticateToken,
   authorizeRole(["admin"]),
-  ProductController.handleDeleteProduct
+  ProductController.handleDeleteProduct,
 );
 
 router.get("/discounted", ProductController.handleGetDiscountedProducts);
+router.get("/flash-sale", ProductController.handleGetFlashSaleProducts);
 router.get("/filter", ProductController.handleFilterProducts);
 router.get("/recommend/:id", ProductController.handleRecommendProducts);
 router.get(
   "/recommend-fortune",
-  ProductController.handleRecommendFortuneProducts
+  ProductController.handleRecommendFortuneProducts,
 );
 
 module.exports = router;

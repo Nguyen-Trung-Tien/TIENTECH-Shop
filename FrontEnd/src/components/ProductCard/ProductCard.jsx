@@ -20,14 +20,35 @@ const ProductCard = ({ product }) => {
 
   const [loadingCart, setLoadingCart] = useState(false);
 
-  const { id, name, price, discount = 0, stock, sold, image, isActive, reviews = [] } = product;
+  const {
+    id,
+    name,
+    price,
+    displayPrice,
+    discount = 0,
+    stock,
+    sold,
+    image,
+    isActive,
+    reviews = [],
+    flashSaleActive = false,
+    flashSaleDiscount = 0,
+    originalPrice: flashOriginalPrice,
+    basePrice,
+  } = product;
 
   const avgRating = useMemo(() => {
     if (!reviews.length) return 0;
-    return reviews.reduce((sum, r) => sum + (r.rating || 0), 0) / reviews.length;
+    return (
+      reviews.reduce((sum, r) => sum + (r.rating || 0), 0) / reviews.length
+    );
   }, [reviews]);
 
-  const finalPrice = discount > 0 ? price * (1 - discount / 100) : price;
+  const productOriginalPrice = flashSaleActive
+    ? Number(flashOriginalPrice || basePrice || price)
+    : Number(basePrice || price);
+
+  const finalPrice = Number(displayPrice || price);
 
   const handleAddToCart = async (e) => {
     e.stopPropagation();
@@ -42,8 +63,17 @@ const ProductCard = ({ product }) => {
         const newCartRes = await createCart(userId, token);
         cart = newCartRes.data;
       }
-      const res = await addCart({ cartId: cart.id, productId: id, quantity: 1 }, token);
-      dispatch(addCartItem({ id: res.data.id, product: res.data.product, quantity: res.data.quantity }));
+      const res = await addCart(
+        { cartId: cart.id, productId: id, quantity: 1 },
+        token,
+      );
+      dispatch(
+        addCartItem({
+          id: res.data.id,
+          product: res.data.product,
+          quantity: res.data.quantity,
+        }),
+      );
       toast.success(`Đã thêm vào giỏ`);
     } catch (err) {
       toast.error("Lỗi thêm giỏ hàng");
@@ -68,20 +98,41 @@ const ProductCard = ({ product }) => {
           loading="lazy"
           className="w-full h-full object-contain p-4 mix-blend-multiply transition-transform duration-500 group-hover:scale-105"
         />
-        
+
         {/* Badges */}
         <div className="absolute top-2 left-2 flex flex-col gap-1 z-10">
-          {discount > 0 && <Badge variant="brand">-{discount}%</Badge>}
+          {flashSaleActive && flashSaleDiscount > 0 && (
+            <Badge variant="danger">
+              Flash -{Math.round(flashSaleDiscount)}%
+            </Badge>
+          )}
+          {!flashSaleActive && discount > 0 && (
+            <Badge variant="brand">-{discount}%</Badge>
+          )}
         </div>
 
         {/* Mobile quick add button */}
         <div className="absolute bottom-2 right-2 lg:hidden">
-           <Button variant="primary" size="icon" icon={FiShoppingCart} onClick={handleAddToCart} loading={loadingCart} className="rounded-full shadow-lg" />
+          <Button
+            variant="primary"
+            size="icon"
+            icon={FiShoppingCart}
+            onClick={handleAddToCart}
+            loading={loadingCart}
+            className="rounded-full shadow-lg"
+          />
         </div>
 
         {/* Desktop hover action */}
         <div className="absolute inset-x-0 bottom-0 p-3 translate-y-full group-hover:translate-y-0 transition-transform duration-300 z-20 bg-gradient-to-t from-white/90 to-transparent hidden lg:block">
-          <Button variant="primary" size="sm" className="w-full" icon={FiShoppingCart} onClick={handleAddToCart} loading={loadingCart}>
+          <Button
+            variant="primary"
+            size="sm"
+            className="w-full"
+            icon={FiShoppingCart}
+            onClick={handleAddToCart}
+            loading={loadingCart}
+          >
             THÊM GIỎ HÀNG
           </Button>
         </div>
@@ -89,7 +140,9 @@ const ProductCard = ({ product }) => {
 
       {/* Content Area */}
       <div className="p-3 flex flex-col flex-1">
-        <p className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1 truncate">Official Store</p>
+        <p className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1 truncate">
+          Official Store
+        </p>
         <h3 className="text-xs md:text-sm font-bold text-slate-800 dark:text-white line-clamp-2 leading-tight mb-2 h-8 group-hover:text-primary transition-colors">
           {name}
         </h3>
@@ -97,19 +150,30 @@ const ProductCard = ({ product }) => {
         <div className="flex items-center gap-1 mb-2">
           <div className="flex text-amber-400 text-[9px]">
             {Array.from({ length: 5 }).map((_, i) => (
-              <FaStar key={i} className={avgRating >= i + 1 ? "fill-current" : "text-slate-200 dark:text-slate-700"} />
+              <FaStar
+                key={i}
+                className={
+                  avgRating >= i + 1
+                    ? "fill-current"
+                    : "text-slate-200 dark:text-slate-700"
+                }
+              />
             ))}
           </div>
-          {sold > 0 && <span className="text-[9px] text-slate-400 dark:text-slate-500">| Đã bán {sold}</span>}
+          {sold > 0 && (
+            <span className="text-[9px] text-slate-400 dark:text-slate-500">
+              | Đã bán {sold}
+            </span>
+          )}
         </div>
 
         <div className="mt-auto pt-2 border-t border-slate-50 dark:border-dark-border">
           <p className="text-base font-black text-slate-900 dark:text-white leading-none">
             {Math.round(finalPrice).toLocaleString("vi-VN")} ₫
           </p>
-          {discount > 0 && (
+          {((flashSaleActive && flashOriginalPrice) || discount > 0) && (
             <p className="text-[10px] text-slate-400 dark:text-slate-500 line-through mt-1">
-              {Math.round(price).toLocaleString("vi-VN")} ₫
+              {Math.round(productOriginalPrice).toLocaleString("vi-VN")} ₫
             </p>
           )}
         </div>

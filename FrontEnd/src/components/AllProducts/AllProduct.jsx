@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { toast } from "react-toastify";
-import { useSelector } from "react-redux";
 import { useSearchParams } from "react-router-dom";
 import ProductCard from "../../components/ProductCard/ProductCard";
 import SkeletonCard from "../SkeletonCard/SkeletonCard";
@@ -15,10 +14,8 @@ const AllProducts = React.memo(() => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [error, setError] = useState(false);
+  const [flashSaleOnly, setFlashSaleOnly] = useState(false);
   const limit = 12;
-
-  const user = useSelector((state) => state.user.user);
-  const userId = user?.id;
 
   const [searchParams] = useSearchParams();
   const searchQuery = searchParams.get("search") || "";
@@ -34,13 +31,13 @@ const AllProducts = React.memo(() => {
 
         const res = searchQuery
           ? await searchProductsApi(searchQuery, currentPage, limit)
-          : await getAllProductApi(currentPage, limit);
+          : await getAllProductApi(currentPage, limit, "", flashSaleOnly);
 
         if (res?.errCode === 0) {
           const newProducts = res?.products || [];
 
           setProducts((prev) =>
-            append ? [...prev, ...newProducts] : newProducts
+            append ? [...prev, ...newProducts] : newProducts,
           );
 
           setTotalPages(res.totalPages || 1);
@@ -57,7 +54,7 @@ const AllProducts = React.memo(() => {
         setLoadingMore(false);
       }
     },
-    [searchQuery, limit]
+    [searchQuery, limit, flashSaleOnly],
   );
 
   useEffect(() => {
@@ -65,7 +62,7 @@ const AllProducts = React.memo(() => {
     setProducts([]);
     setError(false);
     fetchProducts(1, false);
-  }, [fetchProducts]);
+  }, [fetchProducts, flashSaleOnly]);
 
   const handleLoadMore = () => {
     if (page >= totalPages || loadingMore) return;
@@ -84,23 +81,40 @@ const AllProducts = React.memo(() => {
     <section className="py-12 bg-surface-50 min-h-screen">
       <div className="container-custom">
         {/* Header Section */}
-        <div className="flex flex-col items-center mb-12 text-center">
+        <div className="flex flex-col items-center mb-8 text-center">
           <div className="inline-flex items-center justify-center w-12 h-12 bg-primary/10 rounded-2xl text-primary mb-4">
-             <FiSearch className="text-2xl" />
+            <FiSearch className="text-2xl" />
           </div>
           <h2 className="text-2xl md:text-3xl font-display font-bold text-surface-900 tracking-tight">
             {searchQuery
               ? `Kết quả tìm kiếm: "${searchQuery}"`
-              : "Tất cả sản phẩm công nghệ"}
+              : flashSaleOnly
+                ? "Sản phẩm Flash Sale"
+                : "Tất cả sản phẩm công nghệ"}
           </h2>
           <div className="mt-2 h-1 w-20 bg-primary rounded-full"></div>
+
+          <div className="mt-4 flex items-center gap-3 text-xs text-slate-500">
+            <label className="inline-flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={flashSaleOnly}
+                onChange={(e) => setFlashSaleOnly(e.target.checked)}
+                className="form-checkbox h-4 w-4 text-primary"
+              />
+              Chỉ Flash Sale
+            </label>
+            <span>Hiện tại: {flashSaleOnly ? "Flash Sale" : "Toàn bộ"}</span>
+          </div>
         </div>
 
         {/* Error State */}
         {error && (
           <div className="max-w-md mx-auto p-6 bg-rose-50 border border-rose-100 rounded-2xl text-center">
             <FiAlertCircle className="w-10 h-10 text-rose-500 mx-auto mb-3" />
-            <p className="text-rose-900 font-bold mb-4">Đã có lỗi xảy ra khi tải sản phẩm.</p>
+            <p className="text-rose-900 font-bold mb-4">
+              Đã có lỗi xảy ra khi tải sản phẩm.
+            </p>
             <button
               onClick={() => fetchProducts(1, false)}
               className="inline-flex items-center gap-2 px-6 py-2 bg-rose-500 text-white font-bold rounded-xl hover:bg-rose-600 transition-colors shadow-lg shadow-rose-500/20"
@@ -116,11 +130,16 @@ const AllProducts = React.memo(() => {
         {/* Empty State */}
         {!loading && !error && products.length === 0 && (
           <div className="max-w-md mx-auto p-12 bg-white rounded-3xl border border-surface-200 text-center shadow-soft">
-             <div className="w-20 h-20 bg-surface-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <FiSearch className="text-3xl text-surface-400" />
-             </div>
-             <h3 className="text-lg font-bold text-surface-900 mb-2">Không tìm thấy sản phẩm</h3>
-             <p className="text-surface-500 text-sm">Chúng tôi không tìm thấy kết quả phù hợp với từ khóa của bạn. Vui lòng thử lại với từ khóa khác.</p>
+            <div className="w-20 h-20 bg-surface-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <FiSearch className="text-3xl text-surface-400" />
+            </div>
+            <h3 className="text-lg font-bold text-surface-900 mb-2">
+              Không tìm thấy sản phẩm
+            </h3>
+            <p className="text-surface-500 text-sm">
+              Chúng tôi không tìm thấy kết quả phù hợp với từ khóa của bạn. Vui
+              lòng thử lại với từ khóa khác.
+            </p>
           </div>
         )}
 

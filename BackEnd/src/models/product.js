@@ -74,6 +74,10 @@ module.exports = (sequelize, DataTypes) => {
       },
       discount: { type: DataTypes.DECIMAL(5, 2), defaultValue: 0.0 },
       isActive: { type: DataTypes.BOOLEAN, defaultValue: true },
+      isFlashSale: { type: DataTypes.BOOLEAN, defaultValue: false },
+      flashSalePrice: { type: DataTypes.DECIMAL(10, 2), allowNull: true },
+      flashSaleStart: { type: DataTypes.DATE, allowNull: true },
+      flashSaleEnd: { type: DataTypes.DATE, allowNull: true },
 
       // Thông số điện tử
       color: { type: DataTypes.STRING }, // Màu sắc

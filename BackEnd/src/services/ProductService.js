@@ -7,11 +7,76 @@ const productCache = new NodeCache({ stdTTL: 600, checkperiod: 120 });
 
 const clearProductCache = () => {
   const keys = productCache.keys();
-  keys.forEach(key => {
+  keys.forEach((key) => {
     if (key.startsWith("products_")) {
       productCache.del(key);
     }
   });
+};
+
+const isFlashSaleActive = (product) => {
+  if (!product || !product.isFlashSale) return false;
+  if (!product.flashSaleStart || !product.flashSaleEnd) return false;
+
+  const now = new Date();
+  const start = new Date(product.flashSaleStart);
+  const end = new Date(product.flashSaleEnd);
+  return now >= start && now <= end;
+};
+
+const applyFlashSaleToProduct = (productData) => {
+  const product = { ...productData };
+  const originalPrice = Number(product.price);
+  product.basePrice = originalPrice;
+  product.originalPrice = originalPrice;
+  product.flashSaleActive = isFlashSaleActive(product);
+
+  if (product.flashSaleActive && product.flashSalePrice) {
+    const salePrice = Number(product.flashSalePrice);
+    product.displayPrice = salePrice;
+    product.price = salePrice; // legacy usage in UI
+    product.flashSaleDiscount =
+      originalPrice > 0
+        ? ((originalPrice - salePrice) / originalPrice) * 100
+        : 0;
+  } else if (Number(product.discount) > 0) {
+    const discount = Number(product.discount);
+    const discountedPrice = originalPrice * (1 - discount / 100);
+    product.displayPrice = Number(discountedPrice.toFixed(2));
+    product.price = product.displayPrice;
+    product.flashSaleActive = false;
+    product.flashSaleDiscount = discount;
+  } else {
+    product.displayPrice = originalPrice;
+    product.price = originalPrice;
+    product.flashSaleDiscount = 0;
+  }
+
+  return product;
+};
+
+const disableExpiredFlashSales = async () => {
+  try {
+    const now = new Date();
+    const [updated] = await db.Product.update(
+      { isFlashSale: false },
+      {
+        where: {
+          isFlashSale: true,
+          flashSaleEnd: { [Op.lte]: now },
+        },
+      },
+    );
+
+    if (updated > 0) {
+      clearProductCache();
+    }
+
+    return { errCode: 0, updated };
+  } catch (error) {
+    console.error("Error disabling expired flash sales:", error);
+    return { errCode: 1, errMessage: error.message };
+  }
 };
 
 const createProduct = async (data, imageRecords = []) => {
@@ -38,16 +103,31 @@ const createProduct = async (data, imageRecords = []) => {
   }
 };
 
-const getAllProducts = async (categoryId, page = 1, limit = 10) => {
-  const cacheKey = `products_${categoryId || 'all'}_${page}_${limit}`;
+const getAllProducts = async (
+  categoryId,
+  page = 1,
+  limit = 10,
+  isFlashSale = false,
+) => {
+  const cacheKey = `products_${categoryId || "all"}_${isFlashSale ? "flash" : "all"}_${page}_${limit}`;
   const cachedData = productCache.get(cacheKey);
-  
+
   if (cachedData) {
     return cachedData;
   }
 
   const offset = (page - 1) * limit;
-  const whereCondition = categoryId ? { categoryId } : {};
+  const whereCondition = {};
+  if (categoryId) whereCondition.categoryId = categoryId;
+
+  if (isFlashSale) {
+    const now = new Date();
+    whereCondition.isFlashSale = true;
+    whereCondition.flashSaleStart = { [Op.lte]: now };
+    whereCondition.flashSaleEnd = { [Op.gte]: now };
+  } else {
+    whereCondition.isActive = true;
+  }
 
   const { count, rows } = await db.Product.findAndCountAll({
     where: whereCondition,
@@ -63,7 +143,10 @@ const getAllProducts = async (categoryId, page = 1, limit = 10) => {
 
   const result = {
     errCode: 0,
-    products: rows.map((p) => ({ ...p.toJSON(), image: p.image || null })),
+    products: rows.map((p) => {
+      const raw = { ...p.toJSON(), image: p.image || null };
+      return applyFlashSaleToProduct(raw);
+    }),
     totalItems: count,
     currentPage: page,
     totalPages: Math.ceil(count / limit),
@@ -87,7 +170,15 @@ const getProductById = async (id) => {
         {
           model: db.ProductVariant,
           as: "variants",
-          attributes: ["id", "sku", "price", "stock", "isActive", "attributes", "imageUrl"],
+          attributes: [
+            "id",
+            "sku",
+            "price",
+            "stock",
+            "isActive",
+            "attributes",
+            "imageUrl",
+          ],
         },
       ],
     });
@@ -101,18 +192,20 @@ const getProductById = async (id) => {
         })
       : [];
 
+    const formattedProduct = applyFlashSaleToProduct({
+      ...product.toJSON(),
+      image: product.image || null,
+      sold: product.sold || 0,
+      images: images.map((i) => ({
+        id: i.id,
+        imageUrl: i.imageUrl,
+        isPrimary: i.isPrimary,
+      })),
+    });
+
     return {
       errCode: 0,
-      product: {
-        ...product.toJSON(),
-        image: product.image || null,
-        sold: product.sold || 0,
-        images: images.map((i) => ({
-          id: i.id,
-          imageUrl: i.imageUrl,
-          isPrimary: i.isPrimary,
-        })),
-      },
+      product: formattedProduct,
     };
   } catch (e) {
     console.error("Error fetching product:", e);
@@ -130,13 +223,15 @@ const updateProduct = async (id, data, imageRecords = []) => {
     }
     const updatedData = { ...data };
 
-    const updatedProduct = await product.update(updatedData, { transaction: t });
+    const updatedProduct = await product.update(updatedData, {
+      transaction: t,
+    });
 
     if (imageRecords.length > 0) {
       if (imageRecords.some((i) => i.isPrimary)) {
         await db.ProductImage.update(
           { isPrimary: false },
-          { where: { productId: id }, transaction: t }
+          { where: { productId: id }, transaction: t },
         );
       }
 
@@ -289,10 +384,18 @@ const updateProductSold = async (productId, quantity) => {
 const getDiscountedProducts = async (page = 1, limit = 10) => {
   const offset = (page - 1) * limit;
 
+  const now = new Date();
   const { count, rows } = await db.Product.findAndCountAll({
     where: {
-      discount: { [db.Sequelize.Op.gt]: 0 },
       isActive: true,
+      [Op.or]: [
+        { discount: { [db.Sequelize.Op.gt]: 0 } },
+        {
+          isFlashSale: true,
+          flashSaleStart: { [Op.lte]: now },
+          flashSaleEnd: { [Op.gte]: now },
+        },
+      ],
     },
     include: [
       { model: db.Category, as: "category" },
@@ -305,10 +408,73 @@ const getDiscountedProducts = async (page = 1, limit = 10) => {
 
   return {
     errCode: 0,
-    products: rows.map((p) => ({ ...p.toJSON(), image: p.image || null })),
+    products: rows.map((p) => {
+      const raw = { ...p.toJSON(), image: p.image || null };
+      return applyFlashSaleToProduct(raw);
+    }),
     totalItems: count,
     currentPage: page,
     totalPages: Math.ceil(count / limit),
+  };
+};
+
+const getFlashSaleProducts = async (page = 1, limit = 10) => {
+  const now = new Date();
+  const offset = (page - 1) * limit;
+
+  const { count, rows } = await db.Product.findAndCountAll({
+    where: {
+      isActive: true,
+      isFlashSale: true,
+      flashSaleStart: { [Op.lte]: now },
+      flashSaleEnd: { [Op.gte]: now },
+    },
+    include: [
+      { model: db.Category, as: "category" },
+      { model: db.Brand, as: "brand" },
+    ],
+    limit,
+    offset,
+    order: [["flashSaleStart", "ASC"]],
+  });
+
+  let upcomingItems = [];
+  let nextFlashSaleStart = null;
+
+  if (count === 0) {
+    upcomingItems = await db.Product.findAll({
+      where: {
+        isActive: true,
+        isFlashSale: true,
+        flashSaleStart: { [Op.gt]: now },
+      },
+      include: [
+        { model: db.Category, as: "category" },
+        { model: db.Brand, as: "brand" },
+      ],
+      limit: 5,
+      order: [["flashSaleStart", "ASC"]],
+    });
+
+    if (upcomingItems.length > 0) {
+      nextFlashSaleStart = upcomingItems[0].flashSaleStart;
+    }
+  }
+
+  return {
+    errCode: 0,
+    products: rows.map((p) => {
+      const raw = { ...p.toJSON(), image: p.image || null };
+      return applyFlashSaleToProduct(raw);
+    }),
+    totalItems: count,
+    currentPage: page,
+    totalPages: Math.ceil(count / limit),
+    upcomingProducts: upcomingItems.map((p) => {
+      const raw = { ...p.toJSON(), image: p.image || null };
+      return applyFlashSaleToProduct(raw);
+    }),
+    nextFlashSaleStart,
   };
 };
 
@@ -501,6 +667,8 @@ module.exports = {
   searchSuggestions,
   updateProductSold,
   getDiscountedProducts,
+  getFlashSaleProducts,
+  disableExpiredFlashSales,
   filterProducts,
   recommendProducts,
   recommendFortuneProducts,

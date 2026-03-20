@@ -7,6 +7,7 @@ const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const http = require("http");
 const { Server } = require("socket.io");
+const ProductService = require("./services/ProductService");
 
 dotenv.config();
 
@@ -44,6 +45,18 @@ routes(app);
 // Connect DB
 if (process.env.NODE_ENV !== "test") {
   connectDB();
+
+  // Cron: disable expired flash sales every minute
+  const flashSaleJob = async () => {
+    try {
+      await ProductService.disableExpiredFlashSales();
+    } catch (error) {
+      console.error("Flash sale cron error:", error);
+    }
+  };
+
+  flashSaleJob();
+  setInterval(flashSaleJob, 60 * 1000);
 }
 
 // Socket.io connection logic

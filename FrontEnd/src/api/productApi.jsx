@@ -4,10 +4,19 @@ const SUGGEST_TTL_MS = 10000;
 const suggestCache = new Map();
 const suggestInflight = new Map();
 
-export const getAllProductApi = async (page = 1, limit = 10, search = "") => {
+export const getAllProductApi = async (
+  page = 1,
+  limit = 10,
+  search = "",
+  isFlashSale = false,
+) => {
   try {
+    const params = { page, limit };
+    if (search) params.search = search;
+    if (isFlashSale) params.isFlashSale = true;
+
     const res = await axiosClient.get(`/product/get-all-product`, {
-      params: { page, limit, search },
+      params,
     });
     return res;
   } catch (err) {
@@ -68,8 +77,8 @@ export const searchProductsApi = async (query, page = 1, limit = 10) => {
   try {
     const res = await axiosClient.get(
       `/product/search?q=${encodeURIComponent(
-        query
-      )}&page=${page}&limit=${limit}`
+        query,
+      )}&page=${page}&limit=${limit}`,
     );
 
     return {
@@ -131,6 +140,18 @@ export const getDiscountedProductsApi = async (page = 1, limit = 6) => {
   }
 };
 
+export const getFlashSaleProductsApi = async (page = 1, limit = 6) => {
+  try {
+    const res = await axiosClient.get(`/product/flash-sale`, {
+      params: { page, limit },
+    });
+    return res;
+  } catch (err) {
+    console.error("Get flash sale products API error:", err);
+    throw err;
+  }
+};
+
 export const filterProductsApi = async ({
   brandId = "",
   categoryId = "",
@@ -139,7 +160,7 @@ export const filterProductsApi = async ({
   search = "",
   page = 1,
   limit = 10,
-}) => {
+} = {}) => {
   try {
     const res = await axiosClient.get("/product/filter", {
       params: {
@@ -163,7 +184,7 @@ export const filterProductsApi = async ({
 export const getRecommendedProductsApi = async (
   productId,
   page = 1,
-  limit = 6
+  limit = 6,
 ) => {
   try {
     const res = await axiosClient.get(`/product/recommend/${productId}`, {
