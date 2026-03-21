@@ -1,163 +1,276 @@
 import React, { useState, useEffect } from "react";
-import { FiPlus, FiTrash2, FiSettings, FiCheck } from "react-icons/fi";
+import { FiPlus, FiTrash2, FiSettings, FiEdit2, FiCheck, FiX, FiRefreshCcw } from "react-icons/fi";
 import { toast } from "react-toastify";
-import { createVariant, deleteVariant } from "../../../api/variantApi";
+import { createVariant, deleteVariant, updateVariant } from "../../../api/variantApi";
 
-const VariantManager = ({ productId, initialVariants = [], onRefresh }) => {
-  const [variants, setVariants] = useState(initialVariants);
+const VariantManager = ({ productId, initialVariants = [], formData, setFormData, onRefresh }) => {
   const [loading, setLoading] = useState(false);
-  const [newVariant, setNewVariant] = useState({
-    sku: "",
-    price: "",
-    stock: "",
-    attributes: { Màu: "", RAM: "", ROM: "" }
-  });
+  const [editingId, setEditingId] = useState(null);
+  const [editForm, setEditForm] = useState(null);
+
+  // Local state for options builder
+  const [localOptions, setLocalOptions] = useState(
+    formData?.options?.length > 0 ? formData.options : [{ name: "Color", values: [""] }]
+  );
 
   useEffect(() => {
-    setVariants(initialVariants);
-  }, [initialVariants]);
-
-  const handleAddVariant = async () => {
-    if (!newVariant.price || !newVariant.stock) {
-      return toast.warn("Vui lòng nhập giá và tồn kho!");
+    if (formData?.options) {
+      setLocalOptions(formData.options.length > 0 ? formData.options : [{ name: "Color", values: [""] }]);
     }
-    setLoading(true);
-    try {
-      const payload = {
-        productId,
-        ...newVariant,
-        // Chuyển đổi attributes thành chuỗi JSON nếu backend yêu cầu
-        attributes: JSON.stringify(newVariant.attributes)
-      };
-      const res = await createVariant(payload);
-      if (res.errCode === 0) {
-        toast.success("Thêm biến thể thành công!");
-        setNewVariant({ sku: "", price: "", stock: "", attributes: { Màu: "", RAM: "", ROM: "" } });
-        onRefresh();
+  }, [formData?.options]);
+
+  const updateParentOptions = (newOptions) => {
+    setLocalOptions(newOptions);
+    setFormData(prev => ({ ...prev, options: newOptions }));
+  };
+
+  const addOption = () => {
+    updateParentOptions([...localOptions, { name: "", values: [""] }]);
+  };
+
+  const removeOption = (index) => {
+    updateParentOptions(localOptions.filter((_, i) => i !== index));
+  };
+
+  const updateOptionName = (index, name) => {
+    const newOptions = [...localOptions];
+    newOptions[index].name = name;
+    updateParentOptions(newOptions);
+  };
+
+  const addOptionValue = (optIndex) => {
+    const newOptions = [...localOptions];
+    newOptions[optIndex].values.push("");
+    updateParentOptions(newOptions);
+  };
+
+  const updateOptionValue = (optIndex, valIndex, value) => {
+    const newOptions = [...localOptions];
+    newOptions[optIndex].values[valIndex] = value;
+    updateParentOptions(newOptions);
+  };
+
+  const removeOptionValue = (optIndex, valIndex) => {
+    const newOptions = [...localOptions];
+    newOptions[optIndex].values = newOptions[optIndex].values.filter((_, i) => i !== valIndex);
+    updateParentOptions(newOptions);
+  };
+
+  const generateVariants = () => {
+    const validOptions = localOptions.filter(opt => opt.name && opt.values.some(v => v.trim()));
+    if (validOptions.length === 0) return toast.warn("Vui lòng nhập thuộc tính!");
+
+    const combinations = validOptions.reduce((acc, option) => {
+      const values = option.values.filter(v => v.trim());
+      if (acc.length === 0) return values.map(v => ({ [option.name]: v }));
+      
+      const newAcc = [];
+      acc.forEach(combo => {
+        values.forEach(v => {
+          newAcc.push({ ...combo, [option.name]: v });
+        });
+      });
+      return newAcc;
+    }, []);
+
+    const newVariants = combinations.map((combo, idx) => ({
+      sku: `${formData.sku || 'SKU'}-${idx}-${Date.now().toString(36).substr(-4)}`,
+      price: formData.price || 0,
+      stock: 0,
+      attributeValues: combo
+    }));
+
+    setFormData(prev => ({ ...prev, variants: newVariants }));
+    toast.success(`Đã tạo ${newVariants.length} phiên bản!`);
+  };
+
+  const handleSaveEdit = async (id) => {
+    if (productId) {
+      // Logic for editing existing product variants
+      setLoading(true);
+      try {
+        const res = await updateVariant(id, editForm);
+        if (res.errCode === 0) {
+          toast.success("Cập nhật thành công!");
+          setEditingId(null);
+          onRefresh();
+        }
+      } catch (err) {
+        toast.error("Lỗi cập nhật");
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      toast.error("Lỗi khi thêm biến thể");
-    } finally {
-      setLoading(false);
+    } else {
+      // Logic for creating new product variants (update parent state)
+      const updatedVariants = formData.variants.map(v => 
+        v.sku === initialVariants.find(iv => iv.sku === v.sku)?.sku ? editForm : v
+      );
+      setFormData(prev => ({ ...prev, variants: updatedVariants }));
+      setEditingId(null);
+      toast.success("Đã cập nhật tạm thời");
     }
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (v) => {
     if (!window.confirm("Xóa biến thể này?")) return;
-    try {
-      const res = await deleteVariant(id);
-      if (res.errCode === 0) {
+    if (productId && v.id) {
+      try {
+        await deleteVariant(v.id);
         toast.success("Đã xóa!");
         onRefresh();
+      } catch (err) {
+        toast.error("Lỗi khi xóa");
       }
-    } catch (err) {
-      toast.error("Lỗi khi xóa");
+    } else {
+      const filtered = formData.variants.filter(item => item.sku !== v.sku);
+      setFormData(prev => ({ ...prev, variants: filtered }));
+      toast.success("Đã xóa tạm thời");
     }
   };
 
+  const displayVariants = productId ? initialVariants : (formData?.variants || []);
+
   return (
-    <div className="space-y-6 bg-slate-50 p-6 rounded-2xl border border-slate-200">
-      <div className="flex items-center justify-between border-b border-slate-200 pb-4">
-        <div className="flex items-center gap-2">
-          <FiSettings className="text-primary" />
-          <h4 className="text-sm font-black uppercase tracking-tight text-slate-900">Quản lý phiên bản (Variants)</h4>
+    <div className="space-y-8 bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+            <FiSettings size={20} />
+          </div>
+          <div>
+            <h4 className="text-sm font-black text-slate-900 uppercase">Cấu hình Phiên bản</h4>
+            <p className="text-[10px] font-bold text-slate-400">Thiết lập thuộc tính và biến thể</p>
+          </div>
         </div>
       </div>
 
-      {/* Table of existing variants */}
-      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
-        <table className="w-full text-left text-xs">
-          <thead className="bg-slate-100 font-bold uppercase text-slate-500">
-            <tr>
-              <th className="p-3">Thuộc tính</th>
-              <th className="p-3">SKU</th>
-              <th className="p-3">Giá (VND)</th>
-              <th className="p-3">Kho</th>
-              <th className="p-3 text-center">Xóa</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {variants.length > 0 ? variants.map((v) => {
-              const attrs = typeof v.attributes === 'string' ? JSON.parse(v.attributes) : v.attributes;
-              return (
-                <tr key={v.id} className="hover:bg-slate-50">
-                  <td className="p-3">
-                    <div className="flex flex-wrap gap-1">
-                      {Object.entries(attrs || {}).map(([k, val]) => (
-                        val && <span key={k} className="px-1.5 py-0.5 bg-primary/10 text-primary rounded font-bold">{val}</span>
-                      ))}
-                    </div>
-                  </td>
-                  <td className="p-3 font-medium text-slate-500">{v.sku || "—"}</td>
-                  <td className="p-3 font-black text-slate-900">{Number(v.price).toLocaleString()}</td>
-                  <td className="p-3 font-bold text-slate-700">{v.stock}</td>
-                  <td className="p-3 text-center">
-                    <button onClick={() => handleDelete(v.id)} className="text-rose-400 hover:text-rose-600 transition-colors">
-                      <FiTrash2 />
+      {/* Options Builder */}
+      <div className="bg-slate-50/50 p-6 rounded-2xl border border-slate-100 space-y-4">
+        <div className="flex items-center justify-between">
+          <h5 className="text-[10px] font-black uppercase tracking-widest text-slate-500">Thuộc tính sản phẩm</h5>
+          <button type="button" onClick={addOption} className="text-[10px] font-black text-indigo-600 hover:underline">
+            + THÊM THUỘC TÍNH
+          </button>
+        </div>
+
+        {localOptions.map((opt, optIdx) => (
+          <div key={optIdx} className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm relative space-y-3">
+            <button type="button" onClick={() => removeOption(optIdx)} className="absolute top-2 right-2 text-rose-500 hover:bg-rose-50 p-1 rounded-lg">
+              <FiX size={14} />
+            </button>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <input 
+                placeholder="Tên (vd: Màu sắc)"
+                className="input-modern !h-9 text-xs font-bold"
+                value={opt.name}
+                onChange={(e) => updateOptionName(optIdx, e.target.value)}
+              />
+              <div className="md:col-span-3 flex flex-wrap gap-2">
+                {opt.values.map((val, valIdx) => (
+                  <div key={valIdx} className="flex items-center gap-1 bg-slate-50 border border-slate-200 px-2 py-1 rounded-lg">
+                    <input 
+                      className="bg-transparent border-none outline-none text-xs font-medium w-20"
+                      value={val}
+                      onChange={(e) => updateOptionValue(optIdx, valIdx, e.target.value)}
+                    />
+                    <button type="button" onClick={() => removeOptionValue(optIdx, valIdx)} className="text-slate-400 hover:text-rose-500">
+                      <FiX size={12} />
                     </button>
-                  </td>
-                </tr>
-              );
-            }) : (
-              <tr><td colSpan={5} className="p-6 text-center text-slate-400 italic">Chưa có phiên bản nào</td></tr>
-            )}
-          </tbody>
-        </table>
+                  </div>
+                ))}
+                <button type="button" onClick={() => addOptionValue(optIdx)} className="w-8 h-8 rounded-lg border-2 border-dashed border-slate-200 text-slate-400 flex items-center justify-center hover:border-indigo-400">
+                  <FiPlus size={14} />
+                </button>
+              </div>
+            </div>
+          </div>
+        ))}
+
+        {!productId && (
+          <button 
+            type="button"
+            onClick={generateVariants}
+            className="w-full h-10 bg-indigo-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all flex items-center justify-center gap-2"
+          >
+            <FiRefreshCcw /> TẠO CÁC PHIÊN BẢN TỪ THUỘC TÍNH
+          </button>
+        )}
       </div>
 
-      {/* Form to add new variant */}
-      <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4">
-        <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Thêm phiên bản mới</p>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <input 
-            placeholder="Màu (vd: Xám)" 
-            className="input-base !h-9 text-xs"
-            value={newVariant.attributes.Màu}
-            onChange={(e) => setNewVariant({...newVariant, attributes: {...newVariant.attributes, Màu: e.target.value}})}
-          />
-          <input 
-            placeholder="RAM (vd: 8GB)" 
-            className="input-base !h-9 text-xs"
-            value={newVariant.attributes.RAM}
-            onChange={(e) => setNewVariant({...newVariant, attributes: {...newVariant.attributes, RAM: e.target.value}})}
-          />
-          <input 
-            placeholder="ROM (vd: 256GB)" 
-            className="input-base !h-9 text-xs"
-            value={newVariant.attributes.ROM}
-            onChange={(e) => setNewVariant({...newVariant, attributes: {...newVariant.attributes, ROM: e.target.value}})}
-          />
+      {/* Variants Table */}
+      {displayVariants.length > 0 && (
+        <div className="overflow-hidden rounded-2xl border border-slate-100 shadow-sm">
+          <table className="w-full text-left text-[11px] border-collapse bg-white">
+            <thead>
+              <tr className="bg-slate-50 border-b border-slate-100">
+                <th className="p-4 font-black uppercase text-slate-400">Phân loại</th>
+                <th className="p-4 font-black uppercase text-slate-400">Giá bán</th>
+                <th className="p-4 font-black uppercase text-slate-400 text-center">Kho</th>
+                <th className="p-4 font-black uppercase text-slate-400 text-right">Thao tác</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-50">
+              {displayVariants.map((v, idx) => {
+                const isEditing = editingId === (v.id || idx);
+                const attrs = isEditing ? editForm.attributeValues : (v.attributeValues || {});
+                
+                return (
+                  <tr key={v.id || idx} className="hover:bg-slate-50/50">
+                    <td className="p-4">
+                      <div className="flex flex-wrap gap-1">
+                        {Object.entries(attrs).map(([k, val]) => (
+                          <span key={k} className="px-2 py-0.5 bg-indigo-50 text-indigo-600 rounded-md font-bold text-[9px] uppercase border border-indigo-100">
+                            {val}
+                          </span>
+                        ))}
+                      </div>
+                    </td>
+                    <td className="p-4">
+                      {isEditing ? (
+                        <input 
+                          type="number"
+                          className="w-24 h-7 px-2 rounded border border-slate-200 font-black text-indigo-600"
+                          value={editForm.price}
+                          onChange={(e) => setEditForm({...editForm, price: e.target.value})}
+                        />
+                      ) : (
+                        <span className="font-black text-slate-900">{Number(v.price).toLocaleString()}₫</span>
+                      )}
+                    </td>
+                    <td className="p-4 text-center">
+                      {isEditing ? (
+                        <input 
+                          type="number"
+                          className="w-16 h-7 px-2 rounded border border-slate-200 font-black text-center"
+                          value={editForm.stock}
+                          onChange={(e) => setEditForm({...editForm, stock: e.target.value})}
+                        />
+                      ) : (
+                        <span className="font-black text-slate-600">{v.stock}</span>
+                      )}
+                    </td>
+                    <td className="p-4 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        {isEditing ? (
+                          <>
+                            <button type="button" onClick={() => handleSaveEdit(v.id || idx)} className="text-emerald-500 hover:bg-emerald-50 p-1 rounded-lg"><FiCheck size={14}/></button>
+                            <button type="button" onClick={() => setEditingId(null)} className="text-slate-400 hover:bg-slate-50 p-1 rounded-lg"><FiX size={14}/></button>
+                          </>
+                        ) : (
+                          <>
+                            <button type="button" onClick={() => { setEditingId(v.id || idx); setEditForm({...v}); }} className="text-slate-400 hover:text-indigo-600 p-1 rounded-lg"><FiEdit2 size={14}/></button>
+                            <button type="button" onClick={() => handleDelete(v)} className="text-slate-400 hover:text-rose-500 p-1 rounded-lg"><FiTrash2 size={14}/></button>
+                          </>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <input 
-            placeholder="SKU Variant" 
-            className="input-base !h-9 text-xs font-bold"
-            value={newVariant.sku}
-            onChange={(e) => setNewVariant({...newVariant, sku: e.target.value})}
-          />
-          <input 
-            type="number" 
-            placeholder="Giá bán VND" 
-            className="input-base !h-9 text-xs font-bold"
-            value={newVariant.price}
-            onChange={(e) => setNewVariant({...newVariant, price: e.target.value})}
-          />
-          <input 
-            type="number" 
-            placeholder="Tồn kho" 
-            className="input-base !h-9 text-xs font-bold"
-            value={newVariant.stock}
-            onChange={(e) => setNewVariant({...newVariant, stock: e.target.value})}
-          />
-        </div>
-        <button 
-          onClick={handleAddVariant}
-          disabled={loading}
-          className="w-full h-10 bg-slate-900 text-white rounded-lg text-xs font-black uppercase tracking-widest hover:bg-primary transition-all flex items-center justify-center gap-2"
-        >
-          {loading ? <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" /> : <><FiPlus /> XÁC NHẬN THÊM</>}
-        </button>
-      </div>
+      )}
     </div>
   );
 };

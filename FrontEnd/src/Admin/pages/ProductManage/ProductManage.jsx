@@ -58,23 +58,24 @@ const ProductManage = () => {
     discount: "",
     stock: "",
     categoryId: "",
+    brandId: "",
     isActive: true,
     isFlashSale: false,
     flashSalePrice: "",
     flashSaleStart: "",
     flashSaleEnd: "",
-    image: null,
-    brandId: "",
-    color: "",
-    ram: "",
-    rom: "",
-    screen: "",
-    cpu: "",
-    battery: "",
-    weight: "",
-    connectivity: "",
-    os: "",
-    extra: "",
+    options: [], // Added
+    variants: [], // Added
+    specifications: {
+      cpu: "",
+      ram: "",
+      rom: "",
+      screen: "",
+      battery: "",
+      os: "",
+      weight: "",
+      connectivity: "",
+    }
   });
 
   const [imagePreview, setImagePreview] = useState(null);
@@ -164,7 +165,7 @@ const ProductManage = () => {
         name: product.name || "",
         sku: product.sku || "",
         description: product.description || "",
-        price: product.price || "",
+        price: product.basePrice || product.price || "",
         discount: product.discount || "",
         stock: product.stock || "",
         categoryId: product.categoryId || "",
@@ -179,16 +180,16 @@ const ProductManage = () => {
           : "",
         brandId: product.brandId || "",
         image: null,
-        color: product.color || "",
-        ram: product.ram || "",
-        rom: product.rom || "",
-        screen: product.screen || "",
-        cpu: product.cpu || "",
-        battery: product.battery || "",
-        weight: product.weight || "",
-        connectivity: product.connectivity || "",
-        os: product.os || "",
-        extra: product.extra || "",
+        specifications: {
+          cpu: product.specifications?.cpu || product.cpu || "",
+          ram: product.specifications?.ram || product.ram || "",
+          rom: product.specifications?.rom || product.rom || "",
+          screen: product.specifications?.screen || product.screen || "",
+          battery: product.specifications?.battery || product.battery || "",
+          os: product.specifications?.os || product.os || "",
+          weight: product.specifications?.weight || product.weight || "",
+          connectivity: product.specifications?.connectivity || product.connectivity || "",
+        },
       });
       setImagePreview(getImage(product.image));
       setEditProduct(product);
@@ -210,17 +211,16 @@ const ProductManage = () => {
         flashSalePrice: "",
         flashSaleStart: "",
         flashSaleEnd: "",
-        image: null,
-        color: "",
-        ram: "",
-        rom: "",
-        screen: "",
-        cpu: "",
-        battery: "",
-        weight: "",
-        connectivity: "",
-        os: "",
-        extra: "",
+        specifications: {
+          cpu: "",
+          ram: "",
+          rom: "",
+          screen: "",
+          battery: "",
+          os: "",
+          weight: "",
+          connectivity: "",
+        }
       });
       setImagePreview(null);
       setEditProduct(null);
@@ -286,21 +286,33 @@ const ProductManage = () => {
     setLoadingModal(true);
     try {
       const data = new FormData();
-      Object.keys(formData).forEach((key) => {
+      
+      // Map specifications to top-level fields for DB columns compatibility
+      const specData = formData.specifications || {};
+      const mergedData = { 
+        ...formData,
+        ...specData, // spread spec fields (cpu, ram, rom, etc.) to top level
+      };
+
+      Object.keys(mergedData).forEach((key) => {
         if (key === "isActive") {
-          data.append(key, formData[key] ? 1 : 0);
+          data.append(key, mergedData[key] ? 1 : 0);
           return;
         }
 
         if (
-          !formData.isFlashSale &&
+          !mergedData.isFlashSale &&
           ["flashSalePrice", "flashSaleStart", "flashSaleEnd"].includes(key)
         ) {
           return; // không gửi giá trị flash sale khi không bật flash sale
         }
 
-        if (formData[key] !== null && formData[key] !== "") {
-          data.append(key, formData[key]);
+        if (mergedData[key] !== null && mergedData[key] !== "") {
+          if (key === "specifications" || key === "options" || key === "variants") {
+            data.append(key, JSON.stringify(mergedData[key]));
+          } else {
+            data.append(key, mergedData[key]);
+          }
         }
       });
 
@@ -511,7 +523,7 @@ const ProductManage = () => {
                     </td>
                     <td className="px-6 py-4 text-right">
                       <p className="text-sm font-black text-slate-900">
-                        {Number(p.price).toLocaleString()}{" "}
+                        {Number(p.basePrice || p.price).toLocaleString()}{" "}
                         <span className="text-[10px] text-slate-400">VND</span>
                       </p>
                       {p.isFlashSale && p.flashSaleStart && p.flashSaleEnd && (
@@ -995,15 +1007,15 @@ const ProductManage = () => {
                     </div>
                   </div>
                   {/* Variant Management Section */}
-                  {editProduct && (
-                    <div className="pt-4 border-t border-slate-100">
-                      <VariantManager
-                        productId={editProduct.id}
-                        initialVariants={variants}
-                        onRefresh={() => fetchVariants(editProduct.id)}
-                      />
-                    </div>
-                  )}
+                  <div className="pt-4 border-t border-slate-100">
+                    <VariantManager
+                      productId={editProduct?.id}
+                      initialVariants={editProduct ? variants : formData.variants}
+                      formData={formData}
+                      setFormData={setFormData}
+                      onRefresh={editProduct ? () => fetchVariants(editProduct.id) : null}
+                    />
+                  </div>
                   {/* Tech Specs Grid */}{" "}
                   <div className="space-y-4">
                     <div className="flex items-center gap-3">
@@ -1026,11 +1038,11 @@ const ProductManage = () => {
                         { label: "ROM", icon: <FiMaximize />, key: "rom" },
                         { label: "Pin", icon: <FiBattery />, key: "battery" },
                         { label: "Hệ điều hành", icon: <FiInfo />, key: "os" },
-                        { label: "Màu sắc", icon: <FiTag />, key: "color" },
+                        { label: "Trọng lượng", icon: <FiMaximize />, key: "weight" },
                         {
-                          label: "Khác",
+                          label: "Kết nối",
                           icon: <FiMoreHorizontal />,
-                          key: "extra",
+                          key: "connectivity",
                         },
                       ].map((spec) => (
                         <div key={spec.key} className="space-y-1.5">
@@ -1041,11 +1053,14 @@ const ProductManage = () => {
                             type="text"
                             className="input-modern h-10 px-3"
                             placeholder="..."
-                            value={formData[spec.key]}
+                            value={formData.specifications[spec.key] || ""}
                             onChange={(e) =>
                               setFormData({
                                 ...formData,
-                                [spec.key]: e.target.value,
+                                specifications: {
+                                  ...formData.specifications,
+                                  [spec.key]: e.target.value,
+                                }
                               })
                             }
                           />

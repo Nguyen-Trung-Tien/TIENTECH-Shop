@@ -34,12 +34,14 @@ const handleCreateVnpayPayment = async (req, res) => {
 
     // check order tồn tại
     const orderResult = await OrderService.getOrderByCode(orderCode);
-    if (orderResult.errCode !== 0) {
+    if (orderResult.errCode !== 0 || !orderResult.data) {
       return res.status(404).json({
         errCode: 2,
         message: "Order not found",
       });
     }
+
+    const secureAmount = orderResult.data.totalPrice;
 
     let ipAddr =
       req.headers["x-forwarded-for"] || req.socket.remoteAddress || "127.0.0.1";
@@ -53,8 +55,9 @@ const handleCreateVnpayPayment = async (req, res) => {
 
     const createDate = moment().format("YYYYMMDDHHmmss");
 
-    // VNPay yêu cầu INTEGER
-    const vnpAmount = Math.round(Number(amount) * 100);
+    // VNPay yêu cầu INTEGER (nhân 100)
+    // SỬ DỤNG GIÁ TRỊ TỪ DATABASE (secureAmount) THAY VÌ CLIENT SUBMIT (amount) ĐỂ TRÁNH MUA HÀNG 0 ĐỒNG
+    const vnpAmount = Math.round(Number(secureAmount) * 100);
 
     let vnp_Params = {
       vnp_Version: "2.1.0",

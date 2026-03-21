@@ -1,5 +1,5 @@
 const request = require("supertest");
-const app = require("../src/service");
+const { app } = require("../src/service");
 
 describe("Product API", () => {
   it("GET /api/v1/product/get-all-product should return 200 and a list of products", async () => {

@@ -40,9 +40,9 @@ const getCartItemById = async (req, res) => {
 
 const createCartItem = async (req, res) => {
   try {
-    const { cartId, productId, quantity } = req.body;
+    const { cartId, productId, variantId, quantity } = req.body;
     const newItem = await CartItemService.createCartItem(
-      { cartId, productId, quantity },
+      { cartId, productId, variantId, quantity },
       req.user.id
     );
     res.status(201).json({ errCode: 0, data: newItem });

@@ -128,7 +128,7 @@ const UserRoutes = () => {
         }
       />
       <Route
-        path="product-detail/:id"
+        path="product-detail/:slug"
         element={
           <LayoutComponent isShowHeader={true} isShowFooter={true}>
             <ProductDetailPage />

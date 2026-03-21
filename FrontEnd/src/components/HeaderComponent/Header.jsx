@@ -52,9 +52,9 @@ function Header() {
     () => localStorage.getItem("theme") || "light",
   );
 
+  const reduxUser = useSelector((state) => state.user.user);
   const { data: resUser } = useCurrentUser();
-  const user = resUser?.data;
-  const token = localStorage.getItem("accessToken");
+  const user = resUser?.data || reduxUser;
 
   const cartItemCount = useSelector(
     (state) =>
@@ -106,9 +106,9 @@ function Header() {
   useEffect(() => {
     let isMounted = true;
     const fetchCart = async () => {
-      if (!user?.id || !token) return;
+      if (!user?.id) return;
       try {
-        const res = await getAllCarts(token);
+        const res = await getAllCarts();
         const userCart = res.data.find((c) => c.userId === user.id);
         if (isMounted) {
           if (userCart?.items) dispatch(setCartItems(userCart.items));
@@ -122,7 +122,7 @@ function Header() {
     return () => {
       isMounted = false;
     };
-  }, [user?.id, token, dispatch]);
+  }, [user?.id, dispatch]);
 
   // Search Suggestion Debounce
   const fetchSuggestions = useMemo(

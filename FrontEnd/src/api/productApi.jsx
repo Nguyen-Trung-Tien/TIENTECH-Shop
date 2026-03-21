@@ -35,6 +35,16 @@ export const getProductByIdApi = async (id) => {
   }
 };
 
+export const getProductBySlugApi = async (slug) => {
+  try {
+    const res = await axiosClient.get(`/product/get-product-by-slug/${slug}`);
+    return res;
+  } catch (err) {
+    console.error("Get product by slug API error:", err);
+    throw err;
+  }
+};
+
 export const createProductApi = async (data) => {
   try {
     const res = await axiosClient.post(`/product/create-new-product`, data, {

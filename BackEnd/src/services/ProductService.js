@@ -26,7 +26,7 @@ const isFlashSaleActive = (product) => {
 
 const applyFlashSaleToProduct = (productData) => {
   const product = { ...productData };
-  const originalPrice = Number(product.price);
+  const originalPrice = Number(product.basePrice || product.price || 0);
   product.basePrice = originalPrice;
   product.originalPrice = originalPrice;
   product.flashSaleActive = isFlashSaleActive(product);
@@ -79,10 +79,48 @@ const disableExpiredFlashSales = async () => {
   }
 };
 
+const slugify = (text) => {
+  return text
+    .toString()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/[^\w-]+/g, "")
+    .replace(/--+/g, "-")
+    .replace(/^-+/, "")
+    .replace(/-+$/, "");
+};
+
 const createProduct = async (data, imageRecords = []) => {
   const t = await db.sequelize.transaction();
   try {
     const newData = { ...data };
+    
+    // Xử lý specifications và đồng bộ legacy fields
+    if (newData.specifications) {
+      const specs = typeof newData.specifications === 'string' 
+        ? JSON.parse(newData.specifications) 
+        : newData.specifications;
+      
+      newData.cpu = specs.cpu || newData.cpu;
+      newData.ram = specs.ram || newData.ram;
+      newData.rom = specs.rom || newData.rom;
+      newData.screen = specs.screen || newData.screen;
+      newData.battery = specs.battery || newData.battery;
+      newData.os = specs.os || newData.os;
+      newData.weight = specs.weight || newData.weight;
+      newData.connectivity = specs.connectivity || newData.connectivity;
+    }
+
+    // Auto-generate slug
+    if (!newData.slug && newData.name) {
+      newData.slug = `${slugify(newData.name)}-${Date.now()}`;
+    }
+
+    // Gán basePrice ban đầu bằng price nếu chưa có
+    newData.basePrice = newData.basePrice || newData.price || 0;
+
     const product = await db.Product.create(newData, { transaction: t });
 
     if (imageRecords.length > 0) {
@@ -109,6 +147,10 @@ const getAllProducts = async (
   limit = 10,
   isFlashSale = false,
 ) => {
+  // Cap limit để ngăn DB overload
+  limit = Math.min(Math.max(1, Number(limit) || 10), 100);
+  page = Math.max(1, Number(page) || 1);
+
   const cacheKey = `products_${categoryId || "all"}_${isFlashSale ? "flash" : "all"}_${page}_${limit}`;
   const cachedData = productCache.get(cacheKey);
 
@@ -135,6 +177,7 @@ const getAllProducts = async (
       { model: db.Category, as: "category" },
       { model: db.Brand, as: "brand" },
       { model: db.Review, as: "reviews" },
+      { model: db.ProductImage, as: "images", attributes: ["imageUrl", "isPrimary"] },
     ],
     limit,
     offset,
@@ -144,7 +187,12 @@ const getAllProducts = async (
   const result = {
     errCode: 0,
     products: rows.map((p) => {
-      const raw = { ...p.toJSON(), image: p.image || null };
+      let image = p.image;
+      if (!image && p.images && p.images.length > 0) {
+        const primary = p.images.find((i) => i.isPrimary) || p.images[0];
+        image = primary.imageUrl;
+      }
+      const raw = { ...p.toJSON(), image: image || null };
       return applyFlashSaleToProduct(raw);
     }),
     totalItems: count,
@@ -152,7 +200,8 @@ const getAllProducts = async (
     totalPages: Math.ceil(count / limit),
   };
 
-  productCache.set(cacheKey, result);
+  // Flash sale sản phẩm dùng TTL ngắn hơn (60s) vì giá thay đổi theo phút
+  productCache.set(cacheKey, result, isFlashSale ? 60 : 600);
   return result;
 };
 
@@ -165,18 +214,30 @@ const getProductById = async (id) => {
         {
           model: db.ProductImage,
           as: "images",
-          attributes: ["id", "imageUrl", "isPrimary"],
+          attributes: ["id", "imageUrl", "isPrimary", "variantId"],
+        },
+        {
+          model: db.ProductOption,
+          as: "options",
+          include: [{ model: db.ProductOptionValue, as: "values", attributes: ["id", "value"] }],
         },
         {
           model: db.ProductVariant,
           as: "variants",
+          include: [
+            {
+              model: db.ProductOptionValue,
+              as: "optionValues",
+              attributes: ["id", "value", "productOptionId"],
+            },
+          ],
           attributes: [
             "id",
             "sku",
             "price",
             "stock",
             "isActive",
-            "attributes",
+            "attributeValues",
             "imageUrl",
           ],
         },
@@ -222,6 +283,27 @@ const updateProduct = async (id, data, imageRecords = []) => {
       return { errCode: 1, errMessage: "Product not found" };
     }
     const updatedData = { ...data };
+    
+    // Xử lý specifications và đồng bộ legacy fields
+    if (updatedData.specifications) {
+      const specs = typeof updatedData.specifications === 'string' 
+        ? JSON.parse(updatedData.specifications) 
+        : updatedData.specifications;
+      
+      updatedData.cpu = specs.cpu || updatedData.cpu;
+      updatedData.ram = specs.ram || updatedData.ram;
+      updatedData.rom = specs.rom || updatedData.rom;
+      updatedData.screen = specs.screen || updatedData.screen;
+      updatedData.battery = specs.battery || updatedData.battery;
+      updatedData.os = specs.os || updatedData.os;
+      updatedData.weight = specs.weight || updatedData.weight;
+      updatedData.connectivity = specs.connectivity || updatedData.connectivity;
+    }
+
+    // Re-generate slug if name changes and no slug provided
+    if (updatedData.name && updatedData.name !== product.name && !updatedData.slug) {
+      updatedData.slug = `${slugify(updatedData.name)}-${product.id}`;
+    }
 
     const updatedProduct = await product.update(updatedData, {
       transaction: t,
@@ -243,6 +325,7 @@ const updateProduct = async (id, data, imageRecords = []) => {
     }
 
     await t.commit();
+    clearProductCache();
     return { errCode: 0, product: updatedProduct };
   } catch (e) {
     await t.rollback();
@@ -256,6 +339,7 @@ const deleteProduct = async (id) => {
     const product = await db.Product.findByPk(id);
     if (!product) return { errCode: 1, errMessage: "Product not found" };
     await product.destroy();
+    clearProductCache();
     return { errCode: 0, errMessage: "Product deleted successfully" };
   } catch (e) {
     console.error("Error deleting product:", e);
@@ -267,7 +351,9 @@ const searchProducts = async (query, page = 1, limit = 10) => {
   const offset = (page - 1) * limit;
   const { Op } = db.Sequelize;
 
-  const whereCondition = query ? { name: { [Op.like]: `%${query}%` } } : {};
+  // Chỉ tìm sản phẩm đang active (không hiện sản phẩm đã ẩn)
+  const whereCondition = { isActive: true };
+  if (query) whereCondition.name = { [Op.like]: `%${query}%` };
 
   // Tìm sản phẩm phân trang (dùng cho trang kết quả tìm kiếm)
   const { count, rows } = await db.Product.findAndCountAll({
@@ -275,6 +361,7 @@ const searchProducts = async (query, page = 1, limit = 10) => {
     include: [
       { model: db.Category, as: "category" },
       { model: db.Brand, as: "brand" },
+      { model: db.ProductImage, as: "images", attributes: ["imageUrl", "isPrimary"] },
     ],
     limit,
     offset,
@@ -310,7 +397,14 @@ const searchProducts = async (query, page = 1, limit = 10) => {
 
   return {
     errCode: 0,
-    products: rows.map((p) => ({ ...p.toJSON(), image: p.image || null })),
+    products: rows.map((p) => {
+      let image = p.image;
+      if (!image && p.images && p.images.length > 0) {
+        const primary = p.images.find((i) => i.isPrimary) || p.images[0];
+        image = primary.imageUrl;
+      }
+      return { ...p.toJSON(), image: image || null };
+    }),
     totalItems: count,
     currentPage: page,
     totalPages: Math.ceil(count / limit),
@@ -366,7 +460,12 @@ const searchSuggestions = async (query, limit = 8) => {
   };
 };
 
+/**
+ * @deprecated Kông gọi hàm này từ bên ngoài — stock và sold được quản lý bửi createOrder/updateOrderStatus.
+ * Hàm này chỉ giữ lại để tương thích ngược.
+ */
 const updateProductSold = async (productId, quantity) => {
+  console.warn("[DEPRECATED] updateProductSold should not be called — stock is managed by order flow.");
   try {
     const product = await db.Product.findByPk(productId);
     if (!product) return { errCode: 1, errMessage: "Product not found" };
@@ -409,7 +508,12 @@ const getDiscountedProducts = async (page = 1, limit = 10) => {
   return {
     errCode: 0,
     products: rows.map((p) => {
-      const raw = { ...p.toJSON(), image: p.image || null };
+      let image = p.image;
+      if (!image && p.images && p.images.length > 0) {
+        const primary = p.images.find((i) => i.isPrimary) || p.images[0];
+        image = primary.imageUrl;
+      }
+      const raw = { ...p.toJSON(), image: image || null };
       return applyFlashSaleToProduct(raw);
     }),
     totalItems: count,
@@ -464,7 +568,12 @@ const getFlashSaleProducts = async (page = 1, limit = 10) => {
   return {
     errCode: 0,
     products: rows.map((p) => {
-      const raw = { ...p.toJSON(), image: p.image || null };
+      let image = p.image;
+      if (!image && p.images && p.images.length > 0) {
+        const primary = p.images.find((i) => i.isPrimary) || p.images[0];
+        image = primary.imageUrl;
+      }
+      const raw = { ...p.toJSON(), image: image || null };
       return applyFlashSaleToProduct(raw);
     }),
     totalItems: count,
@@ -489,19 +598,20 @@ const filterProducts = async ({
   limit = 12,
 }) => {
   try {
+    // Dùng basePrice (cột thực tế trong DB), không phải price (đã xoá)
     const conditions = {
-      price: { [Op.between]: [minPrice, maxPrice] },
+      basePrice: { [Op.between]: [Number(minPrice), Number(maxPrice)] },
       isActive: true,
     };
 
-    if (brandId) conditions.brandId = brandId;
-    if (categoryId) conditions.categoryId = categoryId;
+    if (brandId) conditions.brandId = Number(brandId);
+    if (categoryId) conditions.categoryId = Number(categoryId);
     if (search) conditions.name = { [Op.like]: `%${search}%` };
 
-    // SORT
+    // SORT — dùng basePrice thay vì price
     let order = [];
-    if (sort === "price_asc") order = [["price", "ASC"]];
-    if (sort === "price_desc") order = [["price", "DESC"]];
+    if (sort === "price_asc") order = [["basePrice", "ASC"]];
+    if (sort === "price_desc") order = [["basePrice", "DESC"]];
     if (sort === "newest") order = [["createdAt", "DESC"]];
 
     const offset = (page - 1) * limit;
@@ -511,6 +621,7 @@ const filterProducts = async ({
       include: [
         { model: db.Brand, as: "brand" },
         { model: db.Category, as: "category" },
+        { model: db.ProductImage, as: "images", attributes: ["imageUrl", "isPrimary"] },
       ],
       order,
       limit,
@@ -519,7 +630,14 @@ const filterProducts = async ({
 
     return {
       errCode: 0,
-      data: products.rows,
+      data: products.rows.map(p => {
+        let image = p.image;
+        if (!image && p.images && p.images.length > 0) {
+          const primary = p.images.find(i => i.isPrimary) || p.images[0];
+          image = primary.imageUrl;
+        }
+        return { ...p.toJSON(), image: image || null };
+      }),
       total: products.count,
       page,
       totalPages: Math.ceil(products.count / limit),
@@ -537,7 +655,7 @@ const recommendProducts = async (productId, page = 1, limit = 6) => {
       return { errCode: 1, errMessage: "Product not found" };
     }
 
-    const price = Number(product.price);
+    const price = Number(product.basePrice);
     const priceLow = price * 0.8;
     const priceHigh = price * 1.2;
 
@@ -547,7 +665,7 @@ const recommendProducts = async (productId, page = 1, limit = 6) => {
       [Op.or]: [
         { categoryId: product.categoryId },
         { brandId: product.brandId },
-        { price: { [Op.between]: [priceLow, priceHigh] } },
+        { basePrice: { [Op.between]: [priceLow, priceHigh] } },
       ],
     };
 
@@ -560,6 +678,7 @@ const recommendProducts = async (productId, page = 1, limit = 6) => {
       include: [
         { model: db.Brand, as: "brand" },
         { model: db.Category, as: "category" },
+        { model: db.ProductImage, as: "images", attributes: ["imageUrl", "isPrimary"] },
       ],
       order: [
         ["sold", "DESC"],
@@ -572,7 +691,14 @@ const recommendProducts = async (productId, page = 1, limit = 6) => {
 
     return {
       errCode: 0,
-      data: rows.map((p) => p.toJSON()),
+      data: rows.map((p) => {
+        let image = p.image;
+        if (!image && p.images && p.images.length > 0) {
+          const primary = p.images.find(i => i.isPrimary) || p.images[0];
+          image = primary.imageUrl;
+        }
+        return { ...p.toJSON(), image: image || null };
+      }),
       pagination: {
         page,
         limit,
@@ -635,7 +761,13 @@ const recommendFortuneProducts = async ({
     });
 
     const data = rows.map((p) => {
+      let image = p.image;
+      if (!image && p.images && p.images.length > 0) {
+        const primary = p.images.find(i => i.isPrimary) || p.images[0];
+        image = primary.imageUrl;
+      }
       const product = p.toJSON();
+      product.image = image || null;
       product.isLuckyColor = luckyColors.includes(product.color);
       return product;
     });
@@ -657,10 +789,272 @@ const recommendFortuneProducts = async ({
   }
 };
 
+const getProductBySlug = async (slug) => {
+  try {
+    let product = await db.Product.findOne({
+      where: { slug, isActive: true },
+      include: [
+        { model: db.Category, as: "category", attributes: ["id", "name"] },
+        { model: db.Brand, as: "brand", attributes: ["id", "name"] },
+        {
+          model: db.ProductOption,
+          as: "options",
+          include: [{ model: db.ProductOptionValue, as: "values", attributes: ["id", "value"] }],
+        },
+        {
+          model: db.ProductImage,
+          as: "images",
+          attributes: ["id", "imageUrl", "isPrimary"],
+        },
+        {
+          model: db.ProductVariant,
+          as: "variants",
+          where: { isActive: true },
+          required: false,
+          include: [
+            {
+              model: db.ProductOptionValue,
+              as: "optionValues",
+              attributes: ["id", "value", "productOptionId"],
+            },
+          ],
+          attributes: [
+            "id",
+            "sku",
+            "price",
+            "stock",
+            "attributeValues",
+            "imageUrl",
+          ],
+        },
+      ],
+    });
+
+    // Fallback: If not found by slug, try searching by ID
+    if (!product && !isNaN(slug)) {
+      product = await db.Product.findOne({
+        where: { id: parseInt(slug), isActive: true },
+        include: [
+          { model: db.Category, as: "category", attributes: ["id", "name"] },
+          { model: db.Brand, as: "brand", attributes: ["id", "name"] },
+          {
+            model: db.ProductOption,
+            as: "options",
+            include: [{ model: db.ProductOptionValue, as: "values", attributes: ["id", "value"] }],
+          },
+          {
+            model: db.ProductImage,
+            as: "images",
+            attributes: ["id", "imageUrl", "isPrimary", "variantId"],
+          },
+          {
+            model: db.ProductVariant,
+            as: "variants",
+            where: { isActive: true },
+            required: false,
+            include: [
+              {
+                model: db.ProductOptionValue,
+                as: "optionValues",
+                attributes: ["id", "value", "productOptionId"],
+              },
+            ],
+            attributes: [
+              "id",
+              "sku",
+              "price",
+              "stock",
+              "attributeValues",
+              "imageUrl",
+            ],
+          },
+        ],
+      });
+    }
+
+    if (!product) return { errCode: 1, errMessage: "Product not found" };
+
+    const plainProduct = product.get({ plain: true });
+    const variants = plainProduct.variants || [];
+
+    // 1. Tính toán giá min/max
+    const prices = variants.map((v) => Number(v.price));
+    const minPrice = prices.length > 0 ? Math.min(...prices) : Number(plainProduct.basePrice);
+    const maxPrice = prices.length > 0 ? Math.max(...prices) : Number(plainProduct.basePrice);
+
+    // 2. Tính tổng tồn kho
+    const totalStock = variants.reduce((sum, v) => sum + (v.stock || 0), 0);
+
+    // 3. Logic Flash Sale Real-time
+    const now = new Date();
+    const isFlashSaleActive = 
+      plainProduct.isFlashSale &&
+      plainProduct.flashSaleStart &&
+      plainProduct.flashSaleEnd &&
+      now >= new Date(plainProduct.flashSaleStart) &&
+      now <= new Date(plainProduct.flashSaleEnd);
+
+    // 4. Clean DTO
+    const productDTO = {
+      id: plainProduct.id,
+      name: plainProduct.name,
+      slug: plainProduct.slug,
+      image: plainProduct.image,
+      description: plainProduct.description,
+      specifications: plainProduct.specifications,
+      price: plainProduct.price, // Giá gốc (base)
+      discount: plainProduct.discount, // % giảm giá
+      brand: plainProduct.brand,
+      category: plainProduct.category,
+      images: plainProduct.images.sort((a, b) => (b.isPrimary ? 1 : -1)),
+      variants: variants,
+      
+      // Computed fields
+      priceRange: {
+        min: minPrice,
+        max: maxPrice,
+        display: minPrice === maxPrice ? `${minPrice}` : `${minPrice} - ${maxPrice}`
+      },
+      totalStock,
+      flashSale: {
+        isActive: isFlashSaleActive,
+        price: isFlashSaleActive ? Number(plainProduct.flashSalePrice) : null,
+        endDate: isFlashSaleActive ? plainProduct.flashSaleEnd : null
+      },
+      sold: plainProduct.sold
+    };
+
+    return {
+      errCode: 0,
+      product: productDTO,
+    };
+  } catch (e) {
+    console.error("Error fetching product by slug:", e);
+    return { errCode: 1, errMessage: e.message };
+  }
+};
+const generateVariants = (options) => {
+  // options = [{name: 'Color', values: ['Red', 'Blue']}, {name: 'Size', values: ['S', 'M']}]
+  if (options.length === 0) return [];
+
+  const combinations = options.reduce((acc, option) => {
+    const values = option.values;
+    if (acc.length === 0) return values.map(v => [{ optionName: option.name, value: v }]);
+
+    const newAcc = [];
+    acc.forEach(combo => {
+      values.forEach(v => {
+        newAcc.push([...combo, { optionName: option.name, value: v }]);
+      });
+    });
+    return newAcc;
+  }, []);
+
+  return combinations;
+};
+
+const createProductWithVariants = async (data, imageRecords = []) => {
+  const t = await db.sequelize.transaction();
+  try {
+    const { options, variants: customVariants, ...productData } = data;
+
+    // 1. Create Product
+    if (!productData.slug && productData.name) {
+      productData.slug = `${slugify(productData.name)}-${Date.now()}`;
+    }
+    productData.hasVariants = options && options.length > 0;
+    const product = await db.Product.create(productData, { transaction: t });
+
+    // 2. Create Options and Values
+    const createdOptions = [];
+    if (options && options.length > 0) {
+      for (const opt of options) {
+        const createdOpt = await db.ProductOption.create({
+          name: opt.name,
+          productId: product.id
+        }, { transaction: t });
+
+        const values = opt.values.map(v => ({
+          value: v,
+          productOptionId: createdOpt.id
+        }));
+        const createdValues = await db.ProductOptionValue.bulkCreate(values, { transaction: t });
+        createdOptions.push({ ...createdOpt.toJSON(), values: createdValues });
+      }
+    }
+
+    // 3. Handle Variants
+    if (productData.hasVariants) {
+      // If custom variants provided (with price, stock, SKU)
+      if (customVariants && customVariants.length > 0) {
+        for (const variant of customVariants) {
+          const createdVariant = await db.ProductVariant.create({
+            productId: product.id,
+            sku: variant.sku || `${product.sku}-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
+            price: variant.price || product.basePrice,
+            stock: variant.stock || 0,
+            attributeValues: variant.attributeValues // Keep for compatibility
+          }, { transaction: t });
+
+          // Link to OptionValues
+          if (variant.optionValueIds) {
+            const junctionData = variant.optionValueIds.map(id => ({
+              variantId: createdVariant.id,
+              productOptionValueId: id
+            }));
+            await db.VariantOptionValue.bulkCreate(junctionData, { transaction: t });
+          }
+        }
+      } else {
+        // Auto-generate variants (simple ones)
+        const combos = generateVariants(options);
+        for (const combo of combos) {
+          const createdVariant = await db.ProductVariant.create({
+            productId: product.id,
+            sku: `${product.sku || product.id}-${combo.map(c => c.value).join('-')}`,
+            price: product.basePrice,
+            stock: 0,
+            attributeValues: combo.reduce((acc, curr) => ({ ...acc, [curr.optionName]: curr.value }), {})
+          }, { transaction: t });
+
+          // Find IDs for junction
+          for (const c of combo) {
+            const opt = createdOptions.find(o => o.name === c.optionName);
+            const val = opt.values.find(v => v.value === c.value);
+            await db.VariantOptionValue.create({
+              variantId: createdVariant.id,
+              productOptionValueId: val.id
+            }, { transaction: t });
+          }
+        }
+      }
+    }
+
+    // 4. Handle Images
+    if (imageRecords.length > 0) {
+      const records = imageRecords.map((img) => ({
+        ...img,
+        productId: product.id,
+      }));
+      await db.ProductImage.bulkCreate(records, { transaction: t });
+    }
+
+    await t.commit();
+    clearProductCache();
+    return { errCode: 0, product };
+  } catch (e) {
+    await t.rollback();
+    console.error("Error creating product with variants:", e);
+    return { errCode: 1, errMessage: e.message };
+  }
+};
+
 module.exports = {
   createProduct,
+  createProductWithVariants,
   getAllProducts,
   getProductById,
+  getProductBySlug,
   updateProduct,
   deleteProduct,
   searchProducts,

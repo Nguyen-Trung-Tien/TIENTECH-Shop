@@ -1,30 +1,11 @@
 import { createSlice } from "@reduxjs/toolkit";
 
-const loadFromStorage = (key) => {
-  try {
-    const data = localStorage.getItem(key);
-    return data ? JSON.parse(data) : null;
-  } catch (e) {
-    console.error("Load từ localStorage thất bại:", e);
-    localStorage.removeItem(key);
-    return null;
-  }
-};
-
-// Lưu ý: Không lưu token vào localStorage để tránh XSS.
-// Chỉ lưu thông tin cơ bản của user để hiển thị UI nhanh.
+// NOTE: redux-persist (store.js) handles persistence automatically.
+// We do NOT manually read/write localStorage here to avoid state desync.
 const initialState = {
-  user: loadFromStorage("user"),
-  isAuthenticated: !!loadFromStorage("user"),
-  isInitializing: true, // Mặc định là true để App check /me khi khởi động
-};
-
-const saveToStorage = (key, value) => {
-  try {
-    localStorage.setItem(key, JSON.stringify(value));
-  } catch (e) {
-    console.error(`Lỗi khi lưu ${key}:`, e);
-  }
+  user: null,
+  isAuthenticated: false,
+  isInitializing: true, // App sẽ check /me khi khởi động
 };
 
 const userSlice = createSlice({
@@ -32,25 +13,23 @@ const userSlice = createSlice({
   initialState,
   reducers: {
     setUser: (state, action) => {
-      // action.payload có thể là { user } hoặc trực tiếp user data tùy theo API response
+      // payload có thể là { user } hoặc trực tiếp user data
       const user = action.payload.user || action.payload;
+      // Không lưu avatar vào Redux store (tránh serialize blob lớn)
       const { avatar: _avatar, ...userWithoutAvatar } = user;
       state.user = userWithoutAvatar;
       state.isAuthenticated = true;
       state.isInitializing = false;
-      saveToStorage("user", state.user);
     },
     updateUser: (state, action) => {
       const user = action.payload.user || action.payload;
       const { avatar: _avatar, ...updateWithoutAvatar } = user;
       state.user = { ...state.user, ...updateWithoutAvatar };
-      saveToStorage("user", state.user);
     },
     removeUser: (state) => {
       state.user = null;
       state.isAuthenticated = false;
       state.isInitializing = false;
-      localStorage.removeItem("user");
     },
     setInitializing: (state, action) => {
       state.isInitializing = action.payload;

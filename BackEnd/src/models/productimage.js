@@ -9,6 +9,11 @@ module.exports = (sequelize, DataTypes) => {
         as: "product",
         onDelete: "CASCADE",
       });
+      ProductImage.belongsTo(models.ProductVariant, {
+        foreignKey: "variantId",
+        as: "variant",
+        onDelete: "SET NULL",
+      });
     }
   }
 
@@ -29,6 +34,12 @@ module.exports = (sequelize, DataTypes) => {
       productId: {
         type: DataTypes.INTEGER,
         allowNull: false,
+      },
+      
+      // Mới: Một tấm ảnh có thể thuộc về 1 biến thể (VD: 1 màu cụ thể)
+      variantId: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
       },
     },
     {

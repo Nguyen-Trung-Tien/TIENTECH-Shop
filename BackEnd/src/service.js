@@ -8,6 +8,7 @@ const cors = require("cors");
 const http = require("http");
 const { Server } = require("socket.io");
 const ProductService = require("./services/ProductService");
+const rateLimit = require("express-rate-limit");
 
 dotenv.config();
 
@@ -36,11 +37,41 @@ app.use(bodyParser.urlencoded({ limit: "10mb", extended: true }));
 // Cookie - Phải đặt TRƯỚC routes
 app.use(cookieParser());
 
+// General API rate limiter (100 req / 15 min per IP)
+const generalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 300,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { errCode: 429, errMessage: "Too many requests, please try again later." },
+});
+app.use("/api/", generalLimiter);
+
+// Forgot password: stricter rate limit (5 requests / 15 min per IP)
+const forgotPasswordLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { errCode: 429, errMessage: "Too many password reset requests. Please try again in 15 minutes." },
+});
+app.use("/api/v1/user/forgot-password", forgotPasswordLimiter);
+
 // Static
 app.use(express.static("public"));
 
 // Mount routes
 routes(app);
+
+// Global error handler — phải đặt SAU routes
+// eslint-disable-next-line no-unused-vars
+app.use((err, req, res, next) => {
+  console.error("[GlobalErrorHandler]", err.stack || err);
+  res.status(err.status || 500).json({
+    errCode: -1,
+    errMessage: err.message || "Internal Server Error",
+  });
+});
 
 // Connect DB
 if (process.env.NODE_ENV !== "test") {

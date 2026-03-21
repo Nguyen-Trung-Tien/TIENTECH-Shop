@@ -41,8 +41,42 @@ const uploadFilesToCloudinary = async (files = []) => {
 const handleCreateProduct = async (req, res) => {
   try {
     const data = { ...req.body };
+
+    // Validate required fields
+    if (!data.name || String(data.name).trim() === "") {
+      return res.status(400).json({ errCode: 1, errMessage: "Tên sản phẩm không được để trống" });
+    }
+    if (!data.price && !data.basePrice) {
+      return res.status(400).json({ errCode: 2, errMessage: "Giá sản phẩm không được để trống" });
+    }
+    if (!data.categoryId) {
+      return res.status(400).json({ errCode: 3, errMessage: "Danh mục sản phẩm là bắt buộc" });
+    }
+    if (data.specifications && typeof data.specifications === "string") {
+      try {
+        data.specifications = JSON.parse(data.specifications);
+      } catch (e) {
+        console.error("Error parsing specifications:", e);
+      }
+    }
+    if (data.options && typeof data.options === "string") {
+      try {
+        data.options = JSON.parse(data.options);
+      } catch (e) {
+        console.error("Error parsing options:", e);
+      }
+    }
+    if (data.variants && typeof data.variants === "string") {
+      try {
+        data.variants = JSON.parse(data.variants);
+      } catch (e) {
+        console.error("Error parsing variants:", e);
+      }
+    }
+
     if (data.brandId) data.brandId = parseInt(data.brandId);
     if (data.categoryId) data.categoryId = parseInt(data.categoryId);
+    if (data.price !== undefined) data.basePrice = data.price;
     if (data.isActive !== undefined)
       data.isActive = parseBoolean(data.isActive);
 
@@ -98,7 +132,7 @@ const handleCreateProduct = async (req, res) => {
       );
     }
 
-    const product = await ProductService.createProduct(data, imageRecords);
+    const product = await ProductService.createProductWithVariants(data, imageRecords);
     return res.status(201).json(product);
   } catch (e) {
     console.error(e);
@@ -112,11 +146,9 @@ const handleCreateProduct = async (req, res) => {
 const handleGetAllProducts = async (req, res) => {
   try {
     const categoryId = req.query.categoryId;
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
-    const isFlashSale = ProductService.parseBoolean
-      ? ProductService.parseBoolean(req.query.isFlashSale)
-      : req.query.isFlashSale === "true" || req.query.isFlashSale === "1";
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 10));
+    const isFlashSale = req.query.isFlashSale === "true" || req.query.isFlashSale === "1";
 
     const result = await ProductService.getAllProducts(
       categoryId,
@@ -153,9 +185,17 @@ const handleUpdateProduct = async (req, res) => {
   try {
     const { id } = req.params;
     const data = { ...req.body };
+    if (data.specifications && typeof data.specifications === "string") {
+      try {
+        data.specifications = JSON.parse(data.specifications);
+      } catch (e) {
+        console.error("Error parsing specifications:", e);
+      }
+    }
 
     if (data.brandId) data.brandId = parseInt(data.brandId);
     if (data.categoryId) data.categoryId = parseInt(data.categoryId);
+    if (data.price !== undefined) data.basePrice = data.price;
     if (data.isActive !== undefined)
       data.isActive = parseBoolean(data.isActive);
 
@@ -234,9 +274,9 @@ const handleDeleteProduct = async (req, res) => {
 
 const handleSearchProducts = async (req, res) => {
   try {
-    const query = req.query.q || "";
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
+    const query = (req.query.q || "").trim();
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = Math.min(50, Math.max(1, parseInt(req.query.limit) || 10));
 
     const result = await ProductService.searchProducts(query, page, limit);
     return res.status(200).json(result);
@@ -305,9 +345,9 @@ const handleFilterProducts = async (req, res) => {
       maxPrice,
       search,
       sort,
-      page = 1,
-      limit = 12,
     } = req.query;
+    const page = Math.max(1, Number(req.query.page) || 1);
+    const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 12));
 
     const filters = {
       brandId,
@@ -375,10 +415,26 @@ const handleRecommendFortuneProducts = async (req, res) => {
   }
 };
 
+const handleGetProductBySlug = async (req, res) => {
+  try {
+    const { slug } = req.params;
+    const result = await ProductService.getProductBySlug(slug);
+    const status = result.errCode === 0 ? 200 : 404;
+    return res.status(status).json(result);
+  } catch (e) {
+    console.error("Error in handleGetProductBySlug:", e);
+    return res.status(500).json({
+      errCode: -1,
+      errMessage: "Internal server error",
+    });
+  }
+};
+
 module.exports = {
   handleCreateProduct,
   handleGetAllProducts,
   handleGetProductById,
+  handleGetProductBySlug, // Export mới
   handleUpdateProduct,
   handleDeleteProduct,
   handleSearchProducts,

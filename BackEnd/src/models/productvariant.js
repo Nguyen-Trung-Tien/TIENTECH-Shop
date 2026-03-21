@@ -4,55 +4,63 @@ const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
   class ProductVariant extends Model {
     static associate(models) {
-      ProductVariant.belongsTo(models.Product, {
-        foreignKey: "productId",
-        as: "product",
-        onDelete: "CASCADE",
+      ProductVariant.belongsTo(models.Product, { foreignKey: "productId", as: "product" });
+      ProductVariant.hasMany(models.OrderItem, { foreignKey: "variantId", as: "orderItems" });
+      ProductVariant.hasMany(models.CartItem, { foreignKey: "variantId", as: "cartItems" });
+      ProductVariant.hasMany(models.ProductImage, { foreignKey: "variantId", as: "images" });
+      ProductVariant.belongsToMany(models.ProductOptionValue, {
+        through: "VariantOptionValues",
+        foreignKey: "variantId",
+        as: "optionValues",
       });
     }
   }
 
   ProductVariant.init(
     {
-      sku: {
-        type: DataTypes.STRING,
-        allowNull: true,
-        unique: true,
+      sku: { 
+        type: DataTypes.STRING, 
+        unique: true, 
+        allowNull: false 
       },
-      price: {
-        type: DataTypes.DECIMAL(10, 2),
-        allowNull: false,
-        validate: { min: 0 },
+      price: { 
+        type: DataTypes.DECIMAL(12, 2), 
+        allowNull: false 
       },
-      stock: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        defaultValue: 0,
-        validate: { min: 0 },
+      
+      // Khuyến mãi riêng cho biến thể
+      discount: { type: DataTypes.DECIMAL(5, 2), defaultValue: 0 },
+      salePrice: { 
+        type: DataTypes.DECIMAL(12, 2),
+        comment: "Giá sau giảm giá" 
       },
-      isActive: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: true,
-      },
-      attributes: {
+      
+      stock: { type: DataTypes.INTEGER, defaultValue: 0 },
+      
+      // VD: {Color: 'Gold', Storage: '256GB'}
+      attributeValues: {
         type: DataTypes.JSON,
         allowNull: false,
-        defaultValue: {},
+        defaultValue: {}
       },
-      imageUrl: {
-        type: DataTypes.TEXT,
-        allowNull: true,
-      },
-      productId: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-      },
+      
+      isActive: { type: DataTypes.BOOLEAN, defaultValue: true },
+      productId: { type: DataTypes.INTEGER, allowNull: false },
     },
     {
       sequelize,
       modelName: "ProductVariant",
       tableName: "ProductVariants",
       timestamps: true,
+      hooks: {
+        beforeSave: (variant) => {
+          if (variant.discount > 0) {
+            variant.salePrice = variant.price * (1 - variant.discount / 100);
+          } else {
+            variant.salePrice = variant.price;
+          }
+        }
+      }
     }
   );
 

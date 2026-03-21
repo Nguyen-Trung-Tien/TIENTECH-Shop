@@ -3,7 +3,10 @@ const UserService = require("../services/UserService");
 const handleCreateNewUser = async (req, res) => {
   try {
     const message = await UserService.createNewUser(req.body);
-    return res.status(200).json(message);
+    if (message.errCode === 1) {
+      return res.status(409).json(message); // Email already exists
+    }
+    return res.status(201).json(message);
   } catch (e) {
     console.error(e);
     return res.status(500).json({
@@ -33,17 +36,19 @@ const handleLogin = async (req, res) => {
       });
     }
 
+    const isProduction = process.env.NODE_ENV === "production";
+
     res.cookie("accessToken", result.data.accessToken, {
       httpOnly: true,
-      secure: false, // Tắt secure để chạy được trên http://localhost
-      sameSite: "Lax",
+      secure: isProduction,
+      sameSite: isProduction ? "None" : "Lax",
       maxAge: 15 * 60 * 1000,
     });
 
     res.cookie("refreshToken", result.data.refreshToken, {
       httpOnly: true,
-      secure: false, // Tắt secure để chạy được trên http://localhost
-      sameSite: "Lax",
+      secure: isProduction,
+      sameSite: isProduction ? "None" : "Lax",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
@@ -78,17 +83,19 @@ const handleRefreshToken = async (req, res) => {
       return res.status(403).json(result);
     }
 
+    const isProductionRefresh = process.env.NODE_ENV === "production";
+
     res.cookie("accessToken", result.data.accessToken, {
       httpOnly: true,
-      secure: false,
-      sameSite: "Lax",
+      secure: isProductionRefresh,
+      sameSite: isProductionRefresh ? "None" : "Lax",
       maxAge: 15 * 60 * 1000,
     });
 
     res.cookie("refreshToken", result.data.refreshToken, {
       httpOnly: true,
-      secure: false,
-      sameSite: "Lax",
+      secure: isProductionRefresh,
+      sameSite: isProductionRefresh ? "None" : "Lax",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
@@ -163,8 +170,9 @@ const handleUpdateUser = async (req, res) => {
 
 const handleGetAllUsers = async (req, res) => {
   try {
-    const { page = 1, limit = 10 } = req.query;
-    const result = await UserService.getAllUsers(+page, +limit);
+    const page = Math.max(1, +req.query.page || 1);
+    const limit = Math.min(100, Math.max(1, +req.query.limit || 10));
+    const result = await UserService.getAllUsers(page, limit);
     return res.status(200).json(result);
   } catch (e) {
     console.error(e);
@@ -261,21 +269,38 @@ const handleLogout = async (req, res) => {
 };
 
 const handleChangePassword = async (req, res) => {
-  const { oldPassword, newPassword } = req.body;
-  const userId = req.user?.id;
-  if (!userId || !oldPassword || !newPassword) {
-    return res.status(400).json({
-      errCode: 1,
-      errMessage: "Missing required parameters",
+  try {
+    const { oldPassword, newPassword } = req.body;
+    const userId = req.user?.id;
+
+    if (!userId || !oldPassword || !newPassword) {
+      return res.status(400).json({
+        errCode: 1,
+        errMessage: "Missing required parameters",
+      });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({
+        errCode: 2,
+        errMessage: "New password must be at least 6 characters",
+      });
+    }
+
+    const result = await UserService.updateUserPassword(userId, oldPassword, newPassword);
+
+    if (result.errCode !== 0) {
+      return res.status(400).json(result);
+    }
+
+    return res.status(200).json(result);
+  } catch (e) {
+    console.error("handleChangePassword error:", e);
+    return res.status(500).json({
+      errCode: -1,
+      errMessage: "Internal server error",
     });
   }
-
-  const result = await UserService.updateUserPassword(
-    userId,
-    oldPassword,
-    newPassword
-  );
-  return res.status(200).json(result);
 };
 
 const handleForgotPassword = async (req, res) => {

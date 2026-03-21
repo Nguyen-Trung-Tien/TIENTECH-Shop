@@ -1,13 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
 import { getUserApi } from "../api/userApi";
+import { useSelector } from "react-redux";
 
 export const useCurrentUser = () => {
-  const userLocal = JSON.parse(localStorage.getItem("user"));
-  const token = localStorage.getItem("accessToken");
+  const userRedux = useSelector((state) => state.user.user);
   return useQuery({
-    queryKey: ["me", userLocal?.id],
-    queryFn: () => getUserApi(userLocal.id, token),
-    enabled: !!userLocal?.id,
+    queryKey: ["me", userRedux?.id],
+    queryFn: () => getUserApi(userRedux.id),
+    enabled: !!userRedux?.id,
     staleTime: Infinity,
     cacheTime: Infinity,
     retry: false,

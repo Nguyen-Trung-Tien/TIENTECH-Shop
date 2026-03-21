@@ -19,6 +19,7 @@ router.post(
 );
 router.get("/get-all-product", ProductController.handleGetAllProducts);
 router.get("/get-product/:id", ProductController.handleGetProductById);
+router.get("/get-product-by-slug/:slug", ProductController.handleGetProductBySlug);
 router.get("/search", ProductController.handleSearchProducts);
 router.get("/search-suggest", ProductController.handleSearchSuggestions);
 

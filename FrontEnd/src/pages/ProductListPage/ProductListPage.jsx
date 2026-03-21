@@ -6,7 +6,7 @@ import LoadMoreButton from "../../components/LoadMoreButton/LoadMoreButton";
 import SkeletonCard from "../../components/SkeletonCard/SkeletonCard";
 import ChatBot from "../../components/ChatBot/ChatBot";
 import { FiFilter, FiSearch, FiAlertCircle, FiChevronRight, FiGrid } from "react-icons/fi";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 
 const ProductListPage = () => {
   const {
@@ -129,7 +129,12 @@ const ProductListPage = () => {
                    <FiAlertCircle className="mx-auto text-rose-500 mb-6" size={40} />
                    <h3 className="text-lg font-black text-slate-900 mb-2 uppercase">Lỗi tải dữ liệu</h3>
                    <p className="text-slate-400 text-sm mb-8 font-medium">{error}</p>
-                   <Button variant="primary" onClick={() => window.location.reload()}>Thử lại</Button>
+                   <button
+                     onClick={() => window.location.reload()}
+                     className="px-8 py-3 bg-blue-600 text-white text-sm font-black uppercase tracking-widest rounded-2xl hover:bg-blue-700 transition-colors"
+                   >
+                     Thử lại
+                   </button>
                 </div>
               ) : products.length === 0 ? (
                 <div className="bg-white rounded-[32px] border-2 border-dashed border-slate-200 p-24 text-center">

@@ -10,54 +10,24 @@ const cartSlice = createSlice({
   reducers: {
     setCartItems: (state, action) => {
       if (!Array.isArray(action.payload)) return;
-      state.cartItems = action.payload.map((item) => ({ ...item }));
+      state.cartItems = action.payload;
     },
 
     appendCartItems: (state, action) => {
       if (!Array.isArray(action.payload)) return;
-
-      const updatedItems = [...state.cartItems];
-
-      action.payload.forEach((item) => {
-        const index = updatedItems.findIndex((i) => i.id === item.id);
-        if (index >= 0) {
-          const existing = updatedItems[index];
-          if (
-            existing.quantity !== item.quantity ||
-            existing.product.price !== item.product.price ||
-            existing.product.discount !== item.product.discount
-          ) {
-            updatedItems[index] = { ...item };
-          }
-        } else {
-          updatedItems.push(item);
-        }
-      });
-
-      state.cartItems = updatedItems;
+      state.cartItems = action.payload;
     },
 
     addCartItem: (state, action) => {
       const item = action.payload;
       if (!item) return;
 
-      const minimalItem = {
-        id: item.id,
-        product: {
-          id: item.product.id,
-          name: item.product.name,
-          price: item.product.price,
-          discount: item.product.discount || 0,
-          image: item.product.image || [],
-        },
-        quantity: item.quantity,
-      };
-
-      const index = state.cartItems.findIndex((i) => i.id === minimalItem.id);
+      // Unique key for cart item is id from database
+      const index = state.cartItems.findIndex((i) => i.id === item.id);
       if (index >= 0) {
-        state.cartItems[index].quantity += minimalItem.quantity;
+        state.cartItems[index].quantity = item.quantity; // Update to latest from server
       } else {
-        state.cartItems.push(minimalItem);
+        state.cartItems.push(item);
       }
     },
 

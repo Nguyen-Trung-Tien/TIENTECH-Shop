@@ -23,6 +23,7 @@ const ProductCard = ({ product }) => {
   const {
     id,
     name,
+    slug,
     price,
     displayPrice,
     discount = 0,
@@ -37,6 +38,8 @@ const ProductCard = ({ product }) => {
     basePrice,
   } = product;
 
+  // ... (rest of props)
+
   const avgRating = useMemo(() => {
     if (!reviews.length) return 0;
     return (
@@ -48,7 +51,7 @@ const ProductCard = ({ product }) => {
     ? Number(flashOriginalPrice || basePrice || price)
     : Number(basePrice || price);
 
-  const finalPrice = Number(displayPrice || price);
+  const finalPrice = Number(displayPrice || basePrice || price);
 
   const handleAddToCart = async (e) => {
     e.stopPropagation();
@@ -88,7 +91,7 @@ const ProductCard = ({ product }) => {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       className={`group card-ecommerce relative flex flex-col h-full cursor-pointer ${!isActive ? "opacity-60 grayscale pointer-events-none" : ""}`}
-      onClick={() => navigate(`/product-detail/${id}`)}
+      onClick={() => navigate(`/product-detail/${slug || id}`)}
     >
       {/* Image Area - Aspect ratio 1:1 for compactness */}
       <div className="relative aspect-square overflow-hidden bg-slate-50">

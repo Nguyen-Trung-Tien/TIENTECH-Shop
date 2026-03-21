@@ -282,23 +282,88 @@ const createOrder = async (data) => {
 
       if (!product || !product.isActive) {
         await t.rollback();
-        return { errCode: 3, errMessage: `Sản phẩm ${item.productId} không tồn tại.` };
+        return {
+          errCode: 3,
+          errMessage: `Sản phẩm ${item.productId} không tồn tại hoặc đã ngừng kinh doanh.`,
+        };
+      }
+
+      let variant = null;
+      if (item.variantId) {
+        variant = await db.ProductVariant.findOne({
+          where: { id: item.variantId, productId: product.id },
+          transaction: t,
+          lock: t.LOCK.UPDATE,
+        });
+        if (!variant || !variant.isActive) {
+          await t.rollback();
+          return {
+            errCode: 4,
+            errMessage: `Phiên bản sản phẩm ${item.variantId} không hợp lệ.`,
+          };
+        }
       }
 
       const quantity = Number(item.quantity);
-      const basePrice = Number(product.price) || 0;
-      const discount = Number(product.discount) || 0;
-      const unitPrice = Number((basePrice * (1 - discount / 100)).toFixed(2));
-      const subtotal = Number((unitPrice * quantity).toFixed(2));
+      if (quantity <= 0) {
+        await t.rollback();
+        return { errCode: 5, errMessage: "Số lượng không hợp lệ." };
+      }
 
+      // Check stock
+      if (variant) {
+        if (variant.stock < quantity) {
+          await t.rollback();
+          return {
+            errCode: 6,
+            errMessage: `Sản phẩm ${product.name} (phiên bản ${variant.sku}) không đủ tồn kho.`,
+          };
+        }
+        await variant.decrement("stock", { by: quantity, transaction: t });
+      } else {
+        if (product.stock < quantity) {
+          await t.rollback();
+          return {
+            errCode: 6,
+            errMessage: `Sản phẩm ${product.name} không đủ tồn kho.`,
+          };
+        }
+        await product.decrement("stock", { by: quantity, transaction: t });
+      }
+
+      // Price logic
+      const now = new Date();
+      const isFlashSale =
+        product.isFlashSale &&
+        product.flashSaleStart &&
+        product.flashSaleEnd &&
+        now >= new Date(product.flashSaleStart) &&
+        now <= new Date(product.flashSaleEnd);
+
+      let unitPrice = 0;
+      if (isFlashSale && product.flashSalePrice) {
+        unitPrice = Number(product.flashSalePrice);
+      } else {
+        const originalPrice = variant
+          ? Number(variant.price)
+          : Number(product.basePrice || product.price || 0);
+        const discount = Number(product.discount) || 0;
+        unitPrice = Number((originalPrice * (1 - discount / 100)).toFixed(2));
+      }
+
+      const subtotal = Number((unitPrice * quantity).toFixed(2));
       calculatedTotal += subtotal;
+
+      await product.increment("sold", { by: quantity, transaction: t });
 
       formattedItems.push({
         productId: product.id,
+        variantId: variant ? variant.id : null,
         productName: product.name,
         quantity,
         price: unitPrice,
         subtotal,
+        image: variant?.imageUrl || product.image,
       });
     }
 
@@ -430,49 +495,52 @@ const updateOrderStatus = async (id, status, user = null) => {
       console.warn("No orderItems found for order:", id);
     }
 
+    // NOTE: Stock is already decremented at order creation (createOrder).
+    // On delivery, we only need to record deliveredAt — NOT touch stock again.
     if (
       ["delivered", "completed"].includes(status) &&
       !["delivered", "completed"].includes(prevStatus)
     ) {
+      order.deliveredAt = new Date();
+    }
+
+    // When cancelling an order that was NOT yet delivered, refund stock.
+    if (
+      status === "cancelled" &&
+      !["delivered", "completed"].includes(prevStatus)
+    ) {
       for (const item of order.orderItems) {
-        const product = await db.Product.findByPk(item.productId, {
-          transaction: t,
-        });
-        if (product) {
-          product.sold = (product.sold || 0) + item.quantity;
-          product.stock = Math.max(0, (product.stock || 0) - item.quantity);
-          await product.save({ transaction: t });
+        if (item.variantId) {
+          const variant = await db.ProductVariant.findByPk(item.variantId, { transaction: t });
+          if (variant) {
+            await variant.increment("stock", { by: item.quantity, transaction: t });
+          }
+        } else {
+          const product = await db.Product.findByPk(item.productId, { transaction: t });
+          if (product) {
+            await product.increment("stock", { by: item.quantity, transaction: t });
+          }
         }
       }
     }
 
+    // When cancelling an already-delivered order, reverse sold count + refund stock.
     if (
       status === "cancelled" &&
       ["delivered", "completed"].includes(prevStatus)
     ) {
       for (const item of order.orderItems) {
-        const product = await db.Product.findByPk(item.productId, {
-          transaction: t,
-        });
+        const product = await db.Product.findByPk(item.productId, { transaction: t });
         if (product) {
           product.sold = Math.max(0, (product.sold || 0) - item.quantity);
-          product.stock += item.quantity;
+          product.stock = (product.stock || 0) + item.quantity;
           await product.save({ transaction: t });
         }
-      }
-    }
-
-    if (
-      status === "cancelled" &&
-      !["delivered", "completed"].includes(prevStatus)
-    ) {
-      for (const item of order.orderItems) {
-        const product = await db.Product.findByPk(item.productId, {
-          transaction: t,
-        });
-        if (product) {
-          product.stock += item.quantity;
-          await product.save({ transaction: t });
+        if (item.variantId) {
+          const variant = await db.ProductVariant.findByPk(item.variantId, { transaction: t });
+          if (variant) {
+            await variant.increment("stock", { by: item.quantity, transaction: t });
+          }
         }
       }
     }

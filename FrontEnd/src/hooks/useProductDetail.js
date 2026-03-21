@@ -1,12 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
-import { getProductByIdApi, getRecommendedProductsApi } from "../api/productApi";
+import { getProductBySlugApi, getRecommendedProductsApi } from "../api/productApi";
 import { getAllCarts, createCart, addCart } from "../api/cartApi";
 import { addCartItem } from "../redux/cartSlice";
 import { getReviewsByProductApi } from "../api/reviewApi";
 
-export const useProductDetail = (productId) => {
+export const useProductDetail = (slug) => {
   const dispatch = useDispatch();
   const user = useSelector((state) => state.user.user);
   const userId = user?.id;
@@ -18,74 +18,58 @@ export const useProductDetail = (productId) => {
   
   const [recommended, setRecommended] = useState([]);
   const [loadingRecommended, setLoadingRecommended] = useState(false);
-  const [recommendedPage, setRecommendedPage] = useState(1);
-  const [recommendedTotalPages, setRecommendedTotalPages] = useState(1);
-  
-  const [selectedVariantId, setSelectedVariantId] = useState(null);
-  const [quantity, setQuantity] = useState(1);
   const [addingCart, setAddingCart] = useState(false);
 
-  // Fetch product data
+  // Fetch product data by Slug
   const fetchProduct = useCallback(async () => {
+    if (!slug) return;
     setLoading(true);
     try {
-      const res = await getProductByIdApi(productId);
+      const res = await getProductBySlugApi(slug);
       if (res?.errCode === 0 && res.product) {
         setProduct(res.product);
-        if (res.product.variants?.length > 0) {
-          const firstActive = res.product.variants.find(v => v.isActive) || res.product.variants[0];
-          setSelectedVariantId(firstActive?.id || null);
-        }
+      } else {
+        toast.error(res.errMessage || "Không tìm thấy sản phẩm!");
       }
     } catch (err) {
       toast.error("Lỗi khi tải thông tin sản phẩm!");
     } finally {
       setLoading(false);
     }
-  }, [productId]);
-
-  // Fetch reviews
-  const fetchReviews = useCallback(async (page = 1) => {
-    try {
-      const res = await getReviewsByProductApi(productId, page, 3);
-      if (res?.errCode === 0) {
-        setReviews(res.data || []);
-        setPagination(res.pagination);
-      }
-    } catch (err) {
-      console.error("Fetch reviews error:", err);
-    }
-  }, [productId]);
-
-  // Fetch recommended products
-  const fetchRecommended = useCallback(async (page = 1, append = false) => {
-    try {
-      if (page === 1) setLoadingRecommended(true);
-      const res = await getRecommendedProductsApi(productId, page, 6);
-      if (res?.errCode === 0) {
-        setRecommended(prev => append ? [...prev, ...res.data] : res.data);
-        setRecommendedTotalPages(res.pagination?.totalPages || 1);
-        setRecommendedPage(page);
-      }
-    } finally {
-      setLoadingRecommended(false);
-    }
-  }, [productId]);
+  }, [slug]);
 
   useEffect(() => {
-    if (productId) {
-      fetchProduct();
-      fetchReviews(1);
-    }
-  }, [productId, fetchProduct, fetchReviews]);
+    fetchProduct();
+  }, [fetchProduct]);
 
+  // Fetch reviews & recommended (giả sử dùng product.id sau khi fetch xong)
   useEffect(() => {
-    if (product) fetchRecommended(1);
-  }, [product, fetchRecommended]);
+    if (product?.id) {
+      const fetchExtra = async () => {
+        try {
+          const [reviewsRes, recommendedRes] = await Promise.all([
+            getReviewsByProductApi(product.id, 1, 5),
+            getRecommendedProductsApi(product.id, 1, 6)
+          ]);
+          if (reviewsRes.errCode === 0) {
+            setReviews(reviewsRes.data);
+            setPagination(reviewsRes.pagination);
+          }
+          if (recommendedRes.errCode === 0) {
+            setRecommended(recommendedRes.data);
+          }
+        } catch (err) {
+          console.error("Fetch extra data error:", err);
+        }
+      };
+      fetchExtra();
+    }
+  }, [product?.id]);
 
-  // Cart logic
-  const handleAddToCart = async () => {
-    if (!userId) return toast.warn("Bạn cần đăng nhập để thêm vào giỏ hàng!");
+  const handleAddToCart = async (variantId, quantity = 1) => {
+    if (!userId) return toast.warn("Bạn cần đăng nhập để mua hàng!");
+    if (!variantId && product?.variants?.length > 0) return toast.warn("Vui lòng chọn phiên bản sản phẩm!");
+
     setAddingCart(true);
     try {
       const cartsRes = await getAllCarts();
@@ -94,23 +78,25 @@ export const useProductDetail = (productId) => {
         const newCartRes = await createCart(userId);
         cart = newCartRes.data;
       }
-      const res = await addCart({ cartId: cart.id, productId, quantity });
+
+      const res = await addCart({ 
+        cartId: cart.id, 
+        productId: product.id, 
+        variantId, 
+        quantity 
+      });
+
       if (res.errCode === 0) {
-        dispatch(addCartItem({
-          id: res.data.id,
-          product: {
-            id: res.data.product.id,
-            name: res.data.product.name,
-            price: res.data.product.price,
-            discount: res.data.product.discount || 0,
-            image: res.data.product.image || [],
-          },
-          quantity: res.data.quantity,
-        }));
-        toast.success(`Đã thêm "${product.name}" vào giỏ hàng`);
+        dispatch(addCartItem(res.data));
+        toast.success("Đã thêm vào giỏ hàng!");
+        return true; // Trả về true khi thành công
+      } else {
+        toast.error(res.errMessage);
+        return false;
       }
     } catch (err) {
       toast.error("Lỗi khi thêm vào giỏ hàng!");
+      return false;
     } finally {
       setAddingCart(false);
     }
@@ -123,17 +109,8 @@ export const useProductDetail = (productId) => {
     pagination,
     recommended,
     loadingRecommended,
-    recommendedPage,
-    recommendedTotalPages,
-    selectedVariantId,
-    setSelectedVariantId,
-    quantity,
-    setQuantity,
     addingCart,
-    fetchReviews,
-    fetchRecommended,
     handleAddToCart,
-    userId,
     user
   };
 };

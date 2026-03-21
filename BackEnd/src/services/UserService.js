@@ -224,12 +224,13 @@ const forgotPassword = async (email) => {
   if (!user) return { errCode: 1, errMessage: "Email không tồn tại" };
 
   const resetToken = uuidv4();
+  const resetTokenHash = hashToken(resetToken); // Hash trước khi lưu vào DB
   const resetTokenExpiresAt = new Date(Date.now() + 15 * 60 * 1000);
-  user.resetToken = resetToken;
+  user.resetToken = resetTokenHash;
   user.resetTokenExpiresAt = resetTokenExpiresAt;
   await user.save();
 
-  await sendForgotPasswordEmail(user, resetToken);
+  await sendForgotPasswordEmail(user, resetToken); // Gửi plain token qua email
   return { errCode: 0, errMessage: "Send email success!" };
 };
 
@@ -242,7 +243,8 @@ const verifyResetToken = async (email, token) => {
       return { errCode: 2, errMessage: "No recovery required" };
     }
 
-    if (user.resetToken !== token) {
+    const tokenHash = hashToken(token);
+    if (user.resetToken !== tokenHash) {
       return { errCode: 3, errMessage: "Invalid verification code!" };
     }
 
@@ -262,7 +264,8 @@ const resetPassword = async (email, token, newPassword) => {
     const user = await db.User.findOne({ where: { email } });
     if (!user) return { errCode: 1, errMessage: "Email not found!" };
 
-    if (user.resetToken !== token) {
+    const tokenHash = hashToken(token);
+    if (user.resetToken !== tokenHash) {
       return {
         errCode: 2,
         errMessage: "Token not found!",

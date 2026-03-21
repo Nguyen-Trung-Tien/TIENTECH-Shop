@@ -15,13 +15,15 @@ const SpecItem = ({ label, value }) => {
 };
 
 const ProductSpecs = ({ product }) => {
+  const specMap = product?.specifications || {};
+  
   const specs = [
-    { label: "CPU", value: product.cpu },
-    { label: "RAM", value: product.ram },
-    { label: "ROM", value: product.rom },
-    { label: "Màn hình", value: product.screen },
-    { label: "Pin", value: product.battery },
-    { label: "Hệ điều hành", value: product.os },
+    { label: "CPU", value: specMap.CPU || specMap.cpu || product.cpu },
+    { label: "RAM", value: specMap.RAM || specMap.ram || product.ram },
+    { label: "ROM", value: specMap.ROM || specMap.rom || product.rom },
+    { label: "Màn hình", value: specMap.Screen || specMap.screen || product.screen },
+    { label: "Pin", value: specMap.Battery || specMap.battery || product.battery },
+    { label: "Hệ điều hành", value: specMap.OS || specMap.os || product.os },
   ];
 
   if (specs.every(s => !s.value)) return null;

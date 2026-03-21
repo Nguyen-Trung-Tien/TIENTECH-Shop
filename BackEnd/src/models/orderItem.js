@@ -22,6 +22,11 @@ module.exports = (sequelize, DataTypes) => {
         as: "productInfo",
         onDelete: "SET NULL",
       });
+      OrderItem.belongsTo(models.ProductVariant, {
+        foreignKey: "variantId",
+        as: "variant",
+        onDelete: "SET NULL",
+      });
     }
   }
 
@@ -32,6 +37,7 @@ module.exports = (sequelize, DataTypes) => {
       subtotal: { type: DataTypes.DECIMAL(10, 2), allowNull: false },
       productName: { type: DataTypes.STRING, allowNull: false },
       image: { type: DataTypes.BLOB("long"), allowNull: true },
+      variantId: { type: DataTypes.INTEGER, allowNull: true },
       returnStatus: {
         type: DataTypes.ENUM(
           "none", // chưa yêu cầu trả

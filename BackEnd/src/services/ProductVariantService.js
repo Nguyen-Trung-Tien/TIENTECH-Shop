@@ -14,6 +14,7 @@ const getVariantsByProductId = async (productId) => {
 };
 
 const createVariant = async (data) => {
+  const t = await db.sequelize.transaction();
   try {
     const {
       productId,
@@ -21,8 +22,9 @@ const createVariant = async (data) => {
       price,
       stock,
       isActive = true,
-      attributes = {},
+      attributeValues = {},
       imageUrl = null,
+      optionValueIds = [], // Added for normalization
     } = data;
 
     if (!productId || price == null || stock == null) {
@@ -35,33 +37,68 @@ const createVariant = async (data) => {
       price,
       stock,
       isActive: !!isActive,
-      attributes,
+      attributeValues,
       imageUrl,
-    });
+    }, { transaction: t });
 
+    // Handle normalized junction
+    if (optionValueIds && optionValueIds.length > 0) {
+      const junctionData = optionValueIds.map(id => ({
+        variantId: variant.id,
+        productOptionValueId: id
+      }));
+      await db.VariantOptionValue.bulkCreate(junctionData, { transaction: t });
+    }
+
+    await t.commit();
     return { errCode: 0, data: variant };
   } catch (e) {
+    await t.rollback();
     console.error("Error createVariant:", e);
     return { errCode: 1, errMessage: e.message };
   }
 };
 
 const updateVariant = async (id, data) => {
+  const t = await db.sequelize.transaction();
   try {
-    const variant = await db.ProductVariant.findByPk(id);
-    if (!variant) return { errCode: 1, errMessage: "Variant not found" };
+    const variant = await db.ProductVariant.findByPk(id, { transaction: t });
+    if (!variant) {
+      await t.rollback();
+      return { errCode: 1, errMessage: "Variant not found" };
+    }
 
     const updated = await variant.update({
       sku: data.sku ?? variant.sku,
       price: data.price ?? variant.price,
       stock: data.stock ?? variant.stock,
       isActive: data.isActive ?? variant.isActive,
-      attributes: data.attributes ?? variant.attributes,
+      attributeValues: data.attributeValues ?? variant.attributeValues,
       imageUrl: data.imageUrl ?? variant.imageUrl,
-    });
+    }, { transaction: t });
 
+    // Update normalized junction if provided
+    if (data.optionValueIds) {
+      // Clear old associations
+      await db.VariantOptionValue.destroy({ 
+        where: { variantId: id },
+        transaction: t 
+      });
+      
+      // Add new associations
+      if (data.optionValueIds.length > 0) {
+        const junctionData = data.optionValueIds.map(ovId => ({
+          variantId: id,
+          productOptionValueId: ovId
+        }));
+        await db.VariantOptionValue.bulkCreate(junctionData, { transaction: t });
+      }
+    }
+
+    await t.commit();
     return { errCode: 0, data: updated };
   } catch (e) {
+    await t.rollback();
     console.error("Error updateVariant:", e);
     return { errCode: 1, errMessage: e.message };
   }

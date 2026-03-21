@@ -12,7 +12,7 @@ import { useNavigate } from "react-router-dom";
 import { logoutUserApi } from "../../../api/userApi";
 import { removeUser } from "../../../redux/userSlice";
 import { clearCart } from "../../../redux/cartSlice";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import { useCurrentUser } from "../../../hooks/useUser";
 import logoImage from "../../../assets/Tien-Tech Shop.png";
@@ -21,8 +21,9 @@ import NotificationBell from "../../../components/HeaderComponent/NotificationBe
 const HeaderAdmin = ({ toggleSidebar, isCollapsed }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const reduxUser = useSelector((state) => state.user.user);
   const { data: resUser } = useCurrentUser();
-  const user = resUser?.data;
+  const user = resUser?.data || reduxUser;
 
   const [searchQuery, setSearchQuery] = useState("");
   const [showProfileMenu, setShowProfileMenu] = useState(false);

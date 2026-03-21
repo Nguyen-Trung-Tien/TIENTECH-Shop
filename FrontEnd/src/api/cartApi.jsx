@@ -72,11 +72,12 @@ export const getCartItemById = async (id) => {
   }
 };
 
-export const addCart = async ({ cartId, productId, quantity = 1 }) => {
+export const addCart = async ({ cartId, productId, variantId, quantity = 1 }) => {
   try {
     const res = await axiosClient.post("/cartItem/create-cartItem", {
       cartId,
       productId,
+      variantId,
       quantity,
     });
     return res;
