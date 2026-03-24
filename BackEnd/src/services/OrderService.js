@@ -361,23 +361,24 @@ const createOrder = async (data) => {
       const now = new Date();
       let unitPrice = 0;
 
-      if (variant) {
+      const isFlashSale =
+        product.isFlashSale &&
+        product.flashSaleStart &&
+        product.flashSaleEnd &&
+        now >= new Date(product.flashSaleStart) &&
+        now <= new Date(product.flashSaleEnd);
+
+      if (isFlashSale && product.flashSalePrice) {
+        // ƯU TIÊN 1: Flash Sale (Áp dụng cho toàn bộ sản phẩm)
+        unitPrice = Number(product.flashSalePrice);
+      } else if (variant) {
+        // ƯU TIÊN 2: Giá Variant nếu có
         const originalPrice = Number(variant.price || 0);
         const discount = Number(variant.discount || 0);
         unitPrice = Number((originalPrice * (1 - discount / 100)).toFixed(2));
       } else {
-        const isFlashSale =
-          product.isFlashSale &&
-          product.flashSaleStart &&
-          product.flashSaleEnd &&
-          now >= new Date(product.flashSaleStart) &&
-          now <= new Date(product.flashSaleEnd);
-
-        if (isFlashSale && product.flashSalePrice) {
-          unitPrice = Number(product.flashSalePrice);
-        } else {
-          unitPrice = Number(product.basePrice || 0);
-        }
+        // ƯU TIÊN 3: Giá gốc sản phẩm
+        unitPrice = Number(product.basePrice || 0);
       }
 
       const subtotal = Number((unitPrice * quantity).toFixed(2));
@@ -412,7 +413,7 @@ const createOrder = async (data) => {
     let appliedVoucher = null;
 
     if (voucherCode) {
-      const voucherRes = await VoucherService.checkVoucher(voucherCode, calculatedTotal);
+      const voucherRes = await VoucherService.checkVoucher(voucherCode, calculatedTotal, userId);
       if (voucherRes.errCode === 0) {
         appliedVoucher = await db.Voucher.findOne({ where: { code: voucherCode }, transaction: t });
         discountAmount = voucherRes.data.discountAmount;
@@ -446,6 +447,20 @@ const createOrder = async (data) => {
         transaction: t,
       }
     );
+
+    // Ghi nhận lịch sử sử dụng voucher
+    if (appliedVoucher) {
+      await db.VoucherUsage.create(
+        {
+          voucherId: appliedVoucher.id,
+          userId,
+          orderId: order.id,
+          discountAmount,
+          status: "used",
+        },
+        { transaction: t }
+      );
+    }
 
     const cartItemIds = orderItems.map((item) => item.cartItemId).filter(Boolean);
     if (cartItemIds.length) {

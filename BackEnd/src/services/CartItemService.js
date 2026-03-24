@@ -13,19 +13,19 @@ const isFlashSaleActive = (product) => {
 const calculateFinalPrice = (product, variant) => {
   if (!product) return 0;
 
-  // Nếu có variant, ưu tiên giá của variant (có thể có discount riêng)
+  // ƯU TIÊN 1: Nếu sản phẩm đang Flash Sale, lấy giá Flash Sale
+  if (isFlashSaleActive(product) && product.flashSalePrice) {
+    return Number(product.flashSalePrice);
+  }
+
+  // ƯU TIÊN 2: Nếu có variant, lấy giá của variant (có thể có discount riêng)
   if (variant) {
     const price = Number(variant.price || 0);
     const discount = Number(variant.discount || 0);
     return Number((price * (1 - discount / 100)).toFixed(2));
   }
 
-  // Nếu không có variant, kiểm tra Flash Sale
-  if (isFlashSaleActive(product) && product.flashSalePrice) {
-    return Number(product.flashSalePrice);
-  }
-
-  // Cuối cùng là giá gốc của sản phẩm (Product model no longer has discount field)
+  // ƯU TIÊN 3: Giá gốc của sản phẩm
   return Number(product.basePrice || 0);
 };
 
@@ -46,7 +46,7 @@ const getAllCartItems = async (userId, { limit, offset }) => {
         {
           model: db.Product,
           as: "product",
-          attributes: ["id", "name", "basePrice", "isFlashSale", "flashSalePrice", "flashSaleStart", "flashSaleEnd"],
+          attributes: ["id", "name", "basePrice", "isFlashSale", "flashSalePrice", "flashSaleStart", "flashSaleEnd", "totalStock", "isActive"],
           include: [
             {
               model: db.ProductImage,
@@ -58,7 +58,7 @@ const getAllCartItems = async (userId, { limit, offset }) => {
         {
           model: db.ProductVariant,
           as: "variant",
-          attributes: ["id", "sku", "price", "stock", "attributeValues", "discount", "salePrice"],
+          attributes: ["id", "sku", "price", "stock", "attributeValues", "discount", "salePrice", "isActive"],
           include: [
             {
               model: db.ProductImage,
@@ -91,8 +91,17 @@ const getAllCartItems = async (userId, { limit, offset }) => {
         plainItem.variant.attributes = plainItem.variant.attributeValues;
       }
 
-      // Add finalPrice calculated by backend logic
+      // Add real-time price info
+      const isFS = isFlashSaleActive(plainItem.product);
+      plainItem.isFlashSaleActive = isFS; 
       plainItem.finalPrice = calculateFinalPrice(plainItem.product, plainItem.variant);
+      plainItem.flashSaleEnd = plainItem.product?.flashSaleEnd;
+      
+      if (isFS) {
+          const original = Number(plainItem.product.basePrice || 0);
+          const sale = Number(plainItem.product.flashSalePrice || 0);
+          plainItem.flashSaleDiscount = original > 0 ? Math.round(((original - sale) / original) * 100) : 0;
+      }
 
       return plainItem;
     });
@@ -117,13 +126,13 @@ const getCartItemById = async (id, userId) => {
       {
         model: db.Product,
         as: "product",
-        attributes: ["id", "name", "basePrice", "isFlashSale", "flashSalePrice", "flashSaleStart", "flashSaleEnd"],
+        attributes: ["id", "name", "basePrice", "isFlashSale", "flashSalePrice", "flashSaleStart", "flashSaleEnd", "totalStock", "isActive"],
         include: [{ model: db.ProductImage, as: "images", attributes: ["imageUrl", "isPrimary"] }],
       },
       {
         model: db.ProductVariant,
         as: "variant",
-        attributes: ["id", "sku", "price", "stock", "attributeValues", "discount", "salePrice"],
+        attributes: ["id", "sku", "price", "stock", "attributeValues", "discount", "salePrice", "isActive"],
         include: [{ model: db.ProductImage, as: "images", attributes: ["imageUrl", "isPrimary"] }],
       },
     ],
@@ -143,7 +152,15 @@ const getCartItemById = async (id, userId) => {
     plainItem.variant.attributes = plainItem.variant.attributeValues;
   }
   
+  const isFS = isFlashSaleActive(plainItem.product);
+  plainItem.isFlashSaleActive = isFS && !plainItem.variant;
   plainItem.finalPrice = calculateFinalPrice(plainItem.product, plainItem.variant);
+  
+  if (plainItem.isFlashSaleActive) {
+      const original = Number(plainItem.product.basePrice || 0);
+      const sale = Number(plainItem.product.flashSalePrice || 0);
+      plainItem.flashSaleDiscount = original > 0 ? Math.round(((original - sale) / original) * 100) : 0;
+  }
   
   return plainItem;
 };

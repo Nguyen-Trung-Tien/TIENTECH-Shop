@@ -5,7 +5,7 @@ import { useSearchParams } from "react-router-dom";
  * Enhanced Hook for Product Variant Selection
  * Handles normalized options/values and legacy attributeValues.
  */
-export const useProductVariants = (product) => {
+export const useProductVariants = (product, syncUrl = true) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const variants = useMemo(() => product?.variants || [], [product]);
   const normalizedOptions = useMemo(() => product?.options || [], [product]);
@@ -38,12 +38,14 @@ export const useProductVariants = (product) => {
   // 2. Initial selection from URL or first available
   const [selectedAttributes, setSelectedAttributes] = useState(() => {
     const initial = {};
-    Object.keys(allAttributes).forEach((key) => {
-      const urlValue = searchParams.get(key.toLowerCase());
-      if (urlValue && allAttributes[key].includes(urlValue)) {
-        initial[key] = urlValue;
-      }
-    });
+    if (syncUrl) {
+      Object.keys(allAttributes).forEach((key) => {
+        const urlValue = searchParams.get(key.toLowerCase());
+        if (urlValue && allAttributes[key].includes(urlValue)) {
+          initial[key] = urlValue;
+        }
+      });
+    }
     return initial;
   });
 
@@ -141,14 +143,16 @@ export const useProductVariants = (product) => {
 
     setSelectedAttributes(newSelection);
 
-    // Update URL params
-    const newParams = new URLSearchParams(searchParams);
-    if (newSelection[attrName]) {
-      newParams.set(attrName.toLowerCase(), attrValue);
-    } else {
-      newParams.delete(attrName.toLowerCase());
+    // Update URL params if requested
+    if (syncUrl) {
+      const newParams = new URLSearchParams(searchParams);
+      if (newSelection[attrName]) {
+        newParams.set(attrName.toLowerCase(), attrValue);
+      } else {
+        newParams.delete(attrName.toLowerCase());
+      }
+      setSearchParams(newParams);
     }
-    setSearchParams(newParams);
   };
 
   // Helper cho thuật toán sửa conflict

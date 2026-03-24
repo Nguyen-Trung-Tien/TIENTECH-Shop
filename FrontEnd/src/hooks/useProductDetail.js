@@ -93,14 +93,14 @@ export const useProductDetail = (slug) => {
       if (res.errCode === 0) {
         dispatch(addCartItem(res.data));
         toast.success("Đã thêm vào giỏ hàng!");
-        return true; // Trả về true khi thành công
+        return res.data; // Trả về item vừa thêm
       } else {
         toast.error(res.errMessage);
-        return false;
+        return null;
       }
     } catch (err) {
       toast.error("Lỗi khi thêm vào giỏ hàng!");
-      return false;
+      return null;
     } finally {
       setAddingCart(false);
     }

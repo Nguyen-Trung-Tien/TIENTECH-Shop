@@ -19,7 +19,7 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.ENUM("percentage", "fixed"),
         defaultValue: "percentage",
       },
-      discountValue: {
+      value: {
         type: DataTypes.DECIMAL(15, 2),
         allowNull: false,
       },
@@ -35,6 +35,10 @@ module.exports = (sequelize, DataTypes) => {
       maxUsage: {
         type: DataTypes.INTEGER,
         defaultValue: 100,
+      },
+      perUserUsage: {
+        type: DataTypes.INTEGER,
+        defaultValue: 1,
       },
       usedCount: {
         type: DataTypes.INTEGER,

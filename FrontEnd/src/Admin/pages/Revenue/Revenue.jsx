@@ -64,6 +64,8 @@ const Revenue = () => {
   const formatCurrency = (value) =>
     Number(value).toLocaleString("vi-VN") + " ₫";
 
+  const [rawDashboardData, setRawDashboardData] = useState(null);
+
   const fetchData = useCallback(async () => {
     setLoading(true);
     setChartLoading(true);
@@ -80,12 +82,8 @@ const Revenue = () => {
         setOrders(orderList);
       }
 
-      if (dashboardRes?.errCode === 0 && Array.isArray(dashboardRes.data)) {
-        const backendData = dashboardRes.data.map((item) => ({
-          name: item.day || item.date || "N/A",
-          value: parseFloat(item.revenue || 0),
-        }));
-        setRevenueData(backendData.sort((a, b) => new Date(a.name) - new Date(b.name)));
+      if (dashboardRes?.errCode === 0 && dashboardRes.data) {
+        setRawDashboardData(dashboardRes.data);
       }
 
       if (orderItemsRes?.errCode === 0 && Array.isArray(orderItemsRes.data)) {
@@ -108,6 +106,21 @@ const Revenue = () => {
       setChartLoading(false);
     }
   }, []);
+
+  useEffect(() => {
+    if (rawDashboardData) {
+      let raw = [];
+      if (dateFilter === "7days") raw = rawDashboardData.revenueByWeek || [];
+      else if (dateFilter === "30days") raw = rawDashboardData.revenueByMonth || [];
+      else raw = rawDashboardData.revenueByYear || [];
+
+      const formatted = raw.map(item => ({
+        name: item.date || "N/A",
+        value: parseFloat(item.revenue || 0)
+      }));
+      setRevenueData(formatted);
+    }
+  }, [rawDashboardData, dateFilter]);
 
   useEffect(() => {
     fetchData();

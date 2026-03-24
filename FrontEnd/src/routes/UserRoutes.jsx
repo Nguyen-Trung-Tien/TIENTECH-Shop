@@ -62,7 +62,7 @@ const UserRoutes = () => {
           }
         />
         <Route
-          path="checkout-success/:orderId"
+          path="checkout-success/:orderId?"
           element={
             <LayoutComponent isShowHeader={true} isShowFooter={true}>
               <CheckoutSuccess />
@@ -70,7 +70,7 @@ const UserRoutes = () => {
           }
         />
         <Route
-          path="checkout-failed/:orderId"
+          path="checkout-failed/:orderId?"
           element={
             <LayoutComponent isShowHeader={true} isShowFooter={true}>
               <CheckoutFailed />

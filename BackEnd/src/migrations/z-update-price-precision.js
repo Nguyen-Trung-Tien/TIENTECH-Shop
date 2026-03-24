@@ -40,7 +40,7 @@ module.exports = {
     await updatePrecision("Payments", "amount", false, 0);
 
     // 6. Vouchers
-    await updatePrecision("Vouchers", "discountValue", false, 0);
+    await updatePrecision("Vouchers", "value", false, 0);
     await updatePrecision("Vouchers", "minOrderValue", true, 0);
     await updatePrecision("Vouchers", "maxDiscount", true);
 

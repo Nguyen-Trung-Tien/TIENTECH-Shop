@@ -126,10 +126,10 @@ const FengShuiChat = ({ setBirthYear: setGlobalBirthYear }) => {
               initial={{ x: "-100%" }}
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
-              className="relative w-full max-w-sm bg-white h-full shadow-2xl flex flex-col"
+              className="relative w-full max-w-sm bg-white dark:bg-dark-card h-full shadow-2xl flex flex-col border-r border-slate-100 dark:border-dark-border"
             >
               {/* Header */}
-              <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-primary text-white">
+              <div className="px-6 py-5 border-b border-slate-100 dark:border-dark-border flex items-center justify-between bg-primary text-white">
                  <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
                        <FaRobot size={20} />
@@ -145,13 +145,13 @@ const FengShuiChat = ({ setBirthYear: setGlobalBirthYear }) => {
               </div>
 
               {/* Chat Body */}
-              <div className="flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar bg-slate-50/50">
+              <div className="flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar bg-slate-50/50 dark:bg-dark-bg/50">
                 {messages.map((msg, idx) => (
                   <div key={idx} className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"}`}>
                     <div className={`max-w-[85%] p-4 rounded-2xl text-sm shadow-sm ${
                       msg.sender === "user" 
                         ? "bg-primary text-white rounded-tr-none" 
-                        : "bg-white border border-slate-100 text-slate-700 rounded-tl-none"
+                        : "bg-white dark:bg-dark-bg border border-slate-100 dark:border-dark-border text-slate-700 dark:text-slate-300 rounded-tl-none"
                     }`}>
                       {msg.type === "loading" ? (
                         <div className="flex items-center gap-2 font-bold italic text-xs">
@@ -160,14 +160,14 @@ const FengShuiChat = ({ setBirthYear: setGlobalBirthYear }) => {
                       ) : msg.text}
                       
                       {msg.advice && (
-                        <div className="mt-3 p-3 bg-primary/5 rounded-xl border border-primary/10 space-y-2">
+                        <div className="mt-3 p-3 bg-primary/5 dark:bg-primary/10 rounded-xl border border-primary/10 space-y-2">
                            <p className="font-black text-[10px] text-primary uppercase tracking-widest flex items-center gap-1">
                               <FiZap /> Gợi ý phong thủy
                            </p>
-                           <div className="text-xs space-y-1 text-slate-600 font-medium">
-                              <p><strong>Màu hợp:</strong> {msg.advice.colors.join(", ")}</p>
-                              <p><strong>Vật phẩm:</strong> {msg.advice.items.join(", ")}</p>
-                              <p><strong>Hướng:</strong> {msg.advice.direction}</p>
+                           <div className="text-xs space-y-1 text-slate-600 dark:text-slate-400 font-medium">
+                              <p><strong className="dark:text-slate-300">Màu hợp:</strong> {msg.advice.colors.join(", ")}</p>
+                              <p><strong className="dark:text-slate-300">Vật phẩm:</strong> {msg.advice.items.join(", ")}</p>
+                              <p><strong className="dark:text-slate-300">Hướng:</strong> {msg.advice.direction}</p>
                            </div>
                         </div>
                       )}
@@ -183,13 +183,13 @@ const FengShuiChat = ({ setBirthYear: setGlobalBirthYear }) => {
                   <motion.div 
                     initial={{ y: 20, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
-                    className="p-4 bg-white border-t border-slate-100 flex flex-wrap gap-2"
+                    className="p-4 bg-white dark:bg-dark-card border-t border-slate-100 dark:border-dark-border flex flex-wrap gap-2"
                   >
                     {(step === STEP.GENDER ? ["Nam", "Nữ"] : GOAL_SUGGESTIONS).map((item, i) => (
                       <button
                         key={i}
                         onClick={() => processStep(item)}
-                        className="px-4 py-1.5 rounded-full border border-slate-200 text-xs font-bold text-slate-600 hover:border-primary hover:text-primary hover:bg-primary/5 transition-all"
+                        className="px-4 py-1.5 rounded-full border border-slate-200 dark:border-dark-border text-xs font-bold text-slate-600 dark:text-slate-400 hover:border-primary hover:text-primary hover:bg-primary/5 transition-all"
                       >
                         {item}
                       </button>
@@ -199,11 +199,11 @@ const FengShuiChat = ({ setBirthYear: setGlobalBirthYear }) => {
               </AnimatePresence>
 
               {/* Input Area */}
-              <div className="p-4 border-t border-slate-100 bg-white">
+              <div className="p-4 border-t border-slate-100 dark:border-dark-border bg-white dark:bg-dark-card">
                  <div className="relative group">
                     <input 
                       placeholder="Nhập câu trả lời..." 
-                      className="input-modern pr-12 h-12"
+                      className="input-modern pr-12 h-12 dark:bg-dark-bg dark:text-white dark:border-dark-border"
                       value={input}
                       onChange={(e) => setInput(e.target.value)}
                       onKeyDown={(e) => e.key === "Enter" && handleSend()}

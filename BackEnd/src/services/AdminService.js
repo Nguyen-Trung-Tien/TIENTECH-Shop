@@ -100,12 +100,64 @@ const getDashboardData = async () => {
       users: calculateChange(usersThisMonth, usersLastMonth),
     };
 
+    // 5. Thống kê doanh thu theo chu kỳ (Tuần, Tháng, Năm)
+    const thirtyDaysAgo = new Date(now);
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const twelveMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 11, 1);
+
+    const recentOrders = await db.Order.findAll({
+      where: {
+        createdAt: { [Op.gte]: twelveMonthsAgo },
+        [Op.or]: [{ paymentStatus: "paid" }, { status: "delivered" }]
+      },
+      attributes: ['totalPrice', 'createdAt'],
+      raw: true
+    });
+
+    const groupByDate = (orders, days) => {
+      const result = [];
+      for (let i = days; i >= 0; i--) {
+        const d = new Date(now);
+        d.setDate(d.getDate() - i);
+        const dateString = d.toLocaleDateString('vi-VN');
+        const revenue = orders
+          .filter(o => new Date(o.createdAt).toLocaleDateString('vi-VN') === dateString)
+          .reduce((sum, o) => sum + Number(o.totalPrice), 0);
+        result.push({ date: dateString, revenue });
+      }
+      return result;
+    };
+
+    const groupByMonth = (orders) => {
+      const result = [];
+      for (let i = 11; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const monthYear = `${d.getMonth() + 1}/${d.getFullYear()}`;
+        const revenue = orders
+          .filter(o => {
+            const oDate = new Date(o.createdAt);
+            return oDate.getMonth() === d.getMonth() && oDate.getFullYear() === d.getFullYear();
+          })
+          .reduce((sum, o) => sum + Number(o.totalPrice), 0);
+        result.push({ date: monthYear, revenue });
+      }
+      return result;
+    };
+
+    const revenueByWeek = groupByDate(recentOrders, 6);
+    const revenueByMonth = groupByDate(recentOrders, 29);
+    const revenueByYear = groupByMonth(recentOrders);
+
     return {
       totalProducts,
       todayOrders,
       totalRevenue,
       totalUsers,
       change,
+      revenueByWeek,
+      revenueByMonth,
+      revenueByYear
     };
   } catch (error) {
     console.error("Error from AdminService.getDashboardData:", error);

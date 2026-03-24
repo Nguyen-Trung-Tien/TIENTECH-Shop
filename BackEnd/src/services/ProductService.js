@@ -178,6 +178,9 @@ const getAllProducts = async (
 
   const { count, rows } = await db.Product.findAndCountAll({
     where: whereCondition,
+    attributes: {
+      include: ["hasVariants"]
+    },
     include: [
       { model: db.Category, as: "category" },
       { model: db.Brand, as: "brand" },
@@ -217,7 +220,10 @@ const getAllProducts = async (
 const getProductById = async (id) => {
   try {
     const product = await db.Product.findByPk(id, {
-      include: [
+      attributes: {
+      include: ["hasVariants"]
+    },
+    include: [
         { model: db.Category, as: "category" },
         { model: db.Brand, as: "brand" },
         {
@@ -273,9 +279,15 @@ const getProductById = async (id) => {
         })
       : [];
 
+    let mainImage = product.image;
+    if (!mainImage && images.length > 0) {
+      const primary = images.find((i) => i.isPrimary) || images[0];
+      mainImage = primary.imageUrl;
+    }
+
     const formattedProduct = applyFlashSaleToProduct({
       ...product.toJSON(),
-      image: product.image || null,
+      image: mainImage || null,
       sold: product.sold || 0,
       images: images.map((i) => ({
         id: i.id,
@@ -405,6 +417,9 @@ const searchProducts = async (query, page = 1, limit = 10) => {
   // Tìm sản phẩm phân trang (dùng cho trang kết quả tìm kiếm)
   const { count, rows } = await db.Product.findAndCountAll({
     where: whereCondition,
+    attributes: {
+      include: ["hasVariants"]
+    },
     include: [
       { model: db.Category, as: "category" },
       { model: db.Brand, as: "brand" },
@@ -425,6 +440,9 @@ const searchProducts = async (query, page = 1, limit = 10) => {
       name: { [Op.like]: `%${query}%` },
     },
     attributes: ["id", "name", ["basePrice", "price"]],
+    attributes: {
+      include: ["hasVariants"]
+    },
     include: [{ model: db.ProductImage, as: "images", attributes: ["imageUrl", "isPrimary"] }],
     limit: 8,
     order: [["sold", "DESC"]],
@@ -496,6 +514,9 @@ const searchSuggestions = async (query, limit = 8) => {
   const productSuggestionsRaw = await db.Product.findAll({
     where: { name: { [Op.like]: `%${q}%` } },
     attributes: ["id", "name", ["basePrice", "price"]],
+    attributes: {
+      include: ["hasVariants"]
+    },
     include: [{ model: db.ProductImage, as: "images", attributes: ["imageUrl", "isPrimary"] }],
     limit,
     order: [["sold", "DESC"]],
@@ -568,6 +589,9 @@ const getDiscountedProducts = async (page = 1, limit = 10) => {
         { isFlashSale: true, flashSaleStart: { [Op.lte]: now }, flashSaleEnd: { [Op.gte]: now } },
       ],
     },
+    attributes: {
+      include: ["hasVariants"]
+    },
     include: [
       { model: db.Category, as: "category" },
       { model: db.Brand, as: "brand" },
@@ -610,6 +634,9 @@ const getFlashSaleProducts = async (page = 1, limit = 10) => {
       flashSaleStart: { [Op.lte]: now },
       flashSaleEnd: { [Op.gte]: now },
     },
+    attributes: {
+      include: ["hasVariants"]
+    },
     include: [
       { model: db.Category, as: "category" },
       { model: db.Brand, as: "brand" },
@@ -634,7 +661,10 @@ const getFlashSaleProducts = async (page = 1, limit = 10) => {
         isFlashSale: true,
         flashSaleStart: { [Op.gt]: now },
       },
-      include: [
+      attributes: {
+      include: ["hasVariants"]
+    },
+    include: [
         { model: db.Category, as: "category" },
         { model: db.Brand, as: "brand" },
         {
@@ -710,7 +740,10 @@ const filterProducts = async ({
 
     const products = await db.Product.findAndCountAll({
       where: conditions,
-      include: [
+      attributes: {
+      include: ["hasVariants"]
+    },
+    include: [
         { model: db.Brand, as: "brand" },
         { model: db.Category, as: "category" },
         {
@@ -771,7 +804,10 @@ const recommendProducts = async (productId, page = 1, limit = 6) => {
 
     const rows = await db.Product.findAll({
       where,
-      include: [
+      attributes: {
+      include: ["hasVariants"]
+    },
+    include: [
         { model: db.Brand, as: "brand" },
         { model: db.Category, as: "category" },
         {
@@ -830,13 +866,18 @@ const recommendFortuneProducts = async ({
     const where = { isActive: true };
 
     if (luckyColors.length) {
-      where.color = { [Op.in]: luckyColors };
+      // Filter by color in specifications JSON field
+      where[Op.or] = luckyColors.map(color => ({
+        specifications: {
+          [Op.like]: `%${color}%`
+        }
+      }));
     }
 
     if (brandId) where.brandId = brandId;
     if (categoryId) where.categoryId = categoryId;
-    if (minPrice != null) where.price = { ...where.price, [Op.gte]: minPrice };
-    if (maxPrice != null) where.price = { ...where.price, [Op.lte]: maxPrice };
+    if (minPrice != null) where.basePrice = { ...where.basePrice, [Op.gte]: minPrice };
+    if (maxPrice != null) where.basePrice = { ...where.basePrice, [Op.lte]: maxPrice };
 
     const total = await db.Product.count({ where });
     const offset = (page - 1) * limit;
@@ -845,12 +886,15 @@ const recommendFortuneProducts = async ({
       ["sold", "DESC"],
       ["createdAt", "DESC"],
     ];
-    if (sortBy === "priceAsc") order = [["price", "ASC"]];
-    if (sortBy === "priceDesc") order = [["price", "DESC"]];
+    if (sortBy === "priceAsc") order = [["basePrice", "ASC"]];
+    if (sortBy === "priceDesc") order = [["basePrice", "DESC"]];
 
     const rows = await db.Product.findAll({
       where,
-      include: [
+      attributes: {
+      include: ["hasVariants"]
+    },
+    include: [
         { model: db.Brand, as: "brand" },
         { model: db.Category, as: "category" },
         {
@@ -897,7 +941,10 @@ const getProductBySlug = async (slug) => {
   try {
     let product = await db.Product.findOne({
       where: { slug, isActive: true },
-      include: [
+      attributes: {
+      include: ["hasVariants"]
+    },
+    include: [
         { model: db.Category, as: "category", attributes: ["id", "name"] },
         { model: db.Brand, as: "brand", attributes: ["id", "name"] },
         {
@@ -949,7 +996,10 @@ const getProductBySlug = async (slug) => {
     if (!product && !isNaN(slug)) {
       product = await db.Product.findOne({
         where: { id: parseInt(slug), isActive: true },
-        include: [
+        attributes: {
+      include: ["hasVariants"]
+    },
+    include: [
           { model: db.Category, as: "category", attributes: ["id", "name"] },
           { model: db.Brand, as: "brand", attributes: ["id", "name"] },
           {

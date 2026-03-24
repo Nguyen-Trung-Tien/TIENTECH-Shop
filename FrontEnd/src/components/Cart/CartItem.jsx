@@ -33,7 +33,8 @@ const CartItem = ({
     return item.variant?.price != null ? Number(item.variant.price) : Number(item.product?.basePrice || item.product?.price || 0);
   }, [item]);
 
-  const discount = Number(item.product?.discount || item.variant?.discount || 0);
+  const discount = Number(item.product?.discount || item.variant?.discount || item.flashSaleDiscount || 0);
+  const isFlashSale = item.isFlashSaleActive;
 
   // Chuỗi hiển thị các option (Ví dụ: "8GB - 256GB - Titan")
   const variantOptions = useMemo(() => {
@@ -89,7 +90,11 @@ const CartItem = ({
           <span className="text-[9px] font-black text-primary uppercase tracking-widest bg-primary/5 px-2 py-0.5 rounded-full border border-primary/10">
             {item.product?.category?.name || "Công nghệ"}
           </span>
-          {discount > 0 && (
+          {isFlashSale ? (
+            <span className="text-[9px] font-black text-white bg-danger px-2 py-0.5 rounded-full shadow-lg shadow-danger/20 animate-pulse">
+              FLASH SALE -{discount}%
+            </span>
+          ) : discount > 0 && (
             <span className="text-[9px] font-black text-white bg-brand px-2 py-0.5 rounded-full shadow-lg shadow-brand/20">
               -{discount}%
             </span>

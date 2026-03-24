@@ -93,21 +93,16 @@ const ProductDetailPage = () => {
       return;
     }
 
-    const checkoutItem = {
-      id: product.id,
-      product: product,
-      variant: selectedVariant,
-      quantity: 1,
-    };
-
-    navigate("/checkout", { 
-      state: { 
-        product: product,
-        variant: selectedVariant,
-        quantity: 1,
-        singleItem: checkoutItem
-      } 
-    });
+    const itemId = product?.variants?.length > 0 ? selectedVariant?.id : null;
+    const addedItem = await handleAddToCart(itemId, 1);
+    
+    if (addedItem) {
+      navigate("/checkout", { 
+        state: { 
+          selectedItems: [addedItem]
+        } 
+      });
+    }
   };
 
   const onAddToCart = (e) => {

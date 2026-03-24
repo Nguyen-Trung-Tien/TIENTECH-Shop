@@ -4,155 +4,190 @@ import { FiArrowLeft, FiChevronRight, FiCheckCircle } from "react-icons/fi";
 import { useSelector, useDispatch } from "react-redux";
 import { toast } from "react-toastify";
 import { createOrder } from "../../api/orderApi";
-import { createPayment, createVnpayPayment } from "../../api/paymentApi";
-import { checkVoucherApi } from "../../api/voucherApi";
-import { removeCartItem } from "../../redux/cartSlice";
-import { resetCheckout } from "../../redux/checkoutSlice";
-
-import { useCart } from "../../hooks/useCart";
+import { createVnpayPaymentApi } from "../../api/paymentApi";
+import { clearCart, applyVoucher, removeVoucher } from "../../redux/cartSlice";
 import CheckoutForm from "./CheckoutForm";
-import OrderSummary from "../../components/Cart/OrderSummary";
-import Button from "../../components/UI/Button";
-import { motion } from "framer-motion";
+import OrderSummary from "./OrderSummary";
+import VoucherSelector from "../../components/Cart/VoucherSelector";
 
 const CheckoutPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  
   const user = useSelector((state) => state.user.user);
-  const cartItems = useSelector((state) => state.cart.cartItems);
-  const checkoutState = useSelector((state) => state.checkout);
-
-  const { product: singleProduct, quantity: singleQuantity } = location.state || {};
-  const isSingleProduct = !!singleProduct;
+  const appliedVoucher = useSelector((state) => state.cart.appliedVoucher);
+  
+  const { selectedItems = [] } = location.state || {};
 
   const [loading, setLoading] = useState(false);
-  const [discount, setDiscount] = useState(0);
-  const [appliedVoucher, setAppliedVoucher] = useState("");
+  const [formData, setCheckoutData] = useState({
+    shippingAddress: "",
+    paymentMethod: "COD",
+    note: "",
+  });
 
-  const selectedItems = isSingleProduct
-    ? [{ id: singleProduct.id, product: singleProduct, quantity: singleQuantity }]
-    : cartItems.filter((item) => checkoutState.selectedIds.includes(item.id));
+  // Redirect if no items
+  useEffect(() => {
+    if (selectedItems.length === 0) {
+      toast.warn("Vui lòng chọn sản phẩm để thanh toán");
+      navigate("/cart");
+    }
+  }, [selectedItems, navigate]);
 
   const subtotal = selectedItems.reduce((acc, item) => {
-    // Use finalPrice from backend if available
     if (item.finalPrice !== undefined) {
       return acc + Number(item.finalPrice) * (item.quantity || 0);
     }
-
     const basePrice = item.variant?.price != null ? Number(item.variant.price) : Number(item.product?.basePrice || item.product?.price || 0);
     const discount = Number(item.product?.discount || 0);
     const price = Math.round(discount > 0 ? basePrice * (1 - discount / 100) : basePrice);
     return acc + price * (item.quantity || 0);
   }, 0);
 
-  const handleApplyVoucher = async (code) => {
-    try {
-      const res = await checkVoucherApi(code, subtotal);
-      if (res.errCode === 0) {
-        setDiscount(res.data.discountAmount);
-        setAppliedVoucher(res.data.code);
-        toast.success(res.message);
-      } else {
-        setDiscount(0);
-        setAppliedVoucher("");
-        toast.error(res.errMessage);
-      }
-    } catch (error) {
-      toast.error("Lỗi áp dụng mã giảm giá");
+  const handlePlaceOrder = async () => {
+    if (!formData.shippingAddress) {
+      return toast.error("Vui lòng nhập địa chỉ giao hàng");
     }
-  };
 
-  const handleOrderComplete = async (orderData, paypalDetails = null) => {
     setLoading(true);
     try {
-      const finalOrderData = { ...orderData, voucherCode: appliedVoucher || null };
-      const orderRes = await createOrder(finalOrderData);
-      
-      if (orderRes.errCode !== 0) return toast.error(orderRes.errMessage);
-
-      const { id: orderId, orderCode } = orderRes.data;
-      const finalTotal = Math.max(0, subtotal - discount);
-
-      if (orderData.paymentMethod === "vnpay") {
-        const paymentUrl = await createVnpayPayment({ orderCode, amount: Math.round(finalTotal) });
-        window.location.href = paymentUrl;
-        return;
-      }
-
-      const paymentRes = await createPayment({
-        orderId,
+      const orderData = {
         userId: user.id,
-        amount: finalTotal,
-        method: orderData.paymentMethod,
-        paymentStatus: paypalDetails ? "paid" : "unpaid",
-        status: paypalDetails ? "completed" : "pending",
-        paypalInfo: paypalDetails,
-      });
+        shippingAddress: formData.shippingAddress,
+        paymentMethod: formData.paymentMethod,
+        note: formData.note,
+        voucherCode: appliedVoucher?.code || null,
+        orderItems: selectedItems.map((item) => ({
+          productId: item.productId,
+          variantId: item.variantId,
+          quantity: item.quantity,
+          cartItemId: item.id,
+        })),
+      };
 
-      if (paymentRes.errCode === 0) {
-        if (!isSingleProduct) {
-          selectedItems.forEach((item) => dispatch(removeCartItem(item.id)));
+      const res = await createOrder(orderData, user.accessToken);
+      if (res.errCode === 0) {
+        dispatch(clearCart());
+        
+        // Nếu là VNPAY, gọi API lấy link thanh toán và redirect
+        if (formData.paymentMethod === "VNPAY") {
+          const vnpayRes = await createVnpayPaymentApi({
+            amount: res.data.totalPrice,
+            orderCode: res.data.orderCode
+          });
+          
+          if (vnpayRes.errCode === 0 && vnpayRes.data.paymentUrl) {
+            window.location.href = vnpayRes.data.paymentUrl;
+            return;
+          } else {
+            toast.error("Không thể khởi tạo thanh toán VNPAY");
+          }
         }
-        dispatch(resetCheckout());
+
         toast.success("Đặt hàng thành công!");
-        navigate(`/checkout-success/${orderId}`);
+        navigate("/checkout-success", { state: { order: res.data } });
+      } else {
+        toast.error(res.errMessage);
       }
-    } catch (error) {
-      toast.error("Thanh toán thất bại!");
+    } catch (err) {
+      toast.error("Lỗi đặt hàng, vui lòng thử lại");
     } finally {
       setLoading(false);
     }
   };
 
-  if (selectedItems.length === 0) return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center bg-surface-50">
-      <h2 className="text-xl font-bold mb-4">Không có sản phẩm thanh toán</h2>
-      <Button variant="primary" onClick={() => navigate("/cart")}>QUAY LẠI GIỎ HÀNG</Button>
-    </div>
-  );
+  const handlePayPalApprove = async (data, actions) => {
+    try {
+      const details = await actions.order.capture();
+      // Sau khi PayPal capture thành công, tạo đơn hàng với paymentMethod là PAYPAL và status là paid
+      const orderData = {
+        userId: user.id,
+        shippingAddress: formData.shippingAddress || user.address,
+        paymentMethod: "PAYPAL",
+        note: formData.note,
+        voucherCode: appliedVoucher?.code || null,
+        orderItems: selectedItems.map((item) => ({
+          productId: item.productId,
+          variantId: item.variantId,
+          quantity: item.quantity,
+          cartItemId: item.id,
+        })),
+        paymentStatus: "paid", // Đánh dấu đã thanh toán
+        paypalDetails: details
+      };
+
+      const res = await createOrder(orderData, user.accessToken);
+      if (res.errCode === 0) {
+        dispatch(clearCart());
+        toast.success("Thanh toán PayPal thành công!");
+        navigate("/checkout-success", { state: { order: res.data } });
+      } else {
+        toast.error(res.errMessage);
+      }
+    } catch (err) {
+      toast.error("Lỗi xử lý PayPal");
+    }
+  };
 
   return (
-    <main className="min-h-screen bg-surface-50 py-12">
-      <div className="container-custom">
-        <header className="mb-10">
-          <div className="flex items-center gap-2 text-surface-400 mb-2 text-sm">
-            <Link to="/" className="hover:text-primary">Trang chủ</Link>
-            <FiChevronRight size={14} />
-            <span className="text-surface-900 font-bold">Thanh toán</span>
-          </div>
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <h1 className="text-3xl font-display font-black text-surface-900">Tiến hành thanh toán</h1>
-            <div className="flex items-center gap-3 text-[10px] font-bold uppercase tracking-widest text-surface-400">
-               <span className="text-emerald-500 flex items-center gap-1.5"><FiCheckCircle /> Giỏ hàng</span>
-               <div className="w-6 h-px bg-surface-200" />
-               <span className="text-primary font-black">Thông tin</span>
-               <div className="w-6 h-px bg-surface-200" />
-               <span>Hoàn tất</span>
+    <main className="min-h-screen bg-slate-50 dark:bg-dark-bg py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-10">
+          <div className="flex items-center gap-4">
+            <Link to="/cart" className="p-3 bg-white dark:bg-dark-card rounded-2xl shadow-sm text-slate-400 hover:text-primary transition-all">
+              <FiArrowLeft size={20} />
+            </Link>
+            <div>
+              <h1 className="text-3xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Thanh toán</h1>
+              <div className="flex items-center gap-2 text-slate-400 text-xs font-bold uppercase tracking-widest mt-1">
+                <span>Giỏ hàng</span>
+                <FiChevronRight />
+                <span className="text-primary">Thanh toán</span>
+                <FiChevronRight />
+                <span>Hoàn tất</span>
+              </div>
             </div>
           </div>
-        </header>
+        </div>
 
-        <div className="grid lg:grid-cols-12 gap-10">
-          <section className="lg:col-span-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+          {/* Left: Info */}
+          <div className="lg:col-span-7 space-y-8">
             <CheckoutForm 
-              user={user} 
-              total={subtotal - discount} 
-              selectedItems={selectedItems}
-              onOrderComplete={handleOrderComplete}
-              loading={loading}
+              formData={formData} 
+              setFormData={setCheckoutData} 
+              user={user}
             />
-          </section>
+            
+            {/* Voucher Selection in Checkout */}
+            <div className="bg-white dark:bg-dark-card rounded-[32px] p-8 shadow-sm border border-slate-100 dark:border-dark-border">
+              <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-widest mb-6 flex items-center gap-2">
+                <FiCheckCircle className="text-primary" /> Ưu đãi của bạn
+              </h3>
+              <VoucherSelector 
+                subtotal={subtotal}
+                appliedVoucher={appliedVoucher}
+                onApply={(v) => dispatch(applyVoucher(v))}
+                onRemove={() => dispatch(removeVoucher())}
+              />
+            </div>
+          </div>
 
-          <aside className="lg:col-span-4 sticky top-24">
-            <OrderSummary 
-              isCheckoutPage
-              selectedItems={selectedItems}
-              subtotal={subtotal}
-              discount={discount}
-              onApplyVoucher={handleApplyVoucher}
-              appliedVoucher={appliedVoucher}
-            />
+          {/* Right: Summary */}
+          <aside className="lg:col-span-5">
+            <div className="sticky top-10 space-y-6">
+              <OrderSummary
+                selectedItems={selectedItems}
+                subtotal={subtotal}
+                appliedVoucher={appliedVoucher}
+                loading={loading}
+                paymentMethod={formData.paymentMethod}
+                onPlaceOrder={handlePlaceOrder}
+                onPayPalApprove={handlePayPalApprove}
+              />
+            </div>
           </aside>
         </div>
       </div>
