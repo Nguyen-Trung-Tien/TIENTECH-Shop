@@ -1,28 +1,9 @@
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
-  FiBox,
-  FiPlus,
-  FiEdit2,
-  FiTrash2,
-  FiSearch,
-  FiImage,
-  FiTag,
-  FiDollarSign,
-  FiPercent,
-  FiCheckCircle,
-  FiXCircle,
-  FiLayers,
-  FiCpu,
-  FiMonitor,
-  FiBattery,
-  FiSmartphone,
-  FiMaximize,
-  FiInfo,
-  FiX,
-  FiChevronLeft,
-  FiChevronRight,
-  FiMoreHorizontal,
-  FiPackage,
+  FiBox, FiPlus, FiEdit2, FiTrash2, FiSearch, FiImage, FiTag,
+  FiDollarSign, FiPercent, FiCheckCircle, FiXCircle, FiLayers,
+  FiX, FiChevronLeft, FiChevronRight, FiMoreHorizontal, FiPackage,
+  FiUploadCloud, FiZap
 } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "react-toastify";
@@ -34,8 +15,6 @@ import {
 } from "../../../api/productApi";
 import {
   getVariantsByProduct,
-  createVariant,
-  deleteVariant,
 } from "../../../api/variantApi";
 import { getAllCategoryApi } from "../../../api/categoryApi";
 import { getAllBrandApi } from "../../../api/brandApi";
@@ -50,13 +29,14 @@ const ProductManage = () => {
   const [showModal, setShowModal] = useState(false);
   const [editProduct, setEditProduct] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [filterCategory, setFilterCategory] = useState("");
   const [formData, setFormData] = useState({
     name: "",
     sku: "",
     description: "",
     price: "",
-    discount: "",
-    stock: "",
+    discount: "0",
+    stock: "0",
     categoryId: "",
     brandId: "",
     isActive: true,
@@ -64,31 +44,14 @@ const ProductManage = () => {
     flashSalePrice: "",
     flashSaleStart: "",
     flashSaleEnd: "",
-    options: [], // Added
-    variants: [], // Added
-    specifications: {
-      cpu: "",
-      ram: "",
-      rom: "",
-      screen: "",
-      battery: "",
-      os: "",
-      weight: "",
-      connectivity: "",
-    }
+    options: [],
+    variants: [],
   });
 
   const [imagePreview, setImagePreview] = useState(null);
   const [images, setImages] = useState([]);
   const [imagePreviews, setImagePreviews] = useState([]);
   const [variants, setVariants] = useState([]);
-  const [variantForm, setVariantForm] = useState({
-    sku: "",
-    price: "",
-    stock: "",
-    ram: "",
-    rom: "",
-  });
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const limit = 10;
@@ -102,7 +65,6 @@ const ProductManage = () => {
   });
 
   const searchTimeoutRef = useRef(null);
-  const tableTopRef = useRef(null);
 
   // Fetch data on mount
   useEffect(() => {
@@ -119,11 +81,10 @@ const ProductManage = () => {
       }
     };
     fetchData();
-    fetchProducts(1);
   }, []);
 
   // Fetch products
-  const fetchProducts = async (currentPage = 1, search = "") => {
+  const fetchProducts = async (currentPage = 1, search = "", categoryId = "") => {
     setLoadingTable(true);
     try {
       const res = await getAllProductApi(
@@ -131,6 +92,7 @@ const ProductManage = () => {
         limit,
         search.trim(),
         flashSaleOnly,
+        categoryId
       );
       if (res.errCode === 0) {
         setProducts(res.products || []);
@@ -149,15 +111,15 @@ const ProductManage = () => {
     }
   };
 
-  // Search debounce
+  // Search/Filter debounce
   useEffect(() => {
     if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
     searchTimeoutRef.current = setTimeout(() => {
       setPage(1);
-      fetchProducts(1, searchTerm);
+      fetchProducts(1, searchTerm, filterCategory);
     }, 500);
     return () => clearTimeout(searchTimeoutRef.current);
-  }, [searchTerm, flashSaleOnly]);
+  }, [searchTerm, flashSaleOnly, filterCategory]);
 
   const handleShowModal = (product = null) => {
     if (product) {
@@ -166,8 +128,8 @@ const ProductManage = () => {
         sku: product.sku || "",
         description: product.description || "",
         price: product.basePrice || product.price || "",
-        discount: product.discount || "",
-        stock: product.stock || "",
+        discount: product.discount || "0",
+        stock: product.stock || "0",
         categoryId: product.categoryId || "",
         isActive: product.isActive ?? true,
         isFlashSale: product.isFlashSale ?? false,
@@ -179,22 +141,16 @@ const ProductManage = () => {
           ? new Date(product.flashSaleEnd).toISOString().slice(0, 16)
           : "",
         brandId: product.brandId || "",
-        image: null,
-        specifications: {
-          cpu: product.specifications?.cpu || product.cpu || "",
-          ram: product.specifications?.ram || product.ram || "",
-          rom: product.specifications?.rom || product.rom || "",
-          screen: product.specifications?.screen || product.screen || "",
-          battery: product.specifications?.battery || product.battery || "",
-          os: product.specifications?.os || product.os || "",
-          weight: product.specifications?.weight || product.weight || "",
-          connectivity: product.specifications?.connectivity || product.connectivity || "",
-        },
+        options: product.options || [],
+        variants: product.variants || [],
       });
       setImagePreview(getImage(product.image));
       setEditProduct(product);
       setImages([]);
       setImagePreviews([]);
+      if (product.images && Array.isArray(product.images)) {
+        setImagePreviews(product.images.map(img => getImage(img.imageUrl)));
+      }
       fetchVariants(product.id);
     } else {
       setFormData({
@@ -202,8 +158,8 @@ const ProductManage = () => {
         sku: "",
         description: "",
         price: "",
-        discount: "",
-        stock: "",
+        discount: "0",
+        stock: "0",
         categoryId: "",
         brandId: "",
         isActive: true,
@@ -211,23 +167,14 @@ const ProductManage = () => {
         flashSalePrice: "",
         flashSaleStart: "",
         flashSaleEnd: "",
-        specifications: {
-          cpu: "",
-          ram: "",
-          rom: "",
-          screen: "",
-          battery: "",
-          os: "",
-          weight: "",
-          connectivity: "",
-        }
+        options: [],
+        variants: [],
       });
       setImagePreview(null);
       setEditProduct(null);
       setImages([]);
       setImagePreviews([]);
       setVariants([]);
-      setVariantForm({ sku: "", price: "", stock: "", ram: "", rom: "" });
     }
     setShowModal(true);
   };
@@ -235,6 +182,7 @@ const ProductManage = () => {
   const handleCloseModal = () => {
     setShowModal(false);
     setEditProduct(null);
+    setLoadingModal(false);
   };
 
   const fetchVariants = async (productId) => {
@@ -252,6 +200,30 @@ const ProductManage = () => {
     }
   };
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFormData({ ...formData, image: file });
+      setImagePreview(URL.createObjectURL(file));
+    }
+  };
+
+  const handleGalleryChange = (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length > 0) {
+      setImages([...images, ...files]);
+      const newPreviews = files.map(file => URL.createObjectURL(file));
+      setImagePreviews([...imagePreviews, ...newPreviews]);
+    }
+  };
+
+  const removeGalleryImage = (index) => {
+    const newImages = [...images];
+    const newPreviews = [...imagePreviews];
+    newPreviews.splice(index, 1);
+    setImagePreviews(newPreviews);
+  };
+
   const handleSave = async (e) => {
     e.preventDefault();
     if (!formData.name || !formData.price || !formData.categoryId) {
@@ -259,64 +231,29 @@ const ProductManage = () => {
       return;
     }
 
-    if (formData.isFlashSale) {
-      if (
-        !formData.flashSalePrice ||
-        !formData.flashSaleStart ||
-        !formData.flashSaleEnd
-      ) {
-        toast.error("Vui lòng điền giá và khoảng thời gian cho Flash Sale!");
-        setLoadingModal(false);
-        return;
-      }
-      if (Number(formData.flashSalePrice) >= Number(formData.price)) {
-        toast.error("Giá Flash Sale phải nhỏ hơn giá gốc.");
-        setLoadingModal(false);
-        return;
-      }
-      if (
-        new Date(formData.flashSaleStart) >= new Date(formData.flashSaleEnd)
-      ) {
-        toast.error("Thời gian kết thúc phải lớn hơn thời gian bắt đầu.");
-        setLoadingModal(false);
-        return;
-      }
-    }
-
     setLoadingModal(true);
     try {
       const data = new FormData();
       
-      // Map specifications to top-level fields for DB columns compatibility
-      const specData = formData.specifications || {};
-      const mergedData = { 
-        ...formData,
-        ...specData, // spread spec fields (cpu, ram, rom, etc.) to top level
-      };
-
-      Object.keys(mergedData).forEach((key) => {
-        if (key === "isActive") {
-          data.append(key, mergedData[key] ? 1 : 0);
+      Object.keys(formData).forEach((key) => {
+        if (key === "options" || key === "variants") {
+          data.append(key, JSON.stringify(formData[key]));
           return;
         }
-
-        if (
-          !mergedData.isFlashSale &&
-          ["flashSalePrice", "flashSaleStart", "flashSaleEnd"].includes(key)
-        ) {
-          return; // không gửi giá trị flash sale khi không bật flash sale
+        if (key === "isActive") {
+          data.append(key, formData[key] ? "1" : "0");
+          return;
         }
-
-        if (mergedData[key] !== null && mergedData[key] !== "") {
-          if (key === "specifications" || key === "options" || key === "variants") {
-            data.append(key, JSON.stringify(mergedData[key]));
-          } else {
-            data.append(key, mergedData[key]);
-          }
+        if (key === "image" && formData[key] instanceof File) {
+          data.append("image", formData[key]);
+          return;
+        }
+        if (formData[key] !== null && formData[key] !== "") {
+          data.append(key, formData[key]);
         }
       });
 
-      if (images.length) {
+      if (images.length > 0) {
         images.forEach((file) => data.append("images", file));
       }
 
@@ -325,10 +262,8 @@ const ProductManage = () => {
         : await createProductApi(data);
 
       if (res.errCode === 0) {
-        toast.success(
-          editProduct ? "Cập nhật thành công!" : "Tạo sản phẩm thành công!",
-        );
-        fetchProducts(page, searchTerm);
+        toast.success(editProduct ? "Cập nhật thành công!" : "Tạo sản phẩm thành công!");
+        fetchProducts(page, searchTerm, filterCategory);
         handleCloseModal();
       } else {
         toast.error(res.errMessage || "Thao tác thất bại!");
@@ -351,8 +286,8 @@ const ProductManage = () => {
       });
 
       if (res.errCode === 0) {
-        toast.success("Flash Sale đã được tắt cho sản phẩm này.");
-        fetchProducts(page, searchTerm);
+        toast.success("Flash Sale đã được tắt.");
+        fetchProducts(page, searchTerm, filterCategory);
       } else {
         toast.error(res.errMessage || "Không thể tắt Flash Sale");
       }
@@ -371,6 +306,7 @@ const ProductManage = () => {
         fetchProducts(
           products.length === 1 && page > 1 ? page - 1 : page,
           searchTerm,
+          filterCategory
         );
       } else {
         toast.error(res.errMessage || "Không thể xóa");
@@ -423,7 +359,11 @@ const ProductManage = () => {
           </div>
 
           <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
-            <select className="input-modern py-2 text-xs font-bold uppercase tracking-wider w-full md:w-40">
+            <select 
+              className="input-modern py-2 text-xs font-bold uppercase tracking-wider w-full md:w-40"
+              value={filterCategory}
+              onChange={(e) => setFilterCategory(e.target.value)}
+            >
               <option value="">Tất cả danh mục</option>
               {categories.map((c) => (
                 <option key={c.id} value={c.id}>
@@ -437,7 +377,7 @@ const ProductManage = () => {
                 type="checkbox"
                 checked={flashSaleOnly}
                 onChange={(e) => setFlashSaleOnly(e.target.checked)}
-                className="form-checkbox h-4 w-4 text-primary"
+                className="form-checkbox h-4 w-4 text-primary rounded border-slate-300"
               />
               Chỉ Flash Sale
             </label>
@@ -470,27 +410,22 @@ const ProductManage = () => {
             </thead>
             <tbody className="divide-y divide-slate-100">
               {loadingTable ? (
-                Array(5)
-                  .fill(0)
-                  .map((_, i) => (
-                    <tr key={i} className="animate-pulse">
-                      <td colSpan={6} className="px-6 py-8">
-                        <div className="flex items-center gap-4">
-                          <div className="w-12 h-12 bg-slate-100 rounded-xl"></div>
-                          <div className="space-y-2 flex-1">
-                            <div className="h-4 bg-slate-100 rounded w-1/3"></div>
-                            <div className="h-3 bg-slate-50 rounded w-1/4"></div>
-                          </div>
+                Array(5).fill(0).map((_, i) => (
+                  <tr key={i} className="animate-pulse">
+                    <td colSpan={6} className="px-6 py-8">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 bg-slate-100 rounded-xl"></div>
+                        <div className="space-y-2 flex-1">
+                          <div className="h-4 bg-slate-100 rounded w-1/3"></div>
+                          <div className="h-3 bg-slate-50 rounded w-1/4"></div>
                         </div>
-                      </td>
-                    </tr>
-                  ))
+                      </div>
+                    </td>
+                  </tr>
+                ))
               ) : products.length > 0 ? (
                 products.map((p) => (
-                  <tr
-                    key={p.id}
-                    className="hover:bg-slate-50/50 transition-colors group"
-                  >
+                  <tr key={p.id} className="hover:bg-slate-50/50 transition-colors group">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-4">
                         <div className="w-14 h-14 rounded-xl border border-slate-100 bg-white p-1.5 flex-shrink-0 group-hover:shadow-md transition-all">
@@ -501,9 +436,7 @@ const ProductManage = () => {
                           />
                         </div>
                         <div className="min-w-0">
-                          <p className="text-sm font-bold text-slate-900 truncate">
-                            {p.name}
-                          </p>
+                          <p className="text-sm font-bold text-slate-900 truncate">{p.name}</p>
                           <p className="text-[10px] font-black uppercase tracking-wider text-slate-400 mt-0.5">
                             SKU: {p.sku || "—"}
                           </p>
@@ -513,8 +446,7 @@ const ProductManage = () => {
                     <td className="px-6 py-4">
                       <div className="space-y-1">
                         <div className="flex items-center gap-1.5 text-xs font-bold text-slate-600">
-                          <FiTag className="text-primary/60" />{" "}
-                          {p.brand?.name || "No Brand"}
+                          <FiTag className="text-primary/60" /> {p.brand?.name || "No Brand"}
                         </div>
                         <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                           <FiLayers /> {p.category?.name || "General"}
@@ -523,10 +455,9 @@ const ProductManage = () => {
                     </td>
                     <td className="px-6 py-4 text-right">
                       <p className="text-sm font-black text-slate-900">
-                        {Number(p.basePrice || p.price).toLocaleString()}{" "}
-                        <span className="text-[10px] text-slate-400">VND</span>
+                        {Number(p.basePrice || p.price).toLocaleString()} <span className="text-[10px] text-slate-400">VND</span>
                       </p>
-                      {p.isFlashSale && p.flashSaleStart && p.flashSaleEnd && (
+                      {p.isFlashSale && (
                         <span className="text-[10px] font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded-lg inline-block mt-1">
                           Flash Sale
                         </span>
@@ -538,23 +469,18 @@ const ProductManage = () => {
                       )}
                     </td>
                     <td className="px-6 py-4 text-center">
-                      <span
-                        className={`text-sm font-bold ${p.stock <= 5 ? "text-amber-500" : "text-slate-700"}`}
-                      >
+                      <span className={`text-sm font-bold ${p.stock <= 5 ? "text-amber-500" : "text-slate-700"}`}>
                         {p.stock}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-center">
-                      <span
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
+                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
                           p.isActive
                             ? "bg-emerald-50 text-emerald-600 border border-emerald-100"
                             : "bg-slate-100 text-slate-500 border border-slate-200"
                         }`}
                       >
-                        <span
-                          className={`w-1.5 h-1.5 rounded-full ${p.isActive ? "bg-emerald-500 animate-pulse" : "bg-slate-400"}`}
-                        ></span>
+                        <span className={`w-1.5 h-1.5 rounded-full ${p.isActive ? "bg-emerald-500 animate-pulse" : "bg-slate-400"}`}></span>
                         {p.isActive ? "Hoạt động" : "Tạm khóa"}
                       </span>
                     </td>
@@ -572,16 +498,12 @@ const ProductManage = () => {
                         <button
                           onClick={() => handleShowModal(p)}
                           className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-400 hover:bg-white hover:text-primary hover:shadow-md border border-transparent hover:border-slate-100 transition-all"
-                          title="Chỉnh sửa"
                         >
                           <FiEdit2 />
                         </button>
                         <button
-                          onClick={() =>
-                            setConfirmModal({ show: true, productId: p.id })
-                          }
+                          onClick={() => setConfirmModal({ show: true, productId: p.id })}
                           className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-400 hover:bg-rose-50 hover:text-rose-500 transition-all"
-                          title="Xóa"
                         >
                           <FiTrash2 />
                         </button>
@@ -591,15 +513,8 @@ const ProductManage = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={6} className="px-6 py-20 text-center">
-                    <div className="flex flex-col items-center gap-3">
-                      <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center text-slate-300 text-3xl">
-                        <FiBox />
-                      </div>
-                      <p className="text-sm font-bold text-slate-400">
-                        Không tìm thấy sản phẩm nào
-                      </p>
-                    </div>
+                  <td colSpan={6} className="px-6 py-20 text-center text-slate-400 text-sm font-medium">
+                    Không tìm thấy sản phẩm nào
                   </td>
                 </tr>
               )}
@@ -607,13 +522,12 @@ const ProductManage = () => {
           </table>
         </div>
 
-        {/* Pagination Area */}
         {totalPages > 1 && (
           <div className="p-6 border-t border-slate-100">
             <AppPagination
               page={page}
               totalPages={totalPages}
-              onPageChange={(p) => fetchProducts(p, searchTerm)}
+              onPageChange={(p) => fetchProducts(p, searchTerm, filterCategory)}
             />
           </div>
         )}
@@ -635,7 +549,7 @@ const ProductManage = () => {
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-4xl max-h-[90vh] bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col"
+              className="relative w-full max-w-5xl max-h-[95vh] bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col"
             >
               {/* Modal Header */}
               <div className="px-8 py-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
@@ -644,7 +558,7 @@ const ProductManage = () => {
                     {editProduct ? "Cập nhật sản phẩm" : "Thêm sản phẩm mới"}
                   </h3>
                   <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-1">
-                    Thông tin chi tiết thiết bị
+                    Thiết lập thông tin và cấu hình thiết bị
                   </p>
                 </div>
                 <button
@@ -657,71 +571,91 @@ const ProductManage = () => {
 
               {/* Modal Body */}
               <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
-                <form
-                  id="product-form"
-                  onSubmit={handleSave}
-                  className="space-y-8"
-                >
-                  {/* Row 1: Basic Info */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    {/* Left Side: Images */}
-                    <div className="space-y-6">
-                      <div className="space-y-3">
+                <form id="product-form" onSubmit={handleSave} className="space-y-10">
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+                    {/* LEFT COLUMN: Media & Basic Sales */}
+                    <div className="lg:col-span-5 space-y-8">
+                      {/* Main Image Selection */}
+                      <div className="space-y-4">
                         <label className="text-[11px] font-black uppercase tracking-widest text-slate-400 ml-1">
                           Ảnh đại diện
                         </label>
-                        <div className="relative group">
-                          <div className="aspect-square w-full rounded-3xl border-2 border-dashed border-slate-200 bg-slate-50 flex flex-col items-center justify-center overflow-hidden transition-all group-hover:border-primary/30 group-hover:bg-primary/5">
-                            {imagePreview ? (
-                              <img
-                                src={imagePreview}
-                                alt=""
-                                className="w-full h-full object-contain p-4"
-                              />
-                            ) : (
-                              <>
-                                <FiImage className="text-4xl text-slate-300 mb-2" />
-                                <p className="text-xs font-bold text-slate-400">
-                                  Chọn ảnh chính (Max 2MB)
-                                </p>
-                              </>
-                            )}
-                          </div>
+                        <div className="relative group aspect-video lg:aspect-square w-full rounded-3xl border-2 border-dashed border-slate-200 bg-slate-50 flex flex-col items-center justify-center overflow-hidden transition-all hover:border-primary/30 hover:bg-primary/5">
+                          {imagePreview ? (
+                            <img src={imagePreview} alt="" className="w-full h-full object-contain p-4" />
+                          ) : (
+                            <>
+                              <FiUploadCloud className="text-4xl text-slate-300 mb-2" />
+                              <p className="text-xs font-bold text-slate-400">Tải lên ảnh chính</p>
+                            </>
+                          )}
                           <input
                             type="file"
                             accept="image/*"
-                            onChange={(e) => {
-                              const file = e.target.files[0];
-                              if (file) {
-                                setFormData({ ...formData, image: file });
-                                setImagePreview(URL.createObjectURL(file));
-                              }
-                            }}
+                            onChange={handleImageChange}
                             className="absolute inset-0 opacity-0 cursor-pointer"
                           />
                         </div>
                       </div>
 
-                      <div className="space-y-3">
-                        <label className="text-[11px] font-black uppercase tracking-widest text-slate-400 ml-1">
-                          Thông tin bán hàng
-                        </label>
+                      {/* Product Gallery */}
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between px-1">
+                          <label className="text-[11px] font-black uppercase tracking-widest text-slate-400">
+                            Thư viện ảnh
+                          </label>
+                          <div className="relative">
+                            <button type="button" className="text-[10px] font-black text-primary hover:underline">
+                              THÊM ẢNH
+                            </button>
+                            <input
+                              type="file"
+                              multiple
+                              accept="image/*"
+                              onChange={handleGalleryChange}
+                              className="absolute inset-0 opacity-0 cursor-pointer"
+                            />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-4 gap-3">
+                          {imagePreviews.map((url, idx) => (
+                            <div key={idx} className="relative aspect-square rounded-xl border border-slate-100 overflow-hidden bg-slate-50 group">
+                              <img src={url} alt="" className="w-full h-full object-cover" />
+                              <button
+                                type="button"
+                                onClick={() => removeGalleryImage(idx)}
+                                className="absolute top-1 right-1 w-5 h-5 bg-rose-500 text-white rounded-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
+                              >
+                                <FiX size={12} />
+                              </button>
+                            </div>
+                          ))}
+                          <div className="relative aspect-square rounded-xl border-2 border-dashed border-slate-200 flex items-center justify-center text-slate-300 hover:border-primary/30 hover:text-primary transition-all">
+                             <FiPlus />
+                             <input
+                              type="file"
+                              multiple
+                              accept="image/*"
+                              onChange={handleGalleryChange}
+                              className="absolute inset-0 opacity-0 cursor-pointer"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Sales Info */}
+                      <div className="bg-slate-50/50 p-6 rounded-3xl border border-slate-100 space-y-6">
                         <div className="grid grid-cols-2 gap-4">
                           <div className="space-y-1.5">
                             <span className="text-[10px] font-bold text-slate-500 flex items-center gap-1">
-                              <FiDollarSign /> Giá bán
+                              <FiDollarSign /> Giá niêm yết
                             </span>
                             <input
                               type="number"
                               className="input-modern"
                               placeholder="0"
                               value={formData.price}
-                              onChange={(e) =>
-                                setFormData({
-                                  ...formData,
-                                  price: e.target.value,
-                                })
-                              }
+                              onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                             />
                           </div>
                           <div className="space-y-1.5">
@@ -733,12 +667,7 @@ const ProductManage = () => {
                               className="input-modern"
                               placeholder="0"
                               value={formData.discount}
-                              onChange={(e) =>
-                                setFormData({
-                                  ...formData,
-                                  discount: e.target.value,
-                                })
-                              }
+                              onChange={(e) => setFormData({ ...formData, discount: e.target.value })}
                             />
                           </div>
                           <div className="space-y-1.5">
@@ -750,322 +679,157 @@ const ProductManage = () => {
                               className="input-modern"
                               placeholder="0"
                               value={formData.stock}
-                              onChange={(e) =>
-                                setFormData({
-                                  ...formData,
-                                  stock: e.target.value,
-                                })
-                              }
+                              onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
                             />
                           </div>
                           <div className="space-y-1.5">
-                            <label className="flex items-center gap-2 text-[10px] font-bold text-slate-500">
-                              <input
-                                type="checkbox"
-                                checked={formData.isFlashSale}
-                                onChange={(e) =>
-                                  setFormData({
-                                    ...formData,
-                                    isFlashSale: e.target.checked,
-                                  })
-                                }
-                                className="form-checkbox h-4 w-4"
-                              />
-                              Flash Sale
-                            </label>
-                            {formData.isFlashSale && (
-                              <div className="space-y-2">
-                                <div className="flex items-center gap-2">
-                                  <input
-                                    type="number"
-                                    className="input-modern"
-                                    placeholder="Giá flash sale"
-                                    value={formData.flashSalePrice}
-                                    onChange={(e) =>
-                                      setFormData({
-                                        ...formData,
-                                        flashSalePrice: e.target.value,
-                                      })
-                                    }
-                                  />
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      if (!formData.price) {
-                                        toast.error(
-                                          "Nhập giá gốc trước khi áp dụng flash sale",
-                                        );
-                                        return;
-                                      }
-                                      const base = Number(formData.price) || 0;
-                                      const sale = Math.max(
-                                        0,
-                                        Math.round(base * 0.75),
-                                      );
-                                      setFormData({
-                                        ...formData,
-                                        flashSalePrice: sale,
-                                      });
-                                    }}
-                                    className="btn-modern-secondary text-xs"
-                                  >
-                                    Áp dụng 25% OFF
-                                  </button>
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-2">
-                                  <input
-                                    type="datetime-local"
-                                    className="input-modern"
-                                    value={formData.flashSaleStart}
-                                    onChange={(e) =>
-                                      setFormData({
-                                        ...formData,
-                                        flashSaleStart: e.target.value,
-                                      })
-                                    }
-                                  />
-                                  <input
-                                    type="datetime-local"
-                                    className="input-modern"
-                                    value={formData.flashSaleEnd}
-                                    onChange={(e) =>
-                                      setFormData({
-                                        ...formData,
-                                        flashSaleEnd: e.target.value,
-                                      })
-                                    }
-                                  />
-                                </div>
-
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    const now = new Date();
-                                    const end = new Date(
-                                      now.getTime() + 60 * 60 * 1000,
-                                    );
-
-                                    const pad = (value) =>
-                                      String(value).padStart(2, "0");
-                                    const toDateTimeLocal = (date) => {
-                                      const yyyy = date.getFullYear();
-                                      const mm = pad(date.getMonth() + 1);
-                                      const dd = pad(date.getDate());
-                                      const hh = pad(date.getHours());
-                                      const mi = pad(date.getMinutes());
-                                      return `${yyyy}-${mm}-${dd}T${hh}:${mi}`;
-                                    };
-
-                                    setFormData({
-                                      ...formData,
-                                      flashSaleStart: toDateTimeLocal(now),
-                                      flashSaleEnd: toDateTimeLocal(end),
-                                    });
-                                    toast.success(
-                                      "Tạo thời gian Flash Sale thành công",
-                                    );
-                                  }}
-                                  className="btn-modern-secondary text-xs"
-                                >
-                                  Tạo thời gian nhanh (1h)
-                                </button>
-                              </div>
-                            )}
-                          </div>
-                          <div className="space-y-1.5">
-                            <span className="text-[10px] font-bold text-slate-500 flex items-center gap-1">
-                              Trạng thái
-                            </span>
-                            <div className="flex items-center h-11 px-4 bg-slate-50 rounded-xl border border-slate-200">
-                              <label className="flex items-center cursor-pointer w-full">
-                                <div className="relative">
-                                  <input
-                                    type="checkbox"
-                                    className="sr-only"
-                                    checked={formData.isActive}
-                                    onChange={(e) =>
-                                      setFormData({
-                                        ...formData,
-                                        isActive: e.target.checked,
-                                      })
-                                    }
-                                  />
-                                  <div
-                                    className={`block w-10 h-6 rounded-full transition-colors ${formData.isActive ? "bg-primary" : "bg-slate-300"}`}
-                                  ></div>
-                                  <div
-                                    className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${formData.isActive ? "translate-x-4" : ""}`}
-                                  ></div>
-                                </div>
-                                <span className="ml-3 text-xs font-bold text-slate-600">
-                                  {formData.isActive ? "Hoạt động" : "Tạm khóa"}
-                                </span>
-                              </label>
+                            <span className="text-[10px] font-bold text-slate-500">Trạng thái</span>
+                            <div 
+                              onClick={() => setFormData({...formData, isActive: !formData.isActive})}
+                              className={`h-11 px-4 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
+                                formData.isActive ? "bg-emerald-50 border-emerald-100 text-emerald-600" : "bg-slate-100 border-slate-200 text-slate-400"
+                              }`}
+                            >
+                               <span className="text-xs font-bold">{formData.isActive ? "Hoạt động" : "Tạm ẩn"}</span>
+                               <div className={`w-2 h-2 rounded-full ${formData.isActive ? "bg-emerald-500 animate-pulse" : "bg-slate-400"}`} />
                             </div>
                           </div>
                         </div>
+
+                        {/* Flash Sale Control */}
+                        <div className="pt-4 border-t border-slate-200 space-y-4">
+                           <label className="flex items-center gap-2 cursor-pointer group">
+                              <input 
+                                type="checkbox"
+                                checked={formData.isFlashSale}
+                                onChange={(e) => setFormData({...formData, isFlashSale: e.target.checked})}
+                                className="form-checkbox h-4 w-4 text-primary rounded border-slate-300"
+                              />
+                              <span className="text-xs font-black uppercase text-slate-700 tracking-wider flex items-center gap-2">
+                                <FiZap className={formData.isFlashSale ? "text-orange-500 fill-orange-500" : "text-slate-400"} /> Cấu hình Flash Sale
+                              </span>
+                           </label>
+
+                           {formData.isFlashSale && (
+                             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="space-y-3 pt-2">
+                                <div className="grid grid-cols-2 gap-3">
+                                   <div className="space-y-1">
+                                      <span className="text-[9px] font-bold text-slate-400 uppercase">Giá khuyến mãi</span>
+                                      <input 
+                                        type="number" className="input-modern !h-9 text-xs" 
+                                        value={formData.flashSalePrice}
+                                        onChange={(e) => setFormData({...formData, flashSalePrice: e.target.value})}
+                                      />
+                                   </div>
+                                   <div className="flex items-end">
+                                      <button 
+                                        type="button" 
+                                        onClick={() => {
+                                          const base = Number(formData.price) || 0;
+                                          setFormData({...formData, flashSalePrice: Math.round(base * 0.8)});
+                                        }}
+                                        className="w-full h-9 bg-orange-50 text-orange-600 text-[10px] font-black rounded-lg border border-orange-100 hover:bg-orange-100 transition-colors"
+                                      >
+                                        GỢI Ý GIÁ (-20%)
+                                      </button>
+                                   </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-3">
+                                   <div className="space-y-1">
+                                      <span className="text-[9px] font-bold text-slate-400 uppercase">Ngày bắt đầu</span>
+                                      <input 
+                                        type="datetime-local" className="input-modern !h-9 text-[10px]" 
+                                        value={formData.flashSaleStart}
+                                        onChange={(e) => setFormData({...formData, flashSaleStart: e.target.value})}
+                                      />
+                                   </div>
+                                   <div className="space-y-1">
+                                      <span className="text-[9px] font-bold text-slate-400 uppercase">Ngày kết thúc</span>
+                                      <input 
+                                        type="datetime-local" className="input-modern !h-9 text-[10px]" 
+                                        value={formData.flashSaleEnd}
+                                        onChange={(e) => setFormData({...formData, flashSaleEnd: e.target.value})}
+                                      />
+                                   </div>
+                                </div>
+                             </motion.div>
+                           )}
+                        </div>
                       </div>
                     </div>
 
-                    {/* Right Side: Details */}
-                    <div className="space-y-6">
-                      <div className="space-y-1.5">
-                        <label className="text-[11px] font-black uppercase tracking-widest text-slate-400 ml-1">
-                          Tên sản phẩm
-                        </label>
-                        <input
-                          type="text"
-                          className="input-modern font-bold text-base"
-                          placeholder="Ví dụ: iPhone 15 Pro Max 256GB"
-                          value={formData.name}
-                          onChange={(e) =>
-                            setFormData({ ...formData, name: e.target.value })
-                          }
-                        />
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-4">
+                    {/* RIGHT COLUMN: Text Content & Variants */}
+                    <div className="lg:col-span-7 space-y-8">
+                      <div className="space-y-6">
                         <div className="space-y-1.5">
-                          <label className="text-[11px] font-black uppercase tracking-widest text-slate-400 ml-1">
-                            SKU
-                          </label>
+                          <label className="text-[11px] font-black uppercase tracking-widest text-slate-400 ml-1">Tên sản phẩm</label>
                           <input
                             type="text"
-                            className="input-modern"
-                            placeholder="PROD-001"
-                            value={formData.sku}
-                            onChange={(e) =>
-                              setFormData({ ...formData, sku: e.target.value })
-                            }
+                            className="input-modern font-bold text-base"
+                            placeholder="Ví dụ: Laptop Apple MacBook Air M2 2023..."
+                            value={formData.name}
+                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                           />
                         </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div className="space-y-1.5">
+                            <label className="text-[11px] font-black uppercase tracking-widest text-slate-400 ml-1">SKU Sản phẩm</label>
+                            <input
+                              type="text"
+                              className="input-modern"
+                              placeholder="MAC-M2-2023-SLV"
+                              value={formData.sku}
+                              onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <label className="text-[11px] font-black uppercase tracking-widest text-slate-400 ml-1">Thương hiệu</label>
+                            <select
+                              className="input-modern font-bold"
+                              value={formData.brandId}
+                              onChange={(e) => setFormData({ ...formData, brandId: e.target.value })}
+                            >
+                              <option value="">Chọn hãng</option>
+                              {brands.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
+                            </select>
+                          </div>
+                        </div>
+
                         <div className="space-y-1.5">
-                          <label className="text-[11px] font-black uppercase tracking-widest text-slate-400 ml-1">
-                            Thương hiệu
-                          </label>
+                          <label className="text-[11px] font-black uppercase tracking-widest text-slate-400 ml-1">Danh mục</label>
                           <select
                             className="input-modern font-bold"
-                            value={formData.brandId}
-                            onChange={(e) =>
-                              setFormData({
-                                ...formData,
-                                brandId: e.target.value,
-                              })
-                            }
+                            value={formData.categoryId}
+                            onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
                           >
-                            <option value="">Chọn hãng</option>
-                            {brands.map((b) => (
-                              <option key={b.id} value={b.id}>
-                                {b.name}
-                              </option>
-                            ))}
+                            <option value="">Chọn phân loại</option>
+                            {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
                           </select>
                         </div>
-                      </div>
 
-                      <div className="space-y-1.5">
-                        <label className="text-[11px] font-black uppercase tracking-widest text-slate-400 ml-1">
-                          Danh mục
-                        </label>
-                        <select
-                          className="input-modern font-bold"
-                          value={formData.categoryId}
-                          onChange={(e) =>
-                            setFormData({
-                              ...formData,
-                              categoryId: e.target.value,
-                            })
-                          }
-                        >
-                          <option value="">Chọn loại sản phẩm</option>
-                          {categories.map((c) => (
-                            <option key={c.id} value={c.id}>
-                              {c.name}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-
-                      <div className="space-y-1.5">
-                        <label className="text-[11px] font-black uppercase tracking-widest text-slate-400 ml-1">
-                          Mô tả sản phẩm
-                        </label>
-                        <textarea
-                          rows={5}
-                          className="input-modern resize-none"
-                          placeholder="Nhập thông tin giới thiệu sản phẩm..."
-                          value={formData.description}
-                          onChange={(e) =>
-                            setFormData({
-                              ...formData,
-                              description: e.target.value,
-                            })
-                          }
-                        ></textarea>
-                      </div>
-                    </div>
-                  </div>
-                  {/* Variant Management Section */}
-                  <div className="pt-4 border-t border-slate-100">
-                    <VariantManager
-                      productId={editProduct?.id}
-                      initialVariants={editProduct ? variants : formData.variants}
-                      formData={formData}
-                      setFormData={setFormData}
-                      onRefresh={editProduct ? () => fetchVariants(editProduct.id) : null}
-                    />
-                  </div>
-                  {/* Tech Specs Grid */}{" "}
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-3">
-                      <div className="h-px bg-slate-100 flex-1"></div>
-                      <span className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">
-                        Thông số kỹ thuật
-                      </span>
-                      <div className="h-px bg-slate-100 flex-1"></div>
-                    </div>
-
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      {[
-                        {
-                          label: "Màn hình",
-                          icon: <FiMonitor />,
-                          key: "screen",
-                        },
-                        { label: "CPU", icon: <FiCpu />, key: "cpu" },
-                        { label: "RAM", icon: <FiSmartphone />, key: "ram" },
-                        { label: "ROM", icon: <FiMaximize />, key: "rom" },
-                        { label: "Pin", icon: <FiBattery />, key: "battery" },
-                        { label: "Hệ điều hành", icon: <FiInfo />, key: "os" },
-                        { label: "Trọng lượng", icon: <FiMaximize />, key: "weight" },
-                        {
-                          label: "Kết nối",
-                          icon: <FiMoreHorizontal />,
-                          key: "connectivity",
-                        },
-                      ].map((spec) => (
-                        <div key={spec.key} className="space-y-1.5">
-                          <span className="text-[10px] font-bold text-slate-500 flex items-center gap-2">
-                            {spec.icon} {spec.label}
-                          </span>
-                          <input
-                            type="text"
-                            className="input-modern h-10 px-3"
-                            placeholder="..."
-                            value={formData.specifications[spec.key] || ""}
-                            onChange={(e) =>
-                              setFormData({
-                                ...formData,
-                                specifications: {
-                                  ...formData.specifications,
-                                  [spec.key]: e.target.value,
-                                }
-                              })
-                            }
-                          />
+                        <div className="space-y-1.5">
+                          <label className="text-[11px] font-black uppercase tracking-widest text-slate-400 ml-1">Mô tả tóm tắt</label>
+                          <textarea
+                            rows={4}
+                            className="input-modern resize-none py-3"
+                            placeholder="Mô tả các đặc điểm nổi bật nhất của sản phẩm..."
+                            value={formData.description}
+                            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                          ></textarea>
                         </div>
-                      ))}
+                      </div>
+
+                      {/* Variant Manager Integration - Specifications will be handled here per variant */}
+                      <div className="pt-6 border-t border-slate-100">
+                        <VariantManager
+                          productId={editProduct?.id}
+                          initialVariants={editProduct ? variants : formData.variants}
+                          formData={formData}
+                          setFormData={setFormData}
+                          onRefresh={editProduct ? () => fetchVariants(editProduct.id) : null}
+                        />
+                      </div>
                     </div>
                   </div>
                 </form>
@@ -1073,20 +837,21 @@ const ProductManage = () => {
 
               {/* Modal Footer */}
               <div className="px-8 py-5 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between">
-                <button onClick={handleCloseModal} className="btn-modern-white">
-                  Hủy bỏ
-                </button>
-                <button
-                  form="product-form"
-                  disabled={loadingModal}
-                  className="btn-modern-primary min-w-[140px]"
-                >
-                  {loadingModal ? (
-                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                  ) : (
-                    <>Lưu dữ liệu</>
-                  )}
-                </button>
+                <button onClick={handleCloseModal} className="btn-modern-white">Hủy bỏ</button>
+                <div className="flex items-center gap-3">
+                   <p className="hidden md:block text-[10px] font-bold text-slate-400 uppercase">Vui lòng kiểm tra kỹ trước khi lưu</p>
+                   <button
+                    form="product-form"
+                    disabled={loadingModal}
+                    className="btn-modern-primary min-w-[160px]"
+                  >
+                    {loadingModal ? (
+                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                    ) : (
+                      <>{editProduct ? "CẬP NHẬT SẢN PHẨM" : "ĐĂNG BÁN SẢN PHẨM"}</>
+                    )}
+                  </button>
+                </div>
               </div>
             </motion.div>
           </div>
@@ -1113,19 +878,14 @@ const ProductManage = () => {
               <div className="w-16 h-16 bg-rose-50 text-rose-500 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-6">
                 <FiTrash2 />
               </div>
-              <h3 className="text-xl font-black text-slate-900 mb-2">
-                Xác nhận xóa?
-              </h3>
+              <h3 className="text-xl font-black text-slate-900 mb-2">Xác nhận xóa?</h3>
               <p className="text-sm text-slate-500 mb-8 font-medium">
-                Hành động này không thể hoàn tác. Sản phẩm sẽ bị xóa vĩnh viễn
-                khỏi kho hàng.
+                Sản phẩm sẽ bị gỡ khỏi hệ thống và không thể phục hồi.
               </p>
 
               <div className="grid grid-cols-2 gap-3">
                 <button
-                  onClick={() =>
-                    setConfirmModal({ show: false, productId: null })
-                  }
+                  onClick={() => setConfirmModal({ show: false, productId: null })}
                   className="btn-modern-white"
                 >
                   Hủy

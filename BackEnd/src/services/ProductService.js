@@ -96,13 +96,14 @@ const createProduct = async (data, imageRecords = []) => {
   const t = await db.sequelize.transaction();
   try {
     const newData = { ...data };
-    
+
     // Xử lý specifications và đồng bộ legacy fields
     if (newData.specifications) {
-      const specs = typeof newData.specifications === 'string' 
-        ? JSON.parse(newData.specifications) 
-        : newData.specifications;
-      
+      const specs =
+        typeof newData.specifications === "string"
+          ? JSON.parse(newData.specifications)
+          : newData.specifications;
+
       newData.cpu = specs.cpu || newData.cpu;
       newData.ram = specs.ram || newData.ram;
       newData.rom = specs.rom || newData.rom;
@@ -120,6 +121,10 @@ const createProduct = async (data, imageRecords = []) => {
 
     // Gán basePrice ban đầu bằng price nếu chưa có
     newData.basePrice = newData.basePrice || newData.price || 0;
+    // Map stock -> totalStock (Vì UI có thể gửi trường stock)
+    if (newData.stock !== undefined) {
+      newData.totalStock = Number(newData.stock);
+    }
 
     const product = await db.Product.create(newData, { transaction: t });
 
@@ -177,7 +182,11 @@ const getAllProducts = async (
       { model: db.Category, as: "category" },
       { model: db.Brand, as: "brand" },
       { model: db.Review, as: "reviews" },
-      { model: db.ProductImage, as: "images", attributes: ["imageUrl", "isPrimary"] },
+      {
+        model: db.ProductImage,
+        as: "images",
+        attributes: ["imageUrl", "isPrimary"],
+      },
     ],
     limit,
     offset,
@@ -219,7 +228,13 @@ const getProductById = async (id) => {
         {
           model: db.ProductOption,
           as: "options",
-          include: [{ model: db.ProductOptionValue, as: "values", attributes: ["id", "value"] }],
+          include: [
+            {
+              model: db.ProductOptionValue,
+              as: "values",
+              attributes: ["id", "value"],
+            },
+          ],
         },
         {
           model: db.ProductVariant,
@@ -230,6 +245,11 @@ const getProductById = async (id) => {
               as: "optionValues",
               attributes: ["id", "value", "productOptionId"],
             },
+            {
+              model: db.ProductImage,
+              as: "images",
+              attributes: ["id", "imageUrl", "isPrimary"],
+            },
           ],
           attributes: [
             "id",
@@ -238,7 +258,7 @@ const getProductById = async (id) => {
             "stock",
             "isActive",
             "attributeValues",
-            "imageUrl",
+            "specifications",
           ],
         },
       ],
@@ -262,6 +282,13 @@ const getProductById = async (id) => {
         imageUrl: i.imageUrl,
         isPrimary: i.isPrimary,
       })),
+      variants: product.variants?.map((v) => {
+        const plainV = v.get({ plain: true });
+        return {
+          ...plainV,
+          imageUrl: plainV.images?.[0]?.imageUrl || null,
+        };
+      }),
     });
 
     return {
@@ -283,13 +310,14 @@ const updateProduct = async (id, data, imageRecords = []) => {
       return { errCode: 1, errMessage: "Product not found" };
     }
     const updatedData = { ...data };
-    
+
     // Xử lý specifications và đồng bộ legacy fields
     if (updatedData.specifications) {
-      const specs = typeof updatedData.specifications === 'string' 
-        ? JSON.parse(updatedData.specifications) 
-        : updatedData.specifications;
-      
+      const specs =
+        typeof updatedData.specifications === "string"
+          ? JSON.parse(updatedData.specifications)
+          : updatedData.specifications;
+
       updatedData.cpu = specs.cpu || updatedData.cpu;
       updatedData.ram = specs.ram || updatedData.ram;
       updatedData.rom = specs.rom || updatedData.rom;
@@ -301,13 +329,32 @@ const updateProduct = async (id, data, imageRecords = []) => {
     }
 
     // Re-generate slug if name changes and no slug provided
-    if (updatedData.name && updatedData.name !== product.name && !updatedData.slug) {
+    if (
+      updatedData.name &&
+      updatedData.name !== product.name &&
+      !updatedData.slug
+    ) {
       updatedData.slug = `${slugify(updatedData.name)}-${product.id}`;
+    }
+
+    // Map stock -> totalStock
+    if (updatedData.stock !== undefined) {
+      updatedData.totalStock = Number(updatedData.stock);
     }
 
     const updatedProduct = await product.update(updatedData, {
       transaction: t,
     });
+
+    // Nếu sản phẩm có variants, cập nhật lại totalStock của product cha dựa trên tổng stock các variant
+    const variants = await db.ProductVariant.findAll({
+      where: { productId: id },
+      transaction: t,
+    });
+    if (variants && variants.length > 0) {
+      const totalStock = variants.reduce((sum, v) => sum + (v.stock || 0), 0);
+      await product.update({ totalStock }, { transaction: t });
+    }
 
     if (imageRecords.length > 0) {
       if (imageRecords.some((i) => i.isPrimary)) {
@@ -361,7 +408,11 @@ const searchProducts = async (query, page = 1, limit = 10) => {
     include: [
       { model: db.Category, as: "category" },
       { model: db.Brand, as: "brand" },
-      { model: db.ProductImage, as: "images", attributes: ["imageUrl", "isPrimary"] },
+      {
+        model: db.ProductImage,
+        as: "images",
+        attributes: ["imageUrl", "isPrimary"],
+      },
     ],
     limit,
     offset,
@@ -369,13 +420,25 @@ const searchProducts = async (query, page = 1, limit = 10) => {
   });
 
   // GỢI Ý PRODUCT (lightweight → dành cho Smart Search)
-  const productSuggestions = await db.Product.findAll({
+  const productSuggestionsRaw = await db.Product.findAll({
     where: {
       name: { [Op.like]: `%${query}%` },
     },
-    attributes: ["id", "name", "price", "image"],
+    attributes: ["id", "name", ["basePrice", "price"]],
+    include: [{ model: db.ProductImage, as: "images", attributes: ["imageUrl", "isPrimary"] }],
     limit: 8,
     order: [["sold", "DESC"]],
+  });
+
+  const productSuggestions = productSuggestionsRaw.map(p => {
+    const plain = p.get({ plain: true });
+    const primary = plain.images?.find(i => i.isPrimary) || plain.images?.[0];
+    return {
+      id: plain.id,
+      name: plain.name,
+      price: plain.price,
+      image: primary ? primary.imageUrl : null
+    };
   });
 
   // GỢI Ý KEYWORD
@@ -430,11 +493,23 @@ const searchSuggestions = async (query, limit = 8) => {
     };
   }
 
-  const productSuggestions = await db.Product.findAll({
+  const productSuggestionsRaw = await db.Product.findAll({
     where: { name: { [Op.like]: `%${q}%` } },
-    attributes: ["id", "name", "price", "image"],
+    attributes: ["id", "name", ["basePrice", "price"]],
+    include: [{ model: db.ProductImage, as: "images", attributes: ["imageUrl", "isPrimary"] }],
     limit,
     order: [["sold", "DESC"]],
+  });
+
+  const productSuggestions = productSuggestionsRaw.map(p => {
+    const plain = p.get({ plain: true });
+    const primary = plain.images?.find(i => i.isPrimary) || plain.images?.[0];
+    return {
+      id: plain.id,
+      name: plain.name,
+      price: plain.price,
+      image: primary ? primary.imageUrl : null
+    };
   });
 
   const brandSuggestions = await db.Brand.findAll({
@@ -465,7 +540,9 @@ const searchSuggestions = async (query, limit = 8) => {
  * Hàm này chỉ giữ lại để tương thích ngược.
  */
 const updateProductSold = async (productId, quantity) => {
-  console.warn("[DEPRECATED] updateProductSold should not be called — stock is managed by order flow.");
+  console.warn(
+    "[DEPRECATED] updateProductSold should not be called — stock is managed by order flow.",
+  );
   try {
     const product = await db.Product.findByPk(productId);
     if (!product) return { errCode: 1, errMessage: "Product not found" };
@@ -488,17 +565,17 @@ const getDiscountedProducts = async (page = 1, limit = 10) => {
     where: {
       isActive: true,
       [Op.or]: [
-        { discount: { [db.Sequelize.Op.gt]: 0 } },
-        {
-          isFlashSale: true,
-          flashSaleStart: { [Op.lte]: now },
-          flashSaleEnd: { [Op.gte]: now },
-        },
+        { isFlashSale: true, flashSaleStart: { [Op.lte]: now }, flashSaleEnd: { [Op.gte]: now } },
       ],
     },
     include: [
       { model: db.Category, as: "category" },
       { model: db.Brand, as: "brand" },
+      {
+        model: db.ProductImage,
+        as: "images",
+        attributes: ["imageUrl", "isPrimary"],
+      },
     ],
     limit,
     offset,
@@ -536,6 +613,11 @@ const getFlashSaleProducts = async (page = 1, limit = 10) => {
     include: [
       { model: db.Category, as: "category" },
       { model: db.Brand, as: "brand" },
+      {
+        model: db.ProductImage,
+        as: "images",
+        attributes: ["imageUrl", "isPrimary"],
+      },
     ],
     limit,
     offset,
@@ -555,6 +637,11 @@ const getFlashSaleProducts = async (page = 1, limit = 10) => {
       include: [
         { model: db.Category, as: "category" },
         { model: db.Brand, as: "brand" },
+        {
+          model: db.ProductImage,
+          as: "images",
+          attributes: ["imageUrl", "isPrimary"],
+        },
       ],
       limit: 5,
       order: [["flashSaleStart", "ASC"]],
@@ -580,7 +667,12 @@ const getFlashSaleProducts = async (page = 1, limit = 10) => {
     currentPage: page,
     totalPages: Math.ceil(count / limit),
     upcomingProducts: upcomingItems.map((p) => {
-      const raw = { ...p.toJSON(), image: p.image || null };
+      let image = p.image;
+      if (!image && p.images && p.images.length > 0) {
+        const primary = p.images.find((i) => i.isPrimary) || p.images[0];
+        image = primary.imageUrl;
+      }
+      const raw = { ...p.toJSON(), image: image || null };
       return applyFlashSaleToProduct(raw);
     }),
     nextFlashSaleStart,
@@ -621,7 +713,11 @@ const filterProducts = async ({
       include: [
         { model: db.Brand, as: "brand" },
         { model: db.Category, as: "category" },
-        { model: db.ProductImage, as: "images", attributes: ["imageUrl", "isPrimary"] },
+        {
+          model: db.ProductImage,
+          as: "images",
+          attributes: ["imageUrl", "isPrimary"],
+        },
       ],
       order,
       limit,
@@ -630,10 +726,10 @@ const filterProducts = async ({
 
     return {
       errCode: 0,
-      data: products.rows.map(p => {
+      data: products.rows.map((p) => {
         let image = p.image;
         if (!image && p.images && p.images.length > 0) {
-          const primary = p.images.find(i => i.isPrimary) || p.images[0];
+          const primary = p.images.find((i) => i.isPrimary) || p.images[0];
           image = primary.imageUrl;
         }
         return { ...p.toJSON(), image: image || null };
@@ -678,11 +774,14 @@ const recommendProducts = async (productId, page = 1, limit = 6) => {
       include: [
         { model: db.Brand, as: "brand" },
         { model: db.Category, as: "category" },
-        { model: db.ProductImage, as: "images", attributes: ["imageUrl", "isPrimary"] },
+        {
+          model: db.ProductImage,
+          as: "images",
+          attributes: ["imageUrl", "isPrimary"],
+        },
       ],
       order: [
         ["sold", "DESC"],
-        ["discount", "DESC"],
         ["createdAt", "DESC"],
       ],
       offset,
@@ -694,7 +793,7 @@ const recommendProducts = async (productId, page = 1, limit = 6) => {
       data: rows.map((p) => {
         let image = p.image;
         if (!image && p.images && p.images.length > 0) {
-          const primary = p.images.find(i => i.isPrimary) || p.images[0];
+          const primary = p.images.find((i) => i.isPrimary) || p.images[0];
           image = primary.imageUrl;
         }
         return { ...p.toJSON(), image: image || null };
@@ -754,6 +853,11 @@ const recommendFortuneProducts = async ({
       include: [
         { model: db.Brand, as: "brand" },
         { model: db.Category, as: "category" },
+        {
+          model: db.ProductImage,
+          as: "images",
+          attributes: ["imageUrl", "isPrimary"],
+        },
       ],
       order,
       offset,
@@ -763,7 +867,7 @@ const recommendFortuneProducts = async ({
     const data = rows.map((p) => {
       let image = p.image;
       if (!image && p.images && p.images.length > 0) {
-        const primary = p.images.find(i => i.isPrimary) || p.images[0];
+        const primary = p.images.find((i) => i.isPrimary) || p.images[0];
         image = primary.imageUrl;
       }
       const product = p.toJSON();
@@ -799,7 +903,13 @@ const getProductBySlug = async (slug) => {
         {
           model: db.ProductOption,
           as: "options",
-          include: [{ model: db.ProductOptionValue, as: "values", attributes: ["id", "value"] }],
+          include: [
+            {
+              model: db.ProductOptionValue,
+              as: "values",
+              attributes: ["id", "value"],
+            },
+          ],
         },
         {
           model: db.ProductImage,
@@ -817,6 +927,11 @@ const getProductBySlug = async (slug) => {
               as: "optionValues",
               attributes: ["id", "value", "productOptionId"],
             },
+            {
+              model: db.ProductImage,
+              as: "images",
+              attributes: ["id", "imageUrl", "isPrimary"],
+            },
           ],
           attributes: [
             "id",
@@ -824,7 +939,7 @@ const getProductBySlug = async (slug) => {
             "price",
             "stock",
             "attributeValues",
-            "imageUrl",
+            "specifications",
           ],
         },
       ],
@@ -840,7 +955,13 @@ const getProductBySlug = async (slug) => {
           {
             model: db.ProductOption,
             as: "options",
-            include: [{ model: db.ProductOptionValue, as: "values", attributes: ["id", "value"] }],
+            include: [
+              {
+                model: db.ProductOptionValue,
+                as: "values",
+                attributes: ["id", "value"],
+              },
+            ],
           },
           {
             model: db.ProductImage,
@@ -858,6 +979,11 @@ const getProductBySlug = async (slug) => {
                 as: "optionValues",
                 attributes: ["id", "value", "productOptionId"],
               },
+              {
+                model: db.ProductImage,
+                as: "images",
+                attributes: ["id", "imageUrl", "isPrimary"],
+              },
             ],
             attributes: [
               "id",
@@ -865,7 +991,6 @@ const getProductBySlug = async (slug) => {
               "price",
               "stock",
               "attributeValues",
-              "imageUrl",
             ],
           },
         ],
@@ -879,49 +1004,57 @@ const getProductBySlug = async (slug) => {
 
     // 1. Tính toán giá min/max
     const prices = variants.map((v) => Number(v.price));
-    const minPrice = prices.length > 0 ? Math.min(...prices) : Number(plainProduct.basePrice);
-    const maxPrice = prices.length > 0 ? Math.max(...prices) : Number(plainProduct.basePrice);
+    const minPrice =
+      prices.length > 0 ? Math.min(...prices) : Number(plainProduct.basePrice);
+    const maxPrice =
+      prices.length > 0 ? Math.max(...prices) : Number(plainProduct.basePrice);
 
     // 2. Tính tổng tồn kho
     const totalStock = variants.reduce((sum, v) => sum + (v.stock || 0), 0);
 
     // 3. Logic Flash Sale Real-time
     const now = new Date();
-    const isFlashSaleActive = 
+    const isFlashSaleActive =
       plainProduct.isFlashSale &&
       plainProduct.flashSaleStart &&
       plainProduct.flashSaleEnd &&
       now >= new Date(plainProduct.flashSaleStart) &&
       now <= new Date(plainProduct.flashSaleEnd);
 
+    const primaryImage = plainProduct.images?.find(img => img.isPrimary) || plainProduct.images?.[0];
+
     // 4. Clean DTO
     const productDTO = {
       id: plainProduct.id,
       name: plainProduct.name,
       slug: plainProduct.slug,
-      image: plainProduct.image,
+      image: primaryImage ? primaryImage.imageUrl : null,
       description: plainProduct.description,
       specifications: plainProduct.specifications,
-      price: plainProduct.price, // Giá gốc (base)
-      discount: plainProduct.discount, // % giảm giá
+      price: plainProduct.basePrice, // Giá gốc (base)
+      discount: plainProduct.discount || 0, // % giảm giá (legacy)
       brand: plainProduct.brand,
       category: plainProduct.category,
-      images: plainProduct.images.sort((a, b) => (b.isPrimary ? 1 : -1)),
-      variants: variants,
-      
+      images: plainProduct.images?.sort((a, b) => (b.isPrimary ? 1 : -1)) || [],
+      variants: variants.map((v) => ({
+        ...v,
+        imageUrl: v.images?.[0]?.imageUrl || null,
+      })),
+
       // Computed fields
       priceRange: {
         min: minPrice,
         max: maxPrice,
-        display: minPrice === maxPrice ? `${minPrice}` : `${minPrice} - ${maxPrice}`
+        display:
+          minPrice === maxPrice ? `${minPrice}` : `${minPrice} - ${maxPrice}`,
       },
       totalStock,
       flashSale: {
         isActive: isFlashSaleActive,
         price: isFlashSaleActive ? Number(plainProduct.flashSalePrice) : null,
-        endDate: isFlashSaleActive ? plainProduct.flashSaleEnd : null
+        endDate: isFlashSaleActive ? plainProduct.flashSaleEnd : null,
       },
-      sold: plainProduct.sold
+      sold: plainProduct.sold,
     };
 
     return {
@@ -939,11 +1072,12 @@ const generateVariants = (options) => {
 
   const combinations = options.reduce((acc, option) => {
     const values = option.values;
-    if (acc.length === 0) return values.map(v => [{ optionName: option.name, value: v }]);
+    if (acc.length === 0)
+      return values.map((v) => [{ optionName: option.name, value: v }]);
 
     const newAcc = [];
-    acc.forEach(combo => {
-      values.forEach(v => {
+    acc.forEach((combo) => {
+      values.forEach((v) => {
         newAcc.push([...combo, { optionName: option.name, value: v }]);
       });
     });
@@ -963,71 +1097,106 @@ const createProductWithVariants = async (data, imageRecords = []) => {
       productData.slug = `${slugify(productData.name)}-${Date.now()}`;
     }
     productData.hasVariants = options && options.length > 0;
+    
+    // Map stock -> totalStock cho sản phẩm cha
+    if (productData.stock !== undefined) {
+      productData.totalStock = Number(productData.stock);
+    }
+    
     const product = await db.Product.create(productData, { transaction: t });
 
     // 2. Create Options and Values
+    // ... (unchanged)
     const createdOptions = [];
     if (options && options.length > 0) {
       for (const opt of options) {
-        const createdOpt = await db.ProductOption.create({
-          name: opt.name,
-          productId: product.id
-        }, { transaction: t });
+        const createdOpt = await db.ProductOption.create(
+          {
+            name: opt.name,
+            productId: product.id,
+          },
+          { transaction: t },
+        );
 
-        const values = opt.values.map(v => ({
+        const values = opt.values.map((v) => ({
           value: v,
-          productOptionId: createdOpt.id
+          productOptionId: createdOpt.id,
         }));
-        const createdValues = await db.ProductOptionValue.bulkCreate(values, { transaction: t });
+        const createdValues = await db.ProductOptionValue.bulkCreate(values, {
+          transaction: t,
+        });
         createdOptions.push({ ...createdOpt.toJSON(), values: createdValues });
       }
     }
 
     // 3. Handle Variants
     if (productData.hasVariants) {
+      let finalTotalStock = 0;
       // If custom variants provided (with price, stock, SKU)
       if (customVariants && customVariants.length > 0) {
         for (const variant of customVariants) {
-          const createdVariant = await db.ProductVariant.create({
-            productId: product.id,
-            sku: variant.sku || `${product.sku}-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
-            price: variant.price || product.basePrice,
-            stock: variant.stock || 0,
-            attributeValues: variant.attributeValues // Keep for compatibility
-          }, { transaction: t });
+          const variantStock = Number(variant.stock || 0);
+          finalTotalStock += variantStock;
+          const createdVariant = await db.ProductVariant.create(
+            {
+              productId: product.id,
+              sku:
+                variant.sku ||
+                `${product.sku}-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
+              price: variant.price || product.basePrice,
+              stock: variantStock,
+              attributeValues: variant.attributeValues || {},
+              specifications: variant.specifications || {},
+            },
+            { transaction: t },
+          );
 
           // Link to OptionValues
           if (variant.optionValueIds) {
-            const junctionData = variant.optionValueIds.map(id => ({
+            const junctionData = variant.optionValueIds.map((id) => ({
               variantId: createdVariant.id,
-              productOptionValueId: id
+              productOptionValueId: id,
             }));
-            await db.VariantOptionValue.bulkCreate(junctionData, { transaction: t });
+            await db.VariantOptionValue.bulkCreate(junctionData, {
+              transaction: t,
+            });
           }
         }
       } else {
         // Auto-generate variants (simple ones)
         const combos = generateVariants(options);
         for (const combo of combos) {
-          const createdVariant = await db.ProductVariant.create({
-            productId: product.id,
-            sku: `${product.sku || product.id}-${combo.map(c => c.value).join('-')}`,
-            price: product.basePrice,
-            stock: 0,
-            attributeValues: combo.reduce((acc, curr) => ({ ...acc, [curr.optionName]: curr.value }), {})
-          }, { transaction: t });
+          const createdVariant = await db.ProductVariant.create(
+            {
+              productId: product.id,
+              sku: `${product.sku || product.id}-${combo.map((c) => c.value).join("-")}`,
+              price: product.basePrice,
+              stock: 0,
+              attributeValues: combo.reduce(
+                (acc, curr) => ({ ...acc, [curr.optionName]: curr.value }),
+                {},
+              ),
+            },
+            { transaction: t },
+          );
 
           // Find IDs for junction
           for (const c of combo) {
-            const opt = createdOptions.find(o => o.name === c.optionName);
-            const val = opt.values.find(v => v.value === c.value);
-            await db.VariantOptionValue.create({
-              variantId: createdVariant.id,
-              productOptionValueId: val.id
-            }, { transaction: t });
+            const opt = createdOptions.find((o) => o.name === c.optionName);
+            const val = opt.values.find((v) => v.value === c.value);
+            await db.VariantOptionValue.create(
+              {
+                variantId: createdVariant.id,
+                productOptionValueId: val.id,
+              },
+              { transaction: t },
+            );
           }
         }
       }
+      
+      // Cập nhật lại totalStock cho sản phẩm cha dựa trên các biến thể vừa tạo
+      await product.update({ totalStock: finalTotalStock }, { transaction: t });
     }
 
     // 4. Handle Images

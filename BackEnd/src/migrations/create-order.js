@@ -23,7 +23,7 @@ module.exports = {
         onDelete: "SET NULL",
       },
       totalPrice: {
-        type: Sequelize.DECIMAL(10, 2),
+        type: Sequelize.DECIMAL(15, 2),
         allowNull: false,
         defaultValue: 0.0,
       },

@@ -34,7 +34,7 @@ module.exports = (sequelize, DataTypes) => {
         onDelete: "SET NULL",
       },
       totalPrice: {
-        type: DataTypes.DECIMAL(10, 2),
+        type: DataTypes.DECIMAL(15, 2),
         allowNull: false,
         defaultValue: 0,
       },
@@ -80,7 +80,7 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: true,
       },
       discountAmount: {
-        type: DataTypes.DECIMAL(10, 2),
+        type: DataTypes.DECIMAL(15, 2),
         defaultValue: 0,
       },
       note: {

@@ -33,8 +33,8 @@ module.exports = (sequelize, DataTypes) => {
   OrderItem.init(
     {
       quantity: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 1 },
-      price: { type: DataTypes.DECIMAL(10, 2), allowNull: false },
-      subtotal: { type: DataTypes.DECIMAL(10, 2), allowNull: false },
+      price: { type: DataTypes.DECIMAL(15, 2), allowNull: false },
+      subtotal: { type: DataTypes.DECIMAL(15, 2), allowNull: false },
       productName: { type: DataTypes.STRING, allowNull: false },
       image: { type: DataTypes.BLOB("long"), allowNull: true },
       variantId: { type: DataTypes.INTEGER, allowNull: true },

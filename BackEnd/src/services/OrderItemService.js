@@ -18,7 +18,14 @@ const getAllOrderItems = async () => {
         {
           model: db.Product,
           as: "product",
-          attributes: ["id", "name", "price", "image"],
+          attributes: ["id", "name", "basePrice"],
+          include: [
+            {
+              model: db.ProductImage,
+              as: "images",
+              attributes: ["imageUrl", "isPrimary"],
+            },
+          ],
         },
       ],
       order: [["createdAt", "DESC"]],
@@ -26,9 +33,11 @@ const getAllOrderItems = async () => {
 
     const data = orderItems.map((item) => {
       const it = item.toJSON();
-      it.image = it.image
-        ? `data:image/png;base64,${it.image.toString("base64")}`
-        : null;
+      if (it.product) {
+        const primaryImage = it.product.images?.find(img => img.isPrimary) || it.product.images?.[0];
+        it.product.image = primaryImage ? primaryImage.imageUrl : null;
+        it.product.price = it.product.basePrice;
+      }
       return it;
     });
 
@@ -57,7 +66,14 @@ const getOrderItemById = async (id) => {
         {
           model: db.Product,
           as: "product",
-          attributes: ["id", "name", "price", "image"],
+          attributes: ["id", "name", "basePrice"],
+          include: [
+            {
+              model: db.ProductImage,
+              as: "images",
+              attributes: ["imageUrl", "isPrimary"],
+            },
+          ],
         },
       ],
     });
@@ -66,12 +82,14 @@ const getOrderItemById = async (id) => {
       return { errCode: 1, errMessage: "OrderItem not found" };
     }
 
-    const data = item.toJSON();
-    data.image = data.image
-      ? `data:image/png;base64,${data.image.toString("base64")}`
-      : null;
+    const it = item.toJSON();
+    if (it.product) {
+      const primaryImage = it.product.images?.find(img => img.isPrimary) || it.product.images?.[0];
+      it.product.image = primaryImage ? primaryImage.imageUrl : null;
+      it.product.price = it.product.basePrice;
+    }
 
-    return { errCode: 0, errMessage: "OK", data };
+    return { errCode: 0, errMessage: "OK", data: it };
   } catch (e) {
     console.error("Error getOrderItemById:", e);
     throw e;

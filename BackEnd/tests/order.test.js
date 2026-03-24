@@ -17,8 +17,8 @@ describe("OrderService stock reservation", () => {
 
     product = await db.Product.create({
       name: `Laptop Test ${suffix}`,
-      price: 1000,
-      stock: 10,
+      basePrice: 1000,
+      totalStock: 10,
       isActive: true,
     });
   });

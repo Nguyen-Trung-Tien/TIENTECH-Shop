@@ -30,9 +30,8 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: true,
       },
       discountAmount: {
-        type: DataTypes.DECIMAL(10, 2),
+        type: DataTypes.DECIMAL(15, 2),
         allowNull: false,
-        defaultValue: 0,
       },
       status: {
         type: DataTypes.ENUM("applied", "used", "cancelled"),

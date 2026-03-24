@@ -18,15 +18,15 @@ module.exports = {
         defaultValue: "percentage",
       },
       value: {
-        type: Sequelize.DECIMAL(10, 2),
+        type: Sequelize.DECIMAL(15, 2),
         allowNull: false,
       },
       minOrderValue: {
-        type: Sequelize.DECIMAL(10, 2),
+        type: Sequelize.DECIMAL(15, 2),
         defaultValue: 0,
       },
       maxDiscount: {
-        type: Sequelize.DECIMAL(10, 2),
+        type: Sequelize.DECIMAL(15, 2),
         allowNull: true,
         comment: "Số tiền giảm tối đa nếu dùng percentage",
       },

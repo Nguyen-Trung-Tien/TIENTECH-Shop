@@ -19,13 +19,21 @@ const CartItem = ({
 }) => {
   const navigate = useNavigate();
 
-  // Logic giá: Ưu tiên giá của Variant, nếu không có thì lấy giá Product gốc
+  // Logic giá: Ưu tiên giá tính sẵn từ backend (finalPrice)
+  const finalPrice = useMemo(() => {
+    if (item.finalPrice != null) return Number(item.finalPrice);
+    
+    // Fallback logic
+    const base = item.variant?.price != null ? Number(item.variant.price) : Number(item.product?.basePrice || item.product?.price || 0);
+    const disc = Number(item.product?.discount || 0);
+    return Math.round(disc > 0 ? base * (1 - disc / 100) : base);
+  }, [item]);
+
   const basePrice = useMemo(() => {
     return item.variant?.price != null ? Number(item.variant.price) : Number(item.product?.basePrice || item.product?.price || 0);
   }, [item]);
 
-  const discount = Number(item.product?.discount || 0);
-  const finalPrice = Math.round(discount > 0 ? basePrice * (1 - discount / 100) : basePrice);
+  const discount = Number(item.product?.discount || item.variant?.discount || 0);
 
   // Chuỗi hiển thị các option (Ví dụ: "8GB - 256GB - Titan")
   const variantOptions = useMemo(() => {

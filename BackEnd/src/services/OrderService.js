@@ -66,23 +66,8 @@ const getOrderById = async (id, user) => {
             {
               model: db.Product,
               as: "product",
-              attributes: [
-                "id",
-                "name",
-                "image",
-                "price",
-                "discount",
-                "color",
-                "ram",
-                "rom",
-                "screen",
-                "cpu",
-                "battery",
-                "weight",
-                "connectivity",
-                "os",
-                "extra",
-              ],
+              attributes: ["id", "name", "basePrice", "specifications"],
+              include: [{ model: db.ProductImage, as: "images", attributes: ["imageUrl", "isPrimary"] }],
             },
           ],
         },
@@ -98,6 +83,17 @@ const getOrderById = async (id, user) => {
       return { errCode: 1, errMessage: "Order not found", status: 404 };
     }
 
+    const plainOrder = order.toJSON();
+    if (plainOrder.orderItems) {
+      plainOrder.orderItems.forEach(item => {
+        if (item.product) {
+          const primaryImage = item.product.images?.find(img => img.isPrimary) || item.product.images?.[0];
+          item.product.image = primaryImage ? primaryImage.imageUrl : null;
+          item.product.price = item.product.basePrice;
+        }
+      });
+    }
+
     const isAdmin = user.role === "admin";
     const isOwner = order.userId === user.id;
 
@@ -109,7 +105,7 @@ const getOrderById = async (id, user) => {
       };
     }
 
-    return { errCode: 0, errMessage: "OK", data: order };
+    return { errCode: 0, errMessage: "OK", data: plainOrder };
   } catch (e) {
     console.error("Error in getOrderById:", e);
     throw e;
@@ -163,7 +159,8 @@ const getOrdersByUserId = async (
             {
               model: db.Product,
               as: "product",
-              attributes: ["id", "name", "image", "price", "discount"],
+              attributes: ["id", "name", ["basePrice", "price"]],
+              include: [{ model: db.ProductImage, as: "images", attributes: ["imageUrl", "isPrimary"] }],
             },
           ],
         },
@@ -174,12 +171,26 @@ const getOrdersByUserId = async (
       ],
     });
 
+    // Map to maintain compatibility
+    const mappedOrders = orders.map(order => {
+      const plainOrder = order.toJSON();
+      if (plainOrder.orderItems) {
+        plainOrder.orderItems.forEach(item => {
+          if (item.product) {
+            const primaryImage = item.product.images?.find(img => img.isPrimary) || item.product.images?.[0];
+            item.product.image = primaryImage ? primaryImage.imageUrl : null;
+          }
+        });
+      }
+      return plainOrder;
+    });
+
     const totalPages = Math.ceil(count / limit);
 
     return {
       errCode: 0,
       errMessage: "OK",
-      data: orders,
+      data: mappedOrders,
       pagination: {
         total: count,
         page,
@@ -215,7 +226,8 @@ const getActiveOrdersByUserId = async (userId, page = 1, limit = 10) => {
             {
               model: db.Product,
               as: "productInfo",
-              attributes: ["id", "name", "price", "image"],
+              attributes: ["id", "name", ["basePrice", "price"]],
+              include: [{ model: db.ProductImage, as: "images", attributes: ["imageUrl", "isPrimary"] }],
             },
           ],
         },
@@ -230,12 +242,26 @@ const getActiveOrdersByUserId = async (userId, page = 1, limit = 10) => {
       offset,
     });
 
+    // Map results
+    const mappedOrders = orders.map(order => {
+      const plainOrder = order.toJSON();
+      if (plainOrder.orderItems) {
+        plainOrder.orderItems.forEach(item => {
+          if (item.productInfo) {
+            const primaryImage = item.productInfo.images?.find(img => img.isPrimary) || item.productInfo.images?.[0];
+            item.productInfo.image = primaryImage ? primaryImage.imageUrl : null;
+          }
+        });
+      }
+      return plainOrder;
+    });
+
     const totalPages = Math.ceil(count / limit);
 
     return {
       errCode: 0,
       errMessage: "OK",
-      data: orders,
+      data: mappedOrders,
       pagination: {
         total: count,
         page,
@@ -321,40 +347,55 @@ const createOrder = async (data) => {
         }
         await variant.decrement("stock", { by: quantity, transaction: t });
       } else {
-        if (product.stock < quantity) {
+        if (product.totalStock < quantity) {
           await t.rollback();
           return {
             errCode: 6,
             errMessage: `Sản phẩm ${product.name} không đủ tồn kho.`,
           };
         }
-        await product.decrement("stock", { by: quantity, transaction: t });
+        await product.decrement("totalStock", { by: quantity, transaction: t });
       }
 
       // Price logic
       const now = new Date();
-      const isFlashSale =
-        product.isFlashSale &&
-        product.flashSaleStart &&
-        product.flashSaleEnd &&
-        now >= new Date(product.flashSaleStart) &&
-        now <= new Date(product.flashSaleEnd);
-
       let unitPrice = 0;
-      if (isFlashSale && product.flashSalePrice) {
-        unitPrice = Number(product.flashSalePrice);
-      } else {
-        const originalPrice = variant
-          ? Number(variant.price)
-          : Number(product.basePrice || product.price || 0);
-        const discount = Number(product.discount) || 0;
+
+      if (variant) {
+        const originalPrice = Number(variant.price || 0);
+        const discount = Number(variant.discount || 0);
         unitPrice = Number((originalPrice * (1 - discount / 100)).toFixed(2));
+      } else {
+        const isFlashSale =
+          product.isFlashSale &&
+          product.flashSaleStart &&
+          product.flashSaleEnd &&
+          now >= new Date(product.flashSaleStart) &&
+          now <= new Date(product.flashSaleEnd);
+
+        if (isFlashSale && product.flashSalePrice) {
+          unitPrice = Number(product.flashSalePrice);
+        } else {
+          unitPrice = Number(product.basePrice || 0);
+        }
       }
 
       const subtotal = Number((unitPrice * quantity).toFixed(2));
       calculatedTotal += subtotal;
 
       await product.increment("sold", { by: quantity, transaction: t });
+
+      // Find product primary image
+      const productImages = await db.ProductImage.findAll({ 
+        where: { productId: product.id },
+        transaction: t
+      });
+      const primaryImage = productImages.find(img => img.isPrimary) || productImages[0];
+
+      // Find variant image or product primary image
+      const variantImage = variant 
+        ? productImages.find(img => img.variantId === variant.id) || primaryImage
+        : primaryImage;
 
       formattedItems.push({
         productId: product.id,
@@ -363,7 +404,7 @@ const createOrder = async (data) => {
         quantity,
         price: unitPrice,
         subtotal,
-        image: variant?.imageUrl || product.image,
+        image: variantImage?.imageUrl || null,
       });
     }
 
@@ -518,7 +559,7 @@ const updateOrderStatus = async (id, status, user = null) => {
         } else {
           const product = await db.Product.findByPk(item.productId, { transaction: t });
           if (product) {
-            await product.increment("stock", { by: item.quantity, transaction: t });
+            await product.increment("totalStock", { by: item.quantity, transaction: t });
           }
         }
       }
@@ -533,7 +574,7 @@ const updateOrderStatus = async (id, status, user = null) => {
         const product = await db.Product.findByPk(item.productId, { transaction: t });
         if (product) {
           product.sold = Math.max(0, (product.sold || 0) - item.quantity);
-          product.stock = (product.stock || 0) + item.quantity;
+          product.totalStock = (product.totalStock || 0) + item.quantity;
           await product.save({ transaction: t });
         }
         if (item.variantId) {
@@ -632,7 +673,7 @@ const updatePaymentStatus = async (orderId, paymentStatus) => {
           };
         }
 
-        if (product.stock < item.quantity) {
+        if (product.totalStock < item.quantity) {
           await t.rollback();
           return {
             errCode: 4,
@@ -640,7 +681,7 @@ const updatePaymentStatus = async (orderId, paymentStatus) => {
           };
         }
 
-        product.stock -= item.quantity;
+        product.totalStock -= item.quantity;
         product.sold = (product.sold || 0) + item.quantity;
         await product.save({ transaction: t });
       }

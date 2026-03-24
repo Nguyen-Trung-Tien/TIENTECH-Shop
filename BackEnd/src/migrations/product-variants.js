@@ -11,54 +11,58 @@ module.exports = {
       },
       sku: {
         type: Sequelize.STRING,
-        allowNull: true,
+        allowNull: false,
         unique: true,
       },
       price: {
-        type: Sequelize.DECIMAL(10, 2),
+        type: Sequelize.DECIMAL(15, 2),
         allowNull: false,
         defaultValue: 0,
+      },
+      discount: {
+        type: Sequelize.DECIMAL(5, 2),
+        defaultValue: 0,
+      },
+      salePrice: {
+        type: Sequelize.DECIMAL(15, 2),
+        allowNull: true,
       },
       stock: {
         type: Sequelize.INTEGER,
         allowNull: false,
         defaultValue: 0,
       },
-      isActive: {
-        type: Sequelize.BOOLEAN,
-        defaultValue: true,
-      },
-      attributes: {
+      attributeValues: {
         type: Sequelize.JSON,
         allowNull: false,
         defaultValue: {},
       },
-      imageUrl: {
-        type: Sequelize.TEXT,
-        allowNull: true,
+      isActive: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: true,
       },
       productId: {
         type: Sequelize.INTEGER,
         allowNull: false,
-        // references: {
-        //   model: "Products",
-        //   key: "id",
-        // },
         onDelete: "CASCADE",
         onUpdate: "CASCADE",
       },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE,
+        defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
       },
       updatedAt: {
         allowNull: false,
         type: Sequelize.DATE,
+        defaultValue: Sequelize.literal(
+          "CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP",
+        ),
       },
     });
   },
 
-  async down(queryInterface) {
+  async down(queryInterface, Sequelize) {
     await queryInterface.dropTable("ProductVariants");
   },
 };

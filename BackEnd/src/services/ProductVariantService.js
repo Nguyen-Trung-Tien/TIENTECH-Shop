@@ -4,6 +4,7 @@ const getVariantsByProductId = async (productId) => {
   try {
     const variants = await db.ProductVariant.findAll({
       where: { productId },
+      include: [{ model: db.ProductImage, as: "images", attributes: ["id", "imageUrl", "isPrimary"] }],
       order: [["id", "ASC"]],
     });
     return { errCode: 0, data: variants };
@@ -23,8 +24,8 @@ const createVariant = async (data) => {
       stock,
       isActive = true,
       attributeValues = {},
-      imageUrl = null,
-      optionValueIds = [], // Added for normalization
+      // imageUrl = null, // DEPRECATED: image is stored in ProductImage table
+      optionValueIds = [],
     } = data;
 
     if (!productId || price == null || stock == null) {
@@ -38,7 +39,6 @@ const createVariant = async (data) => {
       stock,
       isActive: !!isActive,
       attributeValues,
-      imageUrl,
     }, { transaction: t });
 
     // Handle normalized junction
@@ -68,14 +68,15 @@ const updateVariant = async (id, data) => {
       return { errCode: 1, errMessage: "Variant not found" };
     }
 
-    const updated = await variant.update({
-      sku: data.sku ?? variant.sku,
-      price: data.price ?? variant.price,
-      stock: data.stock ?? variant.stock,
-      isActive: data.isActive ?? variant.isActive,
-      attributeValues: data.attributeValues ?? variant.attributeValues,
-      imageUrl: data.imageUrl ?? variant.imageUrl,
-    }, { transaction: t });
+    const updateData = {
+      sku: data.sku !== undefined ? data.sku : variant.sku,
+      price: data.price !== undefined ? data.price : variant.price,
+      stock: data.stock !== undefined ? data.stock : variant.stock,
+      isActive: data.isActive !== undefined ? data.isActive : variant.isActive,
+      attributeValues: data.attributeValues !== undefined ? data.attributeValues : variant.attributeValues,
+    };
+
+    const updated = await variant.update(updateData, { transaction: t });
 
     // Update normalized junction if provided
     if (data.optionValueIds) {

@@ -42,14 +42,26 @@ const getBrandById = async (id) => {
         {
           model: db.Product,
           as: "products",
-          attributes: ["id", "name", "price", "image"],
+          attributes: ["id", "name", ["basePrice", "price"]],
+          include: [{ model: db.ProductImage, as: "images", attributes: ["imageUrl", "isPrimary"] }],
         },
       ],
     });
 
     if (!brand) return { errCode: 1, errMessage: "Brand not found" };
 
-    return { errCode: 0, brand };
+    const plainBrand = brand.get({ plain: true });
+    if (plainBrand.products) {
+      plainBrand.products = plainBrand.products.map(p => {
+        const primary = p.images?.find(i => i.isPrimary) || p.images?.[0];
+        return {
+          ...p,
+          image: primary ? primary.imageUrl : null
+        };
+      });
+    }
+
+    return { errCode: 0, brand: plainBrand };
   } catch (e) {
     console.error("Error fetching brand:", e);
     return { errCode: 1, errMessage: e.message };

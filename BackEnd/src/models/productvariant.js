@@ -24,14 +24,14 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false 
       },
       price: { 
-        type: DataTypes.DECIMAL(12, 2), 
+        type: DataTypes.DECIMAL(15, 2), 
         allowNull: false 
       },
       
       // Khuyến mãi riêng cho biến thể
       discount: { type: DataTypes.DECIMAL(5, 2), defaultValue: 0 },
       salePrice: { 
-        type: DataTypes.DECIMAL(12, 2),
+        type: DataTypes.DECIMAL(15, 2),
         comment: "Giá sau giảm giá" 
       },
       
@@ -42,6 +42,12 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.JSON,
         allowNull: false,
         defaultValue: {}
+      },
+
+      specifications: { 
+        type: DataTypes.JSON, 
+        defaultValue: {},
+        comment: "Variant-specific technical specs"
       },
       
       isActive: { type: DataTypes.BOOLEAN, defaultValue: true },

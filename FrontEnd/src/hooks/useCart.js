@@ -62,9 +62,18 @@ export const useCart = () => {
     return cartItems
       .filter((item) => selectedIds.includes(item.id))
       .reduce((acc, item) => {
-        const price = item.product?.discount
-          ? (item.product.price * (100 - item.product.discount)) / 100
-          : item.product?.price || 0;
+        // Use finalPrice from backend if available, otherwise fallback to old logic
+        if (item.finalPrice !== undefined) {
+          return acc + Number(item.finalPrice) * (item.quantity || 0);
+        }
+
+        const basePrice = item.variant?.price != null 
+          ? Number(item.variant.price) 
+          : Number(item.product?.basePrice || item.product?.price || 0);
+        
+        const discount = Number(item.product?.discount || 0);
+        const price = Math.round(discount > 0 ? basePrice * (1 - discount / 100) : basePrice);
+        
         return acc + price * (item.quantity || 0);
       }, 0);
   };

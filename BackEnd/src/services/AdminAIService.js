@@ -14,15 +14,15 @@ const getAIInsights = async () => {
       where: { isActive: true },
       order: [["sold", "DESC"]],
       limit: 5,
-      attributes: ["name", "sold", "stock"],
+      attributes: ["name", "sold", ["totalStock", "stock"]],
     });
 
     // 2. Lấy top 5 sản phẩm bán chậm (tồn kho nhiều nhưng sold ít)
     const slowMoving = await db.Product.findAll({
-      where: { isActive: true, stock: { [Op.gt]: 10 } },
+      where: { isActive: true, totalStock: { [Op.gt]: 10 } },
       order: [["sold", "ASC"]],
       limit: 5,
-      attributes: ["name", "sold", "stock", "price"],
+      attributes: ["name", "sold", ["totalStock", "stock"], ["basePrice", "price"]],
     });
 
     // 3. Lấy các đánh giá thấp gần đây (dưới 3 sao)

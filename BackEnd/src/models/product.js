@@ -30,7 +30,7 @@ module.exports = (sequelize, DataTypes) => {
       
       // Giá cơ bản để hiển thị "Chỉ từ..."
       basePrice: { 
-        type: DataTypes.DECIMAL(12, 2), 
+        type: DataTypes.DECIMAL(15, 2), 
         allowNull: false, 
         defaultValue: 0 
       },
@@ -47,7 +47,7 @@ module.exports = (sequelize, DataTypes) => {
       
       // Flash Sale (Cấp độ sản phẩm - cho phép override biến thể)
       isFlashSale: { type: DataTypes.BOOLEAN, defaultValue: false },
-      flashSalePrice: { type: DataTypes.DECIMAL(12, 2) },
+      flashSalePrice: { type: DataTypes.DECIMAL(15, 2) },
       flashSaleStart: { type: DataTypes.DATE },
       flashSaleEnd: { type: DataTypes.DATE },
     },

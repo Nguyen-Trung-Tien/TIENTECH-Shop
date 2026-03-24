@@ -1,7 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
-import { getProductBySlugApi, getRecommendedProductsApi } from "../api/productApi";
+import {
+  getProductBySlugApi,
+  getRecommendedProductsApi,
+} from "../api/productApi";
 import { getAllCarts, createCart, addCart } from "../api/cartApi";
 import { addCartItem } from "../redux/cartSlice";
 import { getReviewsByProductApi } from "../api/reviewApi";
@@ -15,7 +18,7 @@ export const useProductDetail = (slug) => {
   const [loading, setLoading] = useState(true);
   const [reviews, setReviews] = useState([]);
   const [pagination, setPagination] = useState({ totalPages: 1 });
-  
+
   const [recommended, setRecommended] = useState([]);
   const [loadingRecommended, setLoadingRecommended] = useState(false);
   const [addingCart, setAddingCart] = useState(false);
@@ -49,7 +52,7 @@ export const useProductDetail = (slug) => {
         try {
           const [reviewsRes, recommendedRes] = await Promise.all([
             getReviewsByProductApi(product.id, 1, 5),
-            getRecommendedProductsApi(product.id, 1, 6)
+            getRecommendedProductsApi(product.id, 1, 6),
           ]);
           if (reviewsRes.errCode === 0) {
             setReviews(reviewsRes.data);
@@ -68,22 +71,23 @@ export const useProductDetail = (slug) => {
 
   const handleAddToCart = async (variantId, quantity = 1) => {
     if (!userId) return toast.warn("Bạn cần đăng nhập để mua hàng!");
-    if (!variantId && product?.variants?.length > 0) return toast.warn("Vui lòng chọn phiên bản sản phẩm!");
+    if (!variantId && product?.variants?.length > 0)
+      return toast.warn("Vui lòng chọn phiên bản sản phẩm!");
 
     setAddingCart(true);
     try {
       const cartsRes = await getAllCarts();
-      let cart = cartsRes.data.find(c => c.userId === userId);
+      let cart = cartsRes.data.find((c) => c.userId === userId);
       if (!cart) {
         const newCartRes = await createCart(userId);
         cart = newCartRes.data;
       }
 
-      const res = await addCart({ 
-        cartId: cart.id, 
-        productId: product.id, 
-        variantId, 
-        quantity 
+      const res = await addCart({
+        cartId: cart.id,
+        productId: product.id,
+        variantId,
+        quantity,
       });
 
       if (res.errCode === 0) {
@@ -111,6 +115,6 @@ export const useProductDetail = (slug) => {
     loadingRecommended,
     addingCart,
     handleAddToCart,
-    user
+    user,
   };
 };

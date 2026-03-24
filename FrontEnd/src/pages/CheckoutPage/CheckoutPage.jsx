@@ -35,6 +35,11 @@ const CheckoutPage = () => {
     : cartItems.filter((item) => checkoutState.selectedIds.includes(item.id));
 
   const subtotal = selectedItems.reduce((acc, item) => {
+    // Use finalPrice from backend if available
+    if (item.finalPrice !== undefined) {
+      return acc + Number(item.finalPrice) * (item.quantity || 0);
+    }
+
     const basePrice = item.variant?.price != null ? Number(item.variant.price) : Number(item.product?.basePrice || item.product?.price || 0);
     const discount = Number(item.product?.discount || 0);
     const price = Math.round(discount > 0 ? basePrice * (1 - discount / 100) : basePrice);

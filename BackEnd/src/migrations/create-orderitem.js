@@ -24,8 +24,8 @@ module.exports = {
         onDelete: "SET NULL",
       },
       quantity: { type: Sequelize.INTEGER, allowNull: false, defaultValue: 1 },
-      price: { type: Sequelize.DECIMAL(10, 2), allowNull: false },
-      subtotal: { type: Sequelize.DECIMAL(10, 2), allowNull: false },
+      price: { type: Sequelize.DECIMAL(15, 2), allowNull: false },
+      subtotal: { type: Sequelize.DECIMAL(15, 2), allowNull: false },
       productName: { type: Sequelize.STRING, allowNull: false },
       image: { type: Sequelize.BLOB("long"), allowNull: true },
 
