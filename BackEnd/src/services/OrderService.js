@@ -2,11 +2,25 @@ const db = require("../models");
 const { Op } = require("sequelize");
 const { sendOrderDeliveredEmail } = require("./sendEmail");
 
-const getAllOrders = async (page = 1, limit = 10) => {
+const getAllOrders = async (page = 1, limit = 10, searchTerm = "", status = "") => {
   try {
     const offset = (page - 1) * limit;
+    const where = {};
+
+    if (status && status !== "all") {
+      where.status = status;
+    }
+
+    if (searchTerm) {
+      where[Op.or] = [
+        { orderCode: { [Op.like]: `%${searchTerm}%` } },
+        { "$user.username$": { [Op.like]: `%${searchTerm}%` } },
+        { "$user.phone$": { [Op.like]: `%${searchTerm}%` } },
+      ];
+    }
 
     const { count, rows: orders } = await db.Order.findAndCountAll({
+      where,
       include: [
         {
           model: db.User,
@@ -19,6 +33,7 @@ const getAllOrders = async (page = 1, limit = 10) => {
       order: [["createdAt", "DESC"]],
       limit,
       offset,
+      distinct: true, // Crucial for count when including associations
     });
 
     const totalPages = Math.ceil(count / limit);
@@ -641,12 +656,6 @@ const updatePaymentStatus = async (orderId, paymentStatus) => {
   const t = await db.sequelize.transaction();
   try {
     const order = await db.Order.findByPk(orderId, {
-      include: [
-        {
-          model: db.OrderItem,
-          as: "orderItems",
-        },
-      ],
       transaction: t,
       lock: t.LOCK.UPDATE,
     });
@@ -673,43 +682,25 @@ const updatePaymentStatus = async (orderId, paymentStatus) => {
     }
 
     // CHỈ XỬ LÝ KHI unpaid → paid
+    // NOTE: Stock already decremented at createOrder
     if (order.paymentStatus === "unpaid" && paymentStatus === "paid") {
-      for (const item of order.orderItems) {
-        const product = await db.Product.findByPk(item.productId, {
-          transaction: t,
-          lock: t.LOCK.UPDATE,
-        });
-
-        if (!product) {
-          await t.rollback();
-          return {
-            errCode: 3,
-            errMessage: `Product ${item.productId} not found`,
-          };
-        }
-
-        if (product.totalStock < item.quantity) {
-          await t.rollback();
-          return {
-            errCode: 4,
-            errMessage: `Sản phẩm ${product.name} không đủ tồn kho`,
-          };
-        }
-
-        product.totalStock -= item.quantity;
-        product.sold = (product.sold || 0) + item.quantity;
-        await product.save({ transaction: t });
-      }
-
       order.paymentStatus = "paid";
-      order.status = "confirmed";
+      // Nếu đơn hàng đang chờ xử lý, tự động chuyển sang xác nhận khi đã trả tiền
+      if (order.status === "pending") {
+        order.status = "confirmed";
+      }
       await order.save({ transaction: t });
     }
 
-    // refunded (để sau, không làm trong VNPay)
+    // refunded
     if (paymentStatus === "refunded") {
       order.paymentStatus = "refunded";
-      order.status = "cancelled";
+      // Chế độ hoàn tiền thường đi kèm hủy đơn nếu chưa giao
+      if (order.status !== "delivered") {
+        order.status = "cancelled";
+        // Hoàn tồn kho sẽ được xử lý trong logic cancel nếu cần, 
+        // nhưng thường updatePaymentStatus(refunded) gọi sau khi đơn đã cancel
+      }
       await order.save({ transaction: t });
     }
 

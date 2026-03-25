@@ -37,6 +37,7 @@ import {
 } from "../../../utils/StatusMap";
 import { StatusBadge } from "../../../utils/StatusBadge";
 import AppPagination from "../../../components/Pagination/Pagination";
+import { getImage } from "../../../utils/decodeImage";
 
 const TABS = [
   { id: "all", label: "Tất cả", color: "bg-slate-500" },
@@ -70,17 +71,16 @@ const OrderManage = () => {
     async (currentPage = 1, search = "", status = "all") => {
       setLoading(true);
       try {
-        // Nếu status là 'all', truyền chuỗi rỗng cho API (tùy backend của bạn xử lý)
         const filterStatus = status === "all" ? "" : status;
         const res = await getAllOrders(
           currentPage,
           limit,
           search.trim(),
-          filterStatus, // Giả định API nhận tham số status ở đây
+          filterStatus,
         );
         if (res?.errCode === 0) {
           setOrders(res.data || []);
-          setPage(res.pagination?.currentPage || currentPage);
+          setPage(res.pagination?.page || currentPage);
           setTotalPages(res.pagination?.totalPages || 1);
         } else {
           setOrders([]);
@@ -96,7 +96,6 @@ const OrderManage = () => {
     [limit],
   );
 
-  // Initial load and tab/search change
   useEffect(() => {
     const timer = setTimeout(() => {
       fetchOrders(1, searchTerm, activeTab);
@@ -178,19 +177,23 @@ const OrderManage = () => {
       </div>
 
       {/* Tabs System */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-4 scrollbar-hide">
+      <div className="flex items-center gap-3 overflow-x-auto pb-4 scrollbar-hide px-1">
          {TABS.map((tab) => (
            <button
              key={tab.id}
              onClick={() => { setActiveTab(tab.id); setPage(1); }}
-             className={`px-6 py-3 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all whitespace-nowrap border ${
+             className={`px-8 py-4 rounded-[2rem] text-[11px] font-black uppercase tracking-widest transition-all whitespace-nowrap border-2 flex items-center gap-3 ${
                activeTab === tab.id 
-                ? "bg-primary text-white border-primary shadow-lg shadow-primary/20 scale-105 z-10" 
-                : "bg-white text-slate-500 border-slate-100 hover:border-slate-300"
+                ? "bg-primary text-white border-primary shadow-xl shadow-primary/20 scale-105 z-10" 
+                : "bg-white text-slate-500 border-slate-100 hover:border-slate-300 hover:bg-slate-50"
              }`}
            >
              {tab.label}
-             {activeTab === tab.id && <span className="ml-2 px-1.5 py-0.5 bg-white/20 rounded-md">{orders.length}</span>}
+             <span className={`px-2 py-0.5 rounded-lg text-[9px] font-black ${
+               activeTab === tab.id ? "bg-white/20 text-white" : "bg-slate-100 text-slate-400"
+             }`}>
+               {activeTab === tab.id ? orders.length : "•"}
+             </span>
            </button>
          ))}
       </div>
@@ -217,11 +220,30 @@ const OrderManage = () => {
                 orders.map((order) => (
                   <tr key={order.id} className="hover:bg-slate-50/30 transition-colors group">
                     <td className="px-8 py-6">
-                       <div className="flex flex-col">
-                          <span className="text-sm font-black text-slate-900 group-hover:text-primary transition-colors uppercase tracking-wider">#DH{order.id}</span>
-                          <span className="text-[10px] font-bold text-slate-400 mt-1 flex items-center gap-1.5 uppercase">
-                             <FiCalendar /> {formatDate(order.createdAt)}
-                          </span>
+                       <div className="flex flex-col gap-3">
+                          <div className="flex flex-col">
+                             <span className="text-sm font-black text-slate-900 group-hover:text-primary transition-colors uppercase tracking-wider">#DH{order.id}</span>
+                             <span className="text-[10px] font-bold text-slate-400 mt-1 flex items-center gap-1.5 uppercase">
+                                <FiCalendar /> {formatDate(order.createdAt)}
+                             </span>
+                          </div>
+                          {/* Mini Product Thumbnails */}
+                          <div className="flex -space-x-2 overflow-hidden">
+                             {order.orderItems?.slice(0, 3).map((item, idx) => (
+                               <div key={idx} className="inline-block h-8 w-8 rounded-lg ring-2 ring-white bg-slate-50 border border-slate-100 overflow-hidden">
+                                  <img 
+                                    src={getImage(item.image)} 
+                                    alt="product" 
+                                    className="h-full w-full object-contain"
+                                  />
+                               </div>
+                             ))}
+                             {order.orderItems?.length > 3 && (
+                               <div className="flex items-center justify-center h-8 w-8 rounded-lg ring-2 ring-white bg-slate-100 text-[10px] font-black text-slate-400">
+                                  +{order.orderItems.length - 3}
+                               </div>
+                             )}
+                          </div>
                        </div>
                     </td>
                     <td className="px-8 py-6">

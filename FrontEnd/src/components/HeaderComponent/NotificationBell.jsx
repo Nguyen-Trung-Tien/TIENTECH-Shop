@@ -3,9 +3,10 @@ import { FiBell, FiPackage, FiInfo, FiCheck } from "react-icons/fi";
 import { getNotificationsApi, markAsReadApi, markAllReadApi } from "../../api/notificationApi";
 import { io } from "socket.io-client";
 import { useSelector } from "react-redux";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const NotificationBell = () => {
+  const navigate = useNavigate();
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -15,7 +16,7 @@ const NotificationBell = () => {
   const fetchNotifications = async () => {
     if (!user) return;
     try {
-      const res = await getNotificationsApi(1, 5);
+      const res = await getNotificationsApi(1, 10);
       if (res.errCode === 0) {
         setNotifications(res.data);
         setUnreadCount(res.unreadCount);
@@ -32,14 +33,14 @@ const NotificationBell = () => {
     const socket = io(import.meta.env.VITE_SOCKET_URL || "http://localhost:8080");
     
     if (user) {
+      socket.emit("join", `user_${user.id}`);
       if (user.role === 'admin') {
         socket.emit("join_admin");
         socket.on("new_order", () => fetchNotifications());
-      } else {
-        socket.on(`order_status_updated`, (data) => {
-          fetchNotifications();
-        });
-      }
+      } 
+      
+      socket.on("order_status_updated", () => fetchNotifications());
+      socket.on("notification", () => fetchNotifications());
     }
 
     return () => socket.disconnect();
@@ -55,14 +56,28 @@ const NotificationBell = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleMarkRead = async (id) => {
-    await markAsReadApi(id);
-    fetchNotifications();
+  const handleNotificationClick = async (n) => {
+    if (!n.isRead) {
+      try {
+        await markAsReadApi(n.id);
+        fetchNotifications();
+      } catch (err) {
+        console.error("Error marking as read:", err);
+      }
+    }
+    setShowDropdown(false);
+    if (n.link) {
+      navigate(n.link);
+    }
   };
 
   const handleMarkAllRead = async () => {
-    await markAllReadApi();
-    fetchNotifications();
+    try {
+      await markAllReadApi();
+      fetchNotifications();
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   if (!user) return null;
@@ -98,7 +113,7 @@ const NotificationBell = () => {
               notifications.map((n) => (
                 <div 
                   key={n.id}
-                  onClick={() => !n.isRead && handleMarkRead(n.id)}
+                  onClick={() => handleNotificationClick(n)}
                   className={`p-4 border-b border-surface-50 dark:border-dark-border flex gap-3 cursor-pointer hover:bg-surface-50 dark:hover:bg-dark-bg transition-colors ${!n.isRead ? "bg-primary/5 dark:bg-brand/5" : ""}`}
                 >
                   <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${n.type === 'order' ? "bg-sky-100 text-sky-600" : "bg-primary/10 text-primary"}`}>

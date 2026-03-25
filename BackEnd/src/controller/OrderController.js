@@ -5,8 +5,10 @@ const handleGetAllOrders = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
+    const searchTerm = req.query.searchTerm || "";
+    const status = req.query.status || "";
 
-    const result = await OrderService.getAllOrders(page, limit);
+    const result = await OrderService.getAllOrders(page, limit, searchTerm, status);
     return res.status(200).json(result);
   } catch (e) {
     console.error(e);

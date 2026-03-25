@@ -16,8 +16,9 @@ import {
   FiRotateCcw,
   FiX,
 } from "react-icons/fi";
-import { getOrderById } from "../../api/orderApi";
+import { getOrderById, updateOrderStatus } from "../../api/orderApi";
 import { requestReturn } from "../../api/orderItemApi";
+import { createVnpayPaymentApi } from "../../api/paymentApi";
 import { getImage } from "../../utils/decodeImage";
 import { StatusBadge } from "../../utils/StatusBadge";
 import {
@@ -46,6 +47,7 @@ const initialState = {
   order: null,
   loading: false,
   showReturnModal: false,
+  showCancelModal: false,
   selectedItems: [],
   returnReason: "",
   submitting: false,
@@ -66,6 +68,10 @@ const reducer = (state, action) => {
       };
     case "CLOSE_RETURN_MODAL":
       return { ...state, showReturnModal: false };
+    case "OPEN_CANCEL_MODAL":
+      return { ...state, showCancelModal: true };
+    case "CLOSE_CANCEL_MODAL":
+      return { ...state, showCancelModal: false };
     case "TOGGLE_ITEM":
       return {
         ...state,
@@ -89,10 +95,51 @@ const OrderDetail = () => {
     order,
     loading,
     showReturnModal,
+    showCancelModal,
     selectedItems,
     returnReason,
     submitting,
   } = state;
+
+  const handleCancelOrder = async () => {
+    try {
+      dispatch({ type: "SET_SUBMITTING", payload: true });
+      const res = await updateOrderStatus(id, "cancelled");
+      if (res.errCode === 0) {
+        toast.success("Hủy đơn hàng thành công");
+        dispatch({ type: "CLOSE_CANCEL_MODAL" });
+        fetchOrderDetail();
+      } else {
+        toast.error(res.errMessage);
+      }
+    } catch (error) {
+      toast.error("Lỗi khi hủy đơn hàng");
+    } finally {
+      dispatch({ type: "SET_SUBMITTING", payload: false });
+    }
+  };
+
+  const handleRepay = async () => {
+    if (!order?.orderCode || !order?.totalPrice) {
+      toast.error("Thông tin đơn hàng không hợp lệ để thanh toán lại!");
+      return;
+    }
+
+    try {
+      const res = await createVnpayPaymentApi({
+        amount: Number(order.totalPrice),
+        orderCode: order.orderCode,
+      });
+      if (res?.errCode === 0 && res.data?.paymentUrl) {
+        window.location.href = res.data.paymentUrl;
+      } else {
+        toast.error(res?.message || "Không thể tạo liên kết thanh toán. Vui lòng thử lại!");
+      }
+    } catch (err) {
+      console.error("Repay error:", err);
+      toast.error("Lỗi kết nối máy chủ hoặc yêu cầu không hợp lệ");
+    }
+  };
 
   const fetchOrderDetail = useCallback(async () => {
     try {
@@ -377,6 +424,15 @@ const OrderDetail = () => {
                     Miễn phí
                   </span>
                 </div>
+
+                {order.discountAmount > 0 && (
+                  <div className="flex justify-between items-center text-rose-500 text-sm font-medium">
+                    <span>Giảm giá {order.voucherCode ? `(${order.voucherCode})` : ""}</span>
+                    <span className="font-bold">
+                      -{Number(order.discountAmount).toLocaleString("vi-VN")} ₫
+                    </span>
+                  </div>
+                )}
               </div>
 
               <div className="pt-6 border-t border-gray-200 dark:border-gray-800">
@@ -387,10 +443,34 @@ const OrderDetail = () => {
                   {Number(order.totalPrice).toLocaleString("vi-VN")} ₫
                 </div>
               </div>
+
+              {order.paymentStatus === "unpaid" && order.paymentMethod === "VNPAY" && order.status !== "cancelled" && (
+                <Button
+                  variant="primary"
+                  className="w-full mt-6 shadow-lg shadow-primary/20"
+                  size="lg"
+                  icon={FiCreditCard}
+                  onClick={handleRepay}
+                >
+                  THANH TOÁN NGAY
+                </Button>
+              )}
             </div>
 
             {/* Actions */}
             <div className="space-y-3">
+              {order.status === "pending" && (
+                <Button
+                  variant="danger"
+                  className="w-full"
+                  size="lg"
+                  icon={FiXCircle}
+                  onClick={() => dispatch({ type: "OPEN_CANCEL_MODAL" })}
+                >
+                  HỦY ĐƠN HÀNG
+                </Button>
+              )}
+
               {order.status === "delivered" &&
                 order.orderItems?.some((i) => i.returnStatus === "none") && (
                   <Button
@@ -417,6 +497,7 @@ const OrderDetail = () => {
                 variant="secondary"
                 className="w-full"
                 size="lg"
+                icon={FiPackage}
                 onClick={() => window.print()}
               >
                 IN HÓA ĐƠN
@@ -534,6 +615,55 @@ const OrderDetail = () => {
                     GỬI YÊU CẦU
                   </Button>
                 </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Cancel Order Confirmation Modal */}
+      <AnimatePresence>
+        {showCancelModal && (
+          <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => dispatch({ type: "CLOSE_CANCEL_MODAL" })}
+              className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative w-full max-w-md bg-white rounded-[32px] shadow-2xl overflow-hidden p-8 text-center"
+            >
+              <div className="w-20 h-20 bg-rose-50 text-rose-500 rounded-3xl flex items-center justify-center text-3xl mx-auto mb-6">
+                <FiXCircle />
+              </div>
+              <h3 className="text-2xl font-display font-bold text-surface-900 mb-4">
+                Xác nhận Hủy đơn hàng?
+              </h3>
+              <p className="text-surface-500 mb-10 leading-relaxed">
+                Bạn có chắc chắn muốn hủy đơn hàng <strong>#DH{order.id}</strong> không? 
+                Hành động này không thể hoàn tác.
+              </p>
+              <div className="flex gap-4">
+                <Button
+                  variant="secondary"
+                  className="flex-1"
+                  onClick={() => dispatch({ type: "CLOSE_CANCEL_MODAL" })}
+                >
+                  QUAY LẠI
+                </Button>
+                <Button
+                  variant="danger"
+                  className="flex-1"
+                  loading={submitting}
+                  onClick={handleCancelOrder}
+                >
+                  XÁC NHẬN HỦY
+                </Button>
               </div>
             </motion.div>
           </div>

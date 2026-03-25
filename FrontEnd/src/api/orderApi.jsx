@@ -1,9 +1,9 @@
 import axiosClient from "../utils/axiosClient";
 
-export const getAllOrders = async (page = 1, limit = 10) => {
+export const getAllOrders = async (page = 1, limit = 10, searchTerm = "", status = "") => {
   try {
     const res = await axiosClient.get("/order/get-all-orders", {
-      params: { page, limit },
+      params: { page, limit, searchTerm, status },
     });
     return res;
   } catch (error) {

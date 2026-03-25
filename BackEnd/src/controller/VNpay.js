@@ -25,10 +25,10 @@ const handleCreateVnpayPayment = async (req, res) => {
   try {
     const { amount, orderCode } = req.body;
 
-    if (!amount || !orderCode) {
+    if (!orderCode) {
       return res.status(400).json({
         errCode: 1,
-        message: "amount & orderCode are required",
+        message: "orderCode is required",
       });
     }
 
@@ -37,11 +37,20 @@ const handleCreateVnpayPayment = async (req, res) => {
     if (orderResult.errCode !== 0 || !orderResult.data) {
       return res.status(404).json({
         errCode: 2,
-        message: "Order not found",
+        message: "Order not found or already paid",
       });
     }
 
-    const secureAmount = orderResult.data.totalPrice;
+    const order = orderResult.data;
+    // Ưu tiên dùng giá từ DB để bảo mật, nếu không có thì dùng amount từ client gửi lên (ép kiểu)
+    const secureAmount = order.totalPrice || amount;
+
+    if (!secureAmount) {
+      return res.status(400).json({
+        errCode: 3,
+        message: "Payment amount is missing",
+      });
+    }
 
     let ipAddr =
       req.headers["x-forwarded-for"] || req.socket.remoteAddress || "127.0.0.1";
