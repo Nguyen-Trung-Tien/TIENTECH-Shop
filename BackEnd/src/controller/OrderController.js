@@ -7,8 +7,10 @@ const handleGetAllOrders = async (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
     const searchTerm = req.query.searchTerm || "";
     const status = req.query.status || "";
+    const isReturn = req.query.isReturn === "true";
+    const isCancelRequested = req.query.isCancelRequested === "true";
 
-    const result = await OrderService.getAllOrders(page, limit, searchTerm, status);
+    const result = await OrderService.getAllOrders(page, limit, searchTerm, status, isReturn, isCancelRequested);
     return res.status(200).json(result);
   } catch (e) {
     console.error(e);
@@ -68,8 +70,8 @@ const handleCreateOrder = async (req, res) => {
 const handleUpdateOrderStatus = async (req, res) => {
   try {
     const { id } = req.params;
-    const { status } = req.body;
-    const result = await OrderService.updateOrderStatus(id, status, req.user);
+    const { status, reason } = req.body;
+    const result = await OrderService.updateOrderStatus(id, status, req.user, reason);
     
     if (result.errCode === 0) {
       const io = req.app.get("io");
@@ -136,6 +138,7 @@ const handleGetOrdersByUserId = async (req, res) => {
     const userId = req.params.userId;
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
+    const status = req.query.status || "all";
 
     if (req.user.role !== "admin" && String(req.user.id) !== String(userId)) {
       return res.status(403).json({
@@ -144,7 +147,7 @@ const handleGetOrdersByUserId = async (req, res) => {
       });
     }
 
-    const result = await OrderService.getOrdersByUserId(userId, page, limit);
+    const result = await OrderService.getOrdersByUserId(userId, page, limit, status);
     return res.status(200).json(result);
   } catch (e) {
     console.error(e);

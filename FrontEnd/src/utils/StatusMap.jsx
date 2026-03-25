@@ -5,6 +5,7 @@
   shipped: { label: "Đang giao", variant: "primary" },
   delivered: { label: "Đã giao", variant: "success" },
   cancelled: { label: "Đã hủy", variant: "danger" },
+  cancel_requested: { label: "Yêu cầu hủy", variant: "warning" },
 };
 
 export const paymentStatusMap = {

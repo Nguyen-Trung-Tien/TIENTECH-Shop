@@ -1,9 +1,9 @@
 import axiosClient from "../utils/axiosClient";
 
-export const getAllOrders = async (page = 1, limit = 10, searchTerm = "", status = "") => {
+export const getAllOrders = async (page = 1, limit = 10, searchTerm = "", status = "", isReturn = false, isCancelRequested = false) => {
   try {
     const res = await axiosClient.get("/order/get-all-orders", {
-      params: { page, limit, searchTerm, status },
+      params: { page, limit, searchTerm, status, isReturn, isCancelRequested },
     });
     return res;
   } catch (error) {
@@ -32,11 +32,11 @@ export const createOrder = async (data) => {
   }
 };
 
-export const updateOrderStatus = async (orderId, status) => {
+export const updateOrderStatus = async (orderId, status, reason = "") => {
   try {
     const res = await axiosClient.put(
       `/order/update-status-order/${orderId}/status`,
-      { status }
+      { status, reason }
     );
     return res;
   } catch (error) {

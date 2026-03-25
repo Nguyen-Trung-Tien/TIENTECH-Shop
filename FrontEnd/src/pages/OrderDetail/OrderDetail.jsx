@@ -50,6 +50,7 @@ const initialState = {
   showCancelModal: false,
   selectedItems: [],
   returnReason: "",
+  cancelReason: "",
   submitting: false,
 };
 
@@ -69,7 +70,7 @@ const reducer = (state, action) => {
     case "CLOSE_RETURN_MODAL":
       return { ...state, showReturnModal: false };
     case "OPEN_CANCEL_MODAL":
-      return { ...state, showCancelModal: true };
+      return { ...state, showCancelModal: true, cancelReason: "" };
     case "CLOSE_CANCEL_MODAL":
       return { ...state, showCancelModal: false };
     case "TOGGLE_ITEM":
@@ -81,6 +82,8 @@ const reducer = (state, action) => {
       };
     case "SET_RETURN_REASON":
       return { ...state, returnReason: action.payload };
+    case "SET_CANCEL_REASON":
+      return { ...state, cancelReason: action.payload };
     case "SET_SUBMITTING":
       return { ...state, submitting: action.payload };
     default:
@@ -98,22 +101,27 @@ const OrderDetail = () => {
     showCancelModal,
     selectedItems,
     returnReason,
+    cancelReason,
     submitting,
   } = state;
 
   const handleCancelOrder = async () => {
+    if (!cancelReason.trim()) {
+      return toast.warning("Vui lòng nhập lý do hủy đơn");
+    }
     try {
       dispatch({ type: "SET_SUBMITTING", payload: true });
-      const res = await updateOrderStatus(id, "cancelled");
+      // Gửi yêu cầu hủy kèm lý do
+      const res = await updateOrderStatus(id, "cancel_requested", cancelReason);
       if (res.errCode === 0) {
-        toast.success("Hủy đơn hàng thành công");
+        toast.success("Đã gửi yêu cầu hủy đơn hàng. Vui lòng chờ Admin duyệt.");
         dispatch({ type: "CLOSE_CANCEL_MODAL" });
         fetchOrderDetail();
       } else {
         toast.error(res.errMessage);
       }
     } catch (error) {
-      toast.error("Lỗi khi hủy đơn hàng");
+      toast.error("Lỗi khi gửi yêu cầu hủy đơn");
     } finally {
       dispatch({ type: "SET_SUBMITTING", payload: false });
     }
@@ -642,12 +650,25 @@ const OrderDetail = () => {
                 <FiXCircle />
               </div>
               <h3 className="text-2xl font-display font-bold text-surface-900 mb-4">
-                Xác nhận Hủy đơn hàng?
+                Yêu cầu Hủy đơn hàng?
               </h3>
-              <p className="text-surface-500 mb-10 leading-relaxed">
-                Bạn có chắc chắn muốn hủy đơn hàng <strong>#DH{order.id}</strong> không? 
-                Hành động này không thể hoàn tác.
+              <p className="text-surface-500 mb-6 leading-relaxed">
+                Bạn có chắc chắn muốn gửi yêu cầu hủy đơn hàng <strong>#DH{order.id}</strong> không?
               </p>
+              
+              <div className="mb-8 text-left">
+                <label className="text-[11px] font-black text-surface-400 uppercase tracking-widest mb-2 block">
+                  Lý do hủy đơn
+                </label>
+                <textarea
+                  rows={3}
+                  className="w-full bg-surface-50 border border-surface-200 rounded-2xl p-4 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                  placeholder="Vui lòng nhập lý do hủy đơn hàng..."
+                  value={cancelReason}
+                  onChange={(e) => dispatch({ type: "SET_CANCEL_REASON", payload: e.target.value })}
+                />
+              </div>
+
               <div className="flex gap-4">
                 <Button
                   variant="secondary"
@@ -662,7 +683,7 @@ const OrderDetail = () => {
                   loading={submitting}
                   onClick={handleCancelOrder}
                 >
-                  XÁC NHẬN HỦY
+                  GỬI YÊU CẦU HỦY
                 </Button>
               </div>
             </motion.div>

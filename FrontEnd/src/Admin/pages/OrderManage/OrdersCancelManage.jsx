@@ -7,21 +7,17 @@ import {
   FiUser,
   FiDollarSign,
   FiRefreshCw,
-  FiRotateCw,
   FiEye,
-  FiPackage,
 } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { motion, AnimatePresence } from "framer-motion";
-import { getAllOrders } from "../../../api/orderApi";
-import { processReturn } from "../../../api/orderItemApi";
+import { getAllOrders, updateOrderStatus } from "../../../api/orderApi";
 import AppPagination from "../../../components/Pagination/Pagination";
-import { paymentStatusMap } from "../../../utils/StatusMap";
+import { statusMap, paymentStatusMap } from "../../../utils/StatusMap";
 import { StatusBadge } from "../../../utils/StatusBadge";
-import { getImage } from "../../../utils/decodeImage";
 
-const OrdersReturnPage = () => {
+const OrdersCancelManage = () => {
   const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -37,7 +33,7 @@ const OrdersReturnPage = () => {
     async (currentPage = 1) => {
       setLoading(true);
       try {
-        const res = await getAllOrders(currentPage, limit, "", "", true, false);
+        const res = await getAllOrders(currentPage, limit, "", "", false, true);
         if (res.errCode === 0) {
           setOrders(res.data || []);
           setTotalPages(res.pagination?.totalPages || 1);
@@ -45,7 +41,7 @@ const OrdersReturnPage = () => {
         }
       } catch (err) {
         console.error(err);
-        toast.error("Lỗi tải danh sách yêu cầu trả hàng");
+        toast.error("Lỗi tải danh sách yêu cầu hủy");
       } finally {
         setLoading(false);
       }
@@ -57,26 +53,24 @@ const OrdersReturnPage = () => {
     fetchOrders(1);
   }, [fetchOrders]);
 
-  const handleProcessReturnAction = async () => {
+  const handleProcessCancel = async () => {
     if (!selectedOrder) return;
     const { approve } = confirmModal;
     setLoadingAction(true);
     try {
-      const finalStatus = approve ? "completed" : "rejected";
-      const itemsToProcess = selectedOrder.orderItems.filter(
-        (i) => i.returnStatus === "requested",
-      );
+      const finalStatus = approve ? "cancelled" : "pending";
+      const res = await updateOrderStatus(selectedOrder.id, finalStatus);
       
-      for (let item of itemsToProcess) {
-        await processReturn(item.id, finalStatus);
+      if (res.errCode === 0) {
+        toast.success(approve ? "Đã chấp nhận hủy đơn!" : "Đã từ chối yêu cầu hủy!");
+        fetchOrders(page);
+        setModalShow(false);
+        setConfirmModal({ show: false, approve: true });
+      } else {
+        toast.error(res.errMessage || "Lỗi xử lý");
       }
-      
-      toast.success(approve ? "Đã duyệt và hoàn tất trả hàng (Kho đã cập nhật)!" : "Đã từ chối yêu cầu!");
-      fetchOrders(page);
-      setModalShow(false);
-      setConfirmModal({ show: false, approve: true });
     } catch (err) {
-      toast.error("Lỗi xử lý trả hàng");
+      toast.error("Lỗi kết nối máy chủ");
     } finally {
       setLoadingAction(false);
     }
@@ -87,8 +81,8 @@ const OrdersReturnPage = () => {
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900">Quản lý trả hàng</h1>
-            <p className="text-slate-500 text-sm mt-1">Duyệt và xử lý các yêu cầu trả hàng từ khách hàng.</p>
+            <h1 className="text-2xl font-bold text-slate-900">Duyệt yêu cầu hủy đơn</h1>
+            <p className="text-slate-500 text-sm mt-1">Xử lý các yêu cầu hủy đơn hàng từ khách hàng.</p>
           </div>
           <button 
             onClick={() => fetchOrders(page)}
@@ -107,10 +101,10 @@ const OrdersReturnPage = () => {
         ) : orders.length === 0 ? (
           <div className="bg-white rounded-3xl border border-slate-200 p-20 text-center shadow-sm">
              <div className="w-20 h-20 bg-slate-50 rounded-3xl flex items-center justify-center mx-auto mb-6 text-slate-300">
-                <FiPackage className="text-4xl" />
+                <FiCheckCircle className="text-4xl" />
              </div>
-             <h3 className="text-xl font-bold text-slate-900 mb-2">Không có yêu cầu trả hàng</h3>
-             <p className="text-slate-500">Tất cả các yêu cầu đã được xử lý xong.</p>
+             <h3 className="text-xl font-bold text-slate-900 mb-2">Không có yêu cầu nào</h3>
+             <p className="text-slate-500">Tất cả các yêu cầu hủy đơn đã được xử lý xong.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -136,16 +130,13 @@ const OrdersReturnPage = () => {
                       </div>
                    </div>
 
-                   <div className="space-y-2">
-                      {order.orderItems?.map(item => (
-                        <div key={item.id} className="flex items-center gap-2 p-2 bg-slate-50 rounded-lg border border-slate-100">
-                           <img src={getImage(item.image)} className="w-8 h-8 object-contain" alt="" />
-                           <div className="min-w-0 flex-1">
-                              <p className="text-[11px] font-bold text-slate-900 truncate">{item.productName}</p>
-                              <p className="text-[10px] text-slate-500 italic truncate">Lý do: {item.returnReason || "Không có"}</p>
-                           </div>
-                        </div>
-                      ))}
+                   <div className="bg-rose-50 border border-rose-100 rounded-xl p-4">
+                      <p className="text-[10px] font-bold text-rose-400 uppercase tracking-wider mb-1 flex items-center gap-1">
+                        <FiAlertTriangle /> Lý do hủy từ khách
+                      </p>
+                      <p className="text-sm text-rose-700 font-medium italic line-clamp-3">
+                        "{order.cancelReason || "Không có lý do chi tiết"}"
+                      </p>
                    </div>
 
                    <div className="flex items-center justify-between text-sm">
@@ -160,12 +151,12 @@ const OrdersReturnPage = () => {
                    </div>
                 </div>
 
-                <div className="p-5 pt-0 mt-auto">
+                <div className="p-5 pt-0 mt-auto grid grid-cols-2 gap-3">
                    <button 
                     onClick={() => { setSelectedOrder(order); setModalShow(true); }}
-                    className="w-full h-10 bg-primary text-white rounded-xl text-xs font-bold hover:bg-slate-800 transition-all shadow-lg shadow-primary/10 flex items-center justify-center gap-2"
+                    className="col-span-2 h-10 bg-slate-900 text-white rounded-xl text-xs font-bold hover:bg-slate-800 transition-all shadow-lg shadow-slate-900/10 flex items-center justify-center gap-2 mb-2"
                    >
-                     <FiEye /> Xem & Xử lý ngay
+                     <FiEye /> Xem chi tiết & Xử lý
                    </button>
                 </div>
               </motion.div>
@@ -185,7 +176,7 @@ const OrdersReturnPage = () => {
         )}
       </div>
 
-      {/* Modal Xử lý Trả hàng */}
+      {/* Modal Xử lý */}
       <AnimatePresence>
         {modalShow && selectedOrder && (
           <div className="fixed inset-0 z-[1100] flex items-center justify-center p-4">
@@ -200,47 +191,34 @@ const OrdersReturnPage = () => {
               initial={{ scale: 0.95, opacity: 0 }} 
               animate={{ scale: 1, opacity: 1 }} 
               exit={{ scale: 0.95, opacity: 0 }} 
-              className="relative bg-white rounded-3xl shadow-2xl max-w-lg w-full overflow-hidden border border-slate-100"
+              className="relative bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden border border-slate-100"
             >
-               <div className="p-8">
-                  <div className="w-16 h-16 bg-primary/10 text-primary rounded-2xl flex items-center justify-center text-3xl mx-auto mb-6">
-                    <FiRotateCw />
+               <div className="p-8 text-center">
+                  <div className="w-16 h-16 bg-rose-50 text-rose-500 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-6 border border-rose-100">
+                    <FiAlertTriangle />
                   </div>
-                  <h3 className="text-xl font-bold text-center text-slate-900 mb-2">Chi tiết yêu cầu trả hàng</h3>
-                  <p className="text-slate-500 text-center text-sm mb-6">
-                    Đơn hàng <span className="font-bold text-slate-900">#{selectedOrder.orderCode}</span>
+                  <h3 className="text-xl font-bold text-slate-900 mb-2">Xác nhận yêu cầu hủy</h3>
+                  <p className="text-slate-500 text-sm mb-6 px-4">
+                    Bạn đang xử lý yêu cầu hủy cho đơn hàng <span className="font-bold text-slate-900">#{selectedOrder.orderCode}</span>.
                   </p>
                   
-                  <div className="space-y-3 mb-8 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
-                    {selectedOrder.orderItems.map(item => (
-                      <div key={item.id} className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                        <div className="flex gap-4 items-center mb-2">
-                           <img src={getImage(item.image)} className="w-12 h-12 object-contain bg-white rounded-lg p-1 border" alt="" />
-                           <div className="min-w-0">
-                              <p className="text-sm font-bold text-slate-900 truncate">{item.productName}</p>
-                              <p className="text-xs text-slate-500 font-bold">Số lượng: {item.quantity}</p>
-                           </div>
-                        </div>
-                        <div className="pt-2 border-t border-slate-200">
-                           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Lý do trả hàng</p>
-                           <p className="text-sm text-slate-700 font-medium">"{item.returnReason || "Khách hàng không để lại lý do chi tiết"}"</p>
-                        </div>
-                      </div>
-                    ))}
+                  <div className="bg-slate-50 rounded-2xl p-4 text-left mb-8 border border-slate-100">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Lý do của khách hàng</p>
+                    <p className="text-sm text-slate-700 font-medium">"{selectedOrder.cancelReason || "Không có lý do chi tiết"}"</p>
                   </div>
 
                   <div className="flex gap-3">
                     <button 
                       onClick={() => setConfirmModal({ show: true, approve: false })}
-                      className="flex-1 h-12 bg-rose-50 text-rose-600 rounded-2xl text-xs font-bold hover:bg-rose-100 transition-all flex items-center justify-center gap-2 border border-rose-100"
+                      className="flex-1 h-12 bg-slate-100 text-slate-600 rounded-2xl text-xs font-bold hover:bg-slate-200 transition-all flex items-center justify-center gap-2"
                     >
-                      <FiXCircle /> TỪ CHỐI
+                      <FiXCircle /> TỪ CHỐI HỦY
                     </button>
                     <button 
                       onClick={() => setConfirmModal({ show: true, approve: true })}
-                      className="flex-1 h-12 bg-primary text-white rounded-2xl text-xs font-bold hover:bg-slate-800 transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2"
+                      className="flex-1 h-12 bg-rose-500 text-white rounded-2xl text-xs font-bold hover:bg-rose-600 transition-all shadow-lg shadow-rose-500/20 flex items-center justify-center gap-2"
                     >
-                      <FiCheckCircle /> DUYỆT TRẢ HÀNG
+                      <FiCheckCircle /> CHẤP NHẬN HỦY
                     </button>
                   </div>
                </div>
@@ -249,7 +227,7 @@ const OrdersReturnPage = () => {
         )}
       </AnimatePresence>
 
-      {/* Pop-up xác nhận cuối cùng cho Trả hàng */}
+      {/* Pop-up xác nhận cuối cùng */}
       <AnimatePresence>
         {confirmModal.show && (
           <div className="fixed inset-0 z-[1200] flex items-center justify-center p-4 bg-black/20 backdrop-blur-[1px]">
@@ -259,11 +237,9 @@ const OrdersReturnPage = () => {
               exit={{ scale: 0.9, opacity: 0 }}
               className="bg-white p-6 rounded-2xl shadow-xl max-w-xs w-full text-center border border-slate-100"
             >
-              <div className="w-12 h-12 bg-amber-50 text-amber-500 rounded-full flex items-center justify-center text-2xl mx-auto mb-4"><FiAlertTriangle /></div>
-              <h4 className="text-lg font-bold text-slate-900 mb-2">Xác nhận thao tác?</h4>
+              <h4 className="text-lg font-bold text-slate-900 mb-2">Bạn có chắc chắn?</h4>
               <p className="text-sm text-slate-500 mb-6">
-                Bạn có chắc muốn {confirmModal.approve ? "XÁC NHẬN" : "TỪ CHỐI"} yêu cầu trả hàng này? 
-                {confirmModal.approve && " Kho hàng sẽ tự động được cộng lại."}
+                Hành động này sẽ {confirmModal.approve ? "HỦY" : "TIẾP TỤC"} đơn hàng này.
               </p>
               <div className="flex gap-2">
                 <button 
@@ -274,8 +250,8 @@ const OrdersReturnPage = () => {
                 </button>
                 <button 
                   disabled={loadingAction}
-                  onClick={handleProcessReturnAction}
-                  className={`flex-1 py-2 text-white rounded-xl text-xs font-bold ${confirmModal.approve ? "bg-primary" : "bg-rose-500"}`}
+                  onClick={handleProcessCancel}
+                  className={`flex-1 py-2 text-white rounded-xl text-xs font-bold ${confirmModal.approve ? "bg-rose-500" : "bg-primary"}`}
                 >
                   {loadingAction ? "Đang xử lý..." : "Xác nhận"}
                 </button>
@@ -288,4 +264,4 @@ const OrdersReturnPage = () => {
   );
 };
 
-export default OrdersReturnPage;
+export default OrdersCancelManage;

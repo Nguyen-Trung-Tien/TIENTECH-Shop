@@ -170,6 +170,10 @@ const requestReturn = async (id, reason) => {
       return { errCode: 1, errMessage: "OrderItem not found" };
     }
 
+    if (item.returnStatus !== "none") {
+      return { errCode: 2, errMessage: "Return already requested for this item" };
+    }
+
     item.returnStatus = "requested";
     item.returnReason = reason;
     item.returnRequestedAt = new Date();
@@ -183,22 +187,49 @@ const requestReturn = async (id, reason) => {
 };
 
 const processReturn = async (id, status) => {
+  const t = await db.sequelize.transaction();
   try {
-    const item = await db.OrderItem.findByPk(id);
+    const item = await db.OrderItem.findByPk(id, { transaction: t });
     if (!item) {
+      await t.rollback();
       return { errCode: 1, errMessage: "OrderItem not found" };
     }
 
-    if (!["approved", "rejected", "completed"].includes(status)) {
+    const validStatuses = ["approved", "rejected", "completed"];
+    if (!validStatuses.includes(status)) {
+      await t.rollback();
       return { errCode: 2, errMessage: "Invalid return status" };
     }
 
+    const prevStatus = item.returnStatus;
     item.returnStatus = status;
     item.returnProcessedAt = new Date();
-    await item.save();
+    await item.save({ transaction: t });
 
+    // If return is completed, restore stock and decrement sold count
+    if (status === "completed" && prevStatus !== "completed") {
+      const product = await db.Product.findByPk(item.productId, { transaction: t });
+      if (product) {
+        // Restore product stock and sold count
+        product.totalStock = (product.totalStock || 0) + item.quantity;
+        product.sold = Math.max(0, (product.sold || 0) - item.quantity);
+        await product.save({ transaction: t });
+      }
+
+      if (item.variantId) {
+        const variant = await db.ProductVariant.findByPk(item.variantId, { transaction: t });
+        if (variant) {
+          // Restore variant stock
+          variant.stock = (variant.stock || 0) + item.quantity;
+          await variant.save({ transaction: t });
+        }
+      }
+    }
+
+    await t.commit();
     return { errCode: 0, errMessage: "Return processed", data: item };
   } catch (e) {
+    await t.rollback();
     console.error("Error processReturn:", e);
     throw e;
   }

@@ -2,13 +2,17 @@ const db = require("../models");
 const { Op } = require("sequelize");
 const { sendOrderDeliveredEmail } = require("./sendEmail");
 
-const getAllOrders = async (page = 1, limit = 10, searchTerm = "", status = "") => {
+const getAllOrders = async (page = 1, limit = 10, searchTerm = "", status = "", isReturn = false, isCancelRequested = false) => {
   try {
     const offset = (page - 1) * limit;
     const where = {};
 
     if (status && status !== "all") {
       where.status = status;
+    }
+
+    if (isCancelRequested) {
+      where.status = "cancel_requested";
     }
 
     if (searchTerm) {
@@ -19,17 +23,72 @@ const getAllOrders = async (page = 1, limit = 10, searchTerm = "", status = "") 
       ];
     }
 
+    const include = [
+      {
+        model: db.User,
+        as: "user",
+        attributes: ["id", "username", "email", "phone"],
+      },
+      { 
+        model: db.OrderItem, 
+        as: "orderItems", 
+        separate: true,
+        where: isReturn ? { returnStatus: "requested" } : {}
+      },
+      { model: db.Payment, as: "payment" },
+    ];
+
+    if (isReturn) {
+      // Khi lọc trả hàng, ta chỉ lấy những đơn có ít nhất 1 item đang yêu cầu trả
+      const { count, rows: orders } = await db.Order.findAndCountAll({
+        where,
+        include: [
+          {
+            model: db.User,
+            as: "user",
+            attributes: ["id", "username", "email", "phone"],
+          },
+          { 
+            model: db.OrderItem, 
+            as: "orderItems",
+            where: { returnStatus: "requested" },
+            required: true,
+            include: [
+              {
+                model: db.Product,
+                as: "product",
+                attributes: ["id", "name", "slug", ["basePrice", "price"]],
+                include: [{ model: db.ProductImage, as: "images", attributes: ["imageUrl", "isPrimary"] }],
+              },
+            ],
+          },
+          { model: db.Payment, as: "payment" },
+        ],
+        order: [["createdAt", "DESC"]],
+        limit,
+        offset,
+        distinct: true,
+        subQuery: false,
+      });
+
+      const totalPages = Math.ceil(count / limit);
+
+      return {
+        errCode: 0,
+        errMessage: "OK",
+        data: orders,
+        pagination: {
+          total: count,
+          page,
+          limit,
+          totalPages,
+        },
+      };
+    }
+
     const { count, rows: orders } = await db.Order.findAndCountAll({
       where,
-      include: [
-        {
-          model: db.User,
-          as: "user",
-          attributes: ["id", "username", "email", "phone"],
-        },
-        { model: db.OrderItem, as: "orderItems", separate: true },
-        { model: db.Payment, as: "payment" },
-      ],
+      include,
       order: [["createdAt", "DESC"]],
       limit,
       offset,
@@ -136,9 +195,8 @@ const getOrdersByUserId = async (
 ) => {
   try {
     const offset = (page - 1) * limit;
-
     const where = { userId };
-    if (status !== "all") {
+    if (status && status !== "all") {
       where.status = status;
     }
 
@@ -175,7 +233,7 @@ const getOrdersByUserId = async (
             {
               model: db.Product,
               as: "product",
-              attributes: ["id", "name", ["basePrice", "price"]],
+              attributes: ["id", "name", "slug", ["basePrice", "price"]],
               include: [{ model: db.ProductImage, as: "images", attributes: ["imageUrl", "isPrimary"] }],
             },
           ],
@@ -496,7 +554,7 @@ const createOrder = async (data) => {
   }
 };
 
-const updateOrderStatus = async (id, status, user = null) => {
+const updateOrderStatus = async (id, status, user = null, reason = "") => {
   const t = await db.sequelize.transaction();
   try {
     const validStatuses = [
@@ -506,6 +564,7 @@ const updateOrderStatus = async (id, status, user = null) => {
       "shipped",
       "delivered",
       "cancelled",
+      "cancel_requested",
     ];
     if (!validStatuses.includes(status)) {
       await t.rollback();
@@ -528,29 +587,35 @@ const updateOrderStatus = async (id, status, user = null) => {
         return { errCode: 403, errMessage: "Forbidden", status: 403 };
       }
 
-      // Customer can only cancel pending orders or confirm delivery of shipped orders.
-      if (status === "cancelled" && order.status !== "pending") {
-        await t.rollback();
-        return {
-          errCode: 3,
-          errMessage: "Cannot cancel this order",
-          status: 400,
-        };
-      }
-
-      if (status === "delivered" && order.status !== "shipped") {
+      // Customer can only request cancellation if order is pending or confirmed
+      if (status === "cancel_requested") {
+        if (!["pending", "confirmed"].includes(order.status)) {
+          await t.rollback();
+          return {
+            errCode: 3,
+            errMessage: "Cannot request cancellation for this order status",
+            status: 400,
+          };
+        }
+        order.cancelReason = reason;
+      } else if (status === "delivered" && order.status !== "shipped") {
         await t.rollback();
         return {
           errCode: 4,
           errMessage: "Cannot confirm delivery for this order",
           status: 400,
         };
-      }
-
-      if (!["cancelled", "delivered"].includes(status)) {
+      } else {
+        // Customer cannot set other statuses directly (like cancelled, shipped, etc.)
         await t.rollback();
         return { errCode: 403, errMessage: "Forbidden", status: 403 };
       }
+    }
+
+    // Admin logic for cancel_requested
+    if (user && user.role === "admin" && order.status === "cancel_requested") {
+      // If admin sets to cancelled, it's an approval.
+      // If admin sets back to pending/confirmed/etc, it's a rejection.
     }
 
     const prevStatus = order.status;
@@ -574,6 +639,7 @@ const updateOrderStatus = async (id, status, user = null) => {
       !["delivered", "completed"].includes(prevStatus)
     ) {
       order.deliveredAt = new Date();
+      order.paymentStatus = "paid";
     }
 
     // When cancelling an order that was NOT yet delivered, refund stock.

@@ -45,9 +45,14 @@ module.exports = (sequelize, DataTypes) => {
           "processing",
           "shipped",
           "delivered",
-          "cancelled", // khách hủy
+          "cancelled", // đã hủy
+          "cancel_requested", // đang yêu cầu hủy
         ),
         defaultValue: "pending",
+      },
+      cancelReason: {
+        type: DataTypes.TEXT,
+        allowNull: true,
       },
       confirmationHistory: {
         type: DataTypes.JSON,
