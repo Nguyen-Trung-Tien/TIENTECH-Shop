@@ -27,13 +27,14 @@ const getAllOrders = async (page = 1, limit = 10, searchTerm = "", status = "") 
           as: "user",
           attributes: ["id", "username", "email", "phone"],
         },
-        { model: db.OrderItem, as: "orderItems" },
+        { model: db.OrderItem, as: "orderItems", separate: true },
         { model: db.Payment, as: "payment" },
       ],
       order: [["createdAt", "DESC"]],
       limit,
       offset,
-      distinct: true, // Crucial for count when including associations
+      distinct: true,
+      subQuery: false,
     });
 
     const totalPages = Math.ceil(count / limit);

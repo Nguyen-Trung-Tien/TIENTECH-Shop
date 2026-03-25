@@ -57,6 +57,7 @@ const getAllPayments = async ({
       limit,
       offset,
       distinct: true,
+      subQuery: false,
     });
 
     const totalPages = Math.ceil(count / limit);
