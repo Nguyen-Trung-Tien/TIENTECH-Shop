@@ -132,3 +132,23 @@ export const resetPasswordApi = async (email, token, newPassword) => {
     throw error;
   }
 };
+
+export const verifyEmailApi = async (email, token) => {
+  try {
+    const res = await axiosClient.post("/user/verify-email", { email, token });
+    return res;
+  } catch (error) {
+    console.error("Verify email API error:", error);
+    throw error;
+  }
+};
+
+export const resendVerificationApi = async (email) => {
+  try {
+    const res = await axiosClient.post("/user/resend-verification", { email });
+    return res;
+  } catch (error) {
+    console.error("Resend verification API error:", error);
+    throw error;
+  }
+};

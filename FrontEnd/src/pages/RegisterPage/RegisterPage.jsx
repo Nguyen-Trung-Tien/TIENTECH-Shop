@@ -2,46 +2,90 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FiEye, FiEyeOff, FiUser, FiMail, FiPhone, FiLock, FiArrowLeft } from "react-icons/fi";
 import { toast } from "react-toastify";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
 import { registerUser } from "../../api/userApi";
 import Loading from "../../components/Loading/Loading";
 import logoImage from "../../assets/Tien-Tech Shop.png";
 
+// Di chuyển FloatingInput ra ngoài để tránh việc re-mount component khi state của cha thay đổi
+const FloatingInput = ({ id, name, type, label, icon: Icon, required, toggleIcon: ToggleIcon, onToggle, value, onChange }) => (
+  <div className="relative group">
+    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-surface-400 group-focus-within:text-primary transition-colors duration-200">
+      <Icon size={18} />
+    </div>
+    <input
+      id={id}
+      name={name}
+      type={type}
+      required={required}
+      value={value}
+      onChange={onChange}
+      placeholder=" "
+      className="peer w-full h-14 pl-12 pr-12 bg-surface-50 border-2 border-transparent rounded-2xl text-[14px] font-medium text-surface-900 focus:bg-white focus:border-primary/20 focus:ring-4 focus:ring-primary/5 outline-none transition-all placeholder-transparent"
+    />
+    <label
+      htmlFor={id}
+      className="absolute left-12 top-1/2 -translate-y-1/2 text-surface-500 text-[14px] pointer-events-none transition-all duration-200 
+                 peer-focus:top-0 peer-focus:left-4 peer-focus:text-[11px] peer-focus:font-bold peer-focus:text-primary peer-focus:bg-white peer-focus:px-2
+                 peer-[:not(:placeholder-shown)]:top-0 peer-[:not(:placeholder-shown)]:left-4 peer-[:not(:placeholder-shown)]:text-[11px] peer-[:not(:placeholder-shown)]:font-bold peer-[:not(:placeholder-shown)]:text-primary peer-[:not(:placeholder-shown)]:bg-white peer-[:not(:placeholder-shown)]:px-2"
+    >
+      {label}
+    </label>
+    {ToggleIcon && (
+      <button
+        type="button"
+        onClick={onToggle}
+        className="absolute right-4 top-1/2 -translate-y-1/2 text-surface-400 hover:text-surface-600 transition-colors z-10"
+      >
+        <ToggleIcon size={18} />
+      </button>
+    )}
+  </div>
+);
+
 const RegisterPage = () => {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [formData, setFormData] = useState({
+    username: "",
+    email: "",
+    phone: "",
+    password: "",
+    confirmPassword: ""
+  });
+  
   const navigate = useNavigate();
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
 
   const handleRegister = async (e) => {
     e.preventDefault();
-    setLoading(true);
-
-    const formData = new FormData(e.target);
-    const username = formData.get("username").trim();
-    const email = formData.get("email").trim();
-    const phone = formData.get("phone").trim();
-    const password = formData.get("password");
-    const confirmPassword = formData.get("confirmPassword");
-
-    if (password.length < 6) {
+    
+    if (formData.password.length < 6) {
       toast.warning("Mật khẩu phải có ít nhất 6 ký tự");
-      setLoading(false);
       return;
     }
 
-    if (password !== confirmPassword) {
+    if (formData.password !== formData.confirmPassword) {
       toast.error("Mật khẩu xác nhận không khớp!");
-      setLoading(false);
       return;
     }
 
+    setLoading(true);
     try {
+      const { username, email, phone, password } = formData;
       const data = await registerUser({ username, email, phone, password });
       if (data.errCode === 0) {
-        toast.success("Tạo tài khoản thành công! Vui lòng đăng nhập.");
-        navigate("/login");
+        toast.success(data.errMessage || "Đăng ký thành công! Vui lòng nhập mã OTP.");
+        navigate(`/verify-account?email=${encodeURIComponent(email)}`);
       } else {
         toast.error(data.errMessage || "Đăng ký thất bại!");
       }
@@ -52,39 +96,6 @@ const RegisterPage = () => {
       setLoading(false);
     }
   };
-
-  const FloatingInput = ({ id, name, type, label, icon: Icon, required, toggleIcon: ToggleIcon, onToggle }) => (
-    <div className="relative group">
-      <div className="absolute left-4 top-1/2 -translate-y-1/2 text-surface-400 group-focus-within:text-primary transition-colors duration-200">
-        <Icon size={18} />
-      </div>
-      <input
-        id={id}
-        name={name}
-        type={type}
-        required={required}
-        placeholder=" "
-        className="peer w-full h-14 pl-12 pr-12 bg-surface-50 border-2 border-transparent rounded-2xl text-[14px] font-medium text-surface-900 focus:bg-white focus:border-primary/20 focus:ring-4 focus:ring-primary/5 outline-none transition-all placeholder-transparent"
-      />
-      <label
-        htmlFor={id}
-        className="absolute left-12 top-1/2 -translate-y-1/2 text-surface-500 text-[14px] pointer-events-none transition-all duration-200 
-                   peer-focus:top-0 peer-focus:left-4 peer-focus:text-[11px] peer-focus:font-bold peer-focus:text-primary peer-focus:bg-white peer-focus:px-2
-                   peer-[:not(:placeholder-shown)]:top-0 peer-[:not(:placeholder-shown)]:left-4 peer-[:not(:placeholder-shown)]:text-[11px] peer-[:not(:placeholder-shown)]:font-bold peer-[:not(:placeholder-shown)]:text-primary peer-[:not(:placeholder-shown)]:bg-white peer-[:not(:placeholder-shown)]:px-2"
-      >
-        {label}
-      </label>
-      {ToggleIcon && (
-        <button
-          type="button"
-          onClick={onToggle}
-          className="absolute right-4 top-1/2 -translate-y-1/2 text-surface-400 hover:text-surface-600 transition-colors"
-        >
-          <ToggleIcon size={18} />
-        </button>
-      )}
-    </div>
-  );
 
   return (
     <div className="min-h-screen bg-surface-50 flex items-center justify-center p-4">
@@ -122,13 +133,6 @@ const RegisterPage = () => {
               Tham gia cùng hàng nghìn khách hàng tin dùng Tien-Tech Shop mỗi ngày.
             </motion.p>
           </div>
-
-          {/* Abstract elements */}
-          <div className="absolute inset-0 opacity-10 pointer-events-none">
-             <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-white rounded-full"></div>
-             <div className="absolute top-3/4 left-1/2 w-3 h-3 bg-white rounded-full"></div>
-             <div className="absolute top-1/2 right-1/4 w-1.5 h-1.5 bg-white rounded-full"></div>
-          </div>
         </div>
 
         {/* Right Side - Form */}
@@ -152,6 +156,8 @@ const RegisterPage = () => {
                   label="Họ và tên"
                   icon={FiUser}
                   required
+                  value={formData.username}
+                  onChange={handleInputChange}
                 />
                 <FloatingInput
                   id="email"
@@ -160,6 +166,8 @@ const RegisterPage = () => {
                   label="Email"
                   icon={FiMail}
                   required
+                  value={formData.email}
+                  onChange={handleInputChange}
                 />
               </div>
 
@@ -170,6 +178,8 @@ const RegisterPage = () => {
                 label="Số điện thoại"
                 icon={FiPhone}
                 required
+                value={formData.phone}
+                onChange={handleInputChange}
               />
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -180,6 +190,8 @@ const RegisterPage = () => {
                   label="Mật khẩu"
                   icon={FiLock}
                   required
+                  value={formData.password}
+                  onChange={handleInputChange}
                   toggleIcon={showPassword ? FiEyeOff : FiEye}
                   onToggle={() => setShowPassword(!showPassword)}
                 />
@@ -190,6 +202,8 @@ const RegisterPage = () => {
                   label="Xác nhận"
                   icon={FiLock}
                   required
+                  value={formData.confirmPassword}
+                  onChange={handleInputChange}
                   toggleIcon={showConfirm ? FiEyeOff : FiEye}
                   onToggle={() => setShowConfirm(!showConfirm)}
                 />
@@ -219,6 +233,7 @@ const RegisterPage = () => {
 
             <div className="mt-8 pt-8 border-t border-surface-100 text-center">
               <button
+                type="button"
                 onClick={() => navigate("/")}
                 className="inline-flex items-center gap-2 text-surface-500 hover:text-primary font-bold transition-colors"
               >
@@ -233,4 +248,3 @@ const RegisterPage = () => {
 };
 
 export default RegisterPage;
-

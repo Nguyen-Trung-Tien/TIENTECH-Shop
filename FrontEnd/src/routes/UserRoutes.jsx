@@ -7,6 +7,8 @@ import LayoutComponent from "../components/LayoutComponent/LayoutComponent";
 import HomePage from "../pages/HomePage/HomePage";
 import LoginPage from "../pages/LoginPage/LoginPage";
 import RegisterPage from "../pages/RegisterPage/RegisterPage";
+import VerifyEmail from "../pages/VerifyEmail/VerifyEmail";
+import OTPVerification from "../pages/OTPVerification/OTPVerification";
 import CartPage from "../pages/CartPage/CartPage";
 import CheckoutPage from "../pages/CheckoutPage/CheckoutPage";
 import CheckoutSuccess from "../pages/CheckoutSuccess/CheckoutSuccess";
@@ -41,6 +43,14 @@ const UserRoutes = () => {
               <RegisterPage />
             </LayoutComponent>
           }
+        />
+        <Route
+          path="verify-email"
+          element={<VerifyEmail />}
+        />
+        <Route
+          path="verify-account"
+          element={<OTPVerification />}
         />
       </Route>
 

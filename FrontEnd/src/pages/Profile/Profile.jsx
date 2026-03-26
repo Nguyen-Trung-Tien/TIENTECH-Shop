@@ -9,6 +9,7 @@ import { FiArrowLeft, FiUser, FiMail, FiPhone, FiMapPin, FiCamera, FiEdit3, FiSa
 import { motion, AnimatePresence } from "framer-motion";
 import { Button, Modal } from "../../components/UI";
 import Badge from "../../components/UI/Badge";
+import AddressManager from "./AddressManager";
 
 const Profile = () => {
   const dispatch = useDispatch();
@@ -216,71 +217,78 @@ const Profile = () => {
           </div>
 
           {/* Right Column: Detailed Form */}
-          <div className="lg:col-span-8 bg-white rounded-[32px] p-8 md:p-10 border border-surface-200 shadow-soft">
-            <div className="flex items-center justify-between mb-8 pb-6 border-b border-surface-100">
-               <h3 className="text-xl font-display font-bold text-surface-900">Chi tiết thông tin</h3>
-               {isEditing && (
-                 <Badge variant="warning" className="animate-pulse">Chế độ chỉnh sửa</Badge>
-               )}
-            </div>
+          <div className="lg:col-span-8 space-y-8">
+            <div className="bg-white rounded-[32px] p-8 md:p-10 border border-surface-200 shadow-soft">
+              <div className="flex items-center justify-between mb-8 pb-6 border-b border-surface-100">
+                 <h3 className="text-xl font-display font-bold text-surface-900">Chi tiết thông tin</h3>
+                 {isEditing && (
+                   <Badge variant="warning" className="animate-pulse">Chế độ chỉnh sửa</Badge>
+                 )}
+              </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {/* Field Groups */}
-              {[
-                { name: "username", label: "Họ và tên", icon: FiUser, placeholder: "Nguyễn Văn A" },
-                { name: "email", label: "Email liên lạc", icon: FiMail, type: "email", placeholder: "example@mail.com" },
-                { name: "phone", label: "Số điện thoại", icon: FiPhone, placeholder: "09xx xxx xxx" },
-                { name: "address", label: "Địa chỉ thường trú", icon: FiMapPin, placeholder: "Số nhà, đường, quận/huyện, tỉnh/thành phố...", colSpan: true },
-              ].map((field) => (
-                <div key={field.name} className={`${field.colSpan ? "md:col-span-2" : ""} space-y-1.5`}>
-                  <label className="text-[11px] font-black text-surface-400 uppercase tracking-widest ml-1">{field.label}</label>
-                  <div className={`relative group transition-all duration-300 ${isEditing ? "opacity-100" : "opacity-80"}`}>
-                    <div className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors ${isEditing ? "text-primary" : "text-surface-300"}`}>
-                       <field.icon size={18} />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {/* Field Groups */}
+                {[
+                  { name: "username", label: "Họ và tên", icon: FiUser, placeholder: "Nguyễn Văn A" },
+                  { name: "email", label: "Email liên lạc", icon: FiMail, type: "email", placeholder: "example@mail.com" },
+                  { name: "phone", label: "Số điện thoại", icon: FiPhone, placeholder: "09xx xxx xxx" },
+                  { name: "address", label: "Địa chỉ thường trú", icon: FiMapPin, placeholder: "Số nhà, đường, quận/huyện, tỉnh/thành phố...", colSpan: true },
+                ].map((field) => (
+                  <div key={field.name} className={`${field.colSpan ? "md:col-span-2" : ""} space-y-1.5`}>
+                    <label className="text-[11px] font-black text-surface-400 uppercase tracking-widest ml-1">{field.label}</label>
+                    <div className={`relative group transition-all duration-300 ${isEditing ? "opacity-100" : "opacity-80"}`}>
+                      <div className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors ${isEditing ? "text-primary" : "text-surface-300"}`}>
+                         <field.icon size={18} />
+                      </div>
+                      <input
+                        type={field.type || "text"}
+                        name={field.name}
+                        value={formData[field.name] || ""}
+                        onChange={handleChange}
+                        disabled={!isEditing}
+                        placeholder={field.placeholder}
+                        className={`w-full h-14 pl-12 pr-4 bg-surface-50 border-2 rounded-2xl text-[15px] font-bold outline-none transition-all ${
+                          isEditing 
+                            ? "bg-white border-primary/20 focus:border-primary focus:ring-4 focus:ring-primary/5" 
+                            : "border-transparent bg-surface-50 text-surface-900 cursor-not-allowed"
+                        }`}
+                      />
                     </div>
-                    <input
-                      type={field.type || "text"}
-                      name={field.name}
-                      value={formData[field.name] || ""}
-                      onChange={handleChange}
-                      disabled={!isEditing}
-                      placeholder={field.placeholder}
-                      className={`w-full h-14 pl-12 pr-4 bg-surface-50 border-2 rounded-2xl text-[15px] font-bold outline-none transition-all ${
-                        isEditing 
-                          ? "bg-white border-primary/20 focus:border-primary focus:ring-4 focus:ring-primary/5" 
-                          : "border-transparent bg-surface-50 text-surface-900 cursor-not-allowed"
-                      }`}
-                    />
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
+
+              {isEditing && (
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mt-12 flex justify-end gap-4"
+                >
+                  <Button
+                    variant="secondary"
+                    size="lg"
+                    onClick={() => setIsEditing(false)}
+                  >
+                    HỦY BỎ
+                  </Button>
+                  <Button
+                    variant="primary"
+                    size="lg"
+                    className="shadow-xl shadow-primary/20"
+                    icon={FiSave}
+                    loading={loading}
+                    onClick={handleSave}
+                  >
+                    LƯU THAY ĐỔI
+                  </Button>
+                </motion.div>
+              )}
             </div>
 
-            {isEditing && (
-              <motion.div 
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="mt-12 flex justify-end gap-4"
-              >
-                <Button
-                  variant="secondary"
-                  size="lg"
-                  onClick={() => setIsEditing(false)}
-                >
-                  HỦY BỎ
-                </Button>
-                <Button
-                  variant="primary"
-                  size="lg"
-                  className="shadow-xl shadow-primary/20"
-                  icon={FiSave}
-                  loading={loading}
-                  onClick={handleSave}
-                >
-                  LƯU THAY ĐỔI
-                </Button>
-              </motion.div>
-            )}
+            {/* Address Management Section */}
+            <div className="bg-white rounded-[32px] p-8 md:p-10 border border-surface-200 shadow-soft">
+              <AddressManager />
+            </div>
           </div>
         </div>
       </div>

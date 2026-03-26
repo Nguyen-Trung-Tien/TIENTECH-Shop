@@ -116,7 +116,14 @@ const sendOrderDeliveredEmail = async (user, order) => {
 
 const sendVerificationEmail = async (user, token) => {
   const subject = "📧 Xác nhận tài khoản - Tien-Tech Shop";
-  const verificationUrl = `${process.env.URL_REACT}verify-email?email=${user.email}&token=${token}`;
+  
+  // Đảm bảo URL_REACT có dấu / ở cuối
+  const baseUrl = process.env.URL_REACT.endsWith("/") 
+    ? process.env.URL_REACT 
+    : `${process.env.URL_REACT}/`;
+    
+  const verificationUrl = `${baseUrl}verify-email?email=${encodeURIComponent(user.email)}&token=${token}`;
+  
   const html = `
     <div style="font-family: Arial, sans-serif; background-color: #f9fafb; padding: 24px;">
       <div style="max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); overflow: hidden;">
