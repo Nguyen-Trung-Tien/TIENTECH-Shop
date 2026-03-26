@@ -3,6 +3,7 @@ const bcrypt = require("bcryptjs");
 const { v4: uuidv4 } = require("uuid");
 const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
+const cloudinary = require("cloudinary").v2;
 const {
   generateAccessToken,
   generateRefreshToken,
@@ -29,13 +30,49 @@ const checkUserEmail = async (email) => {
   return !!user;
 };
 
+/**
+ * Helper to upload image to Cloudinary
+ * @param {string|Buffer} file - Base64 string or file buffer
+ * @returns {Promise<string>} - Cloudinary URL
+ */
+const uploadToCloudinary = async (file) => {
+  try {
+    const options = {
+      folder: "avatars",
+      resource_type: "auto",
+    };
+    
+    let result;
+    if (typeof file === "string" && file.startsWith("data:image")) {
+      // Handle base64
+      result = await cloudinary.uploader.upload(file, options);
+    } else if (Buffer.isBuffer(file)) {
+      // Handle buffer from multer
+      result = await new Promise((resolve, reject) => {
+        const uploadStream = cloudinary.uploader.upload_stream(options, (error, result) => {
+          if (error) reject(error);
+          else resolve(result);
+        });
+        uploadStream.end(file);
+      });
+    } else {
+        throw new Error("Invalid file format for Cloudinary upload");
+    }
+    
+    return result.secure_url;
+  } catch (error) {
+    console.error("Cloudinary upload error:", error);
+    throw error;
+  }
+};
+
 const createNewUser = async (data) => {
   try {
     const emailExists = await checkUserEmail(data.email);
     if (emailExists) {
       return {
         errCode: 1,
-        errMessage: "Email already exists, please use another email.",
+        errMessage: "Email đã tồn tại, vui lòng sử dụng email khác.",
       };
     }
 
@@ -47,16 +84,16 @@ const createNewUser = async (data) => {
       password: hashedPassword,
       phone: data.phone || null,
       address: data.address || null,
-      // Prevent privilege escalation: role is always "customer" on self-signup.
       role: "customer",
-      avatar: data.avatar || null,
+      avatar: null,
       isActive: true,
     });
-    return { errCode: 0, errMessage: "User created successfully!" };
+    return { errCode: 0, errMessage: "Người dùng đã được tạo thành công!" };
   } catch (error) {
+    console.error("createNewUser error:", error);
     return {
       errCode: 2,
-      errMessage: "Error from server",
+      errMessage: "Lỗi từ server",
     };
   }
 };
@@ -65,13 +102,13 @@ const handleUserLogin = async (email, password) => {
   try {
     const user = await db.User.findOne({ where: { email } });
     if (!user) {
-      return { errCode: 1, errMessage: "User not found!" };
+      return { errCode: 1, errMessage: "Không tìm thấy người dùng!" };
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
-      return { errCode: 2, errMessage: "Wrong password!" };
+      return { errCode: 2, errMessage: "Mật khẩu không chính xác!" };
     }
 
     const payload = { id: user.id, email: user.email, role: user.role };
@@ -87,40 +124,50 @@ const handleUserLogin = async (email, password) => {
     const { password: _, ...userData } = user.toJSON();
     return {
       errCode: 0,
-      errMessage: "Login successful!",
+      errMessage: "Đăng nhập thành công!",
       data: { user: userData, accessToken, refreshToken },
     };
   } catch (error) {
     console.error("User login error:", error);
-    return { errCode: -1, errMessage: "Error from server!" };
+    return { errCode: -1, errMessage: "Lỗi từ server!" };
   }
 };
 
-const updateUser = async (userId, data) => {
+const updateUser = async (userId, data, currentUserRole = "customer") => {
   try {
     const user = await db.User.findByPk(userId);
-    if (!user) return { errCode: 1, errMessage: "User not found" };
+    if (!user) return { errCode: 1, errMessage: "Không tìm thấy người dùng" };
 
     if (data.email && data.email !== user.email) {
       const emailExists = await checkUserEmail(data.email);
       if (emailExists) {
-        return { errCode: 1, errMessage: "Email already in use" };
+        return { errCode: 1, errMessage: "Email đã được sử dụng" };
       }
     }
-    const fields = ["username", "email", "phone", "address", "role"];
+
+    const fields = ["username", "email", "phone", "address"];
     fields.forEach((field) => {
       if (data[field] !== undefined) user[field] = data[field];
     });
-    if (data.avatar) {
-      const base64Data = data.avatar.split(",")[1];
-      user.avatar = Buffer.from(base64Data, "base64");
+
+    // Hardening: Only Admin can change role
+    if (data.role && currentUserRole === "admin") {
+        user.role = data.role;
     }
+
+    // Avatar upload (handle base64 OR buffer)
+    if (data.avatar) {
+        user.avatar = await uploadToCloudinary(data.avatar);
+    } else if (data.file) {
+        user.avatar = await uploadToCloudinary(data.file.buffer);
+    }
+
     await user.save();
     const { password, ...userData } = user.toJSON();
-    return { errCode: 0, errMessage: "User updated", data: userData };
+    return { errCode: 0, errMessage: "Cập nhật thành công", data: userData };
   } catch (err) {
-    console.error(err);
-    return { errCode: 2, errMessage: "Error from server" };
+    console.error("updateUser error:", err);
+    return { errCode: 2, errMessage: "Lỗi từ server" };
   }
 };
 
@@ -129,16 +176,12 @@ const getUserById = async (userId) => {
     const user = await db.User.findByPk(userId, {
       attributes: { exclude: ["password"] },
     });
-    if (!user) return { errCode: 1, errMessage: "User not found" };
-    const userData = user.toJSON();
-    userData.avatar = userData.avatar
-      ? `data:image/png;base64,${userData.avatar.toString("base64")}`
-      : null;
-
-    return { errCode: 0, errMessage: "OK", data: userData };
+    if (!user) return { errCode: 1, errMessage: "Không tìm thấy người dùng" };
+    
+    return { errCode: 0, errMessage: "OK", data: user.toJSON() };
   } catch (e) {
-    console.error(e);
-    return { errCode: 2, errMessage: "Server error" };
+    console.error("getUserById error:", e);
+    return { errCode: 2, errMessage: "Lỗi từ server" };
   }
 };
 
@@ -153,14 +196,7 @@ const getAllUsers = async (page = 1, limit = 10) => {
       order: [["createdAt", "DESC"]],
     });
 
-    const data = users.map((user) => {
-      const u = user.toJSON();
-      u.avatar = u.avatar
-        ? `data:image/png;base64,${u.avatar.toString("base64")}`
-        : null;
-      return u;
-    });
-
+    const data = users.map((user) => user.toJSON());
     const totalPages = Math.ceil(totalUsers / limit);
 
     return {
@@ -175,7 +211,7 @@ const getAllUsers = async (page = 1, limit = 10) => {
       data,
     };
   } catch (e) {
-    console.error(e);
+    console.error("getAllUsers error:", e);
     throw e;
   }
 };
@@ -184,11 +220,11 @@ const deleteUser = async (userId) => {
   try {
     const user = await db.User.findByPk(userId);
     if (!user) {
-      return { errCode: 1, errMessage: "User not found" };
+      return { errCode: 1, errMessage: "Không tìm thấy người dùng" };
     }
 
     await user.destroy();
-    return { errCode: 0, errMessage: "User deleted successfully" };
+    return { errCode: 0, errMessage: "Xóa người dùng thành công" };
   } catch (e) {
     console.error("Error deleting user:", e);
     throw e;
@@ -199,12 +235,12 @@ const updateUserPassword = async (userId, oldPassword, newPassword) => {
   try {
     const user = await db.User.findByPk(userId);
     if (!user) {
-      return { errCode: 1, errMessage: "User not found" };
+      return { errCode: 1, errMessage: "Không tìm thấy người dùng" };
     }
 
     const isPasswordValid = await bcrypt.compare(oldPassword, user.password);
     if (!isPasswordValid) {
-      return { errCode: 2, errMessage: "Old password is incorrect" };
+      return { errCode: 2, errMessage: "Mật khẩu cũ không chính xác" };
     }
 
     const hashedNewPassword = await hashUserPassword(newPassword);
@@ -212,10 +248,10 @@ const updateUserPassword = async (userId, oldPassword, newPassword) => {
 
     await user.save();
 
-    return { errCode: 0, errMessage: "Password updated successfully" };
+    return { errCode: 0, errMessage: "Cập nhật mật khẩu thành công" };
   } catch (error) {
     console.error("Error updating password:", error);
-    return { errCode: 3, errMessage: "Server error while updating password" };
+    return { errCode: 3, errMessage: "Lỗi khi cập nhật mật khẩu" };
   }
 };
 
@@ -224,56 +260,56 @@ const forgotPassword = async (email) => {
   if (!user) return { errCode: 1, errMessage: "Email không tồn tại" };
 
   const resetToken = uuidv4();
-  const resetTokenHash = hashToken(resetToken); // Hash trước khi lưu vào DB
+  const resetTokenHash = hashToken(resetToken);
   const resetTokenExpiresAt = new Date(Date.now() + 15 * 60 * 1000);
   user.resetToken = resetTokenHash;
   user.resetTokenExpiresAt = resetTokenExpiresAt;
   await user.save();
 
-  await sendForgotPasswordEmail(user, resetToken); // Gửi plain token qua email
-  return { errCode: 0, errMessage: "Send email success!" };
+  await sendForgotPasswordEmail(user, resetToken);
+  return { errCode: 0, errMessage: "Gửi email thành công!" };
 };
 
 const verifyResetToken = async (email, token) => {
   try {
     const user = await db.User.findOne({ where: { email } });
-    if (!user) return { errCode: 1, errMessage: "Email not found!" };
+    if (!user) return { errCode: 1, errMessage: "Không tìm thấy email!" };
 
     if (!user.resetToken) {
-      return { errCode: 2, errMessage: "No recovery required" };
+      return { errCode: 2, errMessage: "Không yêu cầu khôi phục mật khẩu" };
     }
 
     const tokenHash = hashToken(token);
     if (user.resetToken !== tokenHash) {
-      return { errCode: 3, errMessage: "Invalid verification code!" };
+      return { errCode: 3, errMessage: "Mã xác nhận không hợp lệ!" };
     }
 
     if (user.resetTokenExpiresAt && user.resetTokenExpiresAt < new Date()) {
-      return { errCode: 4, errMessage: "Verification code expired!" };
+      return { errCode: 4, errMessage: "Mã xác nhận đã hết hạn!" };
     }
 
-    return { errCode: 0, errMessage: "Valid verification code! " };
+    return { errCode: 0, errMessage: "Mã xác nhận hợp lệ!" };
   } catch (err) {
     console.error("verifyResetToken error:", err);
-    return { errCode: 2, errMessage: "Error from server!" };
+    return { errCode: 2, errMessage: "Lỗi từ server!" };
   }
 };
 
 const resetPassword = async (email, token, newPassword) => {
   try {
     const user = await db.User.findOne({ where: { email } });
-    if (!user) return { errCode: 1, errMessage: "Email not found!" };
+    if (!user) return { errCode: 1, errMessage: "Không tìm thấy email!" };
 
     const tokenHash = hashToken(token);
     if (user.resetToken !== tokenHash) {
       return {
         errCode: 2,
-        errMessage: "Token not found!",
+        errMessage: "Token không tìm thấy!",
       };
     }
 
     if (user.resetTokenExpiresAt && user.resetTokenExpiresAt < new Date()) {
-      return { errCode: 3, errMessage: "Token expired!" };
+      return { errCode: 3, errMessage: "Token đã hết hạn!" };
     }
 
     const hashedPassword = await hashUserPassword(newPassword);
@@ -282,28 +318,28 @@ const resetPassword = async (email, token, newPassword) => {
     user.resetTokenExpiresAt = null;
     await user.save();
 
-    return { errCode: 0, errMessage: "Change password success!" };
+    return { errCode: 0, errMessage: "Đổi mật khẩu thành công!" };
   } catch (err) {
     console.error("resetPassword error:", err);
-    return { errCode: 2, errMessage: "Error from server!" };
+    return { errCode: 2, errMessage: "Lỗi từ server!" };
   }
 };
 const rotateRefreshToken = async (refreshToken) => {
   const decoded = verifyRefreshToken(refreshToken);
-  if (!decoded) return { errCode: 1, errMessage: "Invalid refresh token" };
+  if (!decoded) return { errCode: 1, errMessage: "Refresh token không hợp lệ" };
 
   const user = await db.User.findByPk(decoded.id);
   if (!user || !user.refreshTokenHash) {
-    return { errCode: 2, errMessage: "Refresh token revoked" };
+    return { errCode: 2, errMessage: "Refresh token đã bị thu hồi" };
   }
 
   const tokenHash = hashToken(refreshToken);
   if (user.refreshTokenHash !== tokenHash) {
-    return { errCode: 3, errMessage: "Refresh token mismatch" };
+    return { errCode: 3, errMessage: "Refresh token không khớp" };
   }
 
   if (user.refreshTokenExpiresAt && user.refreshTokenExpiresAt < new Date()) {
-    return { errCode: 4, errMessage: "Refresh token expired" };
+    return { errCode: 4, errMessage: "Refresh token đã hết hạn" };
   }
 
   const payload = { id: user.id, email: user.email, role: user.role };
@@ -327,10 +363,10 @@ const rotateRefreshToken = async (refreshToken) => {
 
 const revokeRefreshToken = async (userId) => {
   const user = await db.User.findByPk(userId);
-  if (!user) return { errCode: 1, errMessage: "User not found" };
+  if (!user) return { errCode: 1, errMessage: "Không tìm thấy người dùng" };
 
   await user.update({ refreshTokenHash: null, refreshTokenExpiresAt: null });
-  return { errCode: 0, errMessage: "Refresh token revoked" };
+  return { errCode: 0, errMessage: "Đã thu hồi refresh token" };
 };
 
 module.exports = {

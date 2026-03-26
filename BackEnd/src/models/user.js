@@ -55,7 +55,7 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.ENUM("customer", "admin"),
         defaultValue: "customer",
       },
-      avatar: { type: DataTypes.BLOB("long"), allowNull: true },
+      avatar: { type: DataTypes.STRING, allowNull: true },
       resetToken: {
         type: DataTypes.STRING,
         allowNull: true,

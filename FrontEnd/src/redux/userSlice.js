@@ -15,16 +15,13 @@ const userSlice = createSlice({
     setUser: (state, action) => {
       // payload có thể là { user } hoặc trực tiếp user data
       const user = action.payload.user || action.payload;
-      // Không lưu avatar vào Redux store (tránh serialize blob lớn)
-      const { avatar: _avatar, ...userWithoutAvatar } = user;
-      state.user = userWithoutAvatar;
+      state.user = user;
       state.isAuthenticated = true;
       state.isInitializing = false;
     },
     updateUser: (state, action) => {
       const user = action.payload.user || action.payload;
-      const { avatar: _avatar, ...updateWithoutAvatar } = user;
-      state.user = { ...state.user, ...updateWithoutAvatar };
+      state.user = { ...state.user, ...user };
     },
     removeUser: (state) => {
       state.user = null;

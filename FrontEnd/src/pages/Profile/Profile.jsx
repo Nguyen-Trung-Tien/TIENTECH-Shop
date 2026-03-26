@@ -31,23 +31,17 @@ const Profile = () => {
   const [avatarLoading, setAvatarLoading] = useState(false);
 
   useEffect(() => {
-    const fetchUser = async () => {
-      if (!user?.id) return;
-      setLoading(true);
-      try {
-        const res = await getUserApi(user.id);
-        if (res?.errCode === 0) {
-          setFormData(res.data);
-          setPreview(res.data.avatar);
-        } else toast.error("Không thể tải thông tin người dùng");
-      } catch {
-        toast.error("Lỗi khi tải thông tin");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchUser();
-  }, [user?.id]);
+    if (user) {
+      setFormData({
+        username: user.username || "",
+        email: user.email || "",
+        phone: user.phone || "",
+        address: user.address || "",
+        avatar: user.avatar || null,
+      });
+      setPreview(user.avatar || null);
+    }
+  }, [user]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;

@@ -6,6 +6,8 @@ const {
   authorizeRole,
 } = require("../middleware/authMiddleware");
 
+const upload = require("./multer");
+
 router.post("/login", UserController.handleLogin);
 router.post("/create-new-user", UserController.handleCreateNewUser);
 router.post("/refresh-token", UserController.handleRefreshToken);
@@ -27,6 +29,7 @@ router.put(
   "/update-user",
   authenticateToken,
   authorizeRole(["admin", "customer"]),
+  upload.single("avatar"),
   UserController.handleUpdateUser
 );
 

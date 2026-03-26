@@ -144,15 +144,12 @@ const handleUpdateUser = async (req, res) => {
       });
     }
 
-    const updateData = {};
-    if (username) updateData.username = username.trim();
-    if (email) updateData.email = email.trim();
-    if (phone) updateData.phone = phone.trim();
-    if (address) updateData.address = address.trim();
-    if (role && req.user.role === "admin") updateData.role = role;
-    if (avatar) updateData.avatar = avatar;
+    const updateData = { ...req.body };
+    if (req.file) {
+      updateData.file = req.file;
+    }
 
-    const result = await UserService.updateUser(id, updateData);
+    const result = await UserService.updateUser(id, updateData, req.user.role);
 
     if (result.errCode !== 0) {
       return res.status(400).json(result);
