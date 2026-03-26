@@ -16,6 +16,7 @@ import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import { motion, AnimatePresence } from "framer-motion";
+import { ConfirmModal } from "../../components/UI";
 import { getOrdersByUserId, updateOrderStatus } from "../../api/orderApi";
 import AppPagination from "../../components/Pagination/Pagination";
 import { getImage } from "../../utils/decodeImage";
@@ -297,53 +298,35 @@ const OrderPage = () => {
       </div>
 
       {/* Cancel Modal */}
-      <AnimatePresence>
-        {showCancelModal && (
-          <div className="fixed inset-0 z-[1100] flex items-center justify-center p-4">
-            <motion.div 
-              initial={{ opacity: 0 }} 
-              animate={{ opacity: 1 }} 
-              exit={{ opacity: 0 }} 
-              onClick={() => setShowCancelModal(false)} 
-              className="absolute inset-0 bg-slate-950/40 backdrop-blur-[2px]" 
-            />
-            <motion.div 
-              initial={{ scale: 0.95, opacity: 0 }} 
-              animate={{ scale: 1, opacity: 1 }} 
-              exit={{ scale: 0.95, opacity: 0 }} 
-              className="relative bg-white p-8 rounded-2xl shadow-xl max-w-sm w-full text-center border border-slate-100"
-            >
-              <div className="w-14 h-14 bg-rose-50 text-rose-500 rounded-xl flex items-center justify-center text-2xl mx-auto mb-4 border border-rose-100"><FiAlertTriangle /></div>
-              <h3 className="text-lg font-bold text-slate-900 mb-2">Yêu cầu Hủy đơn hàng?</h3>
-              <p className="text-slate-500 text-sm mb-4">Bạn có chắc muốn gửi yêu cầu hủy đơn <span className="text-slate-900 font-bold">#{orderToCancel?.orderCode || orderToCancel?.id}</span>?</p>
-              
-              <div className="mb-6 text-left">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block">
-                  Lý do hủy đơn
-                </label>
-                <textarea
-                  rows={3}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none transition-all"
-                  placeholder="Vui lòng nhập lý do..."
-                  value={cancelReason}
-                  onChange={(e) => setCancelReason(e.target.value)}
-                />
-              </div>
-
-              <div className="flex gap-3">
-                 <button onClick={() => setShowCancelModal(false)} className="flex-1 h-10 bg-slate-100 text-slate-600 rounded-xl text-xs font-bold hover:bg-slate-200 transition-all">Quay lại</button>
-                 <button 
-                  disabled={cancelling}
-                  onClick={handleCancelOrder} 
-                  className="flex-1 h-10 bg-rose-500 text-white rounded-xl text-xs font-bold hover:bg-rose-600 transition-all shadow-md shadow-rose-500/20"
-                 >
-                   {cancelling ? "Đang xử lý..." : "Gửi yêu cầu"}
-                 </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+      <ConfirmModal
+        isOpen={showCancelModal}
+        onClose={() => setShowCancelModal(false)}
+        onConfirm={handleCancelOrder}
+        title="Yêu cầu Hủy đơn hàng?"
+        confirmText="Gửi yêu cầu"
+        cancelText="Quay lại"
+        variant="danger"
+        loading={cancelling}
+        icon={FiAlertTriangle}
+        iconClassName="bg-rose-50 text-rose-500 border-rose-100"
+      >
+        <p className="text-slate-500 text-sm mb-4">
+          Bạn có chắc muốn gửi yêu cầu hủy đơn <span className="text-slate-900 font-bold">#{orderToCancel?.orderCode || orderToCancel?.id}</span>?
+        </p>
+        
+        <div className="mb-6 text-left w-full">
+          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block">
+            Lý do hủy đơn
+          </label>
+          <textarea
+            rows={3}
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none transition-all"
+            placeholder="Vui lòng nhập lý do..."
+            value={cancelReason}
+            onChange={(e) => setCancelReason(e.target.value)}
+          />
+        </div>
+      </ConfirmModal>
     </div>
   );
 };

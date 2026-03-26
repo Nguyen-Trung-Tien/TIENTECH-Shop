@@ -7,7 +7,7 @@ import { toast } from "react-toastify";
 import ChangePasswordModal from "./ChangePasswordModal";
 import { FiArrowLeft, FiUser, FiMail, FiPhone, FiMapPin, FiCamera, FiEdit3, FiSave, FiX, FiLock } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
-import Button from "../../components/UI/Button";
+import { Button, Modal } from "../../components/UI";
 import Badge from "../../components/UI/Badge";
 
 const Profile = () => {
@@ -292,76 +292,53 @@ const Profile = () => {
       </div>
 
       {/* Avatar Upload Modal */}
-      <AnimatePresence>
-        {showAvatarModal && (
-          <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setShowAvatarModal(false)}
-              className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+      <Modal
+        isOpen={showAvatarModal}
+        onClose={() => setShowAvatarModal(false)}
+        title="Cập nhật ảnh đại diện"
+        size="md"
+      >
+        <div className="space-y-6 text-center">
+          <div className="w-48 h-48 mx-auto rounded-full border-4 border-surface-100 overflow-hidden shadow-inner">
+            <img
+              src={preview || "/images/avatar-default.png"}
+              alt="Preview"
+              className="w-full h-full object-cover"
             />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="relative w-full max-w-md bg-white rounded-[32px] shadow-2xl overflow-hidden p-8"
-            >
-              <div className="flex items-center justify-between mb-8">
-                <h3 className="text-2xl font-display font-bold text-surface-900">Cập nhật ảnh đại diện</h3>
-                <button 
-                  onClick={() => setShowAvatarModal(false)}
-                  className="p-2 hover:bg-surface-100 rounded-xl transition-colors"
-                >
-                  <FiX size={24} />
-                </button>
-              </div>
-
-              <div className="space-y-6 text-center">
-                <div className="w-48 h-48 mx-auto rounded-full border-4 border-surface-100 overflow-hidden shadow-inner">
-                  <img
-                    src={preview || "/images/avatar-default.png"}
-                    alt="Preview"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-
-                <div className="relative group">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileChange}
-                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                  />
-                  <div className="w-full h-14 bg-surface-50 border-2 border-dashed border-surface-200 rounded-2xl flex items-center justify-center gap-2 group-hover:border-primary/50 group-hover:bg-primary/5 transition-all">
-                    <FiCamera className="text-surface-400 group-hover:text-primary" />
-                    <span className="text-sm font-bold text-surface-600 group-hover:text-primary">Chọn ảnh từ thiết bị</span>
-                  </div>
-                </div>
-
-                <div className="flex gap-4 pt-4">
-                  <Button
-                    variant="secondary"
-                    className="flex-1"
-                    onClick={() => setShowAvatarModal(false)}
-                  >
-                    HỦY BỎ
-                  </Button>
-                  <Button
-                    variant="primary"
-                    className="flex-1"
-                    loading={avatarLoading}
-                    onClick={handleAvatarUpload}
-                  >
-                    CẬP NHẬT
-                  </Button>
-                </div>
-              </div>
-            </motion.div>
           </div>
-        )}
-      </AnimatePresence>
+
+          <div className="relative group">
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+            />
+            <div className="w-full h-14 bg-surface-50 border-2 border-dashed border-surface-200 rounded-2xl flex items-center justify-center gap-2 group-hover:border-primary/50 group-hover:bg-primary/5 transition-all">
+              <FiCamera className="text-surface-400 group-hover:text-primary" />
+              <span className="text-sm font-bold text-surface-600 group-hover:text-primary">Chọn ảnh từ thiết bị</span>
+            </div>
+          </div>
+
+          <div className="flex gap-4 pt-4">
+            <Button
+              variant="secondary"
+              className="flex-1"
+              onClick={() => setShowAvatarModal(false)}
+            >
+              HỦY BỎ
+            </Button>
+            <Button
+              variant="primary"
+              className="flex-1"
+              loading={avatarLoading}
+              onClick={handleAvatarUpload}
+            >
+              CẬP NHẬT
+            </Button>
+          </div>
+        </div>
+      </Modal>
 
       <ChangePasswordModal
         show={showPasswordModal}

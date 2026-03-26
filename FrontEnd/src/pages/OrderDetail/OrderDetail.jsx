@@ -3,6 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useSelector } from "react-redux";
 import { motion, AnimatePresence } from "framer-motion";
+import { Modal, ConfirmModal, Button } from "../../components/UI";
 import {
   FiPackage,
   FiTruck,
@@ -15,6 +16,7 @@ import {
   FiArrowLeft,
   FiRotateCcw,
   FiX,
+  FiAlertTriangle,
 } from "react-icons/fi";
 import { getOrderById, updateOrderStatus } from "../../api/orderApi";
 import { requestReturn } from "../../api/orderItemApi";
@@ -26,7 +28,6 @@ import {
   returnStatusMap,
   statusMap,
 } from "../../utils/StatusMap";
-import Button from "../../components/UI/Button";
 import Badge from "../../components/UI/Badge";
 
 const InfoRow = ({ label, value, icon: Icon }) => (
@@ -515,181 +516,123 @@ const OrderDetail = () => {
         </div>
       </div>
       {/* Modern Return Modal */}
-      <AnimatePresence>
-        {showReturnModal && (
-          <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => dispatch({ type: "CLOSE_RETURN_MODAL" })}
-              className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+      <Modal
+        isOpen={showReturnModal}
+        onClose={() => dispatch({ type: "CLOSE_RETURN_MODAL" })}
+        title="Yêu cầu Trả hàng"
+        size="lg"
+      >
+        <div className="space-y-6">
+          {/* Reason Input */}
+          <div>
+            <label className="text-[11px] font-black text-surface-400 uppercase tracking-widest mb-2 block">
+              Lý do trả hàng
+            </label>
+            <textarea
+              rows={4}
+              className="w-full bg-surface-50 border border-surface-200 rounded-2xl p-4 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+              placeholder="Mô tả chi tiết lý do bạn muốn trả sản phẩm này..."
+              value={returnReason}
+              onChange={(e) =>
+                dispatch({
+                  type: "SET_RETURN_REASON",
+                  payload: e.target.value,
+                })
+              }
             />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="relative w-full max-w-lg bg-white rounded-[32px] shadow-2xl overflow-hidden"
-            >
-              <div className="p-8">
-                <div className="flex items-center justify-between mb-8">
-                  <h3 className="text-2xl font-display font-bold text-surface-900">
-                    Yêu cầu Trả hàng
-                  </h3>
-                  <button
-                    onClick={() => dispatch({ type: "CLOSE_RETURN_MODAL" })}
-                    className="p-2 hover:bg-surface-100 rounded-xl transition-colors"
-                  >
-                    <FiX size={24} />
-                  </button>
-                </div>
+          </div>
 
-                <div className="space-y-6">
-                  {/* Reason Input */}
-                  <div>
-                    <label className="text-[11px] font-black text-surface-400 uppercase tracking-widest mb-2 block">
-                      Lý do trả hàng
-                    </label>
-                    <textarea
-                      rows={4}
-                      className="w-full bg-surface-50 border border-surface-200 rounded-2xl p-4 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-                      placeholder="Mô tả chi tiết lý do bạn muốn trả sản phẩm này..."
-                      value={returnReason}
-                      onChange={(e) =>
+          {/* Product Selection */}
+          <div>
+            <label className="text-[11px] font-black text-surface-400 uppercase tracking-widest mb-3 block">
+              Chọn sản phẩm muốn trả
+            </label>
+            <div className="space-y-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+              {order.orderItems
+                ?.filter((item) => item.returnStatus === "none")
+                .map((item) => (
+                  <label
+                    key={item.id}
+                    className={`flex items-center gap-4 p-3 rounded-2xl border-2 transition-all cursor-pointer ${
+                      selectedItems.includes(item.id)
+                        ? "border-primary bg-primary/5"
+                        : "border-surface-100 bg-white hover:border-surface-200"
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      className="w-5 h-5 rounded-lg text-primary focus:ring-primary border-surface-300"
+                      checked={selectedItems.includes(item.id)}
+                      onChange={() =>
                         dispatch({
-                          type: "SET_RETURN_REASON",
-                          payload: e.target.value,
+                          type: "TOGGLE_ITEM",
+                          payload: item.id,
                         })
                       }
                     />
-                  </div>
-
-                  {/* Product Selection */}
-                  <div>
-                    <label className="text-[11px] font-black text-surface-400 uppercase tracking-widest mb-3 block">
-                      Chọn sản phẩm muốn trả
-                    </label>
-                    <div className="space-y-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
-                      {order.orderItems
-                        ?.filter((item) => item.returnStatus === "none")
-                        .map((item) => (
-                          <label
-                            key={item.id}
-                            className={`flex items-center gap-4 p-3 rounded-2xl border-2 transition-all cursor-pointer ${
-                              selectedItems.includes(item.id)
-                                ? "border-primary bg-primary/5"
-                                : "border-surface-100 bg-white hover:border-surface-200"
-                            }`}
-                          >
-                            <input
-                              type="checkbox"
-                              className="w-5 h-5 rounded-lg text-primary focus:ring-primary border-surface-300"
-                              checked={selectedItems.includes(item.id)}
-                              onChange={() =>
-                                dispatch({
-                                  type: "TOGGLE_ITEM",
-                                  payload: item.id,
-                                })
-                              }
-                            />
-                            <div className="flex-grow">
-                              <p className="text-sm font-bold text-surface-900 line-clamp-1">
-                                {item.productName}
-                              </p>
-                              <p className="text-xs text-surface-500">
-                                Số lượng: {item.quantity}
-                              </p>
-                            </div>
-                          </label>
-                        ))}
+                    <div className="flex-grow">
+                      <p className="text-sm font-bold text-surface-900 line-clamp-1">
+                        {item.productName}
+                      </p>
+                      <p className="text-xs text-surface-500">
+                        Số lượng: {item.quantity}
+                      </p>
                     </div>
-                  </div>
-                </div>
-
-                <div className="flex gap-4 mt-10">
-                  <Button
-                    variant="secondary"
-                    className="flex-1"
-                    onClick={() => dispatch({ type: "CLOSE_RETURN_MODAL" })}
-                  >
-                    HỦY BỎ
-                  </Button>
-                  <Button
-                    variant="primary"
-                    className="flex-1"
-                    loading={submitting}
-                    onClick={handleSubmitReturn}
-                  >
-                    GỬI YÊU CẦU
-                  </Button>
-                </div>
-              </div>
-            </motion.div>
+                  </label>
+                ))}
+            </div>
           </div>
-        )}
-      </AnimatePresence>
+        </div>
+
+        <div className="flex gap-4 mt-10">
+          <Button
+            variant="secondary"
+            className="flex-1"
+            onClick={() => dispatch({ type: "CLOSE_RETURN_MODAL" })}
+          >
+            HỦY BỎ
+          </Button>
+          <Button
+            variant="primary"
+            className="flex-1"
+            loading={submitting}
+            onClick={handleSubmitReturn}
+          >
+            GỬI YÊU CẦU
+          </Button>
+        </div>
+      </Modal>
 
       {/* Cancel Order Confirmation Modal */}
-      <AnimatePresence>
-        {showCancelModal && (
-          <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => dispatch({ type: "CLOSE_CANCEL_MODAL" })}
-              className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
-            />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="relative w-full max-w-md bg-white rounded-[32px] shadow-2xl overflow-hidden p-8 text-center"
-            >
-              <div className="w-20 h-20 bg-rose-50 text-rose-500 rounded-3xl flex items-center justify-center text-3xl mx-auto mb-6">
-                <FiXCircle />
-              </div>
-              <h3 className="text-2xl font-display font-bold text-surface-900 mb-4">
-                Yêu cầu Hủy đơn hàng?
-              </h3>
-              <p className="text-surface-500 mb-6 leading-relaxed">
-                Bạn có chắc chắn muốn gửi yêu cầu hủy đơn hàng <strong>#DH{order.id}</strong> không?
-              </p>
-              
-              <div className="mb-8 text-left">
-                <label className="text-[11px] font-black text-surface-400 uppercase tracking-widest mb-2 block">
-                  Lý do hủy đơn
-                </label>
-                <textarea
-                  rows={3}
-                  className="w-full bg-surface-50 border border-surface-200 rounded-2xl p-4 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-                  placeholder="Vui lòng nhập lý do hủy đơn hàng..."
-                  value={cancelReason}
-                  onChange={(e) => dispatch({ type: "SET_CANCEL_REASON", payload: e.target.value })}
-                />
-              </div>
-
-              <div className="flex gap-4">
-                <Button
-                  variant="secondary"
-                  className="flex-1"
-                  onClick={() => dispatch({ type: "CLOSE_CANCEL_MODAL" })}
-                >
-                  QUAY LẠI
-                </Button>
-                <Button
-                  variant="danger"
-                  className="flex-1"
-                  loading={submitting}
-                  onClick={handleCancelOrder}
-                >
-                  GỬI YÊU CẦU HỦY
-                </Button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+      <ConfirmModal
+        isOpen={showCancelModal}
+        onClose={() => dispatch({ type: "CLOSE_CANCEL_MODAL" })}
+        onConfirm={handleCancelOrder}
+        title="Yêu cầu Hủy đơn hàng?"
+        confirmText="Gửi yêu cầu hủy"
+        cancelText="Quay lại"
+        variant="danger"
+        loading={submitting}
+        icon={FiXCircle}
+        iconClassName="bg-rose-50 text-rose-500 rounded-3xl"
+      >
+        <p className="text-surface-500 mb-6 leading-relaxed">
+          Bạn có chắc chắn muốn gửi yêu cầu hủy đơn hàng <strong>#DH{order.id}</strong> không?
+        </p>
+        
+        <div className="mb-8 text-left w-full">
+          <label className="text-[11px] font-black text-surface-400 uppercase tracking-widest mb-2 block">
+            Lý do hủy đơn
+          </label>
+          <textarea
+            rows={3}
+            className="w-full bg-surface-50 border border-surface-200 rounded-2xl p-4 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+            placeholder="Vui lòng nhập lý do hủy đơn hàng..."
+            value={cancelReason}
+            onChange={(e) => dispatch({ type: "SET_CANCEL_REASON", payload: e.target.value })}
+          />
+        </div>
+      </ConfirmModal>
     </div>
   );
 };
