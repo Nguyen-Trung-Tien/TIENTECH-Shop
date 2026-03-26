@@ -1,13 +1,22 @@
 import { useState, useEffect } from "react";
-import { 
-  getAddressesApi, 
-  createAddressApi, 
-  updateAddressApi, 
-  deleteAddressApi, 
-  setDefaultAddressApi 
+import {
+  getAddressesApi,
+  createAddressApi,
+  updateAddressApi,
+  deleteAddressApi,
+  setDefaultAddressApi,
 } from "../../api/addressApi";
 import { toast } from "react-toastify";
-import { FiPlus, FiMapPin, FiPhone, FiUser, FiEdit2, FiTrash2, FiCheckCircle, FiMoreVertical } from "react-icons/fi";
+import {
+  FiPlus,
+  FiMapPin,
+  FiPhone,
+  FiUser,
+  FiEdit2,
+  FiTrash2,
+  FiCheckCircle,
+  FiMoreVertical,
+} from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button, Modal } from "../../components/UI";
 import Badge from "../../components/UI/Badge";
@@ -18,16 +27,14 @@ const AddressManager = () => {
   const [showModal, setShowModal] = useState(false);
   const [editingAddress, setEditingAddress] = useState(null);
   const [submitLoading, setSubmitLoading] = useState(false);
-
-  const [formData, setFormData] = useState({
-    fullName: "",
-    phone: "",
-    province: "",
-    district: "",
-    ward: "",
-    detailAddress: "",
-    isDefault: false,
-  });
+const [formData, setFormData] = useState({
+  fullName: "",
+  phone: "",
+  province: "",
+  ward: "",
+  detailAddress: "",
+  isDefault: false,
+});
 
   const fetchAddresses = async () => {
     try {
@@ -61,7 +68,6 @@ const AddressManager = () => {
         fullName: address.fullName,
         phone: address.phone,
         province: address.province,
-        district: address.district,
         ward: address.ward,
         detailAddress: address.detailAddress,
         isDefault: address.isDefault,
@@ -72,7 +78,6 @@ const AddressManager = () => {
         fullName: "",
         phone: "",
         province: "",
-        district: "",
         ward: "",
         detailAddress: "",
         isDefault: false,
@@ -138,7 +143,9 @@ const AddressManager = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h3 className="text-xl font-display font-bold text-surface-900">Sổ địa chỉ</h3>
+        <h3 className="text-xl font-display font-bold text-surface-900">
+          Sổ địa chỉ
+        </h3>
         <Button
           variant="primary"
           size="sm"
@@ -151,11 +158,15 @@ const AddressManager = () => {
 
       <div className="grid grid-cols-1 gap-4">
         {loading ? (
-          <div className="py-10 text-center text-surface-400">Đang tải địa chỉ...</div>
+          <div className="py-10 text-center text-surface-400">
+            Đang tải địa chỉ...
+          </div>
         ) : addresses.length === 0 ? (
           <div className="py-10 text-center bg-surface-50 rounded-2xl border-2 border-dashed border-surface-200">
             <FiMapPin className="mx-auto text-4xl text-surface-300 mb-4" />
-            <p className="text-surface-500 font-medium">Bạn chưa có địa chỉ nào.</p>
+            <p className="text-surface-500 font-medium">
+              Bạn chưa có địa chỉ nào.
+            </p>
           </div>
         ) : (
           addresses.map((addr) => (
@@ -164,17 +175,21 @@ const AddressManager = () => {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               className={`p-6 rounded-2xl border-2 transition-all ${
-                addr.isDefault 
-                  ? "bg-primary/5 border-primary/20 shadow-lg shadow-primary/5" 
+                addr.isDefault
+                  ? "bg-primary/5 border-primary/20 shadow-lg shadow-primary/5"
                   : "bg-white border-surface-100 hover:border-surface-200"
               }`}
             >
               <div className="flex justify-between items-start">
                 <div className="space-y-2">
                   <div className="flex items-center gap-3">
-                    <span className="font-bold text-surface-900 text-lg">{addr.fullName}</span>
+                    <span className="font-bold text-surface-900 text-lg">
+                      {addr.fullName}
+                    </span>
                     {addr.isDefault && (
-                      <Badge variant="primary" className="text-[10px]">MẶC ĐỊNH</Badge>
+                      <Badge variant="primary" className="text-[10px]">
+                        MẶC ĐỊNH
+                      </Badge>
                     )}
                   </div>
                   <div className="flex items-center gap-2 text-surface-600">
@@ -182,9 +197,12 @@ const AddressManager = () => {
                     <span className="text-sm font-medium">{addr.phone}</span>
                   </div>
                   <div className="flex items-start gap-2 text-surface-600 max-w-lg">
-                    <FiMapPin size={14} className="mt-1 text-primary shrink-0" />
+                    <FiMapPin
+                      size={14}
+                      className="mt-1 text-primary shrink-0"
+                    />
                     <span className="text-sm">
-                      {addr.detailAddress}, {addr.ward}, {addr.district}, {addr.province}
+                      {[addr.detailAddress, addr.ward, addr.province].filter(Boolean).join(", ")}
                     </span>
                   </div>
                 </div>
@@ -231,7 +249,9 @@ const AddressManager = () => {
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="text-[11px] font-black text-surface-400 uppercase tracking-widest ml-1">Họ và tên</label>
+              <label className="text-[11px] font-black text-surface-400 uppercase tracking-widest ml-1">
+                Họ và tên
+              </label>
               <input
                 required
                 name="fullName"
@@ -242,7 +262,9 @@ const AddressManager = () => {
               />
             </div>
             <div className="space-y-1.5">
-              <label className="text-[11px] font-black text-surface-400 uppercase tracking-widest ml-1">Số điện thoại</label>
+              <label className="text-[11px] font-black text-surface-400 uppercase tracking-widest ml-1">
+                Số điện thoại
+              </label>
               <input
                 required
                 name="phone"
@@ -256,7 +278,9 @@ const AddressManager = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-1.5">
-              <label className="text-[11px] font-black text-surface-400 uppercase tracking-widest ml-1">Tỉnh / Thành phố</label>
+              <label className="text-[11px] font-black text-surface-400 uppercase tracking-widest ml-1">
+                Tỉnh / Thành phố
+              </label>
               <input
                 required
                 name="province"
@@ -266,19 +290,11 @@ const AddressManager = () => {
                 placeholder="Ví dụ: Hà Nội"
               />
             </div>
+
             <div className="space-y-1.5">
-              <label className="text-[11px] font-black text-surface-400 uppercase tracking-widest ml-1">Quận / Huyện</label>
-              <input
-                required
-                name="district"
-                value={formData.district}
-                onChange={handleInputChange}
-                className="w-full h-12 px-4 bg-surface-50 border border-surface-200 rounded-xl focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all font-bold"
-                placeholder="Ví dụ: Ba Đình"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-[11px] font-black text-surface-400 uppercase tracking-widest ml-1">Phường / Xã</label>
+              <label className="text-[11px] font-black text-surface-400 uppercase tracking-widest ml-1">
+                Phường / Xã
+              </label>
               <input
                 required
                 name="ward"
@@ -291,7 +307,9 @@ const AddressManager = () => {
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-[11px] font-black text-surface-400 uppercase tracking-widest ml-1">Địa chỉ chi tiết</label>
+            <label className="text-[11px] font-black text-surface-400 uppercase tracking-widest ml-1">
+              Địa chỉ chi tiết
+            </label>
             <textarea
               required
               name="detailAddress"

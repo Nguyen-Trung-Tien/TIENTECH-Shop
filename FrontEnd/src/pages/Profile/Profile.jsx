@@ -310,7 +310,7 @@ const Profile = () => {
                     name: "address",
                     label: "Địa chỉ thường trú",
                     icon: FiMapPin,
-                    placeholder: "Số nhà, đường, quận/huyện, tỉnh/thành phố...",
+                    placeholder: "Số nhà, đường, phường/xã, tỉnh/thành phố...",
                     colSpan: true,
                   },
                 ].map((field) => (

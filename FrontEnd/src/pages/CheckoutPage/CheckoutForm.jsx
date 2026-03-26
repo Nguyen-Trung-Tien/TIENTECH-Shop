@@ -26,10 +26,14 @@ const CheckoutForm = ({ formData, setFormData, user }) => {
           // Auto-select default address
           const defaultAddr = res.data.find(a => a.isDefault);
           if (defaultAddr && !formData.shippingAddress) {
+            const fullAddress = [defaultAddr.detailAddress, defaultAddr.ward, defaultAddr.province]
+              .filter(part => part && part !== "undefined")
+              .join(", ");
             setFormData(prev => ({
               ...prev,
-              shippingAddress: `${defaultAddr.addressDetail}, ${defaultAddr.ward}, ${defaultAddr.district}, ${defaultAddr.province}`,
-              phone: defaultAddr.phoneNumber || user?.phone || ""
+              shippingAddress: fullAddress,
+              phone: defaultAddr.phone || user?.phone || "",
+              fullName: defaultAddr.fullName || user?.username || ""
             }));
           } else if (res.data.length === 0) {
             setShowManual(true);
@@ -43,11 +47,14 @@ const CheckoutForm = ({ formData, setFormData, user }) => {
   }, [user]);
 
   const handleSelectAddress = (addr) => {
-    const fullAddress = `${addr.addressDetail}, ${addr.ward}, ${addr.district}, ${addr.province}`;
+    const fullAddress = [addr.detailAddress, addr.ward, addr.province]
+      .filter(part => part && part !== "undefined")
+      .join(", ");
     setFormData(prev => ({
       ...prev,
       shippingAddress: fullAddress,
-      phone: addr.phoneNumber || user?.phone || ""
+      phone: addr.phone || user?.phone || "",
+      fullName: addr.fullName || user?.username || ""
     }));
     setShowManual(false);
   };
@@ -96,7 +103,9 @@ const CheckoutForm = ({ formData, setFormData, user }) => {
               <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Chọn địa chỉ đã lưu</label>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {addresses.map((addr) => {
-                  const fullAddrStr = `${addr.addressDetail}, ${addr.ward}, ${addr.district}, ${addr.province}`;
+                  const fullAddrStr = [addr.detailAddress, addr.ward, addr.province]
+                    .filter(part => part && part !== "undefined")
+                    .join(", ");
                   const isSelected = formData.shippingAddress === fullAddrStr;
                   return (
                     <button
@@ -113,9 +122,9 @@ const CheckoutForm = ({ formData, setFormData, user }) => {
                       <div className="flex items-start gap-3">
                         <FiHome className={`mt-1 ${isSelected ? 'text-primary' : 'text-slate-400'}`} />
                         <div>
-                          <p className="text-xs font-black text-slate-900 uppercase mb-1">{addr.label || "Địa chỉ"}</p>
+                          <p className="text-xs font-black text-slate-900 uppercase mb-1">{addr.fullName || "Địa chỉ"}</p>
                           <p className="text-[11px] font-bold text-slate-500 line-clamp-2 leading-relaxed">{fullAddrStr}</p>
-                          <p className="text-[10px] font-bold text-slate-400 mt-1">{addr.phoneNumber}</p>
+                          <p className="text-[10px] font-bold text-slate-400 mt-1">{addr.phone}</p>
                         </div>
                       </div>
                     </button>
@@ -164,7 +173,7 @@ const CheckoutForm = ({ formData, setFormData, user }) => {
                   name="shippingAddress"
                   value={formData.shippingAddress}
                   onChange={handleChange}
-                  placeholder="Số nhà, tên đường, phường/xã, quận/huyện, tỉnh/thành phố..."
+                  placeholder="Số nhà, tên đường, phường/xã, tỉnh/thành phố..."
                   className="w-full h-32 pl-11 pr-4 py-4 bg-slate-50 border-2 border-transparent rounded-2xl text-sm font-medium focus:bg-white focus:border-primary/20 outline-none transition-all resize-none placeholder:text-slate-300"
                 />
               </div>

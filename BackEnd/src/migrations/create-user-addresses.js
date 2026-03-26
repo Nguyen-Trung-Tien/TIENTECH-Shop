@@ -30,10 +30,6 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false,
       },
-      district: {
-        type: Sequelize.STRING,
-        allowNull: false,
-      },
       ward: {
         type: Sequelize.STRING,
         allowNull: false,

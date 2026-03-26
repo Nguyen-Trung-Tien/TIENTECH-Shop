@@ -232,25 +232,9 @@ const getProductById = async (id) => {
           attributes: ["id", "imageUrl", "isPrimary", "variantId"],
         },
         {
-          model: db.ProductOption,
-          as: "options",
-          include: [
-            {
-              model: db.ProductOptionValue,
-              as: "values",
-              attributes: ["id", "value"],
-            },
-          ],
-        },
-        {
           model: db.ProductVariant,
           as: "variants",
           include: [
-            {
-              model: db.ProductOptionValue,
-              as: "optionValues",
-              attributes: ["id", "value", "productOptionId"],
-            },
             {
               model: db.ProductImage,
               as: "images",
@@ -948,17 +932,6 @@ const getProductBySlug = async (slug) => {
         { model: db.Category, as: "category", attributes: ["id", "name"] },
         { model: db.Brand, as: "brand", attributes: ["id", "name"] },
         {
-          model: db.ProductOption,
-          as: "options",
-          include: [
-            {
-              model: db.ProductOptionValue,
-              as: "values",
-              attributes: ["id", "value"],
-            },
-          ],
-        },
-        {
           model: db.ProductImage,
           as: "images",
           attributes: ["id", "imageUrl", "isPrimary"],
@@ -969,11 +942,6 @@ const getProductBySlug = async (slug) => {
           where: { isActive: true },
           required: false,
           include: [
-            {
-              model: db.ProductOptionValue,
-              as: "optionValues",
-              attributes: ["id", "value", "productOptionId"],
-            },
             {
               model: db.ProductImage,
               as: "images",
@@ -1003,17 +971,6 @@ const getProductBySlug = async (slug) => {
           { model: db.Category, as: "category", attributes: ["id", "name"] },
           { model: db.Brand, as: "brand", attributes: ["id", "name"] },
           {
-            model: db.ProductOption,
-            as: "options",
-            include: [
-              {
-                model: db.ProductOptionValue,
-                as: "values",
-                attributes: ["id", "value"],
-              },
-            ],
-          },
-          {
             model: db.ProductImage,
             as: "images",
             attributes: ["id", "imageUrl", "isPrimary", "variantId"],
@@ -1024,11 +981,6 @@ const getProductBySlug = async (slug) => {
             where: { isActive: true },
             required: false,
             include: [
-              {
-                model: db.ProductOptionValue,
-                as: "optionValues",
-                attributes: ["id", "value", "productOptionId"],
-              },
               {
                 model: db.ProductImage,
                 as: "images",
@@ -1041,6 +993,7 @@ const getProductBySlug = async (slug) => {
               "price",
               "stock",
               "attributeValues",
+              "specifications",
             ],
           },
         ],

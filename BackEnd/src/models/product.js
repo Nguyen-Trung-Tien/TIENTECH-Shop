@@ -8,7 +8,6 @@ module.exports = (sequelize, DataTypes) => {
       Product.belongsTo(models.Brand, { foreignKey: "brandId", as: "brand" });
       Product.hasMany(models.ProductImage, { foreignKey: "productId", as: "images" });
       Product.hasMany(models.ProductVariant, { foreignKey: "productId", as: "variants" });
-      Product.hasMany(models.ProductOption, { foreignKey: "productId", as: "options" });
       Product.hasMany(models.Review, { foreignKey: "productId", as: "reviews" });
       Product.hasMany(models.OrderItem, { foreignKey: "productId", as: "orderItems" });
       Product.hasMany(models.Wishlist, { foreignKey: "productId", as: "wishlists" });
@@ -21,32 +20,21 @@ module.exports = (sequelize, DataTypes) => {
       sku: { type: DataTypes.STRING, unique: true },
       slug: { type: DataTypes.STRING, unique: true },
       description: { type: DataTypes.TEXT },
-      
-      // Thông số kỹ thuật động (Dồn hết vào đây)
       specifications: { 
         type: DataTypes.JSON, 
         defaultValue: {},
-        comment: "Store dynamic specs like {RAM: '8GB', CPU: 'M1'}"
       },
-      
-      // Giá cơ bản để hiển thị "Chỉ từ..."
       basePrice: { 
         type: DataTypes.DECIMAL(15, 2), 
         allowNull: false, 
         defaultValue: 0 
       },
-      
-      // Tổng kho (Cập nhật từ các biến thể)
       totalStock: { type: DataTypes.INTEGER, defaultValue: 0 },
       sold: { type: DataTypes.INTEGER, defaultValue: 0 },
-      
       hasVariants: { type: DataTypes.BOOLEAN, defaultValue: false },
       isActive: { type: DataTypes.BOOLEAN, defaultValue: true },
-      
       brandId: { type: DataTypes.INTEGER },
       categoryId: { type: DataTypes.INTEGER },
-      
-      // Flash Sale (Cấp độ sản phẩm - cho phép override biến thể)
       isFlashSale: { type: DataTypes.BOOLEAN, defaultValue: false },
       flashSalePrice: { type: DataTypes.DECIMAL(15, 2) },
       flashSaleStart: { type: DataTypes.DATE },

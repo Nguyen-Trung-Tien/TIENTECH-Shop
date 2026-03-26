@@ -1,6 +1,6 @@
 const db = require("../models");
 const { Op } = require("sequelize");
-
+const ExcelJS = require("exceljs");
 /**
  * Tính toán phần trăm thay đổi
  * @param {number} current Giá trị hiện tại
@@ -15,13 +15,24 @@ const calculateChange = (current, previous) => {
 const getDashboardData = async () => {
   try {
     const now = new Date();
-    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const startOfToday = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+    );
     const startOfYesterday = new Date(startOfToday);
     startOfYesterday.setDate(startOfYesterday.getDate() - 1);
 
     const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-    const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
+    const endOfLastMonth = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      0,
+      23,
+      59,
+      59,
+    );
 
     // 1. Sản phẩm: Tổng số và tăng trưởng tháng này vs tháng trước
     const totalProducts = await db.Product.count();
@@ -54,27 +65,24 @@ const getDashboardData = async () => {
     const revenueStatus = ["paid", "delivered"];
     const totalRevenueResult = await db.Order.sum("totalPrice", {
       where: {
-        [Op.or]: [
-          { paymentStatus: "paid" },
-          { status: "delivered" }
-        ]
-      }
+        [Op.or]: [{ paymentStatus: "paid" }, { status: "delivered" }],
+      },
     });
     const totalRevenue = totalRevenueResult || 0;
 
     const revenueThisMonthResult = await db.Order.sum("totalPrice", {
       where: {
         createdAt: { [Op.gte]: startOfThisMonth },
-        [Op.or]: [{ paymentStatus: "paid" }, { status: "delivered" }]
-      }
+        [Op.or]: [{ paymentStatus: "paid" }, { status: "delivered" }],
+      },
     });
     const revenueThisMonth = revenueThisMonthResult || 0;
 
     const revenueLastMonthResult = await db.Order.sum("totalPrice", {
       where: {
         createdAt: { [Op.gte]: startOfLastMonth, [Op.lt]: startOfThisMonth },
-        [Op.or]: [{ paymentStatus: "paid" }, { status: "delivered" }]
-      }
+        [Op.or]: [{ paymentStatus: "paid" }, { status: "delivered" }],
+      },
     });
     const revenueLastMonth = revenueLastMonthResult || 0;
 
@@ -83,13 +91,13 @@ const getDashboardData = async () => {
     const usersThisMonth = await db.User.count({
       where: {
         role: "customer",
-        createdAt: { [Op.gte]: startOfThisMonth }
+        createdAt: { [Op.gte]: startOfThisMonth },
       },
     });
     const usersLastMonth = await db.User.count({
       where: {
         role: "customer",
-        createdAt: { [Op.gte]: startOfLastMonth, [Op.lt]: startOfThisMonth }
+        createdAt: { [Op.gte]: startOfLastMonth, [Op.lt]: startOfThisMonth },
       },
     });
 
@@ -109,10 +117,10 @@ const getDashboardData = async () => {
     const recentOrders = await db.Order.findAll({
       where: {
         createdAt: { [Op.gte]: twelveMonthsAgo },
-        [Op.or]: [{ paymentStatus: "paid" }, { status: "delivered" }]
+        [Op.or]: [{ paymentStatus: "paid" }, { status: "delivered" }],
       },
-      attributes: ['totalPrice', 'createdAt'],
-      raw: true
+      attributes: ["totalPrice", "createdAt"],
+      raw: true,
     });
 
     const groupByDate = (orders, days) => {
@@ -120,9 +128,12 @@ const getDashboardData = async () => {
       for (let i = days; i >= 0; i--) {
         const d = new Date(now);
         d.setDate(d.getDate() - i);
-        const dateString = d.toLocaleDateString('vi-VN');
+        const dateString = d.toLocaleDateString("vi-VN");
         const revenue = orders
-          .filter(o => new Date(o.createdAt).toLocaleDateString('vi-VN') === dateString)
+          .filter(
+            (o) =>
+              new Date(o.createdAt).toLocaleDateString("vi-VN") === dateString,
+          )
           .reduce((sum, o) => sum + Number(o.totalPrice), 0);
         result.push({ date: dateString, revenue });
       }
@@ -135,9 +146,12 @@ const getDashboardData = async () => {
         const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
         const monthYear = `${d.getMonth() + 1}/${d.getFullYear()}`;
         const revenue = orders
-          .filter(o => {
+          .filter((o) => {
             const oDate = new Date(o.createdAt);
-            return oDate.getMonth() === d.getMonth() && oDate.getFullYear() === d.getFullYear();
+            return (
+              oDate.getMonth() === d.getMonth() &&
+              oDate.getFullYear() === d.getFullYear()
+            );
           })
           .reduce((sum, o) => sum + Number(o.totalPrice), 0);
         result.push({ date: monthYear, revenue });
@@ -157,15 +171,13 @@ const getDashboardData = async () => {
       change,
       revenueByWeek,
       revenueByMonth,
-      revenueByYear
+      revenueByYear,
     };
   } catch (error) {
     console.error("Error from AdminService.getDashboardData:", error);
     throw error;
   }
 };
-
-const ExcelJS = require("exceljs");
 
 const exportRevenueExcel = async () => {
   try {
@@ -174,8 +186,16 @@ const exportRevenueExcel = async () => {
         [Op.or]: [{ paymentStatus: "paid" }, { status: "delivered" }],
       },
       include: [
-        { model: db.User, as: "user", attributes: ["username", "email", "phone"] },
-        { model: db.OrderItem, as: "orderItems", attributes: ["productName", "quantity", "price"] },
+        {
+          model: db.User,
+          as: "user",
+          attributes: ["username", "email", "phone"],
+        },
+        {
+          model: db.OrderItem,
+          as: "orderItems",
+          attributes: ["productName", "quantity", "price"],
+        },
       ],
       order: [["createdAt", "DESC"]],
     });
@@ -205,7 +225,9 @@ const exportRevenueExcel = async () => {
 
     // DATA
     orders.forEach((order) => {
-      const items = order.orderItems.map((i) => `${i.productName} (x${i.quantity})`).join(", ");
+      const items = order.orderItems
+        .map((i) => `${i.productName} (x${i.quantity})`)
+        .join(", ");
       worksheet.addRow({
         orderCode: order.orderCode,
         username: order.user?.username || "Ẩn danh",
@@ -218,7 +240,10 @@ const exportRevenueExcel = async () => {
     });
 
     // TOTAL ROW
-    const totalRevenue = orders.reduce((sum, o) => sum + Number(o.totalPrice), 0);
+    const totalRevenue = orders.reduce(
+      (sum, o) => sum + Number(o.totalPrice),
+      0,
+    );
     worksheet.addRow({});
     worksheet.addRow({ orderCode: "TỔNG DOANH THU", totalPrice: totalRevenue });
     worksheet.lastRow.font = { bold: true, size: 12 };

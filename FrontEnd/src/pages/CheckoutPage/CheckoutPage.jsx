@@ -26,6 +26,8 @@ const CheckoutPage = () => {
     shippingAddress: "",
     paymentMethod: "COD",
     note: "",
+    fullName: "",
+    phone: "",
   });
 
   // Redirect if no items
@@ -56,6 +58,8 @@ const CheckoutPage = () => {
       const orderData = {
         userId: user.id,
         shippingAddress: formData.shippingAddress,
+        receiverName: formData.fullName || user.username,
+        receiverPhone: formData.phone || user.phone,
         paymentMethod: formData.paymentMethod,
         note: formData.note,
         voucherCode: appliedVoucher?.code || null,
@@ -105,6 +109,8 @@ const CheckoutPage = () => {
       const orderData = {
         userId: user.id,
         shippingAddress: formData.shippingAddress || user.address,
+        receiverName: formData.fullName || user.username,
+        receiverPhone: formData.phone || user.phone,
         paymentMethod: "PAYPAL",
         note: formData.note,
         voucherCode: appliedVoucher?.code || null,

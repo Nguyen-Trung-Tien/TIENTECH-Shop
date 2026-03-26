@@ -28,10 +28,6 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
-      district: {
-        type: DataTypes.STRING,
-        allowNull: false,
-      },
       ward: {
         type: DataTypes.STRING,
         allowNull: false,

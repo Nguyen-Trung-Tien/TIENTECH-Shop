@@ -357,6 +357,8 @@ const createOrder = async (data) => {
     const {
       userId,
       shippingAddress,
+      receiverName,
+      receiverPhone,
       paymentMethod,
       note,
       orderItems = [],
@@ -373,6 +375,11 @@ const createOrder = async (data) => {
     const orderCode = `ORD${Date.now()}`;
     const formattedItems = [];
     let calculatedTotal = 0;
+
+    // ... (rest of processing items)
+    // I need to keep the context for replace to work, so I'll read a bit more or use a smaller range.
+    // Actually I'll use a better replace.
+
 
     for (const item of orderItems) {
       const product = await db.Product.findByPk(item.productId, {
@@ -510,6 +517,8 @@ const createOrder = async (data) => {
         discountAmount,
         voucherCode: voucherCode || null,
         shippingAddress,
+        receiverName: receiverName || null,
+        receiverPhone: receiverPhone || null,
         paymentMethod,
         note: note || "",
         paymentStatus: "unpaid",

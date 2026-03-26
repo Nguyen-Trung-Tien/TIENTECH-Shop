@@ -1,7 +1,16 @@
 import React, { useState } from "react";
 import { toast } from "react-toastify";
 import { motion, AnimatePresence } from "framer-motion";
-import { FiMail, FiShield, FiKey, FiArrowLeft, FiRefreshCw, FiEye, FiEyeOff, FiX } from "react-icons/fi";
+import {
+  FiMail,
+  FiShield,
+  FiKey,
+  FiArrowLeft,
+  FiRefreshCw,
+  FiEye,
+  FiEyeOff,
+  FiX,
+} from "react-icons/fi";
 import { Modal, Button } from "../UI";
 import {
   forgotPasswordApi,
@@ -132,7 +141,9 @@ const ForgotPasswordModal = ({ show, onClose }) => {
                   Nhập email đã đăng ký để nhận mã khôi phục mật khẩu.
                 </p>
                 <div className="space-y-1.5">
-                  <label className="text-[12px] font-bold text-surface-900 uppercase tracking-wider ml-1">Email</label>
+                  <label className="text-[12px] font-bold text-surface-900 uppercase tracking-wider ml-1">
+                    Email
+                  </label>
                   <div className="relative group">
                     <FiMail className="absolute left-4 top-1/2 -translate-y-1/2 text-surface-400 group-focus-within:text-primary transition-colors" />
                     <input
@@ -150,21 +161,25 @@ const ForgotPasswordModal = ({ show, onClose }) => {
             {step === 2 && (
               <div className="space-y-4">
                 <p className="text-surface-500 text-sm font-medium leading-relaxed">
-                  Mã xác nhận đã gửi đến <span className="text-surface-900 font-bold">{email}</span>. Vui lòng kiểm tra hộp thư.
+                  Mã xác nhận đã gửi đến{" "}
+                  <span className="text-surface-900 font-bold">{email}</span>.
+                  Vui lòng kiểm tra hộp thư.
                 </p>
                 <div className="space-y-1.5">
-                  <label className="text-[12px] font-bold text-surface-900 uppercase tracking-wider ml-1">Mã xác nhận</label>
+                  <label className="text-[12px] font-bold text-surface-900 uppercase tracking-wider ml-1">
+                    Mã xác nhận
+                  </label>
                   <div className="flex gap-2">
                     <div className="relative flex-1 group">
                       <FiShield className="absolute left-4 top-1/2 -translate-y-1/2 text-surface-400 group-focus-within:text-primary transition-colors" />
                       <input
-                        placeholder="Nhập 6 ký tự..."
+                        placeholder="Nhập mã xác nhận"
                         className="w-full h-12 pl-11 pr-4 bg-surface-50 border-2 border-transparent rounded-xl text-sm font-bold tracking-widest focus:bg-white focus:border-primary/20 outline-none transition-all"
                         value={token}
                         onChange={(e) => setToken(e.target.value.trim())}
                       />
                     </div>
-                    <button 
+                    <button
                       onClick={handleSendEmail}
                       disabled={loading}
                       className="px-4 bg-surface-100 text-surface-600 hover:bg-surface-200 rounded-xl transition-all disabled:opacity-50"
@@ -215,7 +230,13 @@ const ForgotPasswordModal = ({ show, onClose }) => {
           variant={step === 3 ? "primary" : "primary"}
           className={`flex-[2] ${step === 3 ? "bg-emerald-500 hover:bg-emerald-600" : ""}`}
           loading={loading}
-          onClick={step === 1 ? handleSendEmail : step === 2 ? handleVerifyToken : handleResetPassword}
+          onClick={
+            step === 1
+              ? handleSendEmail
+              : step === 2
+                ? handleVerifyToken
+                : handleResetPassword
+          }
         >
           {step === 1 ? "Gửi mã" : step === 2 ? "Xác thực mã" : "Đổi mật khẩu"}
         </Button>
@@ -228,7 +249,9 @@ const PasswordField = ({ label, value, onChange }) => {
   const [show, setShow] = useState(false);
   return (
     <div className="space-y-1.5">
-      <label className="text-[12px] font-bold text-surface-900 uppercase tracking-wider ml-1">{label}</label>
+      <label className="text-[12px] font-bold text-surface-900 uppercase tracking-wider ml-1">
+        {label}
+      </label>
       <div className="relative group">
         <FiKey className="absolute left-4 top-1/2 -translate-y-1/2 text-surface-400 group-focus-within:text-primary transition-colors" />
         <input
@@ -251,4 +274,3 @@ const PasswordField = ({ label, value, onChange }) => {
 };
 
 export default ForgotPasswordModal;
-

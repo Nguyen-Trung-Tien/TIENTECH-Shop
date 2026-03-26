@@ -5,14 +5,18 @@ import {
   FiShoppingBag,
   FiArrowRight,
 } from "react-icons/fi";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import Button from "../../components/UI/Button";
 
 const CheckoutSuccess = () => {
   const navigate = useNavigate();
   const { orderId } = useParams();
+  const location = useLocation();
   const [countdown, setCountdown] = useState(5);
+
+  const order = location.state?.order;
+  const displayOrderCode = order?.orderCode || orderId || "CHECKOUT";
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -72,7 +76,7 @@ const CheckoutSuccess = () => {
             </span>
 
             <strong className="text-xl font-black text-gray-900 tracking-tight">
-              #DH{orderId?.toString().slice(-6).toUpperCase() || "CHECKOUT"}
+              {displayOrderCode.startsWith("#") ? displayOrderCode : `#${displayOrderCode}`}
             </strong>
           </div>
         </div>

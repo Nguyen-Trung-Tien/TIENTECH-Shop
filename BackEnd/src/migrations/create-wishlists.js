@@ -35,12 +35,17 @@ module.exports = {
         ),
       },
     });
-    // Thêm unique constraint để 1 user không thể wishlist 1 sản phẩm nhiều lần
-    await queryInterface.addConstraint("Wishlists", {
-      fields: ["userId", "productId"],
-      type: "unique",
-      name: "unique_wishlist_user_product",
-    });
+    
+    // Check if constraint exists before adding (standard way for MySQL is to just try/catch if no direct check exists in queryInterface for older versions)
+    try {
+      await queryInterface.addConstraint("Wishlists", {
+        fields: ["userId", "productId"],
+        type: "unique",
+        name: "unique_wishlist_user_product",
+      });
+    } catch (error) {
+      console.log("Constraint 'unique_wishlist_user_product' already exists or could not be added.");
+    }
   },
 
   async down(queryInterface, Sequelize) {

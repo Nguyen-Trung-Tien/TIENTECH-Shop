@@ -64,6 +64,14 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.TEXT,
         allowNull: false,
       },
+      receiverName: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      receiverPhone: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
       paymentMethod: {
         type: DataTypes.ENUM("cod", "bank", "paypal", "momo", "vnpay"),
         defaultValue: "cod",

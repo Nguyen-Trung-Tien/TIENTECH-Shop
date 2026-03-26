@@ -326,10 +326,10 @@ const OrderDetail = () => {
                 <div className="space-y-1">
                   <InfoRow
                     label="Người nhận"
-                    value={order.user?.username || "Khách"}
+                    value={order.receiverName || order.user?.username || "Khách"}
                     icon={FiUser}
                   />
-                  <InfoRow label="Số điện thoại" value={order.user?.phone} />
+                  <InfoRow label="Số điện thoại" value={order.receiverPhone || order.user?.phone} />
                   <InfoRow label="Email" value={order.user?.email} />
                 </div>
                 <div className="space-y-1">
