@@ -50,5 +50,7 @@ router.put(
 router.post("/forgot-password", UserController.handleForgotPassword);
 router.post("/verify-reset-token", UserController.handleVerifyResetToken);
 router.post("/reset-password", UserController.handleResetPassword);
+router.post("/verify-email", UserController.handleVerifyEmail);
+router.post("/resend-verification", UserController.handleResendVerification);
 
 module.exports = router;

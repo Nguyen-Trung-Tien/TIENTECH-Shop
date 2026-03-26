@@ -9,10 +9,14 @@ const {
   generateRefreshToken,
   verifyRefreshToken,
 } = require("../services/jwtService");
-const { sendForgotPasswordEmail } = require("./sendEmail");
+const { sendForgotPasswordEmail, sendVerificationEmail } = require("./sendEmail");
 
 const hashToken = (token) =>
   crypto.createHash("sha256").update(token).digest("hex");
+
+const generateRandomToken = () => {
+  return Math.floor(100000 + Math.random() * 900000).toString(); // 6 digit OTP
+};
 
 const getTokenExpiryDate = (token) => {
   const decoded = jwt.decode(token);
@@ -77,8 +81,11 @@ const createNewUser = async (data) => {
     }
 
     const hashedPassword = await hashUserPassword(data.password);
+    const verificationToken = generateRandomToken();
+    const verificationTokenHash = hashToken(verificationToken);
+    const verificationTokenExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
-    await db.User.create({
+    const user = await db.User.create({
       username: data.username,
       email: data.email,
       password: hashedPassword,
@@ -86,9 +93,14 @@ const createNewUser = async (data) => {
       address: data.address || null,
       role: "customer",
       avatar: null,
-      isActive: true,
+      isActive: false,
+      verificationToken: verificationTokenHash,
+      verificationTokenExpiresAt,
     });
-    return { errCode: 0, errMessage: "Người dùng đã được tạo thành công!" };
+
+    await sendVerificationEmail(user, verificationToken);
+
+    return { errCode: 0, errMessage: "Đăng ký thành công! Vui lòng kiểm tra email để xác nhận tài khoản." };
   } catch (error) {
     console.error("createNewUser error:", error);
     return {
@@ -103,6 +115,10 @@ const handleUserLogin = async (email, password) => {
     const user = await db.User.findOne({ where: { email } });
     if (!user) {
       return { errCode: 1, errMessage: "Không tìm thấy người dùng!" };
+    }
+
+    if (!user.isActive) {
+        return { errCode: 3, errMessage: "Tài khoản chưa được kích hoạt. Vui lòng xác nhận email!" };
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
@@ -369,6 +385,56 @@ const revokeRefreshToken = async (userId) => {
   return { errCode: 0, errMessage: "Đã thu hồi refresh token" };
 };
 
+const verifyEmail = async (email, token) => {
+  try {
+    const user = await db.User.findOne({ where: { email } });
+    if (!user) return { errCode: 1, errMessage: "Không tìm thấy người dùng!" };
+
+    if (user.isActive) return { errCode: 0, errMessage: "Tài khoản đã được xác nhận từ trước." };
+
+    const tokenHash = hashToken(token);
+    if (user.verificationToken !== tokenHash) {
+      return { errCode: 2, errMessage: "Mã xác nhận không chính xác!" };
+    }
+
+    if (user.verificationTokenExpiresAt && user.verificationTokenExpiresAt < new Date()) {
+      return { errCode: 3, errMessage: "Mã xác nhận đã hết hạn!" };
+    }
+
+    user.isActive = true;
+    user.verificationToken = null;
+    user.verificationTokenExpiresAt = null;
+    await user.save();
+
+    return { errCode: 0, errMessage: "Xác nhận tài khoản thành công!" };
+  } catch (err) {
+    console.error("verifyEmail error:", err);
+    return { errCode: -1, errMessage: "Lỗi từ server!" };
+  }
+};
+
+const resendVerificationEmail = async (email) => {
+    try {
+        const user = await db.User.findOne({ where: { email } });
+        if (!user) return { errCode: 1, errMessage: "Email không tồn tại" };
+        if (user.isActive) return { errCode: 2, errMessage: "Tài khoản đã được xác nhận" };
+
+        const verificationToken = generateRandomToken();
+        const verificationTokenHash = hashToken(verificationToken);
+        const verificationTokenExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+        user.verificationToken = verificationTokenHash;
+        user.verificationTokenExpiresAt = verificationTokenExpiresAt;
+        await user.save();
+
+        await sendVerificationEmail(user, verificationToken);
+        return { errCode: 0, errMessage: "Đã gửi lại email xác nhận!" };
+    } catch (error) {
+        console.error("resendVerificationEmail error:", error);
+        return { errCode: -1, errMessage: "Lỗi từ server" };
+    }
+};
+
 module.exports = {
   createNewUser,
   handleUserLogin,
@@ -384,4 +450,6 @@ module.exports = {
   forgotPassword,
   rotateRefreshToken,
   revokeRefreshToken,
+  verifyEmail,
+  resendVerificationEmail,
 };

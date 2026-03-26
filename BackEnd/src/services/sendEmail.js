@@ -114,8 +114,48 @@ const sendOrderDeliveredEmail = async (user, order) => {
   return await sendEmail(user.email, subject, html);
 };
 
+const sendVerificationEmail = async (user, token) => {
+  const subject = "📧 Xác nhận tài khoản - Tien-Tech Shop";
+  const verificationUrl = `${process.env.URL_REACT}verify-email?email=${user.email}&token=${token}`;
+  const html = `
+    <div style="font-family: Arial, sans-serif; background-color: #f9fafb; padding: 24px;">
+      <div style="max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); overflow: hidden;">
+        <div style="background-color: #0d6efd; color: white; text-align: center; padding: 16px 0;">
+          <h2 style="margin: 0; font-size: 22px;">Tien-Tech Shop</h2>
+        </div>
+
+        <div style="padding: 24px;">
+          <h3 style="color: #2c3e50;">Chào mừng ${user.username || "bạn"} đến với Tien-Tech!</h3>
+          <p>Cảm ơn bạn đã đăng ký. Vui lòng xác nhận tài khoản của bạn bằng cách nhấn vào nút bên dưới:</p>
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${verificationUrl}" 
+               style="display: inline-block; background-color: #0d6efd; color: white; text-decoration: none; padding: 14px 28px; border-radius: 8px; font-weight: bold; font-size: 16px;">
+              Xác nhận tài khoản
+            </a>
+          </div>
+          <p>Hoặc bạn có thể sử dụng mã xác nhận này trong ứng dụng:</p>
+          <div style="text-align: center; margin: 20px 0;">
+             <div style="display: inline-block; background: #f8f9fa; border: 1px dashed #dee2e6; padding: 10px 20px; font-size: 18px; font-weight: bold; color: #333;">
+              ${token}
+            </div>
+          </div>
+          <p style="font-size: 14px; color: #666;">Link xác nhận này sẽ hết hạn sau 24 giờ.</p>
+          <p>Nếu bạn không đăng ký tài khoản, vui lòng bỏ qua email này.</p>
+          <p style="margin-top: 24px;">Trân trọng,<br>Đội ngũ Tien-Tech</p>
+        </div>
+
+        <div style="background-color: #f3f4f6; text-align: center; padding: 12px;">
+          <p style="font-size: 12px; color: #888; margin: 0;">© ${new Date().getFullYear()} Tien-Tech Shop. All rights reserved.</p>
+        </div>
+      </div>
+    </div>
+  `;
+  return await sendEmail(user.email, subject, html);
+};
+
 module.exports = {
   sendEmail,
   sendForgotPasswordEmail,
   sendOrderDeliveredEmail,
+  sendVerificationEmail,
 };

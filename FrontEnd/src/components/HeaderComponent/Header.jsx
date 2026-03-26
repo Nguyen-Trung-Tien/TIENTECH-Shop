@@ -61,9 +61,7 @@ function Header() {
       state.cart.cartItems?.reduce((sum, i) => sum + (i.quantity || 0), 0) || 0,
   );
 
-  const avatarUrl = user?.avatar?.startsWith("data:image")
-    ? user.avatar
-    : "/default-avatar.png";
+  const avatarUrl = user?.avatar || "/images/avatar-default.png";
 
   useEffect(() => {
     if (theme === "dark") {

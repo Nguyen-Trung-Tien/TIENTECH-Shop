@@ -112,9 +112,17 @@ const HeaderAdmin = ({ toggleSidebar, isCollapsed }) => {
             onClick={() => setShowProfileMenu(!showProfileMenu)}
             className="flex items-center gap-3 rounded-xl p-1 pr-3 hover:bg-slate-50 transition-colors"
           >
-            <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-              <FiUser className="text-lg" />
-            </div>
+            {user?.avatar ? (
+              <img
+                src={user.avatar}
+                alt="Avatar"
+                className="h-8 w-8 rounded-lg object-cover ring-2 ring-primary/10"
+              />
+            ) : (
+              <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                <FiUser className="text-lg" />
+              </div>
+            )}
             <div className="hidden text-left sm:block">
               <p className="text-xs font-semibold text-slate-900 leading-tight">{displayName}</p>
               <p className="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Quản trị viên</p>

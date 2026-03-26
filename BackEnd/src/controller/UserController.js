@@ -360,6 +360,48 @@ const handleResetPassword = async (req, res) => {
   }
 };
 
+const handleVerifyEmail = async (req, res) => {
+  try {
+    const { email, token } = req.body;
+    if (!email || !token) {
+      return res.status(400).json({
+        errCode: 1,
+        errMessage: "Email and token are required",
+      });
+    }
+
+    const result = await UserService.verifyEmail(email, token);
+    return res.status(200).json(result);
+  } catch (e) {
+    console.error("handleVerifyEmail error:", e);
+    return res.status(500).json({
+      errCode: -1,
+      errMessage: "Internal server error",
+    });
+  }
+};
+
+const handleResendVerification = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({
+        errCode: 1,
+        errMessage: "Email is required",
+      });
+    }
+
+    const result = await UserService.resendVerificationEmail(email);
+    return res.status(200).json(result);
+  } catch (e) {
+    console.error("handleResendVerification error:", e);
+    return res.status(500).json({
+      errCode: -1,
+      errMessage: "Internal server error",
+    });
+  }
+};
+
 module.exports = {
   handleCreateNewUser,
   handleLogin,
@@ -374,4 +416,6 @@ module.exports = {
   handleResetPassword,
   handleVerifyResetToken,
   handleGetMe,
+  handleVerifyEmail,
+  handleResendVerification,
 };

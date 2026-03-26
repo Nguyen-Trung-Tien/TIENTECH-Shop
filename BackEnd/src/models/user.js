@@ -72,7 +72,15 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.DATE,
         allowNull: true,
       },
-      isActive: { type: DataTypes.BOOLEAN, defaultValue: true },
+      isActive: { type: DataTypes.BOOLEAN, defaultValue: false },
+      verificationToken: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      verificationTokenExpiresAt: {
+        type: DataTypes.DATE,
+        allowNull: true,
+      },
     },
     {
       sequelize,
