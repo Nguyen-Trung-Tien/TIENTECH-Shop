@@ -402,6 +402,55 @@ const handleResendVerification = async (req, res) => {
   }
 };
 
+const { generateAccessToken, generateRefreshToken } = require("../services/jwtService");
+const crypto = require("crypto");
+const hashToken = (token) => crypto.createHash("sha256").update(token).digest("hex");
+
+const handleGoogleAuthCallback = async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user) {
+      return res.redirect(`${process.env.FRONTEND_URL}/login?error=auth_failed`);
+    }
+
+    const payload = { id: user.id, email: user.email, role: user.role };
+    const accessToken = generateAccessToken(payload);
+    const refreshToken = generateRefreshToken(payload);
+
+    // Get expiration date for refresh token
+    const decoded = require("jsonwebtoken").decode(refreshToken);
+    const refreshTokenExpiresAt = decoded?.exp ? new Date(decoded.exp * 1000) : null;
+
+    // Update user with refresh token hash
+    await user.update({
+      refreshTokenHash: hashToken(refreshToken),
+      refreshTokenExpiresAt,
+    });
+
+    const isProduction = process.env.NODE_ENV === "production";
+
+    res.cookie("accessToken", accessToken, {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: isProduction ? "None" : "Lax",
+      maxAge: 15 * 60 * 1000,
+    });
+
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: isProduction ? "None" : "Lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    // Redirect to frontend (can include a flag to indicate social login success)
+    return res.redirect(`${process.env.FRONTEND_URL}/login-success`);
+  } catch (error) {
+    console.error("Google Auth Callback error:", error);
+    return res.redirect(`${process.env.FRONTEND_URL}/login?error=server_error`);
+  }
+};
+
 module.exports = {
   handleCreateNewUser,
   handleLogin,
@@ -418,4 +467,5 @@ module.exports = {
   handleGetMe,
   handleVerifyEmail,
   handleResendVerification,
+  handleGoogleAuthCallback,
 };

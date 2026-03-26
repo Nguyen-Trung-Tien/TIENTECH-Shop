@@ -8,7 +8,9 @@ import {
   FiHeart, FiShoppingCart, FiCreditCard, FiCheck, FiInfo,
   FiCpu, FiMonitor, FiBattery, FiSmartphone, FiMaximize, FiMoreHorizontal
 } from "react-icons/fi";
+import { FaHeart } from "react-icons/fa";
 import { getImage } from "../../utils/decodeImage";
+import { addToWishlistApi, removeFromWishlistApi, checkWishlistStatusApi } from "../../api/wishlistApi";
 
 const ProductDetailPage = () => {
   const { slug } = useParams();
@@ -17,7 +19,8 @@ const ProductDetailPage = () => {
     product, 
     loading, 
     handleAddToCart, 
-    addingCart 
+    addingCart,
+    user
   } = useProductDetail(slug);
 
   const {
@@ -37,6 +40,8 @@ const ProductDetailPage = () => {
 
   const [mainImage, setMainImage] = useState("");
   const [timeLeft, setTimeLeft] = useState(0);
+  const [isWishlisted, setIsWishlisted] = useState(false);
+  const [loadingWishlist, setLoadingWishlist] = useState(false);
 
   useEffect(() => {
     if (product?.images?.length > 0) {
@@ -44,6 +49,43 @@ const ProductDetailPage = () => {
       setMainImage(primary.imageUrl);
     }
   }, [product]);
+
+  useEffect(() => {
+    if (user && product?.id) {
+      checkWishlistStatus();
+    }
+  }, [user, product?.id]);
+
+  const checkWishlistStatus = async () => {
+    try {
+      const res = await checkWishlistStatusApi(product.id);
+      if (res.errCode === 0) {
+        setIsWishlisted(res.isInWishlist);
+      }
+    } catch (error) {
+      console.error("Check wishlist error:", error);
+    }
+  };
+
+  const handleWishlist = async () => {
+    if (!user) return toast.warn("Vui lòng đăng nhập để lưu sản phẩm!");
+    setLoadingWishlist(true);
+    try {
+      if (isWishlisted) {
+        await removeFromWishlistApi(product.id);
+        setIsWishlisted(false);
+        toast.info("Đã xóa khỏi danh sách yêu thích");
+      } else {
+        await addToWishlistApi(product.id);
+        setIsWishlisted(true);
+        toast.success("Đã thêm vào danh sách yêu thích");
+      }
+    } catch (error) {
+      toast.error("Không thể cập nhật danh sách yêu thích");
+    } finally {
+      setLoadingWishlist(false);
+    }
+  };
 
   useEffect(() => {
     if (product?.flashSale?.isActive && product?.flashSale?.endDate) {
@@ -88,6 +130,7 @@ const ProductDetailPage = () => {
   }, [product, selectedVariant]);
 
   const handleBuyNow = async () => {
+    if (!user) return toast.warn("Vui lòng đăng nhập để mua hàng!");
     if (product?.variants?.length > 0 && !selectedVariant) {
       toast.error("Vui lòng chọn loại sản phẩm (Màu sắc, kích thước...)");
       return;
@@ -111,7 +154,7 @@ const ProductDetailPage = () => {
       toast.error("Vui lòng chọn loại sản phẩm (Màu sắc, kích thước...)");
       return;
     }
-    const itemId = product?.variants?.length > 0 ? selectedVariant?.id : product?.id;
+    const itemId = product?.variants?.length > 0 ? selectedVariant?.id : null;
     handleAddToCart(itemId);
   };
 
@@ -349,8 +392,16 @@ const ProductDetailPage = () => {
                 MUA NGAY
               </button>
 
-              <button className="w-12 h-12 rounded-xl border-2 border-gray-100 flex items-center justify-center text-gray-400 hover:bg-gray-50 hover:text-red-500 hover:border-red-100 transition-all shadow-sm">
-                <FiHeart className="text-xl" />
+              <button 
+                onClick={handleWishlist}
+                disabled={loadingWishlist}
+                className={`w-12 h-12 rounded-xl border-2 flex items-center justify-center transition-all shadow-sm ${
+                  isWishlisted 
+                    ? "border-red-100 bg-red-50 text-red-500" 
+                    : "border-gray-100 text-gray-400 hover:bg-gray-50 hover:text-red-500 hover:border-red-100"
+                }`}
+              >
+                {isWishlisted ? <FaHeart className="text-xl" /> : <FiHeart className="text-xl" />}
               </button>
             </div>
             

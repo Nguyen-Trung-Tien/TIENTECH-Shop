@@ -640,6 +640,23 @@ const updateOrderStatus = async (id, status, user = null, reason = "") => {
     ) {
       order.deliveredAt = new Date();
       order.paymentStatus = "paid";
+
+      // Add loyalty points
+      const userToUpdate = await db.User.findByPk(order.userId, { transaction: t });
+      if (userToUpdate) {
+        const pointsEarned = Math.floor(Number(order.totalPrice) / 10000);
+        const newPoints = (userToUpdate.points || 0) + pointsEarned;
+        
+        let newRank = "Bronze";
+        if (newPoints >= 10000) newRank = "Platinum";
+        else if (newPoints >= 5000) newRank = "Gold";
+        else if (newPoints >= 1000) newRank = "Silver";
+
+        await userToUpdate.update({
+          points: newPoints,
+          rank: newRank
+        }, { transaction: t });
+      }
     }
 
     // When cancelling an order that was NOT yet delivered, refund stock.

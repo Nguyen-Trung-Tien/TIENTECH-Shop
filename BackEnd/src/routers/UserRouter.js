@@ -8,7 +8,20 @@ const {
 
 const upload = require("./multer");
 
+const passport = require("../config/passport");
+
 router.post("/login", UserController.handleLogin);
+router.get(
+  "/auth/google",
+  passport.authenticate("google", { scope: ["profile", "email"], session: false })
+);
+
+router.get(
+  "/auth/google/callback",
+  passport.authenticate("google", { failureRedirect: `${process.env.FRONTEND_URL}/login?error=auth_failed`, session: false }),
+  UserController.handleGoogleAuthCallback
+);
+
 router.post("/create-new-user", UserController.handleCreateNewUser);
 router.post("/refresh-token", UserController.handleRefreshToken);
 router.get("/me", authenticateToken, UserController.handleGetMe);

@@ -5,7 +5,18 @@ import { updateUser } from "../../redux/userSlice";
 import { getUserApi, updateUserApi } from "../../api/userApi";
 import { toast } from "react-toastify";
 import ChangePasswordModal from "./ChangePasswordModal";
-import { FiArrowLeft, FiUser, FiMail, FiPhone, FiMapPin, FiCamera, FiEdit3, FiSave, FiX, FiLock } from "react-icons/fi";
+import {
+  FiArrowLeft,
+  FiUser,
+  FiMail,
+  FiPhone,
+  FiMapPin,
+  FiCamera,
+  FiEdit3,
+  FiSave,
+  FiX,
+  FiLock,
+} from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button, Modal } from "../../components/UI";
 import Badge from "../../components/UI/Badge";
@@ -14,7 +25,7 @@ import AddressManager from "./AddressManager";
 const Profile = () => {
   const dispatch = useDispatch();
   const user = useSelector((state) => state.user.user);
-  
+
   const [formData, setFormData] = useState({
     username: "",
     email: "",
@@ -123,7 +134,9 @@ const Profile = () => {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-surface-50 gap-4">
         <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-        <p className="text-surface-400 font-bold uppercase tracking-widest text-[11px]">Đang tải thông tin cá nhân...</p>
+        <p className="text-surface-400 font-bold uppercase tracking-widest text-[11px]">
+          Đang tải thông tin cá nhân...
+        </p>
       </div>
     );
   }
@@ -132,8 +145,8 @@ const Profile = () => {
     <div className="min-h-screen bg-surface-50 py-12">
       <div className="container-custom">
         {/* Breadcrumb / Back */}
-        <Link 
-          to="/" 
+        <Link
+          to="/"
           className="inline-flex items-center gap-2 text-surface-400 hover:text-primary transition-colors mb-8 font-bold text-[13px] uppercase tracking-widest"
         >
           <FiArrowLeft size={18} /> Quay lại trang chủ
@@ -141,8 +154,12 @@ const Profile = () => {
 
         {/* Page Header */}
         <div className="mb-10">
-          <h1 className="text-3xl font-display font-bold text-surface-900 mb-2">Hồ sơ cá nhân</h1>
-          <p className="text-surface-500 font-medium">Quản lý thông tin tài khoản và bảo mật của bạn.</p>
+          <h1 className="text-3xl font-display font-bold text-surface-900 mb-2">
+            Hồ sơ cá nhân
+          </h1>
+          <p className="text-surface-500 font-medium">
+            Quản lý thông tin tài khoản và bảo mật của bạn.
+          </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
@@ -151,9 +168,9 @@ const Profile = () => {
             <div className="bg-white rounded-[32px] p-8 border border-surface-200 shadow-soft text-center overflow-hidden relative">
               {/* Profile Background Decor */}
               <div className="absolute top-0 left-0 w-full h-24 bg-primary/5 -z-0"></div>
-              
+
               <div className="relative z-10">
-                <div 
+                <div
                   className="group relative w-32 h-32 mx-auto mb-6 rounded-full border-4 border-white shadow-xl cursor-pointer overflow-hidden"
                   onClick={() => setShowAvatarModal(true)}
                 >
@@ -167,8 +184,12 @@ const Profile = () => {
                   </div>
                 </div>
 
-                <h2 className="text-xl font-bold text-surface-900 mb-1">{formData.username || "Người dùng"}</h2>
-                <p className="text-sm text-surface-500 mb-6">{formData.email}</p>
+                <h2 className="text-xl font-bold text-surface-900 mb-1">
+                  {formData.username || "Người dùng"}
+                </h2>
+                <p className="text-sm text-surface-500 mb-6">
+                  {formData.email}
+                </p>
 
                 <div className="flex flex-col gap-3">
                   <Button
@@ -192,27 +213,60 @@ const Profile = () => {
             </div>
 
             {/* Quick Stats or Info */}
-            <div className="bg-surface-900 rounded-[32px] p-8 text-white shadow-xl shadow-surface-900/20">
-               <div className="flex items-center gap-3 mb-6">
-                 <div className="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center text-primary">
-                    <FiUser size={20} />
-                 </div>
-                 <h3 className="text-lg font-display font-bold">Thành viên</h3>
-               </div>
-               <div className="space-y-4">
-                  <div className="flex justify-between items-center py-2 border-b border-white/10">
-                    <span className="text-white/50 text-sm font-medium">Xếp hạng</span>
-                    <Badge variant="brand">Bạch Kim</Badge>
-                  </div>
-                  <div className="flex justify-between items-center py-2 border-b border-white/10">
-                    <span className="text-white/50 text-sm font-medium">Đơn hàng đã mua</span>
-                    <span className="font-bold">24</span>
-                  </div>
-                  <div className="flex justify-between items-center py-2">
-                    <span className="text-white/50 text-sm font-medium">Tham gia từ</span>
-                    <span className="font-bold">20/03/2026</span>
-                  </div>
-               </div>
+            <div className=" bg-white dark:bg-surface-900 rounded-[32px] p-8 text-gray-900 dark:text-white shadow-xl dark:shadow-surface-900/20">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center text-primary">
+                  <FiUser size={20} />
+                </div>
+
+                <h3 className="text-lg font-display font-bold text-gray-900 dark:text-white">
+                  Thành viên
+                </h3>
+              </div>
+
+              <div className="space-y-4">
+                <div className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-white/10">
+                  <span className="text-gray-500 dark:text-white/50 text-sm font-medium">
+                    Xếp hạng
+                  </span>
+
+                  <Badge
+                    variant={
+                      user?.rank === "Platinum"
+                        ? "brand"
+                        : user?.rank === "Gold"
+                          ? "warning"
+                          : user?.rank === "Silver"
+                            ? "primary"
+                            : "secondary"
+                    }
+                  >
+                    {user?.rank || "Đồng"}
+                  </Badge>
+                </div>
+
+                <div className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-white/10">
+                  <span className="text-gray-500 dark:text-white/50 text-sm font-medium">
+                    Điểm tích lũy
+                  </span>
+
+                  <span className="font-bold text-primary">
+                    {user?.points || 0} pts
+                  </span>
+                </div>
+
+                <div className="flex justify-between items-center py-2">
+                  <span className="text-gray-500 dark:text-white/50 text-sm font-medium">
+                    Tham gia từ
+                  </span>
+
+                  <span className="font-bold">
+                    {user?.createdAt
+                      ? new Date(user.createdAt).toLocaleDateString("vi-VN")
+                      : "N/A"}
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -220,25 +274,60 @@ const Profile = () => {
           <div className="lg:col-span-8 space-y-8">
             <div className="bg-white rounded-[32px] p-8 md:p-10 border border-surface-200 shadow-soft">
               <div className="flex items-center justify-between mb-8 pb-6 border-b border-surface-100">
-                 <h3 className="text-xl font-display font-bold text-surface-900">Chi tiết thông tin</h3>
-                 {isEditing && (
-                   <Badge variant="warning" className="animate-pulse">Chế độ chỉnh sửa</Badge>
-                 )}
+                <h3 className="text-xl font-display font-bold text-surface-900">
+                  Chi tiết thông tin
+                </h3>
+                {isEditing && (
+                  <Badge variant="warning" className="animate-pulse">
+                    Chế độ chỉnh sửa
+                  </Badge>
+                )}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {/* Field Groups */}
                 {[
-                  { name: "username", label: "Họ và tên", icon: FiUser, placeholder: "Nguyễn Văn A" },
-                  { name: "email", label: "Email liên lạc", icon: FiMail, type: "email", placeholder: "example@mail.com" },
-                  { name: "phone", label: "Số điện thoại", icon: FiPhone, placeholder: "09xx xxx xxx" },
-                  { name: "address", label: "Địa chỉ thường trú", icon: FiMapPin, placeholder: "Số nhà, đường, quận/huyện, tỉnh/thành phố...", colSpan: true },
+                  {
+                    name: "username",
+                    label: "Họ và tên",
+                    icon: FiUser,
+                    placeholder: "Nguyễn Văn A",
+                  },
+                  {
+                    name: "email",
+                    label: "Email liên lạc",
+                    icon: FiMail,
+                    type: "email",
+                    placeholder: "example@mail.com",
+                  },
+                  {
+                    name: "phone",
+                    label: "Số điện thoại",
+                    icon: FiPhone,
+                    placeholder: "09xx xxx xxx",
+                  },
+                  {
+                    name: "address",
+                    label: "Địa chỉ thường trú",
+                    icon: FiMapPin,
+                    placeholder: "Số nhà, đường, quận/huyện, tỉnh/thành phố...",
+                    colSpan: true,
+                  },
                 ].map((field) => (
-                  <div key={field.name} className={`${field.colSpan ? "md:col-span-2" : ""} space-y-1.5`}>
-                    <label className="text-[11px] font-black text-surface-400 uppercase tracking-widest ml-1">{field.label}</label>
-                    <div className={`relative group transition-all duration-300 ${isEditing ? "opacity-100" : "opacity-80"}`}>
-                      <div className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors ${isEditing ? "text-primary" : "text-surface-300"}`}>
-                         <field.icon size={18} />
+                  <div
+                    key={field.name}
+                    className={`${field.colSpan ? "md:col-span-2" : ""} space-y-1.5`}
+                  >
+                    <label className="text-[11px] font-black text-surface-400 uppercase tracking-widest ml-1">
+                      {field.label}
+                    </label>
+                    <div
+                      className={`relative group transition-all duration-300 ${isEditing ? "opacity-100" : "opacity-80"}`}
+                    >
+                      <div
+                        className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors ${isEditing ? "text-primary" : "text-surface-300"}`}
+                      >
+                        <field.icon size={18} />
                       </div>
                       <input
                         type={field.type || "text"}
@@ -248,8 +337,8 @@ const Profile = () => {
                         disabled={!isEditing}
                         placeholder={field.placeholder}
                         className={`w-full h-14 pl-12 pr-4 bg-surface-50 border-2 rounded-2xl text-[15px] font-bold outline-none transition-all ${
-                          isEditing 
-                            ? "bg-white border-primary/20 focus:border-primary focus:ring-4 focus:ring-primary/5" 
+                          isEditing
+                            ? "bg-white border-primary/20 focus:border-primary focus:ring-4 focus:ring-primary/5"
                             : "border-transparent bg-surface-50 text-surface-900 cursor-not-allowed"
                         }`}
                       />
@@ -259,7 +348,7 @@ const Profile = () => {
               </div>
 
               {isEditing && (
-                <motion.div 
+                <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   className="mt-12 flex justify-end gap-4"
@@ -318,7 +407,9 @@ const Profile = () => {
             />
             <div className="w-full h-14 bg-surface-50 border-2 border-dashed border-surface-200 rounded-2xl flex items-center justify-center gap-2 group-hover:border-primary/50 group-hover:bg-primary/5 transition-all">
               <FiCamera className="text-surface-400 group-hover:text-primary" />
-              <span className="text-sm font-bold text-surface-600 group-hover:text-primary">Chọn ảnh từ thiết bị</span>
+              <span className="text-sm font-bold text-surface-600 group-hover:text-primary">
+                Chọn ảnh từ thiết bị
+              </span>
             </div>
           </div>
 

@@ -7,6 +7,7 @@ import LayoutComponent from "../components/LayoutComponent/LayoutComponent";
 import HomePage from "../pages/HomePage/HomePage";
 import LoginPage from "../pages/LoginPage/LoginPage";
 import RegisterPage from "../pages/RegisterPage/RegisterPage";
+import LoginSuccess from "../pages/LoginSuccess/LoginSuccess";
 import VerifyEmail from "../pages/VerifyEmail/VerifyEmail";
 import OTPVerification from "../pages/OTPVerification/OTPVerification";
 import CartPage from "../pages/CartPage/CartPage";
@@ -23,6 +24,7 @@ import OrderHistory from "../pages/OrdersHistory/OrderHistory";
 import OrderPage from "../pages/OrderPage/OrderPage";
 import OrderDetail from "../pages/OrderDetail/OrderDetail";
 import AboutPage from "../pages/AboutPage/AboutPage";
+import WishlistPage from "../pages/WishlistPage/WishlistPage";
 
 const UserRoutes = () => {
   return (
@@ -53,6 +55,8 @@ const UserRoutes = () => {
           element={<OTPVerification />}
         />
       </Route>
+
+      <Route path="login-success" element={<LoginSuccess />} />
 
       <Route element={<PrivateRoute />}>
         <Route
@@ -124,6 +128,14 @@ const UserRoutes = () => {
           element={
             <LayoutComponent isShowHeader={true} isShowFooter={true}>
               <FortuneProducts />
+            </LayoutComponent>
+          }
+        />
+        <Route
+          path="wishlist"
+          element={
+            <LayoutComponent isShowHeader={true} isShowFooter={true}>
+              <WishlistPage />
             </LayoutComponent>
           }
         />

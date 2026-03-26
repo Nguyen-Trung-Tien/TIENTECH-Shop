@@ -9,10 +9,12 @@ const http = require("http");
 const { Server } = require("socket.io");
 const ProductService = require("./services/ProductService");
 const rateLimit = require("express-rate-limit");
+const passport = require("passport");
 
 dotenv.config();
 
 const app = express();
+app.use(passport.initialize());
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {

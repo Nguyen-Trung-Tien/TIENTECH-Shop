@@ -1,15 +1,35 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { FiEye, FiEyeOff, FiUser, FiMail, FiPhone, FiLock, FiArrowLeft } from "react-icons/fi";
+import {
+  FiEye,
+  FiEyeOff,
+  FiUser,
+  FiMail,
+  FiPhone,
+  FiLock,
+  FiArrowLeft,
+} from "react-icons/fi";
 import { toast } from "react-toastify";
 import { motion } from "framer-motion";
+import { FcGoogle } from "react-icons/fc";
 
 import { registerUser } from "../../api/userApi";
 import Loading from "../../components/Loading/Loading";
 import logoImage from "../../assets/Tien-Tech Shop.png";
 
 // Di chuyển FloatingInput ra ngoài để tránh việc re-mount component khi state của cha thay đổi
-const FloatingInput = ({ id, name, type, label, icon: Icon, required, toggleIcon: ToggleIcon, onToggle, value, onChange }) => (
+const FloatingInput = ({
+  id,
+  name,
+  type,
+  label,
+  icon: Icon,
+  required,
+  toggleIcon: ToggleIcon,
+  onToggle,
+  value,
+  onChange,
+}) => (
   <div className="relative group">
     <div className="absolute left-4 top-1/2 -translate-y-1/2 text-surface-400 group-focus-within:text-primary transition-colors duration-200">
       <Icon size={18} />
@@ -53,22 +73,22 @@ const RegisterPage = () => {
     email: "",
     phone: "",
     password: "",
-    confirmPassword: ""
+    confirmPassword: "",
   });
-  
+
   const navigate = useNavigate();
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
   const handleRegister = async (e) => {
     e.preventDefault();
-    
+
     if (formData.password.length < 6) {
       toast.warning("Mật khẩu phải có ít nhất 6 ký tự");
       return;
@@ -84,7 +104,9 @@ const RegisterPage = () => {
       const { username, email, phone, password } = formData;
       const data = await registerUser({ username, email, phone, password });
       if (data.errCode === 0) {
-        toast.success(data.errMessage || "Đăng ký thành công! Vui lòng nhập mã OTP.");
+        toast.success(
+          data.errMessage || "Đăng ký thành công! Vui lòng nhập mã OTP.",
+        );
         navigate(`/verify-account?email=${encodeURIComponent(email)}`);
       } else {
         toast.error(data.errMessage || "Đăng ký thất bại!");
@@ -100,14 +122,14 @@ const RegisterPage = () => {
   return (
     <div className="min-h-screen bg-surface-50 flex items-center justify-center p-4">
       {loading && <Loading />}
-      
+
       <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-12 bg-white rounded-[2.5rem] shadow-2xl shadow-surface-900/10 overflow-hidden min-h-[700px]">
         {/* Left Side - Visual */}
         <div className="hidden lg:flex lg:col-span-5 relative bg-surface-900 items-center justify-center p-12 overflow-hidden">
           {/* Decorative Gradients */}
           <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] bg-primary/20 rounded-full blur-[120px]"></div>
           <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] bg-brand/10 rounded-full blur-[120px]"></div>
-          
+
           <div className="relative z-10 text-center">
             <motion.img
               initial={{ opacity: 0, y: 20 }}
@@ -116,21 +138,23 @@ const RegisterPage = () => {
               alt="Logo"
               className="w-64 mx-auto mb-8 brightness-0 invert"
             />
-            <motion.h2 
+            <motion.h2
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
               className="text-3xl font-display text-white mb-4"
             >
-              Trải nghiệm công nghệ <span className="text-primary-hover">đỉnh cao</span>
+              Trải nghiệm công nghệ{" "}
+              <span className="text-primary-hover">đỉnh cao</span>
             </motion.h2>
-            <motion.p 
+            <motion.p
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
               className="text-surface-400 text-lg font-medium opacity-80"
             >
-              Tham gia cùng hàng nghìn khách hàng tin dùng Tien-Tech Shop mỗi ngày.
+              Tham gia cùng hàng nghìn khách hàng tin dùng Tien-Tech Shop mỗi
+              ngày.
             </motion.p>
           </div>
         </div>
@@ -143,8 +167,12 @@ const RegisterPage = () => {
             </div>
 
             <div className="mb-10">
-              <h1 className="text-3xl font-display text-surface-900 mb-2">Tạo tài khoản</h1>
-              <p className="text-surface-500 font-medium">Bắt đầu hành trình mua sắm tuyệt vời ngay hôm nay.</p>
+              <h1 className="text-3xl font-display text-surface-900 mb-2">
+                Tạo tài khoản
+              </h1>
+              <p className="text-surface-500 font-medium">
+                Bắt đầu hành trình mua sắm tuyệt vời ngay hôm nay.
+              </p>
             </div>
 
             <form onSubmit={handleRegister} className="space-y-4">
@@ -222,11 +250,36 @@ const RegisterPage = () => {
                   )}
                 </div>
               </button>
+
+              <div className="relative my-8">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-surface-200"></div>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-4 bg-white text-surface-500 font-bold uppercase tracking-wider">
+                    Hoặc
+                  </span>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  window.location.href = `${import.meta.env.VITE_API_URL || "http://localhost:8080/api/v1"}/user/auth/google`;
+                }}
+                className="w-full h-14 bg-white border-2 border-surface-200 text-surface-700 font-bold rounded-2xl flex items-center justify-center gap-3 transition-all hover:bg-surface-50 hover:border-surface-300 active:scale-[0.98]"
+              >
+                <FcGoogle size={22} />
+                <span>Đăng nhập với Google</span>
+              </button>
             </form>
 
             <p className="text-center mt-8 text-surface-500 font-medium">
               Đã có tài khoản?{" "}
-              <Link to="/login" className="text-primary font-bold hover:underline decoration-2 underline-offset-4">
+              <Link
+                to="/login"
+                className="text-primary font-bold hover:underline decoration-2 underline-offset-4"
+              >
                 Đăng nhập
               </Link>
             </p>

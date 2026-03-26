@@ -13,6 +13,7 @@ import {
   FiCompass,
   FiSun,
   FiMoon,
+  FiHeart,
 } from "react-icons/fi";
 
 import { motion, AnimatePresence } from "framer-motion";
@@ -183,6 +184,7 @@ function Header() {
 
   const navLinks = [
     { name: "Trang chủ", path: "/", icon: <FiCompass /> },
+    { name: "Yêu thích", path: "/wishlist", icon: <FiHeart /> },
     { name: "Phong thủy", path: "/fortune-products", icon: <FiBox /> },
     { name: "Giới thiệu", path: "/about", icon: <FiShoppingBag /> },
   ];
@@ -334,6 +336,15 @@ function Header() {
           {/* Notifications */}
           <NotificationBell />
 
+          {/* Wishlist */}
+          <Link
+            to="/wishlist"
+            className="group relative flex items-center justify-center w-11 h-11 rounded-2xl text-slate-700 dark:text-dark-text-secondary hover:bg-slate-100 dark:hover:bg-dark-surface hover:text-primary dark:hover:text-brand transition-all"
+            title="Danh sách yêu thích"
+          >
+            <FiHeart className="text-[22px] group-hover:scale-110 transition-transform" />
+          </Link>
+
           {/* Cart */}
           <Link
             to="/cart"
@@ -399,6 +410,12 @@ function Header() {
                         className="flex items-center gap-3 px-4 py-2.5 text-[14px] font-semibold text-slate-600 dark:text-dark-text-secondary hover:bg-slate-50 dark:hover:bg-dark-bg hover:text-primary dark:hover:text-brand rounded-xl transition-all"
                       >
                         <FiUser className="text-lg" /> Thông tin cá nhân
+                      </Link>
+                      <Link
+                        to="/wishlist"
+                        className="flex items-center gap-3 px-4 py-2.5 text-[14px] font-semibold text-slate-600 dark:text-dark-text-secondary hover:bg-slate-50 dark:hover:bg-dark-bg hover:text-primary dark:hover:text-brand rounded-xl transition-all"
+                      >
+                        <FiHeart className="text-lg" /> Danh sách yêu thích
                       </Link>
                       <Link
                         to="/orders"

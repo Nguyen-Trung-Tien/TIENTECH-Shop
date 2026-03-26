@@ -37,6 +37,11 @@ module.exports = (sequelize, DataTypes) => {
         as: "addresses",
         onDelete: "CASCADE",
       });
+      User.hasMany(models.Wishlist, {
+        foreignKey: "userId",
+        as: "wishlistItems",
+        onDelete: "CASCADE",
+      });
     }
   }
 
@@ -56,12 +61,32 @@ module.exports = (sequelize, DataTypes) => {
       },
       phone: { type: DataTypes.STRING, allowNull: true },
       address: { type: DataTypes.STRING, allowNull: true },
-      password: { type: DataTypes.STRING, allowNull: false },
+      password: { type: DataTypes.STRING, allowNull: true },
       role: {
         type: DataTypes.ENUM("customer", "admin"),
         defaultValue: "customer",
       },
       avatar: { type: DataTypes.STRING, allowNull: true },
+      points: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0,
+        allowNull: false,
+      },
+      rank: {
+        type: DataTypes.ENUM("Bronze", "Silver", "Gold", "Platinum"),
+        defaultValue: "Bronze",
+        allowNull: false,
+      },
+      googleId: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        unique: true,
+      },
+      provider: {
+        type: DataTypes.STRING,
+        defaultValue: "local",
+        allowNull: false,
+      },
       resetToken: {
         type: DataTypes.STRING,
         allowNull: true,

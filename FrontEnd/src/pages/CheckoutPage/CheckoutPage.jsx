@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { FiArrowLeft, FiChevronRight, FiCheckCircle } from "react-icons/fi";
+import { FiArrowLeft, FiChevronRight, FiCheckCircle, FiShoppingBag } from "react-icons/fi";
 import { useSelector, useDispatch } from "react-redux";
 import { toast } from "react-toastify";
 import { createOrder } from "../../api/orderApi";
@@ -9,6 +9,7 @@ import { clearCart, applyVoucher, removeVoucher } from "../../redux/cartSlice";
 import CheckoutForm from "./CheckoutForm";
 import OrderSummary from "./OrderSummary";
 import VoucherSelector from "../../components/Cart/VoucherSelector";
+import { getImage } from "../../utils/decodeImage";
 
 const CheckoutPage = () => {
   const location = useLocation();
@@ -160,6 +161,44 @@ const CheckoutPage = () => {
               setFormData={setCheckoutData} 
               user={user}
             />
+
+            {/* List items section */}
+            <div className="bg-white dark:bg-dark-card rounded-[32px] p-8 shadow-sm border border-slate-100 dark:border-dark-border">
+              <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-widest mb-6 flex items-center gap-2">
+                <FiShoppingBag className="text-primary" /> Sản phẩm ({selectedItems.length})
+              </h3>
+              <div className="space-y-4">
+                {selectedItems.map((item, idx) => (
+                  <div key={idx} className="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 dark:bg-dark-bg border border-slate-100 dark:border-dark-border">
+                    <div className="w-16 h-16 bg-white rounded-xl overflow-hidden flex-shrink-0 border border-slate-100">
+                      <img 
+                        src={getImage(item.variant?.imageUrl || item.product?.image)} 
+                        alt={item.product?.name} 
+                        className="w-full h-full object-contain p-2"
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-xs font-black text-slate-900 dark:text-white uppercase truncate">
+                        {item.product?.name}
+                      </h4>
+                      {item.variant && (
+                        <p className="text-[10px] font-bold text-slate-400 uppercase mt-1">
+                          Loại: {Object.values(item.variant.attributes || {}).join(" / ")}
+                        </p>
+                      )}
+                      <div className="flex items-center justify-between mt-2">
+                        <p className="text-xs font-black text-primary">
+                          {Number(item.finalPrice || item.variant?.price || item.product?.basePrice).toLocaleString()}₫
+                        </p>
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-200 dark:bg-dark-surface px-2 py-1 rounded-md">
+                          Số lượng: {item.quantity}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
             
             {/* Voucher Selection in Checkout */}
             <div className="bg-white dark:bg-dark-card rounded-[32px] p-8 shadow-sm border border-slate-100 dark:border-dark-border">

@@ -7,8 +7,9 @@ import { addCart, getAllCarts, createCart } from "../../api/cartApi";
 import { getProductByIdApi } from "../../api/productApi";
 import { addCartItem } from "../../redux/cartSlice";
 import { getImage } from "../../utils/decodeImage";
-import { FiShoppingCart } from "react-icons/fi";
-import { FaStar } from "react-icons/fa";
+import { FiShoppingCart, FiHeart } from "react-icons/fi";
+import { FaStar, FaHeart } from "react-icons/fa";
+import { addToWishlistApi, removeFromWishlistApi } from "../../api/wishlistApi";
 import Button from "../UI/Button";
 import Badge from "../UI/Badge";
 import QuickVariantModal from "./QuickVariantModal";
@@ -23,6 +24,15 @@ const ProductCard = ({ product }) => {
   const [loadingCart, setLoadingCart] = useState(false);
   const [showQuickModal, setShowQuickModal] = useState(false);
   const [fullProduct, setFullProduct] = useState(null);
+  const [isWishlisted, setIsWishlisted] = useState(false);
+
+  // Initialize wishlist status if user is logged in
+  React.useEffect(() => {
+    if (userId && product.wishlists) {
+      const wishlisted = product.wishlists.some(w => w.userId === userId);
+      setIsWishlisted(wishlisted);
+    }
+  }, [userId, product.wishlists]);
 
   const {
     id,
@@ -42,6 +52,25 @@ const ProductCard = ({ product }) => {
     basePrice,
     hasVariants,
   } = product;
+
+  const handleWishlist = async (e) => {
+    e.stopPropagation();
+    if (!userId) return toast.warn("Vui lòng đăng nhập để lưu sản phẩm!");
+
+    try {
+      if (isWishlisted) {
+        await removeFromWishlistApi(id);
+        setIsWishlisted(false);
+        toast.info("Đã xóa khỏi danh sách yêu thích");
+      } else {
+        await addToWishlistApi(id);
+        setIsWishlisted(true);
+        toast.success("Đã thêm vào danh sách yêu thích");
+      }
+    } catch (error) {
+      toast.error("Không thể cập nhật danh sách yêu thích");
+    }
+  };
 
   const avgRating = useMemo(() => {
     if (!reviews.length) return 0;
@@ -167,6 +196,18 @@ const ProductCard = ({ product }) => {
               <Badge variant="brand">-{discount}%</Badge>
             )}
           </div>
+
+          {/* Wishlist Button */}
+          <button
+            onClick={handleWishlist}
+            className="absolute top-2 right-2 z-20 p-2 bg-white/80 dark:bg-dark-surface/80 backdrop-blur-sm rounded-full shadow-sm hover:scale-110 transition-transform active:scale-95 group/heart"
+          >
+            {isWishlisted ? (
+              <FaHeart className="text-red-500" size={16} />
+            ) : (
+              <FiHeart className="text-slate-400 group-hover/heart:text-red-500 transition-colors" size={16} />
+            )}
+          </button>
 
           {/* Mobile quick add button */}
           <div className="absolute bottom-2 right-2 lg:hidden">

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FiEye, FiEyeOff, FiMail, FiLock, FiArrowLeft, FiUser } from "react-icons/fi";
+import { FcGoogle } from "react-icons/fc";
 import { useDispatch } from "react-redux";
 import { toast } from "react-toastify";
 import { motion, AnimatePresence } from "framer-motion";
@@ -194,6 +195,26 @@ const LoginPage = () => {
                     </>
                   )}
                 </div>
+              </button>
+
+              <div className="relative my-8">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-surface-200"></div>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-4 bg-white text-surface-500 font-bold uppercase tracking-wider">Hoặc</span>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  window.location.href = `${import.meta.env.VITE_API_URL || "http://localhost:8080/api/v1"}/user/auth/google`;
+                }}
+                className="w-full h-14 bg-white border-2 border-surface-200 text-surface-700 font-bold rounded-2xl flex items-center justify-center gap-3 transition-all hover:bg-surface-50 hover:border-surface-300 active:scale-[0.98]"
+              >
+                <FcGoogle size={22} />
+                <span>Đăng nhập với Google</span>
               </button>
             </form>
 
