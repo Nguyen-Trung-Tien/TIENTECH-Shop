@@ -36,7 +36,7 @@ module.exports = (sequelize, DataTypes) => {
       price: { type: DataTypes.DECIMAL(15, 2), allowNull: false },
       subtotal: { type: DataTypes.DECIMAL(15, 2), allowNull: false },
       productName: { type: DataTypes.STRING, allowNull: false },
-      image: { type: DataTypes.BLOB("long"), allowNull: true },
+      image: { type: DataTypes.STRING, allowNull: true },
       variantId: { type: DataTypes.INTEGER, allowNull: true },
       returnStatus: {
         type: DataTypes.ENUM(
@@ -44,7 +44,7 @@ module.exports = (sequelize, DataTypes) => {
           "requested", // khách yêu cầu trả
           "approved", // admin chấp nhận
           "rejected", // admin từ chối
-          "completed" // hoàn tất trả hàng
+          "completed", // hoàn tất trả hàng
         ),
         defaultValue: "none",
       },
@@ -66,7 +66,7 @@ module.exports = (sequelize, DataTypes) => {
       modelName: "OrderItem",
       tableName: "OrderItems",
       timestamps: true,
-    }
+    },
   );
 
   return OrderItem;

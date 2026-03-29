@@ -17,6 +17,7 @@ const CartPage = () => {
   
   const [selectedItems, setSelectedItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
     const loadCart = async () => {
@@ -27,12 +28,13 @@ const CartPage = () => {
     loadCart();
   }, [fetchCart]);
 
-  // Sync selected items when cart loads
+  // Sync selected items when cart first loads
   useEffect(() => {
-    if (cartItems.length > 0 && selectedItems.length === 0) {
+    if (cartItems.length > 0 && !isInitialized) {
       setSelectedItems(cartItems.map((i) => i.id));
+      setIsInitialized(true);
     }
-  }, [cartItems]);
+  }, [cartItems, isInitialized]);
 
   const subtotal = useMemo(() => calculateSubtotal(selectedItems), [selectedItems, calculateSubtotal]);
 
@@ -50,8 +52,20 @@ const CartPage = () => {
     );
   };
 
+  const handleRemove = async (id) => {
+    try {
+      await handleRemoveItem(id);
+      setSelectedItems((prev) => prev.filter((itemId) => itemId !== id));
+    } catch (error) {
+      // Error handled in useCart
+    }
+  };
+
   const handleCheckOut = () => {
     const itemsToCheckout = cartItems.filter((i) => selectedItems.includes(i.id));
+    if (itemsToCheckout.length === 0) {
+      return alert("Vui lòng chọn ít nhất một sản phẩm để thanh toán!");
+    }
     navigate("/checkout", { 
       state: { 
         selectedItems: itemsToCheckout,
@@ -101,7 +115,7 @@ const CartPage = () => {
                     <input 
                       type="checkbox" 
                       className="w-5 h-5 rounded-lg border-2 border-slate-200 text-primary focus:ring-primary"
-                      checked={selectedItems.length === cartItems.length}
+                      checked={selectedItems.length === cartItems.length && cartItems.length > 0}
                       onChange={() => setSelectedItems(selectedItems.length === cartItems.length ? [] : cartItems.map(i => i.id))}
                     />
                     <span className="text-xs font-black text-slate-400 uppercase tracking-widest">Chọn tất cả</span>
@@ -114,8 +128,8 @@ const CartPage = () => {
                       key={item.id}
                       item={item}
                       onUpdateQty={handleUpdateQty}
-                      onRemove={handleRemoveItem}
-                      onToggleSelect={toggleSelect}
+                      onRemove={handleRemove}
+                      onSelect={toggleSelect}
                       isSelected={selectedItems.includes(item.id)}
                     />
                   ))}

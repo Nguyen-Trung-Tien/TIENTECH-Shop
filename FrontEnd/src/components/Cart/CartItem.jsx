@@ -1,7 +1,6 @@
 import React, { useMemo } from "react";
 import { FiMinus, FiPlus, FiTrash2 } from "react-icons/fi";
 import { motion } from "framer-motion";
-import { getImage } from "../../utils/decodeImage";
 import { useNavigate } from "react-router-dom";
 
 /**
@@ -77,7 +76,7 @@ const CartItem = ({
           onClick={() => navigate(`/product-detail/${item.product?.id}?variant=${item.variant?.id}`)}
         >
           <img 
-            src={getImage(itemImage)} 
+            src={itemImage} 
             alt={item.product?.name} 
             className="w-full h-full object-contain mix-blend-multiply group-hover:scale-110 transition-transform duration-500"
           />

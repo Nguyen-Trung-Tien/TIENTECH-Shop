@@ -30,7 +30,7 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.TEXT,
       },
       image: {
-        type: DataTypes.BLOB("long"),
+        type: DataTypes.STRING,
       },
     },
     {
@@ -38,7 +38,7 @@ module.exports = (sequelize, DataTypes) => {
       modelName: "Brand",
       tableName: "Brands",
       timestamps: true,
-    }
+    },
   );
 
   return Brand;

@@ -109,7 +109,7 @@ const PaymentPage = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
           <h1 className="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
-             <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary shadow-sm">
+             <div className="w-12 h-12 bg-indigo-600/10 rounded-2xl flex items-center justify-center text-indigo-600 shadow-sm">
                 <FiDollarSign />
              </div>
              Quản lý thanh toán
@@ -126,7 +126,7 @@ const PaymentPage = () => {
            <select 
              value={filterStatus}
              onChange={(e) => setFilterStatus(e.target.value)}
-             className="w-full h-12 bg-slate-50 border border-slate-100 rounded-2xl px-4 text-xs font-black uppercase tracking-widest outline-none focus:ring-4 focus:ring-primary/5 transition-all appearance-none pr-10"
+             className="w-full h-12 bg-slate-50 border border-slate-100 rounded-2xl px-4 text-xs font-black uppercase tracking-widest outline-none focus:ring-4 focus:ring-indigo-600/5 transition-all appearance-none pr-10"
            >
               <option value="all">Tất cả trạng thái</option>
               <option value="pending">Chờ xử lý</option>
@@ -138,20 +138,20 @@ const PaymentPage = () => {
         </div>
 
         <div className="relative flex-1 min-w-[300px] group">
-           <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" />
+           <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-600 transition-colors" />
            <input
              type="text"
              placeholder="Tìm kiếm theo Mã đơn, ID giao dịch, Email..."
              value={searchTerm}
              onChange={(e) => setSearchTerm(e.target.value)}
              onKeyDown={(e) => e.key === "Enter" && loadPayments(1)}
-             className="w-full h-12 bg-slate-50 border border-slate-100 rounded-2xl pl-12 pr-4 text-sm font-bold focus:bg-white focus:ring-4 focus:ring-primary/5 transition-all outline-none"
+             className="w-full h-12 bg-slate-50 border border-slate-100 rounded-2xl pl-12 pr-4 text-sm font-bold focus:bg-white focus:ring-4 focus:ring-indigo-600/5 transition-all outline-none"
            />
         </div>
 
         <button 
           onClick={() => loadPayments(1)}
-          className="h-12 px-8 bg-primary text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-lg shadow-primary/20"
+          className="h-12 px-8 bg-indigo-600 text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-lg shadow-indigo-600/20"
         >
           Lọc dữ liệu
         </button>
@@ -176,7 +176,7 @@ const PaymentPage = () => {
                 <tr>
                   <td colSpan="6" className="px-6 py-32 text-center">
                     <div className="flex flex-col items-center gap-4">
-                       <FiRefreshCw className="text-4xl text-primary/20 animate-spin" />
+                       <FiRefreshCw className="text-4xl text-indigo-600/20 animate-spin" />
                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Đang tải giao dịch...</p>
                     </div>
                   </td>
@@ -227,7 +227,7 @@ const PaymentPage = () => {
                        <div className="flex items-center justify-center gap-2">
                           <button 
                             onClick={() => setSelectedPayment(p)}
-                            className="w-10 h-10 rounded-xl bg-slate-100 text-slate-500 flex items-center justify-center hover:bg-primary hover:text-white transition-all shadow-sm"
+                            className="w-10 h-10 rounded-xl bg-slate-100 text-slate-500 flex items-center justify-center hover:bg-indigo-600 hover:text-white transition-all shadow-sm"
                           >
                              <FiInfo size={16} />
                           </button>

@@ -1,7 +1,6 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiX, FiCheck, FiShoppingCart, FiCreditCard } from "react-icons/fi";
-import { getImage } from "../../utils/decodeImage";
 import { useProductVariants } from "../../hooks/useProductVariants";
 import Button from "../UI/Button";
 
@@ -75,7 +74,7 @@ const QuickVariantModal = ({ product, isOpen, onClose, onAdd, onBuyNow }) => {
             <div className="flex gap-6 mb-8">
               <div className="w-24 h-24 rounded-2xl bg-slate-50 dark:bg-dark-bg border border-slate-100 dark:border-dark-border p-2 overflow-hidden flex-shrink-0">
                 <img
-                  src={getImage(displayImage)}
+                  src={displayImage}
                   alt={product.name}
                   className="w-full h-full object-contain mix-blend-multiply dark:mix-blend-normal"
                 />

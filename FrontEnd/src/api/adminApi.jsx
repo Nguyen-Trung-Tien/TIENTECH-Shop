@@ -31,3 +31,13 @@ export const getAIInsights = async () => {
     throw error;
   }
 };
+
+export const getRevenueStats = async (period) => {
+  try {
+    const res = await axiosClient.get(`/admin/dashboard?period=${period}`);
+    return res;
+  } catch (error) {
+    console.error("Error getting revenue stats:", error);
+    throw error;
+  }
+};

@@ -1,41 +1,11 @@
 const ProductService = require("../services/ProductService");
-const cloudinary = require("cloudinary").v2;
-
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
-const uploadToCloudinary = (buffer) => {
-  return new Promise((resolve, reject) => {
-    const stream = cloudinary.uploader.upload_stream(
-      { folder: "products" },
-      (error, result) => {
-        if (error) return reject(error);
-        resolve(result);
-      },
-    );
-    stream.end(buffer);
-  });
-};
+const { uploadToCloudinary } = require("../config/cloudinaryConfig");
 
 const parseBoolean = (value) => {
   if (value === true || value === false) return value;
   if (value === "1" || value === "true") return true;
   if (value === "0" || value === "false") return false;
   return value;
-};
-
-const uploadFilesToCloudinary = async (files = []) => {
-  const results = [];
-  for (const file of files) {
-    const res = await uploadToCloudinary(file.buffer);
-    results.push({
-      imageUrl: res.secure_url,
-      publicId: res.public_id,
-    });
-  }
-  return results;
 };
 
 const handleCreateProduct = async (req, res) => {
@@ -46,101 +16,43 @@ const handleCreateProduct = async (req, res) => {
     if (!data.name || String(data.name).trim() === "") {
       return res.status(400).json({ errCode: 1, errMessage: "Tên sản phẩm không được để trống" });
     }
-    if (!data.price && !data.basePrice) {
-      return res.status(400).json({ errCode: 2, errMessage: "Giá sản phẩm không được để trống" });
-    }
-    if (!data.categoryId) {
-      return res.status(400).json({ errCode: 3, errMessage: "Danh mục sản phẩm là bắt buộc" });
-    }
-    if (data.specifications && typeof data.specifications === "string") {
-      try {
-        data.specifications = JSON.parse(data.specifications);
-      } catch (e) {
-        console.error("Error parsing specifications:", e);
+    
+    ["specifications", "options", "variants"].forEach(field => {
+      if (data[field] && typeof data[field] === "string") {
+        try { data[field] = JSON.parse(data[field]); } catch (e) { console.error(`Error parsing ${field}:`, e); }
       }
-    }
-    if (data.options && typeof data.options === "string") {
-      try {
-        data.options = JSON.parse(data.options);
-      } catch (e) {
-        console.error("Error parsing options:", e);
-      }
-    }
-    if (data.variants && typeof data.variants === "string") {
-      try {
-        data.variants = JSON.parse(data.variants);
-      } catch (e) {
-        console.error("Error parsing variants:", e);
-      }
-    }
+    });
 
     if (data.brandId) data.brandId = parseInt(data.brandId);
     if (data.categoryId) data.categoryId = parseInt(data.categoryId);
     if (data.stock !== undefined) data.stock = parseInt(data.stock);
     if (data.price !== undefined) data.basePrice = data.price;
-    if (data.isActive !== undefined)
-      data.isActive = parseBoolean(data.isActive);
-
-    if (data.flashSaleStart) {
-      const startDate = new Date(data.flashSaleStart);
-      if (isNaN(startDate))
-        return res
-          .status(400)
-          .json({ errCode: 1, errMessage: "flashSaleStart không hợp lệ" });
-      data.flashSaleStart = startDate;
-    }
-    if (data.flashSaleEnd) {
-      const endDate = new Date(data.flashSaleEnd);
-      if (isNaN(endDate))
-        return res
-          .status(400)
-          .json({ errCode: 1, errMessage: "flashSaleEnd không hợp lệ" });
-      data.flashSaleEnd = endDate;
-    }
-    if (data.flashSalePrice !== undefined)
-      data.flashSalePrice =
-        data.flashSalePrice === "" ? null : data.flashSalePrice;
+    if (data.isActive !== undefined) data.isActive = parseBoolean(data.isActive);
 
     const files = req.files || {};
-    const primaryFile = files.image?.[0] || files.images?.[0] || null;
+    const primaryFile = files.image?.[0] || null;
     const galleryFiles = files.images || [];
 
     const imageRecords = [];
 
     if (primaryFile) {
-      const uploaded = await uploadToCloudinary(primaryFile.buffer);
+      const uploaded = await uploadToCloudinary(primaryFile.buffer, "products");
       data.image = uploaded.secure_url;
-      imageRecords.push({
-        imageUrl: uploaded.secure_url,
-        publicId: uploaded.public_id,
-        isPrimary: true,
-      });
+      imageRecords.push({ imageUrl: uploaded.secure_url, publicId: uploaded.public_id, isPrimary: true });
     }
 
-    const extraFiles =
-      primaryFile && galleryFiles.length > 0
-        ? galleryFiles.slice(primaryFile === galleryFiles[0] ? 1 : 0)
-        : galleryFiles;
-
-    if (extraFiles.length > 0) {
-      const uploads = await uploadFilesToCloudinary(extraFiles);
-      uploads.forEach((u) =>
-        imageRecords.push({
-          imageUrl: u.imageUrl,
-          publicId: u.publicId,
-          isPrimary: false,
-        }),
-      );
+    if (galleryFiles.length > 0) {
+      for (const file of galleryFiles) {
+        const uploaded = await uploadToCloudinary(file.buffer, "products/gallery");
+        imageRecords.push({ imageUrl: uploaded.secure_url, publicId: uploaded.public_id, isPrimary: false });
+      }
     }
 
     const product = await ProductService.createProductWithVariants(data, imageRecords);
     return res.status(201).json(product);
   } catch (e) {
     console.error(e);
-    return res.status(500).json({
-      errCode: -1,
-      errMessage: "Internal server error",
-    });
+    return res.status(500).json({ errCode: -1, errMessage: "Internal server error" });
   }
 };
 

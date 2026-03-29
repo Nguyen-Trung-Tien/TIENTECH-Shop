@@ -139,7 +139,7 @@ const NotificationBell = () => {
 
           {notifications.length > 0 && (
             <Link 
-              to="/profile" 
+              to="/notifications" 
               className="block p-3 text-center text-[10px] font-black text-surface-400 uppercase tracking-[0.2em] hover:text-primary dark:hover:text-brand border-t border-surface-50 dark:border-dark-border transition-colors"
             >
               Xem tất cả thông báo

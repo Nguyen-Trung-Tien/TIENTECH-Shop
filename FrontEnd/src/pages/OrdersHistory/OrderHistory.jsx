@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { getOrdersByUserId } from "../../api/orderApi";
 import AppPagination from "../../components/Pagination/Pagination";
-import { getImage } from "../../utils/decodeImage";
 import { paymentStatusMap, statusMap } from "../../utils/StatusMap";
 import { StatusBadge } from "../../utils/StatusBadge";
 import ClickableText from "../../components/ClickableText/ClickableText";
@@ -68,24 +67,29 @@ const OrderHistoryPage = () => {
         {loading ? (
           <div className="flex flex-col items-center justify-center py-24 gap-4">
             <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-            <p className="text-surface-400 font-bold uppercase tracking-widest text-[11px]">Đang tải dữ liệu...</p>
+            <p className="text-surface-400 font-bold uppercase tracking-widest text-[11px]">
+              Đang tải dữ liệu...
+            </p>
           </div>
         ) : orders.length === 0 ? (
           <div className="bg-white rounded-[32px] border border-surface-200 p-16 text-center shadow-sm">
             <div className="w-20 h-20 bg-surface-50 rounded-full flex items-center justify-center mx-auto mb-6">
               <FiShoppingBag className="text-3xl text-surface-300" />
             </div>
-            <h3 className="text-xl font-bold text-surface-900 mb-2">Chưa có đơn hàng nào</h3>
+            <h3 className="text-xl font-bold text-surface-900 mb-2">
+              Chưa có đơn hàng nào
+            </h3>
             <p className="text-surface-500 mb-8 max-w-sm mx-auto">
-              Có vẻ như bạn chưa thực hiện giao dịch nào. Hãy khám phá các sản phẩm công nghệ mới nhất của chúng tôi.
+              Có vẻ như bạn chưa thực hiện giao dịch nào. Hãy khám phá các sản
+              phẩm công nghệ mới nhất của chúng tôi.
             </p>
             <Button onClick={() => navigate("/")}>BẮT ĐẦU MUA SẮM</Button>
           </div>
         ) : (
           <div className="space-y-6">
             {orders.map((o) => (
-              <div 
-                key={o.id} 
+              <div
+                key={o.id}
                 className="group bg-white rounded-3xl border border-surface-200 shadow-sm hover:shadow-soft hover:border-primary/20 transition-all duration-300 overflow-hidden"
               >
                 {/* Order Top Bar */}
@@ -100,7 +104,10 @@ const OrderHistoryPage = () => {
                   </div>
                   <div className="flex items-center gap-3">
                     <StatusBadge map={statusMap} status={o.status} />
-                    <StatusBadge map={paymentStatusMap} status={o.paymentStatus} />
+                    <StatusBadge
+                      map={paymentStatusMap}
+                      status={o.paymentStatus}
+                    />
                   </div>
                 </div>
 
@@ -113,7 +120,7 @@ const OrderHistoryPage = () => {
                         <div key={i.id} className="flex gap-4 md:gap-6">
                           <div className="w-20 h-20 md:w-24 md:h-24 bg-surface-50 rounded-2xl border border-surface-100 p-2 flex-shrink-0 group-hover:border-primary/10 transition-colors">
                             <img
-                              src={getImage(p?.image) || "/images/no-image.png"}
+                              src={p?.image || "/images/no-image.png"}
                               alt={p?.name || i.productName}
                               className="w-full h-full object-contain mix-blend-multiply"
                             />
@@ -126,9 +133,13 @@ const OrderHistoryPage = () => {
                               {p?.name || i.productName}
                             </ClickableText>
                             <div className="flex items-center gap-3 mt-1">
-                              <span className="text-sm text-surface-500 font-medium">Số lượng: {i.quantity}</span>
+                              <span className="text-sm text-surface-500 font-medium">
+                                Số lượng: {i.quantity}
+                              </span>
                               <div className="w-1 h-1 bg-surface-300 rounded-full"></div>
-                              <span className="text-sm text-surface-500 font-medium">Phân loại: {p?.category?.name || "Điện tử"}</span>
+                              <span className="text-sm text-surface-500 font-medium">
+                                Phân loại: {p?.category?.name || "Điện tử"}
+                              </span>
                             </div>
                             <div className="flex items-center gap-2 mt-2">
                               {p?.discount > 0 && (
@@ -140,7 +151,10 @@ const OrderHistoryPage = () => {
                                 {formatCurrency(i.price)}
                               </span>
                               {p?.discount > 0 && (
-                                <Badge variant="danger" className="scale-90 origin-left">
+                                <Badge
+                                  variant="danger"
+                                  className="scale-90 origin-left"
+                                >
                                   -{p.discount}%
                                 </Badge>
                               )}
@@ -154,12 +168,14 @@ const OrderHistoryPage = () => {
                   {/* Order Footer */}
                   <div className="mt-8 pt-6 border-t border-surface-100 flex flex-col sm:flex-row items-center justify-between gap-6">
                     <div className="flex flex-col items-center sm:items-start">
-                      <p className="text-[11px] font-black text-surface-400 uppercase tracking-widest mb-1">Tổng cộng đơn hàng</p>
+                      <p className="text-[11px] font-black text-surface-400 uppercase tracking-widest mb-1">
+                        Tổng cộng đơn hàng
+                      </p>
                       <span className="text-2xl font-black text-primary tracking-tight">
                         {formatCurrency(o.totalPrice)}
                       </span>
                     </div>
-                    
+
                     <div className="flex items-center gap-3 w-full sm:w-auto">
                       <Button
                         variant="secondary"
@@ -176,7 +192,11 @@ const OrderHistoryPage = () => {
                           size="md"
                           className="flex-1 sm:flex-none"
                           icon={FiCheckCircle}
-                          onClick={() => navigate(`/product-detail/${o.orderItems[0]?.product?.id}`)}
+                          onClick={() =>
+                            navigate(
+                              `/product-detail/${o.orderItems[0]?.product?.id}`,
+                            )
+                          }
                         >
                           ĐÁNH GIÁ
                         </Button>

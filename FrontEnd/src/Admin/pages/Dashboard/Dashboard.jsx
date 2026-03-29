@@ -114,13 +114,13 @@ const Dashboard = () => {
            <button 
              onClick={handleExport}
              disabled={exporting}
-             className="px-6 py-2.5 bg-white border border-slate-200 rounded-2xl text-xs font-black uppercase tracking-widest text-slate-600 hover:border-primary hover:text-primary transition-all shadow-sm disabled:opacity-50"
+             className="px-6 py-2.5 bg-white border border-slate-200 rounded-2xl text-xs font-black uppercase tracking-widest text-slate-600 hover:border-indigo-600 hover:text-indigo-600 transition-all shadow-sm disabled:opacity-50"
            >
              {exporting ? "Đang xử lý..." : "Xuất báo cáo"}
            </button>
            <Link 
              to="/admin/products" 
-             className="px-6 py-2.5 bg-primary text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-lg shadow-primary/20"
+             className="px-6 py-2.5 bg-indigo-600 text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-lg shadow-indigo-500/20"
            >
              Thêm sản phẩm
            </Link>
@@ -129,7 +129,7 @@ const Dashboard = () => {
 
       {loading ? (
         <div className="flex flex-col items-center justify-center py-32 bg-white rounded-[40px] border border-slate-100 shadow-soft">
-          <div className="w-16 h-16 border-4 border-primary/10 border-t-primary rounded-full animate-spin mb-6"></div>
+          <div className="w-16 h-16 border-4 border-indigo-100 border-t-indigo-600 rounded-full animate-spin mb-6"></div>
           <p className="text-slate-400 font-black text-[10px] tracking-[0.2em] uppercase">Đang đồng bộ dữ liệu...</p>
         </div>
       ) : error ? (
@@ -159,7 +159,7 @@ const Dashboard = () => {
                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Biểu đồ phân tích doanh thu chi tiết</p>
                 </div>
                 <div className="flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-full border border-slate-100">
-                   <div className="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
+                   <div className="w-2 h-2 rounded-full bg-indigo-600 animate-pulse"></div>
                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Live Updates</span>
                 </div>
              </div>

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
-import { getImage } from "../../utils/decodeImage";
 
 const ProductGallery = ({ images = [], primaryImage, discount }) => {
   const gallery = Array.from(new Set([...images.map(i => i.imageUrl), primaryImage].filter(Boolean)));
@@ -30,7 +29,7 @@ const ProductGallery = ({ images = [], primaryImage, discount }) => {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 1.05 }}
             transition={{ duration: 0.3 }}
-            src={getImage(gallery[currentIndex])}
+            src={gallery[currentIndex]}
             alt="Product visual"
             className="max-h-full max-w-full object-contain"
           />
@@ -78,7 +77,7 @@ const ProductGallery = ({ images = [], primaryImage, discount }) => {
               }`}
             >
               <img
-                src={getImage(url)}
+                src={url}
                 alt=""
                 className="w-full h-full object-contain"
               />

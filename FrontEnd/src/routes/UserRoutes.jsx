@@ -15,6 +15,7 @@ import CheckoutPage from "../pages/CheckoutPage/CheckoutPage";
 import CheckoutSuccess from "../pages/CheckoutSuccess/CheckoutSuccess";
 import CheckoutFailed from "../pages/CheckoutFailed/CheckoutFailed";
 import Profile from "../pages/Profile/Profile";
+import Notifications from "../pages/Notifications/Notifications";
 import NotFound from "../pages/NotFound/NotFound";
 import ProductDetailPage from "../pages/ProductDetailPage/ProductDetailPage";
 import ProductListPage from "../pages/ProductListPage/ProductListPage";
@@ -120,6 +121,14 @@ const UserRoutes = () => {
           element={
             <LayoutComponent isShowHeader={true} isShowFooter={true}>
               <Profile />
+            </LayoutComponent>
+          }
+        />
+        <Route
+          path="notifications"
+          element={
+            <LayoutComponent isShowHeader={true} isShowFooter={true}>
+              <Notifications />
             </LayoutComponent>
           }
         />

@@ -27,7 +27,7 @@ module.exports = {
       price: { type: Sequelize.DECIMAL(15, 2), allowNull: false },
       subtotal: { type: Sequelize.DECIMAL(15, 2), allowNull: false },
       productName: { type: Sequelize.STRING, allowNull: false },
-      image: { type: Sequelize.BLOB("long"), allowNull: true },
+      image: { type: Sequelize.STRING, allowNull: true },
 
       returnStatus: {
         type: Sequelize.ENUM(

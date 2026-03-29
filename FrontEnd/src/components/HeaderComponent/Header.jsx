@@ -25,7 +25,6 @@ import { clearCart, setCartItems } from "../../redux/cartSlice";
 import { logoutUserApi } from "../../api/userApi";
 import { searchSuggestionsApi } from "../../api/productApi";
 import { getAllCarts } from "../../api/cartApi";
-import { getImage } from "../../utils/decodeImage";
 import { useCurrentUser } from "../../hooks/useUser";
 import { debounce } from "lodash";
 import logoImage from "../../assets/Tien-Tech Shop.png";
@@ -300,7 +299,7 @@ function Header() {
                               {type === "products" && (
                                 <div className="w-12 h-12 flex-shrink-0 bg-white dark:bg-dark-bg rounded-xl border border-slate-100 dark:border-dark-border p-1.5 shadow-sm">
                                   <img
-                                    src={getImage(item.image)}
+                                    src={item.image}
                                     alt=""
                                     className="w-full h-full object-contain"
                                   />

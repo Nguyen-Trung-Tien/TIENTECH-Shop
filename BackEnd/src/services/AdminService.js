@@ -12,7 +12,7 @@ const calculateChange = (current, previous) => {
   return Math.round(((current - previous) / previous) * 100);
 };
 
-const getDashboardData = async () => {
+const getDashboardData = async (period) => {
   try {
     const now = new Date();
     const startOfToday = new Date(
@@ -25,14 +25,18 @@ const getDashboardData = async () => {
 
     const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-    const endOfLastMonth = new Date(
-      now.getFullYear(),
-      now.getMonth(),
-      0,
-      23,
-      59,
-      59,
-    );
+
+    const startOfThisWeek = new Date(now);
+    startOfThisWeek.setDate(now.getDate() - now.getDay() + 1);
+    startOfThisWeek.setHours(0, 0, 0, 0);
+
+    const startOfThisYear = new Date(now.getFullYear(), 0, 1);
+
+    let startDate;
+    if (period === "week") startDate = startOfThisWeek;
+    else if (period === "year") startDate = startOfThisYear;
+    else if (period === "month") startDate = startOfThisMonth;
+    else startDate = new Date(0); // All time
 
     // 1. Sản phẩm: Tổng số và tăng trưởng tháng này vs tháng trước
     const totalProducts = await db.Product.count();
@@ -61,14 +65,50 @@ const getDashboardData = async () => {
       },
     });
 
+    // Summary for current period
+    const totalOrders = await db.Order.count({
+      where: { createdAt: { [Op.gte]: startDate } },
+    });
+
     // 3. Doanh thu: Tổng và tăng trưởng tháng này vs tháng trước (Chỉ tính đơn đã thanh toán hoặc đã giao)
     const revenueStatus = ["paid", "delivered"];
-    const totalRevenueResult = await db.Order.sum("totalPrice", {
+    const totalRevenueResultAllTime = await db.Order.sum("totalPrice", {
       where: {
         [Op.or]: [{ paymentStatus: "paid" }, { status: "delivered" }],
       },
     });
-    const totalRevenue = totalRevenueResult || 0;
+    const totalRevenueAllTime = totalRevenueResultAllTime || 0;
+
+    const revenueThisPeriodResult = await db.Order.sum("totalPrice", {
+      where: {
+        createdAt: { [Op.gte]: startDate },
+        [Op.or]: [{ paymentStatus: "paid" }, { status: "delivered" }],
+      },
+    });
+    const totalRevenuePeriod = revenueThisPeriodResult || 0;
+
+    // 4. Người dùng: Tổng và tăng trưởng người mới tháng này vs tháng trước
+    const totalUsersAllTime = await db.User.count({
+      where: { role: "customer" },
+    });
+    const newUsers = await db.User.count({
+      where: {
+        role: "customer",
+        createdAt: { [Op.gte]: startDate },
+      },
+    });
+    const usersThisMonth = await db.User.count({
+      where: {
+        role: "customer",
+        createdAt: { [Op.gte]: startOfThisMonth },
+      },
+    });
+    const usersLastMonth = await db.User.count({
+      where: {
+        role: "customer",
+        createdAt: { [Op.gte]: startOfLastMonth, [Op.lt]: startOfThisMonth },
+      },
+    });
 
     const revenueThisMonthResult = await db.Order.sum("totalPrice", {
       where: {
@@ -86,20 +126,8 @@ const getDashboardData = async () => {
     });
     const revenueLastMonth = revenueLastMonthResult || 0;
 
-    // 4. Người dùng: Tổng và tăng trưởng người mới tháng này vs tháng trước
-    const totalUsers = await db.User.count({ where: { role: "customer" } });
-    const usersThisMonth = await db.User.count({
-      where: {
-        role: "customer",
-        createdAt: { [Op.gte]: startOfThisMonth },
-      },
-    });
-    const usersLastMonth = await db.User.count({
-      where: {
-        role: "customer",
-        createdAt: { [Op.gte]: startOfLastMonth, [Op.lt]: startOfThisMonth },
-      },
-    });
+    // Profit estimation (since no cost price, we assume 20% profit margin)
+    const totalProfit = Math.round(totalRevenuePeriod * 0.2);
 
     const change = {
       products: calculateChange(productsThisMonth, productsLastMonth),
@@ -109,9 +137,6 @@ const getDashboardData = async () => {
     };
 
     // 5. Thống kê doanh thu theo chu kỳ (Tuần, Tháng, Năm)
-    const thirtyDaysAgo = new Date(now);
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-
     const twelveMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 11, 1);
 
     const recentOrders = await db.Order.findAll({
@@ -163,15 +188,34 @@ const getDashboardData = async () => {
     const revenueByMonth = groupByDate(recentOrders, 29);
     const revenueByYear = groupByMonth(recentOrders);
 
+    // 6. Top selling products
+    const topProductsRaw = await db.OrderItem.findAll({
+      attributes: [
+        "productId",
+        "productName",
+        [db.sequelize.fn("SUM", db.sequelize.col("quantity")), "totalSold"],
+        [db.sequelize.fn("SUM", db.sequelize.col("subtotal")), "totalRevenue"],
+      ],
+      group: ["productId", "productName"],
+      order: [[db.sequelize.fn("SUM", db.sequelize.col("quantity")), "DESC"]],
+      limit: 5,
+      raw: true,
+    });
+
     return {
       totalProducts,
       todayOrders,
-      totalRevenue,
-      totalUsers,
+      totalRevenue: period ? totalRevenuePeriod : totalRevenueAllTime,
+      totalRevenueAllTime,
+      totalProfit,
+      totalOrders,
+      totalUsers: totalUsersAllTime,
+      newUsers,
       change,
       revenueByWeek,
       revenueByMonth,
       revenueByYear,
+      topProducts: topProductsRaw,
     };
   } catch (error) {
     console.error("Error from AdminService.getDashboardData:", error);

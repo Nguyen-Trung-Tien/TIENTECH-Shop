@@ -59,10 +59,9 @@ const CategorySection = React.memo(({ categories = [], loading }) => {
               <div className="relative aspect-square rounded-[32px] overflow-hidden bg-slate-50 border border-slate-100 shadow-sm transition-all duration-300 group-hover:shadow-xl group-hover:border-primary/20">
                 <img
                   src={
+                    cat.image ||
                     cat.imageUrl ||
-                    (cat.image
-                      ? `data:image/jpeg;base64,${cat.image}`
-                      : "/images/default-category.jpg")
+                    "/images/default-category.jpg"
                   }
                   alt={cat.name}
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"

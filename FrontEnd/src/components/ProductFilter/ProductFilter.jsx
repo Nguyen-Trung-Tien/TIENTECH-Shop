@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { getAllBrandApi } from "../../api/brandApi";
 import { getAllCategoryApi } from "../../api/categoryApi";
-import { getImage } from "../../utils/decodeImage";
 import { FiFilter, FiX, FiCheck, FiChevronDown, FiRotateCcw } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -97,7 +96,7 @@ function ProductFilter({ onFilterChange, isSidebar = false, onClose, initialFilt
                   : "border-slate-50 hover:border-slate-200"
               }`}
             >
-              <img src={getImage(b.image)} alt={b.name} className="max-w-[80%] max-h-[80%] object-contain mix-blend-multiply transition-transform group-hover:scale-110" />
+              <img src={b.image} alt={b.name} className="max-w-[80%] max-h-[80%] object-contain mix-blend-multiply transition-transform group-hover:scale-110" />
               {filters.brand === b.id && (
                 <div className="absolute top-0 right-0 p-1">
                   <FiCheck className="text-primary" size={12} />

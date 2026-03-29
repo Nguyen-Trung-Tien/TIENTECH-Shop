@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { getAllBrandApi } from "../../api/brandApi";
-import { getImage } from "../../utils/decodeImage";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 
@@ -32,7 +31,7 @@ const BrandSection = () => {
   if (loading)
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="w-8 h-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
+        <div className="w-8 h-8 border-4 border-indigo-100 border-t-indigo-600 rounded-full animate-spin"></div>
       </div>
     );
 
@@ -46,13 +45,13 @@ const BrandSection = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: index * 0.05 }}
-            className="group cursor-pointer bg-white p-6 rounded-2xl border border-surface-200/60 hover:border-primary/20 hover:shadow-soft transition-all duration-300 flex items-center justify-center aspect-[3/2]"
+            className="group cursor-pointer bg-white rounded-2xl border border-slate-100 hover:border-indigo-200 hover:shadow-xl hover:shadow-indigo-500/5 transition-all duration-500 flex items-center justify-center w-[142px] h-[48px] mx-auto overflow-hidden p-2"
             onClick={() => navigate(`/product-list?brandId=${brand.id}`)}
           >
             <img
-              src={getImage(brand.image)}
+              src={brand.image}
               alt={brand.name}
-              className="max-h-12 w-auto object-contain grayscale group-hover:grayscale-0 transition-all duration-500 opacity-60 group-hover:opacity-100 group-hover:scale-110"
+              className="max-w-full max-h-full object-contain grayscale-[0.5] group-hover:grayscale-0 transition-all duration-500 opacity-70 group-hover:opacity-100 group-hover:scale-105"
             />
           </motion.div>
         ))}

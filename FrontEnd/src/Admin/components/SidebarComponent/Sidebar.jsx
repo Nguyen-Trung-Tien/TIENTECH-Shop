@@ -13,19 +13,27 @@ import {
   FiTag,
   FiRotateCcw,
   FiXCircle,
+  FiChevronDown,
 } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
 import { logoutUserApi } from "../../../api/userApi";
 import { removeUser } from "../../../redux/userSlice";
 import { clearCart } from "../../../redux/cartSlice";
 import { toast } from "react-toastify";
+import { motion, AnimatePresence } from "framer-motion";
 
 const MENU_ITEMS = [
   { to: "/admin/dashboard", icon: <FiHome />, label: "Dashboard" },
   { to: "/admin/revenue", icon: <FiBarChart />, label: "Doanh thu" },
-  { to: "/admin/orders", icon: <FiShoppingCart />, label: "Đơn hàng" },
-  { to: "/admin/orders-return", icon: <FiRotateCcw />, label: "Duyệt trả hàng" },
-  { to: "/admin/orders-cancel", icon: <FiXCircle />, label: "Duyệt hủy đơn" },
+  { 
+    label: "Đơn hàng", 
+    icon: <FiShoppingCart />,
+    subItems: [
+      { to: "/admin/orders", label: "Tất cả đơn hàng" },
+      { to: "/admin/orders-return", label: "Duyệt trả hàng" },
+      { to: "/admin/orders-cancel", label: "Duyệt hủy hàng" },
+    ]
+  },
   { to: "/admin/payment", icon: <FiDollarSign />, label: "Thanh toán" },
   { to: "/admin/products", icon: <FiBox />, label: "Sản phẩm" },
   { to: "/admin/users", icon: <FiUsers />, label: "Người dùng" },
@@ -42,6 +50,13 @@ const Sidebar = ({ collapsed }) => {
   const user = useSelector((state) => state.user.user);
 
   const [loggingOut, setLoggingOut] = useState(false);
+  const [expandedMenus, setExpandedMenus] = useState(["Đơn hàng"]);
+
+  const toggleMenu = (label) => {
+    setExpandedMenus(prev => 
+      prev.includes(label) ? prev.filter(l => l !== label) : [...prev, label]
+    );
+  };
 
   const handleLogout = async () => {
     if (loggingOut || !user) return;
@@ -72,17 +87,17 @@ const Sidebar = ({ collapsed }) => {
       {/* Brand Logo / Header */}
       <div className="h-16 flex items-center px-6 border-b border-slate-800/50">
         {collapsed ? (
-          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white font-black text-sm shadow-lg shadow-primary/20">
+          <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-black text-sm shadow-lg shadow-indigo-500/20">
             T
           </div>
         ) : (
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white font-black text-sm shadow-lg shadow-primary/20">
+            <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-black text-sm shadow-lg shadow-indigo-500/20">
               T
             </div>
             <div>
               <h1 className="text-sm font-bold text-white tracking-tight leading-none">
-                Admin<span className="text-primary">Panel</span>
+                Admin<span className="text-indigo-500">Panel</span>
               </h1>
               <p className="text-[9px] uppercase tracking-[0.1em] text-slate-400 font-bold mt-1">
                 Management System
@@ -100,6 +115,63 @@ const Sidebar = ({ collapsed }) => {
           </p>
         )}
         {MENU_ITEMS.map((item) => {
+          if (item.subItems) {
+            const isExpanded = expandedMenus.includes(item.label);
+            const isSubActive = item.subItems.some(sub => location.pathname === sub.to);
+            
+            return (
+              <div key={item.label} className="space-y-1">
+                <button
+                  onClick={() => toggleMenu(item.label)}
+                  className={`w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group ${
+                    isSubActive ? "text-white bg-slate-900/50" : "hover:bg-slate-900 hover:text-white"
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <span className={`text-lg flex-shrink-0 ${isSubActive ? "text-indigo-500" : "text-slate-500 group-hover:text-primary transition-colors"}`}>
+                      {item.icon}
+                    </span>
+                    {!collapsed && (
+                      <span className="text-sm font-semibold whitespace-nowrap overflow-hidden transition-all duration-300">
+                        {item.label}
+                      </span>
+                    )}
+                  </div>
+                  {!collapsed && (
+                    <FiChevronDown className={`transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`} />
+                  )}
+                </button>
+
+                {!collapsed && (
+                  <AnimatePresence>
+                    {isExpanded && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="overflow-hidden ml-9 space-y-1"
+                      >
+                        {item.subItems.map(sub => (
+                          <Link
+                            key={sub.to}
+                            to={sub.to}
+                            className={`block px-3 py-2 rounded-lg text-xs font-bold transition-all ${
+                              location.pathname === sub.to 
+                                ? "text-indigo-500 bg-indigo-500/10" 
+                                : "text-slate-500 hover:text-slate-300 hover:bg-slate-900"
+                            }`}
+                          >
+                            {sub.label}
+                          </Link>
+                        ))}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                )}
+              </div>
+            );
+          }
+
           const isActive = location.pathname.startsWith(item.to);
           return (
             <Link
@@ -107,7 +179,7 @@ const Sidebar = ({ collapsed }) => {
               to={item.to}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group relative ${
                 isActive
-                  ? "bg-primary text-white shadow-xl shadow-primary/20"
+                  ? "bg-indigo-600 text-white shadow-xl shadow-indigo-500/20"
                   : "hover:bg-slate-900 hover:text-white"
               }`}
               title={collapsed ? item.label : ""}

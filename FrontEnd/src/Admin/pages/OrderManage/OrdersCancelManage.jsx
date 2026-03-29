@@ -86,7 +86,7 @@ const OrdersCancelManage = () => {
           </div>
           <button 
             onClick={() => fetchOrders(page)}
-            className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-600 hover:text-primary transition-all shadow-sm"
+            className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-600 hover:text-indigo-600 transition-all shadow-sm"
           >
             <FiRefreshCw className={loading ? "animate-spin" : ""} /> Làm mới
           </button>
@@ -123,7 +123,7 @@ const OrdersCancelManage = () => {
                 
                 <div className="p-5 flex-grow space-y-4">
                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center text-primary"><FiUser /></div>
+                      <div className="w-10 h-10 bg-indigo-600/10 rounded-full flex items-center justify-center text-indigo-600"><FiUser /></div>
                       <div>
                          <p className="text-sm font-bold text-slate-900">{order.user?.username}</p>
                          <p className="text-[11px] text-slate-500">{order.user?.phone}</p>
@@ -145,7 +145,7 @@ const OrdersCancelManage = () => {
                          <span>{new Date(order.createdAt).toLocaleDateString("vi-VN")}</span>
                       </div>
                       <div className="flex items-center gap-1.5 text-slate-900 font-bold">
-                         <FiDollarSign className="text-primary" />
+                         <FiDollarSign className="text-indigo-600" />
                          <span>{Number(order.totalPrice).toLocaleString()} ₫</span>
                       </div>
                    </div>
@@ -251,7 +251,7 @@ const OrdersCancelManage = () => {
                 <button 
                   disabled={loadingAction}
                   onClick={handleProcessCancel}
-                  className={`flex-1 py-2 text-white rounded-xl text-xs font-bold ${confirmModal.approve ? "bg-rose-500" : "bg-primary"}`}
+                  className={`flex-1 py-2 text-white rounded-xl text-xs font-bold ${confirmModal.approve ? "bg-rose-500" : "bg-indigo-600"}`}
                 >
                   {loadingAction ? "Đang xử lý..." : "Xác nhận"}
                 </button>

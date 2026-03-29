@@ -9,7 +9,6 @@ import {
   FiCpu, FiMonitor, FiBattery, FiSmartphone, FiMaximize, FiMoreHorizontal
 } from "react-icons/fi";
 import { FaHeart } from "react-icons/fa";
-import { getImage } from "../../utils/decodeImage";
 import { addToWishlistApi, removeFromWishlistApi, checkWishlistStatusApi } from "../../api/wishlistApi";
 
 const ProductDetailPage = () => {
@@ -229,7 +228,7 @@ const ProductDetailPage = () => {
         <div className="lg:col-span-5 space-y-4">
           <div className="aspect-square rounded-2xl overflow-hidden bg-gray-50 border border-gray-100 flex items-center justify-center relative group">
             <img 
-              src={getImage(mainImage)} 
+              src={mainImage} 
               alt={product.name} 
               className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105 p-4"
             />
@@ -248,7 +247,7 @@ const ProductDetailPage = () => {
                   mainImage === img.imageUrl ? "border-blue-500 scale-95 shadow-sm" : "border-transparent opacity-60 hover:opacity-100"
                 }`}
               >
-                <img src={getImage(img.imageUrl)} alt="" className="w-full h-full object-cover" />
+                <img src={img.imageUrl} alt="" className="w-full h-full object-cover" />
               </button>
             ))}
           </div>

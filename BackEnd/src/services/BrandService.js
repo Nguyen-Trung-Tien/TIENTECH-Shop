@@ -13,6 +13,7 @@ const createBrand = async (data) => {
 const getAllBrands = async () => {
   try {
     const brands = await db.Brand.findAll({
+      attributes: ["id", "name", "slug", "description", "image", "createdAt"],
       include: [
         {
           model: db.Product,
@@ -23,10 +24,13 @@ const getAllBrands = async () => {
       order: [["createdAt", "DESC"]],
     });
 
-    const result = brands.map((b) => ({
-      ...b.toJSON(),
-      productCount: b.products.length,
-    }));
+    const result = brands.map((b) => {
+      const brandJson = b.toJSON();
+      return {
+        ...brandJson,
+        productCount: b.products ? b.products.length : 0,
+      };
+    });
 
     return { errCode: 0, brands: result };
   } catch (e) {

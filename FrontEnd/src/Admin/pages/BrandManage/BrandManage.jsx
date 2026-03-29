@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   FiTag,
   FiPlus,
@@ -6,10 +6,9 @@ import {
   FiTrash2,
   FiSearch,
   FiImage,
-  FiChevronLeft,
-  FiChevronRight,
   FiX,
-  FiInfo
+  FiExternalLink,
+  FiLayers
 } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "react-toastify";
@@ -19,7 +18,6 @@ import {
   deleteBrandApi,
   getAllBrandApi,
 } from "../../../api/brandApi";
-import { getImage } from "../../../utils/decodeImage";
 import AppPagination from "../../../components/Pagination/Pagination";
 
 const BrandManage = () => {
@@ -28,21 +26,32 @@ const BrandManage = () => {
   const [editBrand, setEditBrand] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [loadingTable, setLoadingTable] = useState(false);
-  const [loadingModal, setLoadingModal] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   const [formData, setFormData] = useState({
     name: "",
     slug: "",
     description: "",
-    image: null,
+    imageFile: null,
   });
   const [imagePreview, setImagePreview] = useState(null);
 
   const [page, setPage] = useState(1);
-  const limit = 10;
   const [totalPages, setTotalPages] = useState(1);
+  const limit = 10;
 
-  const fetchBrands = async (currentPage = 1, search = "") => {
+  const generateSlug = (name) => {
+    if (!name) return "";
+    return name
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "")
+      .trim();
+  };
+
+  const fetchBrands = useCallback(async (currentPage = 1, search = "") => {
     setLoadingTable(true);
     try {
       const res = await getAllBrandApi(currentPage, limit, search);
@@ -50,22 +59,17 @@ const BrandManage = () => {
         setBrands(res.brands || []);
         setTotalPages(res.totalPages || 1);
         setPage(currentPage);
-      } else {
-        setBrands([]);
-        setTotalPages(1);
-        setPage(1);
       }
     } catch (err) {
-      console.log(err);
       toast.error("Lỗi tải dữ liệu thương hiệu!");
     } finally {
       setLoadingTable(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    fetchBrands(1);
-  }, []);
+    fetchBrands(1, searchTerm);
+  }, [fetchBrands, searchTerm]);
 
   const handleShowModal = (brand = null) => {
     if (brand) {
@@ -73,12 +77,12 @@ const BrandManage = () => {
         name: brand.name || "",
         slug: brand.slug || "",
         description: brand.description || "",
-        image: null,
+        imageFile: null,
       });
       setImagePreview(brand.image || null);
       setEditBrand(brand);
     } else {
-      setFormData({ name: "", slug: "", description: "", image: null });
+      setFormData({ name: "", slug: "", description: "", imageFile: null });
       setImagePreview(null);
       setEditBrand(null);
     }
@@ -88,47 +92,47 @@ const BrandManage = () => {
   const handleCloseModal = () => {
     setShowModal(false);
     setEditBrand(null);
+    setImagePreview(null);
   };
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       if (file.size > 2 * 1024 * 1024) return toast.warn("Ảnh không được vượt quá 2MB");
-      setFormData({ ...formData, image: file });
+      setFormData({ ...formData, imageFile: file });
       setImagePreview(URL.createObjectURL(file));
     }
   };
 
   const handleSave = async (e) => {
     e.preventDefault();
-    if (!formData.name || !formData.slug) return toast.error("Tên và slug không được trống!");
+    if (!formData.name.trim()) return toast.error("Tên thương hiệu không được trống!");
 
-    setLoadingModal(true);
+    setSaving(true);
     try {
       const data = new FormData();
       data.append("name", formData.name);
-      data.append("slug", formData.slug);
+      data.append("slug", formData.slug || generateSlug(formData.name));
       data.append("description", formData.description);
-      if (formData.image) data.append("image", formData.image);
+      if (formData.imageFile) data.append("image", formData.imageFile);
 
       let res = editBrand 
         ? await updateBrandApi(editBrand.id, data)
         : await createBrandApi(data);
 
       if (res.errCode === 0) {
-        toast.success(editBrand ? "Cập nhật thành công!" : "Tạo mới thành công!");
+        toast.success(editBrand ? "Cập nhật thành công!" : "Thêm mới thành công!");
         fetchBrands(page, searchTerm);
         handleCloseModal();
       } else toast.error(res.errMessage || "Thao tác thất bại!");
     } catch (err) {
-      console.log(err);
       toast.error("Lỗi kết nối server!");
     } finally {
-      setLoadingModal(false);
+      setSaving(false);
     }
   };
 
-  const [confirmModal, setConfirmModal] = useState({ show: false, id: null });
+  const [confirmModal, setConfirmModal] = useState({ show: false, id: null, name: "" });
 
   const handleConfirmDelete = async () => {
     try {
@@ -136,233 +140,167 @@ const BrandManage = () => {
       if (res.errCode === 0) {
         toast.success("Đã xóa thương hiệu!");
         fetchBrands(brands.length === 1 && page > 1 ? page - 1 : page, searchTerm);
-      } else toast.error(res.errMessage || "Không thể xóa");
-    } catch (e) {
-      toast.error("Lỗi khi xóa thương hiệu!");
+      }
     } finally {
-      setConfirmModal({ show: false, id: null });
+      setConfirmModal({ show: false, id: null, name: "" });
     }
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header Area */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="space-y-6 max-w-7xl mx-auto p-4 md:p-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary text-xl">
+          <h1 className="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+            <div className="w-12 h-12 rounded-2xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-200">
               <FiTag />
             </div>
-            Quản lý thương hiệu
+            Đối tác & Thương hiệu
           </h1>
-          <p className="text-sm text-slate-500 font-medium mt-1 ml-13">Hệ thống đối tác và các nhãn hàng công nghệ.</p>
+          <p className="text-sm text-slate-500 font-medium mt-2 ml-1">Quản lý danh sách các nhãn hàng cung cấp sản phẩm.</p>
         </div>
         
-        <button 
-          onClick={() => handleShowModal()}
-          className="btn-modern-primary group"
-        >
-          <FiPlus className="text-lg group-hover:rotate-90 transition-transform duration-300" />
-          <span>Thêm thương hiệu mới</span>
+        <button onClick={() => handleShowModal()} className="btn-modern-primary h-12 px-6 group">
+          <FiPlus className="text-xl group-hover:rotate-90 transition-transform duration-300" />
+          <span className="font-bold">Thêm đối tác mới</span>
         </button>
       </div>
 
-      {/* Table Area */}
-      <div className="card-modern">
-        <div className="p-6 border-b border-slate-100 flex flex-col md:flex-row gap-4 items-center justify-between bg-slate-50/30">
+      <div className="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 overflow-hidden">
+        <div className="p-8 border-b border-slate-50 flex flex-col md:flex-row gap-6 items-center justify-between bg-slate-50/30">
            <div className="relative w-full md:w-96">
               <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
               <input 
                 type="text" 
-                placeholder="Tìm tên thương hiệu..." 
-                className="input-modern pl-11 shadow-sm"
+                placeholder="Tìm thương hiệu..." 
+                className="input-modern h-12 pl-12 bg-white border-slate-200 focus:ring-4 focus:ring-indigo-50 font-medium"
                 value={searchTerm}
-                onChange={(e) => {
-                  setSearchTerm(e.target.value);
-                  fetchBrands(1, e.target.value);
-                }}
+                onChange={(e) => setSearchTerm(e.target.value)}
               />
            </div>
            
-           <div className="flex items-center gap-2 px-4 py-2 bg-white rounded-xl border border-slate-200 shadow-sm">
-              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Tổng cộng:</span>
-              <span className="text-xs font-bold text-primary">{brands.length} Hãng</span>
+           <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 px-4 py-2 bg-white rounded-2xl border border-slate-200 shadow-sm">
+                <span className="text-[11px] font-black uppercase tracking-widest text-slate-400">Hệ thống:</span>
+                <span className="text-xs font-bold text-indigo-600">{brands.length} Thương hiệu</span>
+              </div>
            </div>
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse min-w-[800px]">
+          <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-slate-50/50">
-                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 text-center">Logo</th>
-                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Tên thương hiệu</th>
-                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Slug</th>
-                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Mô tả</th>
-                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 text-right">Thao tác</th>
+                <th className="px-8 py-5 text-[11px] font-black uppercase tracking-widest text-slate-400">Logo nhãn hàng</th>
+                <th className="px-8 py-5 text-[11px] font-black uppercase tracking-widest text-slate-400">Thương hiệu</th>
+                <th className="px-8 py-5 text-[11px] font-black uppercase tracking-widest text-slate-400">Sản phẩm</th>
+                <th className="px-8 py-5 text-[11px] font-black uppercase tracking-widest text-slate-400">Slug</th>
+                <th className="px-8 py-5 text-[11px] font-black uppercase tracking-widest text-slate-400 text-right">Hành động</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-slate-50">
               {loadingTable ? (
                 Array(limit).fill(0).map((_, i) => (
                   <tr key={i} className="animate-pulse">
-                    <td colSpan={5} className="px-6 py-6"><div className="h-10 bg-slate-100 rounded-xl w-full"></div></td>
+                    <td colSpan={5} className="px-8 py-8"><div className="h-12 bg-slate-100 rounded-2xl w-full"></div></td>
                   </tr>
                 ))
               ) : brands.length > 0 ? (
                 brands.map((b) => (
-                  <tr key={b.id} className="hover:bg-slate-50/50 transition-colors group">
-                    <td className="px-6 py-4">
-                       <div className="flex justify-center">
-                          <div className="w-24 h-10 rounded-lg border border-slate-100 bg-white p-1 flex-shrink-0 group-hover:shadow-sm transition-all flex items-center justify-center overflow-hidden">
-                            {b.image ? (
-                              <img src={getImage(b.image)} alt={b.name} className="max-w-full max-h-full object-contain" />
-                            ) : (
-                              <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">No Logo</span>
-                            )}
-                          </div>
+                  <tr key={b.id} className="hover:bg-indigo-50/20 transition-all group">
+                    <td className="px-8 py-5">
+                       <div className="w-28 h-12 rounded-xl border border-slate-200 bg-white p-2 shadow-sm group-hover:shadow-md transition-all flex items-center justify-center overflow-hidden">
+                          {b.image ? (
+                            <img src={b.image} alt={b.name} className="max-w-full max-h-full object-contain" />
+                          ) : (
+                            <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">No Logo</span>
+                          )}
                        </div>
                     </td>
-                    <td className="px-6 py-4">
-                       <p className="text-sm font-bold text-slate-900">{b.name}</p>
-                       <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">ID: #{b.id}</p>
+                    <td className="px-8 py-5">
+                       <p className="text-base font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">{b.name}</p>
+                       <p className="text-xs text-slate-400 mt-1 line-clamp-1 max-w-[200px]">{b.description || "—"}</p>
                     </td>
-                    <td className="px-6 py-4">
-                       <code className="text-[10px] font-black bg-slate-100 px-2 py-1 rounded-lg text-emerald-600">/{b.slug}</code>
+                    <td className="px-8 py-5">
+                       <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
+                          <span className="text-xs font-bold text-slate-600">{b.productCount || 0} Sản phẩm</span>
+                       </div>
                     </td>
-                    <td className="px-6 py-4 max-w-xs">
-                       <p className="text-xs font-medium text-slate-500 truncate" title={b.description}>{b.description || "—"}</p>
+                    <td className="px-8 py-5">
+                       <span className="text-xs font-mono font-medium text-emerald-600">/{b.slug}</span>
                     </td>
-                    <td className="px-6 py-4 text-right">
-                       <div className="flex items-center justify-end gap-1.5">
-                          <button 
-                            onClick={() => handleShowModal(b)}
-                            className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-400 hover:bg-white hover:text-primary hover:shadow-md border border-transparent hover:border-slate-100 transition-all"
-                            title="Sửa"
-                          >
-                            <FiEdit2 />
-                          </button>
-                          <button 
-                            onClick={() => setConfirmModal({ show: true, id: b.id })}
-                            className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-400 hover:bg-rose-50 hover:text-rose-500 transition-all"
-                            title="Xóa"
-                          >
-                            <FiTrash2 />
-                          </button>
+                    <td className="px-8 py-5 text-right">
+                       <div className="flex items-center justify-end gap-2">
+                          <button onClick={() => handleShowModal(b)} className="p-3 rounded-2xl text-slate-400 hover:bg-white hover:text-indigo-600 hover:shadow-xl border border-transparent transition-all"><FiEdit2 /></button>
+                          <button onClick={() => setConfirmModal({ show: true, id: b.id, name: b.name })} className="p-3 rounded-2xl text-slate-400 hover:bg-white hover:text-rose-500 hover:shadow-xl border border-transparent transition-all"><FiTrash2 /></button>
                        </div>
                     </td>
                   </tr>
                 ))
               ) : (
-                <tr>
-                  <td colSpan={5} className="px-6 py-20 text-center text-slate-400 font-bold text-sm italic">Không có thương hiệu nào</td>
-                </tr>
+                <tr><td colSpan={5} className="px-8 py-24 text-center text-slate-400 font-bold italic">Không tìm thấy thương hiệu nào</td></tr>
               )}
             </tbody>
           </table>
         </div>
 
-        <div className="p-6 border-t border-slate-100 bg-slate-50/20">
-           <AppPagination
-            page={page}
-            totalPages={totalPages}
-            onPageChange={(p) => fetchBrands(p, searchTerm)}
-           />
+        <div className="p-8 border-t border-slate-50 bg-slate-50/20">
+           <AppPagination page={page} totalPages={totalPages} onPageChange={(p) => fetchBrands(p, searchTerm)} />
         </div>
       </div>
 
-      {/* Form Modal */}
       <AnimatePresence>
         {showModal && (
           <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={handleCloseModal}
-              className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
-            />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-xl bg-white rounded-3xl shadow-2xl overflow-hidden"
-            >
-               <div className="px-8 py-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={handleCloseModal} className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" />
+            <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} className="relative w-full max-w-2xl bg-white rounded-[2.5rem] shadow-2xl overflow-hidden">
+               <div className="px-10 py-8 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
                   <div>
-                     <h3 className="text-xl font-black text-slate-900 tracking-tight">
-                        {editBrand ? "Cập nhật nhãn hàng" : "Thêm nhãn hàng mới"}
-                     </h3>
-                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Thông tin đối tác sản xuất</p>
+                     <h3 className="text-2xl font-black text-slate-900">{editBrand ? "Cập nhật nhãn hàng" : "Thêm nhãn hàng mới"}</h3>
+                     <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest mt-1">Hồ sơ đối tác cung ứng</p>
                   </div>
-                  <button onClick={handleCloseModal} className="w-10 h-10 rounded-xl flex items-center justify-center text-slate-400 hover:bg-white hover:text-slate-900 hover:shadow-md transition-all">
-                    <FiX className="text-xl" />
-                  </button>
+                  <button onClick={handleCloseModal} className="w-12 h-12 rounded-2xl flex items-center justify-center text-slate-400 hover:bg-white hover:text-slate-900 hover:shadow-xl transition-all"><FiX className="text-2xl" /></button>
                </div>
 
-               <form onSubmit={handleSave} className="p-8 space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                     <div className="space-y-1.5">
-                        <label className="text-[11px] font-black uppercase tracking-widest text-slate-400 ml-1">Tên nhãn hiệu *</label>
-                        <input 
-                          className="input-modern font-bold" 
-                          placeholder="Ví dụ: Apple, Samsung..."
-                          value={formData.name}
-                          onChange={(e) => setFormData({...formData, name: e.target.value})}
-                          required 
-                        />
+               <form onSubmit={handleSave} className="p-10 space-y-8">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                     <div className="space-y-6">
+                        <div className="space-y-2">
+                           <label className="text-xs font-black uppercase tracking-widest text-slate-400 ml-1">Tên nhãn hiệu *</label>
+                           <input className="input-modern h-12 font-bold focus:ring-4 focus:ring-indigo-50" placeholder="VD: Apple, ASUS..." value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} required />
+                        </div>
+                        <div className="space-y-2">
+                           <label className="text-xs font-black uppercase tracking-widest text-slate-400 ml-1">Slug định danh</label>
+                           <input className="input-modern h-12 focus:ring-4 focus:ring-indigo-50 font-mono text-emerald-600" placeholder="apple-inc" value={formData.slug} onChange={(e) => setFormData({...formData, slug: e.target.value})} />
+                        </div>
                      </div>
-                     <div className="space-y-1.5">
-                        <label className="text-[11px] font-black uppercase tracking-widest text-slate-400 ml-1">Slug định danh *</label>
-                        <input 
-                          className="input-modern" 
-                          placeholder="apple"
-                          value={formData.slug}
-                          onChange={(e) => setFormData({...formData, slug: e.target.value})}
-                          required 
-                        />
-                     </div>
-                  </div>
 
-                  <div className="space-y-1.5">
-                     <label className="text-[11px] font-black uppercase tracking-widest text-slate-400 ml-1">Mô tả đối tác</label>
-                     <textarea 
-                      className="input-modern resize-none h-24" 
-                      placeholder="Thông tin giới thiệu về thương hiệu này..."
-                      value={formData.description}
-                      onChange={(e) => setFormData({...formData, description: e.target.value})}
-                     />
-                  </div>
-
-                  <div className="space-y-3">
-                     <label className="text-[11px] font-black uppercase tracking-widest text-slate-400 ml-1">Logo thương hiệu</label>
-                     <div className="flex items-center gap-6">
-                        <div className="w-32 h-16 rounded-2xl bg-slate-50 border-2 border-dashed border-slate-200 flex items-center justify-center overflow-hidden shrink-0">
+                     <div className="space-y-2">
+                        <label className="text-xs font-black uppercase tracking-widest text-slate-400 ml-1">Logo nhãn hàng</label>
+                        <div className="group relative w-full aspect-[3/1] rounded-[2rem] bg-slate-50 border-2 border-dashed border-slate-200 flex flex-col items-center justify-center overflow-hidden transition-all hover:border-indigo-400 hover:bg-indigo-50/30">
                            {imagePreview ? (
-                             <img 
-                               src={typeof imagePreview === "string" ? imagePreview : getImage(imagePreview)} 
-                               alt="Preview" 
-                               className="max-w-full max-h-full object-contain p-2" 
-                             />
+                             <img src={imagePreview} alt="Preview" className="max-w-full max-h-full object-contain p-4" />
                            ) : (
-                             <FiImage className="text-2xl text-slate-300" />
+                             <>
+                               <FiImage className="text-4xl text-slate-300 group-hover:text-indigo-400 transition-colors mb-2" />
+                               <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Upload Logo</span>
+                             </>
                            )}
+                           <input type="file" accept="image/*" onChange={handleImageChange} className="absolute inset-0 opacity-0 cursor-pointer" />
                         </div>
-                        <div className="flex-1 space-y-2">
-                           <input 
-                            type="file" 
-                            accept="image/*" 
-                            onChange={handleImageChange}
-                            className="block w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-[11px] file:font-black file:uppercase file:tracking-widest file:bg-primary/10 file:text-primary hover:file:bg-primary/20 transition-all cursor-pointer"
-                           />
-                           <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-relaxed">Khuyến nghị tỉ lệ 3:1 hoặc Logo nền trong suốt.</p>
-                        </div>
+                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center mt-3 leading-relaxed">Khuyên dùng logo PNG nền trong suốt.<br/>Tỉ lệ ngang 3:1.</p>
                      </div>
                   </div>
 
-                  <div className="flex items-center justify-end gap-3 mt-10">
-                     <button type="button" onClick={handleCloseModal} className="btn-modern-white px-8">Hủy bỏ</button>
-                     <button type="submit" className="btn-modern-primary px-10">
-                        {loadingModal ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> : (editBrand ? "Cập nhật" : "Thêm mới")}
+                  <div className="space-y-2">
+                     <label className="text-xs font-black uppercase tracking-widest text-slate-400 ml-1">Thông tin giới thiệu</label>
+                     <textarea className="input-modern resize-none h-32 focus:ring-4 focus:ring-indigo-50" placeholder="Viết vài dòng giới thiệu về đối tác này..." value={formData.description} onChange={(e) => setFormData({...formData, description: e.target.value})} />
+                  </div>
+
+                  <div className="flex items-center justify-end gap-4 mt-10">
+                     <button type="button" onClick={handleCloseModal} className="px-8 py-3 rounded-2xl font-bold text-slate-500 hover:bg-slate-100 transition-all">Hủy</button>
+                     <button type="submit" disabled={saving} className="px-12 py-3 bg-indigo-600 text-white rounded-2xl font-black uppercase tracking-widest shadow-lg shadow-indigo-200 hover:bg-indigo-700 active:scale-95 transition-all disabled:opacity-50">
+                        {saving ? "Đang xử lý..." : (editBrand ? "Lưu thay đổi" : "Thêm đối tác")}
                      </button>
                   </div>
                </form>
@@ -371,32 +309,17 @@ const BrandManage = () => {
         )}
       </AnimatePresence>
 
-      {/* Delete Confirmation Modal */}
       <AnimatePresence>
         {confirmModal.show && (
           <div className="fixed inset-0 z-[1100] flex items-center justify-center p-4">
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setConfirmModal({ show: false, id: null })}
-              className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
-            />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="relative w-full max-w-sm bg-white rounded-3xl shadow-2xl p-8 text-center"
-            >
-              <div className="w-16 h-16 bg-rose-50 text-rose-500 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-6">
-                <FiTrash2 />
-              </div>
-              <h3 className="text-xl font-black text-slate-900 mb-2">Xóa thương hiệu?</h3>
-              <p className="text-sm text-slate-500 mb-8 font-medium">Hành động này sẽ gỡ bỏ nhãn hàng khỏi hệ thống. Các sản phẩm liên kết vẫn sẽ được giữ lại.</p>
-              
-              <div className="grid grid-cols-2 gap-3">
-                 <button onClick={() => setConfirmModal({ show: false, id: null })} className="btn-modern-white">Hủy</button>
-                 <button onClick={handleConfirmDelete} className="btn-modern bg-rose-500 text-white hover:bg-rose-600 shadow-lg shadow-rose-500/20">Xác nhận xóa</button>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setConfirmModal({ show: false, id: null, name: "" })} className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" />
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="relative w-full max-w-sm bg-white rounded-[2rem] shadow-2xl p-10 text-center">
+              <div className="w-20 h-20 bg-rose-50 text-rose-500 rounded-3xl flex items-center justify-center text-4xl mx-auto mb-6 shadow-sm"><FiTrash2 /></div>
+              <h3 className="text-2xl font-black text-slate-900 mb-2">Gỡ bỏ nhãn hàng?</h3>
+              <p className="text-sm text-slate-500 mb-8 font-medium">Bạn có chắc chắn muốn xóa thương hiệu <strong>{confirmModal.name}</strong>? Các sản phẩm hiện tại sẽ không còn thương hiệu liên kết.</p>
+              <div className="grid grid-cols-2 gap-4">
+                 <button onClick={() => setConfirmModal({ show: false, id: null, name: "" })} className="px-6 py-3 rounded-2xl font-bold text-slate-500 hover:bg-slate-100">Hủy</button>
+                 <button onClick={handleConfirmDelete} className="px-6 py-3 bg-rose-500 text-white rounded-2xl font-bold shadow-lg shadow-rose-200 hover:bg-rose-600 active:scale-95 transition-all">Xác nhận</button>
               </div>
             </motion.div>
           </div>

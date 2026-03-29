@@ -21,7 +21,6 @@ import {
 import { getOrderById, updateOrderStatus } from "../../api/orderApi";
 import { requestReturn } from "../../api/orderItemApi";
 import { createVnpayPaymentApi } from "../../api/paymentApi";
-import { getImage } from "../../utils/decodeImage";
 import { StatusBadge } from "../../utils/StatusBadge";
 import {
   paymentStatusMap,
@@ -52,8 +51,27 @@ const initialState = {
   selectedItems: [],
   returnReason: "",
   cancelReason: "",
+  selectedCancelReason: "",
+  selectedReturnReason: "",
   submitting: false,
 };
+
+const CANCEL_REASONS = [
+  "Thay đổi ý định mua hàng",
+  "Tìm thấy giá rẻ hơn ở nơi khác",
+  "Đặt nhầm sản phẩm",
+  "Phí vận chuyển quá cao",
+  "Thời gian giao hàng quá lâu",
+  "Lý do khác",
+];
+
+const RETURN_REASONS = [
+  "Sản phẩm bị lỗi/hỏng",
+  "Giao sai sản phẩm",
+  "Sản phẩm không giống mô tả",
+  "Không còn nhu cầu sử dụng",
+  "Lý do khác",
+];
 
 const reducer = (state, action) => {
   switch (action.type) {
@@ -67,11 +85,17 @@ const reducer = (state, action) => {
         showReturnModal: true,
         selectedItems: action.payload,
         returnReason: "",
+        selectedReturnReason: "",
       };
     case "CLOSE_RETURN_MODAL":
       return { ...state, showReturnModal: false };
     case "OPEN_CANCEL_MODAL":
-      return { ...state, showCancelModal: true, cancelReason: "" };
+      return {
+        ...state,
+        showCancelModal: true,
+        cancelReason: "",
+        selectedCancelReason: "",
+      };
     case "CLOSE_CANCEL_MODAL":
       return { ...state, showCancelModal: false };
     case "TOGGLE_ITEM":
@@ -83,8 +107,12 @@ const reducer = (state, action) => {
       };
     case "SET_RETURN_REASON":
       return { ...state, returnReason: action.payload };
+    case "SET_SELECTED_RETURN_REASON":
+      return { ...state, selectedReturnReason: action.payload };
     case "SET_CANCEL_REASON":
       return { ...state, cancelReason: action.payload };
+    case "SET_SELECTED_CANCEL_REASON":
+      return { ...state, selectedCancelReason: action.payload };
     case "SET_SUBMITTING":
       return { ...state, submitting: action.payload };
     default:
@@ -142,7 +170,10 @@ const OrderDetail = () => {
       if (res?.errCode === 0 && res.data?.paymentUrl) {
         window.location.href = res.data.paymentUrl;
       } else {
-        toast.error(res?.message || "Không thể tạo liên kết thanh toán. Vui lòng thử lại!");
+        toast.error(
+          res?.message ||
+            "Không thể tạo liên kết thanh toán. Vui lòng thử lại!",
+        );
       }
     } catch (err) {
       console.error("Repay error:", err);
@@ -326,10 +357,15 @@ const OrderDetail = () => {
                 <div className="space-y-1">
                   <InfoRow
                     label="Người nhận"
-                    value={order.receiverName || order.user?.username || "Khách"}
+                    value={
+                      order.receiverName || order.user?.username || "Khách"
+                    }
                     icon={FiUser}
                   />
-                  <InfoRow label="Số điện thoại" value={order.receiverPhone || order.user?.phone} />
+                  <InfoRow
+                    label="Số điện thoại"
+                    value={order.receiverPhone || order.user?.phone}
+                  />
                   <InfoRow label="Email" value={order.user?.email} />
                 </div>
                 <div className="space-y-1">
@@ -359,7 +395,7 @@ const OrderDetail = () => {
                     >
                       <div className="w-24 h-24 bg-surface-50 rounded-2xl border border-surface-100 p-2 flex-shrink-0">
                         <img
-                          src={getImage(product.image)}
+                          src={product.image}
                           alt={product.name}
                           className="w-full h-full object-contain mix-blend-multiply"
                         />
@@ -436,7 +472,10 @@ const OrderDetail = () => {
 
                 {order.discountAmount > 0 && (
                   <div className="flex justify-between items-center text-rose-500 text-sm font-medium">
-                    <span>Giảm giá {order.voucherCode ? `(${order.voucherCode})` : ""}</span>
+                    <span>
+                      Giảm giá{" "}
+                      {order.voucherCode ? `(${order.voucherCode})` : ""}
+                    </span>
                     <span className="font-bold">
                       -{Number(order.discountAmount).toLocaleString("vi-VN")} ₫
                     </span>
@@ -453,17 +492,19 @@ const OrderDetail = () => {
                 </div>
               </div>
 
-              {order.paymentStatus === "unpaid" && order.paymentMethod === "VNPAY" && order.status !== "cancelled" && (
-                <Button
-                  variant="primary"
-                  className="w-full mt-6 shadow-lg shadow-primary/20"
-                  size="lg"
-                  icon={FiCreditCard}
-                  onClick={handleRepay}
-                >
-                  THANH TOÁN NGAY
-                </Button>
-              )}
+              {order.paymentStatus === "unpaid" &&
+                order.paymentMethod === "VNPAY" &&
+                order.status !== "cancelled" && (
+                  <Button
+                    variant="primary"
+                    className="w-full mt-6 shadow-lg shadow-primary/20"
+                    size="lg"
+                    icon={FiCreditCard}
+                    onClick={handleRepay}
+                  >
+                    THANH TOÁN NGAY
+                  </Button>
+                )}
             </div>
 
             {/* Actions */}
@@ -515,7 +556,6 @@ const OrderDetail = () => {
           </div>
         </div>
       </div>
-      {/* Modern Return Modal */}
       <Modal
         isOpen={showReturnModal}
         onClose={() => dispatch({ type: "CLOSE_RETURN_MODAL" })}
@@ -523,23 +563,54 @@ const OrderDetail = () => {
         size="lg"
       >
         <div className="space-y-6">
-          {/* Reason Input */}
-          <div>
+          {/* Reason Selection */}
+          <div className="space-y-4">
             <label className="text-[11px] font-black text-surface-400 uppercase tracking-widest mb-2 block">
-              Lý do trả hàng
+              Chọn lý do trả hàng
             </label>
-            <textarea
-              rows={4}
-              className="w-full bg-surface-50 border border-surface-200 rounded-2xl p-4 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-              placeholder="Mô tả chi tiết lý do bạn muốn trả sản phẩm này..."
-              value={returnReason}
-              onChange={(e) =>
-                dispatch({
-                  type: "SET_RETURN_REASON",
-                  payload: e.target.value,
-                })
-              }
-            />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {RETURN_REASONS.map((reason) => (
+                <button
+                  key={reason}
+                  onClick={() => {
+                    dispatch({ type: "SET_SELECTED_RETURN_REASON", payload: reason });
+                    if (reason !== "Lý do khác") {
+                      dispatch({ type: "SET_RETURN_REASON", payload: reason });
+                    } else {
+                      dispatch({ type: "SET_RETURN_REASON", payload: "" });
+                    }
+                  }}
+                  className={`px-4 py-3 rounded-2xl text-left text-xs font-bold transition-all border ${
+                    state.selectedReturnReason === reason
+                      ? "bg-primary/5 border-primary text-primary shadow-sm"
+                      : "bg-surface-50 border-surface-200 text-surface-600 hover:border-surface-300"
+                  }`}
+                >
+                  {reason}
+                </button>
+              ))}
+            </div>
+
+            {state.selectedReturnReason === "Lý do khác" && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                className="pt-2"
+              >
+                <textarea
+                  rows={3}
+                  className="w-full bg-white border border-surface-200 rounded-2xl p-4 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                  placeholder="Mô tả chi tiết lý do bạn muốn trả sản phẩm này..."
+                  value={returnReason}
+                  onChange={(e) =>
+                    dispatch({
+                      type: "SET_RETURN_REASON",
+                      payload: e.target.value,
+                    })
+                  }
+                />
+              </motion.div>
+            )}
           </div>
 
           {/* Product Selection */}
@@ -602,7 +673,6 @@ const OrderDetail = () => {
           </Button>
         </div>
       </Modal>
-
       {/* Cancel Order Confirmation Modal */}
       <ConfirmModal
         isOpen={showCancelModal}
@@ -617,20 +687,56 @@ const OrderDetail = () => {
         iconClassName="bg-rose-50 text-rose-500 rounded-3xl"
       >
         <p className="text-surface-500 mb-6 leading-relaxed">
-          Bạn có chắc chắn muốn gửi yêu cầu hủy đơn hàng <strong>#DH{order.id}</strong> không?
+          Bạn có chắc chắn muốn gửi yêu cầu hủy đơn hàng{" "}
+          <strong>#DH{order.id}</strong> không?
         </p>
-        
-        <div className="mb-8 text-left w-full">
-          <label className="text-[11px] font-black text-surface-400 uppercase tracking-widest mb-2 block">
-            Lý do hủy đơn
-          </label>
-          <textarea
-            rows={3}
-            className="w-full bg-surface-50 border border-surface-200 rounded-2xl p-4 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-            placeholder="Vui lòng nhập lý do hủy đơn hàng..."
-            value={cancelReason}
-            onChange={(e) => dispatch({ type: "SET_CANCEL_REASON", payload: e.target.value })}
-          />
+
+        <div className="mb-8 text-left w-full space-y-4">
+          <div className="space-y-2">
+            <label className="text-[11px] font-black text-surface-400 uppercase tracking-widest mb-1.5 block">
+              Chọn lý do hủy đơn
+            </label>
+            <div className="grid grid-cols-1 gap-2">
+              {CANCEL_REASONS.map((reason) => (
+                <button
+                  key={reason}
+                  onClick={() => {
+                    dispatch({ type: "SET_SELECTED_CANCEL_REASON", payload: reason });
+                    if (reason !== "Lý do khác") {
+                      dispatch({ type: "SET_CANCEL_REASON", payload: reason });
+                    } else {
+                      dispatch({ type: "SET_CANCEL_REASON", payload: "" });
+                    }
+                  }}
+                  className={`px-4 py-3 rounded-2xl text-left text-xs font-bold transition-all border ${
+                    state.selectedCancelReason === reason
+                      ? "bg-primary/5 border-primary text-primary shadow-sm"
+                      : "bg-surface-50 border-surface-200 text-surface-600 hover:border-surface-300"
+                  }`}
+                >
+                  {reason}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {state.selectedCancelReason === "Lý do khác" && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              className="pt-2"
+            >
+              <textarea
+                rows={3}
+                className="w-full bg-white border border-surface-200 rounded-2xl p-4 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                placeholder="Vui lòng nhập lý do cụ thể..."
+                value={cancelReason}
+                onChange={(e) =>
+                  dispatch({ type: "SET_CANCEL_REASON", payload: e.target.value })
+                }
+              />
+            </motion.div>
+          )}
         </div>
       </ConfirmModal>
     </div>

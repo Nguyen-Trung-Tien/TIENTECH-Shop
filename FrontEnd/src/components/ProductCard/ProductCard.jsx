@@ -6,7 +6,6 @@ import { motion } from "framer-motion";
 import { addCart, getAllCarts, createCart } from "../../api/cartApi";
 import { getProductByIdApi } from "../../api/productApi";
 import { addCartItem } from "../../redux/cartSlice";
-import { getImage } from "../../utils/decodeImage";
 import { FiShoppingCart, FiHeart } from "react-icons/fi";
 import { FaStar, FaHeart } from "react-icons/fa";
 import { addToWishlistApi, removeFromWishlistApi } from "../../api/wishlistApi";
@@ -179,7 +178,7 @@ const ProductCard = ({ product }) => {
         {/* Image Area */}
         <div className="relative aspect-square overflow-hidden bg-slate-50 dark:bg-dark-bg">
           <img
-            src={getImage(image)}
+            src={image}
             alt={name}
             loading="lazy"
             className="w-full h-full object-contain p-4 mix-blend-multiply dark:mix-blend-normal transition-transform duration-500 group-hover:scale-105"

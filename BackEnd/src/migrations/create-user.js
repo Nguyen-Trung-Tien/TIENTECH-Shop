@@ -51,12 +51,40 @@ module.exports = {
         defaultValue: "customer",
       },
       avatar: {
-        type: Sequelize.BLOB("long"),
+        type: Sequelize.STRING,
         allowNull: true,
+      },
+      points: {
+        type: Sequelize.INTEGER,
+        defaultValue: 0,
+        allowNull: false,
+      },
+      rank: {
+        type: Sequelize.ENUM("Bronze", "Silver", "Gold", "Platinum"),
+        defaultValue: "Bronze",
+        allowNull: false,
+      },
+      googleId: {
+        type: Sequelize.STRING,
+        allowNull: true,
+        unique: true,
+      },
+      provider: {
+        type: Sequelize.STRING,
+        defaultValue: "local",
+        allowNull: false,
       },
       isActive: {
         type: Sequelize.BOOLEAN,
-        defaultValue: true,
+        defaultValue: false,
+      },
+      verificationToken: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      verificationTokenExpiresAt: {
+        type: Sequelize.DATE,
+        allowNull: true,
       },
       createdAt: {
         allowNull: false,

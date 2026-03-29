@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { motion } from "framer-motion";
 import { getAllProductApi } from "../../api/productApi";
-import { getImage } from "../../utils/decodeImage";
 import ProductCard from "../../components/ProductCard/ProductCard";
 import SkeletonCard from "../SkeletonCard/SkeletonCard";
 
@@ -15,9 +14,7 @@ const ProductSection = () => {
       try {
         const res = await getAllProductApi(1, 6);
         if (res?.errCode === 0) {
-          const featured = res.products
-            ?.filter((p) => p.isActive)
-            ?.slice(0, 6);
+          const featured = res.products?.filter((p) => p.isActive)?.slice(0, 6);
           setProducts(featured);
         } else {
           toast.error("Không thể tải sản phẩm!");
@@ -48,7 +45,7 @@ const ProductSection = () => {
               <span className="w-8 h-[2px] bg-primary"></span>
               Sản phẩm đề xuất
             </motion.div>
-            <motion.h2 
+            <motion.h2
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -64,7 +61,9 @@ const ProductSection = () => {
             className="text-sm font-bold text-primary hover:text-primary-hover transition-colors flex items-center gap-2 group"
           >
             Xem tất cả sản phẩm
-            <span className="group-hover:translate-x-1 transition-transform">→</span>
+            <span className="group-hover:translate-x-1 transition-transform">
+              →
+            </span>
           </motion.button>
         </div>
 
@@ -91,11 +90,23 @@ const ProductSection = () => {
         ) : (
           <div className="flex flex-col items-center justify-center py-20 bg-white rounded-[32px] border border-dashed border-slate-200">
             <div className="w-16 h-16 bg-slate-50 text-slate-300 rounded-full flex items-center justify-center mb-4">
-               <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="box" />
-               </svg>
+              <svg
+                className="w-8 h-8"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="box"
+                />
+              </svg>
             </div>
-            <p className="text-slate-500 font-medium">Hiện tại chưa có sản phẩm nổi bật nào!</p>
+            <p className="text-slate-500 font-medium">
+              Hiện tại chưa có sản phẩm nổi bật nào!
+            </p>
           </div>
         )}
       </div>

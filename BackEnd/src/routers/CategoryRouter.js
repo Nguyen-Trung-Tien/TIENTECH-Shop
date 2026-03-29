@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const CategoryController = require("../controller/CategoryController");
+const upload = require("./multer");
 const {
   authenticateToken,
   authorizeRole,
@@ -12,12 +13,14 @@ router.post(
   "/create",
   authenticateToken,
   authorizeRole(["admin"]),
+  upload.single("image"),
   CategoryController.handleCreateCategory
 );
 router.put(
   "/update/:id",
   authenticateToken,
   authorizeRole(["admin"]),
+  upload.single("image"),
   CategoryController.handleUpdateCategory
 );
 router.delete(

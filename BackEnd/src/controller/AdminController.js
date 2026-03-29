@@ -3,7 +3,8 @@ const AdminAIService = require("../services/AdminAIService");
 
 const getDashboard = async (req, res) => {
   try {
-    const data = await AdminService.getDashboardData();
+    const { period } = req.query;
+    const data = await AdminService.getDashboardData(period);
     res.status(200).json({
       errCode: 0,
       message: "OK",

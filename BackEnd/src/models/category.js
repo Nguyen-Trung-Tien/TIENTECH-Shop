@@ -28,7 +28,7 @@ module.exports = (sequelize, DataTypes) => {
       name: { type: DataTypes.STRING, allowNull: false, unique: true },
       slug: { type: DataTypes.STRING, allowNull: false, unique: true },
       description: { type: DataTypes.TEXT },
-      image: { type: DataTypes.BLOB("long") },
+      image: { type: DataTypes.STRING },
       parentId: { type: DataTypes.INTEGER, allowNull: true },
     },
     {
