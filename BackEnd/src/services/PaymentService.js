@@ -10,6 +10,8 @@ const simulateRefund = async (order, method) => {
   return { success: true, message: "Refund simulated" };
 };
 
+const { getPagination, getPagingData } = require("../utils/paginationHelper");
+
 const getAllPayments = async ({
   page = 1,
   limit = 10,
@@ -19,7 +21,7 @@ const getAllPayments = async ({
   order = "DESC",
 }) => {
   try {
-    const offset = (page - 1) * limit;
+    const { offset, limit: l } = getPagination(page, limit);
 
     let where = {};
     if (status && status !== "all") where.status = status;
@@ -37,7 +39,7 @@ const getAllPayments = async ({
       ? [[{ model: db.User, as: "user" }, orderBy.split(".")[1], order]]
       : [[orderBy, order]];
 
-    const { count, rows } = await db.Payment.findAndCountAll({
+    const data = await db.Payment.findAndCountAll({
       where,
       include: [
         {
@@ -54,25 +56,23 @@ const getAllPayments = async ({
         },
       ],
       order: orderArray,
-      limit,
+      limit: l,
       offset,
       distinct: true,
       subQuery: false,
     });
 
-    const totalPages = Math.ceil(count / limit);
+    const pagingData = getPagingData(data, page, l);
 
     return {
       errCode: 0,
       errMessage: "OK",
-      data: rows,
+      data: pagingData.items,
       pagination: {
-        currentPage: +page,
-        pageSize: +limit,
-        totalItems: count,
-        totalPages,
-        hasNext: +page < totalPages,
-        hasPrev: +page > 1,
+        totalItems: pagingData.totalItems,
+        currentPage: pagingData.currentPage,
+        totalPages: pagingData.totalPages,
+        limit: l,
       },
     };
   } catch (e) {

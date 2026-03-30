@@ -9,6 +9,7 @@ import { addCartItem } from "../../redux/cartSlice";
 import { FiShoppingCart, FiHeart } from "react-icons/fi";
 import { FaStar, FaHeart } from "react-icons/fa";
 import { addToWishlistApi, removeFromWishlistApi } from "../../api/wishlistApi";
+import { formatCurrency } from "../../utils/format";
 import Button from "../UI/Button";
 import Badge from "../UI/Badge";
 import QuickVariantModal from "./QuickVariantModal";
@@ -266,11 +267,11 @@ const ProductCard = ({ product }) => {
 
           <div className="mt-auto pt-2 border-t border-slate-50 dark:border-dark-border">
             <p className="text-base font-black text-slate-900 dark:text-white leading-none">
-              {Math.round(finalPrice).toLocaleString("vi-VN")} ₫
+              {formatCurrency(finalPrice)}
             </p>
             {((flashSaleActive && flashOriginalPrice) || discount > 0) && (
               <p className="text-[10px] text-slate-400 dark:text-slate-500 line-through mt-1">
-                {Math.round(productOriginalPrice).toLocaleString("vi-VN")} ₫
+                {formatCurrency(productOriginalPrice)}
               </p>
             )}
           </div>

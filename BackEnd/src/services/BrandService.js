@@ -10,9 +10,16 @@ const createBrand = async (data) => {
   }
 };
 
-const getAllBrands = async () => {
+const { getPagination, getPagingData } = require("../utils/paginationHelper");
+
+const getAllBrands = async (page = 1, limit = 10, searchTerm = "") => {
   try {
-    const brands = await db.Brand.findAll({
+    const { offset, limit: l } = getPagination(page, limit);
+    const { Op } = require("sequelize");
+    const where = searchTerm ? { name: { [Op.like]: `%${searchTerm}%` } } : {};
+
+    const data = await db.Brand.findAndCountAll({
+      where,
       attributes: ["id", "name", "slug", "description", "image", "createdAt"],
       include: [
         {
@@ -22,9 +29,13 @@ const getAllBrands = async () => {
         },
       ],
       order: [["createdAt", "DESC"]],
+      limit: l,
+      offset,
     });
 
-    const result = brands.map((b) => {
+    const pagingData = getPagingData(data, page, l);
+
+    const result = pagingData.items.map((b) => {
       const brandJson = b.toJSON();
       return {
         ...brandJson,
@@ -32,7 +43,16 @@ const getAllBrands = async () => {
       };
     });
 
-    return { errCode: 0, brands: result };
+    return { 
+      errCode: 0, 
+      brands: result,
+      pagination: {
+        totalItems: pagingData.totalItems,
+        currentPage: pagingData.currentPage,
+        totalPages: pagingData.totalPages,
+        limit: l,
+      }
+    };
   } catch (e) {
     console.error("Error fetching brands:", e);
     return { errCode: 1, errMessage: e.message };

@@ -2,9 +2,11 @@ const db = require("../models");
 const { Op } = require("sequelize");
 const { sendOrderDeliveredEmail } = require("./sendEmail");
 
+const { getPagination, getPagingData } = require("../utils/paginationHelper");
+
 const getAllOrders = async (page = 1, limit = 10, searchTerm = "", status = "", isReturn = false, isCancelRequested = false) => {
   try {
-    const offset = (page - 1) * limit;
+    const { offset, limit: l } = getPagination(page, limit);
     const where = {};
 
     if (status && status !== "all") {
@@ -40,7 +42,7 @@ const getAllOrders = async (page = 1, limit = 10, searchTerm = "", status = "", 
 
     if (isReturn) {
       // Khi lọc trả hàng, ta chỉ lấy những đơn có ít nhất 1 item đang yêu cầu trả
-      const { count, rows: orders } = await db.Order.findAndCountAll({
+      const data = await db.Order.findAndCountAll({
         where,
         include: [
           {
@@ -65,48 +67,48 @@ const getAllOrders = async (page = 1, limit = 10, searchTerm = "", status = "", 
           { model: db.Payment, as: "payment" },
         ],
         order: [["createdAt", "DESC"]],
-        limit,
+        limit: l,
         offset,
         distinct: true,
         subQuery: false,
       });
 
-      const totalPages = Math.ceil(count / limit);
+      const pagingData = getPagingData(data, page, l);
 
       return {
         errCode: 0,
         errMessage: "OK",
-        data: orders,
+        data: pagingData.items,
         pagination: {
-          total: count,
-          page,
-          limit,
-          totalPages,
+          totalItems: pagingData.totalItems,
+          currentPage: pagingData.currentPage,
+          totalPages: pagingData.totalPages,
+          limit: l,
         },
       };
     }
 
-    const { count, rows: orders } = await db.Order.findAndCountAll({
+    const data = await db.Order.findAndCountAll({
       where,
       include,
       order: [["createdAt", "DESC"]],
-      limit,
+      limit: l,
       offset,
       distinct: true,
       subQuery: false,
     });
 
-    const totalPages = Math.ceil(count / limit);
+    const pagingData = getPagingData(data, page, l);
 
     return {
       errCode: 0,
       errMessage: "OK",
-      data: orders,
+      data: pagingData.items,
       pagination: {
-        total: count,
-        page,
-        limit,
-        totalPages,
+        totalItems: pagingData.totalItems,
+        currentPage: pagingData.currentPage,
+        totalPages: pagingData.totalPages,
+        limit: l,
       },
     };
   } catch (e) {
@@ -194,17 +196,17 @@ const getOrdersByUserId = async (
   status = "all"
 ) => {
   try {
-    const offset = (page - 1) * limit;
+    const { offset, limit: l } = getPagination(page, limit);
     const where = { userId };
     if (status && status !== "all") {
       where.status = status;
     }
 
-    const { count, rows: orders } = await db.Order.findAndCountAll({
+    const data = await db.Order.findAndCountAll({
       where,
       distinct: true,
       order: [["createdAt", "DESC"]],
-      limit,
+      limit: l,
       offset,
       attributes: [
         "id",
@@ -245,8 +247,10 @@ const getOrdersByUserId = async (
       ],
     });
 
+    const pagingData = getPagingData(data, page, l);
+
     // Map to maintain compatibility
-    const mappedOrders = orders.map(order => {
+    const mappedOrders = pagingData.items.map(order => {
       const plainOrder = order.toJSON();
       if (plainOrder.orderItems) {
         plainOrder.orderItems.forEach(item => {
@@ -259,17 +263,15 @@ const getOrdersByUserId = async (
       return plainOrder;
     });
 
-    const totalPages = Math.ceil(count / limit);
-
     return {
       errCode: 0,
       errMessage: "OK",
       data: mappedOrders,
       pagination: {
-        total: count,
-        page,
-        limit,
-        totalPages,
+        totalItems: pagingData.totalItems,
+        currentPage: pagingData.currentPage,
+        totalPages: pagingData.totalPages,
+        limit: l,
       },
     };
   } catch (e) {
@@ -280,9 +282,9 @@ const getOrdersByUserId = async (
 
 const getActiveOrdersByUserId = async (userId, page = 1, limit = 10) => {
   try {
-    const offset = (page - 1) * limit;
+    const { offset, limit: l } = getPagination(page, limit);
 
-    const { count, rows: orders } = await db.Order.findAndCountAll({
+    const data = await db.Order.findAndCountAll({
       where: {
         userId,
         status: { [Op.notIn]: ["delivered", "cancelled"] },
@@ -312,12 +314,14 @@ const getActiveOrdersByUserId = async (userId, page = 1, limit = 10) => {
         },
       ],
       order: [["createdAt", "DESC"]],
-      limit,
+      limit: l,
       offset,
     });
 
+    const pagingData = getPagingData(data, page, l);
+
     // Map results
-    const mappedOrders = orders.map(order => {
+    const mappedOrders = pagingData.items.map(order => {
       const plainOrder = order.toJSON();
       if (plainOrder.orderItems) {
         plainOrder.orderItems.forEach(item => {
@@ -330,17 +334,15 @@ const getActiveOrdersByUserId = async (userId, page = 1, limit = 10) => {
       return plainOrder;
     });
 
-    const totalPages = Math.ceil(count / limit);
-
     return {
       errCode: 0,
       errMessage: "OK",
       data: mappedOrders,
       pagination: {
-        total: count,
-        page,
-        limit,
-        totalPages,
+        totalItems: pagingData.totalItems,
+        currentPage: pagingData.currentPage,
+        totalPages: pagingData.totalPages,
+        limit: l,
       },
     };
   } catch (e) {

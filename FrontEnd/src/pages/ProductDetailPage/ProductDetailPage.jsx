@@ -248,7 +248,7 @@ const ProductDetailPage = () => {
         <div className="lg:col-span-5 space-y-4">
           <div className="aspect-square rounded-2xl overflow-hidden bg-gray-50 border border-gray-100 flex items-center justify-center relative group">
             <img 
-              src={mainImage} 
+              src={mainImage || "/images/no-image.png"} 
               alt={product.name} 
               className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105 p-4"
             />

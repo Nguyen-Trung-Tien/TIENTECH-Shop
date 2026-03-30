@@ -2,6 +2,7 @@ const db = require("../models");
 const { Op } = require("sequelize");
 const { getLuckyColorsByYear } = require("../utils/fortuneUtils");
 const NodeCache = require("node-cache");
+const { getPagination, getPagingData } = require("../utils/paginationHelper");
 
 const productCache = new NodeCache({ stdTTL: 600, checkperiod: 120 });
 
@@ -152,10 +153,6 @@ const getAllProducts = async (
   limit = 10,
   isFlashSale = false,
 ) => {
-  // Cap limit để ngăn DB overload
-  limit = Math.min(Math.max(1, Number(limit) || 10), 100);
-  page = Math.max(1, Number(page) || 1);
-
   const cacheKey = `products_${categoryId || "all"}_${isFlashSale ? "flash" : "all"}_${page}_${limit}`;
   const cachedData = productCache.get(cacheKey);
 
@@ -163,7 +160,7 @@ const getAllProducts = async (
     return cachedData;
   }
 
-  const offset = (page - 1) * limit;
+  const { offset, limit: l } = getPagination(page, limit);
   const whereCondition = {};
   if (categoryId) whereCondition.categoryId = categoryId;
 
@@ -176,10 +173,10 @@ const getAllProducts = async (
     whereCondition.isActive = true;
   }
 
-  const { count, rows } = await db.Product.findAndCountAll({
+  const data = await db.Product.findAndCountAll({
     where: whereCondition,
     attributes: {
-      include: ["hasVariants"]
+      include: ["hasVariants"],
     },
     include: [
       { model: db.Category, as: "category" },
@@ -191,14 +188,16 @@ const getAllProducts = async (
         attributes: ["imageUrl", "isPrimary"],
       },
     ],
-    limit,
+    limit: l,
     offset,
     order: [["createdAt", "DESC"]],
   });
 
+  const pagingData = getPagingData(data, page, l);
+
   const result = {
     errCode: 0,
-    products: rows.map((p) => {
+    products: pagingData.items.map((p) => {
       let image = p.image;
       if (!image && p.images && p.images.length > 0) {
         const primary = p.images.find((i) => i.isPrimary) || p.images[0];
@@ -207,9 +206,12 @@ const getAllProducts = async (
       const raw = { ...p.toJSON(), image: image || null };
       return applyFlashSaleToProduct(raw);
     }),
-    totalItems: count,
-    currentPage: page,
-    totalPages: Math.ceil(count / limit),
+    pagination: {
+      totalItems: pagingData.totalItems,
+      currentPage: pagingData.currentPage,
+      totalPages: pagingData.totalPages,
+      limit: l,
+    },
   };
 
   // Flash sale sản phẩm dùng TTL ngắn hơn (60s) vì giá thay đổi theo phút
@@ -221,9 +223,9 @@ const getProductById = async (id) => {
   try {
     const product = await db.Product.findByPk(id, {
       attributes: {
-      include: ["hasVariants"]
-    },
-    include: [
+        include: ["hasVariants"],
+      },
+      include: [
         { model: db.Category, as: "category" },
         { model: db.Brand, as: "brand" },
         {
@@ -391,7 +393,7 @@ const deleteProduct = async (id) => {
 };
 
 const searchProducts = async (query, page = 1, limit = 10) => {
-  const offset = (page - 1) * limit;
+  const { offset, limit: l } = getPagination(page, limit);
   const { Op } = db.Sequelize;
 
   // Chỉ tìm sản phẩm đang active (không hiện sản phẩm đã ẩn)
@@ -399,10 +401,10 @@ const searchProducts = async (query, page = 1, limit = 10) => {
   if (query) whereCondition.name = { [Op.like]: `%${query}%` };
 
   // Tìm sản phẩm phân trang (dùng cho trang kết quả tìm kiếm)
-  const { count, rows } = await db.Product.findAndCountAll({
+  const data = await db.Product.findAndCountAll({
     where: whereCondition,
     attributes: {
-      include: ["hasVariants"]
+      include: ["hasVariants"],
     },
     include: [
       { model: db.Category, as: "category" },
@@ -413,10 +415,12 @@ const searchProducts = async (query, page = 1, limit = 10) => {
         attributes: ["imageUrl", "isPrimary"],
       },
     ],
-    limit,
+    limit: l,
     offset,
     order: [["createdAt", "DESC"]],
   });
+
+  const pagingData = getPagingData(data, page, l);
 
   // GỢI Ý PRODUCT (lightweight → dành cho Smart Search)
   const productSuggestionsRaw = await db.Product.findAll({
@@ -425,21 +429,27 @@ const searchProducts = async (query, page = 1, limit = 10) => {
     },
     attributes: ["id", "name", ["basePrice", "price"]],
     attributes: {
-      include: ["hasVariants"]
+      include: ["hasVariants"],
     },
-    include: [{ model: db.ProductImage, as: "images", attributes: ["imageUrl", "isPrimary"] }],
+    include: [
+      {
+        model: db.ProductImage,
+        as: "images",
+        attributes: ["imageUrl", "isPrimary"],
+      },
+    ],
     limit: 8,
     order: [["sold", "DESC"]],
   });
 
-  const productSuggestions = productSuggestionsRaw.map(p => {
+  const productSuggestions = productSuggestionsRaw.map((p) => {
     const plain = p.get({ plain: true });
-    const primary = plain.images?.find(i => i.isPrimary) || plain.images?.[0];
+    const primary = plain.images?.find((i) => i.isPrimary) || plain.images?.[0];
     return {
       id: plain.id,
       name: plain.name,
       price: plain.price,
-      image: primary ? primary.imageUrl : null
+      image: primary ? primary.imageUrl : null,
     };
   });
 
@@ -462,7 +472,7 @@ const searchProducts = async (query, page = 1, limit = 10) => {
 
   return {
     errCode: 0,
-    products: rows.map((p) => {
+    products: pagingData.items.map((p) => {
       let image = p.image;
       if (!image && p.images && p.images.length > 0) {
         const primary = p.images.find((i) => i.isPrimary) || p.images[0];
@@ -470,9 +480,12 @@ const searchProducts = async (query, page = 1, limit = 10) => {
       }
       return { ...p.toJSON(), image: image || null };
     }),
-    totalItems: count,
-    currentPage: page,
-    totalPages: Math.ceil(count / limit),
+    pagination: {
+      totalItems: pagingData.totalItems,
+      currentPage: pagingData.currentPage,
+      totalPages: pagingData.totalPages,
+      limit: l,
+    },
 
     // Dành cho Smart Search
     suggestions: {
@@ -499,21 +512,27 @@ const searchSuggestions = async (query, limit = 8) => {
     where: { name: { [Op.like]: `%${q}%` } },
     attributes: ["id", "name", ["basePrice", "price"]],
     attributes: {
-      include: ["hasVariants"]
+      include: ["hasVariants"],
     },
-    include: [{ model: db.ProductImage, as: "images", attributes: ["imageUrl", "isPrimary"] }],
+    include: [
+      {
+        model: db.ProductImage,
+        as: "images",
+        attributes: ["imageUrl", "isPrimary"],
+      },
+    ],
     limit,
     order: [["sold", "DESC"]],
   });
 
-  const productSuggestions = productSuggestionsRaw.map(p => {
+  const productSuggestions = productSuggestionsRaw.map((p) => {
     const plain = p.get({ plain: true });
-    const primary = plain.images?.find(i => i.isPrimary) || plain.images?.[0];
+    const primary = plain.images?.find((i) => i.isPrimary) || plain.images?.[0];
     return {
       id: plain.id,
       name: plain.name,
       price: plain.price,
-      image: primary ? primary.imageUrl : null
+      image: primary ? primary.imageUrl : null,
     };
   });
 
@@ -541,7 +560,7 @@ const searchSuggestions = async (query, limit = 8) => {
 };
 
 /**
- * @deprecated Kông gọi hàm này từ bên ngoài — stock và sold được quản lý bửi createOrder/updateOrderStatus.
+ * @deprecated Không gọi hàm này từ bên ngoài — stock và sold được quản lý bởi createOrder/updateOrderStatus.
  * Hàm này chỉ giữ lại để tương thích ngược.
  */
 const updateProductSold = async (productId, quantity) => {
@@ -553,7 +572,7 @@ const updateProductSold = async (productId, quantity) => {
     if (!product) return { errCode: 1, errMessage: "Product not found" };
 
     await product.increment("sold", { by: quantity });
-    await product.decrement("stock", { by: quantity });
+    await product.decrement("totalStock", { by: quantity });
 
     return { errCode: 0, errMessage: "Updated product sold count" };
   } catch (e) {
@@ -563,18 +582,22 @@ const updateProductSold = async (productId, quantity) => {
 };
 
 const getDiscountedProducts = async (page = 1, limit = 10) => {
-  const offset = (page - 1) * limit;
+  const { offset, limit: l } = getPagination(page, limit);
 
   const now = new Date();
-  const { count, rows } = await db.Product.findAndCountAll({
+  const data = await db.Product.findAndCountAll({
     where: {
       isActive: true,
       [Op.or]: [
-        { isFlashSale: true, flashSaleStart: { [Op.lte]: now }, flashSaleEnd: { [Op.gte]: now } },
+        {
+          isFlashSale: true,
+          flashSaleStart: { [Op.lte]: now },
+          flashSaleEnd: { [Op.gte]: now },
+        },
       ],
     },
     attributes: {
-      include: ["hasVariants"]
+      include: ["hasVariants"],
     },
     include: [
       { model: db.Category, as: "category" },
@@ -585,14 +608,16 @@ const getDiscountedProducts = async (page = 1, limit = 10) => {
         attributes: ["imageUrl", "isPrimary"],
       },
     ],
-    limit,
+    limit: l,
     offset,
     order: [["createdAt", "DESC"]],
   });
 
+  const pagingData = getPagingData(data, page, l);
+
   return {
     errCode: 0,
-    products: rows.map((p) => {
+    products: pagingData.items.map((p) => {
       let image = p.image;
       if (!image && p.images && p.images.length > 0) {
         const primary = p.images.find((i) => i.isPrimary) || p.images[0];
@@ -601,17 +626,20 @@ const getDiscountedProducts = async (page = 1, limit = 10) => {
       const raw = { ...p.toJSON(), image: image || null };
       return applyFlashSaleToProduct(raw);
     }),
-    totalItems: count,
-    currentPage: page,
-    totalPages: Math.ceil(count / limit),
+    pagination: {
+      totalItems: pagingData.totalItems,
+      currentPage: pagingData.currentPage,
+      totalPages: pagingData.totalPages,
+      limit: l,
+    },
   };
 };
 
 const getFlashSaleProducts = async (page = 1, limit = 10) => {
   const now = new Date();
-  const offset = (page - 1) * limit;
+  const { offset, limit: l } = getPagination(page, limit);
 
-  const { count, rows } = await db.Product.findAndCountAll({
+  const data = await db.Product.findAndCountAll({
     where: {
       isActive: true,
       isFlashSale: true,
@@ -619,7 +647,7 @@ const getFlashSaleProducts = async (page = 1, limit = 10) => {
       flashSaleEnd: { [Op.gte]: now },
     },
     attributes: {
-      include: ["hasVariants"]
+      include: ["hasVariants"],
     },
     include: [
       { model: db.Category, as: "category" },
@@ -630,15 +658,17 @@ const getFlashSaleProducts = async (page = 1, limit = 10) => {
         attributes: ["imageUrl", "isPrimary"],
       },
     ],
-    limit,
+    limit: l,
     offset,
     order: [["flashSaleStart", "ASC"]],
   });
 
+  const pagingData = getPagingData(data, page, l);
+
   let upcomingItems = [];
   let nextFlashSaleStart = null;
 
-  if (count === 0) {
+  if (pagingData.totalItems === 0) {
     upcomingItems = await db.Product.findAll({
       where: {
         isActive: true,
@@ -646,9 +676,9 @@ const getFlashSaleProducts = async (page = 1, limit = 10) => {
         flashSaleStart: { [Op.gt]: now },
       },
       attributes: {
-      include: ["hasVariants"]
-    },
-    include: [
+        include: ["hasVariants"],
+      },
+      include: [
         { model: db.Category, as: "category" },
         { model: db.Brand, as: "brand" },
         {
@@ -668,7 +698,7 @@ const getFlashSaleProducts = async (page = 1, limit = 10) => {
 
   return {
     errCode: 0,
-    products: rows.map((p) => {
+    products: pagingData.items.map((p) => {
       let image = p.image;
       if (!image && p.images && p.images.length > 0) {
         const primary = p.images.find((i) => i.isPrimary) || p.images[0];
@@ -677,9 +707,12 @@ const getFlashSaleProducts = async (page = 1, limit = 10) => {
       const raw = { ...p.toJSON(), image: image || null };
       return applyFlashSaleToProduct(raw);
     }),
-    totalItems: count,
-    currentPage: page,
-    totalPages: Math.ceil(count / limit),
+    pagination: {
+      totalItems: pagingData.totalItems,
+      currentPage: pagingData.currentPage,
+      totalPages: pagingData.totalPages,
+      limit: l,
+    },
     upcomingProducts: upcomingItems.map((p) => {
       let image = p.image;
       if (!image && p.images && p.images.length > 0) {
@@ -691,6 +724,168 @@ const getFlashSaleProducts = async (page = 1, limit = 10) => {
     }),
     nextFlashSaleStart,
   };
+};
+
+const recommendProducts = async (productId, page = 1, limit = 6) => {
+  try {
+    const product = await db.Product.findByPk(productId);
+    if (!product) {
+      return { errCode: 1, errMessage: "Product not found" };
+    }
+
+    const price = Number(product.basePrice);
+    const priceLow = price * 0.8;
+    const priceHigh = price * 1.2;
+
+    const where = {
+      id: { [Op.ne]: productId },
+      isActive: true,
+      [Op.or]: [
+        { categoryId: product.categoryId },
+        { brandId: product.brandId },
+        { basePrice: { [Op.between]: [priceLow, priceHigh] } },
+      ],
+    };
+
+    const total = await db.Product.count({ where });
+
+    const { offset, limit: l } = getPagination(page, limit);
+
+    const rows = await db.Product.findAll({
+      where,
+      attributes: {
+        include: ["hasVariants"],
+      },
+      include: [
+        { model: db.Brand, as: "brand" },
+        { model: db.Category, as: "category" },
+        {
+          model: db.ProductImage,
+          as: "images",
+          attributes: ["imageUrl", "isPrimary"],
+        },
+      ],
+      order: [
+        ["sold", "DESC"],
+        ["createdAt", "DESC"],
+      ],
+      offset,
+      limit: l,
+    });
+
+    return {
+      errCode: 0,
+      data: rows.map((p) => {
+        let image = p.image;
+        if (!image && p.images && p.images.length > 0) {
+          const primary = p.images.find((i) => i.isPrimary) || p.images[0];
+          image = primary.imageUrl;
+        }
+        return { ...p.toJSON(), image: image || null };
+      }),
+      pagination: {
+        currentPage: Number(page),
+        totalPages: Math.ceil(total / l),
+        totalItems: total,
+        limit: l,
+      },
+    };
+  } catch (e) {
+    console.error("Error recommending products:", e);
+    return { errCode: 1, errMessage: e.message };
+  }
+};
+
+const recommendFortuneProducts = async ({
+  birthYear,
+  brandId,
+  minPrice,
+  maxPrice,
+  categoryId,
+  page = 1,
+  limit = 6,
+  sortBy,
+}) => {
+  try {
+    if (!birthYear) return { errCode: 1, errMessage: "birthYear is required" };
+
+    const luckyColors = getLuckyColorsByYear(Number(birthYear));
+
+    // Build where
+    const where = { isActive: true };
+
+    if (luckyColors.length) {
+      // Filter by color in specifications JSON field
+      where[Op.or] = luckyColors.map((color) => ({
+        specifications: {
+          [Op.like]: `%${color}%`,
+        },
+      }));
+    }
+
+    if (brandId) where.brandId = brandId;
+    if (categoryId) where.categoryId = categoryId;
+    if (minPrice != null)
+      where.basePrice = { ...where.basePrice, [Op.gte]: minPrice };
+    if (maxPrice != null)
+      where.basePrice = { ...where.basePrice, [Op.lte]: maxPrice };
+
+    const total = await db.Product.count({ where });
+    const { offset, limit: l } = getPagination(page, limit);
+
+    let order = [
+      ["sold", "DESC"],
+      ["createdAt", "DESC"],
+    ];
+    if (sortBy === "priceAsc") order = [["basePrice", "ASC"]];
+    if (sortBy === "priceDesc") order = [["basePrice", "DESC"]];
+
+    const rows = await db.Product.findAll({
+      where,
+      attributes: {
+        include: ["hasVariants"],
+      },
+      include: [
+        { model: db.Brand, as: "brand" },
+        { model: db.Category, as: "category" },
+        {
+          model: db.ProductImage,
+          as: "images",
+          attributes: ["imageUrl", "isPrimary"],
+        },
+      ],
+      order,
+      offset,
+      limit: l,
+    });
+
+    const data = rows.map((p) => {
+      let image = p.image;
+      if (!image && p.images && p.images.length > 0) {
+        const primary = p.images.find((i) => i.isPrimary) || p.images[0];
+        image = primary.imageUrl;
+      }
+      const product = p.toJSON();
+      product.image = image || null;
+      product.isLuckyColor = luckyColors.includes(product.color);
+      return product;
+    });
+
+    return {
+      errCode: 0,
+      data,
+      luckyColors,
+      pagination: {
+        currentPage: Number(page),
+        totalPages: Math.ceil(total / l),
+        totalItems: total,
+        limit: l,
+      },
+    };
+  } catch (e) {
+    console.error("Error in recommendFortuneProducts:", e);
+    return { errCode: -1, errMessage: e.message };
+  }
 };
 
 const filterProducts = async ({
@@ -720,14 +915,14 @@ const filterProducts = async ({
     if (sort === "price_desc") order = [["basePrice", "DESC"]];
     if (sort === "newest") order = [["createdAt", "DESC"]];
 
-    const offset = (page - 1) * limit;
+    const { offset, limit: l } = getPagination(page, limit);
 
-    const products = await db.Product.findAndCountAll({
+    const data = await db.Product.findAndCountAll({
       where: conditions,
       attributes: {
-      include: ["hasVariants"]
-    },
-    include: [
+        include: ["hasVariants"],
+      },
+      include: [
         { model: db.Brand, as: "brand" },
         { model: db.Category, as: "category" },
         {
@@ -737,13 +932,15 @@ const filterProducts = async ({
         },
       ],
       order,
-      limit,
+      limit: l,
       offset,
     });
 
+    const pagingData = getPagingData(data, page, l);
+
     return {
       errCode: 0,
-      data: products.rows.map((p) => {
+      data: pagingData.items.map((p) => {
         let image = p.image;
         if (!image && p.images && p.images.length > 0) {
           const primary = p.images.find((i) => i.isPrimary) || p.images[0];
@@ -751,173 +948,16 @@ const filterProducts = async ({
         }
         return { ...p.toJSON(), image: image || null };
       }),
-      total: products.count,
-      page,
-      totalPages: Math.ceil(products.count / limit),
+      pagination: {
+        totalItems: pagingData.totalItems,
+        currentPage: pagingData.currentPage,
+        totalPages: pagingData.totalPages,
+        limit: l,
+      },
     };
   } catch (error) {
     console.error(error);
     return { errCode: 1, errMessage: error.message };
-  }
-};
-
-const recommendProducts = async (productId, page = 1, limit = 6) => {
-  try {
-    const product = await db.Product.findByPk(productId);
-    if (!product) {
-      return { errCode: 1, errMessage: "Product not found" };
-    }
-
-    const price = Number(product.basePrice);
-    const priceLow = price * 0.8;
-    const priceHigh = price * 1.2;
-
-    const where = {
-      id: { [Op.ne]: productId },
-      isActive: true,
-      [Op.or]: [
-        { categoryId: product.categoryId },
-        { brandId: product.brandId },
-        { basePrice: { [Op.between]: [priceLow, priceHigh] } },
-      ],
-    };
-
-    const total = await db.Product.count({ where });
-
-    const offset = (page - 1) * limit;
-
-    const rows = await db.Product.findAll({
-      where,
-      attributes: {
-      include: ["hasVariants"]
-    },
-    include: [
-        { model: db.Brand, as: "brand" },
-        { model: db.Category, as: "category" },
-        {
-          model: db.ProductImage,
-          as: "images",
-          attributes: ["imageUrl", "isPrimary"],
-        },
-      ],
-      order: [
-        ["sold", "DESC"],
-        ["createdAt", "DESC"],
-      ],
-      offset,
-      limit,
-    });
-
-    return {
-      errCode: 0,
-      data: rows.map((p) => {
-        let image = p.image;
-        if (!image && p.images && p.images.length > 0) {
-          const primary = p.images.find((i) => i.isPrimary) || p.images[0];
-          image = primary.imageUrl;
-        }
-        return { ...p.toJSON(), image: image || null };
-      }),
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit),
-      },
-    };
-  } catch (e) {
-    console.error("Error recommending products:", e);
-    return { errCode: 1, errMessage: e.message };
-  }
-};
-
-const recommendFortuneProducts = async ({
-  birthYear,
-  brandId,
-  minPrice,
-  maxPrice,
-  categoryId,
-  page = 1,
-  limit = 6,
-  sortBy,
-}) => {
-  try {
-    if (!birthYear) return { errCode: 1, errMessage: "birthYear is required" };
-
-    const luckyColors = getLuckyColorsByYear(Number(birthYear));
-
-    // Build where
-    const where = { isActive: true };
-
-    if (luckyColors.length) {
-      // Filter by color in specifications JSON field
-      where[Op.or] = luckyColors.map(color => ({
-        specifications: {
-          [Op.like]: `%${color}%`
-        }
-      }));
-    }
-
-    if (brandId) where.brandId = brandId;
-    if (categoryId) where.categoryId = categoryId;
-    if (minPrice != null) where.basePrice = { ...where.basePrice, [Op.gte]: minPrice };
-    if (maxPrice != null) where.basePrice = { ...where.basePrice, [Op.lte]: maxPrice };
-
-    const total = await db.Product.count({ where });
-    const offset = (page - 1) * limit;
-
-    let order = [
-      ["sold", "DESC"],
-      ["createdAt", "DESC"],
-    ];
-    if (sortBy === "priceAsc") order = [["basePrice", "ASC"]];
-    if (sortBy === "priceDesc") order = [["basePrice", "DESC"]];
-
-    const rows = await db.Product.findAll({
-      where,
-      attributes: {
-      include: ["hasVariants"]
-    },
-    include: [
-        { model: db.Brand, as: "brand" },
-        { model: db.Category, as: "category" },
-        {
-          model: db.ProductImage,
-          as: "images",
-          attributes: ["imageUrl", "isPrimary"],
-        },
-      ],
-      order,
-      offset,
-      limit,
-    });
-
-    const data = rows.map((p) => {
-      let image = p.image;
-      if (!image && p.images && p.images.length > 0) {
-        const primary = p.images.find((i) => i.isPrimary) || p.images[0];
-        image = primary.imageUrl;
-      }
-      const product = p.toJSON();
-      product.image = image || null;
-      product.isLuckyColor = luckyColors.includes(product.color);
-      return product;
-    });
-
-    return {
-      errCode: 0,
-      data,
-      luckyColors,
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit),
-      },
-    };
-  } catch (e) {
-    console.error("Error in recommendFortuneProducts:", e);
-    return { errCode: -1, errMessage: e.message };
   }
 };
 
@@ -926,9 +966,9 @@ const getProductBySlug = async (slug) => {
     let product = await db.Product.findOne({
       where: { slug, isActive: true },
       attributes: {
-      include: ["hasVariants"]
-    },
-    include: [
+        include: ["hasVariants"],
+      },
+      include: [
         { model: db.Category, as: "category", attributes: ["id", "name"] },
         { model: db.Brand, as: "brand", attributes: ["id", "name"] },
         {
@@ -965,9 +1005,9 @@ const getProductBySlug = async (slug) => {
       product = await db.Product.findOne({
         where: { id: parseInt(slug), isActive: true },
         attributes: {
-      include: ["hasVariants"]
-    },
-    include: [
+          include: ["hasVariants"],
+        },
+        include: [
           { model: db.Category, as: "category", attributes: ["id", "name"] },
           { model: db.Brand, as: "brand", attributes: ["id", "name"] },
           {
@@ -1024,7 +1064,9 @@ const getProductBySlug = async (slug) => {
       now >= new Date(plainProduct.flashSaleStart) &&
       now <= new Date(plainProduct.flashSaleEnd);
 
-    const primaryImage = plainProduct.images?.find(img => img.isPrimary) || plainProduct.images?.[0];
+    const primaryImage =
+      plainProduct.images?.find((img) => img.isPrimary) ||
+      plainProduct.images?.[0];
 
     // 4. Clean DTO
     const productDTO = {
@@ -1069,26 +1111,6 @@ const getProductBySlug = async (slug) => {
     return { errCode: 1, errMessage: e.message };
   }
 };
-const generateVariants = (options) => {
-  // options = [{name: 'Color', values: ['Red', 'Blue']}, {name: 'Size', values: ['S', 'M']}]
-  if (options.length === 0) return [];
-
-  const combinations = options.reduce((acc, option) => {
-    const values = option.values;
-    if (acc.length === 0)
-      return values.map((v) => [{ optionName: option.name, value: v }]);
-
-    const newAcc = [];
-    acc.forEach((combo) => {
-      values.forEach((v) => {
-        newAcc.push([...combo, { optionName: option.name, value: v }]);
-      });
-    });
-    return newAcc;
-  }, []);
-
-  return combinations;
-};
 
 const createProductWithVariants = async (data, imageRecords = []) => {
   const t = await db.sequelize.transaction();
@@ -1101,26 +1123,28 @@ const createProductWithVariants = async (data, imageRecords = []) => {
       productData.slug = `${slugify(productData.name, { lower: true, locale: "vi" })}-${Date.now()}`;
     }
     productData.hasVariants = customVariants && customVariants.length > 0;
-    
+
     // Map stock -> totalStock cho sản phẩm cha
     if (productData.stock !== undefined) {
       productData.totalStock = Number(productData.stock);
     }
-    
+
     const product = await db.Product.create(productData, { transaction: t });
 
     // 2. Handle Variants
     if (productData.hasVariants) {
       let finalTotalStock = 0;
-      
+
       for (const variant of customVariants) {
         const variantStock = Number(variant.stock || 0);
         finalTotalStock += variantStock;
-        
+
         await db.ProductVariant.create(
           {
             productId: product.id,
-            sku: variant.sku || `${product.sku || product.id}-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
+            sku:
+              variant.sku ||
+              `${product.sku || product.id}-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
             price: variant.price || product.basePrice,
             stock: variantStock,
             attributeValues: variant.attributeValues || {},
@@ -1130,7 +1154,7 @@ const createProductWithVariants = async (data, imageRecords = []) => {
           { transaction: t },
         );
       }
-      
+
       // Cập nhật lại totalStock cho sản phẩm cha dựa trên các biến thể vừa tạo
       await product.update({ totalStock: finalTotalStock }, { transaction: t });
     }
@@ -1154,12 +1178,22 @@ const createProductWithVariants = async (data, imageRecords = []) => {
   }
 };
 
+const getProductBySlugPublic = async (slug) => {
+  try {
+    const result = await getProductBySlug(slug);
+    return result;
+  } catch (e) {
+    return { errCode: 1, errMessage: e.message };
+  }
+};
+
 module.exports = {
   createProduct,
   createProductWithVariants,
   getAllProducts,
   getProductById,
   getProductBySlug,
+  getProductBySlugPublic,
   updateProduct,
   deleteProduct,
   searchProducts,

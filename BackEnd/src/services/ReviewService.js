@@ -1,10 +1,12 @@
 const db = require("../models");
 
+const { getPagination, getPagingData } = require("../utils/paginationHelper");
+
 const getReviewsByProduct = async (productId, page = 1, limit = 10) => {
   try {
-    const offset = (page - 1) * limit;
+    const { offset, limit: l } = getPagination(page, limit);
 
-    const { count, rows } = await db.Review.findAndCountAll({
+    const data = await db.Review.findAndCountAll({
       where: { productId, isApproved: true },
       include: [
         {
@@ -19,11 +21,13 @@ const getReviewsByProduct = async (productId, page = 1, limit = 10) => {
         },
       ],
       order: [["createdAt", "DESC"]],
-      limit: limit,
+      limit: l,
       offset: offset,
     });
 
-    const reviewIds = rows.map((r) => r.id);
+    const pagingData = getPagingData(data, page, l);
+
+    const reviewIds = pagingData.items.map((r) => r.id);
     let repliesByReviewId = {};
     if (reviewIds.length > 0) {
       const replies = await db.ReviewReply.findAll({
@@ -48,15 +52,15 @@ const getReviewsByProduct = async (productId, page = 1, limit = 10) => {
 
     return {
       errCode: 0,
-      data: rows.map((r) => ({
+      data: pagingData.items.map((r) => ({
         ...r.toJSON(),
         replies: repliesByReviewId[r.id] || [],
       })),
       pagination: {
-        total: count,
-        page: page,
-        limit: limit,
-        totalPages: Math.ceil(count / limit),
+        totalItems: pagingData.totalItems,
+        currentPage: pagingData.currentPage,
+        totalPages: pagingData.totalPages,
+        limit: l,
       },
     };
   } catch (error) {
@@ -140,8 +144,8 @@ const getAllReviewsAdmin = async (
   status = "",
 ) => {
   try {
+    const { offset, limit: l } = getPagination(page, limit);
     const where = {};
-    const offset = (page - 1) * limit;
 
     if (rating) where.rating = rating;
 
@@ -149,9 +153,9 @@ const getAllReviewsAdmin = async (
       where.isApproved = status === "approved";
     }
 
-    const { count, rows } = await db.Review.findAndCountAll({
+    const data = await db.Review.findAndCountAll({
       where,
-      limit,
+      limit: l,
       offset,
       order: [["createdAt", "DESC"]],
       include: [
@@ -168,14 +172,16 @@ const getAllReviewsAdmin = async (
       ],
     });
 
+    const pagingData = getPagingData(data, page, l);
+
     return {
       errCode: 0,
-      data: rows,
+      data: pagingData.items,
       pagination: {
-        page,
-        limit,
-        total: count,
-        totalPages: Math.ceil(count / limit),
+        totalItems: pagingData.totalItems,
+        currentPage: pagingData.currentPage,
+        totalPages: pagingData.totalPages,
+        limit: l,
       },
     };
   } catch (error) {
@@ -185,11 +191,10 @@ const getAllReviewsAdmin = async (
 };
 
 const getReviewsByUser = async (userId, page = 1, limit = 10) => {
-  // ... (giữ nguyên logic đã sửa ở bước trước)
   try {
-    const offset = (page - 1) * limit;
+    const { offset, limit: l } = getPagination(page, limit);
 
-    const { count, rows } = await db.Review.findAndCountAll({
+    const data = await db.Review.findAndCountAll({
       where: { userId },
       include: [
         {
@@ -212,11 +217,13 @@ const getReviewsByUser = async (userId, page = 1, limit = 10) => {
         },
       ],
       order: [["createdAt", "DESC"]],
-      limit: limit,
+      limit: l,
       offset: offset,
     });
 
-    const reviewIds = rows.map((r) => r.id);
+    const pagingData = getPagingData(data, page, l);
+
+    const reviewIds = pagingData.items.map((r) => r.id);
     let repliesByReviewId = {};
     if (reviewIds.length > 0) {
       const replies = await db.ReviewReply.findAll({
@@ -241,15 +248,15 @@ const getReviewsByUser = async (userId, page = 1, limit = 10) => {
 
     return {
       errCode: 0,
-      data: rows.map((r) => ({
+      data: pagingData.items.map((r) => ({
         ...r.toJSON(),
         replies: repliesByReviewId[r.id] || [],
       })),
       pagination: {
-        total: count,
-        page: page,
-        limit: limit,
-        totalPages: Math.ceil(count / limit),
+        totalItems: pagingData.totalItems,
+        currentPage: pagingData.currentPage,
+        totalPages: pagingData.totalPages,
+        limit: l,
       },
     };
   } catch (error) {

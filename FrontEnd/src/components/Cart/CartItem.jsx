@@ -1,7 +1,8 @@
 import React, { useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { FiMinus, FiPlus, FiTrash2 } from "react-icons/fi";
 import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { formatCurrency } from "../../utils/format";
 
 /**
  * CartItem Component
@@ -118,11 +119,11 @@ const CartItem = ({
 
         <div className="flex items-center justify-center sm:justify-start gap-3">
            <span className="text-xl font-black text-primary tracking-tighter">
-             {finalPrice.toLocaleString("vi-VN")} ₫
+             {formatCurrency(finalPrice)}
            </span>
            {discount > 0 && (
              <span className="text-xs text-slate-400 line-through decoration-danger/30 decoration-2">
-               {basePrice.toLocaleString("vi-VN")} ₫
+               {formatCurrency(basePrice)}
              </span>
            )}
         </div>
@@ -150,7 +151,7 @@ const CartItem = ({
           <div className="text-right hidden sm:block">
             <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Tạm tính</p>
             <p className="text-lg font-black text-slate-900 tracking-tight">
-              {(finalPrice * item.quantity).toLocaleString("vi-VN")} ₫
+              {formatCurrency(finalPrice * item.quantity)}
             </p>
           </div>
           <button 

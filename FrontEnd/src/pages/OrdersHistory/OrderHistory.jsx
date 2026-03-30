@@ -4,7 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { getOrdersByUserId } from "../../api/orderApi";
 import AppPagination from "../../components/Pagination/Pagination";
-import { paymentStatusMap, statusMap } from "../../utils/StatusMap";
+import { orderStatusMap, paymentStatusMap } from "../../utils/constants";
+import { formatCurrency, formatDate } from "../../utils/format";
 import { StatusBadge } from "../../utils/StatusBadge";
 import ClickableText from "../../components/ClickableText/ClickableText";
 import Button from "../../components/UI/Button";
@@ -42,10 +43,6 @@ const OrderHistoryPage = () => {
   useEffect(() => {
     fetchOrders();
   }, [fetchOrders]);
-
-  const formatCurrency = (v) => (Number(v) || 0).toLocaleString("vi-VN") + " ₫";
-  const formatDate = (dateStr) =>
-    dateStr ? new Date(dateStr).toLocaleDateString("vi-VN") : "-";
 
   const openReviewModal = (order) => {
     setSelectedOrderForReview(order);
@@ -112,7 +109,7 @@ const OrderHistoryPage = () => {
                     </span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <StatusBadge map={statusMap} status={o.status} />
+                    <StatusBadge map={orderStatusMap} status={o.status} />
                     <StatusBadge
                       map={paymentStatusMap}
                       status={o.paymentStatus}

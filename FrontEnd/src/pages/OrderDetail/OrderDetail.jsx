@@ -23,9 +23,12 @@ import { requestReturn } from "../../api/orderItemApi";
 import { createVnpayPaymentApi } from "../../api/paymentApi";
 import { StatusBadge } from "../../utils/StatusBadge";
 import {
+  orderStatusMap,
   paymentStatusMap,
+} from "../../utils/constants";
+import { formatCurrency, formatDate } from "../../utils/format";
+import {
   returnStatusMap,
-  statusMap,
 } from "../../utils/StatusMap";
 import Badge from "../../components/UI/Badge";
 
@@ -283,13 +286,12 @@ const OrderDetail = () => {
               </span>
             </div>
             <p className="text-surface-500 font-medium">
-              Đặt ngày {new Date(order.createdAt).toLocaleDateString("vi-VN")}{" "}
-              lúc {new Date(order.createdAt).toLocaleTimeString("vi-VN")}
+              Đặt {formatDate(order.createdAt)}
             </p>
           </div>
 
           <div className="flex items-center gap-3">
-            <StatusBadge map={statusMap} status={order.status} />
+            <StatusBadge map={orderStatusMap} status={order.status} />
             <StatusBadge map={paymentStatusMap} status={order.paymentStatus} />
           </div>
         </div>
@@ -410,7 +412,7 @@ const OrderDetail = () => {
                         <div className="flex items-center gap-3 text-sm text-surface-500 font-medium mb-3">
                           <span>Số lượng: {item.quantity}</span>
                           <div className="w-1 h-1 bg-surface-300 rounded-full"></div>
-                          <span>Đơn giá: {item.price.toLocaleString()} ₫</span>
+                          <span>Đơn giá: {formatCurrency(item.price)}</span>
                         </div>
                         <div className="flex items-center gap-3">
                           <StatusBadge
@@ -429,7 +431,7 @@ const OrderDetail = () => {
                           Thành tiền
                         </p>
                         <p className="text-lg font-black text-surface-900">
-                          {(item.price * item.quantity).toLocaleString()} ₫
+                          {formatCurrency(item.price * item.quantity)}
                         </p>
                       </div>
                     </div>
@@ -477,7 +479,7 @@ const OrderDetail = () => {
                       {order.voucherCode ? `(${order.voucherCode})` : ""}
                     </span>
                     <span className="font-bold">
-                      -{Number(order.discountAmount).toLocaleString("vi-VN")} ₫
+                      -{formatCurrency(order.discountAmount)}
                     </span>
                   </div>
                 )}
@@ -488,7 +490,7 @@ const OrderDetail = () => {
                   Tổng số tiền thanh toán
                 </p>
                 <div className="text-3xl font-black tracking-tight text-primary">
-                  {Number(order.totalPrice).toLocaleString("vi-VN")} ₫
+                  {formatCurrency(order.totalPrice)}
                 </div>
               </div>
 

@@ -201,30 +201,31 @@ const getUserById = async (userId) => {
   }
 };
 
+const { getPagination, getPagingData } = require("../utils/paginationHelper");
+
 const getAllUsers = async (page = 1, limit = 10) => {
   try {
-    const offset = (page - 1) * limit;
+    const { offset, limit: l } = getPagination(page, limit);
 
-    const { rows: users, count: totalUsers } = await db.User.findAndCountAll({
+    const data = await db.User.findAndCountAll({
       attributes: { exclude: ["password"] },
       offset,
-      limit,
+      limit: l,
       order: [["createdAt", "DESC"]],
     });
 
-    const data = users.map((user) => user.toJSON());
-    const totalPages = Math.ceil(totalUsers / limit);
+    const result = getPagingData(data, page, l);
 
     return {
       errCode: 0,
       errMessage: "OK",
       pagination: {
-        currentPage: page,
-        totalPages,
-        totalUsers,
-        limit,
+        currentPage: result.currentPage,
+        totalPages: result.totalPages,
+        totalItems: result.totalItems,
+        limit: l,
       },
-      data,
+      data: result.items,
     };
   } catch (e) {
     console.error("getAllUsers error:", e);
