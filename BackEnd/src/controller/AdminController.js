@@ -11,7 +11,7 @@ const getDashboard = async (req, res) => {
       data,
     });
   } catch (e) {
-    console.log(e);
+    console.error(e);
     res.status(500).json({
       errCode: 1,
       errMessage: "Error from server",
@@ -32,7 +32,7 @@ const handleExportRevenue = async (req, res) => {
     );
     res.send(buffer);
   } catch (e) {
-    console.log(e);
+    console.error(e);
     res.status(500).json({
       errCode: 1,
       errMessage: "Lỗi xuất file Excel.",

@@ -142,10 +142,6 @@ const handleVnpayReturn = async (req, res) => {
 
     // SAI CHỮ KÝ
     if (secureHash !== generatedHash) {
-      console.log("SIGN DATA:", signData);
-      console.log("HASH FROM VNPAY:", secureHash);
-      console.log("HASH GENERATED:", generatedHash);
-
       return res.status(400).json({
         errCode: 2,
         message: "Invalid VNPay signature",
