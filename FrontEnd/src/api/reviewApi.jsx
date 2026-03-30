@@ -21,7 +21,12 @@ export const createReviewApi = async (payload) => {
     const res = await axiosClient.post(`/review/create`, payload);
     return res;
   } catch (err) {
-    console.error(err);
+    console.error("Lỗi khi tạo đánh giá:", err);
+    // Return error response from server if available
+    if (err.response?.data?.errMessage) {
+      return { errCode: -1, errMessage: err.response.data.errMessage };
+    }
+    throw err;
   }
 };
 

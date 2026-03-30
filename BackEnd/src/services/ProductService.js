@@ -35,18 +35,11 @@ const applyFlashSaleToProduct = (productData) => {
   if (product.flashSaleActive && product.flashSalePrice) {
     const salePrice = Number(product.flashSalePrice);
     product.displayPrice = salePrice;
-    product.price = salePrice; // legacy usage in UI
+    product.price = salePrice; 
     product.flashSaleDiscount =
       originalPrice > 0
         ? ((originalPrice - salePrice) / originalPrice) * 100
         : 0;
-  } else if (Number(product.discount) > 0) {
-    const discount = Number(product.discount);
-    const discountedPrice = originalPrice * (1 - discount / 100);
-    product.displayPrice = Number(discountedPrice.toFixed(2));
-    product.price = product.displayPrice;
-    product.flashSaleActive = false;
-    product.flashSaleDiscount = discount;
   } else {
     product.displayPrice = originalPrice;
     product.price = originalPrice;
@@ -396,16 +389,16 @@ const searchProducts = async (query, page = 1, limit = 10) => {
   const { offset, limit: l } = getPagination(page, limit);
   const { Op } = db.Sequelize;
 
-  // Chỉ tìm sản phẩm đang active (không hiện sản phẩm đã ẩn)
   const whereCondition = { isActive: true };
-  if (query) whereCondition.name = { [Op.like]: `%${query}%` };
+  if (query) {
+    whereCondition[Op.or] = [
+      { name: { [Op.like]: `%${query}%` } },
+      { sku: { [Op.like]: `%${query}%` } },
+    ];
+  }
 
-  // Tìm sản phẩm phân trang (dùng cho trang kết quả tìm kiếm)
   const data = await db.Product.findAndCountAll({
     where: whereCondition,
-    attributes: {
-      include: ["hasVariants"],
-    },
     include: [
       { model: db.Category, as: "category" },
       { model: db.Brand, as: "brand" },
@@ -413,62 +406,14 @@ const searchProducts = async (query, page = 1, limit = 10) => {
         model: db.ProductImage,
         as: "images",
         attributes: ["imageUrl", "isPrimary"],
-      },
+      }
     ],
     limit: l,
     offset,
-    order: [["createdAt", "DESC"]],
+    order: [["id", "DESC"]],
   });
 
   const pagingData = getPagingData(data, page, l);
-
-  // GỢI Ý PRODUCT (lightweight → dành cho Smart Search)
-  const productSuggestionsRaw = await db.Product.findAll({
-    where: {
-      name: { [Op.like]: `%${query}%` },
-    },
-    attributes: ["id", "name", ["basePrice", "price"]],
-    attributes: {
-      include: ["hasVariants"],
-    },
-    include: [
-      {
-        model: db.ProductImage,
-        as: "images",
-        attributes: ["imageUrl", "isPrimary"],
-      },
-    ],
-    limit: 8,
-    order: [["sold", "DESC"]],
-  });
-
-  const productSuggestions = productSuggestionsRaw.map((p) => {
-    const plain = p.get({ plain: true });
-    const primary = plain.images?.find((i) => i.isPrimary) || plain.images?.[0];
-    return {
-      id: plain.id,
-      name: plain.name,
-      price: plain.price,
-      image: primary ? primary.imageUrl : null,
-    };
-  });
-
-  // GỢI Ý KEYWORD
-  const keywordSuggestions = [`${query}`];
-
-  // GỢI Ý BRAND
-  const brandSuggestions = await db.Brand.findAll({
-    where: { name: { [Op.like]: `%${query}%` } },
-    attributes: ["id", "name"],
-    limit: 5,
-  });
-
-  // GỢI Ý CATEGORY
-  const categorySuggestions = await db.Category.findAll({
-    where: { name: { [Op.like]: `%${query}%` } },
-    attributes: ["id", "name"],
-    limit: 5,
-  });
 
   return {
     errCode: 0,
@@ -478,22 +423,14 @@ const searchProducts = async (query, page = 1, limit = 10) => {
         const primary = p.images.find((i) => i.isPrimary) || p.images[0];
         image = primary.imageUrl;
       }
-      return { ...p.toJSON(), image: image || null };
+      return { ...applyFlashSaleToProduct(p.toJSON()), image: image || null };
     }),
     pagination: {
       totalItems: pagingData.totalItems,
       currentPage: pagingData.currentPage,
       totalPages: pagingData.totalPages,
       limit: l,
-    },
-
-    // Dành cho Smart Search
-    suggestions: {
-      products: productSuggestions,
-      keywords: keywordSuggestions,
-      brands: brandSuggestions,
-      categories: categorySuggestions,
-    },
+    }
   };
 };
 
@@ -508,12 +445,13 @@ const searchSuggestions = async (query, limit = 8) => {
     };
   }
 
+  // Sử dụng LIKE đơn giản để tránh lỗi SQL phức tạp
   const productSuggestionsRaw = await db.Product.findAll({
-    where: { name: { [Op.like]: `%${q}%` } },
-    attributes: ["id", "name", ["basePrice", "price"]],
-    attributes: {
-      include: ["hasVariants"],
+    where: { 
+      isActive: true,
+      name: { [Op.like]: `%${q}%` } 
     },
+    attributes: ["id", "name", "basePrice", "isFlashSale", "flashSalePrice", "flashSaleStart", "flashSaleEnd", "sold"],
     include: [
       {
         model: db.ProductImage,
@@ -526,26 +464,30 @@ const searchSuggestions = async (query, limit = 8) => {
   });
 
   const productSuggestions = productSuggestionsRaw.map((p) => {
-    const plain = p.get({ plain: true });
-    const primary = plain.images?.find((i) => i.isPrimary) || plain.images?.[0];
+    const raw = p.toJSON();
+    const processed = applyFlashSaleToProduct(raw);
+    const primary = raw.images?.find((i) => i.isPrimary) || raw.images?.[0];
     return {
-      id: plain.id,
-      name: plain.name,
-      price: plain.price,
+      id: processed.id,
+      name: processed.name,
+      price: processed.displayPrice,
+      originalPrice: processed.basePrice,
+      discount: processed.flashSaleDiscount,
       image: primary ? primary.imageUrl : null,
+      isFlashSale: processed.flashSaleActive
     };
   });
 
   const brandSuggestions = await db.Brand.findAll({
     where: { name: { [Op.like]: `%${q}%` } },
     attributes: ["id", "name"],
-    limit: 5,
+    limit: 3,
   });
 
   const categorySuggestions = await db.Category.findAll({
     where: { name: { [Op.like]: `%${q}%` } },
     attributes: ["id", "name"],
-    limit: 5,
+    limit: 3,
   });
 
   return {

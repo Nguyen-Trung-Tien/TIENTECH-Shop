@@ -16,6 +16,7 @@ import OrdersCancelManage from "../Admin/pages/OrderManage/OrdersCancelManage";
 import PaymentPage from "../Admin/pages/Payment/PaymentPage";
 import BrandManage from "../Admin/pages/BrandManage/BrandManage";
 import VoucherManage from "../Admin/pages/VoucherManage/VoucherManage";
+import OrderDetail from "../pages/OrderDetail/OrderDetail";
 
 const AdminRoutes = () => {
   return (
@@ -29,9 +30,11 @@ const AdminRoutes = () => {
           <Route index element={<Dashboard />} />
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="orders" element={<OrderManage />} />
+          <Route path="order/:id" element={<OrderDetail />} />
           <Route path="orders-return" element={<OrdersReturnPage />} />
           <Route path="orders-cancel" element={<OrdersCancelManage />} />
           <Route path="products" element={<ProductManage />} />
+          <Route path="product/edit/:id" element={<ProductManage />} />
           <Route path="users" element={<UserManage />} />
           <Route path="revenue" element={<Revenue />} />
           <Route path="categories" element={<Categories />} />

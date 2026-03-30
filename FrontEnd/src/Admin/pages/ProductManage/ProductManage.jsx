@@ -6,12 +6,14 @@ import {
   FiUploadCloud, FiZap, FiChevronDown
 } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
+import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import {
   createProductApi,
   deleteProductApi,
   getAllProductApi,
   updateProductApi,
+  getOneProductApi,
 } from "../../../api/productApi";
 import {
   getVariantsByProduct,
@@ -22,6 +24,8 @@ import AppPagination from "../../../components/Pagination/Pagination";
 import VariantManager from "./VariantManager";
 
 const ProductManage = () => {
+  const { id: editId } = useParams();
+  const navigate = useNavigate();
   const [brands, setBrands] = useState([]);
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -99,7 +103,7 @@ const ProductManage = () => {
     fetchData();
   }, []);
 
-  const handleShowModal = (product = null) => {
+  const handleShowModal = useCallback((product = null) => {
     if (product) {
       setFormData({
         name: product.name || "",
@@ -135,13 +139,32 @@ const ProductManage = () => {
       setVariants([]);
     }
     setShowModal(true);
-  };
+  }, []);
+
+  useEffect(() => {
+    if (editId) {
+      const fetchEditProduct = async () => {
+        try {
+          const res = await getOneProductApi(editId);
+          if (res?.errCode === 0) {
+            handleShowModal(res.data);
+          }
+        } catch (err) {
+          console.error("Fetch edit product error:", err);
+        }
+      };
+      fetchEditProduct();
+    }
+  }, [editId, handleShowModal]);
 
   const handleCloseModal = () => {
     setShowModal(false);
     setEditProduct(null);
     setImagePreview(null);
     setGalleryPreviews([]);
+    if (editId) {
+      navigate("/admin/products");
+    }
   };
 
   const fetchVariants = async (productId) => {

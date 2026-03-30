@@ -28,4 +28,11 @@ router.get(
   AdminController.handleAIInsights
 );
 
+router.get(
+  "/global-search",
+  authenticateToken,
+  authorizeRole(["admin"]),
+  AdminController.handleGlobalSearch
+);
+
 module.exports = router;

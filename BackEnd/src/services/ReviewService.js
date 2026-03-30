@@ -317,6 +317,30 @@ const getPendingReviewProducts = async (userId) => {
   }
 };
 
+const toggleLikeReview = async (reviewId) => {
+  try {
+    if (!reviewId) {
+      return { errCode: 2, errMessage: "ID đánh giá không hợp lệ" };
+    }
+
+    const review = await db.Review.findByPk(reviewId);
+    if (!review) {
+      return { errCode: 2, errMessage: "Review không tồn tại" };
+    }
+
+    // Sử dụng increment để tránh lỗi tranh chấp đồng thời và đảm bảo hoạt động bất kể raw config
+    await db.Review.increment("likes", { by: 1, where: { id: reviewId } });
+
+    // Lấy lại dữ liệu mới nhất
+    const updatedReview = await db.Review.findByPk(reviewId);
+
+    return { errCode: 0, data: updatedReview };
+  } catch (error) {
+    console.error("Error toggleLikeReview:", error);
+    return { errCode: 1, errMessage: "Lỗi khi like đánh giá: " + error.message };
+  }
+};
+
 module.exports = {
   createReview,
   getReviewsByProduct,
@@ -325,4 +349,5 @@ module.exports = {
   getAllReviewsAdmin,
   getReviewsByUser,
   getPendingReviewProducts,
+  toggleLikeReview,
 };

@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useReducer } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useLocation, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useSelector } from "react-redux";
 import { motion, AnimatePresence } from "framer-motion";
@@ -125,6 +125,9 @@ const reducer = (state, action) => {
 
 const OrderDetail = () => {
   const { id } = useParams();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const isAdmin = location.pathname.startsWith("/admin");
   const [state, dispatch] = useReducer(reducer, initialState);
   const {
     order,
@@ -267,12 +270,21 @@ const OrderDetail = () => {
       {" "}
       <div className="container-custom">
         {/* Back Button */}
-        <button
-          onClick={() => window.history.back()}
-          className="flex items-center gap-2 text-surface-400 hover:text-primary transition-colors mb-8 font-bold text-[13px] uppercase tracking-widest"
-        >
-          <FiArrowLeft size={18} /> Quay lại lịch sử đơn hàng
-        </button>
+        {isAdmin ? (
+          <button
+            onClick={() => navigate("/admin/orders")}
+            className="flex items-center gap-2 text-surface-400 hover:text-primary transition-colors mb-8 font-bold text-[13px] uppercase tracking-widest"
+          >
+            <FiArrowLeft size={18} /> Quay lại quản lý đơn hàng
+          </button>
+        ) : (
+          <button
+            onClick={() => window.history.back()}
+            className="flex items-center gap-2 text-surface-400 hover:text-primary transition-colors mb-8 font-bold text-[13px] uppercase tracking-widest"
+          >
+            <FiArrowLeft size={18} /> Quay lại lịch sử đơn hàng
+          </button>
+        )}
 
         {/* Page Header */}
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-10">

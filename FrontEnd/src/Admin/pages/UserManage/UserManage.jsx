@@ -15,6 +15,7 @@ import {
   FiChevronDown
 } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
+import { useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
 import {
   deleteUserApi,
@@ -39,6 +40,7 @@ const UserManage = () => {
   const [avatarPreview, setAvatarPreview] = useState(null);
   const [avatarFile, setAvatarFile] = useState(null);
   const searchTimeoutRef = useRef(null);
+  const location = useLocation();
 
   const fetchUsers = useCallback(async (page = 1, query = "") => {
     setLoading(true);
@@ -48,13 +50,25 @@ const UserManage = () => {
         setUsers(res.data || []);
         setCurrentPage(res.pagination?.currentPage || 1);
         setTotalPages(res.pagination?.totalPages || 1);
+        
+        // Kiểm tra xem có cần mở modal edit từ URL không
+        const params = new URLSearchParams(location.search);
+        const editId = params.get("editId");
+        if (editId) {
+          const userToEdit = res.data.find(u => u.id === parseInt(editId));
+          if (userToEdit) {
+            setEditUser(userToEdit);
+            setAvatarPreview(userToEdit.avatar || null);
+            setShowModal(true);
+          }
+        }
       }
     } catch (err) {
       toast.error("Lỗi tải danh sách người dùng");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [location.search]);
 
   useEffect(() => {
     if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);

@@ -261,61 +261,146 @@ function Header() {
                 initial={{ opacity: 0, y: 15, scale: 0.98 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 10, scale: 0.98 }}
-                className="absolute top-full left-0 w-full mt-3 bg-white dark:bg-dark-surface rounded-2xl shadow-xl border border-slate-100 dark:border-dark-border overflow-hidden z-50 p-3"
+                className="absolute top-full left-0 w-full mt-3 bg-white dark:bg-dark-surface rounded-2xl shadow-2xl border border-slate-100 dark:border-dark-border overflow-hidden z-50 p-2 max-h-[80vh] overflow-y-auto"
               >
-                {["keywords", "products", "brands", "categories"].map(
-                  (type) =>
-                    suggestions[type]?.length > 0 && (
-                      <div key={type} className="mb-3 last:mb-0">
-                        <p className="px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-dark-text-secondary bg-slate-50 dark:bg-dark-bg/50 rounded-lg mb-1">
-                          {type === "keywords"
-                            ? "Gợi ý"
-                            : type === "products"
-                              ? "Sản phẩm"
-                              : type === "brands"
-                                ? "Thương hiệu"
-                                : "Danh mục"}
-                        </p>
-                        <div className="space-y-1">
-                          {suggestions[type].map((item) => (
-                            <button
-                              key={item.id || item}
-                              onClick={() => {
-                                if (type === "products")
-                                  navigate(`/product-detail/${item.id}`);
-                                else if (type === "brands")
-                                  navigate(`/product-list?brandId=${item.id}`);
-                                else if (type === "categories")
-                                  navigate(
-                                    `/product-list?categoryId=${item.id}`,
-                                  );
-                                else
-                                  navigate(
-                                    `/product-list?search=${encodeURIComponent(item)}`,
-                                  );
-                                setShowSuggestions(false);
-                              }}
-                              className="flex items-center gap-4 w-full px-3 py-2.5 text-[14px] text-slate-600 dark:text-dark-text-secondary hover:bg-slate-50 dark:hover:bg-dark-bg hover:text-primary dark:hover:text-brand rounded-xl transition-all text-left"
-                            >
-                              {type === "products" && (
-                                <div className="w-12 h-12 flex-shrink-0 bg-white dark:bg-dark-bg rounded-xl border border-slate-100 dark:border-dark-border p-1.5 shadow-sm">
-                                  <img
-                                    src={item.image}
-                                    alt=""
-                                    className="w-full h-full object-contain"
-                                  />
+                {/* Keywords Section */}
+                {suggestions.keywords?.length > 0 && (
+                  <div className="mb-2">
+                    <div className="flex items-center gap-2 px-3 py-2">
+                      {suggestions.keywords.map((kw, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => {
+                            setSearchInput(kw);
+                            navigate(`/product-list?search=${encodeURIComponent(kw)}`);
+                            setShowSuggestions(false);
+                          }}
+                          className="px-3 py-1 bg-slate-50 dark:bg-dark-bg hover:bg-primary/10 dark:hover:bg-brand/10 text-slate-500 dark:text-dark-text-secondary hover:text-primary dark:hover:text-brand rounded-full text-[12px] font-bold transition-all border border-slate-100 dark:border-dark-border"
+                        >
+                          {kw}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-2">
+                  {/* Left: Brands & Categories */}
+                  {(suggestions.brands?.length > 0 || suggestions.categories?.length > 0) && (
+                    <div className="md:col-span-4 space-y-4 p-2 border-r border-slate-50 dark:border-dark-border/50">
+                      {suggestions.brands?.length > 0 && (
+                        <div>
+                          <p className="px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-dark-text-secondary bg-slate-50 dark:bg-dark-bg/50 rounded-lg mb-2">
+                            Thương hiệu
+                          </p>
+                          <div className="space-y-1">
+                            {suggestions.brands.map((brand) => (
+                              <button
+                                key={brand.id}
+                                onClick={() => {
+                                  navigate(`/product-list?brandId=${brand.id}`);
+                                  setShowSuggestions(false);
+                                }}
+                                className="flex items-center gap-3 w-full px-3 py-2 text-[13px] font-bold text-slate-600 dark:text-dark-text-secondary hover:bg-primary/5 dark:hover:bg-brand/5 hover:text-primary dark:hover:text-brand rounded-xl transition-all text-left group"
+                              >
+                                <div className="w-1.5 h-1.5 rounded-full bg-slate-300 group-hover:bg-primary dark:group-hover:bg-brand transition-colors"></div>
+                                {brand.name}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {suggestions.categories?.length > 0 && (
+                        <div>
+                          <p className="px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-dark-text-secondary bg-slate-50 dark:bg-dark-bg/50 rounded-lg mb-2">
+                            Danh mục
+                          </p>
+                          <div className="space-y-1">
+                            {suggestions.categories.map((cat) => (
+                              <button
+                                key={cat.id}
+                                onClick={() => {
+                                  navigate(`/product-list?categoryId=${cat.id}`);
+                                  setShowSuggestions(false);
+                                }}
+                                className="flex items-center gap-3 w-full px-3 py-2 text-[13px] font-bold text-slate-600 dark:text-dark-text-secondary hover:bg-primary/5 dark:hover:bg-brand/5 hover:text-primary dark:hover:text-brand rounded-xl transition-all text-left group"
+                              >
+                                <div className="w-1.5 h-1.5 rounded-full bg-slate-300 group-hover:bg-primary dark:group-hover:bg-brand transition-colors"></div>
+                                {cat.name}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Right: Products */}
+                  <div className={`${(suggestions.brands?.length > 0 || suggestions.categories?.length > 0) ? "md:col-span-8" : "md:col-span-12"} p-2`}>
+                    <p className="px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-dark-text-secondary bg-slate-50 dark:bg-dark-bg/50 rounded-lg mb-2">
+                      Sản phẩm phổ biến
+                    </p>
+                    <div className="space-y-1">
+                      {suggestions.products?.length > 0 ? (
+                        suggestions.products.map((product) => (
+                          <button
+                            key={product.id}
+                            onClick={() => {
+                              navigate(`/product-detail/${product.id}`);
+                              setShowSuggestions(false);
+                            }}
+                            className="flex items-center gap-4 w-full px-3 py-2.5 hover:bg-slate-50 dark:hover:bg-dark-bg rounded-2xl transition-all group border border-transparent hover:border-slate-100 dark:hover:border-dark-border"
+                          >
+                            <div className="relative w-14 h-14 flex-shrink-0 bg-white dark:bg-dark-bg rounded-xl border border-slate-100 dark:border-dark-border p-2 shadow-sm group-hover:scale-105 transition-transform">
+                              <img
+                                src={product.image}
+                                alt=""
+                                className="w-full h-full object-contain"
+                              />
+                              {product.isFlashSale && (
+                                <div className="absolute -top-1 -right-1 px-1.5 py-0.5 bg-rose-500 text-[8px] font-black text-white rounded-md shadow-sm animate-pulse">
+                                  SALE
                                 </div>
                               )}
-                              <span className="font-semibold truncate">
-                                {type === "products"
-                                  ? item.name
-                                  : item.name || item}
-                              </span>
-                            </button>
-                          ))}
+                            </div>
+                            <div className="flex-1 min-w-0 text-left">
+                              <p className="text-[14px] font-bold text-slate-800 dark:text-white truncate group-hover:text-primary dark:group-hover:text-brand transition-colors">
+                                {product.name}
+                              </p>
+                              <div className="flex items-center gap-2 mt-1">
+                                <span className="text-[13px] font-black text-primary dark:text-brand">
+                                  {new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(product.price)}
+                                </span>
+                                {product.discount > 0 && (
+                                  <span className="text-[11px] font-medium text-slate-400 line-through">
+                                    {new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(product.originalPrice)}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </button>
+                        ))
+                      ) : (
+                        <div className="py-8 text-center">
+                          <p className="text-slate-400 text-[13px] font-medium italic">Không tìm thấy sản phẩm phù hợp</p>
                         </div>
-                      </div>
-                    ),
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Footer Link */}
+                {suggestions.products?.length > 0 && (
+                  <button
+                    onClick={() => {
+                      navigate(`/product-list?search=${encodeURIComponent(searchInput)}`);
+                      setShowSuggestions(false);
+                    }}
+                    className="w-full mt-2 py-2.5 bg-slate-900 dark:bg-brand text-white text-[12px] font-black rounded-xl hover:bg-primary dark:hover:bg-brand-dark transition-all flex items-center justify-center gap-2"
+                  >
+                    XEM TẤT CẢ KẾT QUẢ <FiSearch />
+                  </button>
                 )}
               </motion.div>
             )}

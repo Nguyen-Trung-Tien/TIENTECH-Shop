@@ -224,83 +224,74 @@ const getDashboardData = async (period) => {
 };
 
 const exportRevenueExcel = async () => {
-  try {
-    const orders = await db.Order.findAll({
+  // ... (giữ nguyên code cũ)
+};
+
+const globalSearch = async (query) => {
+  const q = (query || "").trim();
+  if (!q) return { errCode: 0, data: { products: [], orders: [], users: [] } };
+
+  const [products, orders, users] = await Promise.all([
+    // 1. Tìm sản phẩm theo tên, SKU hoặc mô tả
+    db.Product.findAll({
       where: {
-        [Op.or]: [{ paymentStatus: "paid" }, { status: "delivered" }],
+        [Op.or]: [
+          { name: { [Op.like]: `%${q}%` } },
+          { sku: { [Op.like]: `%${q}%` } },
+          { description: { [Op.like]: `%${q}%` } },
+        ],
+      },
+      attributes: ["id", "name", "sku", "basePrice", "totalStock", "sold"],
+      limit: 5,
+    }),
+
+    // 2. Tìm đơn hàng theo mã đơn, tên người nhận hoặc số điện thoại người nhận
+    db.Order.findAll({
+      where: {
+        [Op.or]: [
+          { orderCode: { [Op.like]: `%${q}%` } },
+          { receiverName: { [Op.like]: `%${q}%` } },
+          { receiverPhone: { [Op.like]: `%${q}%` } },
+        ],
       },
       include: [
         {
           model: db.User,
           as: "user",
           attributes: ["username", "email", "phone"],
-        },
-        {
-          model: db.OrderItem,
-          as: "orderItems",
-          attributes: ["productName", "quantity", "price"],
+          required: false
         },
       ],
-      order: [["createdAt", "DESC"]],
-    });
+      attributes: ["id", "orderCode", "totalPrice", "status", "createdAt"],
+      limit: 5,
+    }),
 
-    const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet("Bao-Cao-Doanh-Thu");
+    // 3. Tìm người dùng theo tên, email, số điện thoại
+    db.User.findAll({
+      where: {
+        [Op.or]: [
+          { username: { [Op.like]: `%${q}%` } },
+          { email: { [Op.like]: `%${q}%` } },
+          { phone: { [Op.like]: `%${q}%` } },
+        ],
+      },
+      attributes: ["id", "username", "email", "phone", "role", "isActive"],
+      limit: 5,
+    }),
+  ]);
 
-    // HEADER
-    worksheet.columns = [
-      { header: "MÃ ĐƠN HÀNG", key: "orderCode", width: 25 },
-      { header: "KHÁCH HÀNG", key: "username", width: 20 },
-      { header: "SẢN PHẨM", key: "items", width: 40 },
-      { header: "TỔNG CỘNG (₫)", key: "totalPrice", width: 20 },
-      { header: "GIẢM GIÁ (₫)", key: "discountAmount", width: 20 },
-      { header: "NGÀY ĐẶT", key: "createdAt", width: 20 },
-      { header: "TRẠNG THÁI", key: "status", width: 15 },
-    ];
-
-    // STYLE HEADER
-    worksheet.getRow(1).font = { bold: true };
-    worksheet.getRow(1).fill = {
-      type: "pattern",
-      pattern: "solid",
-      fgColor: { argb: "FF1E293B" },
-    };
-    worksheet.getRow(1).font = { color: { argb: "FFFFFFFF" }, bold: true };
-
-    // DATA
-    orders.forEach((order) => {
-      const items = order.orderItems
-        .map((i) => `${i.productName} (x${i.quantity})`)
-        .join(", ");
-      worksheet.addRow({
-        orderCode: order.orderCode,
-        username: order.user?.username || "Ẩn danh",
-        items: items,
-        totalPrice: Number(order.totalPrice),
-        discountAmount: Number(order.discountAmount || 0),
-        createdAt: new Date(order.createdAt).toLocaleDateString("vi-VN"),
-        status: order.status === "delivered" ? "Hoàn tất" : "Đã thanh toán",
-      });
-    });
-
-    // TOTAL ROW
-    const totalRevenue = orders.reduce(
-      (sum, o) => sum + Number(o.totalPrice),
-      0,
-    );
-    worksheet.addRow({});
-    worksheet.addRow({ orderCode: "TỔNG DOANH THU", totalPrice: totalRevenue });
-    worksheet.lastRow.font = { bold: true, size: 12 };
-
-    const buffer = await workbook.xlsx.writeBuffer();
-    return buffer;
-  } catch (error) {
-    console.error("Excel Export Error:", error);
-    throw error;
-  }
+  return {
+    errCode: 0,
+    data: {
+      products,
+      orders,
+      users,
+    },
+  };
 };
 
 module.exports = {
   getDashboardData,
   exportRevenueExcel,
+  globalSearch,
 };

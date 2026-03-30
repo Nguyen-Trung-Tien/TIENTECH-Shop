@@ -25,10 +25,26 @@ const handleGetReviewsByProduct = async (req, res) => {
 const handleCreateReview = async (req, res) => {
   try {
     const { productId, rating, comment, images } = req.body;
-    if (!productId || !rating || !comment) {
+    // Validate required fields
+    if (productId === undefined || productId === null || productId === "") {
       return res.status(400).json({
         errCode: 1,
-        errMessage: "Missing required fields",
+        errMessage: "productId là bắt buộc",
+      });
+    }
+
+    const numRating = Number(rating);
+    if (isNaN(numRating) || numRating < 1 || numRating > 5) {
+      return res.status(400).json({
+        errCode: 1,
+        errMessage: "rating phải từ 1 đến 5 sao",
+      });
+    }
+
+    if (!comment || !comment.trim()) {
+      return res.status(400).json({
+        errCode: 1,
+        errMessage: "Nội dung đánh giá là bắt buộc",
       });
     }
 
@@ -119,12 +135,15 @@ const handleToggleLikeReview = async (req, res) => {
   try {
     const { id } = req.params;
     const data = await ReviewService.toggleLikeReview(id);
+    if (data.errCode !== 0) {
+      return res.status(400).json(data);
+    }
     return res.status(200).json(data);
   } catch (e) {
     console.error(e);
     return res.status(500).json({
       errCode: -1,
-      errMessage: "Error server",
+      errMessage: "Error from server",
     });
   }
 };

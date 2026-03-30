@@ -161,9 +161,16 @@ const updateUser = async (userId, data, currentUserRole = "customer") => {
       }
     }
 
-    const fields = ["username", "email", "phone", "address"];
+    const fields = ["username", "email", "phone", "address", "isActive"];
     fields.forEach((field) => {
-      if (data[field] !== undefined) user[field] = data[field];
+      if (data[field] !== undefined) {
+        // Chuyển đổi string 'true'/'false' sang boolean nếu cần
+        let value = data[field];
+        if (field === "isActive" && typeof value === "string") {
+            value = value === "true";
+        }
+        user[field] = value;
+      }
     });
 
     // Hardening: Only Admin can change role
@@ -171,11 +178,13 @@ const updateUser = async (userId, data, currentUserRole = "customer") => {
         user.role = data.role;
     }
 
-    // Avatar upload (handle base64 OR buffer)
+    // Avatar upload (handle base64 OR buffer OR file object)
     if (data.avatar) {
-        user.avatar = await uploadToCloudinary(data.avatar);
-    } else if (data.file) {
-        user.avatar = await uploadToCloudinary(data.file.buffer);
+        if (typeof data.avatar === "string") {
+            user.avatar = await uploadToCloudinary(data.avatar);
+        } else if (data.avatar.buffer) {
+            user.avatar = await uploadToCloudinary(data.avatar.buffer);
+        }
     }
 
     await user.save();
@@ -203,11 +212,25 @@ const getUserById = async (userId) => {
 
 const { getPagination, getPagingData } = require("../utils/paginationHelper");
 
-const getAllUsers = async (page = 1, limit = 10) => {
+const getAllUsers = async (page = 1, limit = 10, query = "") => {
   try {
     const { offset, limit: l } = getPagination(page, limit);
+    const { Op } = db.Sequelize;
+
+    const whereCondition = {
+        role: { [Op.ne]: "root" } // Ẩn tài khoản root nếu có
+    };
+
+    if (query) {
+      whereCondition[Op.or] = [
+        { username: { [Op.like]: `%${query}%` } },
+        { email: { [Op.like]: `%${query}%` } },
+        { phone: { [Op.like]: `%${query}%` } },
+      ];
+    }
 
     const data = await db.User.findAndCountAll({
+      where: whereCondition,
       attributes: { exclude: ["password"] },
       offset,
       limit: l,

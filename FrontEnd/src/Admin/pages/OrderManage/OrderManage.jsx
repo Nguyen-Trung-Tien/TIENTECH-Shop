@@ -319,12 +319,11 @@ const OrderManage = () => {
                     <td className="px-8 py-6 text-right">
                       <div className="flex items-center justify-end gap-2">
                         <button
-                          onClick={() => navigate(`/orders-detail/${order.id}`)}
+                          onClick={() => navigate(`/admin/order/${order.id}`)}
                           className="w-10 h-10 rounded-2xl bg-slate-100 text-slate-500 flex items-center justify-center hover:bg-indigo-600 hover:text-white transition-all shadow-sm"
                         >
                           <FiInfo size={18} />
                         </button>
-
                         <div className="relative">
                           <button
                             onClick={() =>

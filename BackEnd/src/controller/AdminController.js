@@ -53,8 +53,23 @@ const handleAIInsights = async (req, res) => {
   }
 };
 
+const handleGlobalSearch = async (req, res) => {
+  try {
+    const { q } = req.query;
+    const result = await AdminService.globalSearch(q);
+    res.status(200).json(result);
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({
+      errCode: 1,
+      errMessage: "Lỗi tìm kiếm hệ thống.",
+    });
+  }
+};
+
 module.exports = {
   getDashboard,
   handleExportRevenue,
   handleAIInsights,
+  handleGlobalSearch,
 };

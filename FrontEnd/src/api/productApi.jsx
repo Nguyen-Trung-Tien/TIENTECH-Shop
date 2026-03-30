@@ -106,35 +106,36 @@ export const searchProductsApi = async (query, page = 1, limit = 10) => {
 };
 
 export const searchSuggestionsApi = async (query) => {
-  const q = (query || "").trim().toLowerCase();
+  const q = (query || "").trim();
   if (!q) {
     return {
       suggestions: { products: [], keywords: [], brands: [], categories: [] },
     };
   }
 
-  const cached = suggestCache.get(q);
+  const cached = suggestCache.get(q.toLowerCase());
   if (cached && Date.now() - cached.ts < SUGGEST_TTL_MS) {
     return cached.data;
   }
 
-  const inflight = suggestInflight.get(q);
+  const inflight = suggestInflight.get(q.toLowerCase());
   if (inflight) return inflight;
 
   const req = axiosClient
-    .get(`/product/search-suggest`, { params: { q, limit: 5 } })
+    .get(`/product/search-suggest`, { params: { q, limit: 8 } })
     .then((res) => {
-      const data = res;
-      suggestCache.set(q, { ts: Date.now(), data });
-      suggestInflight.delete(q);
+      // Đảm bảo res chứa key suggestions
+      const data = res.suggestions ? res : { suggestions: res };
+      suggestCache.set(q.toLowerCase(), { ts: Date.now(), data });
+      suggestInflight.delete(q.toLowerCase());
       return data;
     })
     .catch((err) => {
-      suggestInflight.delete(q);
+      suggestInflight.delete(q.toLowerCase());
       throw err;
     });
 
-  suggestInflight.set(q, req);
+  suggestInflight.set(q.toLowerCase(), req);
   return req;
 };
 
@@ -220,4 +221,8 @@ export const fetchFortuneProducts = async ({
     params: { birthYear, brandId, minPrice, maxPrice, categoryId, page, limit },
   });
   return res;
+};
+
+export const getOneProductApi = async (id) => {
+  return getProductByIdApi(id);
 };

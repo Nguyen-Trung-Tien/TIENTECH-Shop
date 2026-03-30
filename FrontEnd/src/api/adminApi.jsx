@@ -32,6 +32,16 @@ export const getAIInsights = async () => {
   }
 };
 
+export const globalSearchApi = async (query) => {
+  try {
+    const res = await axiosClient.get(`/admin/global-search?q=${encodeURIComponent(query)}`);
+    return res;
+  } catch (error) {
+    console.error("Error in global search API:", error);
+    throw error;
+  }
+};
+
 export const getRevenueStats = async (period) => {
   try {
     const res = await axiosClient.get(`/admin/dashboard?period=${period}`);
