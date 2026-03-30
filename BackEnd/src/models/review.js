@@ -22,6 +22,13 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: "reviewId",
         as: "replies" 
       });
+
+      Review.hasMany(models.ReviewImage, {
+        foreignKey: "reviewId",
+        as: "images",
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE",
+      });
     }
   }
 
@@ -47,6 +54,10 @@ module.exports = (sequelize, DataTypes) => {
       isApproved: {
         type: DataTypes.BOOLEAN,
         defaultValue: true,
+      },
+      likes: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0,
       },
     },
     {

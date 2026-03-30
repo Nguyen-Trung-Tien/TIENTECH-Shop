@@ -7,7 +7,7 @@ import {
 } from "../api/productApi";
 import { getAllCarts, createCart, addCart } from "../api/cartApi";
 import { addCartItem } from "../redux/cartSlice";
-import { getReviewsByProductApi } from "../api/reviewApi";
+import { getReviewsByProductApi, createReviewApi } from "../api/reviewApi";
 
 export const useProductDetail = (slug) => {
   const dispatch = useDispatch();
@@ -22,6 +22,7 @@ export const useProductDetail = (slug) => {
   const [recommended, setRecommended] = useState([]);
   const [loadingRecommended, setLoadingRecommended] = useState(false);
   const [addingCart, setAddingCart] = useState(false);
+  const [submittingReview, setSubmittingReview] = useState(false);
 
   // Fetch product data by Slug
   const fetchProduct = useCallback(async () => {
@@ -41,6 +42,19 @@ export const useProductDetail = (slug) => {
     }
   }, [slug]);
 
+  const fetchReviews = useCallback(async (page = 1) => {
+    if (!product?.id) return;
+    try {
+      const res = await getReviewsByProductApi(product.id, page, 5);
+      if (res.errCode === 0) {
+        setReviews(res.data);
+        setPagination(res.pagination);
+      }
+    } catch (err) {
+      console.error("Fetch reviews error:", err);
+    }
+  }, [product?.id]);
+
   useEffect(() => {
     fetchProduct();
   }, [fetchProduct]);
@@ -48,16 +62,10 @@ export const useProductDetail = (slug) => {
   // Fetch reviews & recommended (giả sử dùng product.id sau khi fetch xong)
   useEffect(() => {
     if (product?.id) {
+      fetchReviews();
       const fetchExtra = async () => {
         try {
-          const [reviewsRes, recommendedRes] = await Promise.all([
-            getReviewsByProductApi(product.id, 1, 5),
-            getRecommendedProductsApi(product.id, 1, 6),
-          ]);
-          if (reviewsRes.errCode === 0) {
-            setReviews(reviewsRes.data);
-            setPagination(reviewsRes.pagination);
-          }
+          const recommendedRes = await getRecommendedProductsApi(product.id, 1, 6);
           if (recommendedRes.errCode === 0) {
             setRecommended(recommendedRes.data);
           }
@@ -67,7 +75,7 @@ export const useProductDetail = (slug) => {
       };
       fetchExtra();
     }
-  }, [product?.id]);
+  }, [product?.id, fetchReviews]);
 
   const handleAddToCart = async (variantId, quantity = 1) => {
     if (!userId) return toast.warn("Bạn cần đăng nhập để mua hàng!");
@@ -106,6 +114,30 @@ export const useProductDetail = (slug) => {
     }
   };
 
+  const handleReviewSubmit = async (reviewData) => {
+    if (!user) return toast.warn("Vui lòng đăng nhập để đánh giá!");
+    setSubmittingReview(true);
+    try {
+      const res = await createReviewApi({
+        productId: product.id,
+        ...reviewData
+      });
+      if (res.errCode === 0) {
+        toast.success("Cảm ơn bạn đã đánh giá!");
+        fetchReviews(); // Refresh reviews
+        return true;
+      } else {
+        toast.error(res.errMessage || "Lỗi khi gửi đánh giá");
+        return false;
+      }
+    } catch (error) {
+      toast.error("Không thể gửi đánh giá lúc này");
+      return false;
+    } finally {
+      setSubmittingReview(false);
+    }
+  };
+
   return {
     product,
     loading,
@@ -114,7 +146,9 @@ export const useProductDetail = (slug) => {
     recommended,
     loadingRecommended,
     addingCart,
+    submittingReview,
     handleAddToCart,
+    handleReviewSubmit,
     user,
   };
 };

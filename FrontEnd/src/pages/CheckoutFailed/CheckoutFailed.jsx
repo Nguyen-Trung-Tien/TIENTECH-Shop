@@ -52,7 +52,7 @@ const CheckoutFailed = () => {
               Tham chiếu đơn hàng
             </span>
             <strong className="text-2xl font-black text-danger tracking-tight">
-              #DH{orderId?.toString().slice(-6).toUpperCase()}
+              {orderId?.toString().slice(-6).toUpperCase()}
             </strong>
           </div>
         )}

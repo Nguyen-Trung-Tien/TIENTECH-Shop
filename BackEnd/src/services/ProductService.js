@@ -1097,9 +1097,10 @@ const createProductWithVariants = async (data, imageRecords = []) => {
 
     // 1. Create Product
     if (!productData.slug && productData.name) {
-      productData.slug = `${slugify(productData.name)}-${Date.now()}`;
+      const slugify = require("slugify");
+      productData.slug = `${slugify(productData.name, { lower: true, locale: "vi" })}-${Date.now()}`;
     }
-    productData.hasVariants = options && options.length > 0;
+    productData.hasVariants = customVariants && customVariants.length > 0;
     
     // Map stock -> totalStock cho sản phẩm cha
     if (productData.stock !== undefined) {
@@ -1108,101 +1109,33 @@ const createProductWithVariants = async (data, imageRecords = []) => {
     
     const product = await db.Product.create(productData, { transaction: t });
 
-    // 2. Create Options and Values
-    // ... (unchanged)
-    const createdOptions = [];
-    if (options && options.length > 0) {
-      for (const opt of options) {
-        const createdOpt = await db.ProductOption.create(
+    // 2. Handle Variants
+    if (productData.hasVariants) {
+      let finalTotalStock = 0;
+      
+      for (const variant of customVariants) {
+        const variantStock = Number(variant.stock || 0);
+        finalTotalStock += variantStock;
+        
+        await db.ProductVariant.create(
           {
-            name: opt.name,
             productId: product.id,
+            sku: variant.sku || `${product.sku || product.id}-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
+            price: variant.price || product.basePrice,
+            stock: variantStock,
+            attributeValues: variant.attributeValues || {},
+            specifications: variant.specifications || {},
+            isActive: true,
           },
           { transaction: t },
         );
-
-        const values = opt.values.map((v) => ({
-          value: v,
-          productOptionId: createdOpt.id,
-        }));
-        const createdValues = await db.ProductOptionValue.bulkCreate(values, {
-          transaction: t,
-        });
-        createdOptions.push({ ...createdOpt.toJSON(), values: createdValues });
-      }
-    }
-
-    // 3. Handle Variants
-    if (productData.hasVariants) {
-      let finalTotalStock = 0;
-      // If custom variants provided (with price, stock, SKU)
-      if (customVariants && customVariants.length > 0) {
-        for (const variant of customVariants) {
-          const variantStock = Number(variant.stock || 0);
-          finalTotalStock += variantStock;
-          const createdVariant = await db.ProductVariant.create(
-            {
-              productId: product.id,
-              sku:
-                variant.sku ||
-                `${product.sku}-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
-              price: variant.price || product.basePrice,
-              stock: variantStock,
-              attributeValues: variant.attributeValues || {},
-              specifications: variant.specifications || {},
-            },
-            { transaction: t },
-          );
-
-          // Link to OptionValues
-          if (variant.optionValueIds) {
-            const junctionData = variant.optionValueIds.map((id) => ({
-              variantId: createdVariant.id,
-              productOptionValueId: id,
-            }));
-            await db.VariantOptionValue.bulkCreate(junctionData, {
-              transaction: t,
-            });
-          }
-        }
-      } else {
-        // Auto-generate variants (simple ones)
-        const combos = generateVariants(options);
-        for (const combo of combos) {
-          const createdVariant = await db.ProductVariant.create(
-            {
-              productId: product.id,
-              sku: `${product.sku || product.id}-${combo.map((c) => c.value).join("-")}`,
-              price: product.basePrice,
-              stock: 0,
-              attributeValues: combo.reduce(
-                (acc, curr) => ({ ...acc, [curr.optionName]: curr.value }),
-                {},
-              ),
-            },
-            { transaction: t },
-          );
-
-          // Find IDs for junction
-          for (const c of combo) {
-            const opt = createdOptions.find((o) => o.name === c.optionName);
-            const val = opt.values.find((v) => v.value === c.value);
-            await db.VariantOptionValue.create(
-              {
-                variantId: createdVariant.id,
-                productOptionValueId: val.id,
-              },
-              { transaction: t },
-            );
-          }
-        }
       }
       
       // Cập nhật lại totalStock cho sản phẩm cha dựa trên các biến thể vừa tạo
       await product.update({ totalStock: finalTotalStock }, { transaction: t });
     }
 
-    // 4. Handle Images
+    // 3. Handle Images
     if (imageRecords.length > 0) {
       const records = imageRecords.map((img) => ({
         ...img,

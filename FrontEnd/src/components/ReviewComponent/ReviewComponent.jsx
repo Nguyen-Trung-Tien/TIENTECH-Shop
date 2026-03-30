@@ -1,8 +1,9 @@
 import React from 'react';
-import { FiStar, FiUser, FiCheckCircle } from 'react-icons/fi';
+import { FiStar } from 'react-icons/fi';
 import { motion } from 'framer-motion';
+import ReviewItem from './ReviewItem';
 
-const ReviewComponent = ({ reviews = [] }) => {
+const ReviewComponent = ({ reviews = [], user }) => {
   const averageRating = reviews.length > 0 
     ? (reviews.reduce((acc, item) => acc + item.rating, 0) / reviews.length).toFixed(1) 
     : "5.0";
@@ -61,42 +62,10 @@ const ReviewComponent = ({ reviews = [] }) => {
         </div>
 
         {/* Reviews List */}
-        <div className="lg:col-span-8 space-y-10">
+        <div className="lg:col-span-8 space-y-4">
           {reviews.length > 0 ? (
             reviews.map((review, idx) => (
-              <motion.div 
-                key={review.id || idx}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: idx * 0.1 }}
-                className="pb-10 border-b border-neutral-50 last:border-0"
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-brand-50 rounded-2xl flex items-center justify-center text-brand-600 border border-brand-100">
-                      <FiUser size={24} />
-                    </div>
-                    <div>
-                      <h4 className="text-base font-bold text-neutral-900 flex items-center gap-2">
-                        {review.user?.username || 'Khách hàng ẩn danh'}
-                        <FiCheckCircle className="text-emerald-500 text-sm" title="Đã mua hàng" />
-                      </h4>
-                      <p className="text-[10px] font-black text-neutral-300 uppercase tracking-widest">
-                        {new Date(review.createdAt).toLocaleDateString('vi-VN')}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex gap-0.5">
-                    {[...Array(5)].map((_, i) => (
-                      <FiStar key={i} className={`text-sm ${i < review.rating ? 'text-amber-500 fill-current' : 'text-neutral-200'}`} />
-                    ))}
-                  </div>
-                </div>
-                <p className="text-neutral-600 text-sm-ui leading-relaxed font-medium pl-16">
-                  {review.comment}
-                </p>
-              </motion.div>
+              <ReviewItem key={review.id || idx} review={review} user={user} />
             ))
           ) : (
             <div className="py-20 text-center bg-neutral-50 rounded-3xl border border-dashed border-neutral-200">

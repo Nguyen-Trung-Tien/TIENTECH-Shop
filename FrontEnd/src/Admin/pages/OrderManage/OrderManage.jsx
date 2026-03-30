@@ -251,7 +251,7 @@ const OrderManage = () => {
                       <div className="flex flex-col gap-3">
                         <div className="flex flex-col">
                           <span className="text-sm font-black text-slate-900 group-hover:text-indigo-600 transition-colors uppercase tracking-wider">
-                            #DH{order.id}
+                            {order.orderCode}
                           </span>
                           <span className="text-[10px] font-bold text-slate-400 mt-1 flex items-center gap-1.5 uppercase">
                             <FiCalendar /> {formatDate(order.createdAt)}
@@ -437,8 +437,8 @@ const OrderManage = () => {
                 Xóa đơn hàng?
               </h3>
               <p className="text-slate-500 font-medium mb-10 text-sm leading-relaxed">
-                Hành động này sẽ gỡ bỏ đơn hàng #DH{selectedOrderId} vĩnh viễn
-                khỏi hệ thống.
+                Hành động này sẽ gỡ bỏ đơn hàng {selectedOrderId} vĩnh viễn khỏi
+                hệ thống.
               </p>
               <div className="flex gap-4">
                 <button

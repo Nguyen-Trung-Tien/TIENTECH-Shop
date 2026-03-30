@@ -93,10 +93,10 @@ const Revenue = () => {
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto p-4 md:p-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-200">
+          <h1 className="text-4xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+            <div className="w-16 h-16 rounded-2xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-200">
               <FiBarChart2 />
             </div>
             Phân tích Doanh thu
@@ -186,13 +186,14 @@ const Revenue = () => {
             <ChartCard />
           </div>
         </div>
+        <div className="bg-white p-8 rounded-[2.5rem] text-slate-900 shadow-2xl relative overflow-hidden">
+          {/* hiệu ứng nền (đổi màu cho hợp nền sáng) */}
+          <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-200/40 rounded-full blur-[80px] -mr-32 -mt-32"></div>
 
-        <div className="bg-slate-900 p-8 rounded-[2.5rem] text-white shadow-2xl relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-600/20 rounded-full blur-[80px] -mr-32 -mt-32"></div>
           <div className="relative z-10 space-y-10">
             <div>
               <h3 className="text-xl font-black">Top sản phẩm bán chạy</h3>
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">
+              <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-1">
                 Dựa trên số lượng đơn hàng hoàn tất
               </p>
             </div>
@@ -204,26 +205,28 @@ const Revenue = () => {
                     key={i}
                     className="flex items-center gap-4 group cursor-pointer"
                   >
-                    <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center font-black text-indigo-400 group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                    <div className="w-12 h-12 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center font-black text-indigo-500 group-hover:bg-indigo-600 group-hover:text-white transition-all">
                       #{i + 1}
                     </div>
+
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-bold truncate">
                         {product.productName}
                       </p>
-                      <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                         {product.totalSold} đơn đã bán
                       </p>
                     </div>
+
                     <div className="text-right">
-                      <p className="text-xs font-black text-indigo-400">
+                      <p className="text-xs font-black text-indigo-500">
                         {Number(product.totalRevenue).toLocaleString()}₫
                       </p>
                     </div>
                   </div>
                 ))
               ) : (
-                <p className="text-slate-500 text-sm italic">
+                <p className="text-slate-400 text-sm italic">
                   Chưa có dữ liệu sản phẩm
                 </p>
               )}
@@ -231,7 +234,7 @@ const Revenue = () => {
 
             <Link
               to="/notifications"
-              className="block p-3 text-center text-[10px] font-black text-surface-400 uppercase tracking-[0.2em] hover:text-primary dark:hover:text-brand border-t border-surface-50 dark:border-dark-border transition-colors"
+              className="block p-3 text-center text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] hover:text-indigo-600 border-t border-slate-200 transition-colors"
             >
               Xem tất cả thông báo
             </Link>

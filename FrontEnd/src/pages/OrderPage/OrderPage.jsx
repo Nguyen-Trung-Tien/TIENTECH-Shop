@@ -12,7 +12,7 @@ import {
   FiRefreshCw,
   FiList,
 } from "react-icons/fi";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import { motion, AnimatePresence } from "framer-motion";
@@ -21,6 +21,7 @@ import { getOrdersByUserId, updateOrderStatus } from "../../api/orderApi";
 import AppPagination from "../../components/Pagination/Pagination";
 import { statusMap, paymentStatusMap } from "../../utils/StatusMap";
 import { StatusBadge } from "../../utils/StatusBadge";
+import ReviewModal from "../../components/ReviewComponent/ReviewModal";
 
 const STATUS_TABS = [
   { key: "all", label: "Tất cả", icon: FiList },
@@ -47,6 +48,9 @@ const OrderPage = () => {
   const [cancelReason, setCancelReason] = useState("");
   const [selectedReason, setSelectedReason] = useState("");
 
+  const [selectedOrderForReview, setSelectedOrderForReview] = useState(null);
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+
   const CANCEL_REASONS = [
     "Thay đổi ý định mua hàng",
     "Tìm thấy giá rẻ hơn ở nơi khác",
@@ -56,7 +60,7 @@ const OrderPage = () => {
     "Lý do khác",
   ];
 
-  const limit = 5; // Reduced limit for a more compact view per page
+  const limit = 5;
 
   const fetchOrders = useCallback(
     async (p = page, tab = activeTab) => {
@@ -112,7 +116,6 @@ const OrderPage = () => {
     }
     setCancelling(true);
     try {
-      // Gửi trạng thái cancel_requested thay vì cancelled kèm lý do
       const res = await updateOrderStatus(
         orderToCancel.id,
         "cancel_requested",
@@ -131,6 +134,11 @@ const OrderPage = () => {
     }
   };
 
+  const openReviewModal = (order) => {
+    setSelectedOrderForReview(order);
+    setIsReviewModalOpen(true);
+  };
+
   const formatCurrency = (v) => (Number(v) || 0).toLocaleString("vi-VN") + " ₫";
 
   return (
@@ -146,15 +154,23 @@ const OrderPage = () => {
               Theo dõi và quản lý lịch sử mua hàng của bạn.
             </p>
           </div>
-          <button
-            onClick={() => fetchOrders(page, activeTab)}
-            className="flex items-center justify-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-600 hover:text-primary hover:border-primary/30 transition-all shadow-sm group"
-          >
-            <FiRefreshCw
-              className={`${loading ? "animate-spin" : "group-hover:rotate-180"} transition-transform duration-500`}
-            />{" "}
-            Làm mới
-          </button>
+          <div className="flex items-center gap-3">
+            <Link
+              to="/order-history"
+              className="flex items-center justify-center gap-2 px-4 py-2 bg-primary/5 border border-primary/10 rounded-xl text-xs font-bold text-primary hover:bg-primary/10 transition-all shadow-sm"
+            >
+              <FiCheckCircle size={14} /> Lịch sử đơn hàng
+            </Link>
+            <button
+              onClick={() => fetchOrders(page, activeTab)}
+              className="flex items-center justify-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-600 hover:text-primary hover:border-primary/30 transition-all shadow-sm group"
+            >
+              <FiRefreshCw
+                className={`${loading ? "animate-spin" : "group-hover:rotate-180"} transition-transform duration-500`}
+              />{" "}
+              Làm mới
+            </button>
+          </div>
         </div>
 
         {/* Compact Tabs */}
@@ -326,14 +342,7 @@ const OrderPage = () => {
 
                       {o.status === "delivered" && (
                         <button
-                          onClick={() => {
-                            const product = o.orderItems[0]?.product;
-                            const target =
-                              product?.slug ||
-                              product?.id ||
-                              o.orderItems[0]?.productId;
-                            navigate(`/product-detail/${target}`);
-                          }}
+                          onClick={() => openReviewModal(o)}
                           className="flex-1 sm:flex-none h-10 px-5 bg-emerald-500 text-white rounded-xl text-xs font-bold hover:bg-emerald-600 transition-all shadow-md shadow-emerald-500/20 flex items-center justify-center gap-2"
                         >
                           <FiCheckCircle size={16} /> Đánh giá
@@ -358,6 +367,13 @@ const OrderPage = () => {
           </div>
         )}
       </div>
+
+      <ReviewModal
+        isOpen={isReviewModalOpen}
+        onClose={() => setIsReviewModalOpen(false)}
+        order={selectedOrderForReview}
+        onReviewSuccess={() => fetchOrders(page, activeTab)}
+      />
 
       <ConfirmModal
         isOpen={showCancelModal}

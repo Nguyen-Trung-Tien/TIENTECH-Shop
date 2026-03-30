@@ -1,13 +1,33 @@
-import React, { memo } from "react";
+import React, { memo, useState } from "react";
 import { FaStar, FaCheckCircle } from "react-icons/fa";
 import { FiThumbsUp, FiMessageSquare } from "react-icons/fi";
 import ReplyItem from "./ReplyItem";
+import { toggleLikeReviewApi } from "../../api/reviewApi";
+import { toast } from "react-toastify";
 
 /**
  * ReviewItem Component - Compact Version
  * Hiển thị từng đánh giá của người dùng theo phong cách gọn gàng, tinh tế.
  */
 const ReviewItem = ({ review, user }) => {
+  const [likes, setLikes] = useState(review.likes || 0);
+  const [isLiking, setIsLiking] = useState(false);
+
+  const handleLike = async () => {
+    if (isLiking) return;
+    setIsLiking(true);
+    try {
+      const res = await toggleLikeReviewApi(review.id);
+      if (res.errCode === 0) {
+        setLikes(res.data.likes);
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsLiking(false);
+    }
+  };
+
   return (
     <div className="py-8 border-b border-slate-50 last:border-0 group">
       <div className="flex gap-5 md:gap-6">
@@ -54,16 +74,31 @@ const ReviewItem = ({ review, user }) => {
           </div>
 
           <div className="relative">
-            <p className="text-sm text-slate-600 leading-relaxed mb-6">
+            <p className="text-sm text-slate-600 leading-relaxed mb-4">
               {review.comment}
             </p>
+
+            {/* Review Images */}
+            {review.images && review.images.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-6">
+                {review.images.map((img) => (
+                  <div key={img.id} className="w-20 h-20 rounded-xl overflow-hidden border border-slate-100 shadow-sm cursor-zoom-in hover:scale-105 transition-transform">
+                    <img src={img.imageUrl} alt="review" className="w-full h-full object-cover" />
+                  </div>
+                ))}
+              </div>
+            )}
             
             <div className="flex items-center gap-5">
-              <button className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-slate-400 hover:text-primary transition-colors group/btn">
+              <button 
+                onClick={handleLike}
+                disabled={isLiking}
+                className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-slate-400 hover:text-primary transition-colors group/btn disabled:opacity-50"
+              >
                 <span className="w-8 h-8 flex items-center justify-center bg-slate-50 rounded-lg group-hover/btn:bg-primary/5 transition-all">
-                  <FiThumbsUp size={14} />
+                  <FiThumbsUp size={14} className={isLiking ? "animate-bounce" : ""} />
                 </span>
-                Hữu ích ({review.likes || 0})
+                Hữu ích ({likes})
               </button>
 
               <button className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-slate-400 hover:text-primary transition-colors group/btn">

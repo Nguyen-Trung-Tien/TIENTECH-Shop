@@ -9,6 +9,7 @@ import { StatusBadge } from "../../utils/StatusBadge";
 import ClickableText from "../../components/ClickableText/ClickableText";
 import Button from "../../components/UI/Button";
 import Badge from "../../components/UI/Badge";
+import ReviewModal from "../../components/ReviewComponent/ReviewModal";
 
 const OrderHistoryPage = () => {
   const navigate = useNavigate();
@@ -18,6 +19,9 @@ const OrderHistoryPage = () => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const limit = 10;
+
+  const [selectedOrderForReview, setSelectedOrderForReview] = useState(null);
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
 
   const fetchOrders = useCallback(async () => {
     if (!user?.id) return;
@@ -42,6 +46,11 @@ const OrderHistoryPage = () => {
   const formatCurrency = (v) => (Number(v) || 0).toLocaleString("vi-VN") + " ₫";
   const formatDate = (dateStr) =>
     dateStr ? new Date(dateStr).toLocaleDateString("vi-VN") : "-";
+
+  const openReviewModal = (order) => {
+    setSelectedOrderForReview(order);
+    setIsReviewModalOpen(true);
+  };
 
   return (
     <div className="min-h-screen bg-surface-50 py-12">
@@ -96,7 +105,7 @@ const OrderHistoryPage = () => {
                 <div className="px-6 py-4 bg-surface-50/50 border-b border-surface-100 flex flex-wrap items-center justify-between gap-4">
                   <div className="flex items-center gap-4">
                     <span className="text-[12px] font-black text-surface-900 uppercase tracking-wider bg-white px-3 py-1 rounded-lg border border-surface-200">
-                      #{o.id.toString().slice(-6).toUpperCase()}
+                      #{o.orderCode || o.id}
                     </span>
                     <span className="text-sm text-surface-400 font-medium">
                       Ngày đặt: {formatDate(o.createdAt)}
@@ -192,11 +201,7 @@ const OrderHistoryPage = () => {
                           size="md"
                           className="flex-1 sm:flex-none"
                           icon={FiCheckCircle}
-                          onClick={() =>
-                            navigate(
-                              `/product-detail/${o.orderItems[0]?.product?.id}`,
-                            )
-                          }
+                          onClick={() => openReviewModal(o)}
                         >
                           ĐÁNH GIÁ
                         </Button>
@@ -220,6 +225,13 @@ const OrderHistoryPage = () => {
           </div>
         )}
       </div>
+
+      <ReviewModal
+        isOpen={isReviewModalOpen}
+        onClose={() => setIsReviewModalOpen(false)}
+        order={selectedOrderForReview}
+        onReviewSuccess={fetchOrders}
+      />
     </div>
   );
 };

@@ -18,8 +18,14 @@ const handleCreateProduct = async (req, res) => {
     }
     
     ["specifications", "options", "variants"].forEach(field => {
-      if (data[field] && typeof data[field] === "string") {
-        try { data[field] = JSON.parse(data[field]); } catch (e) { console.error(`Error parsing ${field}:`, e); }
+      if (data[field]) {
+        if (typeof data[field] === "string") {
+          try {
+            data[field] = JSON.parse(data[field]);
+          } catch (e) {
+            console.error(`Error parsing ${field}:`, e);
+          }
+        }
       }
     });
 

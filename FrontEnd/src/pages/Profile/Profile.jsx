@@ -21,6 +21,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button, Modal } from "../../components/UI";
 import Badge from "../../components/UI/Badge";
 import AddressManager from "./AddressManager";
+import ReviewHistory from "../../components/ReviewComponent/ReviewHistory";
 
 const Profile = () => {
   const dispatch = useDispatch();

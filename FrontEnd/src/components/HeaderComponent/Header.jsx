@@ -14,6 +14,7 @@ import {
   FiSun,
   FiMoon,
   FiHeart,
+  FiCheckCircle,
 } from "react-icons/fi";
 
 import { motion, AnimatePresence } from "framer-motion";
@@ -421,6 +422,13 @@ function Header() {
                         className="flex items-center gap-3 px-4 py-2.5 text-[14px] font-semibold text-slate-600 dark:text-dark-text-secondary hover:bg-slate-50 dark:hover:bg-dark-bg hover:text-primary dark:hover:text-brand rounded-xl transition-all"
                       >
                         <FiShoppingBag className="text-lg" /> Đơn mua của tôi
+                      </Link>
+
+                      <Link
+                        to="/order-history"
+                        className="flex items-center gap-3 px-4 py-2.5 text-[14px] font-semibold text-slate-600 dark:text-dark-text-secondary hover:bg-slate-50 dark:hover:bg-dark-bg hover:text-primary dark:hover:text-brand rounded-xl transition-all"
+                      >
+                        <FiCheckCircle className="text-lg" /> Lịch sử đơn hàng
                       </Link>
 
                       <div className="my-2 border-t border-slate-100 dark:border-dark-border mx-2"></div>

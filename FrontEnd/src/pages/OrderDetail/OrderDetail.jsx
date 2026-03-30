@@ -279,7 +279,7 @@ const OrderDetail = () => {
                 Chi tiết Đơn hàng
               </h1>
               <span className="px-3 py-1 bg-primary/10 text-primary text-sm font-black rounded-lg">
-                #DH{order.id}
+                {order.orderCode}
               </span>
             </div>
             <p className="text-surface-500 font-medium">
@@ -573,7 +573,10 @@ const OrderDetail = () => {
                 <button
                   key={reason}
                   onClick={() => {
-                    dispatch({ type: "SET_SELECTED_RETURN_REASON", payload: reason });
+                    dispatch({
+                      type: "SET_SELECTED_RETURN_REASON",
+                      payload: reason,
+                    });
                     if (reason !== "Lý do khác") {
                       dispatch({ type: "SET_RETURN_REASON", payload: reason });
                     } else {
@@ -688,7 +691,7 @@ const OrderDetail = () => {
       >
         <p className="text-surface-500 mb-6 leading-relaxed">
           Bạn có chắc chắn muốn gửi yêu cầu hủy đơn hàng{" "}
-          <strong>#DH{order.id}</strong> không?
+          <strong>{order.orderCode}</strong> không?
         </p>
 
         <div className="mb-8 text-left w-full space-y-4">
@@ -701,7 +704,10 @@ const OrderDetail = () => {
                 <button
                   key={reason}
                   onClick={() => {
-                    dispatch({ type: "SET_SELECTED_CANCEL_REASON", payload: reason });
+                    dispatch({
+                      type: "SET_SELECTED_CANCEL_REASON",
+                      payload: reason,
+                    });
                     if (reason !== "Lý do khác") {
                       dispatch({ type: "SET_CANCEL_REASON", payload: reason });
                     } else {
@@ -732,7 +738,10 @@ const OrderDetail = () => {
                 placeholder="Vui lòng nhập lý do cụ thể..."
                 value={cancelReason}
                 onChange={(e) =>
-                  dispatch({ type: "SET_CANCEL_REASON", payload: e.target.value })
+                  dispatch({
+                    type: "SET_CANCEL_REASON",
+                    payload: e.target.value,
+                  })
                 }
               />
             </motion.div>

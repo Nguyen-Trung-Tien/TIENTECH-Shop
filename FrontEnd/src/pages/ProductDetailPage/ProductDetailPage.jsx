@@ -11,16 +11,36 @@ import {
 import { FaHeart } from "react-icons/fa";
 import { addToWishlistApi, removeFromWishlistApi, checkWishlistStatusApi } from "../../api/wishlistApi";
 
+import Badge from "../../components/UI/Badge";
+import ReviewComponent from "../../components/ReviewComponent/ReviewComponent";
+import ReviewForm from "../../components/ReviewComponent/ReviewForm";
+
 const ProductDetailPage = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
   const { 
     product, 
     loading, 
-    handleAddToCart, 
+    reviews,
+    handleAddToCart,
+    handleReviewSubmit,
+    submittingReview,
     addingCart,
     user
   } = useProductDetail(slug);
+
+  const [newReview, setNewReview] = useState({
+    rating: 0,
+    comment: "",
+    images: [],
+  });
+
+  const onReviewSubmit = async () => {
+    const success = await handleReviewSubmit(newReview);
+    if (success) {
+      setNewReview({ rating: 0, comment: "", images: [] });
+    }
+  };
 
   const {
     allAttributes,
@@ -471,6 +491,11 @@ const ProductDetailPage = () => {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Review Section */}
+      <div className="mt-16 space-y-12">
+        <ReviewComponent reviews={reviews} user={user} />
       </div>
     </div>
   );

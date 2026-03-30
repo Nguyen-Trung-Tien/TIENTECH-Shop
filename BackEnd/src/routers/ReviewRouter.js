@@ -27,6 +27,24 @@ router.delete(
   ReviewController.handleDeleteReview
 );
 router.get(
+  "/user",
+  authenticateToken,
+  authorizeRole(["admin", "customer"]),
+  ReviewController.handleGetReviewsByUser
+);
+router.get(
+  "/pending",
+  authenticateToken,
+  authorizeRole(["admin", "customer"]),
+  ReviewController.handleGetPendingReviewProducts
+);
+router.post(
+  "/like/:id",
+  authenticateToken,
+  authorizeRole(["admin", "customer"]),
+  ReviewController.handleToggleLikeReview
+);
+router.get(
   "/get-all",
   authenticateToken,
   authorizeRole(["admin"]),

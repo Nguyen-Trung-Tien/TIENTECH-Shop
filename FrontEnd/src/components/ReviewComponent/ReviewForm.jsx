@@ -1,5 +1,5 @@
 import React, { memo, useState } from "react";
-import { FaStar } from "react-icons/fa";
+import { FaStar, FaCamera, FaTimes } from "react-icons/fa";
 import Button from "../UI/Button";
 
 /**
@@ -8,10 +8,40 @@ import Button from "../UI/Button";
  */
 const ReviewForm = ({ newReview, setNewReview, onSubmit, loading }) => {
   const [hover, setHover] = useState(null);
+  const [previews, setPreviews] = useState([]);
   const disabled = !newReview.comment.trim() || !newReview.rating || loading;
 
   const handleStarClick = (star) => {
     setNewReview((prev) => ({ ...prev, rating: star }));
+  };
+
+  const handleFileChange = (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length + previews.length > 5) {
+      alert("Chỉ được tải lên tối đa 5 ảnh");
+      return;
+    }
+
+    files.forEach((file) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviews((prev) => [...prev, reader.result]);
+        setNewReview((prev) => ({
+          ...prev,
+          images: [...(newReview.images || []), reader.result],
+        }));
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const removeImage = (index) => {
+    const newPreviews = previews.filter((_, i) => i !== index);
+    setPreviews(newPreviews);
+    setNewReview((prev) => ({
+      ...prev,
+      images: (prev.images || []).filter((_, i) => i !== index),
+    }));
   };
 
   return (
@@ -48,6 +78,32 @@ const ReviewForm = ({ newReview, setNewReview, onSubmit, loading }) => {
                 />
               </button>
             ))}
+          </div>
+        </div>
+
+        {/* Image Upload Area */}
+        <div>
+          <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-3 ml-1">Hình ảnh thực tế (Tối đa 5)</p>
+          <div className="flex flex-wrap gap-3">
+            {previews.map((preview, index) => (
+              <div key={index} className="relative w-20 h-20 rounded-xl overflow-hidden border border-slate-200 shadow-sm group">
+                <img src={preview} alt="preview" className="w-full h-full object-cover" />
+                <button
+                  type="button"
+                  onClick={() => removeImage(index)}
+                  className="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <FaTimes size={10} />
+                </button>
+              </div>
+            ))}
+            {previews.length < 5 && (
+              <label className="w-20 h-20 rounded-xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center gap-1 cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-all text-slate-400 hover:text-primary">
+                <FaCamera size={20} />
+                <span className="text-[8px] font-black uppercase tracking-tighter">Thêm ảnh</span>
+                <input type="file" accept="image/*" multiple onChange={handleFileChange} className="hidden" />
+              </label>
+            )}
           </div>
         </div>
 

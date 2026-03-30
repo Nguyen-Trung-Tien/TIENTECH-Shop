@@ -58,14 +58,14 @@ const sendForgotPasswordEmail = async (user, token) => {
 const sendOrderDeliveredEmail = async (user, order) => {
   if (!user?.email) return false;
 
-  const orderCode = `DH${order.id}`;
-  const subject = `🎉 Đơn hàng ${orderCode} của bạn đã được giao thành công!`;
+  const displayOrderCode = order.orderCode || order.id;
+  const subject = `🎉 Đơn hàng ${displayOrderCode} của bạn đã được giao thành công!`;
   const clientUrl = process.env.URL_REACT;
 
   const html = `
   <div style="font-family: Arial, sans-serif; background-color: #f9fafb; padding: 24px;">
     <div style="max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); overflow: hidden;">
-      <div style="background-color: #ff6f00; color: white; text-align: center; padding: 16px 0;">
+      <div style="background-color: #0d6efd; color: white; text-align: center; padding: 16px 0;">
         <h2 style="margin: 0; font-size: 22px;">Tien-Tech Shop</h2>
       </div>
 
@@ -74,37 +74,37 @@ const sendOrderDeliveredEmail = async (user, order) => {
           user.username || "quý khách"
         },</h3>
         <p style="font-size: 15px; color: #333;">
-          Chúng tôi xin thông báo rằng đơn hàng <strong style="color: #ff6f00;">${orderCode}</strong> của bạn đã được <b>giao thành công</b>.
+          Chúng tôi xin thông báo rằng đơn hàng <strong style="color: #0d6efd;">${displayOrderCode}</strong> của bạn đã được <b>giao thành công</b>.
         </p>
 
         <div style="margin: 20px 0; background: #f3f4f6; border-radius: 8px; padding: 16px;">
           <h4 style="margin-bottom: 10px;">📦 Thông tin đơn hàng</h4>
-          <ul style="list-style: none; padding: 0; margin: 0;">
-            <li><strong>Mã đơn hàng:</strong> ${orderCode}</li>
+          <ul style="list-style: none; padding: 0; margin: 0; font-size: 14px; line-height: 1.6;">
+            <li><strong>Mã đơn hàng:</strong> <span style="color: #0d6efd; font-weight: bold;">${displayOrderCode}</span></li>
             <li><strong>Địa chỉ giao hàng:</strong> ${
               order.shippingAddress
             }</li>
-            <li><strong>Tổng tiền:</strong> ${order.totalPrice.toLocaleString()}₫</li>
+            <li><strong>Tổng thanh toán:</strong> <span style="color: #d32f2f; font-weight: bold;">${Number(order.totalPrice).toLocaleString()}₫</span></li>
           </ul>
         </div>
 
-        <div style="text-align: center; margin-top: 20px;">
-          <a href="${clientUrl}/orders-detail/${order.id}" 
-            style="display: inline-block; background-color: #ff6f00; color: white; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: bold;">
-            🔍 Xem chi tiết đơn hàng
+        <div style="text-align: center; margin-top: 30px; margin-bottom: 30px;">
+          <a href="${clientUrl}/order-history" 
+            style="display: inline-block; background-color: #0d6efd; color: white; text-decoration: none; padding: 14px 28px; border-radius: 8px; font-weight: bold; font-size: 16px; box-shadow: 0 4px 6px rgba(13, 110, 253, 0.2);">
+            ⭐ Đánh giá sản phẩm ngay
           </a>
         </div>
 
-        <p style="margin-top: 24px; color: #555;">
-          Cảm ơn bạn đã mua sắm tại <b>Shop của chúng tôi</b>! ❤️<br/>
-          Nếu có bất kỳ thắc mắc nào, vui lòng phản hồi lại email này hoặc liên hệ đội ngũ hỗ trợ.
+        <p style="margin-top: 24px; color: #555; font-size: 14px;">
+          Cảm ơn bạn đã tin tưởng và mua sắm tại <b>Tien-Tech Shop</b>! ❤️<br/>
+          Những đánh giá của bạn sẽ giúp chúng tôi hoàn thiện dịch vụ tốt hơn.
         </p>
       </div>
 
-      <div style="background-color: #f3f4f6; text-align: center; padding: 12px;">
+      <div style="background-color: #f3f4f6; text-align: center; padding: 16px; border-top: 1px solid #eee;">
         <p style="font-size: 12px; color: #888; margin: 0;">
           Đây là email tự động, vui lòng không trả lời trực tiếp.<br/>
-          © ${new Date().getFullYear()} Shop Của Chúng Tôi.
+          © ${new Date().getFullYear()} Tien-Tech Shop. All rights reserved.
         </p>
       </div>
     </div>
