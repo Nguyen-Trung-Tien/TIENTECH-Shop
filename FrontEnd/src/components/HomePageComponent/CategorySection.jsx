@@ -53,7 +53,7 @@ const CategorySection = React.memo(({ categories = [], loading }) => {
               viewport={{ once: true }}
               transition={{ delay: index * 0.05 }}
               whileHover={{ y: -8 }}
-              onClick={() => navigate(`/product-list?category=${cat.id}`)}
+              onClick={() => navigate(`/product-list?categoryId=${cat.id}`)}
               className="group cursor-pointer"
             >
               <div className="relative aspect-square rounded-[32px] overflow-hidden bg-slate-50 border border-slate-100 shadow-sm transition-all duration-300 group-hover:shadow-xl group-hover:border-primary/20">

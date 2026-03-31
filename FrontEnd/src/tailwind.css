@@ -62,6 +62,15 @@
 
   /* Spacing */
   --spacing-container: 1200px;
+
+  /* Keyframes */
+  @keyframes slide-left {
+    from { transform: translateX(100%); }
+    to { transform: translateX(0); }
+  }
+
+  /* Animations */
+  --animate-slide-left: slide-left 0.3s ease-out;
 }
 
 @layer base {

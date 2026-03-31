@@ -1,29 +1,34 @@
 import { useEffect, useState } from "react";
 import { getAllBrandApi } from "../../api/brandApi";
 import { getAllCategoryApi } from "../../api/categoryApi";
-import { FiFilter, FiX, FiCheck, FiChevronDown, FiRotateCcw } from "react-icons/fi";
+import { getAllAttributesApi } from "../../api/attributeApi";
+import { FiFilter, FiX, FiCheck, FiChevronDown, FiRotateCcw, FiLayers, FiCpu, FiSmartphone, FiMonitor, FiZap } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
 
 function ProductFilter({ onFilterChange, isSidebar = false, onClose, initialFilters }) {
   const [brands, setBrands] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [attributes, setAttributes] = useState([]);
 
   const [filters, setFilters] = useState({
     brand: initialFilters?.brand || "",
     category: initialFilters?.category || "",
     price: initialFilters?.price || [0, 100000000],
     sort: initialFilters?.sort || "",
+    ram: initialFilters?.ram || "",
+    rom: initialFilters?.rom || "",
+    os: initialFilters?.os || "",
+    refresh_rate: initialFilters?.refresh_rate || ""
   });
 
-  // Update local filters if initialFilters change (e.g. navigation)
   useEffect(() => {
     if (initialFilters) {
       setFilters(prev => ({
         ...prev,
-        brand: initialFilters.brand || prev.brand,
-        category: initialFilters.category || prev.category,
-        price: initialFilters.price || prev.price,
-        sort: initialFilters.sort || prev.sort,
+        ...initialFilters,
+        brand: initialFilters.brand || "",
+        category: initialFilters.category || "",
+        price: initialFilters.price || [0, 100000000],
       }));
     }
   }, [initialFilters]);
@@ -31,12 +36,18 @@ function ProductFilter({ onFilterChange, isSidebar = false, onClose, initialFilt
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [brandRes, catRes] = await Promise.all([
+        const [brandRes, catRes, attrRes] = await Promise.all([
           getAllBrandApi(),
-          getAllCategoryApi()
+          getAllCategoryApi(),
+          getAllAttributesApi()
         ]);
         if (brandRes.errCode === 0) setBrands(brandRes.brands || brandRes.data || []);
         if (catRes.errCode === 0) setCategories(catRes.data || []);
+        if (attrRes.errCode === 0) {
+          // Chỉ lấy các thuộc tính quan trọng để lọc
+          const importantCodes = ["ram", "rom", "os", "refresh_rate", "screen"];
+          setAttributes(attrRes.data.filter(a => importantCodes.includes(a.code)));
+        }
       } catch (err) {
         console.error("Lỗi load filters:", err);
       }
@@ -51,19 +62,11 @@ function ProductFilter({ onFilterChange, isSidebar = false, onClose, initialFilt
     if (isSidebar) onFilterChange(newFilters);
   };
 
-  const handleCategoryClick = (id) => {
-    const newCat = filters.category === id ? "" : id;
-    const newFilters = { ...filters, category: newCat };
+  const handleAttrClick = (code, value) => {
+    const newVal = filters[code] === value ? "" : value;
+    const newFilters = { ...filters, [code]: newVal };
     setFilters(newFilters);
     if (isSidebar) onFilterChange(newFilters);
-  };
-
-  const handlePriceChange = (index, value) => {
-    const newPrice = [...filters.price];
-    newPrice[index] = Number(value);
-    const newFilters = { ...filters, price: newPrice };
-    setFilters(newFilters);
-    // sidebar will update on apply button for price to avoid too many fetches
   };
 
   const applyFilters = () => {
@@ -72,9 +75,22 @@ function ProductFilter({ onFilterChange, isSidebar = false, onClose, initialFilt
   };
 
   const resetFilters = () => {
-    const defaultFilters = { brand: "", category: "", price: [0, 100000000], sort: "" };
+    const defaultFilters = { 
+      brand: "", category: "", price: [0, 100000000], sort: "",
+      ram: "", rom: "", os: "", refresh_rate: ""
+    };
     setFilters(defaultFilters);
     onFilterChange(defaultFilters);
+  };
+
+  const getAttrIcon = (code) => {
+    switch (code) {
+      case 'ram': return <FiLayers />;
+      case 'rom': return <FiSmartphone />;
+      case 'os': return <FiZap />;
+      case 'screen': return <FiMonitor />;
+      default: return <FiFilter />;
+    }
   };
 
   const FilterContent = () => (
@@ -86,7 +102,7 @@ function ProductFilter({ onFilterChange, isSidebar = false, onClose, initialFilt
           {filters.brand && <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>}
         </h4>
         <div className="grid grid-cols-2 gap-3">
-          {brands.map((b) => (
+          {brands.slice(0, 6).map((b) => (
             <button
               key={b.id}
               onClick={() => handleBrandClick(b.id)}
@@ -96,7 +112,11 @@ function ProductFilter({ onFilterChange, isSidebar = false, onClose, initialFilt
                   : "border-slate-50 hover:border-slate-200"
               }`}
             >
-              <img src={b.image} alt={b.name} className="max-w-[80%] max-h-[80%] object-contain mix-blend-multiply transition-transform group-hover:scale-110" />
+              {b.image ? (
+                <img src={b.image} alt={b.name} className="max-w-[80%] max-h-[80%] object-contain mix-blend-multiply transition-transform group-hover:scale-110" />
+              ) : (
+                <span className="text-[10px] font-bold text-slate-400">{b.name}</span>
+              )}
               {filters.brand === b.id && (
                 <div className="absolute top-0 right-0 p-1">
                   <FiCheck className="text-primary" size={12} />
@@ -106,6 +126,31 @@ function ProductFilter({ onFilterChange, isSidebar = false, onClose, initialFilt
           ))}
         </div>
       </div>
+
+      {/* Dynamic Attributes Section */}
+      {attributes.map((attr) => (
+        <div key={attr.id} className="space-y-5">
+          <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 flex items-center gap-2">
+            {getAttrIcon(attr.code)}
+            {attr.name}
+          </h4>
+          <div className="flex flex-wrap gap-2">
+            {attr.values?.map((v) => (
+              <button
+                key={v.id}
+                onClick={() => handleAttrClick(attr.code, v.value)}
+                className={`px-3 py-2 rounded-xl text-[10px] font-bold transition-all border-2 ${
+                  filters[attr.code] === v.value
+                    ? "bg-primary border-primary text-white shadow-md shadow-primary/10"
+                    : "bg-slate-50 border-slate-50 text-slate-600 hover:bg-white hover:border-slate-200"
+                }`}
+              >
+                {v.value}
+              </button>
+            ))}
+          </div>
+        </div>
+      ))}
 
       {/* Price Range Section */}
       <div className="space-y-5">
@@ -119,7 +164,7 @@ function ProductFilter({ onFilterChange, isSidebar = false, onClose, initialFilt
                 placeholder="0"
                 className="w-full h-11 bg-slate-50 border-none rounded-xl px-4 text-xs font-bold focus:ring-2 focus:ring-primary/10 transition-all outline-none"
                 value={filters.price[0]}
-                onChange={(e) => handlePriceChange(0, e.target.value)}
+                onChange={(e) => setFilters({...filters, price: [Number(e.target.value), filters.price[1]]})}
               />
             </div>
             <div className="space-y-1.5">
@@ -129,21 +174,9 @@ function ProductFilter({ onFilterChange, isSidebar = false, onClose, initialFilt
                 placeholder="100Tr+"
                 className="w-full h-11 bg-slate-50 border-none rounded-xl px-4 text-xs font-bold focus:ring-2 focus:ring-primary/10 transition-all outline-none"
                 value={filters.price[1]}
-                onChange={(e) => handlePriceChange(1, e.target.value)}
+                onChange={(e) => setFilters({...filters, price: [filters.price[0], Number(e.target.value)]})}
               />
             </div>
-          </div>
-          
-          <div className="flex flex-wrap gap-2">
-             {[5000000, 15000000, 30000000].map(p => (
-               <button 
-                key={p}
-                onClick={() => setFilters({...filters, price: [0, p]})}
-                className="px-3 py-1.5 rounded-lg bg-slate-100 text-[10px] font-bold text-slate-500 hover:bg-primary hover:text-white transition-all"
-               >
-                 Dưới {p/1000000}Tr
-               </button>
-             ))}
           </div>
         </div>
       </div>
@@ -156,14 +189,13 @@ function ProductFilter({ onFilterChange, isSidebar = false, onClose, initialFilt
             { id: "newest", label: "Mới nhất" },
             { id: "price_asc", label: "Giá thấp đến cao" },
             { id: "price_desc", label: "Giá cao đến thấp" },
-            { id: "hot", label: "Bán chạy nhất" },
           ].map(opt => (
             <button
               key={opt.id}
               onClick={() => setFilters({...filters, sort: opt.id === filters.sort ? "" : opt.id})}
               className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-xs font-bold transition-all ${
                 filters.sort === opt.id 
-                  ? "bg-primary text-white shadow-md shadow-primary/10" 
+                  ? "bg-slate-900 text-white shadow-md shadow-slate-900/10" 
                   : "bg-slate-50 text-slate-600 hover:bg-slate-100"
               }`}
             >
@@ -177,7 +209,7 @@ function ProductFilter({ onFilterChange, isSidebar = false, onClose, initialFilt
       <div className="pt-6 flex flex-col gap-3">
          <button 
           onClick={applyFilters}
-          className="w-full h-12 bg-slate-900 text-white rounded-2xl text-[11px] font-black uppercase tracking-widest shadow-xl hover:bg-primary transition-all active:scale-95"
+          className="w-full h-12 bg-indigo-600 text-white rounded-2xl text-[11px] font-black uppercase tracking-widest shadow-xl hover:bg-indigo-700 transition-all active:scale-95"
          >
            Áp dụng bộ lọc
          </button>
@@ -195,7 +227,7 @@ function ProductFilter({ onFilterChange, isSidebar = false, onClose, initialFilt
     return (
       <div className="w-full bg-white rounded-[2.5rem] border border-slate-100 shadow-soft p-8">
         <div className="flex items-center gap-3 mb-10 pb-6 border-b border-slate-50">
-           <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary shadow-sm"><FiFilter /></div>
+           <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600 shadow-sm"><FiFilter /></div>
            <h3 className="text-xl font-black text-slate-900 tracking-tight uppercase">Bộ lọc</h3>
         </div>
         <FilterContent />

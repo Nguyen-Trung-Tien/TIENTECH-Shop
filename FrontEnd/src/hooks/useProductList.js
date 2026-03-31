@@ -2,6 +2,9 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { filterProductsApi } from "../api/productApi";
 
+/**
+ * Hook quản lý danh sách sản phẩm với bộ lọc nâng cao
+ */
 export const useProductList = (limit = 12) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [products, setProducts] = useState([]);
@@ -11,15 +14,28 @@ export const useProductList = (limit = 12) => {
   const [totalPages, setTotalPages] = useState(1);
   const [error, setError] = useState("");
 
+  // Định nghĩa danh sách các thuộc tính lọc hỗ trợ
+  const ATTRIBUTE_KEYS = ["ram", "rom", "os", "screen", "battery", "refresh_rate"];
+
   // Lấy các filter từ URL
-  const filtersFromUrl = useMemo(() => ({
-    brand: searchParams.get("brandId") || "",
-    category: searchParams.get("categoryId") || "",
-    search: searchParams.get("search") || "",
-    minPrice: Number(searchParams.get("minPrice")) || 0,
-    maxPrice: Number(searchParams.get("maxPrice")) || 100000000,
-    sort: searchParams.get("sort") || "",
-  }), [searchParams]);
+  const filtersFromUrl = useMemo(() => {
+    const filters = {
+      brand: searchParams.get("brandId") || "",
+      category: searchParams.get("categoryId") || "",
+      search: searchParams.get("search") || "",
+      minPrice: Number(searchParams.get("minPrice")) || 0,
+      maxPrice: Number(searchParams.get("maxPrice")) || 100000000,
+      sort: searchParams.get("sort") || "",
+    };
+
+    // Thêm các thuộc tính động
+    ATTRIBUTE_KEYS.forEach(key => {
+      const val = searchParams.get(key);
+      if (val) filters[key] = val;
+    });
+
+    return filters;
+  }, [searchParams]);
 
   const fetchProducts = useCallback(
     async (page = 1, append = false) => {
@@ -27,7 +43,8 @@ export const useProductList = (limit = 12) => {
         append ? setLoadingMore(true) : setLoading(true);
         setError("");
 
-        const res = await filterProductsApi({
+        // Chuẩn bị params cho API
+        const apiParams = {
           brandId: filtersFromUrl.brand,
           categoryId: filtersFromUrl.category,
           search: filtersFromUrl.search,
@@ -36,17 +53,28 @@ export const useProductList = (limit = 12) => {
           sort: filtersFromUrl.sort,
           page,
           limit,
+        };
+
+        // Gán thêm các thuộc tính attributes vào apiParams
+        ATTRIBUTE_KEYS.forEach(key => {
+          if (filtersFromUrl[key]) apiParams[key] = filtersFromUrl[key];
         });
+
+        const res = await filterProductsApi(apiParams);
 
         if (res.errCode === 0) {
           const newProducts = res.products || res.data || [];
           setProducts((prev) => (append ? [...prev, ...newProducts] : newProducts));
-          setCurrentPage(res.currentPage || page);
-          setTotalPages(res.totalPages || 1);
+          
+          // Xử lý dữ liệu phân trang từ cấu trúc mới của Backend
+          const pagination = res.pagination || {};
+          setCurrentPage(pagination.currentPage || page);
+          setTotalPages(pagination.totalPages || 1);
         } else {
           throw new Error(res.errMessage || "Lỗi tải sản phẩm");
         }
       } catch (err) {
+        console.error("Fetch products error:", err);
         setError("Không thể kết nối máy chủ. Vui lòng thử lại.");
         if (!append) setProducts([]);
       } finally {
@@ -54,10 +82,10 @@ export const useProductList = (limit = 12) => {
         setLoadingMore(false);
       }
     },
-    [filtersFromUrl, limit],
+    [filtersFromUrl, limit]
   );
 
-  // Tự động fetch khi URL thay đổi
+  // Tự động fetch khi bộ lọc thay đổi
   useEffect(() => {
     fetchProducts(1, false);
   }, [fetchProducts]);
@@ -65,16 +93,17 @@ export const useProductList = (limit = 12) => {
   const handleUpdateFilters = (newFilters) => {
     const params = new URLSearchParams(searchParams);
     
-    // Cập nhật các param mới
+    // Reset về trang 1 khi lọc
+    params.delete("page");
+
     Object.entries(newFilters).forEach(([key, value]) => {
-      if (value) {
-        if (key === 'brand') params.set('brandId', value);
-        else if (key === 'category') params.set('categoryId', value);
-        else params.set(key, value);
+      const paramKey = key === 'brand' ? 'brandId' : (key === 'category' ? 'categoryId' : key);
+      
+      if (value && (Array.isArray(value) ? value.length > 0 : true)) {
+        if (Array.isArray(value)) params.set(paramKey, value.join(','));
+        else params.set(paramKey, value);
       } else {
-        if (key === 'brand') params.delete('brandId');
-        else if (key === 'category') params.delete('categoryId');
-        else params.delete(key);
+        params.delete(paramKey);
       }
     });
     

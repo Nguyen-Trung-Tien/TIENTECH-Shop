@@ -17,12 +17,14 @@ const VoucherRouter = require("./VoucherRouter");
 const NotificationRouter = require("./NotificationRouter");
 const AddressRouter = require("./AddressRouter");
 const WishlistRouter = require("./WishlistRouter");
+const AttributeRouter = require("./AttributeRouter");
 
 const routes = (app) => {
   app.use("/api/v1/user", UserRouter);
   app.use("/api/v1/address", AddressRouter);
   app.use("/api/v1/wishlist", WishlistRouter);
   app.use("/api/v1/product", ProductRouter);
+  app.use("/api/v1/attribute", AttributeRouter);
   app.use("/api/v1/brand", BrandRouter);
   app.use("/api/v1/category", CategoryRouter);
   app.use("/api/v1/review", ReviewRouter);

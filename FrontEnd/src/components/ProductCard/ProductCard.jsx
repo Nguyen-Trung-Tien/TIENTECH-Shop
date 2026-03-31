@@ -245,6 +245,22 @@ const ProductCard = ({ product }) => {
             {name}
           </h3>
 
+          {/* Mini Specs - Hệ thống Attribute mới */}
+          {product.attributes && product.attributes.length > 0 && (
+            <div className="flex flex-wrap gap-1 mb-3">
+              {product.attributes.slice(0, 3).map((attr, idx) => {
+                if (['ram', 'rom', 'refresh_rate'].includes(attr.attribute?.code)) {
+                  return (
+                    <span key={idx} className="px-1.5 py-0.5 bg-slate-50 dark:bg-dark-surface text-[8px] font-bold text-slate-500 rounded border border-slate-100 dark:border-dark-border">
+                      {attr.value}
+                    </span>
+                  );
+                }
+                return null;
+              })}
+            </div>
+          )}
+
           <div className="flex items-center gap-1 mb-2">
             <div className="flex text-amber-400 text-[9px]">
               {Array.from({ length: 5 }).map((_, i) => (

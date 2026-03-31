@@ -8,6 +8,11 @@ module.exports = (sequelize, DataTypes) => {
       ProductVariant.hasMany(models.OrderItem, { foreignKey: "variantId", as: "orderItems" });
       ProductVariant.hasMany(models.CartItem, { foreignKey: "variantId", as: "cartItems" });
       ProductVariant.hasMany(models.ProductImage, { foreignKey: "variantId", as: "images" });
+      ProductVariant.belongsToMany(models.AttributeValue, { 
+        through: "VariantAttributeValues", 
+        foreignKey: "variantId",
+        as: "attributes"
+      });
     }
   }
 

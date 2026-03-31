@@ -1,11 +1,12 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { toast } from "react-toastify";
 import { useSearchParams } from "react-router-dom";
 import ProductCard from "../../components/ProductCard/ProductCard";
 import SkeletonCard from "../SkeletonCard/SkeletonCard";
-import { getAllProductApi, searchProductsApi } from "../../api/productApi";
+import { filterProductsApi, getFlashSaleProductsApi } from "../../api/productApi";
 import LoadMoreButton from "../LoadMoreButton/LoadMoreButton";
-import { FiRefreshCw, FiAlertCircle, FiSearch } from "react-icons/fi";
+import ProductFilter from "./ProductFilter";
+import { FiRefreshCw, FiAlertCircle, FiSearch, FiLayers, FiZap, FiGrid } from "react-icons/fi";
 
 const AllProducts = React.memo(() => {
   const [products, setProducts] = useState([]);
@@ -14,11 +15,34 @@ const AllProducts = React.memo(() => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [error, setError] = useState(false);
-  const [flashSaleOnly, setFlashSaleOnly] = useState(false);
-  const limit = 12;
+  
+  const [searchParams, setSearchParams] = useSearchParams();
+  
+  // Danh sách các key thuộc tính hỗ trợ lọc
+  const ATTR_KEYS = ["ram", "rom", "os", "refresh_rate", "screen", "battery"];
 
-  const [searchParams] = useSearchParams();
-  const searchQuery = searchParams.get("search") || "";
+  // Filter States - Đồng bộ với URL
+  const filters = useMemo(() => {
+    const f = {
+      search: searchParams.get("search") || "",
+      categoryId: searchParams.get("categoryId") || "",
+      brandId: searchParams.get("brandId") || "",
+      minPrice: searchParams.get("minPrice") || "",
+      maxPrice: searchParams.get("maxPrice") || "",
+      sort: searchParams.get("sort") || "newest",
+      flashSaleOnly: searchParams.get("flashSale") === "true",
+    };
+
+    // Thêm các thuộc tính động vào filters object
+    ATTR_KEYS.forEach(key => {
+      const val = searchParams.get(key);
+      if (val) f[key] = val;
+    });
+
+    return f;
+  }, [searchParams]);
+
+  const limit = 12;
 
   const fetchProducts = useCallback(
     async (currentPage = 1, append = false) => {
@@ -29,18 +53,27 @@ const AllProducts = React.memo(() => {
           setError(false);
         }
 
-        const res = searchQuery
-          ? await searchProductsApi(searchQuery, currentPage, limit)
-          : await getAllProductApi(currentPage, limit, "", flashSaleOnly);
+        let res;
+        if (filters.flashSaleOnly) {
+          res = await getFlashSaleProductsApi(currentPage, limit);
+        } else {
+          // Gửi toàn bộ filters object lên API
+          res = await filterProductsApi({
+            ...filters,
+            page: currentPage,
+            limit,
+          });
+        }
 
         if (res?.errCode === 0) {
-          const newProducts = res?.products || [];
+          const newProducts = res?.products || res?.data || [];
+          const totalP = res?.pagination?.totalPages || 1;
 
           setProducts((prev) =>
             append ? [...prev, ...newProducts] : newProducts,
           );
 
-          setTotalPages(res.totalPages || 1);
+          setTotalPages(totalP);
           setPage(currentPage);
         } else {
           throw new Error(res?.errMessage || "Lỗi tải sản phẩm");
@@ -54,23 +87,36 @@ const AllProducts = React.memo(() => {
         setLoadingMore(false);
       }
     },
-    [searchQuery, limit, flashSaleOnly],
+    [filters, limit],
   );
 
+  // Fetch lại mỗi khi filters thay đổi (từ URL)
   useEffect(() => {
-    setPage(1);
-    setProducts([]);
-    setError(false);
     fetchProducts(1, false);
-  }, [fetchProducts, flashSaleOnly]);
+  }, [fetchProducts]);
+
+  const handleFilterChange = (name, value) => {
+    const newParams = new URLSearchParams(searchParams);
+    if (value) {
+      newParams.set(name, value);
+    } else {
+      newParams.delete(name);
+    }
+    newParams.delete("page"); // Reset về trang 1
+    setSearchParams(newParams);
+  };
+
+  const handleClearFilters = () => {
+    setSearchParams({});
+  };
 
   const handleLoadMore = () => {
     if (page >= totalPages || loadingMore) return;
     fetchProducts(page + 1, true);
   };
 
-  const renderSkeletons = (count = 10) => (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
+  const renderSkeletons = (count = 8) => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 xl:grid-cols-4 gap-6">
       {Array.from({ length: count }).map((_, i) => (
         <SkeletonCard key={`skeleton-${i}`} />
       ))}
@@ -78,92 +124,129 @@ const AllProducts = React.memo(() => {
   );
 
   return (
-    <section className="py-12 bg-surface-50 min-h-screen">
+    <section className="py-20 bg-slate-50/30">
       <div className="container-custom">
-        {/* Header Section */}
-        <div className="flex flex-col items-center mb-8 text-center">
-          <div className="inline-flex items-center justify-center w-12 h-12 bg-primary/10 rounded-2xl text-primary mb-4">
-            <FiSearch className="text-2xl" />
+        {/* Modern Header Section */}
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-12 gap-8">
+          <div className="space-y-2">
+            <div className="flex items-center gap-3 text-primary">
+               <div className="w-8 h-[2px] bg-primary rounded-full"></div>
+               <span className="text-[10px] font-black uppercase tracking-[0.3em]">Hệ thống sản phẩm</span>
+            </div>
+            <h2 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">
+              {filters.search
+                ? `Kết quả cho: "${filters.search}"`
+                : filters.flashSaleOnly
+                  ? "Săn Deal Hot"
+                  : "Khám phá Công nghệ"}
+            </h2>
           </div>
-          <h2 className="text-2xl md:text-3xl font-display font-bold text-surface-900 tracking-tight">
-            {searchQuery
-              ? `Kết quả tìm kiếm: "${searchQuery}"`
-              : flashSaleOnly
-                ? "Sản phẩm Flash Sale"
-                : "Tất cả sản phẩm công nghệ"}
-          </h2>
-          <div className="mt-2 h-1 w-20 bg-primary rounded-full"></div>
 
-          <div className="mt-4 flex items-center gap-3 text-xs text-slate-500">
-            <label className="inline-flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={flashSaleOnly}
-                onChange={(e) => setFlashSaleOnly(e.target.checked)}
-                className="form-checkbox h-4 w-4 text-primary"
-              />
-              Chỉ Flash Sale
-            </label>
-            <span>Hiện tại: {flashSaleOnly ? "Flash Sale" : "Toàn bộ"}</span>
+          <div className="flex flex-wrap items-center gap-4">
+            {/* Flash Sale Toggle */}
+            <button
+              onClick={() => handleFilterChange("flashSale", filters.flashSaleOnly ? "" : "true")}
+              className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all border ${
+                filters.flashSaleOnly 
+                  ? "bg-orange-500 border-orange-500 text-white shadow-lg shadow-orange-200" 
+                  : "bg-white border-slate-200 text-slate-600 hover:border-orange-300"
+              }`}
+            >
+              <FiZap className={filters.flashSaleOnly ? "fill-current" : ""} /> Flash Sale
+            </button>
+
+            {/* Sort Dropdown */}
+            <div className="relative">
+               <select
+                value={filters.sort}
+                onChange={(e) => handleFilterChange("sort", e.target.value)}
+                className="appearance-none bg-white border border-slate-200 text-slate-900 text-[10px] font-black uppercase tracking-widest rounded-2xl px-6 py-3 pr-10 shadow-sm outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all cursor-pointer"
+              >
+                <option value="newest">Mới nhất</option>
+                <option value="price_asc">Giá tăng dần</option>
+                <option value="price_desc">Giá giảm dần</option>
+              </select>
+              <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                 <FiLayers size={12} />
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Error State */}
-        {error && (
-          <div className="max-w-md mx-auto p-6 bg-rose-50 border border-rose-100 rounded-2xl text-center">
-            <FiAlertCircle className="w-10 h-10 text-rose-500 mx-auto mb-3" />
-            <p className="text-rose-900 font-bold mb-4">
-              Đã có lỗi xảy ra khi tải sản phẩm.
-            </p>
-            <button
-              onClick={() => fetchProducts(1, false)}
-              className="inline-flex items-center gap-2 px-6 py-2 bg-rose-500 text-white font-bold rounded-xl hover:bg-rose-600 transition-colors shadow-lg shadow-rose-500/20"
-            >
-              <FiRefreshCw /> Thử lại
-            </button>
+        <div className="flex flex-col lg:flex-row gap-12">
+          {/* Dynamic Sidebar Filter */}
+          <ProductFilter 
+            filters={filters} 
+            onFilterChange={handleFilterChange}
+            onClearFilters={handleClearFilters}
+          />
+
+          {/* Main Feed */}
+          <div className="flex-1 min-w-0">
+            {/* Error State */}
+            {error && (
+              <div className="p-12 bg-white rounded-[3rem] border border-rose-100 text-center shadow-soft">
+                <div className="w-20 h-20 bg-rose-50 text-rose-500 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-sm">
+                   <FiAlertCircle size={32} />
+                </div>
+                <p className="text-slate-900 font-black text-lg mb-2">Đã có lỗi xảy ra</p>
+                <p className="text-slate-500 text-sm mb-8">Không thể kết nối với máy chủ để tải sản phẩm.</p>
+                <button
+                  onClick={() => fetchProducts(1, false)}
+                  className="px-8 py-3 bg-indigo-600 text-white font-black text-[11px] uppercase tracking-widest rounded-2xl hover:bg-indigo-700 shadow-xl shadow-indigo-100 transition-all active:scale-95"
+                >
+                  Thử lại ngay
+                </button>
+              </div>
+            )}
+
+            {/* Loading State */}
+            {loading && !products.length && !error && renderSkeletons(8)}
+
+            {/* Empty State */}
+            {!loading && !error && products.length === 0 && (
+              <div className="p-20 bg-white rounded-[3rem] border border-slate-100 text-center shadow-soft">
+                <div className="w-24 h-24 bg-slate-50 text-slate-300 rounded-full flex items-center justify-center mx-auto mb-8">
+                  <FiSearch size={40} />
+                </div>
+                <h3 className="text-2xl font-black text-slate-900 mb-2">
+                  Rất tiếc, không tìm thấy sản phẩm
+                </h3>
+                <p className="text-slate-500 text-sm max-w-sm mx-auto leading-relaxed font-medium">
+                  Chúng tôi không tìm thấy sản phẩm nào phù hợp với các tiêu chí lọc hiện tại của bạn. Hãy thử thay đổi bộ lọc hoặc từ khóa tìm kiếm khác.
+                </p>
+                <button
+                  onClick={handleClearFilters}
+                  className="mt-10 px-10 py-4 bg-slate-900 text-white rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] hover:bg-primary transition-all active:scale-95"
+                >
+                  Xóa tất cả bộ lọc
+                </button>
+              </div>
+            )}
+
+            {/* Product Grid */}
+            {!loading && !error && products.length > 0 && (
+              <div className="space-y-16">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 xl:grid-cols-4 gap-x-6 gap-y-10">
+                  {products.map((product) => (
+                    <ProductCard key={product.id} product={product} />
+                  ))}
+                </div>
+
+                {loadingMore && renderSkeletons(4)}
+
+                <div className="flex justify-center pt-10 border-t border-slate-50">
+                  <LoadMoreButton
+                    currentPage={page}
+                    totalPages={totalPages}
+                    loading={loadingMore}
+                    onLoadMore={handleLoadMore}
+                  />
+                </div>
+              </div>
+            )}
           </div>
-        )}
-
-        {/* Loading State */}
-        {loading && !products.length && !error && renderSkeletons(12)}
-
-        {/* Empty State */}
-        {!loading && !error && products.length === 0 && (
-          <div className="max-w-md mx-auto p-12 bg-white rounded-3xl border border-surface-200 text-center shadow-soft">
-            <div className="w-20 h-20 bg-surface-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <FiSearch className="text-3xl text-surface-400" />
-            </div>
-            <h3 className="text-lg font-bold text-surface-900 mb-2">
-              Không tìm thấy sản phẩm
-            </h3>
-            <p className="text-surface-500 text-sm">
-              Chúng tôi không tìm thấy kết quả phù hợp với từ khóa của bạn. Vui
-              lòng thử lại với từ khóa khác.
-            </p>
-          </div>
-        )}
-
-        {/* Product Grid */}
-        {!loading && !error && products.length > 0 && (
-          <div className="space-y-12">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
-              {products.map((product) => (
-                <ProductCard key={product.id} product={product} />
-              ))}
-            </div>
-
-            {loadingMore && renderSkeletons(6)}
-
-            <div className="flex justify-center pt-8">
-              <LoadMoreButton
-                currentPage={page}
-                totalPages={totalPages}
-                loading={loadingMore}
-                onLoadMore={handleLoadMore}
-              />
-            </div>
-          </div>
-        )}
+        </div>
       </div>
     </section>
   );

@@ -14,10 +14,12 @@ const handleCreateProduct = async (req, res) => {
 
     // Validate required fields
     if (!data.name || String(data.name).trim() === "") {
-      return res.status(400).json({ errCode: 1, errMessage: "Tên sản phẩm không được để trống" });
+      return res
+        .status(400)
+        .json({ errCode: 1, errMessage: "Tên sản phẩm không được để trống" });
     }
-    
-    ["specifications", "options", "variants"].forEach(field => {
+
+    ["specifications", "options", "variants", "attributes"].forEach((field) => {
       if (data[field]) {
         if (typeof data[field] === "string") {
           try {
@@ -29,11 +31,24 @@ const handleCreateProduct = async (req, res) => {
       }
     });
 
+    // Parse attributes inside variants if they exist
+    if (data.variants && Array.isArray(data.variants)) {
+      data.variants = data.variants.map((v) => {
+        if (v.attributes && typeof v.attributes === "string") {
+          try {
+            v.attributes = JSON.parse(v.attributes);
+          } catch (e) {}
+        }
+        return v;
+      });
+    }
+
     if (data.brandId) data.brandId = parseInt(data.brandId);
     if (data.categoryId) data.categoryId = parseInt(data.categoryId);
     if (data.stock !== undefined) data.stock = parseInt(data.stock);
     if (data.price !== undefined) data.basePrice = data.price;
-    if (data.isActive !== undefined) data.isActive = parseBoolean(data.isActive);
+    if (data.isActive !== undefined)
+      data.isActive = parseBoolean(data.isActive);
 
     const files = req.files || {};
     const primaryFile = files.image?.[0] || null;
@@ -44,21 +59,37 @@ const handleCreateProduct = async (req, res) => {
     if (primaryFile) {
       const uploaded = await uploadToCloudinary(primaryFile.buffer, "products");
       data.image = uploaded.secure_url;
-      imageRecords.push({ imageUrl: uploaded.secure_url, publicId: uploaded.public_id, isPrimary: true });
+      imageRecords.push({
+        imageUrl: uploaded.secure_url,
+        publicId: uploaded.public_id,
+        isPrimary: true,
+      });
     }
 
     if (galleryFiles.length > 0) {
       for (const file of galleryFiles) {
-        const uploaded = await uploadToCloudinary(file.buffer, "products/gallery");
-        imageRecords.push({ imageUrl: uploaded.secure_url, publicId: uploaded.public_id, isPrimary: false });
+        const uploaded = await uploadToCloudinary(
+          file.buffer,
+          "products/gallery",
+        );
+        imageRecords.push({
+          imageUrl: uploaded.secure_url,
+          publicId: uploaded.public_id,
+          isPrimary: false,
+        });
       }
     }
 
-    const product = await ProductService.createProductWithVariants(data, imageRecords);
+    const product = await ProductService.createProductWithVariants(
+      data,
+      imageRecords,
+    );
     return res.status(201).json(product);
   } catch (e) {
     console.error(e);
-    return res.status(500).json({ errCode: -1, errMessage: "Internal server error" });
+    return res
+      .status(500)
+      .json({ errCode: -1, errMessage: "Internal server error" });
   }
 };
 
@@ -67,7 +98,8 @@ const handleGetAllProducts = async (req, res) => {
     const categoryId = req.query.categoryId;
     const page = Math.max(1, parseInt(req.query.page) || 1);
     const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 10));
-    const isFlashSale = req.query.isFlashSale === "true" || req.query.isFlashSale === "1";
+    const isFlashSale =
+      req.query.isFlashSale === "true" || req.query.isFlashSale === "1";
 
     const result = await ProductService.getAllProducts(
       categoryId,
@@ -104,12 +136,27 @@ const handleUpdateProduct = async (req, res) => {
   try {
     const { id } = req.params;
     const data = { ...req.body };
-    if (data.specifications && typeof data.specifications === "string") {
-      try {
-        data.specifications = JSON.parse(data.specifications);
-      } catch (e) {
-        console.error("Error parsing specifications:", e);
+    ["specifications", "options", "variants", "attributes"].forEach((field) => {
+      if (data[field]) {
+        if (typeof data[field] === "string") {
+          try {
+            data[field] = JSON.parse(data[field]);
+          } catch (e) {
+            console.error("Error parsing field:", field, e);
+          }
+        }
       }
+    });
+
+    if (data.variants && Array.isArray(data.variants)) {
+      data.variants = data.variants.map((v) => {
+        if (v.attributes && typeof v.attributes === "string") {
+          try {
+            v.attributes = JSON.parse(v.attributes);
+          } catch (e) {}
+        }
+        return v;
+      });
     }
 
     if (data.brandId) data.brandId = parseInt(data.brandId);
@@ -265,6 +312,10 @@ const handleFilterProducts = async (req, res) => {
       maxPrice,
       search,
       sort,
+      ram,
+      rom,
+      screen,
+      battery,
     } = req.query;
     const page = Math.max(1, Number(req.query.page) || 1);
     const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 12));
@@ -276,6 +327,10 @@ const handleFilterProducts = async (req, res) => {
       maxPrice,
       search,
       sort,
+      ram,
+      rom,
+      screen,
+      battery,
       page: Number(page),
       limit: Number(limit),
     };
@@ -354,7 +409,7 @@ module.exports = {
   handleCreateProduct,
   handleGetAllProducts,
   handleGetProductById,
-  handleGetProductBySlug, // Export mới
+  handleGetProductBySlug,
   handleUpdateProduct,
   handleDeleteProduct,
   handleSearchProducts,

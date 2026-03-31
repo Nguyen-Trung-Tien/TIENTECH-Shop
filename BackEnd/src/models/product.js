@@ -11,6 +11,11 @@ module.exports = (sequelize, DataTypes) => {
       Product.hasMany(models.Review, { foreignKey: "productId", as: "reviews" });
       Product.hasMany(models.OrderItem, { foreignKey: "productId", as: "orderItems" });
       Product.hasMany(models.Wishlist, { foreignKey: "productId", as: "wishlists" });
+      Product.belongsToMany(models.AttributeValue, { 
+        through: "ProductAttributeValues", 
+        foreignKey: "productId",
+        as: "attributes"
+      });
     }
   }
 

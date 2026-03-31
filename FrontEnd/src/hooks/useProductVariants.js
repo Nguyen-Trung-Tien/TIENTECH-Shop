@@ -2,40 +2,43 @@ import { useState, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 
 /**
- * Enhanced Hook for Product Variant Selection
- * Handles normalized options/values and legacy attributeValues.
+ * Hook tối ưu để xử lý việc chọn Phiên bản (Variant) và Thuộc tính (Attribute)
  */
 export const useProductVariants = (product, syncUrl = true) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const variants = useMemo(() => product?.variants || [], [product]);
-  const normalizedOptions = useMemo(() => product?.options || [], [product]);
 
-  // 1. Prepare All Attributes (Options)
+  // 1. Tổng hợp tất cả thuộc tính có thể chọn (All Options)
   const allAttributes = useMemo(() => {
-    if (normalizedOptions.length > 0) {
-      // Use normalized options if available
-      const result = {};
-      normalizedOptions.forEach(opt => {
-        result[opt.name] = opt.values.map(v => v.value);
-      });
-      return result;
-    } else {
-      // Fallback to legacy extraction from variants
-      const result = {};
-      variants.forEach((v) => {
-        const vAttrs = v.attributeValues || {};
-        Object.entries(vAttrs).forEach(([key, value]) => {
+    const result = {};
+
+    // Duyệt qua tất cả các biến thể để lấy tập hợp các giá trị thuộc tính
+    variants.forEach((v) => {
+      // Ưu tiên hệ thống attributes mới (array of objects)
+      if (Array.isArray(v.attributes)) {
+        v.attributes.forEach(attrVal => {
+          const name = attrVal.attribute?.name;
+          if (name) {
+            if (!result[name]) result[name] = new Set();
+            result[name].add(attrVal.value);
+          }
+        });
+      } 
+      // Fallback legacy (JSON attributeValues)
+      else if (v.attributeValues) {
+        Object.entries(v.attributeValues).forEach(([key, value]) => {
           if (!result[key]) result[key] = new Set();
           result[key].add(value);
         });
-      });
-      return Object.fromEntries(
-        Object.entries(result).map(([key, value]) => [key, Array.from(value)])
-      );
-    }
-  }, [variants, normalizedOptions]);
+      }
+    });
 
-  // 2. Initial selection from URL or first available
+    return Object.fromEntries(
+      Object.entries(result).map(([key, set]) => [key, Array.from(set)])
+    );
+  }, [variants]);
+
+  // 2. Trạng thái các thuộc tính đang được người dùng chọn
   const [selectedAttributes, setSelectedAttributes] = useState(() => {
     const initial = {};
     if (syncUrl) {
@@ -49,77 +52,61 @@ export const useProductVariants = (product, syncUrl = true) => {
     return initial;
   });
 
-  // 3. Find Selected Variant
+  // 3. Tìm biến thể (Variant) khớp hoàn toàn với lựa chọn
   const selectedVariant = useMemo(() => {
     const isFullSelection = Object.keys(allAttributes).every((key) => selectedAttributes[key]);
     if (!isFullSelection) return null;
 
     return variants.find((v) => {
-      // Check normalized optionValues first
-      if (v.optionValues && v.optionValues.length > 0) {
-        return v.optionValues.every(ov => {
-          const optName = normalizedOptions.find(o => o.id === ov.productOptionId)?.name;
-          return selectedAttributes[optName] === ov.value;
+      // So khớp với hệ thống mới
+      if (Array.isArray(v.attributes)) {
+        return Object.entries(selectedAttributes).every(([name, value]) => {
+          return v.attributes.some(av => av.attribute?.name === name && av.value === value);
         });
       }
-      
-      // Fallback to attributeValues JSON
+      // So khớp legacy
       const vAttrs = v.attributeValues || {};
-      return Object.entries(selectedAttributes).every(
-        ([key, value]) => vAttrs[key] === value
-      );
+      return Object.entries(selectedAttributes).every(([key, value]) => vAttrs[key] === value);
     });
-  }, [selectedAttributes, variants, allAttributes, normalizedOptions]);
+  }, [selectedAttributes, variants, allAttributes]);
 
-  // Display Variant: Dùng để cập nhật Ảnh và Giá ngay khi người dùng pick 1 thuộc tính
+  // Biến thể dùng để hiển thị (Cập nhật Ảnh/Giá ngay khi chọn 1 phần)
   const displayVariant = useMemo(() => {
     if (selectedVariant) return selectedVariant;
     if (Object.keys(selectedAttributes).length === 0) return null;
 
+    // Tìm biến thể đầu tiên khớp với các thuộc tính ĐANG chọn
     return variants.find((v) => {
-      return Object.entries(selectedAttributes).every(([key, value]) => {
-        if (v.optionValues && v.optionValues.length > 0) {
-          return v.optionValues.some(ov => {
-            const opt = normalizedOptions.find(o => o.id === ov.productOptionId);
-            return opt?.name === key && ov.value === value;
-          });
+      return Object.entries(selectedAttributes).every(([name, value]) => {
+        if (Array.isArray(v.attributes)) {
+          return v.attributes.some(av => av.attribute?.name === name && av.value === value);
         }
-        return v.attributeValues?.[key] === value;
+        return v.attributeValues?.[name] === value;
       });
     });
-  }, [selectedVariant, selectedAttributes, variants, normalizedOptions]);
+  }, [selectedVariant, selectedAttributes, variants]);
 
-  // 4. Availability Check
+  // 4. Kiểm tra xem một giá trị thuộc tính có khả dụng để chọn không (dựa trên các option khác đã chọn)
   const checkAttributeAvailability = (attrName, attrValue) => {
     return variants.some((v) => {
-      // Basic stock check
       if (v.stock <= 0) return false;
 
+      // Kiểm tra xem biến thể này có chứa thuộc tính đang xét không
       let match = false;
-      if (v.optionValues && v.optionValues.length > 0) {
-        // Match using normalized optionValues
-        match = v.optionValues.some(ov => {
-          const opt = normalizedOptions.find(o => o.id === ov.productOptionId);
-          return opt?.name === attrName && ov.value === attrValue;
-        });
+      if (Array.isArray(v.attributes)) {
+        match = v.attributes.some(av => av.attribute?.name === attrName && av.value === attrValue);
       } else {
-        // Match using attributeValues JSON
         match = v.attributeValues?.[attrName] === attrValue;
       }
-
       if (!match) return false;
 
-      // Check compatibility with other ALREADY SELECTED attributes
-      return Object.entries(selectedAttributes).every(([key, value]) => {
-        if (key === attrName) return true; // Skip current option
-        
-        if (v.optionValues && v.optionValues.length > 0) {
-          return v.optionValues.some(ov => {
-            const opt = normalizedOptions.find(o => o.id === ov.productOptionId);
-            return opt?.name === key && ov.value === value;
-          });
+      // Kiểm tra xem biến thể này có tương thích với các thuộc tính KHÁC đã chọn không
+      return Object.entries(selectedAttributes).every(([name, value]) => {
+        if (name === attrName) return true;
+        if (Array.isArray(v.attributes)) {
+          return v.attributes.some(av => av.attribute?.name === name && av.value === value);
         }
-        return v.attributeValues?.[key] === value;
+        return v.attributeValues?.[name] === value;
       });
     });
   };
@@ -127,60 +114,30 @@ export const useProductVariants = (product, syncUrl = true) => {
   const onSelectAttribute = (attrName, attrValue) => {
     let newSelection = { ...selectedAttributes };
     
-    // Toggle deselection
     if (newSelection[attrName] === attrValue) {
       delete newSelection[attrName];
     } else {
       newSelection[attrName] = attrValue;
       
-      // Auto-resolve conflicts by clearing other selections if this combination is unavailable
-      const isNowAvailable = checkAttributeAvailabilityForSelection(newSelection, attrName, attrValue);
-      if (!isNowAvailable) {
-        // Clear all other selections except the new one to reset the tree
-        newSelection = { [attrName]: attrValue };
-      }
+      // Nếu tổ hợp mới không có hàng, reset các cái khác để tránh bị kẹt (Deadlock)
+      const isAvailable = variants.some(v => {
+        if (Array.isArray(v.attributes)) {
+          return v.attributes.some(av => av.attribute?.name === attrName && av.value === attrValue);
+        }
+        return v.attributeValues?.[attrName] === attrValue;
+      });
+
+      if (!isAvailable) newSelection = { [attrName]: attrValue };
     }
 
     setSelectedAttributes(newSelection);
 
-    // Update URL params if requested
     if (syncUrl) {
       const newParams = new URLSearchParams(searchParams);
-      if (newSelection[attrName]) {
-        newParams.set(attrName.toLowerCase(), attrValue);
-      } else {
-        newParams.delete(attrName.toLowerCase());
-      }
+      if (newSelection[attrName]) newParams.set(attrName.toLowerCase(), attrValue);
+      else newParams.delete(attrName.toLowerCase());
       setSearchParams(newParams);
     }
-  };
-
-  // Helper cho thuật toán sửa conflict
-  const checkAttributeAvailabilityForSelection = (currentSelection, attrName, attrValue) => {
-    return variants.some((v) => {
-      if (v.stock <= 0) return false;
-      let match = false;
-      if (v.optionValues && v.optionValues.length > 0) {
-        match = v.optionValues.some(ov => {
-          const opt = normalizedOptions.find(o => o.id === ov.productOptionId);
-          return opt?.name === attrName && ov.value === attrValue;
-        });
-      } else {
-        match = v.attributeValues?.[attrName] === attrValue;
-      }
-      if (!match) return false;
-
-      return Object.entries(currentSelection).every(([key, value]) => {
-        if (key === attrName) return true;
-        if (v.optionValues && v.optionValues.length > 0) {
-          return v.optionValues.some(ov => {
-            const opt = normalizedOptions.find(o => o.id === ov.productOptionId);
-            return opt?.name === key && ov.value === value;
-          });
-        }
-        return v.attributeValues?.[key] === value;
-      });
-    });
   };
 
   return {

@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import { getAllProductApi } from "../../api/productApi";
 import ProductCard from "../../components/ProductCard/ProductCard";
 import SkeletonCard from "../SkeletonCard/SkeletonCard";
 
 const ProductSection = () => {
+  const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -58,6 +60,7 @@ const ProductSection = () => {
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
+            onClick={() => navigate("/product-list")}
             className="text-sm font-bold text-primary hover:text-primary-hover transition-colors flex items-center gap-2 group"
           >
             Xem tất cả sản phẩm

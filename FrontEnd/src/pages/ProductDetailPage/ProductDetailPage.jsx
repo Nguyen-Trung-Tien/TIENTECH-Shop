@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useProductDetail } from "../../hooks/useProductDetail";
 import { useProductVariants } from "../../hooks/useProductVariants";
@@ -6,7 +6,7 @@ import { toast } from "react-toastify";
 import { 
   FiZap, FiClock, FiShield, FiTruck, FiChevronRight, 
   FiHeart, FiShoppingCart, FiCreditCard, FiCheck, FiInfo,
-  FiCpu, FiMonitor, FiBattery, FiSmartphone, FiMaximize, FiMoreHorizontal
+  FiCpu, FiMonitor, FiBattery, FiSmartphone, FiMaximize, FiMoreHorizontal, FiSettings
 } from "react-icons/fi";
 import { FaHeart } from "react-icons/fa";
 import { addToWishlistApi, removeFromWishlistApi, checkWishlistStatusApi } from "../../api/wishlistApi";
@@ -35,13 +35,6 @@ const ProductDetailPage = () => {
     images: [],
   });
 
-  const onReviewSubmit = async () => {
-    const success = await handleReviewSubmit(newReview);
-    if (success) {
-      setNewReview({ rating: 0, comment: "", images: [] });
-    }
-  };
-
   const {
     allAttributes,
     selectedAttributes,
@@ -51,7 +44,7 @@ const ProductDetailPage = () => {
     checkAttributeAvailability,
   } = useProductVariants(product);
 
-  const selectedVariant = React.useMemo(() => {
+  const selectedVariant = useMemo(() => {
     if (hookVariant) return hookVariant;
     if (product?.variants?.length > 0) return null;
     return null;
@@ -62,6 +55,79 @@ const ProductDetailPage = () => {
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [loadingWishlist, setLoadingWishlist] = useState(false);
 
+  // Specifications logic - Normalized and Merged
+  const mergedSpecs = useMemo(() => {
+    if (!product) return [];
+    
+    const specsMap = new Map();
+
+    // 1. Lấy từ hệ thống Attributes mới của sản phẩm cha
+    if (Array.isArray(product.attributes)) {
+      product.attributes.forEach(a => {
+        if (a.attribute) {
+          specsMap.set(a.attribute.code.toLowerCase(), {
+            name: a.attribute.name,
+            value: a.value,
+            icon: specIconMap[a.attribute.code.toLowerCase()] || <FiSettings />
+          });
+        }
+      });
+    }
+
+    // 2. Lấy từ hệ thống Attributes mới của biến thể đang chọn (Ghi đè)
+    if (displayVariant && Array.isArray(displayVariant.attributes)) {
+      displayVariant.attributes.forEach(a => {
+        if (a.attribute) {
+          specsMap.set(a.attribute.code.toLowerCase(), {
+            name: a.attribute.name,
+            value: a.value,
+            icon: specIconMap[a.attribute.code.toLowerCase()] || <FiSettings />
+          });
+        }
+      });
+    }
+
+    // 3. Lấy từ trường specifications (JSON legacy) - Nếu chưa có trong Map thì mới thêm vào
+    const legacySpecs = displayVariant?.specifications || product.specifications || {};
+    if (typeof legacySpecs === 'object' && legacySpecs !== null) {
+      Object.entries(legacySpecs).forEach(([key, value]) => {
+        if (!value) return;
+        const normalizedKey = key.toLowerCase();
+        if (!specsMap.has(normalizedKey)) {
+          specsMap.set(normalizedKey, {
+            name: specLabelMap[normalizedKey] || key,
+            value: value,
+            icon: specIconMap[normalizedKey] || <FiInfo />
+          });
+        }
+      });
+    }
+
+    return Array.from(specsMap.values());
+  }, [product, displayVariant]);
+
+  const specIconMap = {
+    screen: <FiMonitor />,
+    cpu: <FiCpu />,
+    ram: <FiSmartphone />,
+    rom: <FiMaximize />,
+    battery: <FiBattery />,
+    os: <FiInfo />,
+    refresh_rate: <FiZap />,
+    connectivity: <FiMoreHorizontal />
+  };
+
+  const specLabelMap = {
+    screen: "Màn hình",
+    cpu: "Vi xử lý (CPU)",
+    ram: "Bộ nhớ RAM",
+    rom: "Bộ nhớ trong",
+    battery: "Dung lượng Pin",
+    os: "Hệ điều hành",
+    refresh_rate: "Tần số quét",
+    connectivity: "Kết nối"
+  };
+
   useEffect(() => {
     if (product?.images?.length > 0) {
       const primary = product.images.find(img => img.isPrimary) || product.images[0];
@@ -71,18 +137,71 @@ const ProductDetailPage = () => {
 
   useEffect(() => {
     if (user && product?.id) {
+      const checkWishlistStatus = async () => {
+        try {
+          const res = await checkWishlistStatusApi(product.id);
+          if (res.errCode === 0) {
+            setIsWishlisted(res.isInWishlist);
+          }
+        } catch (error) {
+          console.error("Check wishlist error:", error);
+        }
+      };
       checkWishlistStatus();
     }
   }, [user, product?.id]);
 
-  const checkWishlistStatus = async () => {
-    try {
-      const res = await checkWishlistStatusApi(product.id);
-      if (res.errCode === 0) {
-        setIsWishlisted(res.isInWishlist);
-      }
-    } catch (error) {
-      console.error("Check wishlist error:", error);
+  useEffect(() => {
+    if (product?.flashSale?.isActive && product?.flashSale?.endDate) {
+      const calculateTimeLeft = () => {
+        const diff = new Date(product.flashSale.endDate) - new Date();
+        return diff > 0 ? Math.floor(diff / 1000) : 0;
+      };
+      setTimeLeft(calculateTimeLeft());
+      const timer = setInterval(() => {
+        const remaining = calculateTimeLeft();
+        setTimeLeft(remaining);
+        if (remaining <= 0) clearInterval(timer);
+      }, 1000);
+      return () => clearInterval(timer);
+    }
+  }, [product]);
+
+  useEffect(() => {
+    if (displayVariant) {
+      const variantImg = product?.images?.find(img => img.variantId === displayVariant.id);
+      if (variantImg) setMainImage(variantImg.imageUrl);
+      else if (displayVariant.imageUrl) setMainImage(displayVariant.imageUrl);
+    } 
+  }, [displayVariant, product]);
+
+  const displayImages = useMemo(() => {
+    if (!product?.images) return [];
+    if (!selectedVariant) return product.images;
+    const variantImages = product.images.filter(img => img.variantId === selectedVariant.id);
+    return variantImages.length > 0 ? variantImages : product.images;
+  }, [product, selectedVariant]);
+
+  // Early returns MUST be after all Hook calls
+  if (loading) return (
+    <div className="flex flex-col justify-center items-center h-[70vh] space-y-4">
+      <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+      <p className="text-gray-500 font-medium">Đang tải sản phẩm...</p>
+    </div>
+  );
+
+  if (!product) return (
+    <div className="text-center mt-20 text-gray-500 font-medium p-8 border border-gray-100 rounded-2xl bg-gray-50 max-w-md mx-auto shadow-sm">
+      <FiInfo className="mx-auto text-4xl mb-4 text-gray-300" />
+      <p>Sản phẩm không tồn tại hoặc đã bị ẩn!</p>
+      <button onClick={() => navigate("/")} className="mt-6 text-blue-600 hover:underline font-bold">Quay lại trang chủ</button>
+    </div>
+  );
+
+  const onReviewSubmit = async () => {
+    const success = await handleReviewSubmit(newReview);
+    if (success) {
+      setNewReview({ rating: 0, comment: "", images: [] });
     }
   };
 
@@ -106,22 +225,6 @@ const ProductDetailPage = () => {
     }
   };
 
-  useEffect(() => {
-    if (product?.flashSale?.isActive && product?.flashSale?.endDate) {
-      const calculateTimeLeft = () => {
-        const diff = new Date(product.flashSale.endDate) - new Date();
-        return diff > 0 ? Math.floor(diff / 1000) : 0;
-      };
-      setTimeLeft(calculateTimeLeft());
-      const timer = setInterval(() => {
-        const remaining = calculateTimeLeft();
-        setTimeLeft(remaining);
-        if (remaining <= 0) clearInterval(timer);
-      }, 1000);
-      return () => clearInterval(timer);
-    }
-  }, [product]);
-
   const formatTime = (seconds) => {
     const h = Math.floor(seconds / 3600);
     const m = Math.floor((seconds % 3600) / 60);
@@ -132,21 +235,6 @@ const ProductDetailPage = () => {
       s: String(s).padStart(2, "0") 
     };
   };
-
-  useEffect(() => {
-    if (displayVariant) {
-      const variantImg = product?.images?.find(img => img.variantId === displayVariant.id);
-      if (variantImg) setMainImage(variantImg.imageUrl);
-      else if (displayVariant.imageUrl) setMainImage(displayVariant.imageUrl);
-    } 
-  }, [displayVariant, product]);
-
-  const displayImages = React.useMemo(() => {
-    if (!product?.images) return [];
-    if (!selectedVariant) return product.images;
-    const variantImages = product.images.filter(img => img.variantId === selectedVariant.id);
-    return variantImages.length > 0 ? variantImages : product.images;
-  }, [product, selectedVariant]);
 
   const handleBuyNow = async () => {
     if (!user) return toast.warn("Vui lòng đăng nhập để mua hàng!");
@@ -177,21 +265,6 @@ const ProductDetailPage = () => {
     handleAddToCart(itemId);
   };
 
-  if (loading) return (
-    <div className="flex flex-col justify-center items-center h-[70vh] space-y-4">
-      <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-      <p className="text-gray-500 font-medium">Đang tải sản phẩm...</p>
-    </div>
-  );
-
-  if (!product) return (
-    <div className="text-center mt-20 text-gray-500 font-medium p-8 border border-gray-100 rounded-2xl bg-gray-50 max-w-md mx-auto shadow-sm">
-      <FiInfo className="mx-auto text-4xl mb-4 text-gray-300" />
-      <p>Sản phẩm không tồn tại hoặc đã bị ẩn!</p>
-      <button onClick={() => navigate("/")} className="mt-6 text-blue-600 hover:underline font-bold">Quay lại trang chủ</button>
-    </div>
-  );
-
   const { h, m, s } = formatTime(timeLeft);
   const isFlashSale = product.flashSale?.isActive && timeLeft > 0;
   
@@ -205,32 +278,6 @@ const ProductDetailPage = () => {
   const discountPercent = isFlashSale 
     ? Math.round(((originalPrice - currentPrice) / originalPrice) * 100)
     : (displayVariant?.discount || 0);
-
-  // Get specs from current selected/displayed variant
-  const currentSpecs = displayVariant?.specifications || product.specifications || {};
-  const hasSpecs = Object.values(currentSpecs).some(v => v && v !== "");
-
-  const specIconMap = {
-    screen: <FiMonitor />,
-    cpu: <FiCpu />,
-    ram: <FiSmartphone />,
-    rom: <FiMaximize />,
-    battery: <FiBattery />,
-    os: <FiInfo />,
-    weight: <FiMaximize />,
-    connectivity: <FiMoreHorizontal />
-  };
-
-  const specLabelMap = {
-    screen: "Màn hình",
-    cpu: "CPU",
-    ram: "RAM",
-    rom: "Bộ nhớ",
-    battery: "Pin/Sạc",
-    os: "Hệ điều hành",
-    weight: "Trọng lượng",
-    connectivity: "Kết nối"
-  };
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-6 md:py-10 bg-white min-h-screen">
@@ -461,30 +508,34 @@ const ProductDetailPage = () => {
                 Thông số kỹ thuật
               </h3>
               {displayVariant && (
-                <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded">
-                   Cấu hình {displayVariant.sku}
+                <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded-lg">
+                   Cấu hình riêng {displayVariant.sku?.split('-')[0]}
                 </span>
               )}
             </div>
             
-            <div className="rounded-xl border border-gray-50 overflow-hidden bg-gray-50/30">
-              {hasSpecs ? (
-                Object.entries(currentSpecs).map(([key, value], idx) => {
-                  if (!value) return null;
-                  return (
-                    <div key={key} className={`flex justify-between py-3 px-5 text-xs transition-colors hover:bg-white ${idx % 2 === 0 ? "bg-white/50" : "bg-transparent"}`}>
-                      <span className="text-gray-400 font-bold uppercase tracking-tight flex items-center gap-2">
-                        {specIconMap[key] || <FiInfo />} {specLabelMap[key] || key}
+            <div className="rounded-2xl border border-gray-100 overflow-hidden bg-gray-50/30 shadow-sm transition-all duration-500">
+              {mergedSpecs.length > 0 ? (
+                <div className="divide-y divide-gray-100">
+                  {mergedSpecs.map((spec, idx) => (
+                    <div key={idx} className="flex justify-between items-center py-3.5 px-5 text-xs transition-colors hover:bg-white bg-white/40">
+                      <span className="text-gray-400 font-bold uppercase tracking-wider flex items-center gap-2.5">
+                        <span className="p-1.5 rounded-lg bg-white shadow-sm text-blue-500">
+                          {spec.icon}
+                        </span>
+                        {spec.name}
                       </span>
-                      <span className="text-gray-800 font-bold">{value}</span>
+                      <span className="text-gray-900 font-extrabold">{spec.value}</span>
                     </div>
-                  );
-                })
+                  ))}
+                </div>
               ) : (
-                <div className="p-8 text-center flex flex-col items-center gap-3">
-                  <FiCpu className="text-3xl text-gray-200" />
-                  <p className="text-xs text-gray-400 font-medium italic">
-                    {displayVariant ? "Phiên bản này chưa cập nhật thông số kỹ thuật chi tiết." : "Vui lòng hoàn tất lựa chọn phiên bản để xem cấu hình chi tiết."}
+                <div className="p-10 text-center flex flex-col items-center gap-4">
+                  <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center text-gray-200 shadow-inner">
+                    <FiCpu size={32} />
+                  </div>
+                  <p className="text-xs text-gray-400 font-medium italic max-w-[200px] leading-relaxed">
+                    {displayVariant ? "Phiên bản này đang được cập nhật thông số..." : "Vui lòng chọn phiên bản để xem cấu hình chi tiết."}
                   </p>
                 </div>
               )}

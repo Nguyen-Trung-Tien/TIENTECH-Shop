@@ -1,9 +1,9 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import {
   FiBox, FiPlus, FiEdit2, FiTrash2, FiSearch, FiTag,
   FiDollarSign, FiPercent, FiCheckCircle, FiXCircle, FiLayers,
   FiX, FiChevronLeft, FiChevronRight, FiMoreHorizontal, FiPackage,
-  FiUploadCloud, FiZap, FiChevronDown
+  FiUploadCloud, FiZap, FiChevronDown, FiCpu, FiMonitor, FiBattery, FiSmartphone, FiSettings
 } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
 import { useParams, useNavigate } from "react-router-dom";
@@ -14,12 +14,12 @@ import {
   getAllProductApi,
   updateProductApi,
   getOneProductApi,
+  filterProductsApi,
 } from "../../../api/productApi";
-import {
-  getVariantsByProduct,
-} from "../../../api/variantApi";
+import { getVariantsByProduct } from "../../../api/variantApi";
 import { getAllCategoryApi } from "../../../api/categoryApi";
 import { getAllBrandApi } from "../../../api/brandApi";
+import { getAllAttributesApi } from "../../../api/attributeApi";
 import AppPagination from "../../../components/Pagination/Pagination";
 import VariantManager from "./VariantManager";
 
@@ -29,10 +29,23 @@ const ProductManage = () => {
   const [brands, setBrands] = useState([]);
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [attributes, setAttributes] = useState([]);
+  
   const [showModal, setShowModal] = useState(false);
   const [editProduct, setEditProduct] = useState(null);
+  
+  // Search & Filter State
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCategory, setFilterCategory] = useState("");
+  const [filterBrand, setFilterBrand] = useState("");
+  const [flashSaleOnly, setFlashSaleOnly] = useState(false);
+  const [attrFilters, setAttrFilters] = useState({
+    ram: "",
+    rom: "",
+    os: "",
+    refresh_rate: ""
+  });
+
   const [formData, setFormData] = useState({
     name: "",
     sku: "",
@@ -47,7 +60,7 @@ const ProductManage = () => {
     flashSalePrice: "",
     flashSaleStart: "",
     flashSaleEnd: "",
-    options: [],
+    attributes: {}, // For new Attributes system
     variants: [],
     imageFile: null
   });
@@ -59,25 +72,28 @@ const ProductManage = () => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const limit = 10;
-  const [flashSaleOnly, setFlashSaleOnly] = useState(false);
   const [loadingTable, setLoadingTable] = useState(false);
   const [saving, setSaving] = useState(false);
 
   const [confirmModal, setConfirmModal] = useState({ show: false, productId: null, name: "" });
 
-  const fetchProducts = useCallback(async (currentPage = 1, search = "", categoryId = "") => {
+  // Fetch Products with all filters
+  const fetchProducts = useCallback(async (currentPage = 1) => {
     setLoadingTable(true);
     try {
-      const res = await getAllProductApi(
-        currentPage,
+      const res = await filterProductsApi({
+        page: currentPage,
         limit,
-        search.trim(),
-        flashSaleOnly,
-        categoryId
-      );
+        search: searchTerm.trim(),
+        categoryId: filterCategory,
+        brandId: filterBrand,
+        isFlashSale: flashSaleOnly,
+        ...attrFilters
+      });
+      
       if (res.errCode === 0) {
-        setProducts(res.products || []);
-        setTotalPages(res.totalPages || 1);
+        setProducts(res.data || []);
+        setTotalPages(res.pagination?.totalPages || 1);
         setPage(currentPage);
       }
     } catch (err) {
@@ -85,26 +101,41 @@ const ProductManage = () => {
     } finally {
       setLoadingTable(false);
     }
-  }, [flashSaleOnly]);
+  }, [searchTerm, filterCategory, filterBrand, flashSaleOnly, attrFilters]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      fetchProducts(1, searchTerm, filterCategory);
+      fetchProducts(1);
     }, 500);
     return () => clearTimeout(timer);
-  }, [searchTerm, filterCategory, fetchProducts]);
+  }, [fetchProducts]);
 
   useEffect(() => {
     const fetchData = async () => {
-      const [catRes, brandRes] = await Promise.all([getAllCategoryApi(), getAllBrandApi()]);
+      const [catRes, brandRes, attrRes] = await Promise.all([
+        getAllCategoryApi(), 
+        getAllBrandApi(),
+        getAllAttributesApi()
+      ]);
       if (catRes.errCode === 0) setCategories(catRes.data || []);
       if (brandRes.errCode === 0) setBrands(brandRes.brands || []);
+      if (attrRes.errCode === 0) setAttributes(attrRes.data || []);
     };
     fetchData();
   }, []);
 
   const handleShowModal = useCallback((product = null) => {
     if (product) {
+      // Map attributes from product
+      const productAttrs = {};
+      if (product.attributes) {
+        product.attributes.forEach(attrVal => {
+          if (attrVal.attribute) {
+            productAttrs[attrVal.attribute.code] = attrVal.value;
+          }
+        });
+      }
+
       setFormData({
         name: product.name || "",
         sku: product.sku || "",
@@ -119,6 +150,7 @@ const ProductManage = () => {
         flashSalePrice: product.flashSalePrice || "",
         flashSaleStart: product.flashSaleStart ? new Date(product.flashSaleStart).toISOString().slice(0, 16) : "",
         flashSaleEnd: product.flashSaleEnd ? new Date(product.flashSaleEnd).toISOString().slice(0, 16) : "",
+        attributes: productAttrs,
         imageFile: null
       });
       setImagePreview(product.image || null);
@@ -130,7 +162,7 @@ const ProductManage = () => {
       setFormData({
         name: "", sku: "", description: "", price: "", discount: "0", stock: "0",
         categoryId: "", brandId: "", isActive: true, isFlashSale: false,
-        flashSalePrice: "", flashSaleStart: "", flashSaleEnd: "", imageFile: null
+        flashSalePrice: "", flashSaleStart: "", flashSaleEnd: "", attributes: {}, imageFile: null
       });
       setImagePreview(null);
       setGalleryPreviews([]);
@@ -147,7 +179,7 @@ const ProductManage = () => {
         try {
           const res = await getOneProductApi(editId);
           if (res?.errCode === 0) {
-            handleShowModal(res.data);
+            handleShowModal(res.product);
           }
         } catch (err) {
           console.error("Fetch edit product error:", err);
@@ -195,8 +227,13 @@ const ProductManage = () => {
 
     const data = new FormData();
     Object.keys(formData).forEach(key => {
-      if (key === "imageFile" && formData[key]) data.append("image", formData[key]);
-      else if (formData[key] !== null && formData[key] !== "") data.append(key, formData[key]);
+      if (key === "imageFile" && formData[key]) {
+        data.append("image", formData[key]);
+      } else if (key === "attributes") {
+        data.append("attributes", JSON.stringify(formData.attributes));
+      } else if (formData[key] !== null && formData[key] !== "") {
+        data.append(key, formData[key]);
+      }
     });
     galleryFiles.forEach(file => data.append("images", file));
 
@@ -205,11 +242,15 @@ const ProductManage = () => {
       let res = editProduct ? await updateProductApi(editProduct.id, data) : await createProductApi(data);
       if (res.errCode === 0) {
         toast.success(editProduct ? "Cập nhật thành công!" : "Đăng bán thành công!");
-        fetchProducts(page, searchTerm, filterCategory);
+        fetchProducts(page);
         handleCloseModal();
       } else toast.error(res.errMessage || "Thao tác thất bại");
-    } catch (err) { toast.error("Lỗi kết nối server"); }
-    finally { setSaving(false); }
+    } catch (err) { 
+      console.error(err);
+      toast.error("Lỗi kết nối server"); 
+    } finally { 
+      setSaving(false); 
+    }
   };
 
   const handleConfirmDelete = async () => {
@@ -217,22 +258,36 @@ const ProductManage = () => {
       const res = await deleteProductApi(confirmModal.productId);
       if (res.errCode === 0) {
         toast.success("Đã xóa sản phẩm");
-        fetchProducts(page, searchTerm, filterCategory);
+        fetchProducts(page);
       }
     } finally { setConfirmModal({ show: false, productId: null, name: "" }); }
   };
 
+  // Helper to get Icon for Attribute
+  const getAttrIcon = (code) => {
+    switch (code) {
+      case 'cpu': return <FiCpu />;
+      case 'ram': return <FiLayers />;
+      case 'rom': return <FiBox />;
+      case 'os': return <FiSettings />;
+      case 'screen': return <FiMonitor />;
+      case 'refresh_rate': return <FiZap />;
+      case 'battery': return <FiBattery />;
+      default: return <FiTag />;
+    }
+  };
+
   return (
-    <div className="space-y-6 max-w-7xl mx-auto p-4 md:p-6">
+    <div className="space-y-6 max-w-7xl mx-auto p-4 md:p-6 pb-20">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
           <h1 className="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
             <div className="w-12 h-12 rounded-2xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-200">
               <FiBox />
             </div>
-            Kho hàng Sản phẩm
+            Quản lý Kho hàng
           </h1>
-          <p className="text-sm text-slate-500 font-medium mt-2 ml-1">Quản lý và cập nhật thông tin thiết bị công nghệ.</p>
+          <p className="text-sm text-slate-500 font-medium mt-2 ml-1">Hệ thống quản lý sản phẩm thông minh & phân loại linh hoạt.</p>
         </div>
 
         <button onClick={() => handleShowModal()} className="btn-modern-primary h-12 px-6 group">
@@ -241,47 +296,89 @@ const ProductManage = () => {
         </button>
       </div>
 
-      <div className="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 overflow-hidden">
-        <div className="p-8 border-b border-slate-50 flex flex-col lg:flex-row gap-6 items-center justify-between bg-slate-50/30">
-          <div className="relative w-full lg:w-96">
-            <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input type="text" placeholder="Tìm theo tên, SKU..." className="input-modern h-12 pl-12 bg-white border-slate-200 focus:ring-4 focus:ring-indigo-50 font-medium" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
-          </div>
+      {/* Advanced Filter Bar */}
+      <div className="bg-white rounded-[2.5rem] shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
+        <div className="p-6 md:p-8 bg-slate-50/50 border-b border-slate-100">
+           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+              <div className="lg:col-span-4 relative">
+                 <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                 <input 
+                    type="text" 
+                    placeholder="Tìm theo tên, SKU..." 
+                    className="input-modern h-12 pl-12 bg-white border-slate-200 focus:ring-4 focus:ring-indigo-50 font-medium w-full" 
+                    value={searchTerm} 
+                    onChange={(e) => setSearchTerm(e.target.value)} 
+                 />
+              </div>
 
-          <div className="flex flex-wrap items-center gap-4 w-full lg:w-auto">
-            <div className="relative w-full sm:w-48">
-              <select className="input-modern h-12 pr-10 appearance-none bg-white font-bold text-xs uppercase tracking-widest" value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)}>
-                <option value="">Tất cả danh mục</option>
-                {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-              </select>
-              <FiChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-            </div>
+              <div className="lg:col-span-8 flex flex-wrap gap-4">
+                 <div className="relative flex-1 min-w-[140px]">
+                    <select className="input-modern h-12 pr-10 appearance-none bg-white font-bold text-[11px] uppercase tracking-widest" value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)}>
+                      <option value="">Danh mục</option>
+                      {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                    </select>
+                    <FiChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                 </div>
 
-            <label className="flex items-center gap-3 px-5 h-12 bg-white rounded-2xl border border-slate-200 cursor-pointer hover:bg-orange-50 hover:border-orange-200 transition-all group">
-              <input type="checkbox" checked={flashSaleOnly} onChange={(e) => setFlashSaleOnly(e.target.checked)} className="form-checkbox h-5 w-5 text-orange-500 rounded-lg border-slate-300" />
-              <span className="text-xs font-black uppercase tracking-widest text-slate-600 group-hover:text-orange-600 flex items-center gap-2">
-                <FiZap className={flashSaleOnly ? "text-orange-500 fill-orange-500" : "text-slate-400"} /> Flash Sale
-              </span>
-            </label>
-          </div>
+                 <div className="relative flex-1 min-w-[140px]">
+                    <select className="input-modern h-12 pr-10 appearance-none bg-white font-bold text-[11px] uppercase tracking-widest" value={filterBrand} onChange={(e) => setFilterBrand(e.target.value)}>
+                      <option value="">Thương hiệu</option>
+                      {brands.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+                    </select>
+                    <FiChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                 </div>
+
+                 {/* Attr Filter Dropdowns */}
+                 {attributes.slice(0, 3).map(attr => (
+                   <div key={attr.id} className="relative flex-1 min-w-[120px]">
+                      <select 
+                        className="input-modern h-12 pr-10 appearance-none bg-white font-bold text-[11px] uppercase tracking-widest" 
+                        value={attrFilters[attr.code] || ""} 
+                        onChange={(e) => setAttrFilters({...attrFilters, [attr.code]: e.target.value})}
+                      >
+                        <option value="">{attr.name}</option>
+                        {attr.values?.map(v => <option key={v.id} value={v.value}>{v.value}</option>)}
+                      </select>
+                      <FiChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                   </div>
+                 ))}
+
+                 <label className="flex items-center gap-3 px-5 h-12 bg-white rounded-2xl border border-slate-200 cursor-pointer hover:bg-orange-50 hover:border-orange-200 transition-all group shrink-0">
+                    <input type="checkbox" checked={flashSaleOnly} onChange={(e) => setFlashSaleOnly(e.target.checked)} className="form-checkbox h-5 w-5 text-orange-500 rounded-lg border-slate-300" />
+                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-600 group-hover:text-orange-600 flex items-center gap-2">
+                      <FiZap className={flashSaleOnly ? "text-orange-500 fill-orange-500" : "text-slate-400"} /> Flash Sale
+                    </span>
+                 </label>
+              </div>
+           </div>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-50/50">
+              <tr className="bg-slate-50/30">
                 <th className="px-8 py-5 text-[11px] font-black uppercase tracking-widest text-slate-400">Sản phẩm</th>
                 <th className="px-8 py-5 text-[11px] font-black uppercase tracking-widest text-slate-400">Phân loại</th>
                 <th className="px-8 py-5 text-[11px] font-black uppercase tracking-widest text-slate-400 text-right">Giá bán</th>
                 <th className="px-8 py-5 text-[11px] font-black uppercase tracking-widest text-slate-400 text-center">Tồn kho</th>
                 <th className="px-8 py-5 text-[11px] font-black uppercase tracking-widest text-slate-400 text-center">Trạng thái</th>
-                <th className="px-8 py-5 text-[11px] font-black uppercase tracking-widest text-slate-400 text-right">Hành động</th>
+                <th className="px-8 py-5 text-[11px] font-black uppercase tracking-widest text-slate-400 text-right">Thao tác</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
               {loadingTable ? Array(5).fill(0).map((_, i) => (
                 <tr key={i} className="animate-pulse"><td colSpan={6} className="px-8 py-8"><div className="h-14 bg-slate-100 rounded-2xl w-full"></div></td></tr>
-              )) : products.map((p) => (
+              )) : products.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="px-8 py-20 text-center">
+                    <div className="max-w-xs mx-auto">
+                      <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center text-slate-300 mx-auto mb-4"><FiSearch size={32} /></div>
+                      <p className="text-slate-900 font-bold">Không tìm thấy sản phẩm</p>
+                      <p className="text-xs text-slate-400 mt-1">Vui lòng điều chỉnh lại bộ lọc hoặc từ khóa tìm kiếm.</p>
+                    </div>
+                  </td>
+                </tr>
+              ) : products.map((p) => (
                 <tr key={p.id} className="hover:bg-indigo-50/20 transition-all group">
                   <td className="px-8 py-5">
                     <div className="flex items-center gap-4">
@@ -331,7 +428,7 @@ const ProductManage = () => {
           </table>
         </div>
         <div className="p-8 border-t border-slate-50 bg-slate-50/20">
-          <AppPagination page={page} totalPages={totalPages} onPageChange={p => fetchProducts(p, searchTerm, filterCategory)} />
+          <AppPagination page={page} totalPages={totalPages} onPageChange={p => fetchProducts(p)} />
         </div>
       </div>
 
@@ -343,7 +440,7 @@ const ProductManage = () => {
               <div className="px-10 py-7 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
                 <div>
                   <h3 className="text-2xl font-black text-slate-900">{editProduct ? "Sửa sản phẩm" : "Đăng sản phẩm mới"}</h3>
-                  <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest mt-1">Cấu hình chi tiết & Thông số kỹ thuật</p>
+                  <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest mt-1">Cấu hình chi tiết & Thông số kỹ thuật chuyên sâu</p>
                 </div>
                 <button onClick={handleCloseModal} className="w-12 h-12 rounded-2xl flex items-center justify-center text-slate-400 hover:bg-white hover:text-slate-900 hover:shadow-xl transition-all"><FiX className="text-2xl" /></button>
               </div>
@@ -353,7 +450,7 @@ const ProductManage = () => {
                   <div className="lg:col-span-4 space-y-8">
                     <div className="space-y-3">
                        <label className="text-xs font-black uppercase tracking-widest text-slate-400 ml-1">Ảnh đại diện</label>
-                       <div className="group relative w-full aspect-square rounded-[2rem] bg-slate-50 border-2 border-dashed border-slate-200 flex flex-col items-center justify-center overflow-hidden transition-all hover:border-indigo-400 hover:bg-indigo-50/30">
+                       <div className="group relative w-full aspect-square rounded-[2rem] bg-slate-50 border-2 border-dashed border-slate-200 flex flex-col items-center justify-center overflow-hidden transition-all hover:border-indigo-400 hover:bg-indigo-50/30 shadow-inner">
                           {imagePreview ? <img src={imagePreview} className="w-full h-full object-contain p-4" /> : (
                             <>
                               <FiUploadCloud className="text-4xl text-slate-300 group-hover:text-indigo-400 transition-colors mb-2" />
@@ -368,41 +465,59 @@ const ProductManage = () => {
                        <label className="text-xs font-black uppercase tracking-widest text-slate-400 ml-1">Thư viện ảnh</label>
                        <div className="grid grid-cols-3 gap-3">
                           {galleryPreviews.map((url, idx) => (
-                            <div key={idx} className="relative aspect-square rounded-2xl border border-slate-100 overflow-hidden group">
+                            <div key={idx} className="relative aspect-square rounded-2xl border border-slate-100 overflow-hidden group shadow-sm">
                               <img src={url} className="w-full h-full object-cover" />
                               <button type="button" className="absolute inset-0 bg-rose-500/80 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"><FiTrash2 /></button>
                             </div>
                           ))}
-                          <div className="relative aspect-square rounded-2xl border-2 border-dashed border-slate-200 flex items-center justify-center text-slate-300 hover:border-indigo-400 hover:text-indigo-400 transition-all">
+                          <div className="relative aspect-square rounded-2xl border-2 border-dashed border-slate-200 flex items-center justify-center text-slate-300 hover:border-indigo-400 hover:text-indigo-400 transition-all bg-slate-50/50">
                              <FiPlus />
                              <input type="file" multiple accept="image/*" onChange={handleGalleryChange} className="absolute inset-0 opacity-0 cursor-pointer" />
                           </div>
                        </div>
                     </div>
 
-                    <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 space-y-6">
+                    <div className="p-6 bg-slate-50 rounded-[2rem] border border-slate-100 space-y-6 shadow-inner">
                        <div className="grid grid-cols-2 gap-4">
                           <div className="space-y-1.5">
-                             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Giá bán</span>
-                             <input type="number" className="input-modern h-11 font-bold" value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} />
+                             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Giá cơ bản</span>
+                             <div className="relative">
+                                <FiDollarSign className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs" />
+                                <input type="number" className="input-modern h-11 pl-8 font-black text-sm" value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} />
+                             </div>
                           </div>
                           <div className="space-y-1.5">
-                             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Tồn kho</span>
-                             <input type="number" className="input-modern h-11 font-bold" value={formData.stock} onChange={e => setFormData({...formData, stock: e.target.value})} />
+                             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Số lượng kho</span>
+                             <div className="relative">
+                                <FiPackage className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs" />
+                                <input type="number" className="input-modern h-11 pl-8 font-black text-sm" value={formData.stock} onChange={e => setFormData({...formData, stock: e.target.value})} />
+                             </div>
                           </div>
                        </div>
                        
                        <div className="pt-4 border-t border-slate-200">
-                          <label className="flex items-center gap-3 cursor-pointer">
-                             <input type="checkbox" checked={formData.isFlashSale} onChange={e => setFormData({...formData, isFlashSale: e.target.checked})} className="form-checkbox h-5 w-5 text-orange-500 rounded-lg border-slate-300" />
-                             <span className="text-xs font-black uppercase text-slate-700 flex items-center gap-2"><FiZap className={formData.isFlashSale ? "text-orange-500 fill-orange-500" : "text-slate-400"} /> Kích hoạt Flash Sale</span>
+                          <label className="flex items-center gap-3 cursor-pointer group">
+                             <input type="checkbox" checked={formData.isFlashSale} onChange={e => setFormData({...formData, isFlashSale: e.target.checked})} className="form-checkbox h-5 w-5 text-orange-500 rounded-lg border-slate-300 focus:ring-orange-200" />
+                             <span className="text-xs font-black uppercase text-slate-700 group-hover:text-orange-600 transition-colors flex items-center gap-2">
+                                <FiZap className={formData.isFlashSale ? "text-orange-500 fill-orange-500" : "text-slate-400"} /> 
+                                Thiết lập Flash Sale
+                             </span>
                           </label>
                           {formData.isFlashSale && (
-                            <div className="mt-4 space-y-4 animate-in fade-in slide-in-from-top-2">
-                               <input type="number" className="input-modern h-10 text-xs font-bold" placeholder="Giá Flash Sale" value={formData.flashSalePrice} onChange={e => setFormData({...formData, flashSalePrice: e.target.value})} />
-                               <div className="grid grid-cols-1 gap-2">
-                                  <input type="datetime-local" className="input-modern h-10 text-[10px]" value={formData.flashSaleStart} onChange={e => setFormData({...formData, flashSaleStart: e.target.value})} />
-                                  <input type="datetime-local" className="input-modern h-10 text-[10px]" value={formData.flashSaleEnd} onChange={e => setFormData({...formData, flashSaleEnd: e.target.value})} />
+                            <div className="mt-4 space-y-4 animate-in fade-in slide-in-from-top-2 bg-white p-4 rounded-2xl border border-orange-100 shadow-sm">
+                               <div className="space-y-1">
+                                 <span className="text-[9px] font-black text-orange-400 uppercase ml-1">Giá khuyến mãi</span>
+                                 <input type="number" className="input-modern h-10 text-xs font-black bg-orange-50/30 border-orange-100 focus:border-orange-500 focus:ring-orange-50" placeholder="Nhập giá sale..." value={formData.flashSalePrice} onChange={e => setFormData({...formData, flashSalePrice: e.target.value})} />
+                               </div>
+                               <div className="grid grid-cols-1 gap-3">
+                                  <div className="space-y-1">
+                                    <span className="text-[9px] font-black text-slate-400 uppercase ml-1">Thời gian bắt đầu</span>
+                                    <input type="datetime-local" className="input-modern h-10 text-[10px] font-bold" value={formData.flashSaleStart} onChange={e => setFormData({...formData, flashSaleStart: e.target.value})} />
+                                  </div>
+                                  <div className="space-y-1">
+                                    <span className="text-[9px] font-black text-slate-400 uppercase ml-1">Thời gian kết thúc</span>
+                                    <input type="datetime-local" className="input-modern h-10 text-[10px] font-bold" value={formData.flashSaleEnd} onChange={e => setFormData({...formData, flashSaleEnd: e.target.value})} />
+                                  </div>
                                </div>
                             </div>
                           )}
@@ -411,37 +526,78 @@ const ProductManage = () => {
                   </div>
 
                   <div className="lg:col-span-8 space-y-8">
-                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="space-y-2">
-                           <label className="text-xs font-black uppercase tracking-widest text-slate-400 ml-1">Tên sản phẩm *</label>
-                           <input className="input-modern h-12 font-bold focus:ring-4 focus:ring-indigo-50" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
+                     <section className="space-y-6">
+                        <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+                           <FiSmartphone className="text-indigo-600" />
+                           <h4 className="text-xs font-black uppercase tracking-tighter text-slate-900">Thông tin cơ bản</h4>
                         </div>
-                        <div className="space-y-2">
-                           <label className="text-xs font-black uppercase tracking-widest text-slate-400 ml-1">SKU / Mã sản phẩm</label>
-                           <input className="input-modern h-12 font-mono text-indigo-600" value={formData.sku} onChange={e => setFormData({...formData, sku: e.target.value})} />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                           <div className="space-y-2">
+                              <label className="text-xs font-black uppercase tracking-widest text-slate-400 ml-1">Tên sản phẩm *</label>
+                              <input className="input-modern h-12 font-bold focus:ring-4 focus:ring-indigo-50" placeholder="VD: iPhone 15 Pro Max 256GB" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
+                           </div>
+                           <div className="space-y-2">
+                              <label className="text-xs font-black uppercase tracking-widest text-slate-400 ml-1">SKU / Mã quản lý</label>
+                              <input className="input-modern h-12 font-mono text-indigo-600 bg-indigo-50/20 border-indigo-100" placeholder="VD: IP15PM-256-BLK" value={formData.sku} onChange={e => setFormData({...formData, sku: e.target.value})} />
+                           </div>
                         </div>
-                     </div>
 
-                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="space-y-2">
-                           <label className="text-xs font-black uppercase tracking-widest text-slate-400 ml-1">Thương hiệu</label>
-                           <select className="input-modern h-12 font-bold" value={formData.brandId} onChange={e => setFormData({...formData, brandId: e.target.value})}>
-                              <option value="">Chọn hãng</option>
-                              {brands.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
-                           </select>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                           <div className="space-y-2 relative">
+                              <label className="text-xs font-black uppercase tracking-widest text-slate-400 ml-1">Thương hiệu</label>
+                              <select className="input-modern h-12 font-bold appearance-none pr-10" value={formData.brandId} onChange={e => setFormData({...formData, brandId: e.target.value})}>
+                                 <option value="">Chọn hãng</option>
+                                 {brands.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+                              </select>
+                              <FiChevronDown className="absolute right-4 top-[42px] text-slate-400 pointer-events-none" />
+                           </div>
+                           <div className="space-y-2 relative">
+                              <label className="text-xs font-black uppercase tracking-widest text-slate-400 ml-1">Danh mục sản phẩm</label>
+                              <select className="input-modern h-12 font-bold appearance-none pr-10" value={formData.categoryId} onChange={e => setFormData({...formData, categoryId: e.target.value})}>
+                                 <option value="">Chọn loại sản phẩm</option>
+                                 {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                              </select>
+                              <FiChevronDown className="absolute right-4 top-[42px] text-slate-400 pointer-events-none" />
+                           </div>
                         </div>
-                        <div className="space-y-2">
-                           <label className="text-xs font-black uppercase tracking-widest text-slate-400 ml-1">Danh mục</label>
-                           <select className="input-modern h-12 font-bold" value={formData.categoryId} onChange={e => setFormData({...formData, categoryId: e.target.value})}>
-                              <option value="">Chọn loại</option>
-                              {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                           </select>
+                     </section>
+
+                     {/* New Attributes Section */}
+                     <section className="space-y-6 pt-6 border-t border-slate-100">
+                        <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+                           <FiLayers className="text-indigo-600" />
+                           <h4 className="text-xs font-black uppercase tracking-tighter text-slate-900">Thông số kỹ thuật (Dropdown/Manual)</h4>
                         </div>
-                     </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 bg-slate-50/50 p-6 rounded-[2rem] border border-slate-100">
+                           {attributes.map(attr => (
+                             <div key={attr.id} className="space-y-2">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1 flex items-center gap-2">
+                                   {getAttrIcon(attr.code)} {attr.name}
+                                </label>
+                                <div className="relative">
+                                   <input 
+                                      list={`list-${attr.code}`}
+                                      className="input-modern h-11 font-bold text-xs bg-white border-slate-200 focus:ring-4 focus:ring-indigo-50"
+                                      placeholder={`Chọn hoặc nhập ${attr.name}...`}
+                                      value={formData.attributes[attr.code] || ""}
+                                      onChange={(e) => setFormData({
+                                         ...formData, 
+                                         attributes: { ...formData.attributes, [attr.code]: e.target.value }
+                                      })}
+                                   />
+                                   <datalist id={`list-${attr.code}`}>
+                                      {attr.values?.map(v => <option key={v.id} value={v.value} />)}
+                                   </datalist>
+                                </div>
+                             </div>
+                           ))}
+                        </div>
+                     </section>
 
                      <div className="space-y-2">
                         <label className="text-xs font-black uppercase tracking-widest text-slate-400 ml-1">Mô tả sản phẩm</label>
-                        <textarea className="input-modern resize-none h-40 py-4 focus:ring-4 focus:ring-indigo-50" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} />
+                        <textarea className="input-modern resize-none h-40 py-4 focus:ring-4 focus:ring-indigo-50 font-medium" placeholder="Nhập mô tả chi tiết về sản phẩm, tính năng nổi bật..." value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} />
                      </div>
 
                      <div className="pt-8 border-t border-slate-100">
@@ -458,10 +614,15 @@ const ProductManage = () => {
               </div>
 
               <div className="px-10 py-6 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between">
-                <button onClick={handleCloseModal} className="px-8 py-3 rounded-2xl font-bold text-slate-500 hover:bg-slate-100 transition-all">Hủy</button>
-                <button form="product-form" disabled={saving} className="px-12 py-4 bg-indigo-600 text-white rounded-[1.5rem] font-black uppercase tracking-widest shadow-xl shadow-indigo-200 hover:bg-indigo-700 active:scale-95 transition-all disabled:opacity-50 min-w-[200px]">
-                   {saving ? "Đang xử lý..." : (editProduct ? "Lưu thay đổi" : "Đăng sản phẩm")}
-                </button>
+                <button onClick={handleCloseModal} className="px-8 py-3 rounded-2xl font-bold text-slate-500 hover:bg-slate-100 transition-all">Đóng</button>
+                <div className="flex items-center gap-4">
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest hidden sm:inline">Kiểm tra kỹ thông tin trước khi lưu</span>
+                  <button form="product-form" disabled={saving} className="px-12 py-4 bg-indigo-600 text-white rounded-[1.5rem] font-black uppercase tracking-widest shadow-xl shadow-indigo-200 hover:bg-indigo-700 active:scale-95 transition-all disabled:opacity-50 min-w-[220px] flex items-center justify-center gap-2">
+                    {saving ? (
+                       <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> Đang lưu...</>
+                    ) : (editProduct ? "Cập nhật sản phẩm" : "Đăng bán sản phẩm")}
+                  </button>
+                </div>
               </div>
             </motion.div>
           </div>
@@ -474,11 +635,11 @@ const ProductManage = () => {
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setConfirmModal({ show: false, productId: null, name: "" })} className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" />
             <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="relative w-full max-w-sm bg-white rounded-[2rem] shadow-2xl p-10 text-center">
               <div className="w-20 h-20 bg-rose-50 text-rose-500 rounded-3xl flex items-center justify-center text-4xl mx-auto mb-6 shadow-sm"><FiTrash2 /></div>
-              <h3 className="text-2xl font-black text-slate-900 mb-2">Xóa sản phẩm?</h3>
-              <p className="text-sm text-slate-500 mb-8 font-medium">Bạn có chắc chắn muốn xóa <strong>{confirmModal.name}</strong>? Toàn bộ dữ liệu kho hàng sẽ bị mất.</p>
+              <h3 className="text-2xl font-black text-slate-900 mb-2">Xác nhận xóa?</h3>
+              <p className="text-sm text-slate-500 mb-8 font-medium leading-relaxed">Bạn có chắc chắn muốn xóa <strong>{confirmModal.name}</strong>? Hành động này không thể hoàn tác.</p>
               <div className="grid grid-cols-2 gap-4">
-                 <button onClick={() => setConfirmModal({ show: false, productId: null, name: "" })} className="px-6 py-3 rounded-2xl font-bold text-slate-500 hover:bg-slate-100">Hủy</button>
-                 <button onClick={handleConfirmDelete} className="px-6 py-3 bg-rose-500 text-white rounded-2xl font-bold shadow-lg shadow-rose-200 hover:bg-rose-600 active:scale-95 transition-all">Xác nhận</button>
+                 <button onClick={() => setConfirmModal({ show: false, productId: null, name: "" })} className="px-6 py-3 rounded-2xl font-bold text-slate-500 hover:bg-slate-100 transition-all">Quay lại</button>
+                 <button onClick={handleConfirmDelete} className="px-6 py-3 bg-rose-500 text-white rounded-2xl font-bold shadow-lg shadow-rose-200 hover:bg-rose-600 active:scale-95 transition-all">Đồng ý xóa</button>
               </div>
             </motion.div>
           </div>
