@@ -4,17 +4,24 @@ const { getLuckyColorsByYear } = require("../utils/fortuneUtils");
 const NodeCache = require("node-cache");
 const { getPagination, getPagingData } = require("../utils/paginationHelper");
 const AttributeService = require("./AttributeService");
-const { generateEmbedding, cosineSimilarity } = require("../utils/embeddingHelper");
+const {
+  generateEmbedding,
+  cosineSimilarity,
+} = require("../utils/embeddingHelper");
 
 const productCache = new NodeCache({ stdTTL: 600, checkperiod: 120 });
 
 // --- CÁC HÀM HELPER NỘI BỘ ---
 
 const prepareProductEmbeddingText = (product) => {
-  const specs = typeof product.specifications === 'string' 
-    ? product.specifications 
-    : JSON.stringify(product.specifications || {});
-  return `Sản phẩm: ${product.name}. Mô tả: ${product.description || ""}. Thông số: ${specs}`.slice(0, 8000);
+  const specs =
+    typeof product.specifications === "string"
+      ? product.specifications
+      : JSON.stringify(product.specifications || {});
+  return `Sản phẩm: ${product.name}. Mô tả: ${product.description || ""}. Thông số: ${specs}`.slice(
+    0,
+    8000,
+  );
 };
 
 const updateProductEmbedding = async (product, transaction) => {
@@ -22,7 +29,10 @@ const updateProductEmbedding = async (product, transaction) => {
     const text = prepareProductEmbeddingText(product);
     const embedding = await generateEmbedding(text);
     if (embedding) {
-      await product.update({ embedding: JSON.stringify(embedding) }, { transaction });
+      await product.update(
+        { embedding: JSON.stringify(embedding) },
+        { transaction },
+      );
     }
   } catch (error) {
     console.error(`Lỗi cập nhật embedding cho SP ${product.id}:`, error);
@@ -31,9 +41,9 @@ const updateProductEmbedding = async (product, transaction) => {
 
 const ensureUniqueSKU = async (sku, transaction) => {
   if (!sku) return `PROD-${Date.now()}`;
-  const existing = await db.Product.findOne({ 
-    where: { sku: { [Op.like]: sku } }, 
-    transaction 
+  const existing = await db.Product.findOne({
+    where: { sku: { [Op.like]: sku } },
+    transaction,
   });
   if (existing) return `${sku}-${Date.now()}`;
   return sku;
@@ -68,7 +78,7 @@ const applyFlashSaleToProduct = (productData) => {
   if (product.flashSaleActive && product.flashSalePrice) {
     const salePrice = Number(product.flashSalePrice);
     product.displayPrice = salePrice;
-    product.price = salePrice; 
+    product.price = salePrice;
     product.flashSaleDiscount =
       originalPrice > 0
         ? ((originalPrice - salePrice) / originalPrice) * 100
@@ -140,7 +150,10 @@ const createProduct = async (data, imageRecords = []) => {
     const product = await db.Product.create(newData, { transaction: t });
 
     if (newData.attributes) {
-      const attrs = typeof newData.attributes === 'string' ? JSON.parse(newData.attributes) : newData.attributes;
+      const attrs =
+        typeof newData.attributes === "string"
+          ? JSON.parse(newData.attributes)
+          : newData.attributes;
       await AttributeService.assignAttributesToProduct(product.id, attrs, t);
     }
 
@@ -170,7 +183,7 @@ const createProductWithVariants = async (data, imageRecords = []) => {
     if (!productData.slug && productData.name) {
       productData.slug = `${slugify(productData.name)}-${Date.now()}`;
     }
-    
+
     productData.sku = await ensureUniqueSKU(productData.sku, t);
     productData.hasVariants = customVariants && customVariants.length > 0;
 
@@ -181,7 +194,10 @@ const createProductWithVariants = async (data, imageRecords = []) => {
     const product = await db.Product.create(productData, { transaction: t });
 
     if (productData.attributes) {
-      const attrs = typeof productData.attributes === 'string' ? JSON.parse(productData.attributes) : productData.attributes;
+      const attrs =
+        typeof productData.attributes === "string"
+          ? JSON.parse(productData.attributes)
+          : productData.attributes;
       await AttributeService.assignAttributesToProduct(product.id, attrs, t);
     }
 
@@ -191,21 +207,45 @@ const createProductWithVariants = async (data, imageRecords = []) => {
         const variantStock = Number(variant.stock || 0);
         finalTotalStock += variantStock;
 
-        const variantAttrs = variant.attributes || variant.attributeValues || {};
+        // Lấy attributeValues từ variant (có thể là object hoặc string JSON)
+        let variantAttrs = variant.attributeValues || variant.attributes || {};
+        if (typeof variantAttrs === "string") {
+          try {
+            variantAttrs = JSON.parse(variantAttrs);
+          } catch (e) {
+            variantAttrs = {};
+          }
+        }
+
+        // Tạo variant với attributeValues được lưu dưới dạng JSON
         const newVariant = await db.ProductVariant.create(
           {
             productId: product.id,
-            sku: variant.sku || `${product.sku}-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
+            sku:
+              variant.sku ||
+              `${product.sku}-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
             price: variant.price || product.basePrice,
             stock: variantStock,
-            attributeValues: variantAttrs,
+            attributeValues: variantAttrs, // Lưu JSON object
             isActive: true,
           },
-          { transaction: t }
+          { transaction: t },
         );
 
-        if (variantAttrs && Object.keys(variantAttrs).length > 0) {
-          await AttributeService.assignAttributesToVariant(newVariant.id, variantAttrs, t);
+        // Nếu có attributes với dữ liệu Attribute reference, hãy gán vào many-to-many
+        // (Tránh lặp lại dữ liệu, chỉ dùng khi thực sự cần)
+        if (
+          variant.attributeIds &&
+          Array.isArray(variant.attributeIds) &&
+          variant.attributeIds.length > 0
+        ) {
+          const attributeValues = await db.AttributeValue.findAll({
+            where: { id: { [Op.in]: variant.attributeIds } },
+            transaction: t,
+          });
+          if (attributeValues.length > 0) {
+            await newVariant.setAttributes(attributeValues, { transaction: t });
+          }
         }
       }
       await product.update({ totalStock: finalTotalStock }, { transaction: t });
@@ -239,7 +279,11 @@ const updateProduct = async (id, data, imageRecords = []) => {
     }
     const updatedData = { ...data };
 
-    if (updatedData.name && updatedData.name !== product.name && !updatedData.slug) {
+    if (
+      updatedData.name &&
+      updatedData.name !== product.name &&
+      !updatedData.slug
+    ) {
       updatedData.slug = `${slugify(updatedData.name)}-${product.id}`;
     }
 
@@ -247,38 +291,51 @@ const updateProduct = async (id, data, imageRecords = []) => {
       updatedData.sku = await ensureUniqueSKU(updatedData.sku, t);
     }
 
-    const updatedProduct = await product.update(updatedData, { transaction: t });
+    const updatedProduct = await product.update(updatedData, {
+      transaction: t,
+    });
 
     // Đảm bảo trường specifications được lưu đúng định dạng JSON/Object
     if (updatedData.specifications) {
       let specs = updatedData.specifications;
-      if (typeof specs === 'string') {
+      if (typeof specs === "string") {
         try {
           specs = JSON.parse(specs);
         } catch (e) {
           console.error("Error parsing specs in updateProduct:", e);
         }
       }
-      await updatedProduct.update({ specifications: specs }, { transaction: t });
+      await updatedProduct.update(
+        { specifications: specs },
+        { transaction: t },
+      );
     }
 
     if (updatedData.attributes) {
-      const attrs = typeof updatedData.attributes === 'string' ? JSON.parse(updatedData.attributes) : updatedData.attributes;
-      await db.ProductAttributeValue.destroy({ where: { productId: id }, transaction: t });
+      const attrs =
+        typeof updatedData.attributes === "string"
+          ? JSON.parse(updatedData.attributes)
+          : updatedData.attributes;
+      await db.ProductAttributeValue.destroy({
+        where: { productId: id },
+        transaction: t,
+      });
       await AttributeService.assignAttributesToProduct(id, attrs, t);
     }
 
     // Handle Variants if provided
     if (updatedData.variants && Array.isArray(updatedData.variants)) {
-      const incomingVariantIds = updatedData.variants.filter(v => v.id).map(v => v.id);
-      
+      const incomingVariantIds = updatedData.variants
+        .filter((v) => v.id)
+        .map((v) => v.id);
+
       // Delete variants not in incoming list
       await db.ProductVariant.destroy({
         where: {
           productId: id,
-          id: { [Op.notIn]: incomingVariantIds }
+          id: { [Op.notIn]: incomingVariantIds },
         },
-        transaction: t
+        transaction: t,
       });
 
       let finalTotalStock = 0;
@@ -288,48 +345,88 @@ const updateProduct = async (id, data, imageRecords = []) => {
 
         if (variantData.id) {
           // Update existing
-          const existingVariant = await db.ProductVariant.findByPk(variantData.id, { transaction: t });
+          const existingVariant = await db.ProductVariant.findByPk(
+            variantData.id,
+            { transaction: t },
+          );
           if (existingVariant) {
-            const variantAttrs = variantData.attributes || variantData.attributeValues || {};
-            await existingVariant.update({
-              sku: variantData.sku || existingVariant.sku,
-              price: variantData.price || existingVariant.price,
-              stock: variantStock,
-              attributeValues: variantAttrs,
-              isActive: variantData.isActive !== undefined ? variantData.isActive : existingVariant.isActive,
-            }, { transaction: t });
+            const variantAttrs =
+              variantData.attributes || variantData.attributeValues || {};
+            await existingVariant.update(
+              {
+                sku: variantData.sku || existingVariant.sku,
+                price: variantData.price || existingVariant.price,
+                stock: variantStock,
+                attributeValues: variantAttrs,
+                isActive:
+                  variantData.isActive !== undefined
+                    ? variantData.isActive
+                    : existingVariant.isActive,
+              },
+              { transaction: t },
+            );
 
             if (variantAttrs) {
-              await db.VariantAttributeValue.destroy({ where: { variantId: existingVariant.id }, transaction: t });
-              await AttributeService.assignAttributesToVariant(existingVariant.id, variantAttrs, t);
+              await db.VariantAttributeValue.destroy({
+                where: { variantId: existingVariant.id },
+                transaction: t,
+              });
+              await AttributeService.assignAttributesToVariant(
+                existingVariant.id,
+                variantAttrs,
+                t,
+              );
             }
           }
         } else {
           // Create new
-          const newVariant = await db.ProductVariant.create({
-            productId: id,
-            sku: variantData.sku || `${product.sku}-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
-            price: variantData.price || product.basePrice,
-            stock: variantStock,
-            attributeValues: variantData.attributes || variantData.attributeValues || {},
-            isActive: true,
-          }, { transaction: t });
+          const newVariant = await db.ProductVariant.create(
+            {
+              productId: id,
+              sku:
+                variantData.sku ||
+                `${product.sku}-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
+              price: variantData.price || product.basePrice,
+              stock: variantStock,
+              attributeValues:
+                variantData.attributes || variantData.attributeValues || {},
+              isActive: true,
+            },
+            { transaction: t },
+          );
 
-          const variantAttrs = variantData.attributes || variantData.attributeValues;
+          const variantAttrs =
+            variantData.attributes || variantData.attributeValues;
           if (variantAttrs) {
-            await AttributeService.assignAttributesToVariant(newVariant.id, variantAttrs, t);
+            await AttributeService.assignAttributesToVariant(
+              newVariant.id,
+              variantAttrs,
+              t,
+            );
           }
         }
       }
-      await updatedProduct.update({ totalStock: finalTotalStock, hasVariants: updatedData.variants.length > 0 }, { transaction: t });
+      await updatedProduct.update(
+        {
+          totalStock: finalTotalStock,
+          hasVariants: updatedData.variants.length > 0,
+        },
+        { transaction: t },
+      );
     } else if (updatedData.stock !== undefined) {
       // If no variants, just update totalStock from product stock
-      await updatedProduct.update({ totalStock: Number(updatedData.stock) }, { transaction: t });
+      await updatedProduct.update(
+        { totalStock: Number(updatedData.stock) },
+        { transaction: t },
+      );
     }
 
     if (imageRecords.length > 0) {
       if (imageRecords.some((i) => i.isPrimary)) {
-        await db.ProductImage.update({ isPrimary: false }, { where: { productId: id }, transaction: t });
+        await db.ProductImage.update(
+          { isPrimary: false },
+          { where: { productId: id }, transaction: t },
+        );
       }
       const records = imageRecords.map((img) => ({ ...img, productId: id }));
       await db.ProductImage.bulkCreate(records, { transaction: t });
@@ -345,7 +442,12 @@ const updateProduct = async (id, data, imageRecords = []) => {
   }
 };
 
-const getAllProducts = async (categoryId, page = 1, limit = 10, isFlashSale = false) => {
+const getAllProducts = async (
+  categoryId,
+  page = 1,
+  limit = 10,
+  isFlashSale = false,
+) => {
   const cacheKey = `products_${categoryId || "all"}_${isFlashSale ? "flash" : "all"}_${page}_${limit}`;
   const cachedData = productCache.get(cacheKey);
   if (cachedData) return cachedData;
@@ -368,7 +470,11 @@ const getAllProducts = async (categoryId, page = 1, limit = 10, isFlashSale = fa
     include: [
       { model: db.Category, as: "category" },
       { model: db.Brand, as: "brand" },
-      { model: db.ProductImage, as: "images", attributes: ["imageUrl", "isPrimary"] },
+      {
+        model: db.ProductImage,
+        as: "images",
+        attributes: ["imageUrl", "isPrimary"],
+      },
     ],
     limit: l,
     offset,
@@ -382,8 +488,12 @@ const getAllProducts = async (categoryId, page = 1, limit = 10, isFlashSale = fa
     errCode: 0,
     products: items.map((p) => {
       const pJSON = p.toJSON();
-      const primary = pJSON.images?.find(i => i.isPrimary) || pJSON.images?.[0];
-      return applyFlashSaleToProduct({ ...pJSON, image: primary?.imageUrl || null });
+      const primary =
+        pJSON.images?.find((i) => i.isPrimary) || pJSON.images?.[0];
+      return applyFlashSaleToProduct({
+        ...pJSON,
+        image: primary?.imageUrl || null,
+      });
     }),
     pagination: paginationMetadata,
   };
@@ -398,16 +508,24 @@ const getProductById = async (id) => {
       include: [
         { model: db.Category, as: "category" },
         { model: db.Brand, as: "brand" },
-        { model: db.AttributeValue, as: "attributes", include: [{ model: db.Attribute, as: "attribute" }] },
+        {
+          model: db.AttributeValue,
+          as: "attributes",
+          include: [{ model: db.Attribute, as: "attribute" }],
+        },
         { model: db.ProductImage, as: "images" },
-        { 
-          model: db.ProductVariant, 
-          as: "variants", 
+        {
+          model: db.ProductVariant,
+          as: "variants",
           include: [
-            { model: db.AttributeValue, as: "attributes", include: [{ model: db.Attribute, as: "attribute" }] },
-            { model: db.ProductImage, as: "images" }
+            {
+              model: db.AttributeValue,
+              as: "attributes",
+              include: [{ model: db.Attribute, as: "attribute" }],
+            },
+            { model: db.ProductImage, as: "images" },
           ],
-          distinct: true
+          distinct: true,
         },
       ],
     });
@@ -415,18 +533,19 @@ const getProductById = async (id) => {
     if (!product) return { errCode: 1, errMessage: "Product not found" };
 
     const plainProduct = product.get({ plain: true });
-    const primary = plainProduct.images?.find(i => i.isPrimary) || plainProduct.images?.[0];
+    const primary =
+      plainProduct.images?.find((i) => i.isPrimary) || plainProduct.images?.[0];
 
-    return { 
-      errCode: 0, 
+    return {
+      errCode: 0,
       product: {
         ...applyFlashSaleToProduct(plainProduct),
         image: primary?.imageUrl || null,
-        variants: plainProduct.variants?.map(v => ({
+        variants: plainProduct.variants?.map((v) => ({
           ...v,
-          imageUrl: v.images?.[0]?.imageUrl || null
-        }))
-      }
+          imageUrl: v.images?.[0]?.imageUrl || null,
+        })),
+      },
     };
   } catch (e) {
     console.error("Error fetching product by id:", e);
@@ -462,7 +581,11 @@ const searchProducts = async (query, page = 1, limit = 10) => {
     include: [
       { model: db.Category, as: "category" },
       { model: db.Brand, as: "brand" },
-      { model: db.ProductImage, as: "images", attributes: ["imageUrl", "isPrimary"] },
+      {
+        model: db.ProductImage,
+        as: "images",
+        attributes: ["imageUrl", "isPrimary"],
+      },
     ],
     limit: l,
     offset,
@@ -476,8 +599,12 @@ const searchProducts = async (query, page = 1, limit = 10) => {
     errCode: 0,
     products: items.map((p) => {
       const pJSON = p.toJSON();
-      const primary = pJSON.images?.find(i => i.isPrimary) || pJSON.images?.[0];
-      return { ...applyFlashSaleToProduct(pJSON), image: primary?.imageUrl || null };
+      const primary =
+        pJSON.images?.find((i) => i.isPrimary) || pJSON.images?.[0];
+      return {
+        ...applyFlashSaleToProduct(pJSON),
+        image: primary?.imageUrl || null,
+      };
     }),
     pagination: paginationMetadata,
   };
@@ -485,12 +612,31 @@ const searchProducts = async (query, page = 1, limit = 10) => {
 
 const searchSuggestions = async (query, limit = 8) => {
   const q = (query || "").trim();
-  if (!q) return { errCode: 0, suggestions: { products: [], keywords: [], brands: [], categories: [] } };
+  if (!q)
+    return {
+      errCode: 0,
+      suggestions: { products: [], keywords: [], brands: [], categories: [] },
+    };
 
   const productSuggestionsRaw = await db.Product.findAll({
     where: { isActive: true, name: { [Op.like]: `%${q}%` } },
-    attributes: ["id", "name", "basePrice", "isFlashSale", "flashSalePrice", "flashSaleStart", "flashSaleEnd", "sold"],
-    include: [{ model: db.ProductImage, as: "images", attributes: ["imageUrl", "isPrimary"] }],
+    attributes: [
+      "id",
+      "name",
+      "basePrice",
+      "isFlashSale",
+      "flashSalePrice",
+      "flashSaleStart",
+      "flashSaleEnd",
+      "sold",
+    ],
+    include: [
+      {
+        model: db.ProductImage,
+        as: "images",
+        attributes: ["imageUrl", "isPrimary"],
+      },
+    ],
     limit,
     order: [["sold", "DESC"]],
   });
@@ -506,28 +652,62 @@ const searchSuggestions = async (query, limit = 8) => {
       originalPrice: processed.basePrice,
       discount: processed.flashSaleDiscount,
       image: primary ? primary.imageUrl : null,
-      isFlashSale: processed.flashSaleActive
+      isFlashSale: processed.flashSaleActive,
     };
   });
 
-  const brandSuggestions = await db.Brand.findAll({ where: { name: { [Op.like]: `%${q}%` } }, attributes: ["id", "name"], limit: 3 });
-  const categorySuggestions = await db.Category.findAll({ where: { name: { [Op.like]: `%${q}%` } }, attributes: ["id", "name"], limit: 3 });
+  const brandSuggestions = await db.Brand.findAll({
+    where: { name: { [Op.like]: `%${q}%` } },
+    attributes: ["id", "name"],
+    limit: 3,
+  });
+  const categorySuggestions = await db.Category.findAll({
+    where: { name: { [Op.like]: `%${q}%` } },
+    attributes: ["id", "name"],
+    limit: 3,
+  });
 
-  return { errCode: 0, suggestions: { products: productSuggestions, keywords: [q], brands: brandSuggestions, categories: categorySuggestions } };
+  return {
+    errCode: 0,
+    suggestions: {
+      products: productSuggestions,
+      keywords: [q],
+      brands: brandSuggestions,
+      categories: categorySuggestions,
+    },
+  };
 };
 
 const filterProducts = async ({
-  brandId, categoryId, minPrice, maxPrice,
-  search = "", sort, ram, rom, screen, battery, os, refresh_rate,
-  page = 1, limit = 12,
+  brandId,
+  categoryId,
+  minPrice,
+  maxPrice,
+  search = "",
+  sort,
+  ram,
+  rom,
+  screen,
+  battery,
+  os,
+  refresh_rate,
+  page = 1,
+  limit = 12,
 }) => {
   try {
     const conditions = {
       isActive: true,
     };
 
-    if (minPrice !== undefined && minPrice !== "" && maxPrice !== undefined && maxPrice !== "") {
-      conditions.basePrice = { [Op.between]: [Number(minPrice), Number(maxPrice)] };
+    if (
+      minPrice !== undefined &&
+      minPrice !== "" &&
+      maxPrice !== undefined &&
+      maxPrice !== ""
+    ) {
+      conditions.basePrice = {
+        [Op.between]: [Number(minPrice), Number(maxPrice)],
+      };
     } else if (minPrice !== undefined && minPrice !== "") {
       conditions.basePrice = { [Op.gte]: Number(minPrice) };
     } else if (maxPrice !== undefined && maxPrice !== "") {
@@ -535,14 +715,17 @@ const filterProducts = async ({
     }
 
     if (brandId && brandId !== "") conditions.brandId = Number(brandId);
-    if (categoryId && categoryId !== "") conditions.categoryId = Number(categoryId);
+    if (categoryId && categoryId !== "")
+      conditions.categoryId = Number(categoryId);
     if (search && search !== "") conditions.name = { [Op.like]: `%${search}%` };
 
     const filterParams = { ram, rom, screen, battery, os, refresh_rate };
     const filterValues = [];
-    Object.keys(filterParams).forEach(key => {
+    Object.keys(filterParams).forEach((key) => {
       if (filterParams[key] && filterParams[key] !== "") {
-        const vals = Array.isArray(filterParams[key]) ? filterParams[key] : String(filterParams[key]).split(",");
+        const vals = Array.isArray(filterParams[key])
+          ? filterParams[key]
+          : String(filterParams[key]).split(",");
         filterValues.push(...vals);
       }
     });
@@ -550,7 +733,11 @@ const filterProducts = async ({
     const include = [
       { model: db.Brand, as: "brand" },
       { model: db.Category, as: "category" },
-      { model: db.ProductImage, as: "images", attributes: ["imageUrl", "isPrimary"] },
+      {
+        model: db.ProductImage,
+        as: "images",
+        attributes: ["imageUrl", "isPrimary"],
+      },
     ];
 
     if (filterValues.length > 0) {
@@ -558,7 +745,7 @@ const filterProducts = async ({
         model: db.AttributeValue,
         as: "attributes",
         where: { value: { [Op.in]: filterValues } },
-        through: { attributes: [] }
+        through: { attributes: [] },
       });
     }
 
@@ -585,8 +772,12 @@ const filterProducts = async ({
       errCode: 0,
       data: items.map((p) => {
         const pJSON = p.toJSON();
-        const primary = pJSON.images?.find(i => i.isPrimary) || pJSON.images?.[0];
-        return { ...applyFlashSaleToProduct(pJSON), image: primary?.imageUrl || null };
+        const primary =
+          pJSON.images?.find((i) => i.isPrimary) || pJSON.images?.[0];
+        return {
+          ...applyFlashSaleToProduct(pJSON),
+          image: primary?.imageUrl || null,
+        };
       }),
       pagination: paginationMetadata,
     };
@@ -600,7 +791,7 @@ const getProductBySlug = async (slug) => {
   try {
     const whereCondition = { isActive: true };
     if (!isNaN(slug) && Number.isInteger(Number(slug))) {
-      whereCondition[Op.or] = [ { slug: slug }, { id: parseInt(slug) } ];
+      whereCondition[Op.or] = [{ slug: slug }, { id: parseInt(slug) }];
     } else {
       whereCondition.slug = slug;
     }
@@ -610,16 +801,24 @@ const getProductBySlug = async (slug) => {
       include: [
         { model: db.Category, as: "category" },
         { model: db.Brand, as: "brand" },
-        { model: db.AttributeValue, as: "attributes", include: [{ model: db.Attribute, as: "attribute" }] },
+        {
+          model: db.AttributeValue,
+          as: "attributes",
+          include: [{ model: db.Attribute, as: "attribute" }],
+        },
         { model: db.ProductImage, as: "images" },
-        { 
-          model: db.ProductVariant, 
-          as: "variants", 
+        {
+          model: db.ProductVariant,
+          as: "variants",
           include: [
-            { model: db.AttributeValue, as: "attributes", include: [{ model: db.Attribute, as: "attribute" }] },
-            { model: db.ProductImage, as: "images" }
+            {
+              model: db.AttributeValue,
+              as: "attributes",
+              include: [{ model: db.Attribute, as: "attribute" }],
+            },
+            { model: db.ProductImage, as: "images" },
           ],
-          distinct: true
+          distinct: true,
         },
       ],
     });
@@ -629,20 +828,32 @@ const getProductBySlug = async (slug) => {
     const plainProduct = product.get({ plain: true });
     const variants = plainProduct.variants || [];
     const prices = variants.map((v) => Number(v.price));
-    const minPrice = prices.length > 0 ? Math.min(...prices) : Number(plainProduct.basePrice);
-    const maxPrice = prices.length > 0 ? Math.max(...prices) : Number(plainProduct.basePrice);
+    const minPrice =
+      prices.length > 0 ? Math.min(...prices) : Number(plainProduct.basePrice);
+    const maxPrice =
+      prices.length > 0 ? Math.max(...prices) : Number(plainProduct.basePrice);
     const totalStock = variants.reduce((sum, v) => sum + (v.stock || 0), 0);
 
-    const primaryImage = plainProduct.images?.find((img) => img.isPrimary) || plainProduct.images?.[0];
+    const primaryImage =
+      plainProduct.images?.find((img) => img.isPrimary) ||
+      plainProduct.images?.[0];
 
     return {
       errCode: 0,
       product: {
         ...applyFlashSaleToProduct(plainProduct),
         image: primaryImage ? primaryImage.imageUrl : null,
-        priceRange: { min: minPrice, max: maxPrice, display: minPrice === maxPrice ? `${minPrice}` : `${minPrice} - ${maxPrice}` },
+        priceRange: {
+          min: minPrice,
+          max: maxPrice,
+          display:
+            minPrice === maxPrice ? `${minPrice}` : `${minPrice} - ${maxPrice}`,
+        },
         totalStock,
-        variants: variants.map((v) => ({ ...v, imageUrl: v.images?.[0]?.imageUrl || null })),
+        variants: variants.map((v) => ({
+          ...v,
+          imageUrl: v.images?.[0]?.imageUrl || null,
+        })),
       },
     };
   } catch (e) {
@@ -670,9 +881,21 @@ const recommendProducts = async (productId, page = 1, limit = 6) => {
     const { offset, limit: l } = getPagination(page, limit);
     const { count, rows } = await db.Product.findAndCountAll({
       where,
-      include: [{ model: db.Brand, as: "brand" }, { model: db.Category, as: "category" }, { model: db.ProductImage, as: "images", attributes: ["imageUrl", "isPrimary"] }],
-      order: [["sold", "DESC"], ["createdAt", "DESC"]],
-      offset, limit: l,
+      include: [
+        { model: db.Brand, as: "brand" },
+        { model: db.Category, as: "category" },
+        {
+          model: db.ProductImage,
+          as: "images",
+          attributes: ["imageUrl", "isPrimary"],
+        },
+      ],
+      order: [
+        ["sold", "DESC"],
+        ["createdAt", "DESC"],
+      ],
+      offset,
+      limit: l,
     });
 
     const pagingData = getPagingData({ count, rows }, page, l);
@@ -682,7 +905,8 @@ const recommendProducts = async (productId, page = 1, limit = 6) => {
       errCode: 0,
       data: items.map((p) => {
         const pJSON = p.toJSON();
-        const primary = pJSON.images?.find(i => i.isPrimary) || pJSON.images?.[0];
+        const primary =
+          pJSON.images?.find((i) => i.isPrimary) || pJSON.images?.[0];
         return { ...pJSON, image: primary?.imageUrl || null };
       }),
       pagination: paginationMetadata,
@@ -697,9 +921,24 @@ const getFlashSaleProducts = async (page = 1, limit = 10) => {
   const now = new Date();
   const { offset, limit: l } = getPagination(page, limit);
   const data = await db.Product.findAndCountAll({
-    where: { isActive: true, isFlashSale: true, flashSaleStart: { [Op.lte]: now }, flashSaleEnd: { [Op.gte]: now } },
-    include: [{ model: db.Category, as: "category" }, { model: db.Brand, as: "brand" }, { model: db.ProductImage, as: "images", attributes: ["imageUrl", "isPrimary"] }],
-    limit: l, offset, order: [["flashSaleStart", "ASC"]],
+    where: {
+      isActive: true,
+      isFlashSale: true,
+      flashSaleStart: { [Op.lte]: now },
+      flashSaleEnd: { [Op.gte]: now },
+    },
+    include: [
+      { model: db.Category, as: "category" },
+      { model: db.Brand, as: "brand" },
+      {
+        model: db.ProductImage,
+        as: "images",
+        attributes: ["imageUrl", "isPrimary"],
+      },
+    ],
+    limit: l,
+    offset,
+    order: [["flashSaleStart", "ASC"]],
   });
   const pagingData = getPagingData(data, page, l);
   const { items, ...paginationMetadata } = pagingData;
@@ -708,8 +947,12 @@ const getFlashSaleProducts = async (page = 1, limit = 10) => {
     errCode: 0,
     products: items.map((p) => {
       const pJSON = p.toJSON();
-      const primary = pJSON.images?.find(i => i.isPrimary) || pJSON.images?.[0];
-      return applyFlashSaleToProduct({ ...pJSON, image: primary?.imageUrl || null });
+      const primary =
+        pJSON.images?.find((i) => i.isPrimary) || pJSON.images?.[0];
+      return applyFlashSaleToProduct({
+        ...pJSON,
+        image: primary?.imageUrl || null,
+      });
     }),
     pagination: paginationMetadata,
   };
@@ -732,7 +975,11 @@ const getDiscountedProducts = async (page = 1, limit = 10) => {
     include: [
       { model: db.Category, as: "category" },
       { model: db.Brand, as: "brand" },
-      { model: db.ProductImage, as: "images", attributes: ["imageUrl", "isPrimary"] },
+      {
+        model: db.ProductImage,
+        as: "images",
+        attributes: ["imageUrl", "isPrimary"],
+      },
     ],
     limit: l,
     offset,
@@ -746,31 +993,59 @@ const getDiscountedProducts = async (page = 1, limit = 10) => {
     errCode: 0,
     products: items.map((p) => {
       const pJSON = p.toJSON();
-      const primary = pJSON.images?.find(i => i.isPrimary) || pJSON.images?.[0];
-      return applyFlashSaleToProduct({ ...pJSON, image: primary?.imageUrl || null });
+      const primary =
+        pJSON.images?.find((i) => i.isPrimary) || pJSON.images?.[0];
+      return applyFlashSaleToProduct({
+        ...pJSON,
+        image: primary?.imageUrl || null,
+      });
     }),
     pagination: paginationMetadata,
   };
 };
 
-const recommendFortuneProducts = async ({ birthYear, brandId, minPrice, maxPrice, categoryId, page = 1, limit = 6 }) => {
+const recommendFortuneProducts = async ({
+  birthYear,
+  brandId,
+  minPrice,
+  maxPrice,
+  categoryId,
+  page = 1,
+  limit = 6,
+}) => {
   try {
     const luckyColors = getLuckyColorsByYear(Number(birthYear));
     const where = { isActive: true };
     if (luckyColors.length) {
-      where[Op.or] = luckyColors.map((color) => ({ specifications: { [Op.like]: `%${color}%` } }));
+      where[Op.or] = luckyColors.map((color) => ({
+        specifications: { [Op.like]: `%${color}%` },
+      }));
     }
     if (brandId) where.brandId = brandId;
     if (categoryId) where.categoryId = categoryId;
-    if (minPrice != null) where.basePrice = { ...where.basePrice, [Op.gte]: minPrice };
-    if (maxPrice != null) where.basePrice = { ...where.basePrice, [Op.lte]: maxPrice };
+    if (minPrice != null)
+      where.basePrice = { ...where.basePrice, [Op.gte]: minPrice };
+    if (maxPrice != null)
+      where.basePrice = { ...where.basePrice, [Op.lte]: maxPrice };
 
     const { offset, limit: l } = getPagination(page, limit);
     const { count, rows } = await db.Product.findAndCountAll({
       where,
-      include: [{ model: db.Brand, as: "brand" }, { model: db.Category, as: "category" }, { model: db.ProductImage, as: "images", attributes: ["imageUrl", "isPrimary"] }],
-      order: [["sold", "DESC"], ["createdAt", "DESC"]],
-      offset, limit: l,
+      include: [
+        { model: db.Brand, as: "brand" },
+        { model: db.Category, as: "category" },
+        {
+          model: db.ProductImage,
+          as: "images",
+          attributes: ["imageUrl", "isPrimary"],
+        },
+      ],
+      order: [
+        ["sold", "DESC"],
+        ["createdAt", "DESC"],
+      ],
+      offset,
+      limit: l,
     });
 
     const pagingData = getPagingData({ count, rows }, page, l);
@@ -780,7 +1055,8 @@ const recommendFortuneProducts = async ({ birthYear, brandId, minPrice, maxPrice
       errCode: 0,
       data: items.map((p) => {
         const pJSON = p.toJSON();
-        const primary = pJSON.images?.find(i => i.isPrimary) || pJSON.images?.[0];
+        const primary =
+          pJSON.images?.find((i) => i.isPrimary) || pJSON.images?.[0];
         const product = { ...pJSON, image: primary?.imageUrl || null };
         product.isLuckyColor = luckyColors.includes(product.color);
         return product;
@@ -797,19 +1073,31 @@ const recommendFortuneProducts = async ({ birthYear, brandId, minPrice, maxPrice
 const searchSemanticProducts = async (query, limit = 5) => {
   try {
     const queryEmbedding = await generateEmbedding(query);
-    if (!queryEmbedding) return { errCode: 1, errMessage: "Không thể tạo embedding cho truy vấn." };
+    if (!queryEmbedding)
+      return {
+        errCode: 1,
+        errMessage: "Không thể tạo embedding cho truy vấn.",
+      };
 
     // Lấy tất cả sản phẩm có embedding (Trong thực tế nên dùng Vector DB nếu dữ liệu lớn)
     const products = await db.Product.findAll({
-      where: { 
+      where: {
         isActive: true,
-        embedding: { [Op.ne]: null }
+        embedding: { [Op.ne]: null },
       },
-      attributes: ["id", "name", "basePrice", "discount", "image", "embedding", "description"],
+      attributes: [
+        "id",
+        "name",
+        "basePrice",
+        "discount",
+        "image",
+        "embedding",
+        "description",
+      ],
     });
 
     const results = products
-      .map(product => {
+      .map((product) => {
         const productEmbedding = JSON.parse(product.embedding);
         const similarity = cosineSimilarity(queryEmbedding, productEmbedding);
         return {
@@ -817,10 +1105,10 @@ const searchSemanticProducts = async (query, limit = 5) => {
           name: product.name,
           price: product.basePrice * (1 - (product.discount || 0) / 100),
           image: product.image,
-          similarity: similarity
+          similarity: similarity,
         };
       })
-      .filter(p => p.similarity > 0.3) // Ngưỡng tương đồng tối thiểu
+      .filter((p) => p.similarity > 0.3) // Ngưỡng tương đồng tối thiểu
       .sort((a, b) => b.similarity - a.similarity)
       .slice(0, limit);
 
@@ -837,7 +1125,8 @@ const syncAllProductEmbeddings = async () => {
   for (const product of products) {
     await updateProductEmbedding(product);
     count++;
-    if (count % 10 === 0) console.log(`Đã đồng bộ ${count}/${products.length} sản phẩm...`);
+    if (count % 10 === 0)
+      console.log(`Đã đồng bộ ${count}/${products.length} sản phẩm...`);
   }
   return { errCode: 0, message: `Đã đồng bộ xong ${count} sản phẩm.` };
 };
@@ -852,21 +1141,28 @@ const getSmartRecommendations = async (productId, limit = 6) => {
     if (product.embedding) {
       const queryEmbedding = JSON.parse(product.embedding);
       const allProducts = await db.Product.findAll({
-        where: { 
-          isActive: true, 
+        where: {
+          isActive: true,
           id: { [Op.ne]: productId },
-          embedding: { [Op.ne]: null }
+          embedding: { [Op.ne]: null },
         },
-        attributes: ["id", "name", "basePrice", "discount", "image", "embedding"],
+        attributes: [
+          "id",
+          "name",
+          "basePrice",
+          "discount",
+          "image",
+          "embedding",
+        ],
       });
 
       semanticMatches = allProducts
-        .map(p => ({
+        .map((p) => ({
           ...p.get({ plain: true }),
           similarity: cosineSimilarity(queryEmbedding, JSON.parse(p.embedding)),
-          reason: "Cùng phong cách"
+          reason: "Cùng phong cách",
         }))
-        .filter(p => p.similarity > 0.7)
+        .filter((p) => p.similarity > 0.7)
         .sort((a, b) => b.similarity - a.similarity);
     }
 
@@ -874,28 +1170,46 @@ const getSmartRecommendations = async (productId, limit = 6) => {
     const orderItems = await db.OrderItem.findAll({
       where: { productId },
       attributes: ["orderId"],
-      raw: true
+      raw: true,
     });
-    const orderIds = orderItems.map(item => item.orderId);
+    const orderIds = orderItems.map((item) => item.orderId);
 
     let boughtTogether = [];
     if (orderIds.length > 0) {
-      const frequentItems = await db.OrderItem.findAll({
-        where: { 
+      // Step 1: Get frequent product IDs with COUNT aggregation
+      const frequentProductData = await db.OrderItem.findAll({
+        where: {
           orderId: { [Op.in]: orderIds },
-          productId: { [Op.ne]: productId }
+          productId: { [Op.ne]: productId },
         },
-        attributes: ["productId", [db.sequelize.fn("COUNT", db.sequelize.col("productId")), "count"]],
+        attributes: [
+          "productId",
+          [db.sequelize.fn("COUNT", db.sequelize.col("productId")), "count"],
+        ],
         group: ["productId"],
         order: [[db.sequelize.literal("count"), "DESC"]],
         limit: limit,
-        include: [{ model: db.Product, as: "product", attributes: ["id", "name", "basePrice", "discount", "image"] }]
+        raw: true,
+        subQuery: false,
       });
 
-      boughtTogether = frequentItems.map(item => ({
-        ...item.product.get({ plain: true }),
-        reason: "Thường mua cùng"
-      }));
+      // Step 2: Get product details separately
+      const productIds = frequentProductData.map((item) => item.productId);
+      if (productIds.length > 0) {
+        const products = await db.Product.findAll({
+          where: { id: { [Op.in]: productIds } },
+          attributes: ["id", "name", "basePrice", "discount", "image"],
+          raw: true,
+        });
+
+        // Step 3: Merge data while maintaining frequency order
+        boughtTogether = frequentProductData
+          .map((item) => {
+            const product = products.find((p) => p.id === item.productId);
+            return product ? { ...product, reason: "Thường mua cùng" } : null;
+          })
+          .filter(Boolean);
+      }
     }
 
     // Kết hợp và loại bỏ trùng lặp
@@ -914,15 +1228,25 @@ const getSmartRecommendations = async (productId, limit = 6) => {
     // Fallback: Cùng danh mục nếu chưa đủ
     if (uniqueResults.length < limit) {
       const fallback = await db.Product.findAll({
-        where: { 
-          categoryId: product.categoryId, 
-          id: { [Op.and]: [{ [Op.ne]: productId }, { [Op.notIn]: Array.from(seenIds) }] },
-          isActive: true
+        where: {
+          categoryId: product.categoryId,
+          id: {
+            [Op.and]: [
+              { [Op.ne]: productId },
+              { [Op.notIn]: Array.from(seenIds) },
+            ],
+          },
+          isActive: true,
         },
         limit: limit - uniqueResults.length,
-        attributes: ["id", "name", "basePrice", "discount", "image"]
+        attributes: ["id", "name", "basePrice", "discount", "image"],
       });
-      fallback.forEach(p => uniqueResults.push({ ...p.get({ plain: true }), reason: "Cùng danh mục" }));
+      fallback.forEach((p) =>
+        uniqueResults.push({
+          ...p.get({ plain: true }),
+          reason: "Cùng danh mục",
+        }),
+      );
     }
 
     return { errCode: 0, products: uniqueResults };
@@ -950,5 +1274,5 @@ module.exports = {
   recommendFortuneProducts,
   searchSemanticProducts,
   syncAllProductEmbeddings,
-  getSmartRecommendations
+  getSmartRecommendations,
 };

@@ -301,17 +301,25 @@ const OrdersReturnPage = () => {
 
                 <div className="flex gap-3">
                   <button
-                    onClick={() =>
-                      setConfirmModal({ show: true, approve: false })
-                    }
+                    onClick={() => {
+                      setModalShow(false);
+                      setTimeout(
+                        () => setConfirmModal({ show: true, approve: false }),
+                        200,
+                      );
+                    }}
                     className="flex-1 h-12 bg-rose-50 text-rose-600 rounded-2xl text-xs font-bold hover:bg-rose-100 transition-all flex items-center justify-center gap-2 border border-rose-100"
                   >
                     <FiXCircle /> TỪ CHỐI
                   </button>
                   <button
-                    onClick={() =>
-                      setConfirmModal({ show: true, approve: true })
-                    }
+                    onClick={() => {
+                      setModalShow(false);
+                      setTimeout(
+                        () => setConfirmModal({ show: true, approve: true }),
+                        200,
+                      );
+                    }}
                     className="flex-1 h-12 bg-indigo-600 text-white rounded-2xl text-xs font-bold hover:bg-slate-800 transition-all shadow-lg shadow-indigo-600/20 flex items-center justify-center gap-2"
                   >
                     <FiCheckCircle /> DUYỆT TRẢ HÀNG
@@ -327,14 +335,24 @@ const OrdersReturnPage = () => {
         isOpen={confirmModal.show}
         onClose={() => setConfirmModal({ ...confirmModal, show: false })}
         onConfirm={handleProcessReturnAction}
-        title={confirmModal.approve ? "Xác nhận duyệt trả hàng?" : "Xác nhận từ chối trả hàng?"}
-        message={confirmModal.approve 
-          ? "Hành động này sẽ xác nhận sản phẩm đã được trả về kho và hoàn tiền cho khách." 
-          : "Hành động này sẽ từ chối yêu cầu trả hàng của khách hàng."}
+        title={
+          confirmModal.approve
+            ? "Xác nhận duyệt trả hàng?"
+            : "Xác nhận từ chối trả hàng?"
+        }
+        message={
+          confirmModal.approve
+            ? "Hành động này sẽ xác nhận sản phẩm đã được trả về kho và hoàn tiền cho khách."
+            : "Hành động này sẽ từ chối yêu cầu trả hàng của khách hàng."
+        }
         confirmText="Xác nhận"
         variant={confirmModal.approve ? "primary" : "danger"}
         icon={confirmModal.approve ? FiRotateCw : FiXCircle}
-        iconClassName={confirmModal.approve ? "bg-indigo-50 text-indigo-600" : "bg-rose-50 text-rose-500"}
+        iconClassName={
+          confirmModal.approve
+            ? "bg-indigo-50 text-indigo-600"
+            : "bg-rose-50 text-rose-500"
+        }
         loading={loadingAction}
       />
     </div>

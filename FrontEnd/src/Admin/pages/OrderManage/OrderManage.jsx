@@ -57,6 +57,7 @@ const OrderManage = () => {
     show: false,
     type: "delete", // "delete" or "status"
     orderId: null,
+    orderCode: null,
     data: null,
   });
   const [loading, setLoading] = useState(true);
@@ -109,17 +110,18 @@ const OrderManage = () => {
     return () => clearTimeout(timer);
   }, [searchTerm, activeTab, fetchOrders]);
 
-  const handleUpdateStatus = (orderId, status) => {
+  const handleUpdateStatus = (orderId, orderCode, status) => {
     setConfirmModal({
       show: true,
       type: "status",
       orderId,
+      orderCode,
       data: status,
     });
   };
 
   const confirmUpdateStatus = async () => {
-    const { orderId, data: status } = confirmModal;
+    const { orderId, orderCode, data: status } = confirmModal;
     setIsUpdating(true);
     try {
       setLoadingId(orderId);
@@ -138,8 +140,9 @@ const OrderManage = () => {
       setActiveDropdown(null);
       setConfirmModal({
         show: false,
-        type: "delete",
+        type: "status",
         orderId: null,
+        orderCode: null,
         data: null,
       });
     }
@@ -152,13 +155,13 @@ const OrderManage = () => {
   };
 
   const onConfirmDelete = async () => {
-    const { orderId } = confirmModal;
+    const { orderId, orderCode } = confirmModal;
     setIsDeleting(true);
     try {
       setLoadingId(orderId);
       const res = await deleteOrder(orderId);
       if (res?.errCode === 0) {
-        toast.success(`Đã xóa đơn DH${orderId}`);
+        toast.success(`Đã xóa đơn ${orderCode || `DH${orderId}`}`);
         fetchOrders(page, searchTerm, activeTab);
       }
     } catch (err) {
@@ -170,7 +173,7 @@ const OrderManage = () => {
         show: false,
         type: "delete",
         orderId: null,
-        data: null,
+        orderCode: null,
       });
     }
   };
@@ -393,7 +396,11 @@ const OrderManage = () => {
                                     <button
                                       key={key}
                                       onClick={() =>
-                                        handleUpdateStatus(order.id, key)
+                                        handleUpdateStatus(
+                                          order.id,
+                                          order.orderCode,
+                                          key,
+                                        )
                                       }
                                       className={`w-full text-left px-4 py-2.5 text-xs font-bold rounded-xl transition-all ${
                                         order.status === key
@@ -416,6 +423,7 @@ const OrderManage = () => {
                               show: true,
                               type: "delete",
                               orderId: order.id,
+                              orderCode: order.orderCode,
                             });
                           }}
                           className="w-10 h-10 rounded-2xl bg-rose-50 text-rose-500 flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all shadow-sm border border-rose-100"
@@ -455,11 +463,17 @@ const OrderManage = () => {
       <ConfirmModal
         isOpen={confirmModal.show && confirmModal.type === "delete"}
         onClose={() =>
-          setConfirmModal({ show: false, type: "delete", orderId: null })
+          setConfirmModal({
+            show: false,
+            type: "delete",
+            orderId: null,
+            orderCode: null,
+            data: null,
+          })
         }
         onConfirm={onConfirmDelete}
         title="Xác nhận xóa đơn hàng?"
-        message={`Hành động này sẽ gỡ bỏ đơn hàng DH${confirmModal.orderId} vĩnh viễn khỏi hệ thống. Bạn có chắc chắn?`}
+        message={`Hành động này sẽ gỡ bỏ đơn hàng ${confirmModal.orderCode || `DH${confirmModal.orderId}`} vĩnh viễn khỏi hệ thống. Bạn có chắc chắn?`}
         confirmText="Đồng ý xóa"
         variant="danger"
         icon={FiTrash2}
@@ -474,12 +488,13 @@ const OrderManage = () => {
             show: false,
             type: "status",
             orderId: null,
+            orderCode: null,
             data: null,
           })
         }
         onConfirm={confirmUpdateStatus}
         title="Cập nhật trạng thái đơn hàng?"
-        message={`Bạn muốn chuyển trạng thái đơn hàng DH${confirmModal.orderId} sang "${statusMap[confirmModal.data]?.label}"?`}
+        message={`Bạn muốn chuyển trạng thái đơn hàng ${confirmModal.orderCode || `DH${confirmModal.orderId}`} sang "${statusMap[confirmModal.data]?.label}"?`}
         confirmText="Xác nhận chuyển"
         variant="primary"
         icon={FiRefreshCcw}

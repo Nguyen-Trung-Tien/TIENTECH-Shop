@@ -44,18 +44,21 @@ export const useProductDetail = (slug) => {
     }
   }, [slug]);
 
-  const fetchReviews = useCallback(async (page = 1) => {
-    if (!product?.id) return;
-    try {
-      const res = await getReviewsByProductApi(product.id, page, 5);
-      if (res.errCode === 0) {
-        setReviews(res.data);
-        setPagination(res.pagination);
+  const fetchReviews = useCallback(
+    async (page = 1) => {
+      if (!product?.id) return;
+      try {
+        const res = await getReviewsByProductApi(product.id, page, 5);
+        if (res.errCode === 0) {
+          setReviews(res.data);
+          setPagination(res.pagination);
+        }
+      } catch (err) {
+        console.error("Fetch reviews error:", err);
       }
-    } catch (err) {
-      console.error("Fetch reviews error:", err);
-    }
-  }, [product?.id]);
+    },
+    [product?.id],
+  );
 
   useEffect(() => {
     fetchProduct();
@@ -67,7 +70,11 @@ export const useProductDetail = (slug) => {
       fetchReviews();
       const fetchExtra = async () => {
         try {
-          const recommendedRes = await getRecommendedProductsApi(product.id, 1, 6);
+          const recommendedRes = await getRecommendedProductsApi(
+            product.id,
+            1,
+            6,
+          );
           if (recommendedRes.errCode === 0) {
             setRecommended(recommendedRes.data);
           }
@@ -85,9 +92,14 @@ export const useProductDetail = (slug) => {
   }, [product?.id, fetchReviews]);
 
   const handleAddToCart = async (variantId, quantity = 1) => {
-    if (!userId) return toast.warn("Bạn cần đăng nhập để mua hàng!");
-    if (!variantId && product?.variants?.length > 0)
-      return toast.warn("Vui lòng chọn phiên bản sản phẩm!");
+    if (!userId) {
+      toast.warn("Bạn cần đăng nhập để mua hàng!");
+      return null;
+    }
+    if (!variantId && product?.variants?.length > 0) {
+      toast.warn("Vui lòng chọn phiên bản sản phẩm!");
+      return null;
+    }
 
     setAddingCart(true);
     try {
@@ -101,7 +113,7 @@ export const useProductDetail = (slug) => {
       const res = await addCart({
         cartId: cart.id,
         productId: product.id,
-        variantId,
+        variantId: variantId || null, // Ensure proper null value for products without variants
         quantity,
       });
 
@@ -127,7 +139,7 @@ export const useProductDetail = (slug) => {
     try {
       const res = await createReviewApi({
         productId: product.id,
-        ...reviewData
+        ...reviewData,
       });
       if (res.errCode === 0) {
         toast.success("Cảm ơn bạn đã đánh giá!");
