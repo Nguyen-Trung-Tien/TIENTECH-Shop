@@ -113,7 +113,18 @@ const ProductDetailPage = () => {
     }
 
     // 3. Lấy từ trường specifications (JSON legacy) - Nếu chưa có trong Map thì mới thêm vào
-    const legacySpecs = displayVariant?.specifications || product.specifications || {};
+    let legacySpecs = displayVariant?.specifications || product.specifications || {};
+    
+    // Nếu legacySpecs là chuỗi JSON, hãy parse nó
+    if (typeof legacySpecs === 'string') {
+      try {
+        legacySpecs = JSON.parse(legacySpecs);
+      } catch (e) {
+        console.error("Error parsing legacy specs:", e);
+        legacySpecs = {};
+      }
+    }
+
     if (typeof legacySpecs === 'object' && legacySpecs !== null) {
       Object.entries(legacySpecs).forEach(([key, value]) => {
         if (!value) return;
@@ -130,28 +141,6 @@ const ProductDetailPage = () => {
 
     return Array.from(specsMap.values());
   }, [product, displayVariant]);
-
-  const specIconMap = {
-    screen: <FiMonitor />,
-    cpu: <FiCpu />,
-    ram: <FiSmartphone />,
-    rom: <FiMaximize />,
-    battery: <FiBattery />,
-    os: <FiInfo />,
-    refresh_rate: <FiZap />,
-    connectivity: <FiMoreHorizontal />
-  };
-
-  const specLabelMap = {
-    screen: "Màn hình",
-    cpu: "Vi xử lý (CPU)",
-    ram: "Bộ nhớ RAM",
-    rom: "Bộ nhớ trong",
-    battery: "Dung lượng Pin",
-    os: "Hệ điều hành",
-    refresh_rate: "Tần số quét",
-    connectivity: "Kết nối"
-  };
 
   useEffect(() => {
     if (product?.images?.length > 0) {

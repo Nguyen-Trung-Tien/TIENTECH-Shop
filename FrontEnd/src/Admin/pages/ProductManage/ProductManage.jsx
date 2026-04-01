@@ -23,6 +23,7 @@ import { getAllAttributesApi } from "../../../api/attributeApi";
 import { syncEmbeddings } from "../../../api/adminApi";
 import AppPagination from "../../../components/Pagination/Pagination";
 import VariantManager from "./VariantManager";
+import { ConfirmModal } from "../../../components/UI/Modal";
 
 const ProductManage = () => {
   const { id: editId } = useParams();
@@ -128,15 +129,28 @@ const ProductManage = () => {
 
   const handleShowModal = useCallback((product = null) => {
     if (product) {
-      // Map attributes from product
+      // Map attributes from product junction table
       const productAttrs = {};
-      if (product.attributes) {
+      if (product.attributes && Array.isArray(product.attributes)) {
         product.attributes.forEach(attrVal => {
           if (attrVal.attribute) {
             productAttrs[attrVal.attribute.code] = attrVal.value;
           }
         });
       }
+
+      // Also merge from legacy specifications JSON field if it exists
+      let legacySpecs = product.specifications || {};
+      if (typeof legacySpecs === 'string') {
+        try {
+          legacySpecs = JSON.parse(legacySpecs);
+        } catch (e) {
+          legacySpecs = {};
+        }
+      }
+      
+      // Merge: priority to junction table attributes, then legacy specs
+      const mergedAttrs = { ...legacySpecs, ...productAttrs };
 
       setFormData({
         name: product.name || "",
@@ -152,7 +166,8 @@ const ProductManage = () => {
         flashSalePrice: product.flashSalePrice || "",
         flashSaleStart: product.flashSaleStart ? new Date(product.flashSaleStart).toISOString().slice(0, 16) : "",
         flashSaleEnd: product.flashSaleEnd ? new Date(product.flashSaleEnd).toISOString().slice(0, 16) : "",
-        attributes: productAttrs,
+        attributes: mergedAttrs,
+        specifications: legacySpecs,
         imageFile: null
       });
       setImagePreview(product.image || null);
@@ -228,11 +243,23 @@ const ProductManage = () => {
     if (!formData.name.trim()) return toast.error("Tên sản phẩm không được trống");
 
     const data = new FormData();
+    
+    // Sync variants from state to formData before saving
+    const finalVariants = editProduct ? variants : formData.variants;
+    
+    // Ensure specifications is synced with attributes for legacy support
+    const finalSpecs = { ...formData.specifications, ...formData.attributes };
+
     Object.keys(formData).forEach(key => {
       if (key === "imageFile" && formData[key]) {
         data.append("image", formData[key]);
-      } else if (key === "attributes") {
-        data.append("attributes", JSON.stringify(formData.attributes));
+      } else if (["attributes", "variants", "options", "specifications"].includes(key)) {
+        let value;
+        if (key === "variants") value = finalVariants;
+        else if (key === "specifications") value = finalSpecs;
+        else value = formData[key];
+        
+        data.append(key, JSON.stringify(value || (key === "attributes" ? {} : [])));
       } else if (formData[key] !== null && formData[key] !== "") {
         data.append(key, formData[key]);
       }
@@ -659,22 +686,17 @@ const ProductManage = () => {
         )}
       </AnimatePresence>
 
-      <AnimatePresence>
-        {confirmModal.show && (
-          <div className="fixed inset-0 z-[1100] flex items-center justify-center p-4">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setConfirmModal({ show: false, productId: null, name: "" })} className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" />
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="relative w-full max-w-sm bg-white rounded-[2rem] shadow-2xl p-10 text-center">
-              <div className="w-20 h-20 bg-rose-50 text-rose-500 rounded-3xl flex items-center justify-center text-4xl mx-auto mb-6 shadow-sm"><FiTrash2 /></div>
-              <h3 className="text-2xl font-black text-slate-900 mb-2">Xác nhận xóa?</h3>
-              <p className="text-sm text-slate-500 mb-8 font-medium leading-relaxed">Bạn có chắc chắn muốn xóa <strong>{confirmModal.name}</strong>? Hành động này không thể hoàn tác.</p>
-              <div className="grid grid-cols-2 gap-4">
-                 <button onClick={() => setConfirmModal({ show: false, productId: null, name: "" })} className="px-6 py-3 rounded-2xl font-bold text-slate-500 hover:bg-slate-100 transition-all">Quay lại</button>
-                 <button onClick={handleConfirmDelete} className="px-6 py-3 bg-rose-500 text-white rounded-2xl font-bold shadow-lg shadow-rose-200 hover:bg-rose-600 active:scale-95 transition-all">Đồng ý xóa</button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+      <ConfirmModal
+        isOpen={confirmModal.show}
+        onClose={() => setConfirmModal({ show: false, productId: null, name: "" })}
+        onConfirm={handleConfirmDelete}
+        title="Xác nhận xóa?"
+        message={`Bạn có chắc chắn muốn xóa ${confirmModal.name}? Hành động này không thể hoàn tác.`}
+        confirmText="Đồng ý xóa"
+        variant="danger"
+        icon={FiTrash2}
+        iconClassName="bg-rose-50 text-rose-500"
+      />
     </div>
   );
 };

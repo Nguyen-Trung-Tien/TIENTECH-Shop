@@ -15,7 +15,7 @@ import { FcGoogle } from "react-icons/fc";
 
 import { registerUser } from "../../api/userApi";
 import Loading from "../../components/Loading/Loading";
-import logoImage from "../../assets/Tien-Tech Shop.png";
+import logoImage from "../../assets/TienTech Shop.png";
 
 // Di chuyển FloatingInput ra ngoài để tránh việc re-mount component khi state của cha thay đổi
 const FloatingInput = ({
@@ -153,7 +153,7 @@ const RegisterPage = () => {
               transition={{ delay: 0.2 }}
               className="text-surface-400 text-lg font-medium opacity-80"
             >
-              Tham gia cùng hàng nghìn khách hàng tin dùng Tien-Tech Shop mỗi
+              Tham gia cùng hàng nghìn khách hàng tin dùng TienTech Shop mỗi
               ngày.
             </motion.p>
           </div>

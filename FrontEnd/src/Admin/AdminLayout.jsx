@@ -23,10 +23,11 @@ const AdminLayout = () => {
             <Outlet />
           </div>
         </main>
-        
+
         {/* Admin Footer - Simple and clean */}
         <footer className="py-4 px-10 border-t border-slate-200/60 bg-white/50 text-center text-[11px] font-bold uppercase tracking-widest text-slate-400">
-          &copy; {new Date().getFullYear()} Tien-Tech Shop &bull; Dashboard Version 2.0
+          &copy; {new Date().getFullYear()} TienTech Shop &bull; Dashboard
+          Version 2.0
         </footer>
       </div>
     </div>

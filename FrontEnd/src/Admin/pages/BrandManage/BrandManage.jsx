@@ -19,6 +19,7 @@ import {
   getAllBrandApi,
 } from "../../../api/brandApi";
 import AppPagination from "../../../components/Pagination/Pagination";
+import { ConfirmModal } from "../../../components/UI/Modal";
 
 const BrandManage = () => {
   const [brands, setBrands] = useState([]);
@@ -309,22 +310,17 @@ const BrandManage = () => {
         )}
       </AnimatePresence>
 
-      <AnimatePresence>
-        {confirmModal.show && (
-          <div className="fixed inset-0 z-[1100] flex items-center justify-center p-4">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setConfirmModal({ show: false, id: null, name: "" })} className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" />
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="relative w-full max-w-sm bg-white rounded-[2rem] shadow-2xl p-10 text-center">
-              <div className="w-20 h-20 bg-rose-50 text-rose-500 rounded-3xl flex items-center justify-center text-4xl mx-auto mb-6 shadow-sm"><FiTrash2 /></div>
-              <h3 className="text-2xl font-black text-slate-900 mb-2">Gỡ bỏ nhãn hàng?</h3>
-              <p className="text-sm text-slate-500 mb-8 font-medium">Bạn có chắc chắn muốn xóa thương hiệu <strong>{confirmModal.name}</strong>? Các sản phẩm hiện tại sẽ không còn thương hiệu liên kết.</p>
-              <div className="grid grid-cols-2 gap-4">
-                 <button onClick={() => setConfirmModal({ show: false, id: null, name: "" })} className="px-6 py-3 rounded-2xl font-bold text-slate-500 hover:bg-slate-100">Hủy</button>
-                 <button onClick={handleConfirmDelete} className="px-6 py-3 bg-rose-500 text-white rounded-2xl font-bold shadow-lg shadow-rose-200 hover:bg-rose-600 active:scale-95 transition-all">Xác nhận</button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+      <ConfirmModal
+        isOpen={confirmModal.show}
+        onClose={() => setConfirmModal({ show: false, id: null, name: "" })}
+        onConfirm={handleConfirmDelete}
+        title="Gỡ bỏ nhãn hàng?"
+        message={`Bạn có chắc chắn muốn xóa thương hiệu ${confirmModal.name}? Các sản phẩm hiện tại sẽ không còn thương hiệu liên kết.`}
+        confirmText="Đồng ý xóa"
+        variant="danger"
+        icon={FiTrash2}
+        iconClassName="bg-rose-50 text-rose-500"
+      />
     </div>
   );
 };

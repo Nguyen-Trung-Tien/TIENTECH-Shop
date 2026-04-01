@@ -31,7 +31,7 @@ const sendForgotPasswordEmail = async (user, token) => {
     <div style="font-family: Arial, sans-serif; background-color: #f9fafb; padding: 24px;">
       <div style="max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); overflow: hidden;">
         <div style="background-color: #0d6efd; color: white; text-align: center; padding: 16px 0;">
-          <h2 style="margin: 0; font-size: 22px;">Tien-Tech Shop</h2>
+          <h2 style="margin: 0; font-size: 22px;">TienTech Shop</h2>
         </div>
 
         <div style="padding: 24px;">
@@ -66,7 +66,7 @@ const sendOrderDeliveredEmail = async (user, order) => {
   <div style="font-family: Arial, sans-serif; background-color: #f9fafb; padding: 24px;">
     <div style="max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); overflow: hidden;">
       <div style="background-color: #0d6efd; color: white; text-align: center; padding: 16px 0;">
-        <h2 style="margin: 0; font-size: 22px;">Tien-Tech Shop</h2>
+        <h2 style="margin: 0; font-size: 22px;">TienTech Shop</h2>
       </div>
 
       <div style="padding: 24px;">
@@ -96,7 +96,7 @@ const sendOrderDeliveredEmail = async (user, order) => {
         </div>
 
         <p style="margin-top: 24px; color: #555; font-size: 14px;">
-          Cảm ơn bạn đã tin tưởng và mua sắm tại <b>Tien-Tech Shop</b>! ❤️<br/>
+          Cảm ơn bạn đã tin tưởng và mua sắm tại <b>TienTech Shop</b>! ❤️<br/>
           Những đánh giá của bạn sẽ giúp chúng tôi hoàn thiện dịch vụ tốt hơn.
         </p>
       </div>
@@ -104,7 +104,7 @@ const sendOrderDeliveredEmail = async (user, order) => {
       <div style="background-color: #f3f4f6; text-align: center; padding: 16px; border-top: 1px solid #eee;">
         <p style="font-size: 12px; color: #888; margin: 0;">
           Đây là email tự động, vui lòng không trả lời trực tiếp.<br/>
-          © ${new Date().getFullYear()} Tien-Tech Shop. All rights reserved.
+          © ${new Date().getFullYear()} TienTech Shop. All rights reserved.
         </p>
       </div>
     </div>
@@ -115,24 +115,24 @@ const sendOrderDeliveredEmail = async (user, order) => {
 };
 
 const sendVerificationEmail = async (user, token) => {
-  const subject = "📧 Xác nhận tài khoản - Tien-Tech Shop";
-  
+  const subject = "📧 Xác nhận tài khoản - TienTech Shop";
+
   // Đảm bảo URL_REACT có dấu / ở cuối
-  const baseUrl = process.env.URL_REACT.endsWith("/") 
-    ? process.env.URL_REACT 
+  const baseUrl = process.env.URL_REACT.endsWith("/")
+    ? process.env.URL_REACT
     : `${process.env.URL_REACT}/`;
-    
+
   const verificationUrl = `${baseUrl}verify-email?email=${encodeURIComponent(user.email)}&token=${token}`;
-  
+
   const html = `
     <div style="font-family: Arial, sans-serif; background-color: #f9fafb; padding: 24px;">
       <div style="max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); overflow: hidden;">
         <div style="background-color: #0d6efd; color: white; text-align: center; padding: 16px 0;">
-          <h2 style="margin: 0; font-size: 22px;">Tien-Tech Shop</h2>
+          <h2 style="margin: 0; font-size: 22px;">TienTech Shop</h2>
         </div>
 
         <div style="padding: 24px;">
-          <h3 style="color: #2c3e50;">Chào mừng ${user.username || "bạn"} đến với Tien-Tech!</h3>
+          <h3 style="color: #2c3e50;">Chào mừng ${user.username || "bạn"} đến với TienTech!</h3>
           <p>Cảm ơn bạn đã đăng ký. Vui lòng xác nhận tài khoản của bạn bằng cách nhấn vào nút bên dưới:</p>
           <div style="text-align: center; margin: 30px 0;">
             <a href="${verificationUrl}" 
@@ -148,11 +148,11 @@ const sendVerificationEmail = async (user, token) => {
           </div>
           <p style="font-size: 14px; color: #666;">Link xác nhận này sẽ hết hạn sau 24 giờ.</p>
           <p>Nếu bạn không đăng ký tài khoản, vui lòng bỏ qua email này.</p>
-          <p style="margin-top: 24px;">Trân trọng,<br>Đội ngũ Tien-Tech</p>
+          <p style="margin-top: 24px;">Trân trọng,<br>Đội ngũ TienTech</p>
         </div>
 
         <div style="background-color: #f3f4f6; text-align: center; padding: 12px;">
-          <p style="font-size: 12px; color: #888; margin: 0;">© ${new Date().getFullYear()} Tien-Tech Shop. All rights reserved.</p>
+          <p style="font-size: 12px; color: #888; margin: 0;">© ${new Date().getFullYear()} TienTech Shop. All rights reserved.</p>
         </div>
       </div>
     </div>

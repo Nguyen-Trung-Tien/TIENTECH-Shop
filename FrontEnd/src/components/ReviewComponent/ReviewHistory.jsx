@@ -7,6 +7,7 @@ import { Link } from "react-router-dom";
 import Pagination from "../UI/Pagination";
 import Button from "../UI/Button";
 import ReviewForm from "./ReviewForm";
+import { ConfirmModal } from "../UI/Modal";
 
 const ReviewHistory = () => {
   const [activeTab, setActiveTab] = useState("pending"); // "pending" or "history"
@@ -17,6 +18,7 @@ const ReviewHistory = () => {
   const [reviewingProductId, setReviewingProductId] = useState(null);
   const [newReview, setNewReview] = useState({ rating: 0, comment: "", images: [] });
   const [submitting, setSubmitting] = useState(false);
+  const [confirmDeleteModal, setConfirmDeleteModal] = useState({ show: false, id: null });
 
   useEffect(() => {
     if (activeTab === "history") {
@@ -55,16 +57,15 @@ const ReviewHistory = () => {
     }
   };
 
-  const handleDelete = async (id) => {
-    if (window.confirm("Bạn có chắc chắn muốn xóa đánh giá này?")) {
-      const res = await deleteReviewApi(id);
-      if (res.errCode === 0) {
-        toast.success("Đã xóa đánh giá");
-        fetchReviews(pagination.page);
-      } else {
-        toast.error(res.errMessage);
-      }
+  const handleDelete = async () => {
+    const res = await deleteReviewApi(confirmDeleteModal.id);
+    if (res.errCode === 0) {
+      toast.success("Đã xóa đánh giá");
+      fetchReviews(pagination.page);
+    } else {
+      toast.error(res.errMessage);
     }
+    setConfirmDeleteModal({ show: false, id: null });
   };
 
   const handleOpenReviewForm = (productId) => {
@@ -225,7 +226,7 @@ const ReviewHistory = () => {
                               <span className="text-[10px] font-bold uppercase tracking-widest">{new Date(review.createdAt).toLocaleDateString("vi-VN")}</span>
                             </div>
                           </div>
-                          <button onClick={() => handleDelete(review.id)} className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"><FiTrash2 size={16} /></button>
+                          <button onClick={() => setConfirmDeleteModal({ show: true, id: review.id })} className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"><FiTrash2 size={16} /></button>
                         </div>
                         <p className="text-slate-600 text-sm italic leading-relaxed">"{review.comment}"</p>
 
@@ -271,6 +272,18 @@ const ReviewHistory = () => {
           )}
         </div>
       )}
+
+      <ConfirmModal
+        isOpen={confirmDeleteModal.show}
+        onClose={() => setConfirmDeleteModal({ show: false, id: null })}
+        onConfirm={handleDelete}
+        title="Xóa đánh giá?"
+        message="Bạn có chắc chắn muốn gỡ bỏ đánh giá này không?"
+        confirmText="Đồng ý xóa"
+        variant="danger"
+        icon={FiTrash2}
+        iconClassName="bg-rose-50 text-rose-500"
+      />
     </div>
   );
 };

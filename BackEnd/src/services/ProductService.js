@@ -191,20 +191,21 @@ const createProductWithVariants = async (data, imageRecords = []) => {
         const variantStock = Number(variant.stock || 0);
         finalTotalStock += variantStock;
 
+        const variantAttrs = variant.attributes || variant.attributeValues || {};
         const newVariant = await db.ProductVariant.create(
           {
             productId: product.id,
             sku: variant.sku || `${product.sku}-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
             price: variant.price || product.basePrice,
             stock: variantStock,
-            attributeValues: variant.attributeValues || {},
+            attributeValues: variantAttrs,
             isActive: true,
           },
           { transaction: t }
         );
 
-        if (variant.attributes) {
-          await AttributeService.assignAttributesToVariant(newVariant.id, variant.attributes, t);
+        if (variantAttrs && Object.keys(variantAttrs).length > 0) {
+          await AttributeService.assignAttributesToVariant(newVariant.id, variantAttrs, t);
         }
       }
       await product.update({ totalStock: finalTotalStock }, { transaction: t });
@@ -246,16 +247,84 @@ const updateProduct = async (id, data, imageRecords = []) => {
       updatedData.sku = await ensureUniqueSKU(updatedData.sku, t);
     }
 
-    if (updatedData.stock !== undefined) {
-      updatedData.totalStock = Number(updatedData.stock);
-    }
-
     const updatedProduct = await product.update(updatedData, { transaction: t });
+
+    // Đảm bảo trường specifications được lưu đúng định dạng JSON/Object
+    if (updatedData.specifications) {
+      let specs = updatedData.specifications;
+      if (typeof specs === 'string') {
+        try {
+          specs = JSON.parse(specs);
+        } catch (e) {
+          console.error("Error parsing specs in updateProduct:", e);
+        }
+      }
+      await updatedProduct.update({ specifications: specs }, { transaction: t });
+    }
 
     if (updatedData.attributes) {
       const attrs = typeof updatedData.attributes === 'string' ? JSON.parse(updatedData.attributes) : updatedData.attributes;
       await db.ProductAttributeValue.destroy({ where: { productId: id }, transaction: t });
       await AttributeService.assignAttributesToProduct(id, attrs, t);
+    }
+
+    // Handle Variants if provided
+    if (updatedData.variants && Array.isArray(updatedData.variants)) {
+      const incomingVariantIds = updatedData.variants.filter(v => v.id).map(v => v.id);
+      
+      // Delete variants not in incoming list
+      await db.ProductVariant.destroy({
+        where: {
+          productId: id,
+          id: { [Op.notIn]: incomingVariantIds }
+        },
+        transaction: t
+      });
+
+      let finalTotalStock = 0;
+      for (const variantData of updatedData.variants) {
+        const variantStock = Number(variantData.stock || 0);
+        finalTotalStock += variantStock;
+
+        if (variantData.id) {
+          // Update existing
+          const existingVariant = await db.ProductVariant.findByPk(variantData.id, { transaction: t });
+          if (existingVariant) {
+            const variantAttrs = variantData.attributes || variantData.attributeValues || {};
+            await existingVariant.update({
+              sku: variantData.sku || existingVariant.sku,
+              price: variantData.price || existingVariant.price,
+              stock: variantStock,
+              attributeValues: variantAttrs,
+              isActive: variantData.isActive !== undefined ? variantData.isActive : existingVariant.isActive,
+            }, { transaction: t });
+
+            if (variantAttrs) {
+              await db.VariantAttributeValue.destroy({ where: { variantId: existingVariant.id }, transaction: t });
+              await AttributeService.assignAttributesToVariant(existingVariant.id, variantAttrs, t);
+            }
+          }
+        } else {
+          // Create new
+          const newVariant = await db.ProductVariant.create({
+            productId: id,
+            sku: variantData.sku || `${product.sku}-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
+            price: variantData.price || product.basePrice,
+            stock: variantStock,
+            attributeValues: variantData.attributes || variantData.attributeValues || {},
+            isActive: true,
+          }, { transaction: t });
+
+          const variantAttrs = variantData.attributes || variantData.attributeValues;
+          if (variantAttrs) {
+            await AttributeService.assignAttributesToVariant(newVariant.id, variantAttrs, t);
+          }
+        }
+      }
+      await updatedProduct.update({ totalStock: finalTotalStock, hasVariants: updatedData.variants.length > 0 }, { transaction: t });
+    } else if (updatedData.stock !== undefined) {
+      // If no variants, just update totalStock from product stock
+      await updatedProduct.update({ totalStock: Number(updatedData.stock) }, { transaction: t });
     }
 
     if (imageRecords.length > 0) {
@@ -337,7 +406,8 @@ const getProductById = async (id) => {
           include: [
             { model: db.AttributeValue, as: "attributes", include: [{ model: db.Attribute, as: "attribute" }] },
             { model: db.ProductImage, as: "images" }
-          ] 
+          ],
+          distinct: true
         },
       ],
     });
@@ -548,7 +618,8 @@ const getProductBySlug = async (slug) => {
           include: [
             { model: db.AttributeValue, as: "attributes", include: [{ model: db.Attribute, as: "attribute" }] },
             { model: db.ProductImage, as: "images" }
-          ] 
+          ],
+          distinct: true
         },
       ],
     });

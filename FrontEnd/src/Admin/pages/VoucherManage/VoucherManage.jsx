@@ -2,11 +2,13 @@ import React, { useState, useEffect } from "react";
 import { FiPlus, FiTrash2, FiTag, FiCalendar, FiDollarSign } from "react-icons/fi";
 import { toast } from "react-toastify";
 import { getAllVouchersApi, createVoucherApi, deleteVoucherApi } from "../../../api/voucherApi";
+import { ConfirmModal } from "../../../components/UI/Modal";
 
 const VoucherManage = () => {
   const [vouchers, setVouchers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [confirmModal, setConfirmModal] = useState({ show: false, id: null, code: "" });
   const [newVoucher, setNewVoucher] = useState({
     code: "",
     type: "percentage",
@@ -42,14 +44,13 @@ const VoucherManage = () => {
     }
   };
 
-  const handleDelete = async (id) => {
-    if (window.confirm("Bạn có chắc chắn muốn xóa mã này?")) {
-      const res = await deleteVoucherApi(id);
-      if (res.errCode === 0) {
-        toast.success("Đã xóa mã giảm giá.");
-        fetchVouchers();
-      }
+  const handleDelete = async () => {
+    const res = await deleteVoucherApi(confirmModal.id);
+    if (res.errCode === 0) {
+      toast.success("Đã xóa mã giảm giá.");
+      fetchVouchers();
     }
+    setConfirmModal({ show: false, id: null, code: "" });
   };
 
   return (
@@ -100,7 +101,7 @@ const VoucherManage = () => {
                 </td>
                 <td className="px-6 py-4 text-center">
                   <button
-                    onClick={() => handleDelete(v.id)}
+                    onClick={() => setConfirmModal({ show: true, id: v.id, code: v.code })}
                     className="text-red-500 hover:text-red-700 p-2"
                   >
                     <FiTrash2 size={18} />
@@ -196,6 +197,18 @@ const VoucherManage = () => {
           </div>
         </div>
       )}
+
+      <ConfirmModal
+        isOpen={confirmModal.show}
+        onClose={() => setConfirmModal({ show: false, id: null, code: "" })}
+        onConfirm={handleDelete}
+        title="Xóa mã giảm giá?"
+        message={`Bạn có chắc chắn muốn xóa mã ${confirmModal.code}? Hành động này không thể hoàn tác.`}
+        confirmText="Đồng ý xóa"
+        variant="danger"
+        icon={FiTrash2}
+        iconClassName="bg-rose-50 text-rose-500"
+      />
     </div>
   );
 };

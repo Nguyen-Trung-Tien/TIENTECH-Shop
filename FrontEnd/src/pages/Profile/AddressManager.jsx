@@ -20,6 +20,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { Button, Modal } from "../../components/UI";
 import Badge from "../../components/UI/Badge";
+import { ConfirmModal } from "../../components/UI/Modal";
 
 const AddressManager = () => {
   const [addresses, setAddresses] = useState([]);
@@ -27,6 +28,7 @@ const AddressManager = () => {
   const [showModal, setShowModal] = useState(false);
   const [editingAddress, setEditingAddress] = useState(null);
   const [submitLoading, setSubmitLoading] = useState(false);
+  const [confirmDeleteModal, setConfirmDeleteModal] = useState({ show: false, id: null });
 const [formData, setFormData] = useState({
   fullName: "",
   phone: "",
@@ -111,10 +113,9 @@ const [formData, setFormData] = useState({
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Bạn có chắc chắn muốn xóa địa chỉ này?")) return;
+  const handleDelete = async () => {
     try {
-      const res = await deleteAddressApi(id);
+      const res = await deleteAddressApi(confirmDeleteModal.id);
       if (res.errCode === 0) {
         toast.success(res.errMessage);
         fetchAddresses();
@@ -124,6 +125,7 @@ const [formData, setFormData] = useState({
     } catch (error) {
       toast.error("Lỗi khi xóa địa chỉ");
     }
+    setConfirmDeleteModal({ show: false, id: null });
   };
 
   const handleSetDefault = async (id) => {
@@ -225,7 +227,7 @@ const [formData, setFormData] = useState({
                         <FiCheckCircle size={16} />
                       </button>
                       <button
-                        onClick={() => handleDelete(addr.id)}
+                        onClick={() => setConfirmDeleteModal({ show: true, id: addr.id })}
                         className="p-2 text-surface-400 hover:text-red-500 transition-colors bg-surface-50 rounded-lg"
                         title="Xóa"
                       >
@@ -354,6 +356,18 @@ const [formData, setFormData] = useState({
           </div>
         </form>
       </Modal>
+
+      <ConfirmModal
+        isOpen={confirmDeleteModal.show}
+        onClose={() => setConfirmDeleteModal({ show: false, id: null })}
+        onConfirm={handleDelete}
+        title="Xác nhận xóa địa chỉ?"
+        message="Hành động này sẽ gỡ bỏ địa chỉ này khỏi danh sách của bạn."
+        confirmText="Đồng ý xóa"
+        variant="danger"
+        icon={FiTrash2}
+        iconClassName="bg-rose-50 text-rose-500"
+      />
     </div>
   );
 };

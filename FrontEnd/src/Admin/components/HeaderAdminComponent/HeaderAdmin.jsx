@@ -20,7 +20,7 @@ import { clearCart } from "../../../redux/cartSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import { useCurrentUser } from "../../../hooks/useUser";
-import logoImage from "../../../assets/Tien-Tech Shop.png";
+import logoImage from "../../../assets/TienTech Shop.png";
 import NotificationBell from "../../../components/HeaderComponent/NotificationBell";
 import { debounce } from "lodash";
 import { motion, AnimatePresence } from "framer-motion";
@@ -34,11 +34,15 @@ const HeaderAdmin = ({ toggleSidebar, isCollapsed }) => {
 
   const [searchQuery, setSearchQuery] = useState("");
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [suggestions, setSuggestions] = useState({ products: [], orders: [], users: [] });
+  const [suggestions, setSuggestions] = useState({
+    products: [],
+    orders: [],
+    users: [],
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
-  
+
   const searchRef = useRef(null);
 
   const displayName =
@@ -65,7 +69,7 @@ const HeaderAdmin = ({ toggleSidebar, isCollapsed }) => {
         setIsLoading(false);
       }
     }, 400),
-    []
+    [],
   );
 
   useEffect(() => {
@@ -138,13 +142,15 @@ const HeaderAdmin = ({ toggleSidebar, isCollapsed }) => {
 
         {/* Brand / Title (Mobile) */}
         <div className="flex items-center gap-2 md:hidden">
-           <img src={logoImage} alt="Logo" className="h-8 w-auto" />
+          <img src={logoImage} alt="Logo" className="h-8 w-auto" />
         </div>
 
         {/* Search Bar (Desktop) */}
         <div ref={searchRef} className="hidden md:block relative group">
           <form onSubmit={handleSearch} className="flex relative group">
-            <FiSearch className={`absolute left-3 top-1/2 -translate-y-1/2 transition-colors ${isLoading ? "text-primary animate-pulse" : "text-slate-400 group-focus-within:text-primary"}`} />
+            <FiSearch
+              className={`absolute left-3 top-1/2 -translate-y-1/2 transition-colors ${isLoading ? "text-primary animate-pulse" : "text-slate-400 group-focus-within:text-primary"}`}
+            />
             <input
               type="text"
               placeholder="Tìm sản phẩm, đơn hàng, khách hàng..."
@@ -167,7 +173,9 @@ const HeaderAdmin = ({ toggleSidebar, isCollapsed }) => {
                 {isLoading ? (
                   <div className="py-8 text-center space-y-2">
                     <div className="inline-block w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
-                    <p className="text-xs text-slate-500 font-medium italic">Đang tìm kiếm hệ thống...</p>
+                    <p className="text-xs text-slate-500 font-medium italic">
+                      Đang tìm kiếm hệ thống...
+                    </p>
                   </div>
                 ) : (
                   <div className="max-h-[70vh] overflow-y-auto custom-scrollbar">
@@ -176,10 +184,12 @@ const HeaderAdmin = ({ toggleSidebar, isCollapsed }) => {
                       <div className="mb-4">
                         <div className="flex items-center gap-2 px-3 py-1.5 mb-1 bg-slate-50 rounded-lg">
                           <FiPackage className="text-primary text-xs" />
-                          <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Sản phẩm</span>
+                          <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">
+                            Sản phẩm
+                          </span>
                         </div>
                         <div className="space-y-1">
-                          {suggestions.products.map(p => (
+                          {suggestions.products.map((p) => (
                             <button
                               key={p.id}
                               onClick={() => {
@@ -189,10 +199,29 @@ const HeaderAdmin = ({ toggleSidebar, isCollapsed }) => {
                               className="flex items-center justify-between w-full px-3 py-2 hover:bg-slate-50 rounded-xl transition-all group text-left"
                             >
                               <div className="min-w-0">
-                                <p className="text-sm font-bold text-slate-800 group-hover:text-primary transition-colors truncate">{p.name}</p>
-                                <p className="text-[10px] text-slate-500 font-medium">SKU: <span className="font-bold text-slate-700">{p.sku}</span> • Kho: <span className={p.totalStock > 0 ? "text-emerald-600" : "text-rose-500"}>{p.totalStock}</span></p>
+                                <p className="text-sm font-bold text-slate-800 group-hover:text-primary transition-colors truncate">
+                                  {p.name}
+                                </p>
+                                <p className="text-[10px] text-slate-500 font-medium">
+                                  SKU:{" "}
+                                  <span className="font-bold text-slate-700">
+                                    {p.sku}
+                                  </span>{" "}
+                                  • Kho:{" "}
+                                  <span
+                                    className={
+                                      p.totalStock > 0
+                                        ? "text-emerald-600"
+                                        : "text-rose-500"
+                                    }
+                                  >
+                                    {p.totalStock}
+                                  </span>
+                                </p>
                               </div>
-                              <span className="text-xs font-black text-slate-900 ml-4">{formatPrice(p.basePrice)}</span>
+                              <span className="text-xs font-black text-slate-900 ml-4">
+                                {formatPrice(p.basePrice)}
+                              </span>
                             </button>
                           ))}
                         </div>
@@ -204,10 +233,12 @@ const HeaderAdmin = ({ toggleSidebar, isCollapsed }) => {
                       <div className="mb-4">
                         <div className="flex items-center gap-2 px-3 py-1.5 mb-1 bg-slate-50 rounded-lg">
                           <FiShoppingBag className="text-indigo-500 text-xs" />
-                          <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Đơn hàng</span>
+                          <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">
+                            Đơn hàng
+                          </span>
                         </div>
                         <div className="space-y-1">
-                          {suggestions.orders.map(o => (
+                          {suggestions.orders.map((o) => (
                             <button
                               key={o.id}
                               onClick={() => {
@@ -217,14 +248,29 @@ const HeaderAdmin = ({ toggleSidebar, isCollapsed }) => {
                               className="flex items-center justify-between w-full px-3 py-2 hover:bg-slate-50 rounded-xl transition-all group text-left"
                             >
                               <div className="min-w-0">
-                                <p className="text-sm font-bold text-slate-800 group-hover:text-indigo-600 transition-colors truncate">#{o.orderCode}</p>
+                                <p className="text-sm font-bold text-slate-800 group-hover:text-indigo-600 transition-colors truncate">
+                                  #{o.orderCode}
+                                </p>
                                 <p className="text-[10px] text-slate-500 font-medium">
-                                  Khách: <span className="font-bold text-slate-700">{o.user?.username || "Ẩn danh"}</span> • {new Date(o.createdAt).toLocaleDateString("vi-VN")}
+                                  Khách:{" "}
+                                  <span className="font-bold text-slate-700">
+                                    {o.user?.username || "Ẩn danh"}
+                                  </span>{" "}
+                                  •{" "}
+                                  {new Date(o.createdAt).toLocaleDateString(
+                                    "vi-VN",
+                                  )}
                                 </p>
                               </div>
                               <div className="text-right">
-                                <p className="text-xs font-black text-slate-900">{formatPrice(o.totalPrice)}</p>
-                                <span className={`text-[8px] font-black uppercase px-1.5 py-0.5 rounded ${o.status === 'delivered' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>{o.status}</span>
+                                <p className="text-xs font-black text-slate-900">
+                                  {formatPrice(o.totalPrice)}
+                                </p>
+                                <span
+                                  className={`text-[8px] font-black uppercase px-1.5 py-0.5 rounded ${o.status === "delivered" ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}
+                                >
+                                  {o.status}
+                                </span>
                               </div>
                             </button>
                           ))}
@@ -237,10 +283,12 @@ const HeaderAdmin = ({ toggleSidebar, isCollapsed }) => {
                       <div className="mb-2">
                         <div className="flex items-center gap-2 px-3 py-1.5 mb-1 bg-slate-50 rounded-lg">
                           <FiUsers className="text-rose-500 text-xs" />
-                          <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Khách hàng</span>
+                          <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">
+                            Khách hàng
+                          </span>
                         </div>
                         <div className="space-y-1">
-                          {suggestions.users.map(u => (
+                          {suggestions.users.map((u) => (
                             <button
                               key={u.id}
                               onClick={() => {
@@ -253,8 +301,12 @@ const HeaderAdmin = ({ toggleSidebar, isCollapsed }) => {
                                 {u.username?.charAt(0).toUpperCase() || "U"}
                               </div>
                               <div className="min-w-0">
-                                <p className="text-sm font-bold text-slate-800 group-hover:text-rose-600 transition-colors truncate">{u.username}</p>
-                                <p className="text-[10px] text-slate-500 font-medium truncate">{u.email} • {u.phone || "N/A"}</p>
+                                <p className="text-sm font-bold text-slate-800 group-hover:text-rose-600 transition-colors truncate">
+                                  {u.username}
+                                </p>
+                                <p className="text-[10px] text-slate-500 font-medium truncate">
+                                  {u.email} • {u.phone || "N/A"}
+                                </p>
                               </div>
                             </button>
                           ))}
@@ -263,25 +315,31 @@ const HeaderAdmin = ({ toggleSidebar, isCollapsed }) => {
                     )}
 
                     {/* No results */}
-                    {suggestions.products.length === 0 && suggestions.orders.length === 0 && suggestions.users.length === 0 && (
-                      <div className="py-12 text-center space-y-2">
-                        <div className="h-12 w-12 bg-slate-50 rounded-full flex items-center justify-center mx-auto">
-                          <FiX className="text-slate-300 text-xl" />
+                    {suggestions.products.length === 0 &&
+                      suggestions.orders.length === 0 &&
+                      suggestions.users.length === 0 && (
+                        <div className="py-12 text-center space-y-2">
+                          <div className="h-12 w-12 bg-slate-50 rounded-full flex items-center justify-center mx-auto">
+                            <FiX className="text-slate-300 text-xl" />
+                          </div>
+                          <p className="text-xs text-slate-400 font-medium italic">
+                            Không tìm thấy kết quả phù hợp
+                          </p>
                         </div>
-                        <p className="text-xs text-slate-400 font-medium italic">Không tìm thấy kết quả phù hợp</p>
-                      </div>
-                    )}
+                      )}
 
                     <div className="mt-2 p-1 pt-2 border-t border-slate-50">
-                       <button
-                         onClick={() => {
-                           navigate(`/admin/search?q=${encodeURIComponent(searchQuery)}`);
-                           setShowSuggestions(false);
-                         }}
-                         className="flex items-center justify-center gap-2 w-full py-2 bg-slate-900 text-white rounded-xl text-[11px] font-black hover:bg-primary transition-all uppercase tracking-widest"
-                       >
-                         Xem toàn bộ kết quả <FiArrowRight />
-                       </button>
+                      <button
+                        onClick={() => {
+                          navigate(
+                            `/admin/search?q=${encodeURIComponent(searchQuery)}`,
+                          );
+                          setShowSuggestions(false);
+                        }}
+                        className="flex items-center justify-center gap-2 w-full py-2 bg-slate-900 text-white rounded-xl text-[11px] font-black hover:bg-primary transition-all uppercase tracking-widest"
+                      >
+                        Xem toàn bộ kết quả <FiArrowRight />
+                      </button>
                     </div>
                   </div>
                 )}
@@ -293,7 +351,7 @@ const HeaderAdmin = ({ toggleSidebar, isCollapsed }) => {
 
       <div className="flex items-center gap-2 md:gap-4">
         {/* Quick Actions */}
-        <button 
+        <button
           onClick={() => navigate("/")}
           className="hidden sm:flex h-10 items-center gap-2 rounded-xl border border-slate-200 px-4 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors"
         >
@@ -324,23 +382,31 @@ const HeaderAdmin = ({ toggleSidebar, isCollapsed }) => {
               </div>
             )}
             <div className="hidden text-left sm:block">
-              <p className="text-xs font-semibold text-slate-900 leading-tight">{displayName}</p>
-              <p className="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Quản trị viên</p>
+              <p className="text-xs font-semibold text-slate-900 leading-tight">
+                {displayName}
+              </p>
+              <p className="text-[10px] text-slate-500 uppercase font-bold tracking-wider">
+                Quản trị viên
+              </p>
             </div>
           </button>
 
           {showProfileMenu && (
             <>
-              <div 
-                className="fixed inset-0 z-10" 
+              <div
+                className="fixed inset-0 z-10"
                 onClick={() => setShowProfileMenu(false)}
               ></div>
               <div className="absolute right-0 mt-2 w-56 origin-top-right rounded-2xl border border-slate-200 bg-white p-2 shadow-xl ring-1 ring-black/5 z-20">
                 <div className="px-3 py-2 border-b border-slate-100 mb-1">
-                   <p className="text-sm font-bold text-slate-900">{user?.username || "Admin"}</p>
-                   <p className="text-xs text-slate-500 truncate">{user?.email}</p>
+                  <p className="text-sm font-bold text-slate-900">
+                    {user?.username || "Admin"}
+                  </p>
+                  <p className="text-xs text-slate-500 truncate">
+                    {user?.email}
+                  </p>
                 </div>
-                
+
                 <button
                   onClick={() => {
                     navigate("/profile");
@@ -351,9 +417,9 @@ const HeaderAdmin = ({ toggleSidebar, isCollapsed }) => {
                   <FiUser className="text-lg" />
                   Hồ sơ cá nhân
                 </button>
-                
+
                 <div className="my-1 border-t border-slate-100"></div>
-                
+
                 <button
                   onClick={handleLogout}
                   disabled={loggingOut}

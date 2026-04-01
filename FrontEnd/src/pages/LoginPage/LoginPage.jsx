@@ -1,6 +1,13 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { FiEye, FiEyeOff, FiMail, FiLock, FiArrowLeft, FiUser } from "react-icons/fi";
+import {
+  FiEye,
+  FiEyeOff,
+  FiMail,
+  FiLock,
+  FiArrowLeft,
+  FiUser,
+} from "react-icons/fi";
 import { FcGoogle } from "react-icons/fc";
 import { useDispatch } from "react-redux";
 import { toast } from "react-toastify";
@@ -11,10 +18,19 @@ import { setUser } from "../../redux/userSlice";
 import { getAvatarBase64 } from "../../utils/decodeImage";
 import ForgotPasswordModal from "../../components/ForgotPasswordModal/ForgotPasswordModal";
 import Loading from "../../components/Loading/Loading";
-import logoImage from "../../assets/Tien-Tech Shop.png";
+import logoImage from "../../assets/TienTech Shop.png";
 
 // TÁCH FloatingInput RA NGOÀI Component chính để không bị re-mount khi gõ phím
-const FloatingInput = ({ id, value, onChange, type, label, icon: Icon, toggleIcon: ToggleIcon, onToggle }) => (
+const FloatingInput = ({
+  id,
+  value,
+  onChange,
+  type,
+  label,
+  icon: Icon,
+  toggleIcon: ToggleIcon,
+  onToggle,
+}) => (
   <div className="relative group mb-4">
     <div className="absolute left-4 top-1/2 -translate-y-1/2 text-surface-400 group-focus-within:text-primary transition-colors duration-200">
       <Icon size={18} />
@@ -93,13 +109,13 @@ const LoginPage = () => {
   return (
     <div className="min-h-screen bg-surface-50 flex items-center justify-center p-4">
       {loading && <Loading />}
-      
+
       <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-12 bg-white rounded-[2.5rem] shadow-2xl shadow-surface-900/10 overflow-hidden min-h-[650px]">
         {/* Left Side - Visual */}
         <div className="hidden lg:flex lg:col-span-5 relative bg-surface-900 items-center justify-center p-12 overflow-hidden">
           <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] bg-primary/20 rounded-full blur-[120px]"></div>
           <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] bg-brand/10 rounded-full blur-[120px]"></div>
-          
+
           <div className="relative z-10 text-center">
             <motion.img
               initial={{ opacity: 0, y: 20 }}
@@ -108,7 +124,7 @@ const LoginPage = () => {
               alt="Logo"
               className="w-56 mx-auto mb-8 brightness-0 invert"
             />
-            <motion.h2 
+            <motion.h2
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
@@ -116,7 +132,7 @@ const LoginPage = () => {
             >
               Chào mừng <span className="text-primary-hover">quay lại</span>
             </motion.h2>
-            <motion.p 
+            <motion.p
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
@@ -135,8 +151,12 @@ const LoginPage = () => {
             </div>
 
             <div className="mb-10">
-              <h1 className="text-3xl font-display text-surface-900 mb-2">Đăng nhập</h1>
-              <p className="text-surface-500 font-medium">Vui lòng nhập thông tin để truy cập tài khoản.</p>
+              <h1 className="text-3xl font-display text-surface-900 mb-2">
+                Đăng nhập
+              </h1>
+              <p className="text-surface-500 font-medium">
+                Vui lòng nhập thông tin để truy cập tài khoản.
+              </p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-2">
@@ -163,13 +183,25 @@ const LoginPage = () => {
               <div className="flex items-center justify-between mb-8 py-2">
                 <label className="flex items-center gap-2 cursor-pointer group">
                   <div className="relative flex items-center justify-center">
-                    <input type="checkbox" id="rememberMe" className="peer sr-only" />
+                    <input
+                      type="checkbox"
+                      id="rememberMe"
+                      className="peer sr-only"
+                    />
                     <div className="w-5 h-5 border-2 border-surface-200 rounded-lg peer-checked:bg-primary peer-checked:border-primary transition-all"></div>
-                    <svg className="absolute w-3 h-3 text-white opacity-0 peer-checked:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="4">
+                    <svg
+                      className="absolute w-3 h-3 text-white opacity-0 peer-checked:opacity-100 transition-opacity"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    >
                       <path d="M5 13l4 4L19 7" />
                     </svg>
                   </div>
-                  <span className="text-sm font-semibold text-surface-600 group-hover:text-surface-900 transition-colors">Ghi nhớ</span>
+                  <span className="text-sm font-semibold text-surface-600 group-hover:text-surface-900 transition-colors">
+                    Ghi nhớ
+                  </span>
                 </label>
                 <button
                   type="button"
@@ -202,7 +234,9 @@ const LoginPage = () => {
                   <div className="w-full border-t border-surface-200"></div>
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="px-4 bg-white text-surface-500 font-bold uppercase tracking-wider">Hoặc</span>
+                  <span className="px-4 bg-white text-surface-500 font-bold uppercase tracking-wider">
+                    Hoặc
+                  </span>
                 </div>
               </div>
 
@@ -220,7 +254,10 @@ const LoginPage = () => {
 
             <p className="text-center mt-8 text-surface-500 font-medium">
               Chưa có tài khoản?{" "}
-              <Link to="/register" className="text-primary font-bold hover:underline decoration-2 underline-offset-4">
+              <Link
+                to="/register"
+                className="text-primary font-bold hover:underline decoration-2 underline-offset-4"
+              >
                 Đăng ký ngay
               </Link>
             </p>

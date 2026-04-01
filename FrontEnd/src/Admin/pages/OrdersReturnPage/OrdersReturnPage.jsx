@@ -19,6 +19,7 @@ import { processReturn } from "../../../api/orderItemApi";
 import AppPagination from "../../../components/Pagination/Pagination";
 import { paymentStatusMap } from "../../../utils/StatusMap";
 import { StatusBadge } from "../../../utils/StatusBadge";
+import { ConfirmModal } from "../../../components/UI/Modal";
 
 const OrdersReturnPage = () => {
   const navigate = useNavigate();
@@ -322,48 +323,20 @@ const OrdersReturnPage = () => {
         )}
       </AnimatePresence>
 
-      {/* Pop-up xác nhận cuối cùng cho Trả hàng */}
-      <AnimatePresence>
-        {confirmModal.show && (
-          <div className="fixed inset-0 z-[1200] flex items-center justify-center p-4 bg-black/20 backdrop-blur-[1px]">
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white p-6 rounded-2xl shadow-xl max-w-xs w-full text-center border border-slate-100"
-            >
-              <div className="w-12 h-12 bg-amber-50 text-amber-500 rounded-full flex items-center justify-center text-2xl mx-auto mb-4">
-                <FiAlertTriangle />
-              </div>
-              <h4 className="text-lg font-bold text-slate-900 mb-2">
-                Xác nhận thao tác?
-              </h4>
-              <p className="text-sm text-slate-500 mb-6">
-                Bạn có chắc muốn {confirmModal.approve ? "XÁC NHẬN" : "TỪ CHỐI"}{" "}
-                yêu cầu trả hàng này?
-                {confirmModal.approve && " Kho hàng sẽ tự động được cộng lại."}
-              </p>
-              <div className="flex gap-2">
-                <button
-                  onClick={() =>
-                    setConfirmModal({ ...confirmModal, show: false })
-                  }
-                  className="flex-1 py-2 bg-slate-100 text-slate-600 rounded-xl text-xs font-bold"
-                >
-                  Quay lại
-                </button>
-                <button
-                  disabled={loadingAction}
-                  onClick={handleProcessReturnAction}
-                  className={`flex-1 py-2 text-white rounded-xl text-xs font-bold ${confirmModal.approve ? "bg-indigo-600" : "bg-rose-500"}`}
-                >
-                  {loadingAction ? "Đang xử lý..." : "Xác nhận"}
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+      <ConfirmModal
+        isOpen={confirmModal.show}
+        onClose={() => setConfirmModal({ ...confirmModal, show: false })}
+        onConfirm={handleProcessReturnAction}
+        title={confirmModal.approve ? "Xác nhận duyệt trả hàng?" : "Xác nhận từ chối trả hàng?"}
+        message={confirmModal.approve 
+          ? "Hành động này sẽ xác nhận sản phẩm đã được trả về kho và hoàn tiền cho khách." 
+          : "Hành động này sẽ từ chối yêu cầu trả hàng của khách hàng."}
+        confirmText="Xác nhận"
+        variant={confirmModal.approve ? "primary" : "danger"}
+        icon={confirmModal.approve ? FiRotateCw : FiXCircle}
+        iconClassName={confirmModal.approve ? "bg-indigo-50 text-indigo-600" : "bg-rose-50 text-rose-500"}
+        loading={loadingAction}
+      />
     </div>
   );
 };

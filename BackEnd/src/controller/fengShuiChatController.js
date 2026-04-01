@@ -2,16 +2,22 @@ require("dotenv").config();
 const OpenAI = require("openai");
 const { Product, Brand, Category } = require("../models");
 const { Op } = require("sequelize");
-const {
-  getFengShuiDetail,
-} = require("../utils/fortuneUtils");
+const { getFengShuiDetail } = require("../utils/fortuneUtils");
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 const handleFengShuiChat = async (req, res) => {
   try {
-    const { birthYear, gender = "male", message, brandId, categoryId, minPrice, maxPrice, history = [] } =
-      req.body;
+    const {
+      birthYear,
+      gender = "male",
+      message,
+      brandId,
+      categoryId,
+      minPrice,
+      maxPrice,
+      history = [],
+    } = req.body;
 
     if (!birthYear || !message)
       return res.status(400).json({ error: "Thiếu năm sinh hoặc câu hỏi." });
@@ -22,8 +28,8 @@ const handleFengShuiChat = async (req, res) => {
     const products = await Product.findAll({
       where: {
         isActive: true,
-        [Op.or]: allLuckyColors.map(color => ({
-          color: { [Op.like]: `%${color}%` }
+        [Op.or]: allLuckyColors.map((color) => ({
+          color: { [Op.like]: `%${color}%` },
         })),
         ...(brandId && { brandId }),
         ...(categoryId && { categoryId }),
@@ -80,19 +86,22 @@ NGUYÊN TẮC TƯ VẤN:
 
     const messages = [
       { role: "system", content: systemPrompt },
-      ...history.slice(-6).map(msg => ({
+      ...history.slice(-6).map((msg) => ({
         role: msg.role === "user" ? "user" : "assistant",
-        content: typeof msg.content === 'string' ? msg.content : JSON.stringify(msg.content)
+        content:
+          typeof msg.content === "string"
+            ? msg.content
+            : JSON.stringify(msg.content),
       })),
-      { role: "user", content: message }
+      { role: "user", content: message },
     ];
 
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model: "gpt-5.4",
       messages: messages,
       temperature: 0.7,
       max_tokens: 500,
-      response_format: { type: "json_object" }
+      response_format: { type: "json_object" },
     });
 
     const result = JSON.parse(completion.choices[0].message.content);
@@ -102,15 +111,14 @@ NGUYÊN TẮC TƯ VẤN:
     if (result.recommendedProducts && result.recommendedProducts.length > 0) {
       finalRecommended = await Product.findAll({
         where: { id: { [Op.in]: result.recommendedProducts }, isActive: true },
-        attributes: ['id', 'name', 'price', 'discount', 'image']
+        attributes: ["id", "name", "price", "discount", "image"],
       });
     }
 
-    res.json({ 
+    res.json({
       reply: result.reply,
-      recommendedProducts: finalRecommended
+      recommendedProducts: finalRecommended,
     });
-
   } catch (error) {
     console.error("Lỗi chatbot phong thủy:", error);
     res.status(500).json({ error: "Lỗi xử lý AI phong thủy." });

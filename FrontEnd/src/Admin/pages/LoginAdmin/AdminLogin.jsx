@@ -12,7 +12,7 @@ import { useDispatch } from "react-redux";
 import { toast } from "react-toastify";
 import { loginUser } from "../../../api/userApi";
 import { setUser } from "../../../redux/userSlice";
-import logoImage from "../../../assets/Tien-Tech Shop.png";
+import logoImage from "../../../assets/TienTech Shop.png";
 import ForgotPasswordModal from "../../../components/ForgotPasswordModal/ForgotPasswordModal";
 
 const AdminLogin = () => {
@@ -78,7 +78,7 @@ const AdminLogin = () => {
               Quản Trị Hệ Thống
             </h2>
             <p className="text-slate-400 text-sm font-medium tracking-wide max-w-[280px] mx-auto">
-              Truy cập trung tâm điều khiển Tien-Tech.
+              Truy cập trung tâm điều khiển TienTech.
             </p>
           </div>
         </div>

@@ -20,10 +20,13 @@ const handleChat = async (req, res) => {
     let suggestedProducts = [];
 
     // 1. Tìm kiếm ngữ nghĩa (Semantic Search) - AI 2.0
-    const semanticResult = await ProductService.searchSemanticProducts(message, 4);
+    const semanticResult = await ProductService.searchSemanticProducts(
+      message,
+      4,
+    );
     if (semanticResult.errCode === 0 && semanticResult.products.length > 0) {
       dbContext += "\nSản phẩm liên quan tìm thấy qua phân tích ý nghĩa:\n";
-      semanticResult.products.forEach(p => {
+      semanticResult.products.forEach((p) => {
         suggestedProducts.push(p);
         dbContext += `- ID: ${p.id}, Tên: ${p.name}, Giá: ${formatPrice(p.price)}đ (Độ phù hợp: ${Math.round(p.similarity * 100)}%)\n`;
       });
@@ -31,27 +34,29 @@ const handleChat = async (req, res) => {
 
     // 2. Tìm kiếm theo từ khóa (Keyword Search) - Fallback
     if (suggestedProducts.length < 2) {
-      const productMatch = message.match(/(?:sản phẩm|sp|mua|tìm|có|bán|giá) (.+)/i);
+      const productMatch = message.match(
+        /(?:sản phẩm|sp|mua|tìm|có|bán|giá) (.+)/i,
+      );
       const queryName = productMatch ? productMatch[1].trim() : message;
-      
+
       const keywordProducts = await Product.findAll({
-        where: { 
+        where: {
           name: { [Op.like]: `%${queryName}%` },
-          isActive: true 
+          isActive: true,
         },
-        limit: 3
+        limit: 3,
       });
 
       if (keywordProducts.length > 0) {
         dbContext += "\nSản phẩm tìm thấy theo từ khóa:\n";
-        keywordProducts.forEach(p => {
-          if (!suggestedProducts.find(sp => sp.id === p.id)) {
+        keywordProducts.forEach((p) => {
+          if (!suggestedProducts.find((sp) => sp.id === p.id)) {
             const discountPrice = p.price * (1 - (p.discount || 0) / 100);
             suggestedProducts.push({
               id: p.id,
               name: p.name,
               price: discountPrice,
-              image: p.image
+              image: p.image,
             });
             dbContext += `- ID: ${p.id}, Tên: ${p.name}, Giá: ${formatPrice(discountPrice)}đ\n`;
           }
@@ -99,48 +104,50 @@ YÊU CẦU PHẢN HỒI:
     // Chuẩn bị tin nhắn bao gồm lịch sử hội thoại (giới hạn 6 câu gần nhất để tiết kiệm token)
     const messages = [
       { role: "system", content: systemPrompt },
-      ...history.slice(-6).map(msg => ({
+      ...history.slice(-6).map((msg) => ({
         role: msg.role === "user" ? "user" : "assistant",
-        content: typeof msg.content === 'string' ? msg.content : JSON.stringify(msg.content)
+        content:
+          typeof msg.content === "string"
+            ? msg.content
+            : JSON.stringify(msg.content),
       })),
-      { role: "user", content: message }
+      { role: "user", content: message },
     ];
 
     let completion;
     try {
       completion = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
+        model: "gpt-5.4",
         messages: messages,
         temperature: 0.7,
         max_tokens: 500,
-        response_format: { type: "json_object" }
+        response_format: { type: "json_object" },
       });
     } catch (err) {
       if (err.code === "rate_limit_exceeded") {
         return res.json({
           reply: "AI đang bận, vui lòng thử lại sau giây lát ⏳",
-          recommendedProducts: []
+          recommendedProducts: [],
         });
       }
       throw err;
     }
 
     const result = JSON.parse(completion.choices[0].message.content);
-    
+
     // Lấy thông tin chi tiết của các sản phẩm được đề xuất
     let finalRecommended = [];
     if (result.recommendedProducts && result.recommendedProducts.length > 0) {
       finalRecommended = await Product.findAll({
         where: { id: { [Op.in]: result.recommendedProducts }, isActive: true },
-        attributes: ['id', 'name', 'price', 'discount', 'image']
+        attributes: ["id", "name", "price", "discount", "image"],
       });
     }
 
-    res.json({ 
+    res.json({
       reply: result.reply,
-      recommendedProducts: finalRecommended
+      recommendedProducts: finalRecommended,
     });
-
   } catch (error) {
     console.error("Lỗi chatbot:", error);
     res.status(500).json({ error: "Lỗi hệ thống AI." });
@@ -153,9 +160,12 @@ function formatPrice(price) {
 
 function translateStatus(status) {
   const map = {
-    pending: "Chờ xử lý", confirmed: "Đã xác nhận",
-    processing: "Đang xử lý", shipped: "Đang giao",
-    delivered: "Đã giao", cancelled: "Đã hủy",
+    pending: "Chờ xử lý",
+    confirmed: "Đã xác nhận",
+    processing: "Đang xử lý",
+    shipped: "Đang giao",
+    delivered: "Đã giao",
+    cancelled: "Đã hủy",
   };
   return map[status] || status;
 }

@@ -22,6 +22,7 @@ import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import AppPagination from "../../../components/Pagination/Pagination";
 import { motion, AnimatePresence } from "framer-motion";
+import { ConfirmModal } from "../../../components/UI/Modal";
 
 const ReviewPage = () => {
   const [reviews, setReviews] = useState([]);
@@ -276,22 +277,17 @@ const ReviewPage = () => {
       </div>
 
       {/* Delete Confirmation Modal */}
-      <AnimatePresence>
-        {showDeleteModal && (
-          <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
-             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowDeleteModal(false)} className="absolute inset-0 bg-slate-950/40 backdrop-blur-sm" />
-             <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="relative bg-white p-10 rounded-[40px] shadow-2xl max-w-md w-full text-center">
-                <div className="w-20 h-20 bg-rose-50 text-rose-500 rounded-3xl flex items-center justify-center text-3xl mx-auto mb-6 border border-rose-100 shadow-lg shadow-rose-500/10">!</div>
-                <h3 className="text-xl font-black text-slate-900 tracking-tight mb-4 text-center">Xóa đánh giá?</h3>
-                <p className="text-slate-500 font-medium mb-8 text-sm">Hành động này không thể hoàn tác. Toàn bộ nội dung đánh giá và phản hồi sẽ biến mất.</p>
-                <div className="flex gap-4">
-                   <button onClick={() => setShowDeleteModal(false)} className="flex-1 h-12 bg-slate-100 text-slate-600 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-slate-200 transition-all">Hủy</button>
-                   <button onClick={handleDeleteReview} className="flex-1 h-12 bg-rose-500 text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-rose-600 transition-all shadow-lg shadow-rose-500/20">Xác nhận xóa</button>
-                </div>
-             </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+      <ConfirmModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={handleDeleteReview}
+        title="Xóa đánh giá?"
+        message="Hành động này không thể hoàn tác. Toàn bộ nội dung đánh giá và phản hồi sẽ biến mất."
+        confirmText="Đồng ý xóa"
+        variant="danger"
+        icon={FiTrash2}
+        iconClassName="bg-rose-50 text-rose-500"
+      />
     </div>
   );
 };

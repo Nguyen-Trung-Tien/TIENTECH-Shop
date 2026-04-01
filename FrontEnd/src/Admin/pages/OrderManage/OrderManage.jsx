@@ -37,6 +37,7 @@ import {
 } from "../../../utils/StatusMap";
 import { StatusBadge } from "../../../utils/StatusBadge";
 import AppPagination from "../../../components/Pagination/Pagination";
+import { ConfirmModal } from "../../../components/UI/Modal";
 
 const TABS = [
   { id: "all", label: "Tất cả", color: "bg-slate-500" },
@@ -52,10 +53,16 @@ const OrderManage = () => {
   const user = useSelector((state) => state.user.user);
   const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [selectedOrderId, setSelectedOrderId] = useState(null);
+  const [confirmModal, setConfirmModal] = useState({
+    show: false,
+    type: "delete", // "delete" or "status"
+    orderId: null,
+    data: null,
+  });
   const [loading, setLoading] = useState(true);
   const [loadingId, setLoadingId] = useState(null);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
@@ -102,7 +109,18 @@ const OrderManage = () => {
     return () => clearTimeout(timer);
   }, [searchTerm, activeTab, fetchOrders]);
 
-  const handleUpdateStatus = async (orderId, status) => {
+  const handleUpdateStatus = (orderId, status) => {
+    setConfirmModal({
+      show: true,
+      type: "status",
+      orderId,
+      data: status,
+    });
+  };
+
+  const confirmUpdateStatus = async () => {
+    const { orderId, data: status } = confirmModal;
+    setIsUpdating(true);
     try {
       setLoadingId(orderId);
       const res = await updateOrderStatus(orderId, status);
@@ -115,26 +133,45 @@ const OrderManage = () => {
     } catch (err) {
       toast.error("Lỗi cập nhật");
     } finally {
+      setIsUpdating(false);
       setLoadingId(null);
       setActiveDropdown(null);
+      setConfirmModal({
+        show: false,
+        type: "delete",
+        orderId: null,
+        data: null,
+      });
     }
   };
 
-  const handleDeleteOrder = async () => {
-    if (!selectedOrderId) return;
+  const handleDeleteOrder = () => {
+    const { orderId } = confirmModal;
+    if (!orderId) return;
+    onConfirmDelete();
+  };
+
+  const onConfirmDelete = async () => {
+    const { orderId } = confirmModal;
+    setIsDeleting(true);
     try {
-      setLoadingId(selectedOrderId);
-      const res = await deleteOrder(selectedOrderId);
+      setLoadingId(orderId);
+      const res = await deleteOrder(orderId);
       if (res?.errCode === 0) {
-        toast.success(`Đã xóa đơn DH${selectedOrderId}`);
+        toast.success(`Đã xóa đơn DH${orderId}`);
         fetchOrders(page, searchTerm, activeTab);
       }
     } catch (err) {
       console.error(err);
     } finally {
+      setIsDeleting(false);
       setLoadingId(null);
-      setShowDeleteModal(false);
-      setSelectedOrderId(null);
+      setConfirmModal({
+        show: false,
+        type: "delete",
+        orderId: null,
+        data: null,
+      });
     }
   };
 
@@ -375,8 +412,11 @@ const OrderManage = () => {
 
                         <button
                           onClick={() => {
-                            setSelectedOrderId(order.id);
-                            setShowDeleteModal(true);
+                            setConfirmModal({
+                              show: true,
+                              type: "delete",
+                              orderId: order.id,
+                            });
                           }}
                           className="w-10 h-10 rounded-2xl bg-rose-50 text-rose-500 flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all shadow-sm border border-rose-100"
                         >
@@ -412,51 +452,40 @@ const OrderManage = () => {
         </div>
       </div>
 
-      {/* Delete Confirmation Modal */}
-      <AnimatePresence>
-        {showDeleteModal && (
-          <div className="fixed inset-0 z-[1100] flex items-center justify-center p-4">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setShowDeleteModal(false)}
-              className="absolute inset-0 bg-slate-950/40 backdrop-blur-sm"
-            />
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="relative bg-white p-10 rounded-[40px] shadow-2xl max-w-md w-full text-center border border-slate-100"
-            >
-              <div className="w-20 h-20 bg-rose-50 text-rose-500 rounded-3xl flex items-center justify-center text-3xl mx-auto mb-6 border border-rose-100 shadow-lg shadow-rose-500/10">
-                <FiTrash2 />
-              </div>
-              <h3 className="text-2xl font-black text-slate-900 mb-4 tracking-tight uppercase">
-                Xóa đơn hàng?
-              </h3>
-              <p className="text-slate-500 font-medium mb-10 text-sm leading-relaxed">
-                Hành động này sẽ gỡ bỏ đơn hàng {selectedOrderId} vĩnh viễn khỏi
-                hệ thống.
-              </p>
-              <div className="flex gap-4">
-                <button
-                  onClick={() => setShowDeleteModal(false)}
-                  className="flex-1 h-14 bg-slate-100 text-slate-600 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-slate-200 transition-all"
-                >
-                  Hủy bỏ
-                </button>
-                <button
-                  onClick={handleDeleteOrder}
-                  className="flex-1 h-14 bg-rose-500 text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-rose-600 transition-all shadow-xl shadow-rose-500/20"
-                >
-                  Xác nhận xóa
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+      <ConfirmModal
+        isOpen={confirmModal.show && confirmModal.type === "delete"}
+        onClose={() =>
+          setConfirmModal({ show: false, type: "delete", orderId: null })
+        }
+        onConfirm={onConfirmDelete}
+        title="Xác nhận xóa đơn hàng?"
+        message={`Hành động này sẽ gỡ bỏ đơn hàng DH${confirmModal.orderId} vĩnh viễn khỏi hệ thống. Bạn có chắc chắn?`}
+        confirmText="Đồng ý xóa"
+        variant="danger"
+        icon={FiTrash2}
+        iconClassName="bg-rose-50 text-rose-500"
+        loading={isDeleting}
+      />
+
+      <ConfirmModal
+        isOpen={confirmModal.show && confirmModal.type === "status"}
+        onClose={() =>
+          setConfirmModal({
+            show: false,
+            type: "status",
+            orderId: null,
+            data: null,
+          })
+        }
+        onConfirm={confirmUpdateStatus}
+        title="Cập nhật trạng thái đơn hàng?"
+        message={`Bạn muốn chuyển trạng thái đơn hàng DH${confirmModal.orderId} sang "${statusMap[confirmModal.data]?.label}"?`}
+        confirmText="Xác nhận chuyển"
+        variant="primary"
+        icon={FiRefreshCcw}
+        iconClassName="bg-indigo-50 text-indigo-600"
+        loading={isUpdating}
+      />
     </div>
   );
 };

@@ -16,6 +16,7 @@ import { getAllOrders, updateOrderStatus } from "../../../api/orderApi";
 import AppPagination from "../../../components/Pagination/Pagination";
 import { statusMap, paymentStatusMap } from "../../../utils/StatusMap";
 import { StatusBadge } from "../../../utils/StatusBadge";
+import { ConfirmModal } from "../../../components/UI/Modal";
 
 const OrdersCancelManage = () => {
   const navigate = useNavigate();
@@ -227,39 +228,20 @@ const OrdersCancelManage = () => {
         )}
       </AnimatePresence>
 
-      {/* Pop-up xác nhận cuối cùng */}
-      <AnimatePresence>
-        {confirmModal.show && (
-          <div className="fixed inset-0 z-[1200] flex items-center justify-center p-4 bg-black/20 backdrop-blur-[1px]">
-            <motion.div 
-              initial={{ scale: 0.9, opacity: 0 }} 
-              animate={{ scale: 1, opacity: 1 }} 
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white p-6 rounded-2xl shadow-xl max-w-xs w-full text-center border border-slate-100"
-            >
-              <h4 className="text-lg font-bold text-slate-900 mb-2">Bạn có chắc chắn?</h4>
-              <p className="text-sm text-slate-500 mb-6">
-                Hành động này sẽ {confirmModal.approve ? "HỦY" : "TIẾP TỤC"} đơn hàng này.
-              </p>
-              <div className="flex gap-2">
-                <button 
-                  onClick={() => setConfirmModal({ ...confirmModal, show: false })}
-                  className="flex-1 py-2 bg-slate-100 text-slate-600 rounded-xl text-xs font-bold"
-                >
-                  Quay lại
-                </button>
-                <button 
-                  disabled={loadingAction}
-                  onClick={handleProcessCancel}
-                  className={`flex-1 py-2 text-white rounded-xl text-xs font-bold ${confirmModal.approve ? "bg-rose-500" : "bg-indigo-600"}`}
-                >
-                  {loadingAction ? "Đang xử lý..." : "Xác nhận"}
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+      <ConfirmModal
+        isOpen={confirmModal.show}
+        onClose={() => setConfirmModal({ ...confirmModal, show: false })}
+        onConfirm={handleProcessCancel}
+        title={confirmModal.approve ? "Xác nhận chấp nhận hủy?" : "Xác nhận từ chối hủy?"}
+        message={confirmModal.approve 
+          ? "Hành động này sẽ chính thức hủy đơn hàng và hoàn tiền nếu có." 
+          : "Hành động này sẽ giữ đơn hàng ở trạng thái chờ và tiếp tục giao dịch."}
+        confirmText="Xác nhận"
+        variant={confirmModal.approve ? "danger" : "primary"}
+        icon={confirmModal.approve ? FiXCircle : FiCheckCircle}
+        iconClassName={confirmModal.approve ? "bg-rose-50 text-rose-500" : "bg-indigo-50 text-indigo-600"}
+        loading={loadingAction}
+      />
     </div>
   );
 };

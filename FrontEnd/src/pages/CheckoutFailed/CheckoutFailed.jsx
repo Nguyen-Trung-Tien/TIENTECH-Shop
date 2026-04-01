@@ -9,7 +9,7 @@ const CheckoutFailed = () => {
   const { orderId } = useParams();
 
   useEffect(() => {
-    document.title = "Thanh toán thất bại - Tien-Tech";
+    document.title = "Thanh toán thất bại - TienTech";
   }, []);
 
   return (

@@ -28,7 +28,7 @@ import { searchSuggestionsApi } from "../../api/productApi";
 import { getAllCarts } from "../../api/cartApi";
 import { useCurrentUser } from "../../hooks/useUser";
 import { debounce } from "lodash";
-import logoImage from "../../assets/Tien-Tech Shop.png";
+import logoImage from "../../assets/TienTech Shop.png";
 import { toast } from "react-toastify";
 import NotificationBell from "./NotificationBell";
 
@@ -272,7 +272,9 @@ function Header() {
                           key={idx}
                           onClick={() => {
                             setSearchInput(kw);
-                            navigate(`/product-list?search=${encodeURIComponent(kw)}`);
+                            navigate(
+                              `/product-list?search=${encodeURIComponent(kw)}`,
+                            );
                             setShowSuggestions(false);
                           }}
                           className="px-3 py-1 bg-slate-50 dark:bg-dark-bg hover:bg-primary/10 dark:hover:bg-brand/10 text-slate-500 dark:text-dark-text-secondary hover:text-primary dark:hover:text-brand rounded-full text-[12px] font-bold transition-all border border-slate-100 dark:border-dark-border"
@@ -286,7 +288,8 @@ function Header() {
 
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-2">
                   {/* Left: Brands & Categories */}
-                  {(suggestions.brands?.length > 0 || suggestions.categories?.length > 0) && (
+                  {(suggestions.brands?.length > 0 ||
+                    suggestions.categories?.length > 0) && (
                     <div className="md:col-span-4 space-y-4 p-2 border-r border-slate-50 dark:border-dark-border/50">
                       {suggestions.brands?.length > 0 && (
                         <div>
@@ -310,7 +313,7 @@ function Header() {
                           </div>
                         </div>
                       )}
-                      
+
                       {suggestions.categories?.length > 0 && (
                         <div>
                           <p className="px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-dark-text-secondary bg-slate-50 dark:bg-dark-bg/50 rounded-lg mb-2">
@@ -321,7 +324,9 @@ function Header() {
                               <button
                                 key={cat.id}
                                 onClick={() => {
-                                  navigate(`/product-list?categoryId=${cat.id}`);
+                                  navigate(
+                                    `/product-list?categoryId=${cat.id}`,
+                                  );
                                   setShowSuggestions(false);
                                 }}
                                 className="flex items-center gap-3 w-full px-3 py-2 text-[13px] font-bold text-slate-600 dark:text-dark-text-secondary hover:bg-primary/5 dark:hover:bg-brand/5 hover:text-primary dark:hover:text-brand rounded-xl transition-all text-left group"
@@ -337,7 +342,9 @@ function Header() {
                   )}
 
                   {/* Right: Products */}
-                  <div className={`${(suggestions.brands?.length > 0 || suggestions.categories?.length > 0) ? "md:col-span-8" : "md:col-span-12"} p-2`}>
+                  <div
+                    className={`${suggestions.brands?.length > 0 || suggestions.categories?.length > 0 ? "md:col-span-8" : "md:col-span-12"} p-2`}
+                  >
                     <p className="px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-dark-text-secondary bg-slate-50 dark:bg-dark-bg/50 rounded-lg mb-2">
                       Sản phẩm phổ biến
                     </p>
@@ -370,11 +377,17 @@ function Header() {
                               </p>
                               <div className="flex items-center gap-2 mt-1">
                                 <span className="text-[13px] font-black text-primary dark:text-brand">
-                                  {new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(product.price)}
+                                  {new Intl.NumberFormat("vi-VN", {
+                                    style: "currency",
+                                    currency: "VND",
+                                  }).format(product.price)}
                                 </span>
                                 {product.discount > 0 && (
                                   <span className="text-[11px] font-medium text-slate-400 line-through">
-                                    {new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(product.originalPrice)}
+                                    {new Intl.NumberFormat("vi-VN", {
+                                      style: "currency",
+                                      currency: "VND",
+                                    }).format(product.originalPrice)}
                                   </span>
                                 )}
                               </div>
@@ -383,7 +396,9 @@ function Header() {
                         ))
                       ) : (
                         <div className="py-8 text-center">
-                          <p className="text-slate-400 text-[13px] font-medium italic">Không tìm thấy sản phẩm phù hợp</p>
+                          <p className="text-slate-400 text-[13px] font-medium italic">
+                            Không tìm thấy sản phẩm phù hợp
+                          </p>
                         </div>
                       )}
                     </div>
@@ -394,7 +409,9 @@ function Header() {
                 {suggestions.products?.length > 0 && (
                   <button
                     onClick={() => {
-                      navigate(`/product-list?search=${encodeURIComponent(searchInput)}`);
+                      navigate(
+                        `/product-list?search=${encodeURIComponent(searchInput)}`,
+                      );
                       setShowSuggestions(false);
                     }}
                     className="w-full mt-2 py-2.5 bg-slate-900 dark:bg-brand text-white text-[12px] font-black rounded-xl hover:bg-primary dark:hover:bg-brand-dark transition-all flex items-center justify-center gap-2"

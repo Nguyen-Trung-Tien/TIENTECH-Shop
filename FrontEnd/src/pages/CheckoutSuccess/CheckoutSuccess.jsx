@@ -62,7 +62,7 @@ const CheckoutSuccess = () => {
         {/* DESCRIPTION */}
         <p className="text-gray-500 text-sm mb-6 leading-relaxed max-w-sm mx-auto">
           Cảm ơn bạn đã mua sắm tại{" "}
-          <span className="text-primary font-bold italic">Tien-Tech</span>. Đơn
+          <span className="text-primary font-bold italic">TienTech</span>. Đơn
           hàng đang được chuẩn bị để giao cho bạn.
         </p>
 
@@ -76,7 +76,9 @@ const CheckoutSuccess = () => {
             </span>
 
             <strong className="text-xl font-black text-gray-900 tracking-tight">
-              {displayOrderCode.startsWith("#") ? displayOrderCode : `#${displayOrderCode}`}
+              {displayOrderCode.startsWith("#")
+                ? displayOrderCode
+                : `#${displayOrderCode}`}
             </strong>
           </div>
         </div>

@@ -35,6 +35,7 @@ import {
   updateVariant,
 } from "../../../api/variantApi";
 import { getAllAttributesApi } from "../../../api/attributeApi";
+import { ConfirmModal } from "../../../components/UI/Modal";
 
 const VariantManager = ({
   productId,
@@ -46,6 +47,7 @@ const VariantManager = ({
   const [loading, setLoading] = useState(false);
   const [expandedIdx, setExpandedIdx] = useState(null);
   const [attributes, setAttributes] = useState([]);
+  const [confirmModal, setConfirmModal] = useState({ show: false, v: null, idx: null });
 
   // Local state for variant generation options (e.g. Color, ROM)
   const [localOptions, setLocalOptions] = useState(
@@ -183,8 +185,12 @@ const VariantManager = ({
     }
   };
 
-  const handleDelete = async (v, idx) => {
-    if (!window.confirm("Bạn có chắc muốn xóa phiên bản này?")) return;
+  const handleDelete = (v, idx) => {
+    setConfirmModal({ show: true, v, idx });
+  };
+
+  const onConfirmDelete = async () => {
+    const { v, idx } = confirmModal;
     if (productId && v.id) {
       try {
         await deleteVariant(v.id);
@@ -197,6 +203,7 @@ const VariantManager = ({
       const filtered = formData.variants.filter((_, i) => i !== idx);
       setFormData((prev) => ({ ...prev, variants: filtered }));
     }
+    setConfirmModal({ show: false, v: null, idx: null });
   };
 
   const displayVariants = productId
@@ -369,8 +376,18 @@ const VariantManager = ({
           <div className="grid grid-cols-1 gap-4">
             {displayVariants.map((v, idx) => {
               const isExpanded = expandedIdx === idx;
-              // Handle both new attributes object and legacy attributeValues
-              const variantAttrs = v.attributes || v.attributeValues || {};
+              
+              // Normalize attributes for display and editing
+              let variantAttrs = {};
+              if (Array.isArray(v.attributes)) {
+                v.attributes.forEach(av => {
+                  if (av.attribute) {
+                    variantAttrs[av.attribute.code] = av.value;
+                  }
+                });
+              } else {
+                variantAttrs = v.attributes || v.attributeValues || {};
+              }
 
               return (
                 <div
@@ -555,7 +572,7 @@ const VariantManager = ({
                             {productId && v.id && (
                               <button
                                 type="button"
-                                onClick={() => handleSaveVariant(v)}
+                                onClick={() => handleSaveVariant({ ...v, attributes: variantAttrs })}
                                 className="h-14 px-12 bg-indigo-600 text-white rounded-[1.5rem] font-black text-[11px] uppercase tracking-widest shadow-xl shadow-indigo-200 hover:bg-indigo-700 active:scale-95 transition-all flex items-center gap-3"
                               >
                                 <FiCheck size={18} /> LƯU THAY ĐỔI
@@ -572,6 +589,18 @@ const VariantManager = ({
           </div>
         </div>
       )}
+
+      <ConfirmModal
+        isOpen={confirmModal.show}
+        onClose={() => setConfirmModal({ show: false, v: null, idx: null })}
+        onConfirm={onConfirmDelete}
+        title="Xác nhận xóa phiên bản?"
+        message="Hành động này sẽ gỡ bỏ vĩnh viễn phiên bản sản phẩm này. Bạn có chắc chắn?"
+        confirmText="Đồng ý xóa"
+        variant="danger"
+        icon={FiTrash2}
+        iconClassName="bg-rose-50 text-rose-500"
+      />
     </div>
   );
 };
