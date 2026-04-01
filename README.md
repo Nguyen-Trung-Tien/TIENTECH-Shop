@@ -1,7 +1,7 @@
 <div align="center">
 
   <!-- Hero Banner -->
-  <img src="https://capsule-render.vercel.app/api?type=waving&color=0:667eea,100:764ba2&height=220&section=header&text=🛒%20TIEN_TECH%20Shop&fontSize=42&fontColor=fff&animation=fadeIn&fontAlignY=35&desc=Premium%20E-Commerce%20Platform&descSize=18&descAlignY=55&descAlign=50" width="100%" />
+  <img src="https://capsule-render.vercel.app/api?type=waving&color=0:667eea,100:764ba2&height=220&section=header&text=🛒%20TIENTECH%20Shop&fontSize=42&fontColor=fff&animation=fadeIn&fontAlignY=35&desc=Premium%20E-Commerce%20Platform&descSize=18&descAlignY=55&descAlign=50" width="100%" />
 
   <br />
 
