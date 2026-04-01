@@ -44,6 +44,7 @@ router.get("/discounted", ProductController.handleGetDiscountedProducts);
 router.get("/flash-sale", ProductController.handleGetFlashSaleProducts);
 router.get("/filter", ProductController.handleFilterProducts);
 router.get("/recommend/:id", ProductController.handleRecommendProducts);
+router.get("/smart-recommendations/:id", ProductController.handleGetSmartRecommendations);
 router.get(
   "/recommend-fortune",
   ProductController.handleRecommendFortuneProducts,

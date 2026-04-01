@@ -42,6 +42,16 @@ export const globalSearchApi = async (query) => {
   }
 };
 
+export const syncEmbeddings = async () => {
+  try {
+    const res = await axiosClient.post("/admin/sync-embeddings");
+    return res;
+  } catch (error) {
+    console.error("Error syncing embeddings:", error);
+    throw error;
+  }
+};
+
 export const getRevenueStats = async (period) => {
   try {
     const res = await axiosClient.get(`/admin/dashboard?period=${period}`);

@@ -390,6 +390,21 @@ const handleRecommendFortuneProducts = async (req, res) => {
   }
 };
 
+const handleGetSmartRecommendations = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const limit = parseInt(req.query.limit) || 6;
+    const result = await ProductService.getSmartRecommendations(id, limit);
+    return res.status(200).json(result);
+  } catch (e) {
+    console.error("Error in handleGetSmartRecommendations:", e);
+    return res.status(500).json({
+      errCode: -1,
+      errMessage: "Internal server error",
+    });
+  }
+};
+
 const handleGetProductBySlug = async (req, res) => {
   try {
     const { slug } = req.params;
@@ -419,4 +434,5 @@ module.exports = {
   handleFilterProducts,
   handleRecommendProducts,
   handleRecommendFortuneProducts,
+  handleGetSmartRecommendations,
 };

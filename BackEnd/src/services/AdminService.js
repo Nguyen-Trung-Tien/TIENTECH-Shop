@@ -290,8 +290,21 @@ const globalSearch = async (query) => {
   };
 };
 
+const ProductService = require("./ProductService");
+
+const syncEmbeddings = async () => {
+  try {
+    const result = await ProductService.syncAllProductEmbeddings();
+    return result;
+  } catch (error) {
+    console.error("Error from AdminService.syncEmbeddings:", error);
+    throw error;
+  }
+};
+
 module.exports = {
   getDashboardData,
   exportRevenueExcel,
   globalSearch,
+  syncEmbeddings,
 };

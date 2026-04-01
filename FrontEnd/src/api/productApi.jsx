@@ -218,6 +218,16 @@ export const getRecommendedProductsApi = async (
   }
 };
 
+export const getSmartRecommendationsApi = async (id, limit = 6) => {
+  try {
+    const res = await axiosClient.get(`/product/smart-recommendations/${id}?limit=${limit}`);
+    return res;
+  } catch (error) {
+    console.error("Error fetching smart recommendations:", error);
+    throw error;
+  }
+};
+
 export const fetchFortuneProducts = async ({
   birthYear,
   brandId,

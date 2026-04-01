@@ -65,19 +65,19 @@
 
 ## 🚀 Giới thiệu
 
-**TIEN_TECH Shop** là hệ thống thương mại điện tử hoàn chỉnh (Full-stack E-Commerce), mô phỏng toàn bộ quy trình mua sắm trực tuyến — từ giao diện khách hàng (Storefront) cho đến bảng quản trị viên (Admin Dashboard).
+**TIENTECH ** là hệ thống thương mại điện tử hoàn chỉnh (Full-stack E-Commerce), mô phỏng toàn bộ quy trình mua sắm trực tuyến — từ giao diện khách hàng (Storefront) cho đến bảng quản trị viên (Admin Dashboard).
 
 ### Điểm nổi bật
 
-| | Tính năng | Mô tả |
-|--|-----------|-------|
-| 🤖 | **AI-Powered** | Chatbot tư vấn sản phẩm tích hợp OpenAI & Gemini, dự đoán giá, tư vấn phong thuỷ |
-| 💳 | **Đa phương thức thanh toán** | COD, VNPay, PayPal — hỗ trợ cả nội địa lẫn quốc tế |
-| ⚡ | **Real-time** | Thông báo đơn hàng & cập nhật trạng thái tức thời qua Socket.IO |
-| 🔒 | **Bảo mật** | JWT (Access + Refresh Token), Google OAuth 2.0, Rate Limiting, RBAC |
-| 🎯 | **Flash Sale** | Hệ thống khuyến mãi flash sale tự động tắt khi hết hạn (Cron job) |
-| 🌙 | **Dark Mode** | Giao diện hỗ trợ chuyển đổi Light / Dark theme |
-| ☁️ | **Cloud Storage** | Quản lý hình ảnh sản phẩm & avatar qua Cloudinary |
+|     | Tính năng                     | Mô tả                                                                            |
+| --- | ----------------------------- | -------------------------------------------------------------------------------- |
+| 🤖  | **AI-Powered**                | Chatbot tư vấn sản phẩm tích hợp OpenAI & Gemini, dự đoán giá, tư vấn phong thuỷ |
+| 💳  | **Đa phương thức thanh toán** | COD, VNPay, PayPal — hỗ trợ cả nội địa lẫn quốc tế                               |
+| ⚡  | **Real-time**                 | Thông báo đơn hàng & cập nhật trạng thái tức thời qua Socket.IO                  |
+| 🔒  | **Bảo mật**                   | JWT (Access + Refresh Token), Google OAuth 2.0, Rate Limiting, RBAC              |
+| 🎯  | **Flash Sale**                | Hệ thống khuyến mãi flash sale tự động tắt khi hết hạn (Cron job)                |
+| 🌙  | **Dark Mode**                 | Giao diện hỗ trợ chuyển đổi Light / Dark theme                                   |
+| ☁️  | **Cloud Storage**             | Quản lý hình ảnh sản phẩm & avatar qua Cloudinary                                |
 
 ---
 
@@ -125,49 +125,49 @@
 
 ### Frontend
 
-| Công nghệ | Phiên bản | Vai trò |
-|-----------|-----------|---------|
-| ![React](https://img.shields.io/badge/React-20232a?style=flat-square&logo=react&logoColor=61DAFB) React | 19.2 | UI Library |
-| ![Vite](https://img.shields.io/badge/Vite-646CFF?style=flat-square&logo=vite&logoColor=white) Vite | 7.x | Build tool & Dev server |
-| ![Redux](https://img.shields.io/badge/Redux-593d88?style=flat-square&logo=redux&logoColor=white) Redux Toolkit | 2.9 | State Management |
-| ![TailwindCSS](https://img.shields.io/badge/TailwindCSS-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white) TailwindCSS | 4.2 | Utility-first CSS |
-| ![Framer](https://img.shields.io/badge/Framer_Motion-0055FF?style=flat-square&logo=framer&logoColor=white) Framer Motion | 12.x | Animations |
-| ![React Router](https://img.shields.io/badge/React_Router-CA4245?style=flat-square&logo=react-router&logoColor=white) React Router | 7.x | Client-side routing |
-| ![Recharts](https://img.shields.io/badge/Recharts-FF6384?style=flat-square&logo=chart.js&logoColor=white) Recharts | 3.x | Admin charts & analytics |
-| ![Axios](https://img.shields.io/badge/Axios-5A29E4?style=flat-square&logo=axios&logoColor=white) Axios | 1.x | HTTP Client |
-| ![Socket.IO](https://img.shields.io/badge/Socket.IO_Client-010101?style=flat-square&logo=socket.io&logoColor=white) Socket.IO Client | 4.8 | Real-time communication |
-| ![SASS](https://img.shields.io/badge/SASS-CC6699?style=flat-square&logo=sass&logoColor=white) SASS | 1.x | CSS Preprocessor |
+| Công nghệ                                                                                                                            | Phiên bản | Vai trò                  |
+| ------------------------------------------------------------------------------------------------------------------------------------ | --------- | ------------------------ |
+| ![React](https://img.shields.io/badge/React-20232a?style=flat-square&logo=react&logoColor=61DAFB) React                              | 19.2      | UI Library               |
+| ![Vite](https://img.shields.io/badge/Vite-646CFF?style=flat-square&logo=vite&logoColor=white) Vite                                   | 7.x       | Build tool & Dev server  |
+| ![Redux](https://img.shields.io/badge/Redux-593d88?style=flat-square&logo=redux&logoColor=white) Redux Toolkit                       | 2.9       | State Management         |
+| ![TailwindCSS](https://img.shields.io/badge/TailwindCSS-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white) TailwindCSS       | 4.2       | Utility-first CSS        |
+| ![Framer](https://img.shields.io/badge/Framer_Motion-0055FF?style=flat-square&logo=framer&logoColor=white) Framer Motion             | 12.x      | Animations               |
+| ![React Router](https://img.shields.io/badge/React_Router-CA4245?style=flat-square&logo=react-router&logoColor=white) React Router   | 7.x       | Client-side routing      |
+| ![Recharts](https://img.shields.io/badge/Recharts-FF6384?style=flat-square&logo=chart.js&logoColor=white) Recharts                   | 3.x       | Admin charts & analytics |
+| ![Axios](https://img.shields.io/badge/Axios-5A29E4?style=flat-square&logo=axios&logoColor=white) Axios                               | 1.x       | HTTP Client              |
+| ![Socket.IO](https://img.shields.io/badge/Socket.IO_Client-010101?style=flat-square&logo=socket.io&logoColor=white) Socket.IO Client | 4.8       | Real-time communication  |
+| ![SASS](https://img.shields.io/badge/SASS-CC6699?style=flat-square&logo=sass&logoColor=white) SASS                                   | 1.x       | CSS Preprocessor         |
 
 ### Backend
 
-| Công nghệ | Phiên bản | Vai trò |
-|-----------|-----------|---------|
-| ![NodeJS](https://img.shields.io/badge/Node.js-43853D?style=flat-square&logo=node.js&logoColor=white) Node.js | 22+ | Runtime |
-| ![Express](https://img.shields.io/badge/Express-000000?style=flat-square&logo=express&logoColor=white) Express | 5.1 | Web framework |
-| ![Sequelize](https://img.shields.io/badge/Sequelize-52B0E7?style=flat-square&logo=sequelize&logoColor=white) Sequelize | 6.x | ORM |
-| ![MySQL](https://img.shields.io/badge/MySQL-005C84?style=flat-square&logo=mysql&logoColor=white) MySQL | 8.x | Database |
-| ![JWT](https://img.shields.io/badge/JWT-000000?style=flat-square&logo=json-web-tokens&logoColor=white) JWT | — | Authentication |
-| ![Socket.IO](https://img.shields.io/badge/Socket.IO-010101?style=flat-square&logo=socket.io&logoColor=white) Socket.IO | 4.8 | Real-time events |
-| ![Cloudinary](https://img.shields.io/badge/Cloudinary-3448C5?style=flat-square&logo=cloudinary&logoColor=white) Cloudinary | 2.8 | Image hosting |
-| ![Passport](https://img.shields.io/badge/Passport.js-34E27A?style=flat-square&logo=passport&logoColor=white) Passport.js | 0.7 | Google OAuth 2.0 |
-| ![Nodemailer](https://img.shields.io/badge/Nodemailer-339933?style=flat-square&logo=gmail&logoColor=white) Nodemailer | 7.x | Transactional emails |
+| Công nghệ                                                                                                                  | Phiên bản | Vai trò              |
+| -------------------------------------------------------------------------------------------------------------------------- | --------- | -------------------- |
+| ![NodeJS](https://img.shields.io/badge/Node.js-43853D?style=flat-square&logo=node.js&logoColor=white) Node.js              | 22+       | Runtime              |
+| ![Express](https://img.shields.io/badge/Express-000000?style=flat-square&logo=express&logoColor=white) Express             | 5.1       | Web framework        |
+| ![Sequelize](https://img.shields.io/badge/Sequelize-52B0E7?style=flat-square&logo=sequelize&logoColor=white) Sequelize     | 6.x       | ORM                  |
+| ![MySQL](https://img.shields.io/badge/MySQL-005C84?style=flat-square&logo=mysql&logoColor=white) MySQL                     | 8.x       | Database             |
+| ![JWT](https://img.shields.io/badge/JWT-000000?style=flat-square&logo=json-web-tokens&logoColor=white) JWT                 | —         | Authentication       |
+| ![Socket.IO](https://img.shields.io/badge/Socket.IO-010101?style=flat-square&logo=socket.io&logoColor=white) Socket.IO     | 4.8       | Real-time events     |
+| ![Cloudinary](https://img.shields.io/badge/Cloudinary-3448C5?style=flat-square&logo=cloudinary&logoColor=white) Cloudinary | 2.8       | Image hosting        |
+| ![Passport](https://img.shields.io/badge/Passport.js-34E27A?style=flat-square&logo=passport&logoColor=white) Passport.js   | 0.7       | Google OAuth 2.0     |
+| ![Nodemailer](https://img.shields.io/badge/Nodemailer-339933?style=flat-square&logo=gmail&logoColor=white) Nodemailer      | 7.x       | Transactional emails |
 
 ### AI & Payment
 
-| Công nghệ | Vai trò |
-|-----------|---------|
-| ![OpenAI](https://img.shields.io/badge/OpenAI-412991?style=flat-square&logo=openai&logoColor=white) OpenAI API | AI Chatbot, dự đoán giá |
-| ![Google](https://img.shields.io/badge/Gemini-4285F4?style=flat-square&logo=google&logoColor=white) Google Gemini | AI tư vấn phong thuỷ |
-| ![VNPay](https://img.shields.io/badge/VNPay-0060AF?style=flat-square&logoColor=white) VNPay | Thanh toán nội địa |
-| ![PayPal](https://img.shields.io/badge/PayPal-003087?style=flat-square&logo=paypal&logoColor=white) PayPal | Thanh toán quốc tế |
+| Công nghệ                                                                                                         | Vai trò                 |
+| ----------------------------------------------------------------------------------------------------------------- | ----------------------- |
+| ![OpenAI](https://img.shields.io/badge/OpenAI-412991?style=flat-square&logo=openai&logoColor=white) OpenAI API    | AI Chatbot, dự đoán giá |
+| ![Google](https://img.shields.io/badge/Gemini-4285F4?style=flat-square&logo=google&logoColor=white) Google Gemini | AI tư vấn phong thuỷ    |
+| ![VNPay](https://img.shields.io/badge/VNPay-0060AF?style=flat-square&logoColor=white) VNPay                       | Thanh toán nội địa      |
+| ![PayPal](https://img.shields.io/badge/PayPal-003087?style=flat-square&logo=paypal&logoColor=white) PayPal        | Thanh toán quốc tế      |
 
 ### DevOps & Testing
 
-| Công nghệ | Vai trò |
-|-----------|---------|
-| ![Jest](https://img.shields.io/badge/Jest-C21325?style=flat-square&logo=jest&logoColor=white) Jest | Unit testing |
-| ![Supertest](https://img.shields.io/badge/Supertest-009688?style=flat-square&logoColor=white) Supertest | API integration testing |
-| ![ESLint](https://img.shields.io/badge/ESLint-4B32C3?style=flat-square&logo=eslint&logoColor=white) ESLint | Code linting |
+| Công nghệ                                                                                                      | Vai trò                 |
+| -------------------------------------------------------------------------------------------------------------- | ----------------------- |
+| ![Jest](https://img.shields.io/badge/Jest-C21325?style=flat-square&logo=jest&logoColor=white) Jest             | Unit testing            |
+| ![Supertest](https://img.shields.io/badge/Supertest-009688?style=flat-square&logoColor=white) Supertest        | API integration testing |
+| ![ESLint](https://img.shields.io/badge/ESLint-4B32C3?style=flat-square&logo=eslint&logoColor=white) ESLint     | Code linting            |
 | ![Nodemon](https://img.shields.io/badge/Nodemon-76D04B?style=flat-square&logo=nodemon&logoColor=white) Nodemon | Auto-restart dev server |
 
 ---
@@ -181,6 +181,7 @@
 <td width="50%">
 
 **🔐 Xác thực & Tài khoản**
+
 - Đăng ký / Đăng nhập (Email & Password)
 - Đăng nhập nhanh Google OAuth 2.0
 - Xác minh email qua OTP
@@ -192,6 +193,7 @@
 <td width="50%">
 
 **🔍 Tìm kiếm & Duyệt sản phẩm**
+
 - Tìm kiếm thông minh với gợi ý từ khóa
 - Lọc theo danh mục, thương hiệu, giá
 - Sản phẩm giảm giá & Flash Sale
@@ -205,6 +207,7 @@
 <td width="50%">
 
 **🛒 Giỏ hàng & Thanh toán**
+
 - Thêm / Cập nhật / Xóa sản phẩm trong giỏ
 - Chọn biến thể sản phẩm (màu sắc, dung lượng...)
 - Áp mã giảm giá Voucher
@@ -215,6 +218,7 @@
 <td width="50%">
 
 **📦 Đơn hàng & Tương tác**
+
 - Theo dõi trạng thái đơn hàng real-time
 - Lịch sử mua hàng chi tiết
 - Đánh giá sản phẩm (kèm ảnh)
@@ -233,6 +237,7 @@
 <td width="50%">
 
 **📈 Dashboard & Thống kê**
+
 - Tổng quan doanh thu, đơn hàng, khách hàng
 - Biểu đồ doanh thu theo thời gian (Recharts)
 - AI Insights — phân tích xu hướng kinh doanh
@@ -242,6 +247,7 @@
 <td width="50%">
 
 **📦 Quản lý Sản phẩm**
+
 - CRUD sản phẩm (kèm gallery ảnh Cloudinary)
 - Quản lý biến thể sản phẩm
 - Quản lý danh mục & thương hiệu
@@ -253,6 +259,7 @@
 <td width="50%">
 
 **🚚 Quản lý Đơn hàng**
+
 - Duyệt & cập nhật trạng thái đơn
 - Quản lý đơn hoàn trả & huỷ
 - Xử lý thanh toán & hoàn tiền
@@ -262,6 +269,7 @@
 <td width="50%">
 
 **👥 Quản lý Người dùng & Khuyến mãi**
+
 - CRUD người dùng & phân quyền
 - Quản lý đánh giá sản phẩm
 - Tạo & quản lý mã Voucher
@@ -500,12 +508,12 @@ Bảng phụ: Voucher, VoucherUsage, Wishlist, Notification, ReviewReply, Review
 
 ### Yêu cầu hệ thống
 
-| Phần mềm | Phiên bản tối thiểu |
-|-----------|---------------------|
-| Node.js | >= 22.x |
-| npm | >= 10.x |
-| MySQL Server | >= 8.0 |
-| Git | >= 2.x |
+| Phần mềm     | Phiên bản tối thiểu |
+| ------------ | ------------------- |
+| Node.js      | >= 22.x             |
+| npm          | >= 10.x             |
+| MySQL Server | >= 8.0              |
+| Git          | >= 2.x              |
 
 ### Bước 1 — Clone dự án
 
@@ -637,102 +645,102 @@ VITE_PAYPAL_CURRENCY=USD
 
 ### 🔐 Authentication & Users
 
-| Method | Endpoint | Auth | Mô tả |
-|--------|----------|------|--------|
-| `POST` | `/user/login` | ❌ | Đăng nhập (email + password) |
-| `POST` | `/user/create-new-user` | ❌ | Đăng ký tài khoản mới |
-| `GET` | `/user/auth/google` | ❌ | Đăng nhập qua Google OAuth |
-| `POST` | `/user/refresh-token` | ❌ | Làm mới access token |
-| `GET` | `/user/me` | 🔑 | Lấy thông tin user hiện tại |
-| `PUT` | `/user/update-user` | 🔑 | Cập nhật hồ sơ (kèm avatar) |
-| `PUT` | `/user/change-password` | 🔑 | Đổi mật khẩu |
-| `POST` | `/user/forgot-password` | ❌ | Gửi email đặt lại mật khẩu |
-| `POST` | `/user/verify-email` | ❌ | Xác minh email qua OTP |
-| `POST` | `/user/logout` | ❌ | Đăng xuất |
-| `GET` | `/user/get-all-user` | 🛡️ | [Admin] Danh sách người dùng |
-| `DELETE` | `/user/delete/:id` | 🛡️ | [Admin] Xoá người dùng |
+| Method   | Endpoint                | Auth | Mô tả                        |
+| -------- | ----------------------- | ---- | ---------------------------- |
+| `POST`   | `/user/login`           | ❌   | Đăng nhập (email + password) |
+| `POST`   | `/user/create-new-user` | ❌   | Đăng ký tài khoản mới        |
+| `GET`    | `/user/auth/google`     | ❌   | Đăng nhập qua Google OAuth   |
+| `POST`   | `/user/refresh-token`   | ❌   | Làm mới access token         |
+| `GET`    | `/user/me`              | 🔑   | Lấy thông tin user hiện tại  |
+| `PUT`    | `/user/update-user`     | 🔑   | Cập nhật hồ sơ (kèm avatar)  |
+| `PUT`    | `/user/change-password` | 🔑   | Đổi mật khẩu                 |
+| `POST`   | `/user/forgot-password` | ❌   | Gửi email đặt lại mật khẩu   |
+| `POST`   | `/user/verify-email`    | ❌   | Xác minh email qua OTP       |
+| `POST`   | `/user/logout`          | ❌   | Đăng xuất                    |
+| `GET`    | `/user/get-all-user`    | 🛡️   | [Admin] Danh sách người dùng |
+| `DELETE` | `/user/delete/:id`      | 🛡️   | [Admin] Xoá người dùng       |
 
 ### 📦 Products
 
-| Method | Endpoint | Auth | Mô tả |
-|--------|----------|------|--------|
-| `GET` | `/product/get-all-product` | ❌ | Tất cả sản phẩm (phân trang) |
-| `GET` | `/product/get-product/:id` | ❌ | Chi tiết sản phẩm theo ID |
-| `GET` | `/product/get-product-by-slug/:slug` | ❌ | Chi tiết sản phẩm theo slug |
-| `GET` | `/product/search` | ❌ | Tìm kiếm sản phẩm |
-| `GET` | `/product/search-suggest` | ❌ | Gợi ý tìm kiếm |
-| `GET` | `/product/discounted` | ❌ | Sản phẩm đang giảm giá |
-| `GET` | `/product/flash-sale` | ❌ | Sản phẩm Flash Sale |
-| `GET` | `/product/filter` | ❌ | Lọc sản phẩm nâng cao |
-| `GET` | `/product/recommend/:id` | ❌ | Sản phẩm gợi ý |
-| `GET` | `/product/recommend-fortune` | ❌ | Gợi ý phong thuỷ |
-| `POST` | `/product/create-new-product` | 🛡️ | [Admin] Thêm sản phẩm mới |
-| `PUT` | `/product/update-product/:id` | 🛡️ | [Admin] Sửa sản phẩm |
-| `DELETE` | `/product/delete-product/:id` | 🛡️ | [Admin] Xoá sản phẩm |
+| Method   | Endpoint                             | Auth | Mô tả                        |
+| -------- | ------------------------------------ | ---- | ---------------------------- |
+| `GET`    | `/product/get-all-product`           | ❌   | Tất cả sản phẩm (phân trang) |
+| `GET`    | `/product/get-product/:id`           | ❌   | Chi tiết sản phẩm theo ID    |
+| `GET`    | `/product/get-product-by-slug/:slug` | ❌   | Chi tiết sản phẩm theo slug  |
+| `GET`    | `/product/search`                    | ❌   | Tìm kiếm sản phẩm            |
+| `GET`    | `/product/search-suggest`            | ❌   | Gợi ý tìm kiếm               |
+| `GET`    | `/product/discounted`                | ❌   | Sản phẩm đang giảm giá       |
+| `GET`    | `/product/flash-sale`                | ❌   | Sản phẩm Flash Sale          |
+| `GET`    | `/product/filter`                    | ❌   | Lọc sản phẩm nâng cao        |
+| `GET`    | `/product/recommend/:id`             | ❌   | Sản phẩm gợi ý               |
+| `GET`    | `/product/recommend-fortune`         | ❌   | Gợi ý phong thuỷ             |
+| `POST`   | `/product/create-new-product`        | 🛡️   | [Admin] Thêm sản phẩm mới    |
+| `PUT`    | `/product/update-product/:id`        | 🛡️   | [Admin] Sửa sản phẩm         |
+| `DELETE` | `/product/delete-product/:id`        | 🛡️   | [Admin] Xoá sản phẩm         |
 
 ### 🛒 Cart
 
-| Method | Endpoint | Auth | Mô tả |
-|--------|----------|------|--------|
-| `GET` | `/cart/*` | 🔑 | Xem giỏ hàng |
-| `POST` | `/cartItem/*` | 🔑 | Thêm sản phẩm vào giỏ |
-| `PUT` | `/cartItem/*` | 🔑 | Cập nhật số lượng |
-| `DELETE` | `/cartItem/*` | 🔑 | Xoá sản phẩm khỏi giỏ |
+| Method   | Endpoint      | Auth | Mô tả                 |
+| -------- | ------------- | ---- | --------------------- |
+| `GET`    | `/cart/*`     | 🔑   | Xem giỏ hàng          |
+| `POST`   | `/cartItem/*` | 🔑   | Thêm sản phẩm vào giỏ |
+| `PUT`    | `/cartItem/*` | 🔑   | Cập nhật số lượng     |
+| `DELETE` | `/cartItem/*` | 🔑   | Xoá sản phẩm khỏi giỏ |
 
 ### 📋 Orders
 
-| Method | Endpoint | Auth | Mô tả |
-|--------|----------|------|--------|
-| `POST` | `/order/create-new-order` | 🔑 | Tạo đơn hàng mới |
-| `GET` | `/order/user/:userId` | 🔑 | Đơn hàng của user |
-| `GET` | `/order/active/:userId` | 🔑 | Đơn hàng đang xử lý |
-| `GET` | `/order/get-order/:id` | 🔑 | Chi tiết đơn hàng |
-| `GET` | `/order/get-all-orders` | 🛡️ | [Admin] Tất cả đơn hàng |
-| `PUT` | `/order/update-status-order/:id/status` | 🛡️ | [Admin] Cập nhật trạng thái |
-| `DELETE` | `/order/delete-order/:id` | 🛡️ | [Admin] Xoá đơn hàng |
+| Method   | Endpoint                                | Auth | Mô tả                       |
+| -------- | --------------------------------------- | ---- | --------------------------- |
+| `POST`   | `/order/create-new-order`               | 🔑   | Tạo đơn hàng mới            |
+| `GET`    | `/order/user/:userId`                   | 🔑   | Đơn hàng của user           |
+| `GET`    | `/order/active/:userId`                 | 🔑   | Đơn hàng đang xử lý         |
+| `GET`    | `/order/get-order/:id`                  | 🔑   | Chi tiết đơn hàng           |
+| `GET`    | `/order/get-all-orders`                 | 🛡️   | [Admin] Tất cả đơn hàng     |
+| `PUT`    | `/order/update-status-order/:id/status` | 🛡️   | [Admin] Cập nhật trạng thái |
+| `DELETE` | `/order/delete-order/:id`               | 🛡️   | [Admin] Xoá đơn hàng        |
 
 ### 💳 Payments
 
-| Method | Endpoint | Auth | Mô tả |
-|--------|----------|------|--------|
-| `POST` | `/payment/create-payment` | 🔑 | Tạo thanh toán |
-| `GET` | `/payment/get-all-payment` | 🛡️ | [Admin] Danh sách thanh toán |
-| `PUT` | `/payment/payment-complete/:id/complete` | 🛡️ | [Admin] Xác nhận hoàn tất |
-| `PUT` | `/payment/payment-refund/:id/refund` | 🛡️ | [Admin] Hoàn tiền |
+| Method | Endpoint                                 | Auth | Mô tả                        |
+| ------ | ---------------------------------------- | ---- | ---------------------------- |
+| `POST` | `/payment/create-payment`                | 🔑   | Tạo thanh toán               |
+| `GET`  | `/payment/get-all-payment`               | 🛡️   | [Admin] Danh sách thanh toán |
+| `PUT`  | `/payment/payment-complete/:id/complete` | 🛡️   | [Admin] Xác nhận hoàn tất    |
+| `PUT`  | `/payment/payment-refund/:id/refund`     | 🛡️   | [Admin] Hoàn tiền            |
 
 ### 🎟️ Vouchers
 
-| Method | Endpoint | Auth | Mô tả |
-|--------|----------|------|--------|
-| `GET` | `/voucher/active` | ❌ | Voucher đang hoạt động |
-| `POST` | `/voucher/check` | ❌ | Kiểm tra mã giảm giá |
-| `POST` | `/voucher/create` | 🛡️ | [Admin] Tạo voucher |
-| `PUT` | `/voucher/update/:id` | 🛡️ | [Admin] Sửa voucher |
-| `DELETE` | `/voucher/delete/:id` | 🛡️ | [Admin] Xoá voucher |
+| Method   | Endpoint              | Auth | Mô tả                  |
+| -------- | --------------------- | ---- | ---------------------- |
+| `GET`    | `/voucher/active`     | ❌   | Voucher đang hoạt động |
+| `POST`   | `/voucher/check`      | ❌   | Kiểm tra mã giảm giá   |
+| `POST`   | `/voucher/create`     | 🛡️   | [Admin] Tạo voucher    |
+| `PUT`    | `/voucher/update/:id` | 🛡️   | [Admin] Sửa voucher    |
+| `DELETE` | `/voucher/delete/:id` | 🛡️   | [Admin] Xoá voucher    |
 
 ### 🤖 AI & Chat
 
-| Method | Endpoint | Auth | Mô tả |
-|--------|----------|------|--------|
-| `POST` | `/chat/ask` | ❌ | Hỏi AI Chatbot (OpenAI) |
-| `POST` | `/chat/predict` | ❌ | Dự đoán giá sản phẩm |
-| `POST` | `/chat/fengshui` | ❌ | Tư vấn phong thuỷ (Gemini) |
+| Method | Endpoint         | Auth | Mô tả                      |
+| ------ | ---------------- | ---- | -------------------------- |
+| `POST` | `/chat/ask`      | ❌   | Hỏi AI Chatbot (OpenAI)    |
+| `POST` | `/chat/predict`  | ❌   | Dự đoán giá sản phẩm       |
+| `POST` | `/chat/fengshui` | ❌   | Tư vấn phong thuỷ (Gemini) |
 
 ### 📍 Others
 
-| Method | Endpoint | Auth | Mô tả |
-|--------|----------|------|--------|
-| `*` | `/address/*` | 🔑 | CRUD địa chỉ giao hàng |
-| `*` | `/wishlist/*` | 🔑 | Danh sách yêu thích |
-| `*` | `/review/*` | 🔑 | Đánh giá sản phẩm |
-| `*` | `/review-reply/*` | 🔑 | Trả lời đánh giá |
-| `*` | `/notification/*` | 🔑 | Thông báo |
-| `*` | `/brand/*` | 🛡️ | [Admin] Quản lý thương hiệu |
-| `*` | `/category/*` | 🛡️ | [Admin] Quản lý danh mục |
-| `*` | `/variant/*` | 🛡️ | [Admin] Biến thể sản phẩm |
-| `*` | `/admin/*` | 🛡️ | [Admin] Thống kê & quản trị |
+| Method | Endpoint          | Auth | Mô tả                       |
+| ------ | ----------------- | ---- | --------------------------- |
+| `*`    | `/address/*`      | 🔑   | CRUD địa chỉ giao hàng      |
+| `*`    | `/wishlist/*`     | 🔑   | Danh sách yêu thích         |
+| `*`    | `/review/*`       | 🔑   | Đánh giá sản phẩm           |
+| `*`    | `/review-reply/*` | 🔑   | Trả lời đánh giá            |
+| `*`    | `/notification/*` | 🔑   | Thông báo                   |
+| `*`    | `/brand/*`        | 🛡️   | [Admin] Quản lý thương hiệu |
+| `*`    | `/category/*`     | 🛡️   | [Admin] Quản lý danh mục    |
+| `*`    | `/variant/*`      | 🛡️   | [Admin] Biến thể sản phẩm   |
+| `*`    | `/admin/*`        | 🛡️   | [Admin] Thống kê & quản trị |
 
-> **Chú thích:** ❌ Public  •  🔑 Yêu cầu đăng nhập  •  🛡️ Yêu cầu quyền Admin
+> **Chú thích:** ❌ Public • 🔑 Yêu cầu đăng nhập • 🛡️ Yêu cầu quyền Admin
 
 ---
 
@@ -740,13 +748,13 @@ VITE_PAYPAL_CURRENCY=USD
 
 Hệ thống sử dụng **Socket.IO** để truyền tải thông báo real-time:
 
-| Event | Hướng | Mô tả |
-|-------|-------|--------|
-| `connection` | Client → Server | Kết nối WebSocket |
-| `join_admin` | Client → Server | Admin tham gia phòng nhận thông báo |
-| `new_order` | Server → Admin Room | Thông báo khi có đơn hàng mới |
-| `order_status_update` | Server → Client | Cập nhật trạng thái đơn hàng |
-| `disconnect` | Client → Server | Ngắt kết nối |
+| Event                 | Hướng               | Mô tả                               |
+| --------------------- | ------------------- | ----------------------------------- |
+| `connection`          | Client → Server     | Kết nối WebSocket                   |
+| `join_admin`          | Client → Server     | Admin tham gia phòng nhận thông báo |
+| `new_order`           | Server → Admin Room | Thông báo khi có đơn hàng mới       |
+| `order_status_update` | Server → Client     | Cập nhật trạng thái đơn hàng        |
+| `disconnect`          | Client → Server     | Ngắt kết nối                        |
 
 ---
 
@@ -828,11 +836,11 @@ Dự án được phân phối dưới giấy phép **MIT**. Xem file [LICENSE](
 
 <div align="center">
 
-| | Thông tin |
-|--|-----------|
-| 👤 | **Nguyễn Trung Tiến** |
-| 🐙 | GitHub: [@Nguyen-Trung-Tien](https://github.com/Nguyen-Trung-Tien) |
-| 📧 | Email: [trungtiennguyen910@gmail.com](mailto:trungtiennguyen910@gmail.com) |
+|     | Thông tin                                                                  |
+| --- | -------------------------------------------------------------------------- |
+| 👤  | **Nguyễn Trung Tiến**                                                      |
+| 🐙  | GitHub: [@Nguyen-Trung-Tien](https://github.com/Nguyen-Trung-Tien)         |
+| 📧  | Email: [trungtiennguyen910@gmail.com](mailto:trungtiennguyen910@gmail.com) |
 
 </div>
 

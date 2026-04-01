@@ -6,7 +6,7 @@ import { toast } from "react-toastify";
 import { 
   FiZap, FiClock, FiShield, FiTruck, FiChevronRight, 
   FiHeart, FiShoppingCart, FiCreditCard, FiCheck, FiInfo,
-  FiCpu, FiMonitor, FiBattery, FiSmartphone, FiMaximize, FiMoreHorizontal, FiSettings
+  FiCpu, FiMonitor, FiBattery, FiSmartphone, FiMaximize, FiMoreHorizontal, FiSettings, FiTrendingUp
 } from "react-icons/fi";
 import { FaHeart } from "react-icons/fa";
 import { addToWishlistApi, removeFromWishlistApi, checkWishlistStatusApi } from "../../api/wishlistApi";
@@ -14,6 +14,29 @@ import { addToWishlistApi, removeFromWishlistApi, checkWishlistStatusApi } from 
 import Badge from "../../components/UI/Badge";
 import ReviewComponent from "../../components/ReviewComponent/ReviewComponent";
 import ReviewForm from "../../components/ReviewComponent/ReviewForm";
+import PricePredictionModal from "../../components/PricePredictionModal/PricePredictionModal";
+
+const specIconMap = {
+  screen: <FiMonitor />,
+  cpu: <FiCpu />,
+  ram: <FiSmartphone />,
+  rom: <FiMaximize />,
+  battery: <FiBattery />,
+  os: <FiInfo />,
+  refresh_rate: <FiZap />,
+  connectivity: <FiMoreHorizontal />
+};
+
+const specLabelMap = {
+  screen: "Màn hình",
+  cpu: "Vi xử lý (CPU)",
+  ram: "Bộ nhớ RAM",
+  rom: "Bộ nhớ trong",
+  battery: "Dung lượng Pin",
+  os: "Hệ điều hành",
+  refresh_rate: "Tần số quét",
+  connectivity: "Kết nối"
+};
 
 const ProductDetailPage = () => {
   const { slug } = useParams();
@@ -22,6 +45,7 @@ const ProductDetailPage = () => {
     product, 
     loading, 
     reviews,
+    smartRecs,
     handleAddToCart,
     handleReviewSubmit,
     submittingReview,
@@ -54,6 +78,7 @@ const ProductDetailPage = () => {
   const [timeLeft, setTimeLeft] = useState(0);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [loadingWishlist, setLoadingWishlist] = useState(false);
+  const [showPrediction, setShowPrediction] = useState(false);
 
   // Specifications logic - Normalized and Merged
   const mergedSpecs = useMemo(() => {
@@ -471,6 +496,15 @@ const ProductDetailPage = () => {
               </button>
             </div>
             
+            {/* AI Prediction Button */}
+            <button
+              onClick={() => setShowPrediction(true)}
+              className="w-full h-12 rounded-xl bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100 font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2"
+            >
+              <FiTrendingUp className="text-lg text-indigo-600" />
+              DỰ ĐOÁN GIÁ AI
+            </button>
+            
             {(!selectedVariant && product.variants?.length > 0) && (
               <p className="text-center text-red-500 text-[10px] font-bold uppercase tracking-wider bg-red-50 py-2 rounded-lg">
                 ⚠️ Vui lòng chọn phiên bản để tiếp tục mua hàng
@@ -544,10 +578,69 @@ const ProductDetailPage = () => {
         </div>
       </div>
 
+      {/* Smart Recommendations Section */}
+      {smartRecs.length > 0 && (
+        <div className="mt-20 space-y-8">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-gray-100 pb-6">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-100">
+                  <FiZap className="fill-current" />
+                </div>
+                <h2 className="text-2xl font-black text-slate-900 tracking-tight uppercase">Gợi ý thông minh</h2>
+              </div>
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Dựa trên phân tích AI & Hành vi mua sắm của bạn</p>
+            </div>
+            <a href="/products" className="text-[11px] font-black uppercase tracking-widest text-indigo-600 hover:text-indigo-700 transition-colors flex items-center gap-2 group">
+              Xem tất cả sản phẩm <FiChevronRight className="group-hover:translate-x-1 transition-transform" />
+            </a>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {smartRecs.map((rec) => (
+              <a 
+                key={rec.id} 
+                href={`/product/${rec.id}`}
+                className="group bg-white rounded-3xl border border-gray-100 p-4 hover:shadow-2xl hover:shadow-indigo-100 transition-all duration-500 relative overflow-hidden"
+              >
+                <div className="absolute top-3 left-3 z-10">
+                   <span className={`px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-tighter shadow-sm flex items-center gap-1 ${
+                     rec.reason === "Thường mua cùng" ? "bg-emerald-500 text-white" : "bg-indigo-600 text-white"
+                   }`}>
+                     {rec.reason === "Thường mua cùng" ? "🤝" : "✨"} {rec.reason}
+                   </span>
+                </div>
+                
+                <div className="aspect-square rounded-2xl bg-gray-50 mb-4 overflow-hidden flex items-center justify-center p-4">
+                  <img 
+                    src={rec.image} 
+                    alt={rec.name} 
+                    className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500" 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <h3 className="text-xs font-black text-slate-900 uppercase truncate group-hover:text-indigo-600 transition-colors">{rec.name}</h3>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-sm font-black text-red-600">{Number(rec.basePrice * (1 - (rec.discount || 0)/100)).toLocaleString()}đ</span>
+                    {rec.discount > 0 && <span className="text-[10px] font-bold text-slate-400 line-through">{rec.basePrice.toLocaleString()}đ</span>}
+                  </div>
+                </div>
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Review Section */}
       <div className="mt-16 space-y-12">
         <ReviewComponent reviews={reviews} user={user} />
       </div>
+
+      <PricePredictionModal 
+        productId={product?.id} 
+        isOpen={showPrediction} 
+        onClose={() => setShowPrediction(false)} 
+      />
     </div>
   );
 };

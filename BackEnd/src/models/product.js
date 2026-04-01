@@ -44,6 +44,7 @@ module.exports = (sequelize, DataTypes) => {
       flashSalePrice: { type: DataTypes.DECIMAL(15, 2) },
       flashSaleStart: { type: DataTypes.DATE },
       flashSaleEnd: { type: DataTypes.DATE },
+      embedding: { type: DataTypes.TEXT("long"), allowNull: true },
     },
     {
       sequelize,

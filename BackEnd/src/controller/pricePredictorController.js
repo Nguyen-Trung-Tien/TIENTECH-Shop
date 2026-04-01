@@ -18,28 +18,36 @@ function sanitizeGeminiJSON(text) {
 }
 
 async function analyzeProductWithGemini(product) {
+  const currentMonth = new Date().getMonth() + 1;
   const prompt = `
-Phân tích sản phẩm theo dữ liệu:
-
+Bạn là chuyên gia phân tích thị trường công nghệ. Hãy phân tích sản phẩm:
 Tên: ${product.name}
-Giá gốc: ${product.price}
+Giá hiện tại: ${product.price}đ
 Giảm giá: ${product.discount}%
 Danh mục: ${product.category?.name || "Không có"}
+Tháng hiện tại: ${currentMonth}
 
-Hãy dự đoán:
-- Xu hướng giá 30/60/90 ngày tới tại Việt Nam
-- Rủi ro giá
-- Gợi ý có nên mua không
-- Giá hợp lý để mua
-- Điểm độ tin cậy 0-100
+Dựa trên vòng đời sản phẩm (Product Life Cycle) và các sự kiện mua sắm lớn tại Việt Nam (Shopee 11.11, Black Friday, Tết, chu kỳ ra mắt iPhone/Laptop mới):
+1. Dự đoán xu hướng giá 30, 60, 90 ngày tới.
+2. Đưa ra "Fair Price" (Giá hợp lý nhất nên mua).
+3. Rủi ro: Có model mới sắp ra mắt không? Có đợt sale lớn nào sắp tới không?
+4. Lời khuyên: "BUY NOW", "WAIT", "SKIP".
+5. Độ tin cậy (0-100%).
 
-Trả về JSON THUẦN, không markdown, không giải thích:
+Trả về JSON THUẦN:
 {
-  "trend": "",
-  "suggestion": "",
-  "risk": "",
+  "trend": "Mô tả xu hướng",
+  "suggestion": "Lời khuyên chi tiết",
+  "adviceCode": "BUY_NOW | WAIT | SKIP",
+  "risk": "Mô tả rủi ro",
   "fairPrice": 0,
-  "reliability": 0
+  "reliability": 0,
+  "chartData": [
+    {"name": "Hiện tại", "price": 0},
+    {"name": "30 ngày", "price": 0},
+    {"name": "60 ngày", "price": 0},
+    {"name": "90 ngày", "price": 0}
+  ]
 }
   `;
 

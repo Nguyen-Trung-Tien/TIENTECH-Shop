@@ -4,10 +4,30 @@ const { getLuckyColorsByYear } = require("../utils/fortuneUtils");
 const NodeCache = require("node-cache");
 const { getPagination, getPagingData } = require("../utils/paginationHelper");
 const AttributeService = require("./AttributeService");
+const { generateEmbedding, cosineSimilarity } = require("../utils/embeddingHelper");
 
 const productCache = new NodeCache({ stdTTL: 600, checkperiod: 120 });
 
 // --- CÁC HÀM HELPER NỘI BỘ ---
+
+const prepareProductEmbeddingText = (product) => {
+  const specs = typeof product.specifications === 'string' 
+    ? product.specifications 
+    : JSON.stringify(product.specifications || {});
+  return `Sản phẩm: ${product.name}. Mô tả: ${product.description || ""}. Thông số: ${specs}`.slice(0, 8000);
+};
+
+const updateProductEmbedding = async (product, transaction) => {
+  try {
+    const text = prepareProductEmbeddingText(product);
+    const embedding = await generateEmbedding(text);
+    if (embedding) {
+      await product.update({ embedding: JSON.stringify(embedding) }, { transaction });
+    }
+  } catch (error) {
+    console.error(`Lỗi cập nhật embedding cho SP ${product.id}:`, error);
+  }
+};
 
 const ensureUniqueSKU = async (sku, transaction) => {
   if (!sku) return `PROD-${Date.now()}`;
@@ -703,6 +723,144 @@ const recommendFortuneProducts = async ({ birthYear, brandId, minPrice, maxPrice
   }
 };
 
+const searchSemanticProducts = async (query, limit = 5) => {
+  try {
+    const queryEmbedding = await generateEmbedding(query);
+    if (!queryEmbedding) return { errCode: 1, errMessage: "Không thể tạo embedding cho truy vấn." };
+
+    // Lấy tất cả sản phẩm có embedding (Trong thực tế nên dùng Vector DB nếu dữ liệu lớn)
+    const products = await db.Product.findAll({
+      where: { 
+        isActive: true,
+        embedding: { [Op.ne]: null }
+      },
+      attributes: ["id", "name", "basePrice", "discount", "image", "embedding", "description"],
+    });
+
+    const results = products
+      .map(product => {
+        const productEmbedding = JSON.parse(product.embedding);
+        const similarity = cosineSimilarity(queryEmbedding, productEmbedding);
+        return {
+          id: product.id,
+          name: product.name,
+          price: product.basePrice * (1 - (product.discount || 0) / 100),
+          image: product.image,
+          similarity: similarity
+        };
+      })
+      .filter(p => p.similarity > 0.3) // Ngưỡng tương đồng tối thiểu
+      .sort((a, b) => b.similarity - a.similarity)
+      .slice(0, limit);
+
+    return { errCode: 0, products: results };
+  } catch (e) {
+    console.error("Lỗi tìm kiếm ngữ nghĩa:", e);
+    return { errCode: 1, errMessage: e.message };
+  }
+};
+
+const syncAllProductEmbeddings = async () => {
+  const products = await db.Product.findAll();
+  let count = 0;
+  for (const product of products) {
+    await updateProductEmbedding(product);
+    count++;
+    if (count % 10 === 0) console.log(`Đã đồng bộ ${count}/${products.length} sản phẩm...`);
+  }
+  return { errCode: 0, message: `Đã đồng bộ xong ${count} sản phẩm.` };
+};
+
+const getSmartRecommendations = async (productId, limit = 6) => {
+  try {
+    const product = await db.Product.findByPk(productId);
+    if (!product) return { errCode: 1, errMessage: "Sản phẩm không tồn tại" };
+
+    // 1. Lấy sản phẩm tương đồng về Ngữ nghĩa (Semantic)
+    let semanticMatches = [];
+    if (product.embedding) {
+      const queryEmbedding = JSON.parse(product.embedding);
+      const allProducts = await db.Product.findAll({
+        where: { 
+          isActive: true, 
+          id: { [Op.ne]: productId },
+          embedding: { [Op.ne]: null }
+        },
+        attributes: ["id", "name", "basePrice", "discount", "image", "embedding"],
+      });
+
+      semanticMatches = allProducts
+        .map(p => ({
+          ...p.get({ plain: true }),
+          similarity: cosineSimilarity(queryEmbedding, JSON.parse(p.embedding)),
+          reason: "Cùng phong cách"
+        }))
+        .filter(p => p.similarity > 0.7)
+        .sort((a, b) => b.similarity - a.similarity);
+    }
+
+    // 2. Lấy sản phẩm thường được mua cùng (Frequently Bought Together)
+    const orderItems = await db.OrderItem.findAll({
+      where: { productId },
+      attributes: ["orderId"],
+      raw: true
+    });
+    const orderIds = orderItems.map(item => item.orderId);
+
+    let boughtTogether = [];
+    if (orderIds.length > 0) {
+      const frequentItems = await db.OrderItem.findAll({
+        where: { 
+          orderId: { [Op.in]: orderIds },
+          productId: { [Op.ne]: productId }
+        },
+        attributes: ["productId", [db.sequelize.fn("COUNT", db.sequelize.col("productId")), "count"]],
+        group: ["productId"],
+        order: [[db.sequelize.literal("count"), "DESC"]],
+        limit: limit,
+        include: [{ model: db.Product, as: "product", attributes: ["id", "name", "basePrice", "discount", "image"] }]
+      });
+
+      boughtTogether = frequentItems.map(item => ({
+        ...item.product.get({ plain: true }),
+        reason: "Thường mua cùng"
+      }));
+    }
+
+    // Kết hợp và loại bỏ trùng lặp
+    const combined = [...boughtTogether, ...semanticMatches];
+    const uniqueResults = [];
+    const seenIds = new Set();
+
+    for (const p of combined) {
+      if (!seenIds.has(p.id)) {
+        uniqueResults.push(p);
+        seenIds.add(p.id);
+      }
+      if (uniqueResults.length >= limit) break;
+    }
+
+    // Fallback: Cùng danh mục nếu chưa đủ
+    if (uniqueResults.length < limit) {
+      const fallback = await db.Product.findAll({
+        where: { 
+          categoryId: product.categoryId, 
+          id: { [Op.and]: [{ [Op.ne]: productId }, { [Op.notIn]: Array.from(seenIds) }] },
+          isActive: true
+        },
+        limit: limit - uniqueResults.length,
+        attributes: ["id", "name", "basePrice", "discount", "image"]
+      });
+      fallback.forEach(p => uniqueResults.push({ ...p.get({ plain: true }), reason: "Cùng danh mục" }));
+    }
+
+    return { errCode: 0, products: uniqueResults };
+  } catch (e) {
+    console.error("Lỗi getSmartRecommendations:", e);
+    return { errCode: 1, errMessage: e.message };
+  }
+};
+
 module.exports = {
   createProduct,
   createProductWithVariants,
@@ -718,5 +876,8 @@ module.exports = {
   getFlashSaleProducts,
   getDiscountedProducts,
   disableExpiredFlashSales,
-  recommendFortuneProducts
+  recommendFortuneProducts,
+  searchSemanticProducts,
+  syncAllProductEmbeddings,
+  getSmartRecommendations
 };

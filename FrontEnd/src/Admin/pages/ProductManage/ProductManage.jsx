@@ -20,6 +20,7 @@ import { getVariantsByProduct } from "../../../api/variantApi";
 import { getAllCategoryApi } from "../../../api/categoryApi";
 import { getAllBrandApi } from "../../../api/brandApi";
 import { getAllAttributesApi } from "../../../api/attributeApi";
+import { syncEmbeddings } from "../../../api/adminApi";
 import AppPagination from "../../../components/Pagination/Pagination";
 import VariantManager from "./VariantManager";
 
@@ -74,6 +75,7 @@ const ProductManage = () => {
   const limit = 10;
   const [loadingTable, setLoadingTable] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [isSyncingAI, setIsSyncingAI] = useState(false);
 
   const [confirmModal, setConfirmModal] = useState({ show: false, productId: null, name: "" });
 
@@ -263,6 +265,23 @@ const ProductManage = () => {
     } finally { setConfirmModal({ show: false, productId: null, name: "" }); }
   };
 
+  const handleSyncAI = async () => {
+    setIsSyncingAI(true);
+    try {
+      const res = await syncEmbeddings();
+      if (res.errCode === 0) {
+        toast.success("Đồng bộ dữ liệu AI Vector thành công!");
+      } else {
+        toast.error(res.errMessage || "Đồng bộ thất bại");
+      }
+    } catch (error) {
+      console.error("Sync AI error:", error);
+      toast.error("Lỗi khi đồng bộ dữ liệu AI");
+    } finally {
+      setIsSyncingAI(false);
+    }
+  };
+
   // Helper to get Icon for Attribute
   const getAttrIcon = (code) => {
     switch (code) {
@@ -290,10 +309,21 @@ const ProductManage = () => {
           <p className="text-sm text-slate-500 font-medium mt-2 ml-1">Hệ thống quản lý sản phẩm thông minh & phân loại linh hoạt.</p>
         </div>
 
-        <button onClick={() => handleShowModal()} className="btn-modern-primary h-12 px-6 group">
-          <FiPlus className="text-xl group-hover:rotate-90 transition-transform duration-300" />
-          <span className="font-bold">Đăng sản phẩm mới</span>
-        </button>
+        <div className="flex items-center gap-3">
+          <button 
+            onClick={handleSyncAI} 
+            disabled={isSyncingAI}
+            className="flex items-center gap-2 px-6 h-12 rounded-2xl bg-slate-100 hover:bg-white border border-slate-200 hover:border-indigo-400 text-slate-600 hover:text-indigo-600 font-black uppercase tracking-widest text-[11px] transition-all hover:shadow-xl hover:shadow-indigo-100 disabled:opacity-50"
+          >
+            <FiCpu className={`${isSyncingAI ? "animate-spin" : ""}`} />
+            {isSyncingAI ? "Đang đồng bộ..." : "Đồng bộ AI Vector"}
+          </button>
+          
+          <button onClick={() => handleShowModal()} className="btn-modern-primary h-12 px-6 group">
+            <FiPlus className="text-xl group-hover:rotate-90 transition-transform duration-300" />
+            <span className="font-bold">Đăng sản phẩm mới</span>
+          </button>
+        </div>
       </div>
 
       {/* Advanced Filter Bar */}

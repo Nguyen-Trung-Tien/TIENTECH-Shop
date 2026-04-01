@@ -67,9 +67,23 @@ const handleGlobalSearch = async (req, res) => {
   }
 };
 
+const handleSyncEmbeddings = async (req, res) => {
+  try {
+    const result = await AdminService.syncEmbeddings();
+    res.status(200).json(result);
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({
+      errCode: 1,
+      errMessage: "Lỗi khi đồng bộ dữ liệu AI.",
+    });
+  }
+};
+
 module.exports = {
   getDashboard,
   handleExportRevenue,
   handleAIInsights,
   handleGlobalSearch,
+  handleSyncEmbeddings,
 };

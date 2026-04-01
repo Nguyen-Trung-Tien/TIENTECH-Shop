@@ -3,27 +3,28 @@ const OpenAI = require("openai");
 const { Product, Brand, Category } = require("../models");
 const { Op } = require("sequelize");
 const {
-  getElementByBirthYear,
-  getLuckyColorsByYear,
+  getFengShuiDetail,
 } = require("../utils/fortuneUtils");
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 const handleFengShuiChat = async (req, res) => {
   try {
-    const { birthYear, message, brandId, categoryId, minPrice, maxPrice, history = [] } =
+    const { birthYear, gender = "male", message, brandId, categoryId, minPrice, maxPrice, history = [] } =
       req.body;
 
     if (!birthYear || !message)
       return res.status(400).json({ error: "Thiếu năm sinh hoặc câu hỏi." });
 
-    const element = getElementByBirthYear(Number(birthYear));
-    const luckyColors = getLuckyColorsByYear(Number(birthYear));
+    const fs = getFengShuiDetail(Number(birthYear), gender);
+    const allLuckyColors = [...fs.luckyColors, ...fs.supportColors];
 
     const products = await Product.findAll({
       where: {
         isActive: true,
-        color: { [Op.in]: luckyColors },
+        [Op.or]: allLuckyColors.map(color => ({
+          color: { [Op.like]: `%${color}%` }
+        })),
         ...(brandId && { brandId }),
         ...(categoryId && { categoryId }),
         ...(minPrice && { price: { [Op.gte]: minPrice } }),
@@ -36,36 +37,45 @@ const handleFengShuiChat = async (req, res) => {
       order: [
         ["sold", "DESC"],
         ["discount", "DESC"],
-        ["createdAt", "DESC"],
       ],
       limit: 6,
     });
 
-    let dbContext = `Mệnh: ${element}\nMàu may mắn: ${luckyColors.join(", ")}`;
+    let dbContext = `
+THÔNG TIN KHÁCH HÀNG:
+- Năm sinh: ${birthYear} (${fs.gender})
+- Mệnh Niên: ${fs.menhNien}
+- Cung Phi: ${fs.cungPhi} (Hành ${fs.element})
+- Màu Đại Cát (Tương sinh): ${fs.supportColors.join(", ")}
+- Màu Bình An (Bản mệnh): ${fs.luckyColors.join(", ")}
+- Màu Đại Kỵ: ${fs.badColors.join(", ")}
+- Con số may mắn: ${fs.luckyNumbers.join(", ")}
+`;
+
     if (products.length) {
-      dbContext += "\nSản phẩm gợi ý trong kho:\n";
+      dbContext += "\nSẢN PHẨM HỢP MỆNH TRONG KHO:\n";
       products.forEach((p) => {
         const currentPrice = p.price * (1 - p.discount / 100);
-        dbContext += `- ID: ${p.id}, Tên: ${p.name}, Giá: ${currentPrice.toLocaleString()} ₫, Kho: ${p.stock}\n`;
+        dbContext += `- ID: ${p.id}, Tên: ${p.name}, Màu: ${p.color}, Giá: ${currentPrice.toLocaleString()}đ\n`;
       });
     }
 
     const systemPrompt = `
-Bạn là chuyên gia phong thủy của TienTech Shop.
-Nhiệm vụ: Tư vấn chọn sản phẩm công nghệ theo bản mệnh, màu sắc may mắn của khách hàng.
+Bạn là "TienTech FengShui Master" - Bậc thầy phong thủy công nghệ.
+Nhiệm vụ: Tư vấn chọn sản phẩm (Laptop, iPhone, Tablet...) dựa trên bản mệnh chuyên sâu.
 
-THÔNG TIN PHONG THỦY & KHO:
-${dbContext}
-
-YÊU CẦU PHẢN HỒI:
-1. Trả lời bằng tiếng Việt, giọng điệu chuyên gia nhưng gần gũi.
-2. Giải thích tại sao sản phẩm/màu sắc đó lại hợp với mệnh ${element}.
-3. Trả về định dạng JSON THUẦN:
+NGUYÊN TẮC TƯ VẤN:
+1. Chào hỏi theo phong cách chuyên gia (VD: "Kính thưa quý khách sinh năm ${birthYear}...").
+2. Phân tích sự kết hợp giữa cung phi ${fs.cungPhi} và sản phẩm người dùng đang quan tâm.
+3. Ưu tiên gợi ý màu sắc Đại Cát trước, sau đó mới đến màu Bình An. Tuyệt đối khuyên tránh màu Đại Kỵ.
+4. Nhắc đến các con số may mắn (${fs.luckyNumbers.join(", ")}) có thể xuất hiện trong giá tiền hoặc mã máy.
+5. Tư vấn thêm về hướng đặt thiết bị trên bàn làm việc để kích tài lộc (Ví dụ: Mệnh ${fs.element} đặt hướng nào).
+6. Trả về JSON THUẦN:
 {
-  "reply": "Nội dung tư vấn của bạn",
-  "recommendedProducts": [id1, id2] // Mảng ID các sản phẩm hợp mệnh nhất (tối đa 3)
+  "reply": "Lời tư vấn tâm huyết và chi tiết",
+  "recommendedProducts": [id1, id2, id3],
+  "fsData": ${JSON.stringify(fs)}
 }
-4. Không markdown, không giải thích ngoài JSON.
 `;
 
     const messages = [

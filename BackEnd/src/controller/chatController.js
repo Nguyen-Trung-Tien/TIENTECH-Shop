@@ -2,6 +2,7 @@ require("dotenv").config();
 const OpenAI = require("openai");
 const { Product, Order, Category, OrderItem, User } = require("../models");
 const { Op } = require("sequelize");
+const ProductService = require("../services/ProductService");
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -18,34 +19,42 @@ const handleChat = async (req, res) => {
     let dbContext = "";
     let suggestedProducts = [];
 
-    // Tìm kiếm sản phẩm liên quan để cung cấp context cho AI
-    const productMatch = message.match(/(?:sản phẩm|sp|mua|tìm|có|bán|giá) (.+)/i);
-    if (productMatch) {
-      const productName = productMatch[1].trim();
-      const products = await Product.findAll({
+    // 1. Tìm kiếm ngữ nghĩa (Semantic Search) - AI 2.0
+    const semanticResult = await ProductService.searchSemanticProducts(message, 4);
+    if (semanticResult.errCode === 0 && semanticResult.products.length > 0) {
+      dbContext += "\nSản phẩm liên quan tìm thấy qua phân tích ý nghĩa:\n";
+      semanticResult.products.forEach(p => {
+        suggestedProducts.push(p);
+        dbContext += `- ID: ${p.id}, Tên: ${p.name}, Giá: ${formatPrice(p.price)}đ (Độ phù hợp: ${Math.round(p.similarity * 100)}%)\n`;
+      });
+    }
+
+    // 2. Tìm kiếm theo từ khóa (Keyword Search) - Fallback
+    if (suggestedProducts.length < 2) {
+      const productMatch = message.match(/(?:sản phẩm|sp|mua|tìm|có|bán|giá) (.+)/i);
+      const queryName = productMatch ? productMatch[1].trim() : message;
+      
+      const keywordProducts = await Product.findAll({
         where: { 
-          [Op.or]: [
-            { name: { [Op.like]: `%${productName}%` } },
-            { description: { [Op.like]: `%${productName}%` } }
-          ],
+          name: { [Op.like]: `%${queryName}%` },
           isActive: true 
         },
-        include: [{ model: Category, as: "category" }],
         limit: 3
       });
 
-      if (products.length > 0) {
-        dbContext += "\nSản phẩm tìm thấy trong kho:\n";
-        products.forEach(p => {
-          const discountPrice = p.price * (1 - p.discount / 100);
-          suggestedProducts.push({
-            id: p.id,
-            name: p.name,
-            price: discountPrice,
-            image: p.image,
-            discount: p.discount
-          });
-          dbContext += `- ID: ${p.id}, Tên: ${p.name}, Giá: ${formatPrice(discountPrice)}đ, Kho: ${p.stock}\n`;
+      if (keywordProducts.length > 0) {
+        dbContext += "\nSản phẩm tìm thấy theo từ khóa:\n";
+        keywordProducts.forEach(p => {
+          if (!suggestedProducts.find(sp => sp.id === p.id)) {
+            const discountPrice = p.price * (1 - (p.discount || 0) / 100);
+            suggestedProducts.push({
+              id: p.id,
+              name: p.name,
+              price: discountPrice,
+              image: p.image
+            });
+            dbContext += `- ID: ${p.id}, Tên: ${p.name}, Giá: ${formatPrice(discountPrice)}đ\n`;
+          }
         });
       }
     }

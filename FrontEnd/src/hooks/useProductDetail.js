@@ -4,6 +4,7 @@ import { toast } from "react-toastify";
 import {
   getProductBySlugApi,
   getRecommendedProductsApi,
+  getSmartRecommendationsApi,
 } from "../api/productApi";
 import { getAllCarts, createCart, addCart } from "../api/cartApi";
 import { addCartItem } from "../redux/cartSlice";
@@ -20,6 +21,7 @@ export const useProductDetail = (slug) => {
   const [pagination, setPagination] = useState({ totalPages: 1 });
 
   const [recommended, setRecommended] = useState([]);
+  const [smartRecs, setSmartRecs] = useState([]);
   const [loadingRecommended, setLoadingRecommended] = useState(false);
   const [addingCart, setAddingCart] = useState(false);
   const [submittingReview, setSubmittingReview] = useState(false);
@@ -59,7 +61,7 @@ export const useProductDetail = (slug) => {
     fetchProduct();
   }, [fetchProduct]);
 
-  // Fetch reviews & recommended (giả sử dùng product.id sau khi fetch xong)
+  // Fetch reviews & recommended & smart recommendations
   useEffect(() => {
     if (product?.id) {
       fetchReviews();
@@ -68,6 +70,11 @@ export const useProductDetail = (slug) => {
           const recommendedRes = await getRecommendedProductsApi(product.id, 1, 6);
           if (recommendedRes.errCode === 0) {
             setRecommended(recommendedRes.data);
+          }
+
+          const smartRecsRes = await getSmartRecommendationsApi(product.id, 4);
+          if (smartRecsRes.errCode === 0) {
+            setSmartRecs(smartRecsRes.products);
           }
         } catch (err) {
           console.error("Fetch extra data error:", err);
@@ -144,6 +151,7 @@ export const useProductDetail = (slug) => {
     reviews,
     pagination,
     recommended,
+    smartRecs,
     loadingRecommended,
     addingCart,
     submittingReview,

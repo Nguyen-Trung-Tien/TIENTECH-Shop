@@ -35,4 +35,11 @@ router.get(
   AdminController.handleGlobalSearch
 );
 
+router.post(
+  "/sync-embeddings",
+  authenticateToken,
+  authorizeRole(["admin"]),
+  AdminController.handleSyncEmbeddings
+);
+
 module.exports = router;

@@ -13,13 +13,13 @@ API.interceptors.request.use((config) => {
   return config;
 });
 
-export const sendMessage = async (message, userId = null) => {
+export const sendMessage = async (message, userId = null, history = []) => {
   try {
-    const payload = { message, userId };
+    const payload = { message, userId, history };
 
     const res = await API.post("/chat/ask", payload);
 
-    return res.data.reply;
+    return res.data; // Trả về { reply, recommendedProducts }
   } catch (error) {
     console.error("Chatbot error:", error);
 
