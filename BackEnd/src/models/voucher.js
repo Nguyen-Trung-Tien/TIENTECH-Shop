@@ -15,6 +15,14 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
         unique: true,
       },
+      name: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      description: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
       type: {
         type: DataTypes.ENUM("percentage", "fixed"),
         defaultValue: "percentage",
@@ -44,7 +52,12 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         defaultValue: 0,
       },
-      expiryDate: {
+      startDate: {
+        type: DataTypes.DATE,
+        allowNull: true,
+        defaultValue: DataTypes.NOW,
+      },
+      endDate: {
         type: DataTypes.DATE,
         allowNull: false,
       },

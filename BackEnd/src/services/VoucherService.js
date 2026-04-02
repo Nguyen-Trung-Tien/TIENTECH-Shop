@@ -29,11 +29,19 @@ const validateVoucher = async (code, orderTotal, userId = null) => {
       where: {
         code,
         isActive: true,
-        expiryDate: { [Op.gt]: new Date() },
+        endDate: { [Op.gt]: new Date() },
+        startDate: { [Op.lte]: new Date() },
       },
     });
 
     if (!voucher) {
+      // Check if voucher exists but is not yet active
+      const notYetActive = await db.Voucher.findOne({
+        where: { code, startDate: { [Op.gt]: new Date() } }
+      });
+      if (notYetActive) {
+        return { errCode: 1, errMessage: `Mã giảm giá chỉ có hiệu lực từ ngày ${new Date(notYetActive.startDate).toLocaleDateString('vi-VN')}.` };
+      }
       return { errCode: 1, errMessage: "Mã giảm giá không hợp lệ hoặc đã hết hạn." };
     }
 
@@ -185,9 +193,10 @@ const getActiveVouchers = async () => {
     const vouchers = await db.Voucher.findAll({
       where: {
         isActive: true,
-        expiryDate: { [Op.gt]: new Date() },
+        endDate: { [Op.gt]: new Date() },
+        startDate: { [Op.lte]: new Date() },
       },
-      order: [["expiryDate", "ASC"]],
+      order: [["endDate", "ASC"]],
     });
     return { errCode: 0, data: vouchers };
   } catch (error) {

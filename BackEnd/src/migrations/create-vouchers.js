@@ -13,6 +13,14 @@ module.exports = {
         allowNull: false,
         unique: true,
       },
+      name: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      description: {
+        type: Sequelize.TEXT,
+        allowNull: true,
+      },
       type: {
         type: Sequelize.ENUM("percentage", "fixed"), // Giảm theo % hoặc tiền cố định
         defaultValue: "percentage",
@@ -33,6 +41,10 @@ module.exports = {
       maxUsage: {
         type: Sequelize.INTEGER,
         defaultValue: 100,
+      },
+      perUserUsage: {
+        type: Sequelize.INTEGER,
+        defaultValue: 1,
       },
       usedCount: {
         type: Sequelize.INTEGER,

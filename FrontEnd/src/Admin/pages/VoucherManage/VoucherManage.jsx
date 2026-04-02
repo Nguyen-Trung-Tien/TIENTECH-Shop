@@ -34,7 +34,7 @@ const VoucherManage = () => {
       render: (item) => (
         <div>
           <p className="text-sm font-black text-indigo-600 tracking-wider uppercase">{item.code}</p>
-          <p className="text-[11px] font-bold text-slate-500 mt-0.5">{item.name}</p>
+          <p className="text-[11px] font-bold text-slate-500 mt-0.5">{item.name || 'Không có tên'}</p>
         </div>
       ),
     },
@@ -43,9 +43,9 @@ const VoucherManage = () => {
       render: (item) => (
         <div className="flex items-center gap-1 text-sm font-black text-rose-600">
           <FiPercent className="text-rose-400" />
-          {item.discountType === 'percentage' 
-            ? `${item.discountValue || 0}%` 
-            : `${(item.discountValue || 0).toLocaleString()}đ`}
+          {item.type === 'percentage' 
+            ? `${item.value || 0}%` 
+            : `${Number(item.value || 0).toLocaleString()}đ`}
         </div>
       ),
     },
@@ -54,12 +54,12 @@ const VoucherManage = () => {
         render: (item) => (
           <div className="space-y-1">
             <div className="flex items-center gap-2 text-[10px] font-bold text-slate-500">
-              <FiUsers className="text-slate-400" /> {item.usedCount || 0} / {item.usageLimit || '∞'}
+              <FiUsers className="text-slate-400" /> {item.usedCount || 0} / {item.maxUsage || '∞'}
             </div>
             <div className="w-24 h-1.5 bg-slate-100 rounded-full overflow-hidden">
                 <div 
                     className="h-full bg-indigo-500 rounded-full" 
-                    style={{ width: `${Math.min(100, ((item.usedCount || 0) / (item.usageLimit || 100)) * 100)}%` }}
+                    style={{ width: `${Math.min(100, ((item.usedCount || 0) / (item.maxUsage || 100)) * 100)}%` }}
                 />
             </div>
           </div>
@@ -69,8 +69,13 @@ const VoucherManage = () => {
       header: "Thời hạn",
       render: (item) => (
         <div className="text-[11px] font-bold text-slate-500 space-y-0.5">
-          <div className="flex items-center gap-1"><FiCalendar className="text-indigo-400" /> {item.startDate ? new Date(item.startDate).toLocaleDateString('vi-VN') : 'N/A'}</div>
-          <div className="flex items-center gap-1 opacity-60">đến {item.endDate ? new Date(item.endDate).toLocaleDateString('vi-VN') : 'N/A'}</div>
+          <div className="flex items-center gap-1">
+            <FiCalendar className="text-indigo-400" /> 
+            {item.startDate ? new Date(item.startDate).toLocaleDateString('vi-VN') : 'N/A'}
+          </div>
+          <div className="flex items-center gap-1 opacity-60">
+            đến {item.endDate ? new Date(item.endDate).toLocaleDateString('vi-VN') : 'N/A'}
+          </div>
         </div>
       ),
     },
@@ -108,7 +113,7 @@ const VoucherManage = () => {
     { name: "code", label: "Mã Voucher", placeholder: "Ví dụ: KHUYENMAI2024", required: true },
     { name: "name", label: "Tên chương trình", placeholder: "Ví dụ: Giảm giá mùa hè", required: true },
     { 
-      name: "discountType", 
+      name: "type", 
       label: "Loại giảm giá", 
       type: "select", 
       options: [
@@ -117,9 +122,11 @@ const VoucherManage = () => {
       ],
       required: true 
     },
-    { name: "discountValue", label: "Giá trị giảm", type: "number", placeholder: "10 hoặc 50000...", required: true },
+    { name: "value", label: "Giá trị giảm", type: "number", placeholder: "10 hoặc 50000...", required: true },
     { name: "minOrderValue", label: "Đơn tối thiểu", type: "number", placeholder: "0", defaultValue: 0 },
-    { name: "usageLimit", label: "Số lượng tối đa", type: "number", placeholder: "100", defaultValue: 100 },
+    { name: "maxDiscount", label: "Giảm tối đa (đ)", type: "number", placeholder: "Ví dụ: 100000", helpText: "Chỉ dùng cho loại phần trăm" },
+    { name: "maxUsage", label: "Số lượng tối đa", type: "number", placeholder: "100", defaultValue: 100 },
+    { name: "perUserUsage", label: "Lượt dùng/Người", type: "number", placeholder: "1", defaultValue: 1 },
     { name: "startDate", label: "Ngày bắt đầu", type: "date", required: true },
     { name: "endDate", label: "Ngày kết thúc", type: "date", required: true },
     { name: "description", label: "Mô tả", type: "textarea", fullWidth: true },
@@ -129,6 +136,17 @@ const VoucherManage = () => {
   const onSave = async (formData) => {
     const payload = { ...formData };
     await handleSave(payload);
+  };
+
+  const handleEditClick = (item) => {
+    const formattedItem = { ...item };
+    if (formattedItem.startDate) {
+      formattedItem.startDate = new Date(formattedItem.startDate).toISOString().split('T')[0];
+    }
+    if (formattedItem.endDate) {
+      formattedItem.endDate = new Date(formattedItem.endDate).toISOString().split('T')[0];
+    }
+    handleShowModal(formattedItem);
   };
 
   return (
@@ -143,7 +161,7 @@ const VoucherManage = () => {
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
         onAddClick={() => handleShowModal()}
-        onEditClick={handleShowModal}
+        onEditClick={handleEditClick}
         onDeleteClick={handleDelete}
         page={page}
         totalPages={totalPages}
