@@ -11,8 +11,6 @@ import {
   FiDollarSign,
   FiHelpCircle,
   FiTag,
-  FiRotateCcw,
-  FiXCircle,
   FiChevronDown,
 } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
@@ -25,14 +23,14 @@ import { motion, AnimatePresence } from "framer-motion";
 const MENU_ITEMS = [
   { to: "/admin/dashboard", icon: <FiHome />, label: "Dashboard" },
   { to: "/admin/revenue", icon: <FiBarChart />, label: "Doanh thu" },
-  { 
-    label: "Đơn hàng", 
+  {
+    label: "Đơn hàng",
     icon: <FiShoppingCart />,
     subItems: [
       { to: "/admin/orders", label: "Tất cả đơn hàng" },
       { to: "/admin/orders-return", label: "Duyệt trả hàng" },
       { to: "/admin/orders-cancel", label: "Duyệt hủy hàng" },
-    ]
+    ],
   },
   { to: "/admin/payment", icon: <FiDollarSign />, label: "Thanh toán" },
   { to: "/admin/products", icon: <FiBox />, label: "Sản phẩm" },
@@ -53,8 +51,8 @@ const Sidebar = ({ collapsed }) => {
   const [expandedMenus, setExpandedMenus] = useState(["Đơn hàng"]);
 
   const toggleMenu = (label) => {
-    setExpandedMenus(prev => 
-      prev.includes(label) ? prev.filter(l => l !== label) : [...prev, label]
+    setExpandedMenus((prev) =>
+      prev.includes(label) ? prev.filter((l) => l !== label) : [...prev, label],
     );
   };
 
@@ -117,18 +115,24 @@ const Sidebar = ({ collapsed }) => {
         {MENU_ITEMS.map((item) => {
           if (item.subItems) {
             const isExpanded = expandedMenus.includes(item.label);
-            const isSubActive = item.subItems.some(sub => location.pathname === sub.to);
-            
+            const isSubActive = item.subItems.some(
+              (sub) => location.pathname === sub.to,
+            );
+
             return (
               <div key={item.label} className="space-y-1">
                 <button
                   onClick={() => toggleMenu(item.label)}
                   className={`w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group ${
-                    isSubActive ? "text-white bg-slate-900/50" : "hover:bg-slate-900 hover:text-white"
+                    isSubActive
+                      ? "text-white bg-slate-900/50"
+                      : "hover:bg-slate-900 hover:text-white"
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <span className={`text-lg flex-shrink-0 ${isSubActive ? "text-indigo-500" : "text-slate-500 group-hover:text-primary transition-colors"}`}>
+                    <span
+                      className={`text-lg flex-shrink-0 ${isSubActive ? "text-indigo-500" : "text-slate-500 group-hover:text-primary transition-colors"}`}
+                    >
                       {item.icon}
                     </span>
                     {!collapsed && (
@@ -138,7 +142,9 @@ const Sidebar = ({ collapsed }) => {
                     )}
                   </div>
                   {!collapsed && (
-                    <FiChevronDown className={`transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`} />
+                    <FiChevronDown
+                      className={`transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`}
+                    />
                   )}
                 </button>
 
@@ -151,13 +157,13 @@ const Sidebar = ({ collapsed }) => {
                         exit={{ height: 0, opacity: 0 }}
                         className="overflow-hidden ml-9 space-y-1"
                       >
-                        {item.subItems.map(sub => (
+                        {item.subItems.map((sub) => (
                           <Link
                             key={sub.to}
                             to={sub.to}
                             className={`block px-3 py-2 rounded-lg text-xs font-bold transition-all ${
-                              location.pathname === sub.to 
-                                ? "text-indigo-500 bg-indigo-500/10" 
+                              location.pathname === sub.to
+                                ? "text-indigo-500 bg-indigo-500/10"
                                 : "text-slate-500 hover:text-slate-300 hover:bg-slate-900"
                             }`}
                           >

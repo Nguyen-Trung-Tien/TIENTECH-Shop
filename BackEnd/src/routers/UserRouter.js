@@ -5,9 +5,7 @@ const {
   authenticateToken,
   authorizeRole,
 } = require("../middleware/authMiddleware");
-
 const upload = require("./multer");
-
 const passport = require("../config/passport");
 
 router.post("/login", UserController.handleLogin);
@@ -22,24 +20,26 @@ router.get(
   UserController.handleGoogleAuthCallback
 );
 
-router.post("/create-new-user", UserController.handleCreateNewUser);
+// Thêm upload.none() để xử lý multipart/form-data không có file, hoặc upload.single("avatar") nếu cần
+router.post("/create", upload.single("avatar"), UserController.handleCreateNewUser);
+
 router.post("/refresh-token", UserController.handleRefreshToken);
-router.get("/me", authenticateToken, UserController.handleGetMe);
+router.get("/get-me", authenticateToken, UserController.handleGetMe);
 router.get(
-  "/get-all-user",
+  "/get-all",
   authenticateToken,
   authorizeRole(["admin"]),
   UserController.handleGetAllUsers
 );
 
 router.get(
-  "/get-user/:id",
+  "/get-by-id/:id",
   authenticateToken,
   authorizeRole(["admin", "customer"]),
   UserController.handleGetUserById
 );
 router.put(
-  "/update-user",
+  "/update",
   authenticateToken,
   authorizeRole(["admin", "customer"]),
   upload.single("avatar"),

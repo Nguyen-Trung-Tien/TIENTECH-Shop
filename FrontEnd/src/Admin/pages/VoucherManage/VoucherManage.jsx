@@ -1,215 +1,174 @@
-import React, { useState, useEffect } from "react";
-import { FiPlus, FiTrash2, FiTag, FiCalendar, FiDollarSign } from "react-icons/fi";
-import { toast } from "react-toastify";
-import { getAllVouchersApi, createVoucherApi, deleteVoucherApi } from "../../../api/voucherApi";
+import React from "react";
+import { FiGift, FiPercent, FiCalendar, FiUsers } from "react-icons/fi";
+import { voucherApi } from "../../../api/voucherApi";
+import { useAdminCrud } from "../../../hooks/useAdminCrud";
+import GenericAdminTable from "../../components/GenericAdminTable";
+import GenericAdminModal from "../../components/GenericAdminModal";
 import { ConfirmModal } from "../../../components/UI/Modal";
 
 const VoucherManage = () => {
-  const [vouchers, setVouchers] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [showModal, setShowModal] = useState(false);
-  const [confirmModal, setConfirmModal] = useState({ show: false, id: null, code: "" });
-  const [newVoucher, setNewVoucher] = useState({
-    code: "",
-    type: "percentage",
-    value: "",
-    minOrderValue: 0,
-    maxDiscount: "",
-    maxUsage: 100,
-    expiryDate: "",
-  });
+  const {
+    data: vouchers,
+    loading,
+    saving,
+    showModal,
+    editingItem: editingVoucher,
+    searchTerm,
+    setSearchTerm,
+    page,
+    totalPages,
+    handleShowModal,
+    handleCloseModal,
+    handleSave,
+    handleDelete,
+    showDeleteModal,
+    setShowDeleteModal,
+    deletingItem,
+    confirmDelete,
+    setPage,
+  } = useAdminCrud(voucherApi, { itemName: "Voucher", initialLimit: 8 });
 
-  const fetchVouchers = async () => {
-    setLoading(true);
-    const res = await getAllVouchersApi();
-    if (res.errCode === 0) {
-      setVouchers(res.data);
-    }
-    setLoading(false);
-  };
+  const columns = [
+    {
+      header: "Mã & Tên",
+      render: (item) => (
+        <div>
+          <p className="text-sm font-black text-indigo-600 tracking-wider uppercase">{item.code}</p>
+          <p className="text-[11px] font-bold text-slate-500 mt-0.5">{item.name}</p>
+        </div>
+      ),
+    },
+    {
+      header: "Ưu đãi",
+      render: (item) => (
+        <div className="flex items-center gap-1 text-sm font-black text-rose-600">
+          <FiPercent className="text-rose-400" />
+          {item.discountType === 'percentage' 
+            ? `${item.discountValue || 0}%` 
+            : `${(item.discountValue || 0).toLocaleString()}đ`}
+        </div>
+      ),
+    },
+    {
+        header: "Sử dụng",
+        render: (item) => (
+          <div className="space-y-1">
+            <div className="flex items-center gap-2 text-[10px] font-bold text-slate-500">
+              <FiUsers className="text-slate-400" /> {item.usedCount || 0} / {item.usageLimit || '∞'}
+            </div>
+            <div className="w-24 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                <div 
+                    className="h-full bg-indigo-500 rounded-full" 
+                    style={{ width: `${Math.min(100, ((item.usedCount || 0) / (item.usageLimit || 100)) * 100)}%` }}
+                />
+            </div>
+          </div>
+        ),
+    },
+    {
+      header: "Thời hạn",
+      render: (item) => (
+        <div className="text-[11px] font-bold text-slate-500 space-y-0.5">
+          <div className="flex items-center gap-1"><FiCalendar className="text-indigo-400" /> {item.startDate ? new Date(item.startDate).toLocaleDateString('vi-VN') : 'N/A'}</div>
+          <div className="flex items-center gap-1 opacity-60">đến {item.endDate ? new Date(item.endDate).toLocaleDateString('vi-VN') : 'N/A'}</div>
+        </div>
+      ),
+    },
+    {
+      header: "Trạng thái",
+      render: (item) => {
+          const now = new Date();
+          const isExpired = item.endDate && new Date(item.endDate) < now;
+          const isStarted = item.startDate && new Date(item.startDate) <= now;
+          
+          let statusLabel = "Đang chạy";
+          let statusColor = "bg-emerald-50 text-emerald-600";
+          
+          if (isExpired) {
+              statusLabel = "Hết hạn";
+              statusColor = "bg-rose-50 text-rose-600";
+          } else if (!isStarted) {
+              statusLabel = "Chờ lịch";
+              statusColor = "bg-amber-50 text-amber-600";
+          } else if (!item.isActive) {
+              statusLabel = "Đã khóa";
+              statusColor = "bg-slate-100 text-slate-400";
+          }
 
-  useEffect(() => {
-    fetchVouchers();
-  }, []);
+          return (
+            <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider ${statusColor}`}>
+              {statusLabel}
+            </span>
+          );
+      },
+    },
+  ];
 
-  const handleCreate = async (e) => {
-    e.preventDefault();
-    const res = await createVoucherApi(newVoucher);
-    if (res.errCode === 0) {
-      toast.success("Tạo mã giảm giá thành công!");
-      setShowModal(false);
-      fetchVouchers();
-    } else {
-      toast.error(res.errMessage);
-    }
-  };
+  const formFields = [
+    { name: "code", label: "Mã Voucher", placeholder: "Ví dụ: KHUYENMAI2024", required: true },
+    { name: "name", label: "Tên chương trình", placeholder: "Ví dụ: Giảm giá mùa hè", required: true },
+    { 
+      name: "discountType", 
+      label: "Loại giảm giá", 
+      type: "select", 
+      options: [
+        { label: "Phần trăm (%)", value: "percentage" },
+        { label: "Số tiền cố định (đ)", value: "fixed" }
+      ],
+      required: true 
+    },
+    { name: "discountValue", label: "Giá trị giảm", type: "number", placeholder: "10 hoặc 50000...", required: true },
+    { name: "minOrderValue", label: "Đơn tối thiểu", type: "number", placeholder: "0", defaultValue: 0 },
+    { name: "usageLimit", label: "Số lượng tối đa", type: "number", placeholder: "100", defaultValue: 100 },
+    { name: "startDate", label: "Ngày bắt đầu", type: "date", required: true },
+    { name: "endDate", label: "Ngày kết thúc", type: "date", required: true },
+    { name: "description", label: "Mô tả", type: "textarea", fullWidth: true },
+    { name: "isActive", label: "Kích hoạt", type: "checkbox", placeholder: "Cho phép sử dụng ngay" },
+  ];
 
-  const handleDelete = async () => {
-    const res = await deleteVoucherApi(confirmModal.id);
-    if (res.errCode === 0) {
-      toast.success("Đã xóa mã giảm giá.");
-      fetchVouchers();
-    }
-    setConfirmModal({ show: false, id: null, code: "" });
+  const onSave = async (formData) => {
+    const payload = { ...formData };
+    await handleSave(payload);
   };
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-2xl font-bold text-gray-800">Quản lý Mã giảm giá</h1>
-        <button
-          onClick={() => setShowModal(true)}
-          className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-dark transition-all"
-        >
-          <FiPlus /> Thêm mã mới
-        </button>
-      </div>
+    <>
+      <GenericAdminTable
+        title="Quản lý Vouchers"
+        subtitle="Chương trình ưu đãi & Mã giảm giá"
+        icon={FiGift}
+        columns={columns}
+        data={vouchers}
+        loading={loading}
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        onAddClick={() => handleShowModal()}
+        onEditClick={handleShowModal}
+        onDeleteClick={handleDelete}
+        page={page}
+        totalPages={totalPages}
+        onPageChange={setPage}
+        addLabel="Tạo Voucher"
+      />
 
-      <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-        <table className="w-full text-left border-collapse">
-          <thead className="bg-gray-50 text-gray-600 uppercase text-xs font-bold">
-            <tr>
-              <th className="px-6 py-4">Mã</th>
-              <th className="px-6 py-4">Loại</th>
-              <th className="px-6 py-4">Giá trị</th>
-              <th className="px-6 py-4">Đơn tối thiểu</th>
-              <th className="px-6 py-4">Lượt dùng</th>
-              <th className="px-6 py-4">Hạn dùng</th>
-              <th className="px-6 py-4 text-center">Hành động</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100">
-            {vouchers.map((v) => (
-              <tr key={v.id} className="hover:bg-gray-50 transition-colors">
-                <td className="px-6 py-4 font-bold text-primary">{v.code}</td>
-                <td className="px-6 py-4 capitalize">{v.type === 'percentage' ? 'Phần trăm' : 'Cố định'}</td>
-                <td className="px-6 py-4 font-bold text-emerald-600">
-                  {v.type === 'percentage' ? `${v.value}%` : `${Number(v.value).toLocaleString()}₫`}
-                </td>
-                <td className="px-6 py-4">{Number(v.minOrderValue).toLocaleString()}₫</td>
-                <td className="px-6 py-4">
-                  <span className="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded-full font-bold">
-                    {v.usedCount} / {v.maxUsage}
-                  </span>
-                </td>
-                <td className="px-6 py-4 text-sm">
-                  {new Date(v.expiryDate) < new Date() ? (
-                    <span className="text-red-500 font-bold">Hết hạn</span>
-                  ) : (
-                    new Date(v.expiryDate).toLocaleDateString("vi-VN")
-                  )}
-                </td>
-                <td className="px-6 py-4 text-center">
-                  <button
-                    onClick={() => setConfirmModal({ show: true, id: v.id, code: v.code })}
-                    className="text-red-500 hover:text-red-700 p-2"
-                  >
-                    <FiTrash2 size={18} />
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {showModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl w-full max-w-md p-8 shadow-2xl">
-            <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
-              <FiTag className="text-primary" /> Tạo mã giảm giá mới
-            </h2>
-            <form onSubmit={handleCreate} className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Mã giảm giá</label>
-                <input
-                  required
-                  type="text"
-                  placeholder="VD: GIAMGIA10"
-                  className="w-full border p-3 rounded-xl uppercase font-bold"
-                  onChange={(e) => setNewVoucher({ ...newVoucher, code: e.target.value.toUpperCase() })}
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Loại</label>
-                  <select
-                    className="w-full border p-3 rounded-xl"
-                    onChange={(e) => setNewVoucher({ ...newVoucher, type: e.target.value })}
-                  >
-                    <option value="percentage">Phần trăm (%)</option>
-                    <option value="fixed">Cố định (₫)</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Giá trị</label>
-                  <input
-                    required
-                    type="number"
-                    className="w-full border p-3 rounded-xl font-bold"
-                    onChange={(e) => setNewVoucher({ ...newVoucher, value: e.target.value })}
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Đơn tối thiểu</label>
-                  <input
-                    type="number"
-                    className="w-full border p-3 rounded-xl"
-                    onChange={(e) => setNewVoucher({ ...newVoucher, minOrderValue: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Lượt dùng tối đa</label>
-                  <input
-                    type="number"
-                    className="w-full border p-3 rounded-xl"
-                    onChange={(e) => setNewVoucher({ ...newVoucher, maxUsage: e.target.value })}
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Ngày hết hạn</label>
-                <input
-                  required
-                  type="date"
-                  className="w-full border p-3 rounded-xl"
-                  onChange={(e) => setNewVoucher({ ...newVoucher, expiryDate: e.target.value })}
-                />
-              </div>
-              <div className="flex gap-4 pt-4">
-                <button
-                  type="button"
-                  onClick={() => setShowModal(false)}
-                  className="flex-grow bg-gray-100 text-gray-600 font-bold py-3 rounded-xl hover:bg-gray-200 transition-all"
-                >
-                  Hủy
-                </button>
-                <button
-                  type="submit"
-                  className="flex-grow bg-primary text-white font-bold py-3 rounded-xl hover:bg-primary-dark shadow-lg shadow-primary/20 transition-all"
-                >
-                  Lưu mã
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      <GenericAdminModal
+        show={showModal}
+        onClose={handleCloseModal}
+        title="Voucher"
+        editingItem={editingVoucher}
+        fields={formFields}
+        onSave={onSave}
+        saving={saving}
+      />
 
       <ConfirmModal
-        isOpen={confirmModal.show}
-        onClose={() => setConfirmModal({ show: false, id: null, code: "" })}
-        onConfirm={handleDelete}
-        title="Xóa mã giảm giá?"
-        message={`Bạn có chắc chắn muốn xóa mã ${confirmModal.code}? Hành động này không thể hoàn tác.`}
-        confirmText="Đồng ý xóa"
-        variant="danger"
-        icon={FiTrash2}
-        iconClassName="bg-rose-50 text-rose-500"
+        show={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={confirmDelete}
+        title="Xác nhận xóa"
+        message={`Xóa voucher "${deletingItem?.code}"? Người dùng sẽ không thể sử dụng mã này nữa.`}
       />
-    </div>
+    </>
   );
 };
 

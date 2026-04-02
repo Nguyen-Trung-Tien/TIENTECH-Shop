@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { updateUser } from "../../redux/userSlice";
-import { getUserApi, updateUserApi } from "../../api/userApi";
+import { updateUserApi } from "../../api/userApi";
 import { toast } from "react-toastify";
 import ChangePasswordModal from "./ChangePasswordModal";
 import {
@@ -17,11 +17,10 @@ import {
   FiX,
   FiLock,
 } from "react-icons/fi";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { Button, Modal } from "../../components/UI";
 import Badge from "../../components/UI/Badge";
 import AddressManager from "./AddressManager";
-import ReviewHistory from "../../components/ReviewComponent/ReviewHistory";
 
 const Profile = () => {
   const dispatch = useDispatch();

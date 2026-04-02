@@ -5,11 +5,9 @@ import {
   FiMail,
   FiShield,
   FiKey,
-  FiArrowLeft,
   FiRefreshCw,
   FiEye,
   FiEyeOff,
-  FiX,
 } from "react-icons/fi";
 import { Modal, Button } from "../UI";
 import {

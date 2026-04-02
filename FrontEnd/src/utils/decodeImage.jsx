@@ -1,9 +1,3 @@
-export const decodeImage = (bufferObj) => {
-  if (!bufferObj || !bufferObj.data) return null;
-  const uint8Array = new Uint8Array(bufferObj.data);
-  return new TextDecoder().decode(uint8Array);
-};
-
 export const getAvatarBase64 = (avatar) => {
   if (!avatar || !avatar.data) return "/default-avatar.png";
 

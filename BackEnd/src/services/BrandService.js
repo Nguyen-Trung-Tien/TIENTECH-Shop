@@ -1,29 +1,24 @@
 const db = require("../models");
-const { getPagination, getPagingData } = require("../utils/paginationHelper");
+const BaseService = require("./BaseService");
 const { slugify } = require("../utils/slugHelper");
 
-const createBrand = async (data) => {
-  try {
+class BrandService extends BaseService {
+  constructor() {
+    super(db.Brand, "Brand");
+  }
+
+  // Override create to handle slug
+  async createBrand(data) {
     if (data.name && !data.slug) {
       data.slug = slugify(data.name);
     }
-    const brand = await db.Brand.create(data);
-    return { errCode: 0, brand };
-  } catch (e) {
-    console.error("Error creating brand:", e);
-    return { errCode: 1, errMessage: e.message };
+    return await this.create(data);
   }
-};
 
-const getAllBrands = async (page = 1, limit = 10, searchTerm = "") => {
-  try {
-    const { offset, limit: l } = getPagination(page, limit);
-    const { Op } = require("sequelize");
-    const where = searchTerm ? { name: { [Op.like]: `%${searchTerm}%` } } : {};
-
-    const data = await db.Brand.findAndCountAll({
-      where,
-      attributes: ["id", "name", "slug", "description", "image", "createdAt"],
+  // Specialized method for all brands with product count
+  async getAllBrands(page = 1, limit = 10, searchTerm = "") {
+    const options = {
+      searchFields: ["name"],
       include: [
         {
           model: db.Product,
@@ -32,42 +27,26 @@ const getAllBrands = async (page = 1, limit = 10, searchTerm = "") => {
         },
       ],
       order: [["createdAt", "DESC"]],
-      limit: l,
-      offset,
-      distinct: true,
-    });
-
-    const pagingData = getPagingData(data, page, l);
-
-    const result = pagingData.items.map((b) => {
-      const brandJson = b.toJSON();
-      return {
-        ...brandJson,
-        productCount: b.products ? b.products.length : 0,
-        products: undefined,
-      };
-    });
-
-    return { 
-      errCode: 0, 
-      brands: result,
-      pagination: {
-        totalItems: pagingData.totalItems,
-        currentPage: pagingData.currentPage,
-        totalPages: pagingData.totalPages,
-        limit: l,
-      }
     };
-  } catch (e) {
-    console.error("Error fetching brands:", e);
-    return { errCode: 1, errMessage: e.message };
-  }
-};
 
-const getBrandBySlug = async (slug) => {
-  try {
-    const brand = await db.Brand.findOne({
-      where: { slug },
+    const result = await this.getAll(page, limit, searchTerm, options);
+    
+    if (result.errCode === 0) {
+      result.brands = result.data.map((b) => {
+        const brandJson = b.toJSON();
+        return {
+          ...brandJson,
+          productCount: b.products ? b.products.length : 0,
+          products: undefined,
+        };
+      });
+      delete result.data;
+    }
+    return result;
+  }
+
+  async getBrandBySlug(slug) {
+    return await this.getOne({ slug }, {
       include: [
         {
           model: db.Product,
@@ -77,30 +56,10 @@ const getBrandBySlug = async (slug) => {
         },
       ],
     });
-
-    if (!brand) return { errCode: 1, errMessage: "Brand not found" };
-
-    const plainBrand = brand.get({ plain: true });
-    if (plainBrand.products) {
-      plainBrand.products = plainBrand.products.map(p => {
-        const primary = p.images?.find(i => i.isPrimary) || p.images?.[0];
-        return {
-          ...p,
-          image: primary ? primary.imageUrl : null
-        };
-      });
-    }
-
-    return { errCode: 0, brand: plainBrand };
-  } catch (e) {
-    console.error("Error fetching brand by slug:", e);
-    return { errCode: 1, errMessage: e.message };
   }
-};
 
-const getBrandById = async (id) => {
-  try {
-    const brand = await db.Brand.findByPk(id, {
+  async getBrandById(id) {
+    return await this.getById(id, {
       include: [
         {
           model: db.Product,
@@ -110,61 +69,18 @@ const getBrandById = async (id) => {
         },
       ],
     });
-
-    if (!brand) return { errCode: 1, errMessage: "Brand not found" };
-
-    const plainBrand = brand.get({ plain: true });
-    if (plainBrand.products) {
-      plainBrand.products = plainBrand.products.map(p => {
-        const primary = p.images?.find(i => i.isPrimary) || p.images?.[0];
-        return {
-          ...p,
-          image: primary ? primary.imageUrl : null
-        };
-      });
-    }
-
-    return { errCode: 0, brand: plainBrand };
-  } catch (e) {
-    console.error("Error fetching brand:", e);
-    return { errCode: 1, errMessage: e.message };
   }
-};
 
-const updateBrand = async (id, data) => {
-  try {
-    const brand = await db.Brand.findByPk(id);
-    if (!brand) return { errCode: 1, errMessage: "Brand not found" };
-
+  async updateBrand(id, data) {
     if (data.name && !data.slug) {
       data.slug = slugify(data.name);
     }
-
-    const updatedBrand = await brand.update(data);
-    return { errCode: 0, brand: updatedBrand };
-  } catch (e) {
-    console.error("Error updating brand:", e);
-    return { errCode: 1, errMessage: e.message };
+    return await this.update(id, data);
   }
-};
 
-const deleteBrand = async (id) => {
-  try {
-    const brand = await db.Brand.findByPk(id);
-    if (!brand) return { errCode: 1, errMessage: "Brand not found" };
-
-    await brand.destroy();
-    return { errCode: 0, errMessage: "Brand deleted successfully" };
-  } catch (e) {
-    console.error("Error deleting brand:", e);
-    return { errCode: 1, errMessage: e.message };
+  async deleteBrand(id) {
+    return await this.delete(id);
   }
-};
+}
 
-module.exports = {
-  createBrand,
-  getAllBrands,
-  getBrandById,
-  updateBrand,
-  deleteBrand,
-};
+module.exports = new BrandService();

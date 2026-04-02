@@ -1,12 +1,11 @@
 import { useEffect, useState } from "react";
-import { useSearchParams, useNavigate, Link } from "react-router-dom";
+import { useSearchParams, Link } from "react-router-dom";
 import { verifyEmailApi, resendVerificationApi } from "../../api/userApi";
 import { toast } from "react-toastify";
 import { CheckCircle, XCircle, Loader2, Mail } from "lucide-react";
 
 const VerifyEmail = () => {
   const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
   const [status, setStatus] = useState("verifying"); // verifying, success, error
   const [message, setMessage] = useState("");
   const [isResending, setIsResending] = useState(false);
@@ -18,7 +17,9 @@ const VerifyEmail = () => {
     const verify = async () => {
       if (!email || !token) {
         setStatus("error");
-        setMessage("Thiếu thông tin xác thực. Vui lòng kiểm tra lại link trong email.");
+        setMessage(
+          "Thiếu thông tin xác thực. Vui lòng kiểm tra lại link trong email.",
+        );
         return;
       }
 
@@ -34,7 +35,10 @@ const VerifyEmail = () => {
         }
       } catch (error) {
         setStatus("error");
-        setMessage(error.response?.data?.errMessage || "Có lỗi xảy ra trong quá trình xác thực.");
+        setMessage(
+          error.response?.data?.errMessage ||
+            "Có lỗi xảy ra trong quá trình xác thực.",
+        );
       }
     };
 
@@ -51,7 +55,9 @@ const VerifyEmail = () => {
     try {
       const res = await resendVerificationApi(email);
       if (res.errCode === 0) {
-        toast.success("Đã gửi lại email xác nhận. Vui lòng kiểm tra hộp thư của bạn.");
+        toast.success(
+          "Đã gửi lại email xác nhận. Vui lòng kiểm tra hộp thư của bạn.",
+        );
       } else {
         toast.error(res.errMessage || "Gửi lại email thất bại.");
       }
@@ -72,9 +78,7 @@ const VerifyEmail = () => {
           {status === "success" && (
             <CheckCircle className="w-16 h-16 text-green-500" />
           )}
-          {status === "error" && (
-            <XCircle className="w-16 h-16 text-red-500" />
-          )}
+          {status === "error" && <XCircle className="w-16 h-16 text-red-500" />}
         </div>
 
         <h1 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">
@@ -83,9 +87,7 @@ const VerifyEmail = () => {
           {status === "error" && "Xác nhận thất bại"}
         </h1>
 
-        <p className="text-gray-600 dark:text-gray-400 mb-8">
-          {message}
-        </p>
+        <p className="text-gray-600 dark:text-gray-400 mb-8">{message}</p>
 
         <div className="space-y-4">
           {status === "success" && (
@@ -121,7 +123,9 @@ const VerifyEmail = () => {
           )}
 
           {status === "verifying" && (
-            <p className="text-sm text-gray-500">Vui lòng đợi trong giây lát...</p>
+            <p className="text-sm text-gray-500">
+              Vui lòng đợi trong giây lát...
+            </p>
           )}
         </div>
       </div>

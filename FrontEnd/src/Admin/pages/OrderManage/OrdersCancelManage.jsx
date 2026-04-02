@@ -9,17 +9,15 @@ import {
   FiRefreshCw,
   FiEye,
 } from "react-icons/fi";
-import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { motion, AnimatePresence } from "framer-motion";
 import { getAllOrders, updateOrderStatus } from "../../../api/orderApi";
 import AppPagination from "../../../components/Pagination/Pagination";
-import { statusMap, paymentStatusMap } from "../../../utils/StatusMap";
+import { paymentStatusMap } from "../../../utils/StatusMap";
 import { StatusBadge } from "../../../utils/StatusBadge";
 import { ConfirmModal } from "../../../components/UI/Modal";
 
 const OrdersCancelManage = () => {
-  const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);

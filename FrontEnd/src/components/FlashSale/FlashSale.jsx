@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { toast } from "react-toastify";
 import { motion } from "framer-motion";
 import { getFlashSaleProductsApi } from "../../api/productApi";
 import ProductCard from "../../components/ProductCard/ProductCard";
@@ -68,7 +67,9 @@ const FlashSale = () => {
           const firstProduct = res.products[0];
           const diffSec = Math.max(
             0,
-            Math.floor((new Date(firstProduct.flashSaleEnd) - new Date()) / 1000),
+            Math.floor(
+              (new Date(firstProduct.flashSaleEnd) - new Date()) / 1000,
+            ),
           );
           setTimeLeft(diffSec);
           setIsUpcoming(false);

@@ -1,12 +1,10 @@
 import React from "react";
 import {
   FiPercent,
-  FiTruck,
   FiShield,
   FiRefreshCw,
   FiArrowRight,
   FiCheckCircle,
-  FiX,
 } from "react-icons/fi";
 import Button from "../UI/Button";
 

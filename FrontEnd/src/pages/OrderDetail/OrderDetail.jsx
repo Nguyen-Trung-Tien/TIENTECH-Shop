@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useReducer } from "react";
 import { useParams, Link, useLocation, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { useSelector } from "react-redux";
 import { motion, AnimatePresence } from "framer-motion";
 import { Modal, ConfirmModal, Button } from "../../components/UI";
 import {
@@ -15,22 +14,15 @@ import {
   FiCreditCard,
   FiArrowLeft,
   FiRotateCcw,
-  FiX,
   FiAlertTriangle,
 } from "react-icons/fi";
 import { getOrderById, updateOrderStatus } from "../../api/orderApi";
 import { requestReturn } from "../../api/orderItemApi";
 import { createVnpayPaymentApi } from "../../api/paymentApi";
 import { StatusBadge } from "../../utils/StatusBadge";
-import {
-  orderStatusMap,
-  paymentStatusMap,
-} from "../../utils/constants";
+import { orderStatusMap, paymentStatusMap } from "../../utils/constants";
 import { formatCurrency, formatDate } from "../../utils/format";
-import {
-  returnStatusMap,
-} from "../../utils/StatusMap";
-import Badge from "../../components/UI/Badge";
+import { returnStatusMap } from "../../utils/StatusMap";
 
 const InfoRow = ({ label, value, icon: Icon }) => (
   <div className="flex items-center justify-between py-3 border-b border-surface-100 last:border-0">
@@ -309,26 +301,34 @@ const OrderDetail = () => {
         </div>
 
         {/* Cancel Reason Display */}
-        {(order.status === "cancelled" || order.status === "cancel_requested") && order.cancelReason && (
-          <motion.div 
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-rose-50 border border-rose-100 rounded-[32px] p-8 mb-8 flex items-start gap-4"
-          >
-            <div className="w-12 h-12 bg-rose-500 text-white rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-rose-200">
-              <FiAlertTriangle size={24} />
-            </div>
-            <div>
-              <h4 className="text-rose-900 font-black text-lg uppercase tracking-tight mb-1">
-                {order.status === "cancel_requested" ? "Yêu cầu hủy đơn" : "Đơn hàng đã hủy"}
-              </h4>
-              <p className="text-rose-700 font-bold text-sm mb-2 uppercase tracking-widest opacity-60">Lý do từ khách hàng:</p>
-              <div className="bg-white/50 rounded-2xl p-4 border border-rose-200/50">
-                <p className="text-rose-800 font-medium italic">"{order.cancelReason}"</p>
+        {(order.status === "cancelled" ||
+          order.status === "cancel_requested") &&
+          order.cancelReason && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-rose-50 border border-rose-100 rounded-[32px] p-8 mb-8 flex items-start gap-4"
+            >
+              <div className="w-12 h-12 bg-rose-500 text-white rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-rose-200">
+                <FiAlertTriangle size={24} />
               </div>
-            </div>
-          </motion.div>
-        )}
+              <div>
+                <h4 className="text-rose-900 font-black text-lg uppercase tracking-tight mb-1">
+                  {order.status === "cancel_requested"
+                    ? "Yêu cầu hủy đơn"
+                    : "Đơn hàng đã hủy"}
+                </h4>
+                <p className="text-rose-700 font-bold text-sm mb-2 uppercase tracking-widest opacity-60">
+                  Lý do từ khách hàng:
+                </p>
+                <div className="bg-white/50 rounded-2xl p-4 border border-rose-200/50">
+                  <p className="text-rose-800 font-medium italic">
+                    "{order.cancelReason}"
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+          )}
 
         {/* Order Stepper (Desktop) */}
         {!isCancelled && (

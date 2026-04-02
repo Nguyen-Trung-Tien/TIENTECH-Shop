@@ -1,4 +1,3 @@
-import React from "react";
 import { FiTrendingUp, FiTrendingDown } from "react-icons/fi";
 import { motion } from "framer-motion";
 
@@ -17,14 +16,20 @@ const StatsCard = ({ title, value, icon, change, isIncrease }) => {
           <div className="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center text-primary text-2xl group-hover:bg-primary group-hover:text-white transition-all duration-300 shadow-sm border border-slate-100">
             {icon}
           </div>
-          
+
           {change && (
-            <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-black uppercase tracking-wider ${
-              isIncrease 
-                ? "bg-emerald-50 text-emerald-600 border border-emerald-100" 
-                : "bg-rose-50 text-rose-600 border border-rose-100"
-            }`}>
-              {isIncrease ? <FiTrendingUp className="text-sm" /> : <FiTrendingDown className="text-sm" />}
+            <div
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-black uppercase tracking-wider ${
+                isIncrease
+                  ? "bg-emerald-50 text-emerald-600 border border-emerald-100"
+                  : "bg-rose-50 text-rose-600 border border-rose-100"
+              }`}
+            >
+              {isIncrease ? (
+                <FiTrendingUp className="text-sm" />
+              ) : (
+                <FiTrendingDown className="text-sm" />
+              )}
               {change}
             </div>
           )}
@@ -39,12 +44,14 @@ const StatsCard = ({ title, value, icon, change, isIncrease }) => {
           </h3>
         </div>
       </div>
-      
+
       {/* Progress-like accent bar */}
       <div className="mt-6 h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
-         <div className={`h-full rounded-full transition-all duration-700 w-0 group-hover:w-full ${
-           isIncrease ? "bg-emerald-500" : "bg-rose-500"
-         } opacity-60`}></div>
+        <div
+          className={`h-full rounded-full transition-all duration-700 w-0 group-hover:w-full ${
+            isIncrease ? "bg-emerald-500" : "bg-rose-500"
+          } opacity-60`}
+        ></div>
       </div>
     </motion.div>
   );

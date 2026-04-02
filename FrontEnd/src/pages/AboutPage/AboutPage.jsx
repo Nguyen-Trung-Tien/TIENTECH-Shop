@@ -1,11 +1,5 @@
 import React from "react";
-import {
-  FiUsers,
-  FiTarget,
-  FiEye,
-  FiArrowRight,
-  FiAward,
-} from "react-icons/fi";
+import { FiUsers, FiTarget, FiEye } from "react-icons/fi";
 import { motion } from "framer-motion";
 import imgPro1 from "../../assets/1759303601055.png";
 import imgPro2 from "../../assets/1759303601055.png";

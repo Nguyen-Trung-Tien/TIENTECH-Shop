@@ -1,23 +1,13 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import {
-  FiBox,
   FiSearch,
-  FiTruck,
   FiCheckCircle,
-  FiXCircle,
   FiRefreshCcw,
-  FiDollarSign,
   FiUser,
   FiCalendar,
-  FiMapPin,
   FiInfo,
-  FiAlertTriangle,
-  FiMoreHorizontal,
-  FiChevronDown,
   FiTrash2,
-  FiExternalLink,
   FiPackage,
-  FiPhone,
   FiRefreshCw,
 } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
@@ -29,12 +19,7 @@ import {
   updateOrderStatus,
   deleteOrder,
 } from "../../../api/orderApi";
-import { updatePayment } from "../../../api/paymentApi";
-import {
-  paymentStatusMap,
-  returnStatusMap,
-  statusMap,
-} from "../../../utils/StatusMap";
+import { statusMap } from "../../../utils/StatusMap";
 import { StatusBadge } from "../../../utils/StatusBadge";
 import AppPagination from "../../../components/Pagination/Pagination";
 import { ConfirmModal } from "../../../components/UI/Modal";
@@ -50,7 +35,6 @@ const TABS = [
 ];
 
 const OrderManage = () => {
-  const user = useSelector((state) => state.user.user);
   const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
   const [confirmModal, setConfirmModal] = useState({
@@ -70,9 +54,6 @@ const OrderManage = () => {
   const [activeTab, setActiveTab] = useState("all");
   const [activeDropdown, setActiveDropdown] = useState(null);
   const limit = 10;
-
-  const searchTimeoutRef = useRef(null);
-  const dropdownRef = useRef(null);
 
   const fetchOrders = useCallback(
     async (currentPage = 1, search = "", status = "all") => {
@@ -146,12 +127,6 @@ const OrderManage = () => {
         data: null,
       });
     }
-  };
-
-  const handleDeleteOrder = () => {
-    const { orderId } = confirmModal;
-    if (!orderId) return;
-    onConfirmDelete();
   };
 
   const onConfirmDelete = async () => {
@@ -350,7 +325,10 @@ const OrderManage = () => {
                           className="text-[10px] px-4 py-1.5 font-black uppercase tracking-[0.1em] rounded-xl shadow-sm"
                         />
                         {order.cancelReason && (
-                          <span className="text-[9px] font-bold text-rose-500 bg-rose-50 px-2 py-0.5 rounded-lg line-clamp-1 max-w-[120px]" title={order.cancelReason}>
+                          <span
+                            className="text-[9px] font-bold text-rose-500 bg-rose-50 px-2 py-0.5 rounded-lg line-clamp-1 max-w-[120px]"
+                            title={order.cancelReason}
+                          >
                             Lý do: {order.cancelReason}
                           </span>
                         )}

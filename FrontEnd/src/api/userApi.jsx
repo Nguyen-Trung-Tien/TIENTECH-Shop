@@ -1,154 +1,85 @@
 import axiosClient from "../utils/axiosClient";
 
-export const loginUser = async (email, password) => {
-  try {
-    const res = await axiosClient.post("/user/login", { email, password });
-    return res;
-  } catch (error) {
-    console.error("Login API error:", error);
-    throw error;
-  }
+export const getAllUsersApi = (page, limit, search) =>
+  axiosClient.get(`/user/get-all`, { params: { page, limit, query: search } });
+
+export const getUserApi = (id) =>
+  axiosClient.get(`/user/get-by-id/${id}`);
+
+export const deleteUserApi = (id) =>
+  axiosClient.delete(`/user/delete/${id}`);
+
+export const updateUserApi = (data) => {
+  const config = data instanceof FormData 
+    ? { headers: { "Content-Type": "multipart/form-data" } }
+    : {};
+  return axiosClient.put(`/user/update`, data, config);
 };
 
-export const getMeApi = async () => {
-  try {
-    const res = await axiosClient.get("/user/me");
-    return res;
-  } catch (error) {
-    console.error("Get Me API error:", error);
-    throw error;
-  }
+export const registerUser = (data) => {
+  const config = data instanceof FormData 
+    ? { headers: { "Content-Type": "multipart/form-data" } }
+    : {};
+  return axiosClient.post(`/user/create`, data, config);
 };
 
-export const registerUser = async (data) => {
-  try {
-    const res = await axiosClient.post("/user/create-new-user", data);
-    return res;
-  } catch (error) {
-    console.error("Register user API error:", error);
-    throw error;
-  }
+export const loginUser = (emailOrData, password) => {
+  const data = typeof emailOrData === 'object' ? emailOrData : { email: emailOrData, password };
+  return axiosClient.post(`/user/login`, data);
 };
 
-export const getUserApi = async (userId) => {
-  try {
-    const res = await axiosClient.get(`/user/get-user/${userId}`);
-    return res;
-  } catch (error) {
-    console.error("Get user API error:", error);
-    throw error;
-  }
+export const getMeApi = () => 
+  axiosClient.get(`/user/get-me`);
+
+export const logoutUserApi = () =>
+  axiosClient.post(`/user/logout`);
+
+export const verifyEmailApi = (emailOrData, token) => {
+  const data = typeof emailOrData === 'object' ? emailOrData : { email: emailOrData, token };
+  return axiosClient.post(`/user/verify-email`, data);
 };
 
-export const updateUserApi = async (data, isFormData = false) => {
-  try {
-    const res = await axiosClient.put(`/user/update-user`, data, {
-      headers: {
-        "Content-Type": isFormData ? "multipart/form-data" : "application/json",
-      },
-    });
-    return res;
-  } catch (error) {
-    console.error("Update user API error:", error);
-    throw error;
-  }
+export const resendVerificationApi = (emailOrData) => {
+  const data = typeof emailOrData === 'object' ? emailOrData : { email: emailOrData };
+  return axiosClient.post(`/user/resend-verification`, data);
 };
 
-export const getAllUsersApi = async (page = 1, limit = 10) => {
-  try {
-    const res = await axiosClient.get(
-      `/user/get-all-user?page=${page}&limit=${limit}`
-    );
-    return res;
-  } catch (error) {
-    console.error("Get all users API error:", error);
-    throw error;
-  }
+export const updatePasswordApi = (data) =>
+  axiosClient.put(`/user/change-password`, data);
+
+export const forgotPasswordApi = (emailOrData) => {
+  const data = typeof emailOrData === 'object' ? emailOrData : { email: emailOrData };
+  return axiosClient.post(`/user/forgot-password`, data);
 };
 
-export const deleteUserApi = async (userId) => {
-  try {
-    const res = await axiosClient.delete(`/user/delete/${userId}`);
-    return res;
-  } catch (error) {
-    console.error("Delete user API error:", error);
-    throw error;
-  }
+export const verifyResetTokenApi = (emailOrData, token) => {
+  const data = typeof emailOrData === 'object' ? emailOrData : { email: emailOrData, token };
+  return axiosClient.post(`/user/verify-reset-token`, data);
 };
 
-export const logoutUserApi = async () => {
-  try {
-    const res = await axiosClient.post(`/user/logout`);
-    return res;
-  } catch (error) {
-    console.error("Logout user API error:", error);
-    throw error;
-  }
+export const resetPasswordApi = (emailOrData, token, newPassword) => {
+  const data = typeof emailOrData === 'object' ? emailOrData : { email: emailOrData, token, newPassword };
+  return axiosClient.post(`/user/reset-password`, data);
 };
 
-export const updatePasswordApi = async (data) => {
-  try {
-    const res = await axiosClient.put(`/user/change-password`, data);
-    return res;
-  } catch (error) {
-    console.error("Update password API error:", error);
-    throw error;
-  }
-};
-
-export const forgotPasswordApi = async (email) => {
-  try {
-    const res = await axiosClient.post("/user/forgot-password", { email });
-    return res;
-  } catch (error) {
-    console.error("Forgot password API error:", error);
-    throw error;
-  }
-};
-
-export const verifyResetTokenApi = async (email, token) => {
-  try {
-    const res = await axiosClient.post("/user/verify-reset-token", {
-      email,
-      token,
-    });
-    return res;
-  } catch (error) {
-    console.error("Verify reset token API error:", error);
-    throw error;
-  }
-};
-
-export const resetPasswordApi = async (email, token, newPassword) => {
-  try {
-    const res = await axiosClient.post("/user/reset-password", {
-      email,
-      token,
-      newPassword,
-    });
-    return res;
-  } catch (error) {
-    console.error("Reset password API error:", error);
-    throw error;
-  }
-};
-
-export const verifyEmailApi = async (email, token) => {
-  try {
-    const res = await axiosClient.post("/user/verify-email", { email, token });
-    return res;
-  } catch (error) {
-    console.error("Verify email API error:", error);
-    throw error;
-  }
-};
-
-export const resendVerificationApi = async (email) => {
-  try {
-    const res = await axiosClient.post("/user/resend-verification", { email });
-    return res;
-  } catch (error) {
-    console.error("Resend verification API error:", error);
-    throw error;
-  }
+export const userApi = {
+  getAll: getAllUsersApi,
+  getById: getUserApi,
+  create: registerUser,
+  login: loginUser,
+  update: (id, data) => {
+    if (data instanceof FormData) {
+      if (!data.has("id")) data.append("id", id);
+      return updateUserApi(data);
+    }
+    return updateUserApi({ ...data, id });
+  },
+  delete: deleteUserApi,
+  getMe: getMeApi,
+  logout: logoutUserApi,
+  verifyEmail: verifyEmailApi,
+  resendVerification: resendVerificationApi,
+  updatePassword: updatePasswordApi,
+  forgotPassword: forgotPasswordApi,
+  resetPassword: resetPasswordApi
 };

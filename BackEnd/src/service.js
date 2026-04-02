@@ -45,7 +45,10 @@ const generalLimiter = rateLimit({
   max: 300,
   standardHeaders: true,
   legacyHeaders: false,
-  message: { errCode: 429, errMessage: "Too many requests, please try again later." },
+  message: {
+    errCode: 429,
+    errMessage: "Too many requests, please try again later.",
+  },
 });
 app.use("/api/", generalLimiter);
 
@@ -55,7 +58,11 @@ const forgotPasswordLimiter = rateLimit({
   max: 5,
   standardHeaders: true,
   legacyHeaders: false,
-  message: { errCode: 429, errMessage: "Too many password reset requests. Please try again in 15 minutes." },
+  message: {
+    errCode: 429,
+    errMessage:
+      "Too many password reset requests. Please try again in 15 minutes.",
+  },
 });
 app.use("/api/v1/user/forgot-password", forgotPasswordLimiter);
 

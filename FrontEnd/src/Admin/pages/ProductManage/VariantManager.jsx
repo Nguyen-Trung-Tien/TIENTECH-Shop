@@ -3,24 +3,14 @@ import {
   FiPlus,
   FiTrash2,
   FiSettings,
-  FiEdit2,
   FiCheck,
   FiX,
   FiRefreshCcw,
-  FiCpu,
-  FiMonitor,
   FiBattery,
   FiSmartphone,
-  FiMaximize,
-  FiInfo,
-  FiMoreHorizontal,
   FiChevronDown,
-  FiChevronUp,
   FiDatabase,
-  FiAperture,
-  FiCamera,
   FiDroplet,
-  FiZap,
   FiLayers,
   FiTag,
   FiBox,
@@ -29,11 +19,7 @@ import {
 } from "react-icons/fi";
 import { toast } from "react-toastify";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  createVariant,
-  deleteVariant,
-  updateVariant,
-} from "../../../api/variantApi";
+import { deleteVariant, updateVariant } from "../../../api/variantApi";
 import { getAllAttributesApi } from "../../../api/attributeApi";
 import { ConfirmModal } from "../../../components/UI/Modal";
 
@@ -47,7 +33,11 @@ const VariantManager = ({
   const [loading, setLoading] = useState(false);
   const [expandedIdx, setExpandedIdx] = useState(null);
   const [attributes, setAttributes] = useState([]);
-  const [confirmModal, setConfirmModal] = useState({ show: false, v: null, idx: null });
+  const [confirmModal, setConfirmModal] = useState({
+    show: false,
+    v: null,
+    idx: null,
+  });
 
   // Local state for variant generation options (e.g. Color, ROM)
   const [localOptions, setLocalOptions] = useState(
@@ -290,7 +280,8 @@ const VariantManager = ({
                         updateOptionInfo(
                           optIdx,
                           selectedAttr?.name || val,
-                          selectedAttr?.code || val.toLowerCase().replace(/\s+/g, "_"),
+                          selectedAttr?.code ||
+                            val.toLowerCase().replace(/\s+/g, "_"),
                         );
                       }}
                     />
@@ -379,11 +370,11 @@ const VariantManager = ({
           <div className="grid grid-cols-1 gap-4">
             {displayVariants.map((v, idx) => {
               const isExpanded = expandedIdx === idx;
-              
+
               // Normalize attributes for display and editing
               let variantAttrs = {};
               if (Array.isArray(v.attributes)) {
-                v.attributes.forEach(av => {
+                v.attributes.forEach((av) => {
                   if (av.attribute) {
                     variantAttrs[av.attribute.code] = av.value;
                   }
@@ -596,7 +587,12 @@ const VariantManager = ({
                             {productId && v.id && (
                               <button
                                 type="button"
-                                onClick={() => handleSaveVariant({ ...v, attributes: variantAttrs })}
+                                onClick={() =>
+                                  handleSaveVariant({
+                                    ...v,
+                                    attributes: variantAttrs,
+                                  })
+                                }
                                 className="h-14 px-12 bg-indigo-600 text-white rounded-[1.5rem] font-black text-[11px] uppercase tracking-widest shadow-xl shadow-indigo-200 hover:bg-indigo-700 active:scale-95 transition-all flex items-center gap-3"
                               >
                                 <FiCheck size={18} /> LƯU THAY ĐỔI

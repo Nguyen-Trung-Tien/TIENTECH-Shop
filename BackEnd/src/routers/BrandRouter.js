@@ -7,29 +7,28 @@ const {
   authorizeRole,
 } = require("../middleware/authMiddleware");
 
+router.get("/get-all", BrandController.handleGetAllBrands);
+router.get("/get-by-id/:id", BrandController.handleGetBrandById);
+router.get("/get-by-slug/:slug", BrandController.handleGetBrandBySlug);
+
 router.post(
-  "/create-new-brand",
-  upload.single("image"),
+  "/create",
   authenticateToken,
   authorizeRole(["admin"]),
+  upload.single("image"),
   BrandController.handleCreateBrand
 );
 
-router.get("/get-all-brand", BrandController.handleGetAllBrands);
-router.get("/get-brand/:id", BrandController.handleGetBrandById);
-router.get("/get-brand-by-slug/:slug", BrandController.handleGetBrandBySlug);
-
-
 router.put(
-  "/update-brand/:id",
-  upload.single("image"),
+  "/update/:id",
   authenticateToken,
   authorizeRole(["admin"]),
+  upload.single("image"),
   BrandController.handleUpdateBrand
 );
 
 router.delete(
-  "/delete-brand/:id",
+  "/delete/:id",
   authenticateToken,
   authorizeRole(["admin"]),
   BrandController.handleDeleteBrand

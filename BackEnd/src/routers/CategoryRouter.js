@@ -7,9 +7,9 @@ const {
   authorizeRole,
 } = require("../middleware/authMiddleware");
 
-router.get("/get-all-category", CategoryController.handleGetAllCategories);
-router.get("/get-category/:id", CategoryController.handleGetCategoryById);
-router.get("/get-category-by-slug/:slug", CategoryController.handleGetCategoryBySlug);
+router.get("/get-all", CategoryController.handleGetAllCategories);
+router.get("/get-by-id/:id", CategoryController.handleGetCategoryById);
+router.get("/get-by-slug/:slug", CategoryController.handleGetCategoryBySlug);
 
 router.post(
   "/create",

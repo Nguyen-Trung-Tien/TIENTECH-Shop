@@ -1,5 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { FiFilter, FiChevronDown, FiChevronUp, FiX, FiCheck, FiZap, FiLayers, FiSmartphone, FiMonitor } from "react-icons/fi";
+import {
+  FiFilter,
+  FiChevronDown,
+  FiChevronUp,
+  FiX,
+  FiZap,
+  FiLayers,
+  FiSmartphone,
+} from "react-icons/fi";
 import { getAllBrandApi } from "../../api/brandApi";
 import { getAllCategoryApi } from "../../api/categoryApi";
 import { getAllAttributesApi } from "../../api/attributeApi";
@@ -25,9 +33,9 @@ const ProductFilter = ({ filters, onFilterChange, onClearFilters }) => {
         const [catRes, brandRes, attrRes] = await Promise.all([
           getAllCategoryApi(),
           getAllBrandApi(),
-          getAllAttributesApi()
+          getAllAttributesApi(),
         ]);
-        
+
         if (catRes?.data) setCategories(catRes.data);
         if (brandRes?.brands) setBrands(brandRes.brands);
         else if (brandRes?.data) setBrands(brandRes.data);
@@ -35,7 +43,9 @@ const ProductFilter = ({ filters, onFilterChange, onClearFilters }) => {
         if (attrRes?.errCode === 0) {
           // Chỉ hiển thị các thuộc tính quan trọng trên sidebar
           const importantCodes = ["ram", "rom", "os", "refresh_rate"];
-          setAttributes(attrRes.data.filter(a => importantCodes.includes(a.code)));
+          setAttributes(
+            attrRes.data.filter((a) => importantCodes.includes(a.code)),
+          );
         }
       } catch (err) {
         console.error("Error fetching filter data:", err);
@@ -54,22 +64,26 @@ const ProductFilter = ({ filters, onFilterChange, onClearFilters }) => {
   const handleMultiSelect = (name, value) => {
     const currentValues = filters[name] ? filters[name].split(",") : [];
     const index = currentValues.indexOf(value);
-    
+
     if (index > -1) {
       currentValues.splice(index, 1);
     } else {
       currentValues.push(value);
     }
-    
+
     onFilterChange(name, currentValues.join(","));
   };
 
   const getAttrIcon = (code) => {
     switch (code) {
-      case 'ram': return <FiLayers className="text-indigo-500" />;
-      case 'rom': return <FiSmartphone className="text-blue-500" />;
-      case 'os': return <FiZap className="text-orange-500" />;
-      default: return <FiFilter className="text-slate-400" />;
+      case "ram":
+        return <FiLayers className="text-indigo-500" />;
+      case "rom":
+        return <FiSmartphone className="text-blue-500" />;
+      case "os":
+        return <FiZap className="text-orange-500" />;
+      default:
+        return <FiFilter className="text-slate-400" />;
     }
   };
 
@@ -95,10 +109,14 @@ const ProductFilter = ({ filters, onFilterChange, onClearFilters }) => {
                   type="radio"
                   name="categoryId"
                   checked={filters.categoryId === cat.id.toString()}
-                  onChange={() => onFilterChange("categoryId", cat.id.toString())}
+                  onChange={() =>
+                    onFilterChange("categoryId", cat.id.toString())
+                  }
                   className="w-4 h-4 text-primary border-surface-300 focus:ring-primary/20"
                 />
-                <span className={`text-sm transition-colors ${filters.categoryId === cat.id.toString() ? "text-primary font-bold" : "text-surface-600 group-hover:text-primary"}`}>
+                <span
+                  className={`text-sm transition-colors ${filters.categoryId === cat.id.toString() ? "text-primary font-bold" : "text-surface-600 group-hover:text-primary"}`}
+                >
                   {cat.name}
                 </span>
               </label>
@@ -121,7 +139,14 @@ const ProductFilter = ({ filters, onFilterChange, onClearFilters }) => {
             {brands.map((brand) => (
               <button
                 key={brand.id}
-                onClick={() => onFilterChange("brandId", filters.brandId === brand.id.toString() ? "" : brand.id.toString())}
+                onClick={() =>
+                  onFilterChange(
+                    "brandId",
+                    filters.brandId === brand.id.toString()
+                      ? ""
+                      : brand.id.toString(),
+                  )
+                }
                 className={`px-2 py-2 rounded-xl border text-[10px] font-black uppercase tracking-tighter transition-all ${
                   filters.brandId === brand.id.toString()
                     ? "bg-primary border-primary text-white shadow-md shadow-primary/20"
@@ -181,7 +206,9 @@ const ProductFilter = ({ filters, onFilterChange, onClearFilters }) => {
           <div className="space-y-4 mt-3 pr-2">
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="text-[9px] font-black uppercase tracking-widest text-surface-400 mb-1 block">Từ</label>
+                <label className="text-[9px] font-black uppercase tracking-widest text-surface-400 mb-1 block">
+                  Từ
+                </label>
                 <input
                   type="number"
                   value={filters.minPrice}
@@ -191,7 +218,9 @@ const ProductFilter = ({ filters, onFilterChange, onClearFilters }) => {
                 />
               </div>
               <div>
-                <label className="text-[9px] font-black uppercase tracking-widest text-surface-400 mb-1 block">Đến</label>
+                <label className="text-[9px] font-black uppercase tracking-widest text-surface-400 mb-1 block">
+                  Đến
+                </label>
                 <input
                   type="number"
                   value={filters.maxPrice}
@@ -249,7 +278,9 @@ const ProductFilter = ({ filters, onFilterChange, onClearFilters }) => {
             />
             <div className="absolute right-0 top-0 bottom-0 w-80 bg-white p-8 shadow-2xl flex flex-col rounded-l-[3rem]">
               <div className="flex items-center justify-between mb-8 pb-5 border-b border-slate-50">
-                <h3 className="font-black text-xl text-slate-900 tracking-tight uppercase">Bộ lọc</h3>
+                <h3 className="font-black text-xl text-slate-900 tracking-tight uppercase">
+                  Bộ lọc
+                </h3>
                 <button
                   onClick={() => setIsMobileOpen(false)}
                   className="w-10 h-10 bg-slate-50 text-slate-400 hover:text-rose-500 rounded-xl flex items-center justify-center transition-all"

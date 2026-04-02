@@ -3,10 +3,13 @@ import { toast } from "react-toastify";
 import { useSearchParams } from "react-router-dom";
 import ProductCard from "../../components/ProductCard/ProductCard";
 import SkeletonCard from "../SkeletonCard/SkeletonCard";
-import { filterProductsApi, getFlashSaleProductsApi } from "../../api/productApi";
+import {
+  filterProductsApi,
+  getFlashSaleProductsApi,
+} from "../../api/productApi";
 import LoadMoreButton from "../LoadMoreButton/LoadMoreButton";
 import ProductFilter from "./ProductFilter";
-import { FiRefreshCw, FiAlertCircle, FiSearch, FiLayers, FiZap, FiGrid } from "react-icons/fi";
+import { FiAlertCircle, FiSearch, FiLayers, FiZap } from "react-icons/fi";
 
 const AllProducts = React.memo(() => {
   const [products, setProducts] = useState([]);
@@ -15,9 +18,9 @@ const AllProducts = React.memo(() => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [error, setError] = useState(false);
-  
+
   const [searchParams, setSearchParams] = useSearchParams();
-  
+
   // Danh sách các key thuộc tính hỗ trợ lọc
   const ATTR_KEYS = ["ram", "rom", "os", "refresh_rate", "screen", "battery"];
 
@@ -34,7 +37,7 @@ const AllProducts = React.memo(() => {
     };
 
     // Thêm các thuộc tính động vào filters object
-    ATTR_KEYS.forEach(key => {
+    ATTR_KEYS.forEach((key) => {
       const val = searchParams.get(key);
       if (val) f[key] = val;
     });
@@ -130,8 +133,10 @@ const AllProducts = React.memo(() => {
         <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-12 gap-8">
           <div className="space-y-2">
             <div className="flex items-center gap-3 text-primary">
-               <div className="w-8 h-[2px] bg-primary rounded-full"></div>
-               <span className="text-[10px] font-black uppercase tracking-[0.3em]">Hệ thống sản phẩm</span>
+              <div className="w-8 h-[2px] bg-primary rounded-full"></div>
+              <span className="text-[10px] font-black uppercase tracking-[0.3em]">
+                Hệ thống sản phẩm
+              </span>
             </div>
             <h2 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">
               {filters.search
@@ -145,19 +150,25 @@ const AllProducts = React.memo(() => {
           <div className="flex flex-wrap items-center gap-4">
             {/* Flash Sale Toggle */}
             <button
-              onClick={() => handleFilterChange("flashSale", filters.flashSaleOnly ? "" : "true")}
+              onClick={() =>
+                handleFilterChange(
+                  "flashSale",
+                  filters.flashSaleOnly ? "" : "true",
+                )
+              }
               className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all border ${
-                filters.flashSaleOnly 
-                  ? "bg-orange-500 border-orange-500 text-white shadow-lg shadow-orange-200" 
+                filters.flashSaleOnly
+                  ? "bg-orange-500 border-orange-500 text-white shadow-lg shadow-orange-200"
                   : "bg-white border-slate-200 text-slate-600 hover:border-orange-300"
               }`}
             >
-              <FiZap className={filters.flashSaleOnly ? "fill-current" : ""} /> Flash Sale
+              <FiZap className={filters.flashSaleOnly ? "fill-current" : ""} />{" "}
+              Flash Sale
             </button>
 
             {/* Sort Dropdown */}
             <div className="relative">
-               <select
+              <select
                 value={filters.sort}
                 onChange={(e) => handleFilterChange("sort", e.target.value)}
                 className="appearance-none bg-white border border-slate-200 text-slate-900 text-[10px] font-black uppercase tracking-widest rounded-2xl px-6 py-3 pr-10 shadow-sm outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all cursor-pointer"
@@ -167,7 +178,7 @@ const AllProducts = React.memo(() => {
                 <option value="price_desc">Giá giảm dần</option>
               </select>
               <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-                 <FiLayers size={12} />
+                <FiLayers size={12} />
               </div>
             </div>
           </div>
@@ -175,8 +186,8 @@ const AllProducts = React.memo(() => {
 
         <div className="flex flex-col lg:flex-row gap-12">
           {/* Dynamic Sidebar Filter */}
-          <ProductFilter 
-            filters={filters} 
+          <ProductFilter
+            filters={filters}
             onFilterChange={handleFilterChange}
             onClearFilters={handleClearFilters}
           />
@@ -187,10 +198,14 @@ const AllProducts = React.memo(() => {
             {error && (
               <div className="p-12 bg-white rounded-[3rem] border border-rose-100 text-center shadow-soft">
                 <div className="w-20 h-20 bg-rose-50 text-rose-500 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-sm">
-                   <FiAlertCircle size={32} />
+                  <FiAlertCircle size={32} />
                 </div>
-                <p className="text-slate-900 font-black text-lg mb-2">Đã có lỗi xảy ra</p>
-                <p className="text-slate-500 text-sm mb-8">Không thể kết nối với máy chủ để tải sản phẩm.</p>
+                <p className="text-slate-900 font-black text-lg mb-2">
+                  Đã có lỗi xảy ra
+                </p>
+                <p className="text-slate-500 text-sm mb-8">
+                  Không thể kết nối với máy chủ để tải sản phẩm.
+                </p>
                 <button
                   onClick={() => fetchProducts(1, false)}
                   className="px-8 py-3 bg-indigo-600 text-white font-black text-[11px] uppercase tracking-widest rounded-2xl hover:bg-indigo-700 shadow-xl shadow-indigo-100 transition-all active:scale-95"
@@ -213,7 +228,9 @@ const AllProducts = React.memo(() => {
                   Rất tiếc, không tìm thấy sản phẩm
                 </h3>
                 <p className="text-slate-500 text-sm max-w-sm mx-auto leading-relaxed font-medium">
-                  Chúng tôi không tìm thấy sản phẩm nào phù hợp với các tiêu chí lọc hiện tại của bạn. Hãy thử thay đổi bộ lọc hoặc từ khóa tìm kiếm khác.
+                  Chúng tôi không tìm thấy sản phẩm nào phù hợp với các tiêu chí
+                  lọc hiện tại của bạn. Hãy thử thay đổi bộ lọc hoặc từ khóa tìm
+                  kiếm khác.
                 </p>
                 <button
                   onClick={handleClearFilters}

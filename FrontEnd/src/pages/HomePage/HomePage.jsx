@@ -11,7 +11,6 @@ import Testimonials from "../../components/Testimonials/Testimonials";
 import BlogSection from "../../components/BlogSection/BlogSection";
 import Newsletter from "../../components/Newsletter/Newsletter";
 import BrandSection from "../../components/BrandSection/BrandSection";
-import { motion } from "framer-motion";
 
 const HomePage = () => {
   const [categories, setCategories] = useState([]);
@@ -34,7 +33,7 @@ const HomePage = () => {
   return (
     <div className="bg-white">
       <ChatBot />
-      
+
       {/* Hero with full width */}
       <HeroSection />
 
@@ -45,10 +44,7 @@ const HomePage = () => {
         </div>
 
         {/* Categories Section */}
-        <CategorySection
-          categories={categories}
-          loading={loadingCategories}
-        />
+        <CategorySection categories={categories} loading={loadingCategories} />
 
         {/* Banner with high impact */}
         <div className="container-custom py-8">

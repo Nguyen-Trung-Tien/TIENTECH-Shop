@@ -4,7 +4,7 @@ import { toast } from "react-toastify";
 import { FiStar, FiTrash2, FiMessageSquare, FiPackage, FiCalendar, FiClock, FiCheckCircle, FiEdit3 } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
-import Pagination from "../UI/Pagination";
+import Pagination from "../Pagination/Pagination";
 import Button from "../UI/Button";
 import ReviewForm from "./ReviewForm";
 import { ConfirmModal } from "../UI/Modal";

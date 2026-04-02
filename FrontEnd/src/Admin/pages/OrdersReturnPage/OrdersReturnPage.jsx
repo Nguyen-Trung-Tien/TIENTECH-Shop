@@ -2,7 +2,6 @@ import React, { useEffect, useState, useCallback } from "react";
 import {
   FiCheckCircle,
   FiXCircle,
-  FiAlertTriangle,
   FiClock,
   FiUser,
   FiDollarSign,
@@ -11,7 +10,6 @@ import {
   FiEye,
   FiPackage,
 } from "react-icons/fi";
-import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { motion, AnimatePresence } from "framer-motion";
 import { getAllOrders } from "../../../api/orderApi";
@@ -22,7 +20,6 @@ import { StatusBadge } from "../../../utils/StatusBadge";
 import { ConfirmModal } from "../../../components/UI/Modal";
 
 const OrdersReturnPage = () => {
-  const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);

@@ -1,7 +1,6 @@
 import React from "react";
 import {
   FiPercent,
-  FiTruck,
   FiShield,
   FiRefreshCw,
   FiArrowRight,
