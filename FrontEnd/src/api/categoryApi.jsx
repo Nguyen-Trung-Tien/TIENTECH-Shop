@@ -1,11 +1,23 @@
 import axiosClient from "../utils/axiosClient";
 
-export const getAllCategoryApi = async () => {
+export const getAllCategoryApi = async (page = 1, limit = 10, search = "") => {
   try {
-    const res = await axiosClient.get("/category/get-all-category");
+    const res = await axiosClient.get("/category/get-all-category", {
+      params: { page, limit, search }
+    });
     return res;
   } catch (err) {
     console.error("Get All Category API error:", err);
+    throw err;
+  }
+};
+
+export const getCategoryBySlugApi = async (slug) => {
+  try {
+    const res = await axiosClient.get(`/category/get-category-by-slug/${slug}`);
+    return res;
+  } catch (err) {
+    console.error("Get Category by Slug API error:", err);
     throw err;
   }
 };

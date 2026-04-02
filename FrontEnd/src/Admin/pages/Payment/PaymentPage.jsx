@@ -56,12 +56,15 @@ const PaymentPage = () => {
   });
 
   const loadPayments = useCallback(
-    async (page = 1) => {
+    async (page = 1, status = filterStatus, search = searchTerm) => {
       setLoading(true);
       try {
-        const res = await getAllPayments(
-          { status: filterStatus, page, limit: pageSize, search: searchTerm }
-        );
+        const res = await getAllPayments({
+          status: status === "all" ? "" : status,
+          page,
+          limit: pageSize,
+          search: search.trim()
+        });
         if (res.errCode === 0) {
           setPayments(res.data || []);
           setCurrentPage(res.pagination.currentPage);
@@ -74,12 +77,15 @@ const PaymentPage = () => {
         setLoading(false);
       }
     },
-    [filterStatus, pageSize, searchTerm],
+    [pageSize, filterStatus, searchTerm],
   );
 
   useEffect(() => {
-    loadPayments(1);
-  }, [loadPayments]);
+    const timer = setTimeout(() => {
+      loadPayments(1, filterStatus, searchTerm);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [filterStatus, searchTerm, pageSize]);
 
   const handleActionClick = (actionFn, paymentId, message) => {
     setActionModal({ show: true, actionFn, paymentId, message });
@@ -95,7 +101,7 @@ const PaymentPage = () => {
       } else {
         await actionModal.actionFn(actionModal.paymentId);
       }
-      loadPayments(currentPage);
+      loadPayments(currentPage, filterStatus, searchTerm);
       toast.success(`${actionName} thành công.`);
     } catch (error) {
       toast.error(`${actionName} thất bại.`);
@@ -144,13 +150,12 @@ const PaymentPage = () => {
              placeholder="Tìm kiếm theo Mã đơn, ID giao dịch, Email..."
              value={searchTerm}
              onChange={(e) => setSearchTerm(e.target.value)}
-             onKeyDown={(e) => e.key === "Enter" && loadPayments(1)}
              className="w-full h-12 bg-slate-50 border border-slate-100 rounded-2xl pl-12 pr-4 text-sm font-bold focus:bg-white focus:ring-4 focus:ring-indigo-600/5 transition-all outline-none"
            />
         </div>
 
         <button 
-          onClick={() => loadPayments(1)}
+          onClick={() => loadPayments(1, filterStatus, searchTerm)}
           className="h-12 px-8 bg-indigo-600 text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-lg shadow-indigo-600/20"
         >
           Lọc dữ liệu
@@ -191,7 +196,7 @@ const PaymentPage = () => {
                 payments.map((p) => (
                   <tr key={p.id} className="hover:bg-slate-50/50 transition-colors group">
                     <td className="px-6 py-5">
-                       <p className="text-xs font-black text-slate-900 mb-1 uppercase tracking-wider">#{p.id}</p>
+                       <p className="text-xs font-black text-slate-900 mb-1 uppercase tracking-wider">#{p.order?.orderCode || p.id}</p>
                        <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                           <FiCalendar />
                           {new Date(p.createdAt).toLocaleDateString("vi-VN")}
@@ -264,11 +269,8 @@ const PaymentPage = () => {
             </tbody>
           </table>
         </div>
-      </div>
 
-      {/* Pagination Container */}
-      {totalPages > 1 && (
-        <div className="flex flex-col md:flex-row items-center justify-between gap-6 px-4">
+        <div className="p-8 border-t border-slate-50 bg-slate-50/30 flex justify-between items-center">
            <p className="text-[11px] font-black uppercase tracking-widest text-slate-400">
              Trang {currentPage} của {totalPages} — {totalItems} Giao dịch
            </p>
@@ -276,10 +278,10 @@ const PaymentPage = () => {
              page={currentPage}
              totalPages={totalPages}
              loading={loading}
-             onPageChange={(p) => loadPayments(p)}
+             onPageChange={(p) => loadPayments(p, filterStatus, searchTerm)}
            />
         </div>
-      )}
+      </div>
 
       {/* Modals: Simplified using Framer Motion */}
       <AnimatePresence>
@@ -295,7 +297,7 @@ const PaymentPage = () => {
                className="relative w-full max-w-2xl bg-white rounded-[40px] shadow-2xl overflow-hidden border border-slate-100"
              >
                 <div className="p-8 border-b border-slate-50 flex items-center justify-between">
-                   <h3 className="text-xl font-black text-slate-900 tracking-tight">Chi tiết giao dịch #{selectedPayment.id}</h3>
+                   <h3 className="text-xl font-black text-slate-900 tracking-tight">Chi tiết giao dịch #{selectedPayment.order?.orderCode || selectedPayment.id}</h3>
                    <button onClick={() => setSelectedPayment(null)} className="w-10 h-10 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400 hover:text-rose-500 transition-colors">
                       <FiX size={24} />
                    </button>
@@ -317,12 +319,94 @@ const PaymentPage = () => {
                       <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Phương thức</p>
                       <span className={`inline-flex px-3 py-1 rounded-lg text-[10px] font-black uppercase border ${METHOD_BADGE[selectedPayment.method]}`}>{selectedPayment.method}</span>
                    </div>
-                   {/* More details... */}
+                   <div className="space-y-1">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Trạng thái</p>
+                      <span className={`inline-flex px-3 py-1 rounded-lg text-[10px] font-black uppercase border ${STATUS_LABELS[selectedPayment.status]?.class}`}>
+                        {STATUS_LABELS[selectedPayment.status]?.text}
+                      </span>
+                   </div>
+                   <div className="space-y-1 text-right">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Ngày tạo</p>
+                      <p className="text-sm font-bold text-slate-900">{new Date(selectedPayment.createdAt).toLocaleString("vi-VN")}</p>
+                   </div>
+                   {selectedPayment.vnp_TransactionNo && (
+                     <div className="col-span-2 space-y-1 pt-4 border-t border-slate-50">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Mã giao dịch VNPAY</p>
+                        <p className="text-xs font-mono font-bold text-indigo-600 bg-indigo-50 px-3 py-2 rounded-xl">{selectedPayment.vnp_TransactionNo}</p>
+                     </div>
+                   )}
+                   {selectedPayment.status === "refunded" && (
+                     <div className="col-span-2 space-y-1 pt-4 border-t border-slate-50">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-rose-400">Ghi chú hoàn tiền</p>
+                        <p className="text-sm font-bold text-slate-600 italic">"{selectedPayment.refundNote || "Không có ghi chú"}"</p>
+                     </div>
+                   )}
                 </div>
-                <div className="p-8 bg-slate-50 flex justify-end">
-                   <button onClick={() => setSelectedPayment(null)} className="px-8 py-3 bg-white border border-slate-200 rounded-2xl text-xs font-black uppercase tracking-widest text-slate-600">Đóng</button>
+                <div className="p-8 bg-slate-50 flex justify-end gap-3">
+                   {selectedPayment.status === "completed" && (
+                     <button 
+                       onClick={() => {
+                         handleActionClick(refundPayment, selectedPayment.id, "Xác nhận hoàn tiền cho giao dịch này?");
+                         setSelectedPayment(null);
+                       }}
+                       className="px-6 py-3 bg-amber-500 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-amber-600 transition-all shadow-lg shadow-amber-500/20"
+                     >
+                       Hoàn tiền
+                     </button>
+                   )}
+                   <button onClick={() => setSelectedPayment(null)} className="px-8 py-3 bg-white border border-slate-200 rounded-2xl text-xs font-black uppercase tracking-widest text-slate-600 hover:bg-slate-100 transition-colors">Đóng</button>
                 </div>
              </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Action Confirmation Modal */}
+      <AnimatePresence>
+        {actionModal.show && (
+          <div className="fixed inset-0 z-[1100] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              onClick={() => setActionModal({ ...actionModal, show: false })}
+              className="absolute inset-0 bg-slate-950/40 backdrop-blur-sm"
+            />
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
+              className="relative w-full max-w-md bg-white rounded-[32px] p-8 shadow-2xl border border-slate-100 text-center"
+            >
+              <div className="w-20 h-20 bg-rose-50 rounded-3xl flex items-center justify-center text-rose-500 mx-auto mb-6">
+                 <FiAlertTriangle size={40} />
+              </div>
+              <h3 className="text-xl font-black text-slate-900 mb-2">Xác nhận hành động</h3>
+              <p className="text-slate-500 font-medium mb-8">{actionModal.message}</p>
+              
+              {actionModal.actionFn === refundPayment && (
+                <div className="mb-8 text-left">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2 mb-2 block">Lý do hoàn tiền</label>
+                  <textarea 
+                    value={refundNote}
+                    onChange={(e) => setRefundNote(e.target.value)}
+                    placeholder="Nhập lý do hoàn tiền..."
+                    className="w-full h-24 bg-slate-50 border border-slate-100 rounded-2xl p-4 text-sm font-bold focus:ring-4 focus:ring-indigo-600/5 outline-none transition-all resize-none"
+                  />
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-4">
+                <button 
+                  onClick={() => setActionModal({ ...actionModal, show: false })}
+                  className="h-14 bg-slate-100 text-slate-600 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-slate-200 transition-all"
+                >
+                  Hủy bỏ
+                </button>
+                <button 
+                  onClick={confirmAction}
+                  className="h-14 bg-indigo-600 text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-lg shadow-indigo-600/20"
+                >
+                  Xác nhận
+                </button>
+              </div>
+            </motion.div>
           </div>
         )}
       </AnimatePresence>

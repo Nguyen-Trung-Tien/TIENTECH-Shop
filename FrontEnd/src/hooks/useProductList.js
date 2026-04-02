@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useParams, useLocation } from "react-router-dom";
 import { filterProductsApi } from "../api/productApi";
 
 /**
@@ -7,6 +7,8 @@ import { filterProductsApi } from "../api/productApi";
  */
 export const useProductList = (limit = 12) => {
   const [searchParams, setSearchParams] = useSearchParams();
+  const { slug } = useParams();
+  const location = useLocation();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -14,14 +16,18 @@ export const useProductList = (limit = 12) => {
   const [totalPages, setTotalPages] = useState(1);
   const [error, setError] = useState("");
 
+  // Xác định type từ URL path
+  const isCategory = location.pathname.includes("/category/");
+  const isBrand = location.pathname.includes("/brand/");
+
   // Định nghĩa danh sách các thuộc tính lọc hỗ trợ
   const ATTRIBUTE_KEYS = ["ram", "rom", "os", "screen", "battery", "refresh_rate"];
 
   // Lấy các filter từ URL
   const filtersFromUrl = useMemo(() => {
     const filters = {
-      brand: searchParams.get("brandId") || "",
-      category: searchParams.get("categoryId") || "",
+      brand: isBrand ? slug : (searchParams.get("brandId") || ""),
+      category: isCategory ? slug : (searchParams.get("categoryId") || ""),
       search: searchParams.get("search") || "",
       minPrice: Number(searchParams.get("minPrice")) || 0,
       maxPrice: Number(searchParams.get("maxPrice")) || 100000000,
@@ -35,7 +41,7 @@ export const useProductList = (limit = 12) => {
     });
 
     return filters;
-  }, [searchParams]);
+  }, [searchParams, slug, isCategory, isBrand]);
 
   const fetchProducts = useCallback(
     async (page = 1, append = false) => {
@@ -45,12 +51,16 @@ export const useProductList = (limit = 12) => {
 
         // Chuẩn bị params cho API
         const apiParams = {
-          brandId: filtersFromUrl.brand,
-          categoryId: filtersFromUrl.category,
+          brand: isBrand ? filtersFromUrl.brand : undefined,
+          category: isCategory ? filtersFromUrl.category : undefined,
+          brandId: !isBrand ? filtersFromUrl.brand : undefined,
+          categoryId: !isCategory ? filtersFromUrl.category : undefined,
           search: filtersFromUrl.search,
           minPrice: filtersFromUrl.minPrice,
           maxPrice: filtersFromUrl.maxPrice,
           sort: filtersFromUrl.sort,
+          os: filtersFromUrl.os,
+          refresh_rate: filtersFromUrl.refresh_rate,
           page,
           limit,
         };
@@ -66,7 +76,6 @@ export const useProductList = (limit = 12) => {
           const newProducts = res.products || res.data || [];
           setProducts((prev) => (append ? [...prev, ...newProducts] : newProducts));
           
-          // Xử lý dữ liệu phân trang từ cấu trúc mới của Backend
           const pagination = res.pagination || {};
           setCurrentPage(pagination.currentPage || page);
           setTotalPages(pagination.totalPages || 1);
@@ -82,7 +91,7 @@ export const useProductList = (limit = 12) => {
         setLoadingMore(false);
       }
     },
-    [filtersFromUrl, limit]
+    [filtersFromUrl, limit, isBrand, isCategory]
   );
 
   // Tự động fetch khi bộ lọc thay đổi
@@ -92,8 +101,6 @@ export const useProductList = (limit = 12) => {
 
   const handleUpdateFilters = (newFilters) => {
     const params = new URLSearchParams(searchParams);
-    
-    // Reset về trang 1 khi lọc
     params.delete("page");
 
     Object.entries(newFilters).forEach(([key, value]) => {

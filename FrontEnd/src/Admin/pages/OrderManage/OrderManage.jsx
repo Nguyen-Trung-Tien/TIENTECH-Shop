@@ -349,6 +349,11 @@ const OrderManage = () => {
                           status={order.status}
                           className="text-[10px] px-4 py-1.5 font-black uppercase tracking-[0.1em] rounded-xl shadow-sm"
                         />
+                        {order.cancelReason && (
+                          <span className="text-[9px] font-bold text-rose-500 bg-rose-50 px-2 py-0.5 rounded-lg line-clamp-1 max-w-[120px]" title={order.cancelReason}>
+                            Lý do: {order.cancelReason}
+                          </span>
+                        )}
                         {order.paymentStatus === "paid" && (
                           <span className="text-[9px] font-black uppercase text-emerald-500 flex items-center gap-1">
                             <FiCheckCircle /> Đã thanh toán

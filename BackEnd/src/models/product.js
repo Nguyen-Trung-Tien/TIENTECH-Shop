@@ -36,6 +36,7 @@ module.exports = (sequelize, DataTypes) => {
       },
       totalStock: { type: DataTypes.INTEGER, defaultValue: 0 },
       sold: { type: DataTypes.INTEGER, defaultValue: 0 },
+      discount: { type: DataTypes.DECIMAL(5, 2), defaultValue: 0 },
       hasVariants: { type: DataTypes.BOOLEAN, defaultValue: false },
       isActive: { type: DataTypes.BOOLEAN, defaultValue: true },
       brandId: { type: DataTypes.INTEGER },

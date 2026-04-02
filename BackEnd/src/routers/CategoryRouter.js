@@ -8,7 +8,9 @@ const {
 } = require("../middleware/authMiddleware");
 
 router.get("/get-all-category", CategoryController.handleGetAllCategories);
-router.get("/:id", CategoryController.handleGetCategoryById);
+router.get("/get-category/:id", CategoryController.handleGetCategoryById);
+router.get("/get-category-by-slug/:slug", CategoryController.handleGetCategoryBySlug);
+
 router.post(
   "/create",
   authenticateToken,

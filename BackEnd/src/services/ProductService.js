@@ -356,6 +356,7 @@ const updateProduct = async (id, data, imageRecords = []) => {
               {
                 sku: variantData.sku || existingVariant.sku,
                 price: variantData.price || existingVariant.price,
+                discount: variantData.discount !== undefined ? variantData.discount : existingVariant.discount,
                 stock: variantStock,
                 attributeValues: variantAttrs,
                 isActive:
@@ -387,6 +388,7 @@ const updateProduct = async (id, data, imageRecords = []) => {
                 variantData.sku ||
                 `${product.sku}-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
               price: variantData.price || product.basePrice,
+              discount: variantData.discount || 0,
               stock: variantStock,
               attributeValues:
                 variantData.attributes || variantData.attributeValues || {},
@@ -492,6 +494,7 @@ const getAllProducts = async (
         pJSON.images?.find((i) => i.isPrimary) || pJSON.images?.[0];
       return applyFlashSaleToProduct({
         ...pJSON,
+        discount: pJSON.discount || 0,
         image: primary?.imageUrl || null,
       });
     }),
@@ -681,6 +684,8 @@ const searchSuggestions = async (query, limit = 8) => {
 const filterProducts = async ({
   brandId,
   categoryId,
+  brand, // slug
+  category, // slug
   minPrice,
   maxPrice,
   search = "",
@@ -714,9 +719,28 @@ const filterProducts = async ({
       conditions.basePrice = { [Op.lte]: Number(maxPrice) };
     }
 
-    if (brandId && brandId !== "") conditions.brandId = Number(brandId);
-    if (categoryId && categoryId !== "")
+    // Xử lý brandId hoặc brand slug
+    if (brandId && brandId !== "") {
+      const brandIds = Array.isArray(brandId)
+        ? brandId
+        : String(brandId).split(",").map(id => Number(id.trim()));
+      conditions.brandId = { [Op.in]: brandIds };
+    } else if (brand && brand !== "") {
+      const brandSlugs = Array.isArray(brand)
+        ? brand
+        : String(brand).split(",").map(s => s.trim());
+      const brandData = await db.Brand.findAll({ where: { slug: { [Op.in]: brandSlugs } } });
+      if (brandData.length > 0) conditions.brandId = { [Op.in]: brandData.map(b => b.id) };
+    }
+
+    // Xử lý categoryId hoặc category slug
+    if (categoryId && categoryId !== "") {
       conditions.categoryId = Number(categoryId);
+    } else if (category && category !== "") {
+      const categoryData = await db.Category.findOne({ where: { slug: category } });
+      if (categoryData) conditions.categoryId = categoryData.id;
+    }
+
     if (search && search !== "") conditions.name = { [Op.like]: `%${search}%` };
 
     const filterParams = { ram, rom, screen, battery, os, refresh_rate };
@@ -725,7 +749,7 @@ const filterProducts = async ({
       if (filterParams[key] && filterParams[key] !== "") {
         const vals = Array.isArray(filterParams[key])
           ? filterParams[key]
-          : String(filterParams[key]).split(",");
+          : String(filterParams[key]).split(",").map(v => v.trim());
         filterValues.push(...vals);
       }
     });
@@ -918,44 +942,102 @@ const recommendProducts = async (productId, page = 1, limit = 6) => {
 };
 
 const getFlashSaleProducts = async (page = 1, limit = 10) => {
-  const now = new Date();
-  const { offset, limit: l } = getPagination(page, limit);
-  const data = await db.Product.findAndCountAll({
-    where: {
-      isActive: true,
-      isFlashSale: true,
-      flashSaleStart: { [Op.lte]: now },
-      flashSaleEnd: { [Op.gte]: now },
-    },
-    include: [
-      { model: db.Category, as: "category" },
-      { model: db.Brand, as: "brand" },
-      {
-        model: db.ProductImage,
-        as: "images",
-        attributes: ["imageUrl", "isPrimary"],
+  try {
+    const now = new Date();
+    const { offset, limit: l } = getPagination(page, limit);
+    
+    // Lấy sản phẩm đang Flash Sale
+    const activeData = await db.Product.findAndCountAll({
+      where: {
+        isActive: true,
+        isFlashSale: true,
+        flashSaleStart: { [Op.lte]: now },
+        flashSaleEnd: { [Op.gte]: now },
       },
-    ],
-    limit: l,
-    offset,
-    order: [["flashSaleStart", "ASC"]],
-  });
-  const pagingData = getPagingData(data, page, l);
-  const { items, ...paginationMetadata } = pagingData;
+      include: [
+        { model: db.Category, as: "category" },
+        { model: db.Brand, as: "brand" },
+        {
+          model: db.ProductImage,
+          as: "images",
+          attributes: ["imageUrl", "isPrimary"],
+        },
+      ],
+      limit: l,
+      offset,
+      order: [["flashSaleStart", "ASC"]],
+    });
 
-  return {
-    errCode: 0,
-    products: items.map((p) => {
+    // Lấy sản phẩm sắp Flash Sale (trong vòng 24h tới)
+    const upcomingData = await db.Product.findAll({
+      where: {
+        isActive: true,
+        isFlashSale: true,
+        flashSaleStart: { 
+          [Op.gt]: now,
+          [Op.lte]: new Date(now.getTime() + 24 * 60 * 60 * 1000) 
+        },
+      },
+      include: [
+        {
+          model: db.ProductImage,
+          as: "images",
+          attributes: ["imageUrl", "isPrimary"],
+        },
+      ],
+      limit: 6,
+      order: [["flashSaleStart", "ASC"]],
+    });
+
+    const pagingData = getPagingData(activeData, page, l);
+
+    // Tìm thời điểm bắt đầu của đợt Flash Sale tiếp theo
+    const nextFlashSale = await db.Product.findOne({
+      where: {
+        isActive: true,
+        isFlashSale: true,
+        flashSaleStart: { [Op.gt]: now },
+      },
+      order: [["flashSaleStart", "ASC"]],
+      attributes: ["flashSaleStart"],
+    });
+
+    const products = pagingData.items.map((p) => {
       const pJSON = p.toJSON();
-      const primary =
-        pJSON.images?.find((i) => i.isPrimary) || pJSON.images?.[0];
+      const primary = pJSON.images?.find((i) => i.isPrimary) || pJSON.images?.[0];
       return applyFlashSaleToProduct({
         ...pJSON,
         image: primary?.imageUrl || null,
       });
-    }),
-    pagination: paginationMetadata,
-  };
+    });
+
+    const upcomingProducts = upcomingData.map((p) => {
+      const pJSON = p.toJSON();
+      const primary = pJSON.images?.find((i) => i.isPrimary) || pJSON.images?.[0];
+      return {
+        ...pJSON,
+        image: primary?.imageUrl || null,
+      };
+    });
+
+    return {
+      errCode: 0,
+      products,
+      upcomingProducts,
+      nextFlashSaleStart: nextFlashSale ? nextFlashSale.flashSaleStart : null,
+      pagination: {
+        totalItems: pagingData.totalItems,
+        totalPages: pagingData.totalPages,
+        currentPage: pagingData.currentPage,
+      },
+      // Thêm các trường này cho tương thích ngược với FrontEnd cũ nếu cần
+      currentPage: pagingData.currentPage,
+      totalPages: pagingData.totalPages
+    };
+  } catch (error) {
+    console.error("Error in getFlashSaleProducts:", error);
+    return { errCode: 1, errMessage: error.message };
+  }
 };
 
 const getDiscountedProducts = async (page = 1, limit = 10) => {

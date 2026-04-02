@@ -1,14 +1,18 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { useProductList } from "../../hooks/useProductList";
 import ProductCard from "../../components/ProductCard/ProductCard";
 import ProductFilter from "../../components/ProductFilter/ProductFilter";
 import LoadMoreButton from "../../components/LoadMoreButton/LoadMoreButton";
 import SkeletonCard from "../../components/SkeletonCard/SkeletonCard";
 import ChatBot from "../../components/ChatBot/ChatBot";
+import Breadcrumbs from "../../components/Breadcrumbs/Breadcrumbs";
 import { FiFilter, FiSearch, FiAlertCircle, FiChevronRight, FiGrid } from "react-icons/fi";
 import { AnimatePresence, motion } from "framer-motion";
+import { useParams, useLocation } from "react-router-dom";
 
 const ProductListPage = () => {
+  const { slug } = useParams();
+  const location = useLocation();
   const {
     products,
     loading,
@@ -23,6 +27,16 @@ const ProductListPage = () => {
 
   const [showMobileFilter, setShowMobileFilter] = React.useState(false);
 
+  const isCategory = location.pathname.includes("/category/");
+  const isBrand = location.pathname.includes("/brand/");
+
+  const pageTitle = useMemo(() => {
+    if (filters.search) return `Kết quả: "${filters.search}"`;
+    if (isCategory && slug) return slug.replace(/-/g, ' ').toUpperCase();
+    if (isBrand && slug) return `THƯƠNG HIỆU: ${slug.replace(/-/g, ' ').toUpperCase()}`;
+    return "TẤT CẢ SẢN PHẨM";
+  }, [filters.search, isCategory, isBrand, slug]);
+
   return (
     <main className="min-h-screen bg-slate-50/50 pb-24">
       <ChatBot />
@@ -32,17 +46,9 @@ const ProductListPage = () => {
          <div className="absolute top-0 right-0 w-1/3 h-full bg-primary/5 skew-x-12 translate-x-20 transition-all duration-1000"></div>
          <div className="container-custom relative z-10">
             <div className="max-w-2xl">
-               <nav className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-6">
-                  <span>Cửa hàng</span>
-                  <FiChevronRight />
-                  <span className="text-primary">Tất cả sản phẩm</span>
-               </nav>
+               <Breadcrumbs />
                <h1 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tighter mb-4 uppercase">
-                  {filters.search ? (
-                     <>Kết quả: <span className="text-primary italic">"{filters.search}"</span></>
-                  ) : (
-                     <>KHÁM PHÁ <br/> <span className="text-primary">CÔNG NGHỆ MỚI</span></>
-                  )}
+                  {pageTitle}
                </h1>
                <p className="text-slate-500 font-medium text-sm">Hệ thống phân phối linh kiện máy tính & giải pháp công nghệ hàng đầu Việt Nam.</p>
             </div>

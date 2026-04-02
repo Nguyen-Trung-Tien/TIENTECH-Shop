@@ -53,6 +53,21 @@ const ProductDetailPage = () => {
     user
   } = useProductDetail(slug);
 
+  const averageRating = useMemo(() => {
+    if (!reviews || reviews.length === 0) return 5.0;
+    const total = reviews.reduce((acc, r) => acc + r.rating, 0);
+    return (total / reviews.length).toFixed(1);
+  }, [reviews]);
+
+  const ratingStars = useMemo(() => {
+    const stars = [];
+    const fullStars = Math.floor(averageRating);
+    for (let i = 0; i < 5; i++) {
+      stars.push(i < fullStars ? "★" : "☆");
+    }
+    return stars.join("");
+  }, [averageRating]);
+
   const [newReview, setNewReview] = useState({
     rating: 0,
     comment: "",
@@ -354,8 +369,12 @@ const ProductDetailPage = () => {
               <span className="text-gray-500">Đã bán: <span className="text-gray-900 font-semibold">{product.sold}</span></span>
               <span className="text-gray-200">|</span>
               <div className="flex items-center gap-1.5">
-                <div className="flex text-amber-400">★★★★★</div>
-                <span className="text-gray-900 font-bold">4.8</span>
+                <div className="flex text-amber-400 tracking-tighter">
+                  {ratingStars}
+                </div>
+                <span className="text-gray-900 font-bold">
+                  {averageRating}
+                </span>
               </div>
             </div>
           </div>

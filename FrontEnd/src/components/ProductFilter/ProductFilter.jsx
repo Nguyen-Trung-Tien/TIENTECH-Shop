@@ -11,14 +11,14 @@ function ProductFilter({ onFilterChange, isSidebar = false, onClose, initialFilt
   const [attributes, setAttributes] = useState([]);
 
   const [filters, setFilters] = useState({
-    brand: initialFilters?.brand || "",
+    brand: Array.isArray(initialFilters?.brand) ? initialFilters.brand : (initialFilters?.brand ? [initialFilters.brand] : []),
     category: initialFilters?.category || "",
     price: initialFilters?.price || [0, 100000000],
     sort: initialFilters?.sort || "",
-    ram: initialFilters?.ram || "",
-    rom: initialFilters?.rom || "",
-    os: initialFilters?.os || "",
-    refresh_rate: initialFilters?.refresh_rate || ""
+    ram: Array.isArray(initialFilters?.ram) ? initialFilters.ram : (initialFilters?.ram ? initialFilters.ram.split(",") : []),
+    rom: Array.isArray(initialFilters?.rom) ? initialFilters.rom : (initialFilters?.rom ? initialFilters.rom.split(",") : []),
+    os: Array.isArray(initialFilters?.os) ? initialFilters.os : (initialFilters?.os ? initialFilters.os.split(",") : []),
+    refresh_rate: Array.isArray(initialFilters?.refresh_rate) ? initialFilters.refresh_rate : (initialFilters?.refresh_rate ? initialFilters.refresh_rate.split(",") : [])
   });
 
   useEffect(() => {
@@ -26,7 +26,11 @@ function ProductFilter({ onFilterChange, isSidebar = false, onClose, initialFilt
       setFilters(prev => ({
         ...prev,
         ...initialFilters,
-        brand: initialFilters.brand || "",
+        brand: Array.isArray(initialFilters.brand) ? initialFilters.brand : (initialFilters.brand ? [initialFilters.brand] : []),
+        ram: Array.isArray(initialFilters.ram) ? initialFilters.ram : (initialFilters.ram ? initialFilters.ram.split(",") : []),
+        rom: Array.isArray(initialFilters.rom) ? initialFilters.rom : (initialFilters.rom ? initialFilters.rom.split(",") : []),
+        os: Array.isArray(initialFilters.os) ? initialFilters.os : (initialFilters.os ? initialFilters.os.split(",") : []),
+        refresh_rate: Array.isArray(initialFilters.refresh_rate) ? initialFilters.refresh_rate : (initialFilters.refresh_rate ? initialFilters.refresh_rate.split(",") : []),
         category: initialFilters.category || "",
         price: initialFilters.price || [0, 100000000],
       }));
@@ -56,14 +60,23 @@ function ProductFilter({ onFilterChange, isSidebar = false, onClose, initialFilt
   }, []);
 
   const handleBrandClick = (id) => {
-    const newBrand = filters.brand === id ? "" : id;
+    const isSelected = filters.brand.includes(id);
+    const newBrand = isSelected 
+      ? filters.brand.filter(b => b !== id)
+      : [...filters.brand, id];
+    
     const newFilters = { ...filters, brand: newBrand };
     setFilters(newFilters);
     if (isSidebar) onFilterChange(newFilters);
   };
 
   const handleAttrClick = (code, value) => {
-    const newVal = filters[code] === value ? "" : value;
+    const currentValues = Array.isArray(filters[code]) ? filters[code] : [];
+    const isSelected = currentValues.includes(value);
+    const newVal = isSelected
+      ? currentValues.filter(v => v !== value)
+      : [...currentValues, value];
+      
     const newFilters = { ...filters, [code]: newVal };
     setFilters(newFilters);
     if (isSidebar) onFilterChange(newFilters);
@@ -76,8 +89,8 @@ function ProductFilter({ onFilterChange, isSidebar = false, onClose, initialFilt
 
   const resetFilters = () => {
     const defaultFilters = { 
-      brand: "", category: "", price: [0, 100000000], sort: "",
-      ram: "", rom: "", os: "", refresh_rate: ""
+      brand: [], category: "", price: [0, 100000000], sort: "",
+      ram: [], rom: [], os: [], refresh_rate: []
     };
     setFilters(defaultFilters);
     onFilterChange(defaultFilters);
@@ -99,7 +112,7 @@ function ProductFilter({ onFilterChange, isSidebar = false, onClose, initialFilt
       <div className="space-y-5">
         <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 flex items-center justify-between">
           Thương hiệu
-          {filters.brand && <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>}
+          {filters.brand.length > 0 && <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>}
         </h4>
         <div className="grid grid-cols-2 gap-3">
           {brands.slice(0, 6).map((b) => (
@@ -107,7 +120,7 @@ function ProductFilter({ onFilterChange, isSidebar = false, onClose, initialFilt
               key={b.id}
               onClick={() => handleBrandClick(b.id)}
               className={`group relative p-3 rounded-2xl border-2 transition-all flex items-center justify-center h-14 bg-white overflow-hidden ${
-                filters.brand === b.id 
+                filters.brand.includes(b.id) 
                   ? "border-primary shadow-lg shadow-primary/5 z-10" 
                   : "border-slate-50 hover:border-slate-200"
               }`}
@@ -117,7 +130,7 @@ function ProductFilter({ onFilterChange, isSidebar = false, onClose, initialFilt
               ) : (
                 <span className="text-[10px] font-bold text-slate-400">{b.name}</span>
               )}
-              {filters.brand === b.id && (
+              {filters.brand.includes(b.id) && (
                 <div className="absolute top-0 right-0 p-1">
                   <FiCheck className="text-primary" size={12} />
                 </div>
@@ -135,19 +148,22 @@ function ProductFilter({ onFilterChange, isSidebar = false, onClose, initialFilt
             {attr.name}
           </h4>
           <div className="flex flex-wrap gap-2">
-            {attr.values?.map((v) => (
-              <button
-                key={v.id}
-                onClick={() => handleAttrClick(attr.code, v.value)}
-                className={`px-3 py-2 rounded-xl text-[10px] font-bold transition-all border-2 ${
-                  filters[attr.code] === v.value
-                    ? "bg-primary border-primary text-white shadow-md shadow-primary/10"
-                    : "bg-slate-50 border-slate-50 text-slate-600 hover:bg-white hover:border-slate-200"
-                }`}
-              >
-                {v.value}
-              </button>
-            ))}
+            {attr.values?.map((v) => {
+              const isSelected = Array.isArray(filters[attr.code]) && filters[attr.code].includes(v.value);
+              return (
+                <button
+                  key={v.id}
+                  onClick={() => handleAttrClick(attr.code, v.value)}
+                  className={`px-3 py-2 rounded-xl text-[10px] font-bold transition-all border-2 ${
+                    isSelected
+                      ? "bg-primary border-primary text-white shadow-md shadow-primary/10"
+                      : "bg-slate-50 border-slate-50 text-slate-600 hover:bg-white hover:border-slate-200"
+                  }`}
+                >
+                  {v.value}
+                </button>
+              );
+            })}
           </div>
         </div>
       ))}

@@ -64,13 +64,21 @@ const FlashSale = () => {
         setIsUpcoming(!hasActive && Boolean(res.nextFlashSaleStart));
 
         if (hasActive) {
-          setTimeLeft(0);
+          // Nếu đang có flash sale, tính thời gian đến lúc kết thúc (lấy từ sản phẩm đầu tiên)
+          const firstProduct = res.products[0];
+          const diffSec = Math.max(
+            0,
+            Math.floor((new Date(firstProduct.flashSaleEnd) - new Date()) / 1000),
+          );
+          setTimeLeft(diffSec);
+          setIsUpcoming(false);
         } else if (res.nextFlashSaleStart) {
           const diffSec = Math.max(
             0,
             Math.floor((new Date(res.nextFlashSaleStart) - new Date()) / 1000),
           );
           setTimeLeft(diffSec);
+          setIsUpcoming(true);
         } else {
           setTimeLeft(0);
           setIsUpcoming(false);

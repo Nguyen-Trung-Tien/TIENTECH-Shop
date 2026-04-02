@@ -16,8 +16,9 @@ router.post(
 );
 
 router.get("/get-all-brand", BrandController.handleGetAllBrands);
-
 router.get("/get-brand/:id", BrandController.handleGetBrandById);
+router.get("/get-brand-by-slug/:slug", BrandController.handleGetBrandBySlug);
+
 
 router.put(
   "/update-brand/:id",

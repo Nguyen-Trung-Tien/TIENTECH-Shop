@@ -50,7 +50,7 @@ const ReviewComponent = ({ reviews = [], user }) => {
                     whileInView={{ width: `${item.percentage}%` }}
                     viewport={{ once: true }}
                     transition={{ duration: 1, ease: "easeOut" }}
-                    className="h-full bg-brand-500 rounded-full"
+                    className="h-full bg-blue-600 rounded-full"
                   />
                 </div>
                 <span className="w-10 text-xs font-bold text-neutral-500 text-right shrink-0">

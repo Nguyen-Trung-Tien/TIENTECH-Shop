@@ -45,6 +45,10 @@ module.exports = {
         defaultValue: 0,
         allowNull: false,
       },
+      discount: {
+        type: Sequelize.DECIMAL(5, 2),
+        defaultValue: 0,
+      },
       hasVariants: {
         type: Sequelize.BOOLEAN,
         defaultValue: false,

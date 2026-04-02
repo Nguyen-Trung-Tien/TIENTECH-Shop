@@ -175,6 +175,22 @@ const UserRoutes = () => {
         }
       />
       <Route
+        path="category/:slug"
+        element={
+          <LayoutComponent isShowHeader={true} isShowFooter={true}>
+            <ProductListPage />
+          </LayoutComponent>
+        }
+      />
+      <Route
+        path="brand/:slug"
+        element={
+          <LayoutComponent isShowHeader={true} isShowFooter={true}>
+            <ProductListPage />
+          </LayoutComponent>
+        }
+      />
+      <Route
         path="products"
         element={
           <LayoutComponent isShowHeader={true} isShowFooter={true}>

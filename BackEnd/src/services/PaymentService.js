@@ -45,7 +45,7 @@ const getAllPayments = async ({
         {
           model: db.Order,
           as: "order",
-          attributes: ["id", "status", "totalPrice"],
+          attributes: ["id", "orderCode", "status", "totalPrice"],
           required: false,
         },
         {
@@ -88,7 +88,7 @@ const getPaymentById = async (id) => {
         {
           model: db.Order,
           as: "order",
-          attributes: ["id", "status", "totalPrice"],
+          attributes: ["id", "orderCode", "status", "totalPrice"],
         },
         { model: db.User, as: "user", attributes: ["id", "name", "email"] },
       ],
@@ -287,56 +287,68 @@ const deletePayment = async (id) => {
 };
 
 const completePayment = async (id, transactionId) => {
+  const t = await db.sequelize.transaction();
   try {
-    const payment = await db.Payment.findByPk(id);
-    if (!payment) return { errCode: 1, errMessage: "Payment not found" };
+    const payment = await db.Payment.findByPk(id, { transaction: t });
+    if (!payment) {
+      await t.rollback();
+      return { errCode: 1, errMessage: "Payment not found" };
+    }
 
     payment.transactionId =
       transactionId || payment.transactionId || `DH${payment.orderId}`;
 
     payment.status = "completed";
     payment.paymentDate = new Date();
-    await payment.save();
+    await payment.save({ transaction: t });
 
     const order = await db.Order.findByPk(payment.orderId, {
       include: [{ model: db.OrderItem, as: "orderItems" }],
+      transaction: t
     });
 
     if (order) {
       order.paymentStatus = "paid";
-      await order.save();
+      if (order.status === "pending") order.status = "confirmed";
+      await order.save({ transaction: t });
 
       for (const item of order.orderItems) {
-        await ProductService.updateProductSold(item.productId, item.quantity);
+        await ProductService.updateProductSold(item.productId, item.quantity, t);
       }
     }
 
+    await t.commit();
     return { errCode: 0, errMessage: "Payment completed", data: payment };
   } catch (e) {
+    await t.rollback();
     console.error("Error completePayment:", e);
     throw e;
   }
 };
 
 const refundPayment = async (id, note = "") => {
+  const t = await db.sequelize.transaction();
   try {
-    const payment = await db.Payment.findByPk(id);
+    const payment = await db.Payment.findByPk(id, { transaction: t });
     if (!payment) {
+      await t.rollback();
       return { errCode: 1, errMessage: "Payment not found" };
     }
 
     payment.status = "refunded";
     payment.note = note || payment.note || "";
-    await payment.save();
+    await payment.save({ transaction: t });
 
-    const order = await db.Order.findByPk(payment.orderId);
+    const order = await db.Order.findByPk(payment.orderId, { transaction: t });
     if (order) {
       order.paymentStatus = "refunded";
-      await order.save();
+      await order.save({ transaction: t });
     }
 
+    await t.commit();
     return { errCode: 0, errMessage: "Payment refunded", data: payment };
   } catch (e) {
+    await t.rollback();
     console.error("Error refundPayment:", e);
     return { errCode: 1, errMessage: e.message || "Error refunding payment" };
   }

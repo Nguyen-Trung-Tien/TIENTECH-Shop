@@ -308,6 +308,8 @@ const handleFilterProducts = async (req, res) => {
     const {
       brandId,
       categoryId,
+      brand,
+      category,
       minPrice,
       maxPrice,
       search,
@@ -316,6 +318,8 @@ const handleFilterProducts = async (req, res) => {
       rom,
       screen,
       battery,
+      os,
+      refresh_rate,
     } = req.query;
     const page = Math.max(1, Number(req.query.page) || 1);
     const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 12));
@@ -323,6 +327,8 @@ const handleFilterProducts = async (req, res) => {
     const filters = {
       brandId,
       categoryId,
+      brand,
+      category,
       minPrice,
       maxPrice,
       search,
@@ -331,6 +337,8 @@ const handleFilterProducts = async (req, res) => {
       rom,
       screen,
       battery,
+      os,
+      refresh_rate,
       page: Number(page),
       limit: Number(limit),
     };

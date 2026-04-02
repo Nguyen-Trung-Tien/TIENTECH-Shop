@@ -14,7 +14,7 @@ const uploadToCloudinary = (buffer) => {
       (error, result) => {
         if (error) return reject(error);
         resolve(result);
-      }
+      },
     );
     stream.end(buffer);
   });
@@ -42,7 +42,8 @@ const handleCreateBrand = async (req, res) => {
 
 const handleGetAllBrands = async (req, res) => {
   try {
-    const result = await BrandService.getAllBrands();
+    const { page, limit, search } = req.query;
+    const result = await BrandService.getAllBrands(page, limit, search);
     return res.status(200).json(result);
   } catch (e) {
     console.error("Error in handleGetAllBrands:", e);
@@ -60,6 +61,20 @@ const handleGetBrandById = async (req, res) => {
     return res.status(status).json(result);
   } catch (e) {
     console.error("Error in handleGetBrandById:", e);
+    return res.status(500).json({
+      errCode: -1,
+      errMessage: "Internal server error",
+    });
+  }
+};
+
+const handleGetBrandBySlug = async (req, res) => {
+  try {
+    const result = await BrandService.getBrandBySlug(req.params.slug);
+    const status = result.errCode === 0 ? 200 : 404;
+    return res.status(status).json(result);
+  } catch (e) {
+    console.error("Error in handleGetBrandBySlug:", e);
     return res.status(500).json({
       errCode: -1,
       errMessage: "Internal server error",
@@ -106,6 +121,7 @@ module.exports = {
   handleCreateBrand,
   handleGetAllBrands,
   handleGetBrandById,
+  handleGetBrandBySlug,
   handleUpdateBrand,
   handleDeleteBrand,
 };

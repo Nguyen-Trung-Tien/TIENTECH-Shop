@@ -2,6 +2,10 @@ import { useEffect, useState } from "react";
 import { getAllBrandApi } from "../../api/brandApi";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Autoplay, Pagination } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/pagination";
 
 const BrandSection = () => {
   const [brands, setBrands] = useState([]);
@@ -11,7 +15,7 @@ const BrandSection = () => {
   useEffect(() => {
     const fetchBrands = async () => {
       try {
-        const res = await getAllBrandApi(1, 1000, "");
+        const res = await getAllBrandApi(1, 15, ""); // Lấy 15 thương hiệu nổi bật
 
         if (res?.errCode === 0 && Array.isArray(res.brands)) {
           setBrands(res.brands);
@@ -37,25 +41,40 @@ const BrandSection = () => {
 
   return (
     <div className="container-custom my-12">
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
+      <Swiper
+        modules={[Autoplay, Pagination]}
+        spaceBetween={20}
+        slidesPerView={2}
+        autoplay={{
+          delay: 3000,
+          disableOnInteraction: false,
+        }}
+        breakpoints={{
+          640: { slidesPerView: 3 },
+          768: { slidesPerView: 4 },
+          1024: { slidesPerView: 6 },
+        }}
+        className="pb-10"
+      >
         {brands.map((brand, index) => (
-          <motion.div
-            key={brand.id}
-            initial={{ opacity: 0, y: 10 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: index * 0.05 }}
-            className="group cursor-pointer bg-white rounded-2xl border border-slate-100 hover:border-indigo-200 hover:shadow-xl hover:shadow-indigo-500/5 transition-all duration-500 flex items-center justify-center w-[142px] h-[48px] mx-auto overflow-hidden p-2"
-            onClick={() => navigate(`/product-list?brandId=${brand.id}`)}
-          >
-            <img
-              src={brand.image}
-              alt={brand.name}
-              className="max-w-full max-h-full object-contain grayscale-[0.5] group-hover:grayscale-0 transition-all duration-500 opacity-70 group-hover:opacity-100 group-hover:scale-105"
-            />
-          </motion.div>
+          <SwiperSlide key={brand.id}>
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: index * 0.05 }}
+              className="group cursor-pointer bg-white rounded-2xl border border-slate-100 hover:border-indigo-200 hover:shadow-xl hover:shadow-indigo-500/5 transition-all duration-500 flex items-center justify-center h-[60px] mx-auto overflow-hidden p-3"
+              onClick={() => navigate(`/brand/${brand.slug}`)}
+            >
+              <img
+                src={brand.image}
+                alt={brand.name}
+                className="max-w-full max-h-full object-contain grayscale group-hover:grayscale-0 transition-all duration-500 opacity-60 group-hover:opacity-100 group-hover:scale-110"
+              />
+            </motion.div>
+          </SwiperSlide>
         ))}
-      </div>
+      </Swiper>
     </div>
   );
 };

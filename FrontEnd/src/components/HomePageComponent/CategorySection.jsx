@@ -53,7 +53,7 @@ const CategorySection = React.memo(({ categories = [], loading }) => {
               viewport={{ once: true }}
               transition={{ delay: index * 0.05 }}
               whileHover={{ y: -8 }}
-              onClick={() => navigate(`/product-list?categoryId=${cat.id}`)}
+              onClick={() => navigate(`/category/${cat.slug}`)}
               className="group cursor-pointer"
             >
               <div className="relative aspect-square rounded-[32px] overflow-hidden bg-slate-50 border border-slate-100 shadow-sm transition-all duration-300 group-hover:shadow-xl group-hover:border-primary/20">
@@ -69,6 +69,12 @@ const CategorySection = React.memo(({ categories = [], loading }) => {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity"></div>
                 
+                {cat.productCount > 0 && (
+                  <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-[10px] font-bold text-slate-900 shadow-sm z-10 transition-transform group-hover:scale-110">
+                    {cat.productCount} SẢN PHẨM
+                  </div>
+                )}
+
                 <div className="absolute inset-x-0 bottom-0 p-4 text-center">
                    <h3 className="text-white font-bold text-sm md:text-base tracking-wide uppercase transition-transform duration-300 group-hover:translate-y-[-4px]">
                       {cat.name}

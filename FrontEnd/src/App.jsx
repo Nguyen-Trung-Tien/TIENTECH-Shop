@@ -50,9 +50,8 @@ const App = () => {
   return (
     <div className="min-h-screen bg-white dark:bg-dark-bg text-gray-900 dark:text-dark-text-primary transition-colors duration-300">
       <Routes>
-        <Route path="/admin/*" element={<AdminRoutes />} />
         <Route path="/*" element={<UserRoutes />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="/admin/*" element={<AdminRoutes />} />
       </Routes>
 
       <ToastContainer

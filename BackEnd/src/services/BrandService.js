@@ -1,7 +1,12 @@
 const db = require("../models");
+const { getPagination, getPagingData } = require("../utils/paginationHelper");
+const { slugify } = require("../utils/slugHelper");
 
 const createBrand = async (data) => {
   try {
+    if (data.name && !data.slug) {
+      data.slug = slugify(data.name);
+    }
     const brand = await db.Brand.create(data);
     return { errCode: 0, brand };
   } catch (e) {
@@ -9,8 +14,6 @@ const createBrand = async (data) => {
     return { errCode: 1, errMessage: e.message };
   }
 };
-
-const { getPagination, getPagingData } = require("../utils/paginationHelper");
 
 const getAllBrands = async (page = 1, limit = 10, searchTerm = "") => {
   try {
@@ -31,6 +34,7 @@ const getAllBrands = async (page = 1, limit = 10, searchTerm = "") => {
       order: [["createdAt", "DESC"]],
       limit: l,
       offset,
+      distinct: true,
     });
 
     const pagingData = getPagingData(data, page, l);
@@ -40,6 +44,7 @@ const getAllBrands = async (page = 1, limit = 10, searchTerm = "") => {
       return {
         ...brandJson,
         productCount: b.products ? b.products.length : 0,
+        products: undefined,
       };
     });
 
@@ -55,6 +60,40 @@ const getAllBrands = async (page = 1, limit = 10, searchTerm = "") => {
     };
   } catch (e) {
     console.error("Error fetching brands:", e);
+    return { errCode: 1, errMessage: e.message };
+  }
+};
+
+const getBrandBySlug = async (slug) => {
+  try {
+    const brand = await db.Brand.findOne({
+      where: { slug },
+      include: [
+        {
+          model: db.Product,
+          as: "products",
+          attributes: ["id", "name", ["basePrice", "price"]],
+          include: [{ model: db.ProductImage, as: "images", attributes: ["imageUrl", "isPrimary"] }],
+        },
+      ],
+    });
+
+    if (!brand) return { errCode: 1, errMessage: "Brand not found" };
+
+    const plainBrand = brand.get({ plain: true });
+    if (plainBrand.products) {
+      plainBrand.products = plainBrand.products.map(p => {
+        const primary = p.images?.find(i => i.isPrimary) || p.images?.[0];
+        return {
+          ...p,
+          image: primary ? primary.imageUrl : null
+        };
+      });
+    }
+
+    return { errCode: 0, brand: plainBrand };
+  } catch (e) {
+    console.error("Error fetching brand by slug:", e);
     return { errCode: 1, errMessage: e.message };
   }
 };
@@ -96,6 +135,10 @@ const updateBrand = async (id, data) => {
   try {
     const brand = await db.Brand.findByPk(id);
     if (!brand) return { errCode: 1, errMessage: "Brand not found" };
+
+    if (data.name && !data.slug) {
+      data.slug = slugify(data.name);
+    }
 
     const updatedBrand = await brand.update(data);
     return { errCode: 0, brand: updatedBrand };

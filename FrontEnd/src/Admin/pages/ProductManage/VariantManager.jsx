@@ -277,27 +277,30 @@ const VariantManager = ({
                     Loại thuộc tính (Chọn hoặc Nhập)
                   </label>
                   <div className="relative">
-                    <select
-                      className="input-modern !h-12 text-xs font-black uppercase tracking-wider appearance-none pr-10"
-                      value={opt.code || ""}
+                    <input
+                      list={`list-attr-${optIdx}`}
+                      className="input-modern !h-12 text-xs font-black uppercase tracking-wider pr-10"
+                      placeholder="Chọn hoặc nhập..."
+                      value={opt.name || opt.code || ""}
                       onChange={(e) => {
+                        const val = e.target.value;
                         const selectedAttr = attributes.find(
-                          (a) => a.code === e.target.value,
+                          (a) => a.name === val || a.code === val,
                         );
                         updateOptionInfo(
                           optIdx,
-                          selectedAttr?.name || e.target.value,
-                          e.target.value,
+                          selectedAttr?.name || val,
+                          selectedAttr?.code || val.toLowerCase().replace(/\s+/g, "_"),
                         );
                       }}
-                    >
-                      <option value="">-- Chọn thuộc tính --</option>
+                    />
+                    <datalist id={`list-attr-${optIdx}`}>
                       {attributes.map((a) => (
-                        <option key={a.id} value={a.code}>
-                          {a.name}
+                        <option key={a.id} value={a.name}>
+                          {a.code}
                         </option>
                       ))}
-                    </select>
+                    </datalist>
                     <FiChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
                   </div>
                 </div>
@@ -459,6 +462,27 @@ const VariantManager = ({
                                   onChange={(e) => {
                                     const newVariants = [...displayVariants];
                                     newVariants[idx].price = e.target.value;
+                                    setFormData((prev) => ({
+                                      ...prev,
+                                      variants: newVariants,
+                                    }));
+                                  }}
+                                />
+                              </div>
+                            </div>
+                            <div className="space-y-2">
+                              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                                Giảm giá (%)
+                              </label>
+                              <div className="relative">
+                                <FiTag className="absolute left-4 top-1/2 -translate-y-1/2 text-rose-400" />
+                                <input
+                                  type="number"
+                                  className="input-modern !h-12 pl-10 text-base font-black text-rose-600"
+                                  value={v.discount || 0}
+                                  onChange={(e) => {
+                                    const newVariants = [...displayVariants];
+                                    newVariants[idx].discount = e.target.value;
                                     setFormData((prev) => ({
                                       ...prev,
                                       variants: newVariants,

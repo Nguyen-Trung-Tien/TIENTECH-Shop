@@ -1,11 +1,23 @@
 import axiosClient from "../utils/axiosClient";
 
-export const getAllBrandApi = async () => {
+export const getAllBrandApi = async (page = 1, limit = 10, search = "") => {
   try {
-    const res = await axiosClient.get(`/brand/get-all-brand`);
+    const res = await axiosClient.get(`/brand/get-all-brand`, {
+      params: { page, limit, search }
+    });
     return res;
   } catch (err) {
     console.error("Get All Brand API error:", err);
+    throw err;
+  }
+};
+
+export const getBrandBySlugApi = async (slug) => {
+  try {
+    const res = await axiosClient.get(`/brand/get-brand-by-slug/${slug}`);
+    return res;
+  } catch (err) {
+    console.error("Get Brand by Slug API error:", err);
     throw err;
   }
 };

@@ -89,7 +89,7 @@ const handleCompletePayment = async (req, res) => {
   try {
     const result = await PaymentService.completePayment(
       req.params.id,
-      req.body.transactionId
+      req.body?.transactionId
     );
     return res.status(200).json(result);
   } catch (e) {

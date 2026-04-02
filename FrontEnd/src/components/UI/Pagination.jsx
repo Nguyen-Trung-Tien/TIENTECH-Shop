@@ -20,9 +20,8 @@ const Pagination = ({
 
   const buttonBase =
     "w-10 h-10 inline-flex items-center justify-center rounded-lg border text-sm font-semibold transition duration-200 ease-out";
-  const active = "bg-brand-500 border-brand-500 text-white shadow-lg";
-  const inactive =
-    "bg-white border-neutral-200 text-neutral-700 hover:bg-neutral-100";
+  const active = "bg-blue-600 border-blue-600 text-white shadow-lg";
+  const inactive =    "bg-white border-neutral-200 text-neutral-700 hover:bg-neutral-100";
 
   return (
     <div className={`flex items-center flex-wrap gap-2 mt-8 ${className}`}>
