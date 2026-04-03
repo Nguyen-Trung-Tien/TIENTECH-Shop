@@ -11,9 +11,27 @@ if (!process.env.GEMINI_API_KEY) {
   console.error("CRITICAL ERROR: GEMINI_API_KEY format seems invalid (should start with 'AIzaSy')");
 }
 const model = genAI.getGenerativeModel({
-  model: "gemini-2.5-flash",
+  model: "gemini-1.5-flash",
   generationConfig: { responseMimeType: "application/json" },
 });
+
+const extractJson = (text) => {
+  try {
+    // Try to parse directly first
+    return JSON.parse(text);
+  } catch (e) {
+    // Fallback: extract JSON from markdown code blocks or curly braces
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      try {
+        return JSON.parse(jsonMatch[0]);
+      } catch (innerError) {
+        console.error("Failed to parse extracted JSON:", innerError);
+      }
+    }
+    throw new Error("Could not parse AI response as JSON");
+  }
+};
 
 const handleChat = async (req, res) => {
   try {
@@ -121,7 +139,7 @@ YÊU CẦU PHẢN HỒI:
     try {
       const resultGen = await model.generateContent({ contents });
       const responseText = resultGen.response.text();
-      const result = JSON.parse(responseText);
+      const result = extractJson(responseText);
 
       // Lấy thông tin chi tiết của các sản phẩm được đề xuất
       let finalRecommended = [];

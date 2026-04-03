@@ -171,19 +171,6 @@ const createPayment = async (data, actor = null) => {
       order.paymentStatus = "paid";
       if (order.status === "pending") order.status = "confirmed";
       await order.save({ transaction: t });
-
-      // Cập nhật sold & stock sản phẩm
-      const orderItems = await db.OrderItem.findAll({
-        where: { orderId },
-        transaction: t,
-      });
-      for (const item of orderItems) {
-        await ProductService.updateProductSold(
-          item.productId,
-          item.quantity,
-          t
-        );
-      }
     }
 
     await t.commit();
@@ -311,10 +298,6 @@ const completePayment = async (id, transactionId) => {
       order.paymentStatus = "paid";
       if (order.status === "pending") order.status = "confirmed";
       await order.save({ transaction: t });
-
-      for (const item of order.orderItems) {
-        await ProductService.updateProductSold(item.productId, item.quantity, t);
-      }
     }
 
     await t.commit();
