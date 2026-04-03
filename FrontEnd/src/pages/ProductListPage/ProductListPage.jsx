@@ -7,7 +7,7 @@ import SkeletonCard from "../../components/SkeletonCard/SkeletonCard";
 import ChatBot from "../../components/ChatBot/ChatBot";
 import Breadcrumbs from "../../components/Breadcrumbs/Breadcrumbs";
 import { FiFilter, FiSearch, FiAlertCircle, FiGrid } from "react-icons/fi";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion as Motion, AnimatePresence } from "framer-motion";
 import { useParams, useLocation } from "react-router-dom";
 
 const ProductListPage = () => {

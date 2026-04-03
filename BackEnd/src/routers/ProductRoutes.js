@@ -49,5 +49,6 @@ router.get(
   "/recommend-fortune",
   ProductController.handleRecommendFortuneProducts,
 );
+router.get("/semantic-search", ProductController.handleSemanticSearch);
 
 module.exports = router;

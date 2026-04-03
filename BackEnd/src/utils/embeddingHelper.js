@@ -1,12 +1,11 @@
 require("dotenv").config();
-const OpenAI = require("openai");
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+// Sử dụng GEMINI_API_KEY hoặc API_KEY tùy vào cấu hình .env của bạn
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || process.env.API_KEY);
 
 /**
- * Tạo vector embedding từ văn bản sử dụng OpenAI
+ * Tạo vector embedding từ văn bản sử dụng Google Gemini AI
  * @param {string} text - Văn bản cần tạo embedding
  * @returns {Promise<number[]>} - Mảng vector
  */
@@ -14,18 +13,15 @@ const generateEmbedding = async (text) => {
   try {
     if (!text || text.trim() === "") return null;
 
-    // Giới hạn độ dài để tránh lỗi token (OpenAI hỗ trợ tối đa 8191 tokens cho text-embedding-3-small)
+    // Giới hạn độ dài để tránh lỗi (Gemini hỗ trợ tốt văn bản dài, nhưng 8000 là mức an toàn)
     const sanitizedText = text.replace(/\n/g, " ").slice(0, 8000);
 
-    const response = await openai.embeddings.create({
-      model: "gpt-5.4",
-      input: sanitizedText,
-      encoding_format: "float",
-    });
-
-    return response.data[0].embedding;
+    const model = genAI.getGenerativeModel({ model: "text-embedding-004" });
+    const result = await model.embedContent(sanitizedText);
+    
+    return result.embedding.values;
   } catch (error) {
-    console.error("Lỗi khi tạo embedding:", error);
+    console.error("Lỗi khi tạo embedding với Gemini:", error.message || error);
     return null;
   }
 };

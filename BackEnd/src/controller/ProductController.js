@@ -428,6 +428,23 @@ const handleGetProductBySlug = async (req, res) => {
   }
 };
 
+const handleSemanticSearch = async (req, res) => {
+  try {
+    const { q, limit } = req.query;
+    const result = await ProductService.searchSemanticProducts(
+      q,
+      parseInt(limit) || 5,
+    );
+    return res.status(200).json(result);
+  } catch (e) {
+    console.error("Error in handleSemanticSearch:", e);
+    return res.status(500).json({
+      errCode: -1,
+      errMessage: "Internal server error",
+    });
+  }
+};
+
 module.exports = {
   handleCreateProduct,
   handleGetAllProducts,
@@ -443,4 +460,5 @@ module.exports = {
   handleRecommendProducts,
   handleRecommendFortuneProducts,
   handleGetSmartRecommendations,
+  handleSemanticSearch,
 };

@@ -23,6 +23,17 @@ const getVariantsByProductId = async (productId) => {
   }
 };
 
+const updateProductTotalStock = async (productId, transaction) => {
+  const totalStock = await db.ProductVariant.sum("stock", {
+    where: { productId },
+    transaction,
+  });
+  await db.Product.update(
+    { totalStock: totalStock || 0 },
+    { where: { id: productId }, transaction },
+  );
+};
+
 const createVariant = async (data) => {
   const t = await db.sequelize.transaction();
   try {
@@ -55,6 +66,9 @@ const createVariant = async (data) => {
     if (attrsToAssign && Object.keys(attrsToAssign).length > 0) {
       await AttributeService.assignAttributesToVariant(variant.id, attrsToAssign, t);
     }
+
+    // Cập nhật totalStock sản phẩm cha
+    await updateProductTotalStock(productId, t);
 
     await t.commit();
     
@@ -101,6 +115,9 @@ const updateVariant = async (id, data) => {
       await AttributeService.assignAttributesToVariant(id, attrsToUpdate, t);
     }
 
+    // Cập nhật totalStock sản phẩm cha
+    await updateProductTotalStock(variant.productId, t);
+
     await t.commit();
 
     const updated = await db.ProductVariant.findByPk(id, {
@@ -119,12 +136,23 @@ const updateVariant = async (id, data) => {
 };
 
 const deleteVariant = async (id) => {
+  const t = await db.sequelize.transaction();
   try {
-    const variant = await db.ProductVariant.findByPk(id);
-    if (!variant) return { errCode: 1, errMessage: "Variant not found" };
-    await variant.destroy();
+    const variant = await db.ProductVariant.findByPk(id, { transaction: t });
+    if (!variant) {
+      await t.rollback();
+      return { errCode: 1, errMessage: "Variant not found" };
+    }
+    const productId = variant.productId;
+    await variant.destroy({ transaction: t });
+
+    // Cập nhật totalStock sản phẩm cha
+    await updateProductTotalStock(productId, t);
+
+    await t.commit();
     return { errCode: 0, errMessage: "Variant deleted" };
   } catch (e) {
+    await t.rollback();
     console.error("Error deleteVariant:", e);
     return { errCode: 1, errMessage: e.message };
   }

@@ -680,6 +680,11 @@ const updateOrderStatus = async (id, status, user = null, reason = "") => {
           const variant = await db.ProductVariant.findByPk(item.variantId, { transaction: t });
           if (variant) {
             await variant.increment("stock", { by: item.quantity, transaction: t });
+            // Cập nhật lại totalStock của sản phẩm cha
+            const product = await db.Product.findByPk(item.productId, { transaction: t });
+            if (product) {
+              await product.increment("totalStock", { by: item.quantity, transaction: t });
+            }
           }
         } else {
           const product = await db.Product.findByPk(item.productId, { transaction: t });
