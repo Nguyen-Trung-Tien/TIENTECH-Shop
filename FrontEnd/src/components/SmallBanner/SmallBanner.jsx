@@ -1,5 +1,5 @@
 import { FiTruck, FiTag, FiHeadphones, FiCheckCircle } from "react-icons/fi";
-import { motion } from "framer-motion";
+import { motion as Motion } from "framer-motion";
 
 const SmallBanner = () => {
   const items = [
@@ -35,7 +35,7 @@ const SmallBanner = () => {
         {items.map((item, idx) => {
           const Icon = item.icon;
           return (
-            <motion.div
+            <Motion.div
               key={idx}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -57,7 +57,7 @@ const SmallBanner = () => {
                   {item.desc}
                 </p>
               </div>
-            </motion.div>
+            </Motion.div>
           );
         })}
       </div>

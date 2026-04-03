@@ -15,7 +15,7 @@ import { getAllCategoryApi } from "../../api/categoryApi";
 import ProductCard from "../ProductCard/ProductCard";
 import FengShuiChat from "../ChatBot/FengShui";
 import AppPagination from "../Pagination/Pagination";
-import { motion } from "framer-motion";
+import { motion as Motion } from "framer-motion";
 import Button from "../UI/Button";
 import Badge from "../UI/Badge";
 
@@ -269,7 +269,7 @@ const FortuneProducts = () => {
           <div className="lg:col-span-8 space-y-8">
             {/* LUCKY COLORS DISPLAY */}
             {luckyColors.length > 0 && (
-              <motion.div
+              <Motion.div
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 className="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-slate-200 dark:border-dark-border shadow-sm flex flex-wrap items-center gap-4"
@@ -288,7 +288,7 @@ const FortuneProducts = () => {
                     </span>
                   ))}
                 </div>
-              </motion.div>
+              </Motion.div>
             )}
 
             {/* PRODUCT GRID */}

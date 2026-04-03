@@ -10,7 +10,7 @@ import {
   FiArrowLeft,
 } from "react-icons/fi";
 import { toast } from "react-toastify";
-import { motion } from "framer-motion";
+import { motion as Motion } from "framer-motion";
 import { FcGoogle } from "react-icons/fc";
 
 import { registerUser } from "../../api/userApi";
@@ -131,14 +131,14 @@ const RegisterPage = () => {
           <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] bg-brand/10 rounded-full blur-[100px]"></div>
 
           <div className="relative z-10 text-center">
-            <motion.img
+            <Motion.img
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               src={logoImage}
               alt="Logo"
               className="w-48 mx-auto mb-6 brightness-0 invert"
             />
-            <motion.h2
+            <Motion.h2
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
@@ -146,8 +146,8 @@ const RegisterPage = () => {
             >
               Trải nghiệm công nghệ{" "}
               <span className="text-primary-hover">đỉnh cao</span>
-            </motion.h2>
-            <motion.p
+            </Motion.h2>
+            <Motion.p
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
@@ -155,7 +155,7 @@ const RegisterPage = () => {
             >
               Tham gia cùng hàng nghìn khách hàng tin dùng TienTech Shop mỗi
               ngày.
-            </motion.p>
+            </Motion.p>
           </div>
         </div>
 

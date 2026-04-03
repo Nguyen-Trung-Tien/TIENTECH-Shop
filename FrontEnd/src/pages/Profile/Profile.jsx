@@ -17,7 +17,7 @@ import {
   FiX,
   FiLock,
 } from "react-icons/fi";
-import { motion } from "framer-motion";
+import { motion as Motion } from "framer-motion";
 import { Button, Modal } from "../../components/UI";
 import Badge from "../../components/UI/Badge";
 import AddressManager from "./AddressManager";
@@ -348,7 +348,7 @@ const Profile = () => {
               </div>
 
               {isEditing && (
-                <motion.div
+                <Motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   className="mt-12 flex justify-end gap-4"
@@ -370,7 +370,7 @@ const Profile = () => {
                   >
                     LƯU THAY ĐỔI
                   </Button>
-                </motion.div>
+                </Motion.div>
               )}
             </div>
 

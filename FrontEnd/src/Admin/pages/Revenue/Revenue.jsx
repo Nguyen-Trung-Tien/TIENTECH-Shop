@@ -9,7 +9,7 @@ import {
   FiArrowDownRight,
   FiBarChart2,
 } from "react-icons/fi";
-import { motion } from "framer-motion";
+import { motion as Motion } from "framer-motion";
 import { getRevenueStats, exportRevenue } from "../../../api/adminApi";
 import { toast } from "react-toastify";
 import ChartCard from "../../components/ChartCardComponent/ChartCard";
@@ -127,7 +127,7 @@ const Revenue = () => {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {statCards.map((card, i) => (
-          <motion.div
+          <Motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.1 }}
@@ -159,7 +159,7 @@ const Revenue = () => {
                 so với kỳ trước
               </span>
             </div>
-          </motion.div>
+          </Motion.div>
         ))}
       </div>
 

@@ -1,10 +1,14 @@
 require("dotenv").config();
-const OpenAI = require("openai");
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 const { Product, Brand, Category } = require("../models");
 const { Op } = require("sequelize");
 const { getFengShuiDetail } = require("../utils/fortuneUtils");
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const model = genAI.getGenerativeModel({
+  model: "gemini-2.5-flash",
+  generationConfig: { responseMimeType: "application/json" },
+});
 
 const handleFengShuiChat = async (req, res) => {
   try {
@@ -84,45 +88,48 @@ NGUYÊN TẮC TƯ VẤN:
 }
 `;
 
-    const messages = [
-      { role: "system", content: systemPrompt },
+    // Chuẩn bị tin nhắn bao gồm lịch sử hội thoại
+    const contents = [
+      { role: "user", parts: [{ text: systemPrompt }] },
       ...history.slice(-6).map((msg) => ({
-        role: msg.role === "user" ? "user" : "assistant",
-        content:
-          typeof msg.content === "string"
-            ? msg.content
-            : JSON.stringify(msg.content),
+        role: msg.role === "user" ? "user" : "model",
+        parts: [{ text: typeof msg.content === "string" ? msg.content : JSON.stringify(msg.content) }],
       })),
-      { role: "user", content: message },
+      { role: "user", parts: [{ text: message }] },
     ];
 
-    const completion = await openai.chat.completions.create({
-      model: "gpt-5.4",
-      messages: messages,
-      temperature: 0.7,
-      max_tokens: 500,
-      response_format: { type: "json_object" },
-    });
+    try {
+      const resultGen = await model.generateContent({ contents });
+      const responseText = resultGen.response.text();
+      const result = JSON.parse(responseText);
 
-    const result = JSON.parse(completion.choices[0].message.content);
+      // Lấy thông tin chi tiết của các sản phẩm được đề xuất
+      let finalRecommended = [];
+      if (result.recommendedProducts && result.recommendedProducts.length > 0) {
+        finalRecommended = await Product.findAll({
+          where: { id: { [Op.in]: result.recommendedProducts }, isActive: true },
+          attributes: ["id", "name", "price", "discount", "image"],
+        });
+      }
 
-    // Lấy thông tin chi tiết của các sản phẩm được đề xuất
-    let finalRecommended = [];
-    if (result.recommendedProducts && result.recommendedProducts.length > 0) {
-      finalRecommended = await Product.findAll({
-        where: { id: { [Op.in]: result.recommendedProducts }, isActive: true },
-        attributes: ["id", "name", "price", "discount", "image"],
+      res.json({
+        reply: result.reply,
+        recommendedProducts: finalRecommended,
+      });
+    } catch (err) {
+      console.error("Gemini FengShui Error:", err);
+      return res.json({
+        reply: "Thầy phong thủy đang bận bấm quẻ, vui lòng quay lại sau! 🔮",
+        recommendedProducts: [],
       });
     }
-
-    res.json({
-      reply: result.reply,
-      recommendedProducts: finalRecommended,
-    });
   } catch (error) {
     console.error("Lỗi chatbot phong thủy:", error);
     res.status(500).json({ error: "Lỗi xử lý AI phong thủy." });
   }
 };
+
+module.exports = { handleFengShuiChat };
+
 
 module.exports = { handleFengShuiChat };

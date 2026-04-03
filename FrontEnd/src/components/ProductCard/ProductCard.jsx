@@ -2,7 +2,7 @@ import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useSelector, useDispatch } from "react-redux";
-import { motion } from "framer-motion";
+import { motion as Motion } from "framer-motion";
 import { addCart, getAllCarts, createCart } from "../../api/cartApi";
 import { getProductByIdApi } from "../../api/productApi";
 import { addCartItem } from "../../redux/cartSlice";
@@ -29,7 +29,7 @@ const ProductCard = ({ product }) => {
   // Initialize wishlist status if user is logged in
   React.useEffect(() => {
     if (userId && product.wishlists) {
-      const wishlisted = product.wishlists.some(w => w.userId === userId);
+      const wishlisted = product.wishlists.some((w) => w.userId === userId);
       setIsWishlisted(wishlisted);
     }
   }, [userId, product.wishlists]);
@@ -88,7 +88,8 @@ const ProductCard = ({ product }) => {
   const handleAddToCartClick = async (e) => {
     e.stopPropagation();
     if (!userId) return toast.warn("Vui lòng đăng nhập!");
-    if (!isActive || (stock < 1 && !hasVariants)) return toast.error("Hết hàng!");
+    if (!isActive || (stock < 1 && !hasVariants))
+      return toast.error("Hết hàng!");
 
     // Nếu sản phẩm có variant, mở modal chọn option
     if (hasVariants) {
@@ -123,27 +124,27 @@ const ProductCard = ({ product }) => {
         cart = newCartRes.data;
       }
 
-      const payload = { 
-        cartId: cart.id, 
-        productId: id, 
-        quantity: 1 
+      const payload = {
+        cartId: cart.id,
+        productId: id,
+        quantity: 1,
       };
       if (isVariant || hasVariants) {
         payload.variantId = targetId;
       }
 
       const res = await addCart(payload, token);
-      
+
       const cartItem = {
         id: res.data.id,
         product: res.data.product,
         variant: res.data.variant,
         quantity: res.data.quantity,
-        finalPrice: res.data.finalPrice
+        finalPrice: res.data.finalPrice,
       };
 
       dispatch(addCartItem(cartItem));
-      
+
       toast.success(`Đã thêm vào giỏ`);
       setShowQuickModal(false);
       return cartItem; // Trả về để dùng cho Mua ngay
@@ -159,17 +160,17 @@ const ProductCard = ({ product }) => {
   const handleBuyNow = async (targetId) => {
     const item = await executeAddToCart(targetId, true);
     if (item) {
-      navigate("/checkout", { 
-        state: { 
-          selectedItems: [item] 
-        } 
+      navigate("/checkout", {
+        state: {
+          selectedItems: [item],
+        },
       });
     }
   };
 
   return (
     <>
-      <motion.article
+      <Motion.article
         initial={{ opacity: 0, y: 10 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
@@ -205,7 +206,10 @@ const ProductCard = ({ product }) => {
             {isWishlisted ? (
               <FaHeart className="text-red-500" size={16} />
             ) : (
-              <FiHeart className="text-slate-400 group-hover/heart:text-red-500 transition-colors" size={16} />
+              <FiHeart
+                className="text-slate-400 group-hover/heart:text-red-500 transition-colors"
+                size={16}
+              />
             )}
           </button>
 
@@ -249,9 +253,14 @@ const ProductCard = ({ product }) => {
           {product.attributes && product.attributes.length > 0 && (
             <div className="flex flex-wrap gap-1 mb-3">
               {product.attributes.slice(0, 3).map((attr, idx) => {
-                if (['ram', 'rom', 'refresh_rate'].includes(attr.attribute?.code)) {
+                if (
+                  ["ram", "rom", "refresh_rate"].includes(attr.attribute?.code)
+                ) {
                   return (
-                    <span key={idx} className="px-1.5 py-0.5 bg-slate-50 dark:bg-dark-surface text-[8px] font-bold text-slate-500 rounded border border-slate-100 dark:border-dark-border">
+                    <span
+                      key={idx}
+                      className="px-1.5 py-0.5 bg-slate-50 dark:bg-dark-surface text-[8px] font-bold text-slate-500 rounded border border-slate-100 dark:border-dark-border"
+                    >
                       {attr.value}
                     </span>
                   );
@@ -292,7 +301,7 @@ const ProductCard = ({ product }) => {
             )}
           </div>
         </div>
-      </motion.article>
+      </Motion.article>
 
       {/* Quick Variant Selection Modal */}
       {fullProduct && (

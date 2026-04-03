@@ -6,7 +6,7 @@ import {
   FiArrowRight,
 } from "react-icons/fi";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion as Motion } from "framer-motion";
 import Button from "../../components/UI/Button";
 
 const CheckoutSuccess = () => {
@@ -38,21 +38,21 @@ const CheckoutSuccess = () => {
       <div className="absolute top-0 right-0 w-[350px] h-[350px] bg-emerald-500/5 rounded-full blur-[80px]"></div>
       <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-primary/5 rounded-full blur-[70px]"></div>
 
-      <motion.div
+      <Motion.div
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ duration: 0.4 }}
         className="relative z-10 w-full max-w-md bg-white rounded-3xl shadow-xl border border-gray-200 p-8 text-center"
       >
         {/* SUCCESS ICON */}
-        <motion.div
+        <Motion.div
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ type: "spring", stiffness: 200, delay: 0.2 }}
           className="w-16 h-16 bg-emerald-500 rounded-2xl flex items-center justify-center text-white mx-auto mb-6 shadow-lg shadow-emerald-500/30"
         >
           <FiCheckCircle size={32} />
-        </motion.div>
+        </Motion.div>
 
         {/* TITLE */}
         <h1 className="text-2xl font-bold text-gray-900 mb-2">
@@ -113,7 +113,7 @@ const CheckoutSuccess = () => {
           </span>
           <FiArrowRight />
         </div>
-      </motion.div>
+      </Motion.div>
     </div>
   );
 };

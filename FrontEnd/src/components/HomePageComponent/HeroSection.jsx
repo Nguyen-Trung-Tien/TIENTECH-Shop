@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { FiArrowRight, FiShoppingBag, FiInfo } from "react-icons/fi";
-import { motion } from "framer-motion";
+import { motion as Motion } from "framer-motion";
 
 const HeroSection = () => {
   const navigate = useNavigate();
@@ -19,7 +19,7 @@ const HeroSection = () => {
         <div className="flex flex-col lg:flex-row items-center gap-16">
           {/* Left Content */}
           <div className="flex-1 text-center lg:text-left">
-            <motion.div
+            <Motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
@@ -31,9 +31,9 @@ const HeroSection = () => {
                 </span>
                 Ưu đãi công nghệ mỗi ngày
               </span>
-            </motion.div>
+            </Motion.div>
 
-            <motion.h1
+            <Motion.h1
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
@@ -47,9 +47,9 @@ const HeroSection = () => {
               <span className="text-2xl md:text-4xl font-light text-slate-400">
                 Định nghĩa lại trải nghiệm công nghệ
               </span>
-            </motion.h1>
+            </Motion.h1>
 
-            <motion.p
+            <Motion.p
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
@@ -58,9 +58,9 @@ const HeroSection = () => {
               Khám phá hệ sinh thái sản phẩm công nghệ chính hãng từ Laptop,
               Smartphone đến linh kiện PC cao cấp. Cam kết giá tốt nhất thị
               trường cùng chính sách bảo hành 1:1.
-            </motion.p>
+            </Motion.p>
 
-            <motion.div
+            <Motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.3 }}
@@ -82,10 +82,10 @@ const HeroSection = () => {
                 <FiInfo className="text-xl" />
                 Về chúng tôi
               </button>
-            </motion.div>
+            </Motion.div>
 
             {/* Trust Badges */}
-            <motion.div
+            <Motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 1, delay: 0.5 }}
@@ -117,11 +117,11 @@ const HeroSection = () => {
                   Hỗ trợ
                 </p>
               </div>
-            </motion.div>
+            </Motion.div>
           </div>
 
           {/* Right Content - Visual */}
-          <motion.div
+          <Motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8, delay: 0.2 }}
@@ -135,7 +135,7 @@ const HeroSection = () => {
               />
 
               {/* Floating Card */}
-              <motion.div
+              <Motion.div
                 animate={{ y: [0, -10, 0] }}
                 transition={{
                   repeat: Infinity,
@@ -155,12 +155,12 @@ const HeroSection = () => {
                     Giảm tới 50%
                   </p>
                 </div>
-              </motion.div>
+              </Motion.div>
             </div>
 
             {/* Glow effect under the image */}
             <div className="absolute inset-0 bg-primary/20 rounded-full blur-[80px] -z-10"></div>
-          </motion.div>
+          </Motion.div>
         </div>
       </div>
     </section>

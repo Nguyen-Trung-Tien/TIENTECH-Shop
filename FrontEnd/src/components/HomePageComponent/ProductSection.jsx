@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import { motion } from "framer-motion";
+import { motion as Motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { getAllProductApi } from "../../api/productApi";
 import ProductCard from "../../components/ProductCard/ProductCard";
@@ -38,7 +38,7 @@ const ProductSection = () => {
         {/* Section Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
           <div className="max-w-2xl">
-            <motion.div
+            <Motion.div
               initial={{ opacity: 0, x: -20 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
@@ -46,17 +46,17 @@ const ProductSection = () => {
             >
               <span className="w-8 h-[2px] bg-primary"></span>
               Sản phẩm đề xuất
-            </motion.div>
-            <motion.h2
+            </Motion.div>
+            <Motion.h2
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               className="text-3xl md:text-4xl font-black text-slate-900 leading-tight"
             >
               ✨ SẢN PHẨM NỔI BẬT ✨
-            </motion.h2>
+            </Motion.h2>
           </div>
-          <motion.button
+          <Motion.button
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
@@ -67,7 +67,7 @@ const ProductSection = () => {
             <span className="group-hover:translate-x-1 transition-transform">
               →
             </span>
-          </motion.button>
+          </Motion.button>
         </div>
 
         {loading ? (
@@ -79,7 +79,7 @@ const ProductSection = () => {
         ) : products.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
             {products.map((product, index) => (
-              <motion.div
+              <Motion.div
                 key={product.id}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -87,7 +87,7 @@ const ProductSection = () => {
                 transition={{ delay: index * 0.1 }}
               >
                 <ProductCard product={product} />
-              </motion.div>
+              </Motion.div>
             ))}
           </div>
         ) : (

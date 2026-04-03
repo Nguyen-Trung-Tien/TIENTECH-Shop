@@ -1,9 +1,9 @@
 import { FiTrendingUp, FiTrendingDown } from "react-icons/fi";
-import { motion } from "framer-motion";
+import { motion as Motion } from "framer-motion";
 
 const StatsCard = ({ title, value, icon, change, isIncrease }) => {
   return (
-    <motion.div
+    <Motion.div
       whileHover={{ y: -5 }}
       transition={{ duration: 0.2 }}
       className="bg-white p-6 rounded-3xl border border-slate-200 shadow-soft group cursor-pointer h-full flex flex-col justify-between relative overflow-hidden"
@@ -53,7 +53,7 @@ const StatsCard = ({ title, value, icon, change, isIncrease }) => {
           } opacity-60`}
         ></div>
       </div>
-    </motion.div>
+    </Motion.div>
   );
 };
 

@@ -11,11 +11,10 @@ import {
 import { FcGoogle } from "react-icons/fc";
 import { useDispatch } from "react-redux";
 import { toast } from "react-toastify";
-import { motion } from "framer-motion";
+import { motion as Motion } from "framer-motion";
 
 import { loginUser } from "../../api/userApi";
 import { setUser } from "../../redux/userSlice";
-import { getAvatarBase64 } from "../../utils/decodeImage";
 import ForgotPasswordModal from "../../components/ForgotPasswordModal/ForgotPasswordModal";
 import Loading from "../../components/Loading/Loading";
 import logoImage from "../../assets/TienTech Shop.png";
@@ -90,7 +89,7 @@ const LoginPage = () => {
           role: user.role,
           phone: user.phone,
           address: user.address,
-          avatar: getAvatarBase64(user.avatar),
+          avatar: user.avatar,
         };
         dispatch(setUser({ user: minimalUser }));
         toast.success(res.errMessage || "Đăng nhập thành công!");
@@ -117,29 +116,29 @@ const LoginPage = () => {
           <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] bg-brand/10 rounded-full blur-[100px]"></div>
 
           <div className="relative z-10 text-center">
-            <motion.img
+            <Motion.img
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               src={logoImage}
               alt="Logo"
               className="w-40 mx-auto mb-6 brightness-0 invert"
             />
-            <motion.h2
+            <Motion.h2
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
               className="text-2xl font-display text-white mb-3"
             >
               Chào mừng <span className="text-primary-hover">quay lại</span>
-            </motion.h2>
-            <motion.p
+            </Motion.h2>
+            <Motion.p
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
               className="text-surface-400 text-sm font-medium opacity-80 px-4"
             >
               Nơi công nghệ gặp gỡ tương lai và trải nghiệm mua sắm đỉnh cao.
-            </motion.p>
+            </Motion.p>
           </div>
         </div>
 

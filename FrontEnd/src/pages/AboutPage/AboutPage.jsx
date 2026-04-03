@@ -1,6 +1,6 @@
 import React from "react";
 import { FiUsers, FiTarget, FiEye } from "react-icons/fi";
-import { motion } from "framer-motion";
+import { motion as Motion } from "framer-motion";
 import imgPro1 from "../../assets/1759303601055.png";
 import imgPro2 from "../../assets/1759303601055.png";
 import imgPro3 from "../../assets/1759555519030.png";
@@ -43,7 +43,7 @@ const AboutPage = () => {
         </div>
 
         <div className="container-custom relative z-10 text-center">
-          <motion.div
+          <Motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
@@ -72,7 +72,7 @@ const AboutPage = () => {
             >
               KHÁM PHÁ NGAY
             </Button>
-          </motion.div>
+          </Motion.div>
         </div>
       </section>
 
@@ -80,7 +80,7 @@ const AboutPage = () => {
       <section className="py-24 bg-slate-50">
         <div className="container-custom">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-            <motion.div
+            <Motion.div
               initial={{ opacity: 0, x: -50 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
@@ -95,9 +95,9 @@ const AboutPage = () => {
               </div>
               <div className="absolute -bottom-8 -right-8 w-48 h-48 bg-primary/10 rounded-full blur-3xl -z-0"></div>
               <div className="absolute -top-8 -left-8 w-32 h-32 bg-indigo-500/10 rounded-full blur-2xl -z-0"></div>
-            </motion.div>
+            </Motion.div>
 
-            <motion.div
+            <Motion.div
               initial={{ opacity: 0, x: 50 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
@@ -137,7 +137,7 @@ const AboutPage = () => {
                   </p>
                 </div>
               </div>
-            </motion.div>
+            </Motion.div>
           </div>
         </div>
       </section>
@@ -146,7 +146,7 @@ const AboutPage = () => {
       <section className="py-24">
         <div className="container-custom">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <motion.div
+            <Motion.div
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -163,9 +163,9 @@ const AboutPage = () => {
                 nghiệp tăng hiệu suất, tiết kiệm chi phí và bứt phá trong kỷ
                 nguyên số không ngừng biến động.
               </p>
-            </motion.div>
+            </Motion.div>
 
-            <motion.div
+            <Motion.div
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -183,7 +183,7 @@ const AboutPage = () => {
                 mang lại trải nghiệm mua sắm hiện đại và giá trị bền vững cho
                 cộng đồng công nghệ.
               </p>
-            </motion.div>
+            </Motion.div>
           </div>
         </div>
       </section>
@@ -204,7 +204,7 @@ const AboutPage = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
             {teamMembers.map((member, idx) => (
-              <motion.div
+              <Motion.div
                 key={idx}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -231,7 +231,7 @@ const AboutPage = () => {
                   {member.role}
                 </p>
                 <p className="text-slate-500 font-medium px-4">{member.desc}</p>
-              </motion.div>
+              </Motion.div>
             ))}
           </div>
         </div>

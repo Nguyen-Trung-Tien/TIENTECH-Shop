@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion as Motion, AnimatePresence } from "framer-motion";
 import { FiLock, FiEye, FiEyeOff, FiX, FiCheckCircle } from "react-icons/fi";
 import { toast } from "react-toastify";
 import { updatePasswordApi } from "../../api/userApi";
@@ -66,14 +66,14 @@ const ChangePasswordModal = ({ show, onHide, userId }) => {
     <AnimatePresence>
       {show && (
         <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
-          <motion.div 
+          <Motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onHide}
             className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
           />
-          <motion.div
+          <Motion.div
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -86,26 +86,44 @@ const ChangePasswordModal = ({ show, onHide, userId }) => {
                   <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
                     <FiLock size={20} />
                   </div>
-                  <h3 className="text-2xl font-display font-bold">Đổi mật khẩu</h3>
+                  <h3 className="text-2xl font-display font-bold">
+                    Đổi mật khẩu
+                  </h3>
                 </div>
-                <button 
+                <button
                   onClick={onHide}
                   className="p-2 hover:bg-white/10 rounded-xl transition-colors"
                 >
                   <FiX size={24} />
                 </button>
               </div>
-              <p className="text-white/70 text-sm">Cập nhật mật khẩu để bảo vệ tài khoản của bạn.</p>
+              <p className="text-white/70 text-sm">
+                Cập nhật mật khẩu để bảo vệ tài khoản của bạn.
+              </p>
             </div>
 
             <div className="p-8 space-y-6">
               {[
-                { name: "oldPassword", label: "Mật khẩu cũ", placeholder: "Nhập mật khẩu hiện tại" },
-                { name: "newPassword", label: "Mật khẩu mới", placeholder: "Tối thiểu 6 ký tự" },
-                { name: "confirmPassword", label: "Xác nhận mật khẩu", placeholder: "Nhập lại mật khẩu mới" },
+                {
+                  name: "oldPassword",
+                  label: "Mật khẩu cũ",
+                  placeholder: "Nhập mật khẩu hiện tại",
+                },
+                {
+                  name: "newPassword",
+                  label: "Mật khẩu mới",
+                  placeholder: "Tối thiểu 6 ký tự",
+                },
+                {
+                  name: "confirmPassword",
+                  label: "Xác nhận mật khẩu",
+                  placeholder: "Nhập lại mật khẩu mới",
+                },
               ].map(({ name, label, placeholder }) => (
                 <div key={name} className="space-y-1.5">
-                  <label className="text-[11px] font-black text-surface-400 uppercase tracking-widest ml-1">{label}</label>
+                  <label className="text-[11px] font-black text-surface-400 uppercase tracking-widest ml-1">
+                    {label}
+                  </label>
                   <div className="relative group">
                     <input
                       type={showPassword[name] ? "text" : "password"}
@@ -125,23 +143,23 @@ const ChangePasswordModal = ({ show, onHide, userId }) => {
                       onClick={() => toggleShowPassword(name)}
                       className="absolute right-4 top-1/2 -translate-y-1/2 text-surface-400 hover:text-primary transition-colors"
                     >
-                      {showPassword[name] ? <FiEyeOff size={18} /> : <FiEye size={18} />}
+                      {showPassword[name] ? (
+                        <FiEyeOff size={18} />
+                      ) : (
+                        <FiEye size={18} />
+                      )}
                     </button>
                   </div>
                 </div>
               ))}
 
               <div className="flex gap-4 mt-8">
-                <Button 
-                  variant="secondary" 
-                  className="flex-1" 
-                  onClick={onHide}
-                >
+                <Button variant="secondary" className="flex-1" onClick={onHide}>
                   HỦY BỎ
                 </Button>
-                <Button 
-                  variant="primary" 
-                  className="flex-1 shadow-lg shadow-primary/20" 
+                <Button
+                  variant="primary"
+                  className="flex-1 shadow-lg shadow-primary/20"
                   loading={loading}
                   icon={FiCheckCircle}
                   onClick={handleSave}
@@ -150,7 +168,7 @@ const ChangePasswordModal = ({ show, onHide, userId }) => {
                 </Button>
               </div>
             </div>
-          </motion.div>
+          </Motion.div>
         </div>
       )}
     </AnimatePresence>

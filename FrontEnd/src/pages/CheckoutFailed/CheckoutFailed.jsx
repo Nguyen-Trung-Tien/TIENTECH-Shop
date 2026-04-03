@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { FiXCircle, FiHome, FiRotateCw, FiAlertCircle } from "react-icons/fi";
 import { useNavigate, useParams } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion as Motion } from "framer-motion";
 import Button from "../../components/UI/Button";
 
 const CheckoutFailed = () => {
@@ -18,21 +18,21 @@ const CheckoutFailed = () => {
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-danger/5 rounded-full blur-[100px] -z-0"></div>
       <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-amber-500/5 rounded-full blur-[80px] -z-0"></div>
 
-      <motion.div
+      <Motion.div
         initial={{ opacity: 0, scale: 0.9, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ duration: 0.5 }}
         className="relative z-10 w-full max-w-xl bg-white rounded-[40px] shadow-2xl border border-surface-200 p-10 md:p-16 text-center"
       >
         {/* FAILED ICON */}
-        <motion.div
+        <Motion.div
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ type: "spring", stiffness: 200, delay: 0.2 }}
           className="w-24 h-24 bg-danger rounded-3xl flex items-center justify-center text-white mx-auto mb-10 shadow-xl shadow-danger/30"
         >
           <FiXCircle size={48} />
-        </motion.div>
+        </Motion.div>
 
         {/* TITLE */}
         <h1 className="text-3xl md:text-4xl font-display font-bold text-surface-900 mb-4">
@@ -85,7 +85,7 @@ const CheckoutFailed = () => {
             VỀ TRANG CHỦ
           </Button>
         </div>
-      </motion.div>
+      </Motion.div>
     </div>
   );
 };

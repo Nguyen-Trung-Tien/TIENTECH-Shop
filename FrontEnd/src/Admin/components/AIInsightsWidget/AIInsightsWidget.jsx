@@ -7,7 +7,7 @@ import {
   FiChevronUp,
 } from "react-icons/fi";
 import { getAIInsights } from "../../../api/adminApi";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion as Motion, AnimatePresence } from "framer-motion";
 
 const AIInsightsWidget = () => {
   const [insights, setInsights] = useState(null);
@@ -35,7 +35,7 @@ const AIInsightsWidget = () => {
         if (res.errCode === 0) {
           setInsights(res.data);
         }
-      } catch (error) {
+      } catch {
         console.error("Failed to load AI insights");
       } finally {
         setLoading(false);
@@ -82,7 +82,7 @@ const AIInsightsWidget = () => {
 
       <AnimatePresence>
         {isExpanded && (
-          <motion.div
+          <Motion.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
@@ -159,7 +159,7 @@ const AIInsightsWidget = () => {
                 Không có dữ liệu phân tích.
               </div>
             )}
-          </motion.div>
+          </Motion.div>
         )}
       </AnimatePresence>
     </div>

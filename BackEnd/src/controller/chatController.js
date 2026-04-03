@@ -1,11 +1,18 @@
 require("dotenv").config();
-const OpenAI = require("openai");
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 const { Product, Order, Category, OrderItem, User } = require("../models");
 const { Op } = require("sequelize");
 const ProductService = require("../services/ProductService");
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "dummy_key");
+if (!process.env.GEMINI_API_KEY) {
+  console.error("CRITICAL ERROR: GEMINI_API_KEY is missing in .env file!");
+} else if (!process.env.GEMINI_API_KEY.startsWith("AIzaSy")) {
+  console.error("CRITICAL ERROR: GEMINI_API_KEY format seems invalid (should start with 'AIzaSy')");
+}
+const model = genAI.getGenerativeModel({
+  model: "gemini-2.5-flash",
+  generationConfig: { responseMimeType: "application/json" },
 });
 
 const handleChat = async (req, res) => {
@@ -101,53 +108,41 @@ YÊU CẦU PHẢN HỒI:
 3. Không markdown, không giải thích ngoài JSON.
 `;
 
-    // Chuẩn bị tin nhắn bao gồm lịch sử hội thoại (giới hạn 6 câu gần nhất để tiết kiệm token)
-    const messages = [
-      { role: "system", content: systemPrompt },
+    // Chuẩn bị tin nhắn bao gồm lịch sử hội thoại
+    const contents = [
+      { role: "user", parts: [{ text: systemPrompt }] },
       ...history.slice(-6).map((msg) => ({
-        role: msg.role === "user" ? "user" : "assistant",
-        content:
-          typeof msg.content === "string"
-            ? msg.content
-            : JSON.stringify(msg.content),
+        role: msg.role === "user" ? "user" : "model",
+        parts: [{ text: typeof msg.content === "string" ? msg.content : JSON.stringify(msg.content) }],
       })),
-      { role: "user", content: message },
+      { role: "user", parts: [{ text: message }] },
     ];
 
-    let completion;
     try {
-      completion = await openai.chat.completions.create({
-        model: "gpt-5.4",
-        messages: messages,
-        temperature: 0.7,
-        max_tokens: 500,
-        response_format: { type: "json_object" },
-      });
-    } catch (err) {
-      if (err.code === "rate_limit_exceeded") {
-        return res.json({
-          reply: "AI đang bận, vui lòng thử lại sau giây lát ⏳",
-          recommendedProducts: [],
+      const resultGen = await model.generateContent({ contents });
+      const responseText = resultGen.response.text();
+      const result = JSON.parse(responseText);
+
+      // Lấy thông tin chi tiết của các sản phẩm được đề xuất
+      let finalRecommended = [];
+      if (result.recommendedProducts && result.recommendedProducts.length > 0) {
+        finalRecommended = await Product.findAll({
+          where: { id: { [Op.in]: result.recommendedProducts }, isActive: true },
+          attributes: ["id", "name", "price", "discount", "image"],
         });
       }
-      throw err;
-    }
 
-    const result = JSON.parse(completion.choices[0].message.content);
-
-    // Lấy thông tin chi tiết của các sản phẩm được đề xuất
-    let finalRecommended = [];
-    if (result.recommendedProducts && result.recommendedProducts.length > 0) {
-      finalRecommended = await Product.findAll({
-        where: { id: { [Op.in]: result.recommendedProducts }, isActive: true },
-        attributes: ["id", "name", "price", "discount", "image"],
+      res.json({
+        reply: result.reply,
+        recommendedProducts: finalRecommended,
+      });
+    } catch (err) {
+      console.error("Gemini Error:", err);
+      return res.json({
+        reply: "AI đang bận, vui lòng thử lại sau giây lát ⏳",
+        recommendedProducts: [],
       });
     }
-
-    res.json({
-      reply: result.reply,
-      recommendedProducts: finalRecommended,
-    });
   } catch (error) {
     console.error("Lỗi chatbot:", error);
     res.status(500).json({ error: "Lỗi hệ thống AI." });

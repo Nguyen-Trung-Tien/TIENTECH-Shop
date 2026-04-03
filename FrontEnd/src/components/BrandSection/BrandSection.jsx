@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { getAllBrandApi } from "../../api/brandApi";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion as Motion } from "framer-motion";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Pagination } from "swiper/modules";
 import "swiper/css";
@@ -58,7 +58,7 @@ const BrandSection = () => {
       >
         {brands.map((brand, index) => (
           <SwiperSlide key={brand.id}>
-            <motion.div
+            <Motion.div
               initial={{ opacity: 0, y: 10 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -71,7 +71,7 @@ const BrandSection = () => {
                 alt={brand.name}
                 className="max-w-full max-h-full object-contain grayscale group-hover:grayscale-0 transition-all duration-500 opacity-60 group-hover:opacity-100 group-hover:scale-110"
               />
-            </motion.div>
+            </Motion.div>
           </SwiperSlide>
         ))}
       </Swiper>

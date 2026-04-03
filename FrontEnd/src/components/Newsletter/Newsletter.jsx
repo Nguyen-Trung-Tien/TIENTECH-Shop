@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { motion } from "framer-motion";
+import { motion as Motion } from "framer-motion";
 import { FiSend, FiShield } from "react-icons/fi";
 import { toast } from "react-toastify";
 
@@ -21,7 +21,7 @@ const Newsletter = () => {
   return (
     <section className="py-12 bg-white dark:bg-dark-bg transition-colors duration-300">
       <div className="container-custom">
-        <motion.div 
+        <Motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -41,7 +41,8 @@ const Newsletter = () => {
                 <span className="text-primary italic">trong tầm tay</span>
               </h4>
               <p className="text-slate-400 text-xs font-medium max-w-sm mx-auto lg:mx-0">
-                Gia nhập cộng đồng 10,000+ người đam mê công nghệ để nhận tin tức & mã giảm giá sớm nhất.
+                Gia nhập cộng đồng 10,000+ người đam mê công nghệ để nhận tin
+                tức & mã giảm giá sớm nhất.
               </p>
             </div>
 
@@ -56,8 +57,8 @@ const Newsletter = () => {
                     required
                     className="flex-1 bg-transparent px-4 py-3 outline-none text-white text-sm font-semibold placeholder:text-slate-500"
                   />
-                  <button 
-                    type="submit" 
+                  <button
+                    type="submit"
                     disabled={loading}
                     className="px-8 py-3 bg-primary text-white font-black text-[11px] uppercase tracking-[0.15em] rounded-lg hover:bg-primary-hover transition-all active:scale-95 flex items-center justify-center gap-2 shadow-lg shadow-primary/20 disabled:opacity-50"
                   >
@@ -70,7 +71,7 @@ const Newsletter = () => {
               </p>
             </div>
           </div>
-        </motion.div>
+        </Motion.div>
       </div>
     </section>
   );

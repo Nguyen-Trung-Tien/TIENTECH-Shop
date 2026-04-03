@@ -18,7 +18,7 @@ import {
 } from "../../../api/reviewReplyApi";
 import { toast } from "react-toastify";
 import AppPagination from "../../../components/Pagination/Pagination";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion as Motion, AnimatePresence } from "framer-motion";
 import { ConfirmModal } from "../../../components/UI/Modal";
 
 const ReviewPage = () => {
@@ -187,7 +187,7 @@ const ReviewPage = () => {
           </div>
         ) : (
           reviews.map((review) => (
-            <motion.div
+            <Motion.div
               layout
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -298,7 +298,7 @@ const ReviewPage = () => {
                   </div>
                 </div>
               </div>
-            </motion.div>
+            </Motion.div>
           ))
         )}
       </div>

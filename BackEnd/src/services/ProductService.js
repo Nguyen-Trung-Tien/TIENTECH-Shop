@@ -4,6 +4,7 @@ const { getLuckyColorsByYear } = require("../utils/fortuneUtils");
 const NodeCache = require("node-cache");
 const { getPagination, getPagingData } = require("../utils/paginationHelper");
 const AttributeService = require("./AttributeService");
+const { slugify } = require("../utils/slugHelper");
 const {
   generateEmbedding,
   cosineSimilarity,
@@ -90,19 +91,6 @@ const applyFlashSaleToProduct = (productData) => {
   }
 
   return product;
-};
-
-const slugify = (text) => {
-  return text
-    .toString()
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/\s+/g, "-")
-    .replace(/[^\w-]+/g, "")
-    .replace(/--+/g, "-")
-    .replace(/^-+/, "")
-    .replace(/-+$/, "");
 };
 
 const disableExpiredFlashSales = async () => {

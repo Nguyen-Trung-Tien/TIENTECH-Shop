@@ -3,19 +3,10 @@ const { Product, Category } = require("../models");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const geminiModel = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-
-function sanitizeGeminiJSON(text) {
-  if (!text) return null;
-
-  text = text.replace(/```json/gi, "");
-  text = text.replace(/```/g, "");
-
-  const match = text.match(/\{[\s\S]*\}$/);
-  if (match) text = match[0];
-
-  return text.trim();
-}
+const geminiModel = genAI.getGenerativeModel({
+  model: "gemini-2.5-flash",
+  generationConfig: { responseMimeType: "application/json" },
+});
 
 async function analyzeProductWithGemini(product) {
   const currentMonth = new Date().getMonth() + 1;
@@ -34,7 +25,7 @@ Dựa trên vòng đời sản phẩm (Product Life Cycle) và các sự kiện 
 4. Lời khuyên: "BUY NOW", "WAIT", "SKIP".
 5. Độ tin cậy (0-100%).
 
-Trả về JSON THUẦN:
+Trả về JSON THUẦN với cấu trúc:
 {
   "trend": "Mô tả xu hướng",
   "suggestion": "Lời khuyên chi tiết",
@@ -53,13 +44,9 @@ Trả về JSON THUẦN:
 
   try {
     const result = await geminiModel.generateContent(prompt);
-    let raw = result.response.text();
-
-    raw = sanitizeGeminiJSON(raw);
-
-    return JSON.parse(raw);
+    return JSON.parse(result.response.text());
   } catch (err) {
-    console.error("Gemini parse error:", err);
+    console.error("Gemini AI Analysis Error:", err);
     return null;
   }
 }

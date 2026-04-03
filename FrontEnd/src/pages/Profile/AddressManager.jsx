@@ -17,7 +17,7 @@ import {
   FiCheckCircle,
   FiMoreVertical,
 } from "react-icons/fi";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion as Motion, AnimatePresence } from "framer-motion";
 import { Button, Modal } from "../../components/UI";
 import Badge from "../../components/UI/Badge";
 import { ConfirmModal } from "../../components/UI/Modal";
@@ -28,15 +28,18 @@ const AddressManager = () => {
   const [showModal, setShowModal] = useState(false);
   const [editingAddress, setEditingAddress] = useState(null);
   const [submitLoading, setSubmitLoading] = useState(false);
-  const [confirmDeleteModal, setConfirmDeleteModal] = useState({ show: false, id: null });
-const [formData, setFormData] = useState({
-  fullName: "",
-  phone: "",
-  province: "",
-  ward: "",
-  detailAddress: "",
-  isDefault: false,
-});
+  const [confirmDeleteModal, setConfirmDeleteModal] = useState({
+    show: false,
+    id: null,
+  });
+  const [formData, setFormData] = useState({
+    fullName: "",
+    phone: "",
+    province: "",
+    ward: "",
+    detailAddress: "",
+    isDefault: false,
+  });
 
   const fetchAddresses = async () => {
     try {
@@ -172,7 +175,7 @@ const [formData, setFormData] = useState({
           </div>
         ) : (
           addresses.map((addr) => (
-            <motion.div
+            <Motion.div
               key={addr.id}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -204,7 +207,9 @@ const [formData, setFormData] = useState({
                       className="mt-1 text-primary shrink-0"
                     />
                     <span className="text-sm">
-                      {[addr.detailAddress, addr.ward, addr.province].filter(Boolean).join(", ")}
+                      {[addr.detailAddress, addr.ward, addr.province]
+                        .filter(Boolean)
+                        .join(", ")}
                     </span>
                   </div>
                 </div>
@@ -227,7 +232,9 @@ const [formData, setFormData] = useState({
                         <FiCheckCircle size={16} />
                       </button>
                       <button
-                        onClick={() => setConfirmDeleteModal({ show: true, id: addr.id })}
+                        onClick={() =>
+                          setConfirmDeleteModal({ show: true, id: addr.id })
+                        }
                         className="p-2 text-surface-400 hover:text-red-500 transition-colors bg-surface-50 rounded-lg"
                         title="Xóa"
                       >
@@ -237,7 +244,7 @@ const [formData, setFormData] = useState({
                   )}
                 </div>
               </div>
-            </motion.div>
+            </Motion.div>
           ))
         )}
       </div>

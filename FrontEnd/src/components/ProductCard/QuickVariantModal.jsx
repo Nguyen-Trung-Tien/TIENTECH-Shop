@@ -1,5 +1,5 @@
 import React from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion as Motion, AnimatePresence } from "framer-motion";
 import { FiX, FiCheck, FiShoppingCart, FiCreditCard } from "react-icons/fi";
 import { useProductVariants } from "../../hooks/useProductVariants";
 import Button from "../UI/Button";
@@ -16,17 +16,20 @@ const QuickVariantModal = ({ product, isOpen, onClose, onAdd, onBuyNow }) => {
 
   const displayImage = React.useMemo(() => {
     if (displayVariant?.imageUrl) return displayVariant.imageUrl;
-    
+
     // Fallback to variant image from product.images if variantId matches
     if (displayVariant && product.images) {
-      const variantImg = product.images.find(img => img.variantId === displayVariant.id);
+      const variantImg = product.images.find(
+        (img) => img.variantId === displayVariant.id,
+      );
       if (variantImg) return variantImg.imageUrl;
     }
 
     if (product.image) return product.image;
 
     if (product.images && product.images.length > 0) {
-      const primary = product.images.find(img => img.isPrimary) || product.images[0];
+      const primary =
+        product.images.find((img) => img.isPrimary) || product.images[0];
       return primary.imageUrl;
     }
 
@@ -35,19 +38,21 @@ const QuickVariantModal = ({ product, isOpen, onClose, onAdd, onBuyNow }) => {
 
   if (!isOpen) return null;
 
-  const currentPrice = displayVariant 
-    ? (Number(displayVariant.salePrice) > 0 ? displayVariant.salePrice : displayVariant.price)
-    : (product.displayPrice || product.basePrice || product.price);
+  const currentPrice = displayVariant
+    ? Number(displayVariant.salePrice) > 0
+      ? displayVariant.salePrice
+      : displayVariant.price
+    : product.displayPrice || product.basePrice || product.price;
 
-  const originalPrice = displayVariant 
-    ? displayVariant.price 
-    : (product.originalPrice || product.basePrice || product.price);
+  const originalPrice = displayVariant
+    ? displayVariant.price
+    : product.originalPrice || product.basePrice || product.price;
 
   return (
     <AnimatePresence>
       <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
         {/* Overlay */}
-        <motion.div
+        <Motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -56,7 +61,7 @@ const QuickVariantModal = ({ product, isOpen, onClose, onAdd, onBuyNow }) => {
         />
 
         {/* Modal Content */}
-        <motion.div
+        <Motion.div
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -106,7 +111,10 @@ const QuickVariantModal = ({ product, isOpen, onClose, onAdd, onBuyNow }) => {
                   <div className="flex flex-wrap gap-2">
                     {values.map((val) => {
                       const isSelected = selectedAttributes[attrName] === val;
-                      const isAvailable = checkAttributeAvailability(attrName, val);
+                      const isAvailable = checkAttributeAvailability(
+                        attrName,
+                        val,
+                      );
                       return (
                         <button
                           key={val}
@@ -116,8 +124,8 @@ const QuickVariantModal = ({ product, isOpen, onClose, onAdd, onBuyNow }) => {
                             isSelected
                               ? "bg-slate-900 dark:bg-primary border-slate-900 dark:border-primary text-white shadow-lg shadow-slate-200 dark:shadow-none"
                               : isAvailable
-                              ? "bg-white dark:bg-dark-bg border-slate-100 dark:border-dark-border hover:border-slate-300 dark:hover:border-slate-600 text-slate-600 dark:text-slate-300"
-                              : "bg-slate-50 dark:bg-dark-bg border-slate-50 dark:border-dark-border text-slate-300 dark:text-slate-600 cursor-not-allowed opacity-60"
+                                ? "bg-white dark:bg-dark-bg border-slate-100 dark:border-dark-border hover:border-slate-300 dark:hover:border-slate-600 text-slate-600 dark:text-slate-300"
+                                : "bg-slate-50 dark:bg-dark-bg border-slate-50 dark:border-dark-border text-slate-300 dark:text-slate-600 cursor-not-allowed opacity-60"
                           }`}
                         >
                           {val}
@@ -152,7 +160,7 @@ const QuickVariantModal = ({ product, isOpen, onClose, onAdd, onBuyNow }) => {
                   MUA NGAY
                 </Button>
               </div>
-              
+
               {product.variants?.length > 0 && !selectedVariant && (
                 <p className="text-center text-danger text-[10px] font-bold uppercase mt-3 tracking-widest">
                   Vui lòng chọn đầy đủ các tùy chọn
@@ -160,7 +168,7 @@ const QuickVariantModal = ({ product, isOpen, onClose, onAdd, onBuyNow }) => {
               )}
             </div>
           </div>
-        </motion.div>
+        </Motion.div>
       </div>
     </AnimatePresence>
   );

@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useReducer } from "react";
 import { useParams, Link, useLocation, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion as Motion, AnimatePresence } from "framer-motion";
 import { Modal, ConfirmModal, Button } from "../../components/UI";
 import {
   FiPackage,
@@ -304,7 +304,7 @@ const OrderDetail = () => {
         {(order.status === "cancelled" ||
           order.status === "cancel_requested") &&
           order.cancelReason && (
-            <motion.div
+            <Motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               className="bg-rose-50 border border-rose-100 rounded-[32px] p-8 mb-8 flex items-start gap-4"
@@ -327,7 +327,7 @@ const OrderDetail = () => {
                   </p>
                 </div>
               </div>
-            </motion.div>
+            </Motion.div>
           )}
 
         {/* Order Stepper (Desktop) */}
@@ -631,7 +631,7 @@ const OrderDetail = () => {
             </div>
 
             {state.selectedReturnReason === "Lý do khác" && (
-              <motion.div
+              <Motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
                 className="pt-2"
@@ -648,7 +648,7 @@ const OrderDetail = () => {
                     })
                   }
                 />
-              </motion.div>
+              </Motion.div>
             )}
           </div>
 
@@ -763,7 +763,7 @@ const OrderDetail = () => {
           </div>
 
           {state.selectedCancelReason === "Lý do khác" && (
-            <motion.div
+            <Motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               className="pt-2"
@@ -780,7 +780,7 @@ const OrderDetail = () => {
                   })
                 }
               />
-            </motion.div>
+            </Motion.div>
           )}
         </div>
       </ConfirmModal>

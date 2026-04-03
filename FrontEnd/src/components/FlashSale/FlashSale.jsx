@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { motion as Motion } from "framer-motion";
 import { getFlashSaleProductsApi } from "../../api/productApi";
 import ProductCard from "../../components/ProductCard/ProductCard";
 import SkeletonCard from "../SkeletonCard/SkeletonCard";
@@ -175,7 +175,7 @@ const FlashSale = () => {
           <div className="space-y-10">
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
               {products.map((product, index) => (
-                <motion.div
+                <Motion.div
                   key={product.id}
                   initial={{ opacity: 0, y: 10 }}
                   whileInView={{ opacity: 1, y: 0 }}
@@ -183,7 +183,7 @@ const FlashSale = () => {
                   transition={{ delay: (index % 6) * 0.05 }}
                 >
                   <ProductCard product={product} />
-                </motion.div>
+                </Motion.div>
               ))}
             </div>
 

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { toast } from "react-toastify";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion as Motion, AnimatePresence } from "framer-motion";
 import {
   FiMail,
   FiShield,
@@ -126,7 +126,7 @@ const ForgotPasswordModal = ({ show, onClose }) => {
     >
       <div className="min-h-[200px]">
         <AnimatePresence mode="wait">
-          <motion.div
+          <Motion.div
             key={step}
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -208,7 +208,7 @@ const ForgotPasswordModal = ({ show, onClose }) => {
                 </div>
               </div>
             )}
-          </motion.div>
+          </Motion.div>
         </AnimatePresence>
       </div>
 

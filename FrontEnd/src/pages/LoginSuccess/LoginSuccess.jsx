@@ -4,7 +4,6 @@ import { useDispatch } from "react-redux";
 import { toast } from "react-toastify";
 import { getMeApi } from "../../api/userApi";
 import { setUser } from "../../redux/userSlice";
-import { getAvatarBase64 } from "../../utils/decodeImage";
 import Loading from "../../components/Loading/Loading";
 
 const LoginSuccess = () => {
@@ -24,7 +23,7 @@ const LoginSuccess = () => {
             role: user.role,
             phone: user.phone,
             address: user.address,
-            avatar: user.avatar?.startsWith("http") ? user.avatar : getAvatarBase64(user.avatar),
+            avatar: user.avatar,
             points: user.points,
             rank: user.rank,
           };

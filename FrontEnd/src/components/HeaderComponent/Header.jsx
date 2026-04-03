@@ -17,7 +17,7 @@ import {
   FiCheckCircle,
 } from "react-icons/fi";
 
-import { motion, AnimatePresence } from "framer-motion";
+import { motion as Motion, AnimatePresence } from "framer-motion";
 import { useSelector, useDispatch } from "react-redux";
 
 // Theme state moved into Header component body (to fix Invalid hook call)
@@ -257,7 +257,7 @@ function Header() {
           {/* Suggestions Dropdown */}
           <AnimatePresence>
             {showSuggestions && (
-              <motion.div
+              <Motion.div
                 initial={{ opacity: 0, y: 15, scale: 0.98 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 10, scale: 0.98 }}
@@ -419,7 +419,7 @@ function Header() {
                     XEM TẤT CẢ KẾT QUẢ <FiSearch />
                   </button>
                 )}
-              </motion.div>
+              </Motion.div>
             )}
           </AnimatePresence>
         </div>
@@ -482,7 +482,7 @@ function Header() {
 
               <AnimatePresence>
                 {isUserMenuOpen && (
-                  <motion.div
+                  <Motion.div
                     initial={{ opacity: 0, scale: 0.95, y: 15 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: 10 }}
@@ -542,7 +542,7 @@ function Header() {
                         <FiLogOut className="text-lg" /> Đăng xuất
                       </button>
                     </div>
-                  </motion.div>
+                  </Motion.div>
                 )}
               </AnimatePresence>
             </div>
@@ -573,7 +573,7 @@ function Header() {
       {/* Mobile Menu */}
       <AnimatePresence>
         {isMobileMenuOpen && (
-          <motion.div
+          <Motion.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
@@ -605,7 +605,7 @@ function Header() {
                 ))}
               </div>
             </div>
-          </motion.div>
+          </Motion.div>
         )}
       </AnimatePresence>
     </header>

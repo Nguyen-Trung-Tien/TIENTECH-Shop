@@ -10,7 +10,7 @@ import {
   FiPackage,
   FiRefreshCw,
 } from "react-icons/fi";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion as Motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
@@ -365,7 +365,7 @@ const OrderManage = () => {
                           </button>
                           <AnimatePresence>
                             {activeDropdown === order.id && (
-                              <motion.div
+                              <Motion.div
                                 initial={{ opacity: 0, y: 10, scale: 0.95 }}
                                 animate={{ opacity: 1, y: 0, scale: 1 }}
                                 exit={{ opacity: 0, y: 10, scale: 0.95 }}
@@ -395,7 +395,7 @@ const OrderManage = () => {
                                     </button>
                                   ))}
                                 </div>
-                              </motion.div>
+                              </Motion.div>
                             )}
                           </AnimatePresence>
                         </div>

@@ -10,7 +10,7 @@ import {
   FiInfo,
   FiActivity,
 } from "react-icons/fi";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion as Motion, AnimatePresence } from "framer-motion";
 import {
   AreaChart,
   Area,
@@ -87,7 +87,7 @@ const PricePredictionModal = ({ productId, isOpen, onClose }) => {
   return (
     <AnimatePresence>
       <div className="fixed inset-0 z-[1100] flex items-center justify-center p-4">
-        <motion.div
+        <Motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -95,7 +95,7 @@ const PricePredictionModal = ({ productId, isOpen, onClose }) => {
           className="absolute inset-0 bg-slate-900/40 backdrop-blur-md"
         />
 
-        <motion.div
+        <Motion.div
           initial={{ opacity: 0, scale: 0.9, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -195,7 +195,7 @@ const PricePredictionModal = ({ productId, isOpen, onClose }) => {
                       </p>
                     </div>
                     <div className="mt-4 w-full h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
-                      <motion.div
+                      <Motion.div
                         initial={{ width: 0 }}
                         animate={{
                           width: `${data?.aiAnalysis?.reliability || data?.reliability}%`,
@@ -345,7 +345,7 @@ const PricePredictionModal = ({ productId, isOpen, onClose }) => {
               Đã hiểu
             </button>
           </div>
-        </motion.div>
+        </Motion.div>
       </div>
     </AnimatePresence>
   );

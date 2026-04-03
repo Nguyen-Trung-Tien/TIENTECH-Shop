@@ -15,7 +15,7 @@ import {
 import { useNavigate, Link } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion as Motion, AnimatePresence } from "framer-motion";
 import { ConfirmModal } from "../../components/UI";
 import { getOrdersByUserId, updateOrderStatus } from "../../api/orderApi";
 import AppPagination from "../../components/Pagination/Pagination";
@@ -221,7 +221,7 @@ const OrderPage = () => {
         ) : (
           <div className="space-y-4">
             {orders.map((o) => (
-              <motion.div
+              <Motion.div
                 layout
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -351,7 +351,7 @@ const OrderPage = () => {
                     </div>
                   </div>
                 </div>
-              </motion.div>
+              </Motion.div>
             ))}
           </div>
         )}
@@ -429,7 +429,7 @@ const OrderPage = () => {
           </div>
 
           {selectedReason === "Lý do khác" && (
-            <motion.div
+            <Motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               className="space-y-2"
@@ -444,7 +444,7 @@ const OrderPage = () => {
                 value={cancelReason}
                 onChange={(e) => setCancelReason(e.target.value)}
               />
-            </motion.div>
+            </Motion.div>
           )}
         </div>
       </ConfirmModal>

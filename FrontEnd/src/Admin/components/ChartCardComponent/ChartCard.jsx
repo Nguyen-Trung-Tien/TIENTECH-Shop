@@ -9,7 +9,7 @@ import {
   CartesianGrid,
 } from "recharts";
 import { FiRefreshCw } from "react-icons/fi";
-import { motion } from "framer-motion";
+import { motion as Motion } from "framer-motion";
 import { getDashboard } from "../../../api/adminApi";
 
 const PERIOD = { WEEK: "week", MONTH: "month", YEAR: "year" };
@@ -107,7 +107,7 @@ const ChartCard = ({ token }) => {
       : FALLBACK_DATA[type];
 
   return (
-    <motion.div
+    <Motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       className="bg-white rounded-3xl border border-slate-200 shadow-soft overflow-hidden p-6"
@@ -202,7 +202,7 @@ const ChartCard = ({ token }) => {
           </ResponsiveContainer>
         )}
       </div>
-    </motion.div>
+    </Motion.div>
   );
 };
 

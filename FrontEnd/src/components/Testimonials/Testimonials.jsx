@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { motion as Motion } from "framer-motion";
 import { FaStar, FaQuoteLeft } from "react-icons/fa";
 import image1 from "../../assets/000000005b6461.png";
 
@@ -40,19 +40,19 @@ const Testimonials = ({ limit = 3 }) => {
     <section className="py-20 bg-surface-50 overflow-hidden">
       <div className="container-custom">
         <div className="flex flex-col items-center mb-16 text-center">
-          <motion.h3
+          <Motion.h3
             initial={{ opacity: 0, scale: 0.9 }}
             whileInView={{ opacity: 1, scale: 1 }}
             className="text-3xl md:text-4xl font-display font-black text-surface-900 tracking-tight"
           >
             Khách Hàng Nói Gì Về <span className="text-primary">TienTech</span>
-          </motion.h3>
+          </Motion.h3>
           <div className="h-1.5 w-12 bg-primary mt-4 rounded-full"></div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {items.map((t, index) => (
-            <motion.div
+            <Motion.div
               key={t.id}
               initial={{ opacity: 0, x: index % 2 === 0 ? -30 : 30 }}
               whileInView={{ opacity: 1, x: 0 }}
@@ -93,7 +93,7 @@ const Testimonials = ({ limit = 3 }) => {
                   </div>
                 </div>
               </div>
-            </motion.div>
+            </Motion.div>
           ))}
         </div>
       </div>

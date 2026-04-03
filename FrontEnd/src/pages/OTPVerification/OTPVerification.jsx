@@ -3,13 +3,13 @@ import { useSearchParams, useNavigate, Link } from "react-router-dom";
 import { verifyEmailApi, resendVerificationApi } from "../../api/userApi";
 import { toast } from "react-toastify";
 import { Mail, ArrowLeft, Loader2 } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion as Motion } from "framer-motion";
 
 const OTPVerification = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const email = searchParams.get("email");
-  
+
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
@@ -102,7 +102,7 @@ const OTPVerification = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-dark-bg p-4">
-      <motion.div 
+      <Motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="max-w-md w-full bg-white dark:bg-dark-card rounded-3xl shadow-2xl p-8 border border-gray-100 dark:border-gray-800"
@@ -111,10 +111,14 @@ const OTPVerification = () => {
           <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
             <Mail className="w-8 h-8 text-blue-600" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Xác thực tài khoản</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+            Xác thực tài khoản
+          </h1>
           <p className="text-gray-500 dark:text-gray-400">
             Chúng tôi đã gửi mã OTP 6 chữ số đến <br />
-            <span className="font-semibold text-gray-900 dark:text-white">{email}</span>
+            <span className="font-semibold text-gray-900 dark:text-white">
+              {email}
+            </span>
           </p>
         </div>
 
@@ -140,7 +144,11 @@ const OTPVerification = () => {
             disabled={loading}
             className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-2xl shadow-lg shadow-blue-500/30 active:scale-[0.98] transition-all disabled:opacity-70 flex items-center justify-center gap-2"
           >
-            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "XÁC NHẬN"}
+            {loading ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              "XÁC NHẬN"
+            )}
           </button>
         </form>
 
@@ -148,9 +156,11 @@ const OTPVerification = () => {
           <p className="text-gray-500 dark:text-gray-400 text-sm">
             Bạn không nhận được mã?{" "}
             {timer > 0 ? (
-              <span className="text-blue-600 font-bold">Gửi lại sau {timer}s</span>
+              <span className="text-blue-600 font-bold">
+                Gửi lại sau {timer}s
+              </span>
             ) : (
-              <button 
+              <button
                 onClick={handleResend}
                 disabled={resending}
                 className="text-blue-600 font-bold hover:underline disabled:opacity-50"
@@ -160,11 +170,14 @@ const OTPVerification = () => {
             )}
           </p>
 
-          <Link to="/register" className="inline-flex items-center gap-2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 text-sm font-medium transition-colors">
+          <Link
+            to="/register"
+            className="inline-flex items-center gap-2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 text-sm font-medium transition-colors"
+          >
             <ArrowLeft className="w-4 h-4" /> Quay lại đăng ký
           </Link>
         </div>
-      </motion.div>
+      </Motion.div>
     </div>
   );
 };

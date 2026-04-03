@@ -10,7 +10,7 @@ import {
   FiEye,
 } from "react-icons/fi";
 import { toast } from "react-toastify";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion as Motion, AnimatePresence } from "framer-motion";
 import { getAllOrders, updateOrderStatus } from "../../../api/orderApi";
 import AppPagination from "../../../components/Pagination/Pagination";
 import { paymentStatusMap } from "../../../utils/StatusMap";
@@ -124,7 +124,7 @@ const OrdersCancelManage = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {orders.map((order) => (
-              <motion.div
+              <Motion.div
                 layout
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -191,7 +191,7 @@ const OrdersCancelManage = () => {
                     <FiEye /> Xem chi tiết & Xử lý
                   </button>
                 </div>
-              </motion.div>
+              </Motion.div>
             ))}
           </div>
         )}
@@ -212,14 +212,14 @@ const OrdersCancelManage = () => {
       <AnimatePresence>
         {modalShow && selectedOrder && (
           <div className="fixed inset-0 z-[1100] flex items-center justify-center p-4">
-            <motion.div
+            <Motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setModalShow(false)}
               className="absolute inset-0 bg-slate-950/40 backdrop-blur-[2px]"
             />
-            <motion.div
+            <Motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
@@ -276,7 +276,7 @@ const OrdersCancelManage = () => {
                   </button>
                 </div>
               </div>
-            </motion.div>
+            </Motion.div>
           </div>
         )}
       </AnimatePresence>

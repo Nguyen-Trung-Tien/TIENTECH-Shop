@@ -18,7 +18,7 @@ import { logoutUserApi } from "../../../api/userApi";
 import { removeUser } from "../../../redux/userSlice";
 import { clearCart } from "../../../redux/cartSlice";
 import { toast } from "react-toastify";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion as Motion, AnimatePresence } from "framer-motion";
 
 const MENU_ITEMS = [
   { to: "/admin/dashboard", icon: <FiHome />, label: "Dashboard" },
@@ -151,7 +151,7 @@ const Sidebar = ({ collapsed }) => {
                 {!collapsed && (
                   <AnimatePresence>
                     {isExpanded && (
-                      <motion.div
+                      <Motion.div
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: "auto", opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
@@ -170,7 +170,7 @@ const Sidebar = ({ collapsed }) => {
                             {sub.label}
                           </Link>
                         ))}
-                      </motion.div>
+                      </Motion.div>
                     )}
                   </AnimatePresence>
                 )}

@@ -1,7 +1,13 @@
 import React from "react";
-import { FiSearch, FiPlus, FiEdit2, FiTrash2, FiRefreshCw } from "react-icons/fi";
+import {
+  FiSearch,
+  FiPlus,
+  FiEdit2,
+  FiTrash2,
+  FiRefreshCw,
+} from "react-icons/fi";
 import AppPagination from "../../components/Pagination/Pagination";
-import { motion } from "framer-motion";
+import { motion as Motion } from "framer-motion";
 
 /**
  * Generic Table component for Admin Management pages
@@ -54,8 +60,8 @@ const GenericAdminTable = ({
               onChange={(e) => onSearchChange(e.target.value)}
             />
           </div>
-          <button 
-            onClick={onAddClick} 
+          <button
+            onClick={onAddClick}
             className="btn-modern-primary group h-12 px-6 flex items-center gap-2 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-all"
           >
             <FiPlus className="text-xl group-hover:rotate-90 transition-transform duration-300" />
@@ -71,8 +77,8 @@ const GenericAdminTable = ({
             <thead>
               <tr className="bg-slate-50/50 border-b border-slate-100">
                 {columns.map((col, idx) => (
-                  <th 
-                    key={idx} 
+                  <th
+                    key={idx}
                     className={`px-8 py-6 text-[10px] font-black uppercase tracking-widest text-slate-400 ${col.className || ""}`}
                   >
                     {col.header}
@@ -86,31 +92,46 @@ const GenericAdminTable = ({
             <tbody className="divide-y divide-slate-50">
               {loading ? (
                 <tr>
-                  <td colSpan={columns.length + 1} className="px-8 py-20 text-center">
+                  <td
+                    colSpan={columns.length + 1}
+                    className="px-8 py-20 text-center"
+                  >
                     <div className="flex flex-col items-center gap-3">
                       <FiRefreshCw className="text-4xl text-indigo-600 animate-spin" />
-                      <p className="text-slate-400 font-bold text-sm">Đang tải dữ liệu...</p>
+                      <p className="text-slate-400 font-bold text-sm">
+                        Đang tải dữ liệu...
+                      </p>
                     </div>
                   </td>
                 </tr>
               ) : data.length === 0 ? (
                 <tr>
-                  <td colSpan={columns.length + 1} className="px-8 py-20 text-center">
-                    <p className="text-slate-400 font-bold">Không tìm thấy dữ liệu</p>
+                  <td
+                    colSpan={columns.length + 1}
+                    className="px-8 py-20 text-center"
+                  >
+                    <p className="text-slate-400 font-bold">
+                      Không tìm thấy dữ liệu
+                    </p>
                   </td>
                 </tr>
               ) : (
                 data.map((item, rowIdx) => (
-                  <motion.tr 
+                  <Motion.tr
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: rowIdx * 0.05 }}
-                    key={item.id || rowIdx} 
+                    key={item.id || rowIdx}
                     className="hover:bg-slate-50/50 transition-colors group"
                   >
                     {columns.map((col, colIdx) => (
-                      <td key={colIdx} className={`px-8 py-5 ${col.className || ""}`}>
-                        {col.render ? col.render(item) : (
+                      <td
+                        key={colIdx}
+                        className={`px-8 py-5 ${col.className || ""}`}
+                      >
+                        {col.render ? (
+                          col.render(item)
+                        ) : (
                           <span className="text-sm font-bold text-slate-700">
                             {item[col.accessor]}
                           </span>
@@ -118,7 +139,9 @@ const GenericAdminTable = ({
                       </td>
                     ))}
                     <td className="px-8 py-5 text-right">
-                      {renderActions ? renderActions(item) : (
+                      {renderActions ? (
+                        renderActions(item)
+                      ) : (
                         <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                           <button
                             onClick={() => onEditClick(item)}
@@ -137,7 +160,7 @@ const GenericAdminTable = ({
                         </div>
                       )}
                     </td>
-                  </motion.tr>
+                  </Motion.tr>
                 ))
               )}
             </tbody>

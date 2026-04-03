@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import {
   FiSearch,
   FiUser,
@@ -23,7 +23,7 @@ import { useCurrentUser } from "../../../hooks/useUser";
 import logoImage from "../../../assets/TienTech Shop.png";
 import NotificationBell from "../../../components/HeaderComponent/NotificationBell";
 import { debounce } from "lodash";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion as Motion, AnimatePresence } from "framer-motion";
 
 const HeaderAdmin = ({ toggleSidebar, isCollapsed }) => {
   const dispatch = useDispatch();
@@ -51,24 +51,25 @@ const HeaderAdmin = ({ toggleSidebar, isCollapsed }) => {
       : user?.username || user?.email || "Admin";
 
   // Global Search Debounced
-  const debouncedSearch = useCallback(
-    debounce(async (query) => {
-      if (!query.trim()) {
-        setSuggestions({ products: [], orders: [], users: [] });
-        setIsLoading(false);
-        return;
-      }
-      try {
-        const res = await globalSearchApi(query);
-        if (res.errCode === 0) {
-          setSuggestions(res.data);
+  const debouncedSearch = useMemo(
+    () =>
+      debounce(async (query) => {
+        if (!query.trim()) {
+          setSuggestions({ products: [], orders: [], users: [] });
+          setIsLoading(false);
+          return;
         }
-      } catch (err) {
-        console.error("Global search error:", err);
-      } finally {
-        setIsLoading(false);
-      }
-    }, 400),
+        try {
+          const res = await globalSearchApi(query);
+          if (res.errCode === 0) {
+            setSuggestions(res.data);
+          }
+        } catch (err) {
+          console.error("Global search error:", err);
+        } finally {
+          setIsLoading(false);
+        }
+      }, 400),
     [],
   );
 
@@ -164,7 +165,7 @@ const HeaderAdmin = ({ toggleSidebar, isCollapsed }) => {
           {/* Global Search Suggestions Dropdown */}
           <AnimatePresence>
             {showSuggestions && (
-              <motion.div
+              <Motion.div
                 initial={{ opacity: 0, y: 10, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 5, scale: 0.95 }}
@@ -343,7 +344,7 @@ const HeaderAdmin = ({ toggleSidebar, isCollapsed }) => {
                     </div>
                   </div>
                 )}
-              </motion.div>
+              </Motion.div>
             )}
           </AnimatePresence>
         </div>

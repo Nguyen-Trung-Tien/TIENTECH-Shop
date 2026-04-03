@@ -12,7 +12,7 @@ import {
   FiMonitor,
   FiZap,
 } from "react-icons/fi";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion as Motion, AnimatePresence } from "framer-motion";
 
 const getAttrIcon = (code) => {
   switch (code) {
@@ -29,15 +29,15 @@ const getAttrIcon = (code) => {
   }
 };
 
-const FilterContent = ({ 
-  brands, 
-  attributes, 
-  filters, 
-  handleBrandClick, 
-  handleAttrClick, 
-  setFilters, 
-  applyFilters, 
-  resetFilters 
+const FilterContent = ({
+  brands,
+  attributes,
+  filters,
+  handleBrandClick,
+  handleAttrClick,
+  setFilters,
+  applyFilters,
+  resetFilters,
 }) => (
   <div className="space-y-10">
     {/* Brands Section */}
@@ -118,7 +118,10 @@ const FilterContent = ({
       <div className="space-y-4">
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1.5">
-            <label htmlFor="price-from" className="text-[9px] font-bold text-slate-400 ml-1">
+            <label
+              htmlFor="price-from"
+              className="text-[9px] font-bold text-slate-400 ml-1"
+            >
               TỪ
             </label>
             <input
@@ -136,7 +139,10 @@ const FilterContent = ({
             />
           </div>
           <div className="space-y-1.5">
-            <label htmlFor="price-to" className="text-[9px] font-bold text-slate-400 ml-1">
+            <label
+              htmlFor="price-to"
+              className="text-[9px] font-bold text-slate-400 ml-1"
+            >
               ĐẾN
             </label>
             <input
@@ -358,7 +364,7 @@ function ProductFilter({
     handleAttrClick,
     setFilters,
     applyFilters,
-    resetFilters
+    resetFilters,
   };
 
   if (isSidebar) {
@@ -380,7 +386,7 @@ function ProductFilter({
   return (
     <AnimatePresence>
       <div className="fixed inset-0 z-[1000] flex justify-end lg:hidden">
-        <motion.div
+        <Motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -388,7 +394,7 @@ function ProductFilter({
           className="absolute inset-0 bg-slate-950/60 backdrop-blur-md"
         />
 
-        <motion.div
+        <Motion.div
           initial={{ x: "100%" }}
           animate={{ x: 0 }}
           exit={{ x: "100%" }}
@@ -410,7 +416,7 @@ function ProductFilter({
           <div className="flex-1 overflow-y-auto px-8 pb-10 custom-scrollbar">
             <FilterContent {...commonProps} />
           </div>
-        </motion.div>
+        </Motion.div>
       </div>
     </AnimatePresence>
   );

@@ -1,17 +1,24 @@
-import React from 'react';
-import { FiStar } from 'react-icons/fi';
-import { motion } from 'framer-motion';
-import ReviewItem from './ReviewItem';
+import React from "react";
+import { FiStar } from "react-icons/fi";
+import { motion as Motion } from "framer-motion";
+import ReviewItem from "./ReviewItem";
 
 const ReviewComponent = ({ reviews = [], user }) => {
-  const averageRating = reviews.length > 0 
-    ? (reviews.reduce((acc, item) => acc + item.rating, 0) / reviews.length).toFixed(1) 
-    : "5.0";
+  const averageRating =
+    reviews.length > 0
+      ? (
+          reviews.reduce((acc, item) => acc + item.rating, 0) / reviews.length
+        ).toFixed(1)
+      : "5.0";
 
-  const ratingCounts = [5, 4, 3, 2, 1].map(star => ({
+  const ratingCounts = [5, 4, 3, 2, 1].map((star) => ({
     star,
-    count: reviews.filter(r => r.rating === star).length,
-    percentage: reviews.length > 0 ? (reviews.filter(r => r.rating === star).length / reviews.length) * 100 : 0
+    count: reviews.filter((r) => r.rating === star).length,
+    percentage:
+      reviews.length > 0
+        ? (reviews.filter((r) => r.rating === star).length / reviews.length) *
+          100
+        : 0,
   }));
 
   return (
@@ -29,13 +36,20 @@ const ReviewComponent = ({ reviews = [], user }) => {
         {/* Rating Summary */}
         <div className="lg:col-span-4 space-y-8">
           <div className="bg-neutral-50 rounded-3xl p-8 text-center border border-neutral-100">
-            <p className="text-6xl font-display font-black text-neutral-900 mb-2">{averageRating}</p>
+            <p className="text-6xl font-display font-black text-neutral-900 mb-2">
+              {averageRating}
+            </p>
             <div className="flex justify-center gap-1 mb-4">
               {[...Array(5)].map((_, i) => (
-                <FiStar key={i} className={`text-xl ${i < Math.floor(averageRating) ? 'text-amber-500 fill-current' : 'text-neutral-200'}`} />
+                <FiStar
+                  key={i}
+                  className={`text-xl ${i < Math.floor(averageRating) ? "text-amber-500 fill-current" : "text-neutral-200"}`}
+                />
               ))}
             </div>
-            <p className="text-sm font-bold text-neutral-500 uppercase tracking-widest">Xếp hạng trung bình</p>
+            <p className="text-sm font-bold text-neutral-500 uppercase tracking-widest">
+              Xếp hạng trung bình
+            </p>
           </div>
 
           <div className="space-y-4">
@@ -45,7 +59,7 @@ const ReviewComponent = ({ reviews = [], user }) => {
                   {item.star} <FiStar className="fill-current text-amber-500" />
                 </span>
                 <div className="flex-1 h-2 bg-neutral-100 rounded-full overflow-hidden">
-                  <motion.div 
+                  <Motion.div
                     initial={{ width: 0 }}
                     whileInView={{ width: `${item.percentage}%` }}
                     viewport={{ once: true }}
@@ -69,7 +83,9 @@ const ReviewComponent = ({ reviews = [], user }) => {
             ))
           ) : (
             <div className="py-20 text-center bg-neutral-50 rounded-3xl border border-dashed border-neutral-200">
-              <p className="text-neutral-400 font-bold italic">Chưa có đánh giá nào cho sản phẩm này.</p>
+              <p className="text-neutral-400 font-bold italic">
+                Chưa có đánh giá nào cho sản phẩm này.
+              </p>
             </div>
           )}
         </div>

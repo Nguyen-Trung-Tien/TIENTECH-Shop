@@ -1,20 +1,23 @@
 import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion as Motion, AnimatePresence } from "framer-motion";
 import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
 
 const ProductGallery = ({ images = [], primaryImage, discount }) => {
-  const gallery = Array.from(new Set([...images.map(i => i.imageUrl), primaryImage].filter(Boolean)));
+  const gallery = Array.from(
+    new Set([...images.map((i) => i.imageUrl), primaryImage].filter(Boolean)),
+  );
   const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
     if (primaryImage) {
-      const idx = gallery.findIndex(u => u === primaryImage);
+      const idx = gallery.findIndex((u) => u === primaryImage);
       if (idx !== -1) setCurrentIndex(idx);
     }
   }, [primaryImage, gallery]);
 
   const goNext = () => setCurrentIndex((prev) => (prev + 1) % gallery.length);
-  const goPrev = () => setCurrentIndex((prev) => (prev - 1 + gallery.length) % gallery.length);
+  const goPrev = () =>
+    setCurrentIndex((prev) => (prev - 1 + gallery.length) % gallery.length);
 
   if (!gallery.length) return null;
 
@@ -23,7 +26,7 @@ const ProductGallery = ({ images = [], primaryImage, discount }) => {
       {/* Main Image Container */}
       <div className="relative aspect-square rounded-[32px] bg-white shadow-soft border border-slate-100 overflow-hidden flex items-center justify-center p-8 group">
         <AnimatePresence mode="wait">
-          <motion.img
+          <Motion.img
             key={gallery[currentIndex]}
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -76,11 +79,7 @@ const ProductGallery = ({ images = [], primaryImage, discount }) => {
                   : "border-transparent opacity-50 hover:opacity-100 hover:border-slate-200"
               }`}
             >
-              <img
-                src={url}
-                alt=""
-                className="w-full h-full object-contain"
-              />
+              <img src={url} alt="" className="w-full h-full object-contain" />
             </button>
           ))}
         </div>

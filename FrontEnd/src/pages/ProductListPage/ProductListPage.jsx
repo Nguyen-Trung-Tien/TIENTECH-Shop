@@ -85,13 +85,13 @@ const ProductListPage = () => {
             {/* Mobile Filter Drawer */}
             <AnimatePresence>
               {showMobileFilter && (
-                <motion.div
+                <Motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   className="fixed inset-0 z-[200] lg:hidden bg-slate-900/60 backdrop-blur-sm p-4"
                 >
-                  <motion.div
+                  <Motion.div
                     initial={{ x: "100%" }}
                     animate={{ x: 0 }}
                     exit={{ x: "100%" }}
@@ -115,8 +115,8 @@ const ProductListPage = () => {
                         onClose={() => setShowMobileFilter(false)}
                       />
                     </div>
-                  </motion.div>
-                </motion.div>
+                  </Motion.div>
+                </Motion.div>
               )}
             </AnimatePresence>
           </aside>
@@ -177,7 +177,7 @@ const ProductListPage = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-x-8 gap-y-10">
                   <AnimatePresence>
                     {products.map((product, idx) => (
-                      <motion.div
+                      <Motion.div
                         key={product.id}
                         layout
                         initial={{ opacity: 0, scale: 0.95 }}
@@ -185,7 +185,7 @@ const ProductListPage = () => {
                         transition={{ duration: 0.3, delay: (idx % 3) * 0.05 }}
                       >
                         <ProductCard product={product} />
-                      </motion.div>
+                      </Motion.div>
                     ))}
                   </AnimatePresence>
                 </div>

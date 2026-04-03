@@ -18,7 +18,7 @@ import {
   FiPackage,
 } from "react-icons/fi";
 import { toast } from "react-toastify";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion as Motion, AnimatePresence } from "framer-motion";
 import { deleteVariant, updateVariant } from "../../../api/variantApi";
 import { getAllAttributesApi } from "../../../api/attributeApi";
 import { ConfirmModal } from "../../../components/UI/Modal";
@@ -432,7 +432,7 @@ const VariantManager = ({
 
                   <AnimatePresence>
                     {isExpanded && (
-                      <motion.div
+                      <Motion.div
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: "auto", opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
@@ -600,7 +600,7 @@ const VariantManager = ({
                             )}
                           </div>
                         </div>
-                      </motion.div>
+                      </Motion.div>
                     )}
                   </AnimatePresence>
                 </div>

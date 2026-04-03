@@ -203,14 +203,14 @@ const handleUpdateProduct = async (req, res) => {
     }
 
     if (galleryFiles.length > 0) {
-      const uploads = await uploadFilesToCloudinary(galleryFiles);
-      uploads.forEach((u) =>
+      for (const file of galleryFiles) {
+        const uploaded = await uploadToCloudinary(file.buffer, "products/gallery");
         imageRecords.push({
-          imageUrl: u.imageUrl,
-          publicId: u.publicId,
+          imageUrl: uploaded.secure_url,
+          publicId: uploaded.public_id,
           isPrimary: false,
-        }),
-      );
+        });
+      }
     }
 
     const product = await ProductService.updateProduct(id, data, imageRecords);

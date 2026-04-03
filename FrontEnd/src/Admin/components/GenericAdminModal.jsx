@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { FiX, FiImage, FiUploadCloud } from "react-icons/fi";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion as Motion, AnimatePresence } from "framer-motion";
 
 /**
  * Generic Modal for Add/Edit forms in Admin pages
@@ -23,7 +23,7 @@ const GenericAdminModal = ({
         // Initialize form with editing item data
         const initialData = {};
         const initialPreviews = {};
-        fields.forEach(field => {
+        fields.forEach((field) => {
           initialData[field.name] = editingItem[field.name] || "";
           if (field.type === "image" && editingItem[field.name]) {
             initialPreviews[field.name] = editingItem[field.name];
@@ -34,8 +34,9 @@ const GenericAdminModal = ({
       } else {
         // Reset form for new item
         const resetData = {};
-        fields.forEach(field => {
-          resetData[field.name] = field.defaultValue !== undefined ? field.defaultValue : "";
+        fields.forEach((field) => {
+          resetData[field.name] =
+            field.defaultValue !== undefined ? field.defaultValue : "";
         });
         setFormData(resetData);
         setPreviews({});
@@ -45,17 +46,20 @@ const GenericAdminModal = ({
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: type === "checkbox" ? checked : value
+      [name]: type === "checkbox" ? checked : value,
     }));
   };
 
   const handleImageChange = (e, fieldName) => {
     const file = e.target.files[0];
     if (file) {
-      setFormData(prev => ({ ...prev, [`${fieldName}File`]: file }));
-      setPreviews(prev => ({ ...prev, [fieldName]: URL.createObjectURL(file) }));
+      setFormData((prev) => ({ ...prev, [`${fieldName}File`]: file }));
+      setPreviews((prev) => ({
+        ...prev,
+        [fieldName]: URL.createObjectURL(file),
+      }));
     }
   };
 
@@ -69,15 +73,15 @@ const GenericAdminModal = ({
   return (
     <AnimatePresence>
       <div className="fixed inset-0 z-[999] flex items-center justify-center p-4">
-        <motion.div
+        <Motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
           className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
         />
-        
-        <motion.div
+
+        <Motion.div
           initial={{ opacity: 0, scale: 0.9, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -95,12 +99,19 @@ const GenericAdminModal = ({
             </button>
           </div>
 
-          <form onSubmit={handleSubmit} className="p-8 max-h-[70vh] overflow-y-auto">
+          <form
+            onSubmit={handleSubmit}
+            className="p-8 max-h-[70vh] overflow-y-auto"
+          >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {fields.map((field) => (
-                <div key={field.name} className={field.fullWidth ? "md:col-span-2" : ""}>
+                <div
+                  key={field.name}
+                  className={field.fullWidth ? "md:col-span-2" : ""}
+                >
                   <label className="block text-sm font-bold text-slate-700 mb-2 ml-1">
-                    {field.label} {field.required && <span className="text-rose-500">*</span>}
+                    {field.label}{" "}
+                    {field.required && <span className="text-rose-500">*</span>}
                   </label>
 
                   {field.type === "textarea" ? (
@@ -121,8 +132,10 @@ const GenericAdminModal = ({
                       required={field.required}
                     >
                       <option value="">-- Chọn {field.label} --</option>
-                      {field.options?.map(opt => (
-                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                      {field.options?.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
                       ))}
                     </select>
                   ) : field.type === "image" ? (
@@ -137,7 +150,9 @@ const GenericAdminModal = ({
                         ) : (
                           <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-400">
                             <FiImage className="text-4xl mb-2" />
-                            <span className="text-xs font-bold uppercase tracking-wider">Chọn hình ảnh</span>
+                            <span className="text-xs font-bold uppercase tracking-wider">
+                              Chọn hình ảnh
+                            </span>
                           </div>
                         )}
                         <input
@@ -157,7 +172,9 @@ const GenericAdminModal = ({
                         onChange={handleChange}
                         className="w-5 h-5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
                       />
-                      <span className="text-sm font-bold text-slate-700">{field.placeholder || "Kích hoạt"}</span>
+                      <span className="text-sm font-bold text-slate-700">
+                        {field.placeholder || "Kích hoạt"}
+                      </span>
                     </div>
                   ) : (
                     <input
@@ -192,7 +209,7 @@ const GenericAdminModal = ({
               </button>
             </div>
           </form>
-        </motion.div>
+        </Motion.div>
       </div>
     </AnimatePresence>
   );
