@@ -134,9 +134,9 @@ const FengShuiChat = ({ setGlobalBirthYear }) => {
     <>
       <button
         onClick={handleShow}
-        className="fixed bottom-24 right-6 w-14 h-14 bg-amber-600 text-white rounded-full shadow-xl shadow-amber-900/20 flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-[999] border-4 border-amber-100 dark:border-amber-900/30 overflow-hidden group"
+        className="fixed bottom-24 right-6 w-14 h-14 bg-blue-600 text-white rounded-full shadow-xl shadow-blue-900/20 flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-[999] border-4 border-blue-100 dark:border-blue-900/30 overflow-hidden group"
       >
-        <div className="absolute inset-0 bg-gradient-to-tr from-amber-700 to-amber-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+        <div className="absolute inset-0 bg-gradient-to-tr from-blue-700 to-blue-400 opacity-0 group-hover:opacity-100 transition-opacity" />
         <FiZap size={24} className="relative z-10 animate-pulse" />
       </button>
 
@@ -158,7 +158,7 @@ const FengShuiChat = ({ setGlobalBirthYear }) => {
               className="relative w-full max-w-md bg-white dark:bg-slate-900 h-full shadow-2xl flex flex-col border-l border-slate-100 dark:border-slate-800"
             >
               {/* Header */}
-              <div className="px-6 py-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-gradient-to-r from-amber-600 to-amber-500 text-white">
+              <div className="px-6 py-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-gradient-to-r from-blue-700 to-blue-500 text-white">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30 shadow-inner">
                     <FiZap size={24} />
@@ -167,7 +167,7 @@ const FengShuiChat = ({ setGlobalBirthYear }) => {
                     <h3 className="font-black text-base tracking-tight uppercase leading-none">
                       FengShui Master
                     </h3>
-                    <p className="text-[10px] font-black text-amber-100 tracking-[0.2em] uppercase mt-1 opacity-80">
+                    <p className="text-[10px] font-black text-blue-100 tracking-[0.2em] uppercase mt-1 opacity-80">
                       TienTech Premium AI
                     </p>
                   </div>
@@ -186,7 +186,7 @@ const FengShuiChat = ({ setGlobalBirthYear }) => {
                   <div className="flex items-center gap-3">
                     <div
                       className="w-2 h-2 rounded-full animate-ping"
-                      style={{ backgroundColor: fsData.hex }}
+                      style={{ backgroundColor: fsData.hex || "#3b82f6" }}
                     />
                     <span className="text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">
                       Cung {fsData.cungPhi} • Hành {fsData.element}
@@ -196,7 +196,7 @@ const FengShuiChat = ({ setGlobalBirthYear }) => {
                     {fsData.luckyNumbers.map((n) => (
                       <span
                         key={n}
-                        className="w-5 h-5 rounded-md bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-[10px] font-black text-amber-600 shadow-sm"
+                        className="w-5 h-5 rounded-md bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-[10px] font-black text-blue-600 shadow-sm"
                       >
                         {n}
                       </span>
@@ -216,12 +216,12 @@ const FengShuiChat = ({ setGlobalBirthYear }) => {
                       <div
                         className={`p-4 rounded-3xl text-sm shadow-sm leading-relaxed ${
                           msg.sender === "user"
-                            ? "bg-amber-600 text-white rounded-tr-none font-bold"
+                            ? "bg-blue-600 text-white rounded-tr-none font-bold"
                             : "bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 text-slate-700 dark:text-slate-200 rounded-tl-none font-medium"
                         }`}
                       >
                         {msg.type === "loading" ? (
-                          <div className="flex items-center gap-3 font-black uppercase text-[10px] tracking-widest text-amber-600">
+                          <div className="flex items-center gap-3 font-black uppercase text-[10px] tracking-widest text-blue-600">
                             <FaSpinner className="animate-spin" />
                             {msg.text}
                           </div>
@@ -235,7 +235,7 @@ const FengShuiChat = ({ setGlobalBirthYear }) => {
                         <div className="overflow-hidden rounded-3xl border border-slate-100 dark:border-slate-700 shadow-xl shadow-slate-200/50 dark:shadow-none">
                           <div
                             className="h-2"
-                            style={{ background: msg.fsInfo.gradient }}
+                            style={{ background: msg.fsInfo.gradient || "linear-gradient(to right, #3b82f6, #2563eb)" }}
                           />
                           <div className="p-4 bg-white dark:bg-slate-800 space-y-4">
                             <div className="flex justify-between items-end">
@@ -251,7 +251,7 @@ const FengShuiChat = ({ setGlobalBirthYear }) => {
                                 <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">
                                   Cung Phi
                                 </p>
-                                <p className="text-sm font-black text-amber-600">
+                                <p className="text-sm font-black text-blue-600">
                                   {msg.fsInfo.cungPhi}
                                 </p>
                               </div>
@@ -282,14 +282,14 @@ const FengShuiChat = ({ setGlobalBirthYear }) => {
                       {msg.recommendedProducts &&
                         msg.recommendedProducts.length > 0 && (
                           <div className="grid gap-3">
-                            <p className="text-[10px] font-black text-amber-600 dark:text-amber-500 uppercase tracking-[0.2em] ml-2">
+                            <p className="text-[10px] font-black text-blue-600 dark:text-blue-500 uppercase tracking-[0.2em] ml-2">
                               Sản phẩm linh ứng:
                             </p>
                             {msg.recommendedProducts.map((prod) => (
                               <a
                                 key={prod.id}
-                                href={`/product/${prod.id}`}
-                                className="flex items-center gap-4 p-3 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 hover:border-amber-400 dark:hover:border-amber-600 transition-all group shadow-sm"
+                                href={`/product-detail/${prod.slug || prod.id}`}
+                                className="flex items-center gap-4 p-3 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 hover:border-blue-400 dark:hover:border-blue-600 transition-all group shadow-sm"
                               >
                                 <div className="w-14 h-14 rounded-xl bg-slate-50 dark:bg-slate-900 overflow-hidden flex-shrink-0 border border-slate-100 dark:border-slate-700 group-hover:scale-105 transition-transform">
                                   <img
@@ -303,7 +303,7 @@ const FengShuiChat = ({ setGlobalBirthYear }) => {
                                     {prod.name}
                                   </h5>
                                   <div className="flex items-center gap-2 mt-1">
-                                    <span className="text-[13px] font-black text-amber-600">
+                                    <span className="text-[13px] font-black text-blue-600">
                                       {prod.price?.toLocaleString()}đ
                                     </span>
                                     {prod.discount > 0 && (
@@ -338,7 +338,7 @@ const FengShuiChat = ({ setGlobalBirthYear }) => {
                       <button
                         key={i}
                         onClick={() => processStep(item)}
-                        className="px-5 py-2 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-900/30 text-xs font-black uppercase tracking-widest text-amber-700 dark:text-amber-500 hover:bg-amber-600 hover:text-white dark:hover:bg-amber-600 dark:hover:text-white transition-all active:scale-95"
+                        className="px-5 py-2 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-900/30 text-xs font-black uppercase tracking-widest text-blue-700 dark:text-blue-500 hover:bg-blue-600 hover:text-white dark:hover:bg-blue-600 dark:hover:text-white transition-all active:scale-95"
                       >
                         {item}
                       </button>
@@ -356,7 +356,7 @@ const FengShuiChat = ({ setGlobalBirthYear }) => {
                         ? "Nhập năm sinh (VD: 1998)..."
                         : "Nhập câu trả lời..."
                     }
-                    className="w-full bg-slate-50 dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-2xl px-5 py-4 text-sm font-bold text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-amber-500 transition-all pr-14"
+                    className="w-full bg-slate-50 dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-2xl px-5 py-4 text-sm font-bold text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-blue-500 transition-all pr-14"
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && handleSend()}
@@ -365,13 +365,13 @@ const FengShuiChat = ({ setGlobalBirthYear }) => {
                   <button
                     onClick={handleSend}
                     disabled={loading || !input.trim()}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center bg-amber-600 text-white rounded-xl shadow-lg shadow-amber-900/20 hover:bg-amber-700 active:scale-95 disabled:opacity-50 transition-all"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center bg-blue-600 text-white rounded-xl shadow-lg shadow-blue-900/20 hover:bg-blue-700 active:scale-95 disabled:opacity-50 transition-all"
                   >
                     <FiSend size={18} />
                   </button>
                 </div>
                 <p className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase text-center mt-4 tracking-widest opacity-60">
-                  Powered by TienTech AI Engine v5.0 Spiritual Edition
+                  Powered by TienTech AI Engine Spiritual Edition
                 </p>
               </div>
             </Motion.div>

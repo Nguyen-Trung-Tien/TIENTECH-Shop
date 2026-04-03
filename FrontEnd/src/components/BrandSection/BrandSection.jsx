@@ -3,9 +3,8 @@ import { getAllBrandApi } from "../../api/brandApi";
 import { useNavigate } from "react-router-dom";
 import { motion as Motion } from "framer-motion";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Autoplay, Pagination } from "swiper/modules";
+import { Autoplay } from "swiper/modules";
 import "swiper/css";
-import "swiper/css/pagination";
 
 const BrandSection = () => {
   const [brands, setBrands] = useState([]);
@@ -15,8 +14,7 @@ const BrandSection = () => {
   useEffect(() => {
     const fetchBrands = async () => {
       try {
-        const res = await getAllBrandApi(1, 15, ""); // Lấy 15 thương hiệu nổi bật
-
+        const res = await getAllBrandApi(1, 15, ""); 
         if (res?.errCode === 0 && Array.isArray(res.brands)) {
           setBrands(res.brands);
         } else {
@@ -28,48 +26,42 @@ const BrandSection = () => {
         setLoading(false);
       }
     };
-
     fetchBrands();
   }, []);
 
-  if (loading)
-    return (
-      <div className="flex items-center justify-center py-12">
-        <div className="w-8 h-8 border-4 border-indigo-100 border-t-indigo-600 rounded-full animate-spin"></div>
-      </div>
-    );
+  if (loading) return null;
 
   return (
-    <div className="container-custom my-12">
+    <div className="container-custom py-4">
       <Swiper
-        modules={[Autoplay, Pagination]}
-        spaceBetween={20}
-        slidesPerView={2}
+        modules={[Autoplay]}
+        spaceBetween={10}
+        slidesPerView={4}
         autoplay={{
-          delay: 3000,
+          delay: 2500,
           disableOnInteraction: false,
         }}
         breakpoints={{
-          640: { slidesPerView: 3 },
-          768: { slidesPerView: 4 },
-          1024: { slidesPerView: 6 },
+          640: { slidesPerView: 5 },
+          768: { slidesPerView: 7 },
+          1024: { slidesPerView: 10 },
         }}
-        className="pb-10"
+        className="flex items-center"
       >
         {brands.map((brand, index) => (
           <SwiperSlide key={brand.id}>
             <Motion.div
-              initial={{ opacity: 0, y: 10 }}
-              whileInView={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
-              transition={{ delay: index * 0.05 }}
-              className="group cursor-pointer bg-white rounded-2xl border border-slate-100 hover:border-indigo-200 hover:shadow-xl hover:shadow-indigo-500/5 transition-all duration-500 flex items-center justify-center h-[60px] mx-auto overflow-hidden p-3"
+              transition={{ delay: index * 0.02 }}
+              className="group cursor-pointer bg-white dark:bg-gray-900 border border-slate-100 dark:border-gray-800 shadow-sm rounded-xl transition-all duration-300 flex items-center justify-center h-[36px] px-2 hover:shadow-md hover:border-blue-500/30"
               onClick={() => navigate(`/brand/${brand.slug}`)}
             >
               <img
                 src={brand.image}
                 alt={brand.name}
-                className="max-w-full max-h-full object-contain grayscale group-hover:grayscale-0 transition-all duration-500 opacity-60 group-hover:opacity-100 group-hover:scale-110"
+                className="max-w-full max-h-[20px] object-contain transition-transform duration-300 opacity-100 group-hover:scale-110"
               />
             </Motion.div>
           </SwiperSlide>

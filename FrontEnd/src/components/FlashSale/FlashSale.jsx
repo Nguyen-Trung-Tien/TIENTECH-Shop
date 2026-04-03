@@ -63,7 +63,6 @@ const FlashSale = () => {
         setIsUpcoming(!hasActive && Boolean(res.nextFlashSaleStart));
 
         if (hasActive) {
-          // Nếu đang có flash sale, tính thời gian đến lúc kết thúc (lấy từ sản phẩm đầu tiên)
           const firstProduct = res.products[0];
           const diffSec = Math.max(
             0,
@@ -115,12 +114,12 @@ const FlashSale = () => {
   };
 
   return (
-    <section className="py-16 bg-white dark:bg-dark-bg border-y border-slate-100 dark:border-dark-border">
+    <section className="py-4 md:py-6 bg-white dark:bg-black border-y border-slate-100 dark:border-gray-800 transition-colors duration-300">
       <div className="container-custom">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
           <div className="flex items-center gap-4">
-            <div className="w-10 h-10 bg-brand rounded-xl flex items-center justify-center text-white shadow-lg shadow-brand/20 animate-pulse">
+            <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-500/20 animate-pulse">
               <FiZap className="text-xl fill-current" />
             </div>
             <div>
@@ -138,15 +137,15 @@ const FlashSale = () => {
           </div>
 
           {(products.length > 0 || isUpcoming) && (
-            <div className="flex items-center gap-4 bg-slate-50 dark:bg-dark-surface p-2 pr-4 rounded-2xl border border-slate-100 dark:border-dark-border">
+            <div className="flex items-center gap-4 bg-slate-50 dark:bg-gray-900 p-2 pr-4 rounded-2xl border border-slate-100 dark:border-gray-800">
               <div className="flex gap-1.5">
                 {[h, m, s].map((unit, idx) => (
                   <React.Fragment key={idx}>
-                    <div className="w-10 h-10 bg-slate-900 dark:bg-brand rounded-lg flex items-center justify-center text-white font-black text-lg">
+                    <div className="w-10 h-10 bg-slate-900 dark:bg-blue-600 rounded-lg flex items-center justify-center text-white font-black text-lg shadow-sm">
                       {unit}
                     </div>
                     {idx < 2 && (
-                      <span className="text-xl font-black text-slate-300 dark:text-slate-700 self-center">
+                      <span className="text-xl font-black text-slate-300 dark:text-gray-700 self-center">
                         :
                       </span>
                     )}
@@ -166,14 +165,14 @@ const FlashSale = () => {
 
         {/* Product Grid */}
         {loading && !loadingMore ? (
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 md:gap-4">
             {Array.from({ length: 6 }).map((_, idx) => (
               <SkeletonCard key={idx} />
             ))}
           </div>
         ) : products.length > 0 ? (
-          <div className="space-y-10">
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+          <div className="space-y-8">
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 md:gap-4">
               {products.map((product, index) => (
                 <Motion.div
                   key={product.id}
@@ -188,7 +187,7 @@ const FlashSale = () => {
             </div>
 
             {currentPage < totalPages && (
-              <div className="flex justify-center">
+              <div className="flex justify-center pt-2">
                 <LoadMoreButton
                   page={currentPage}
                   totalPages={totalPages}
@@ -199,32 +198,32 @@ const FlashSale = () => {
             )}
           </div>
         ) : upcomingProducts.length > 0 ? (
-          <div className="space-y-5">
-            <div className="py-8 px-6 bg-yellow-50 border border-yellow-100 rounded-2xl text-center">
-              <FiClock className="mx-auto text-2xl text-yellow-600 mb-2" />
-              <h3 className="text-lg font-bold text-yellow-800">
+          <div className="space-y-6">
+            <div className="py-6 px-6 bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/20 rounded-2xl text-center">
+              <FiClock className="mx-auto text-2xl text-blue-600 mb-2" />
+              <h3 className="text-lg font-bold text-blue-800 dark:text-blue-400">
                 Flash Sale sẽ bắt đầu sớm
               </h3>
-              <p className="text-sm text-yellow-600">
+              <p className="text-sm text-blue-600/70 dark:text-blue-400/70">
                 {nextFlashSaleStart
                   ? `Bắt đầu lúc ${new Date(nextFlashSaleStart).toLocaleString()}`
                   : "Flash Sale sắp diễn ra."}
               </p>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-5">
               {upcomingProducts.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
             </div>
           </div>
         ) : (
-          <div className="py-16 bg-slate-50 dark:bg-dark-surface rounded-2xl flex flex-col items-center justify-center text-center px-6 border-2 border-dashed border-slate-200 dark:border-dark-border">
-            <FiZap className="text-3xl text-slate-300 dark:text-slate-700 mb-4" />
+          <div className="py-12 bg-slate-50 dark:bg-gray-900/50 rounded-3xl flex flex-col items-center justify-center text-center px-6 border-2 border-dashed border-slate-200 dark:border-gray-800">
+            <FiZap className="text-3xl text-slate-300 dark:text-gray-700 mb-4" />
             <h3 className="text-lg font-bold text-slate-900 dark:text-white">
               Chưa có Flash Sale
             </h3>
-            <p className="text-slate-500 dark:text-slate-400 text-xs">
+            <p className="text-slate-500 dark:text-slate-400 text-xs uppercase tracking-widest font-bold">
               Hãy quay lại sau để săn những ưu đãi mới nhất.
             </p>
           </div>

@@ -33,37 +33,37 @@ const ProductSection = () => {
   }, []);
 
   return (
-    <section className="py-20 bg-slate-50">
+    <section className="py-6 md:py-8 bg-slate-50 dark:bg-gray-900/20 transition-colors duration-300">
       <div className="container-custom">
         {/* Section Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6">
           <div className="max-w-2xl">
             <Motion.div
-              initial={{ opacity: 0, x: -20 }}
+              initial={{ opacity: 0, x: -15 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
-              className="flex items-center gap-2 text-primary font-bold text-xs uppercase tracking-[0.2em] mb-3"
+              className="flex items-center gap-2 text-blue-600 dark:text-blue-400 font-bold text-[10px] uppercase tracking-[0.2em] mb-3"
             >
-              <span className="w-8 h-[2px] bg-primary"></span>
+              <span className="w-6 h-[2px] bg-blue-600 shadow-lg shadow-blue-500/20"></span>
               Sản phẩm đề xuất
             </Motion.div>
             <Motion.h2
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 15 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="text-3xl md:text-4xl font-black text-slate-900 leading-tight"
+              className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white leading-tight uppercase tracking-tight"
             >
-              ✨ SẢN PHẨM NỔI BẬT ✨
+              ✨ Sản phẩm nổi bật ✨
             </Motion.h2>
           </div>
           <Motion.button
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
-            onClick={() => navigate("/product-list")}
-            className="text-sm font-bold text-primary hover:text-primary-hover transition-colors flex items-center gap-2 group"
+            onClick={() => navigate("/products")}
+            className="text-xs font-black text-blue-600 hover:text-blue-700 transition-colors flex items-center gap-2 group uppercase tracking-widest"
           >
-            Xem tất cả sản phẩm
+            Xem tất cả
             <span className="group-hover:translate-x-1 transition-transform">
               →
             </span>
@@ -71,30 +71,30 @@ const ProductSection = () => {
         </div>
 
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 md:gap-4">
             {Array.from({ length: 6 }).map((_, idx) => (
               <SkeletonCard key={idx} />
             ))}
           </div>
         ) : products.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 md:gap-4">
             {products.map((product, index) => (
               <Motion.div
                 key={product.id}
-                initial={{ opacity: 0, y: 30 }}
+                initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
+                transition={{ delay: index * 0.05 }}
               >
                 <ProductCard product={product} />
               </Motion.div>
             ))}
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center py-20 bg-white rounded-[32px] border border-dashed border-slate-200">
-            <div className="w-16 h-16 bg-slate-50 text-slate-300 rounded-full flex items-center justify-center mb-4">
+          <div className="flex flex-col items-center justify-center py-16 bg-white dark:bg-gray-900 rounded-[2.5rem] border border-dashed border-slate-200 dark:border-gray-800">
+            <div className="w-14 h-14 bg-slate-50 dark:bg-gray-800 text-slate-300 dark:text-gray-700 rounded-full flex items-center justify-center mb-4 shadow-inner">
               <svg
-                className="w-8 h-8"
+                className="w-7 h-7"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -103,11 +103,11 @@ const ProductSection = () => {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   strokeWidth={2}
-                  d="box"
+                  d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
                 />
               </svg>
             </div>
-            <p className="text-slate-500 font-medium">
+            <p className="text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest text-[10px]">
               Hiện tại chưa có sản phẩm nổi bật nào!
             </p>
           </div>

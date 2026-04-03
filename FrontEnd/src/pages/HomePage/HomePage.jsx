@@ -9,7 +9,6 @@ import SmallBanner from "../../components/SmallBanner/SmallBanner";
 import FlashSale from "../../components/FlashSale/FlashSale";
 import Testimonials from "../../components/Testimonials/Testimonials";
 import BlogSection from "../../components/BlogSection/BlogSection";
-import Newsletter from "../../components/Newsletter/Newsletter";
 import BrandSection from "../../components/BrandSection/BrandSection";
 
 const HomePage = () => {
@@ -31,53 +30,38 @@ const HomePage = () => {
   }, []);
 
   return (
-    <div className="bg-white">
+    <div className="bg-white dark:bg-black transition-colors duration-300">
       <ChatBot />
-
-      {/* Hero with full width */}
       <HeroSection />
 
-      <main className="space-y-0">
-        {/* Brand Logos - Subtle Divider */}
-        <div className="bg-slate-50 py-10 border-y border-slate-100">
-          <BrandSection />
-        </div>
+      <main>
+        {/* Sections are now stacked tightly */}
+        <BrandSection />
 
-        {/* Categories Section */}
         <CategorySection categories={categories} loading={loadingCategories} />
 
-        {/* Banner with high impact */}
-        <div className="container-custom py-8">
-          <div className="rounded-[40px] overflow-hidden shadow-2xl transition-transform hover:scale-[1.01] duration-500">
+        <div className="container-custom py-2">
+          <div className="rounded-[2rem] overflow-hidden shadow-md">
             <SmallBanner />
           </div>
         </div>
 
-        {/* Flash Sale - High Energy */}
         <FlashSale />
 
-        {/* Recommended Products */}
         <ProductSection
           categories={categories}
           loadingCategories={loadingCategories}
         />
 
-        {/* Main Product Feed */}
-        <div className="py-16 bg-white">
-          <AllProducts
-            categories={categories}
-            loadingCategories={loadingCategories}
-          />
-        </div>
+        <AllProducts
+          categories={categories}
+          loadingCategories={loadingCategories}
+        />
 
-        {/* Social Proof & Content */}
-        <div className="bg-slate-50 py-20 space-y-24">
+        <div className="bg-slate-50 dark:bg-gray-900/20 py-8 border-t border-slate-100 dark:border-gray-800 space-y-8">
           <Testimonials />
           <BlogSection />
         </div>
-
-        {/* Final CTA */}
-        <Newsletter />
       </main>
     </div>
   );

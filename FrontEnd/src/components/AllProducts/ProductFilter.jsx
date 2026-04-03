@@ -41,7 +41,6 @@ const ProductFilter = ({ filters, onFilterChange, onClearFilters }) => {
         else if (brandRes?.data) setBrands(brandRes.data);
 
         if (attrRes?.errCode === 0) {
-          // Chỉ hiển thị các thuộc tính quan trọng trên sidebar
           const importantCodes = ["ram", "rom", "os", "refresh_rate"];
           setAttributes(
             attrRes.data.filter((a) => importantCodes.includes(a.code)),
@@ -64,59 +63,46 @@ const ProductFilter = ({ filters, onFilterChange, onClearFilters }) => {
   const handleMultiSelect = (name, value) => {
     const currentValues = filters[name] ? filters[name].split(",") : [];
     const index = currentValues.indexOf(value);
-
     if (index > -1) {
       currentValues.splice(index, 1);
     } else {
       currentValues.push(value);
     }
-
     onFilterChange(name, currentValues.join(","));
   };
 
   const getAttrIcon = (code) => {
     switch (code) {
-      case "ram":
-        return <FiLayers className="text-indigo-500" />;
-      case "rom":
-        return <FiSmartphone className="text-blue-500" />;
-      case "os":
-        return <FiZap className="text-orange-500" />;
-      default:
-        return <FiFilter className="text-slate-400" />;
+      case "ram": return <FiLayers className="text-blue-500" />;
+      case "rom": return <FiSmartphone className="text-indigo-500" />;
+      case "os": return <FiZap className="text-orange-500" />;
+      default: return <FiFilter className="text-slate-400" />;
     }
   };
 
   const FilterContent = () => (
     <div className="space-y-6">
       {/* Categories */}
-      <div className="border-b border-surface-200 pb-4">
+      <div className="border-b border-slate-100 dark:border-gray-800 pb-4">
         <button
           onClick={() => toggleSection("categories")}
-          className="flex items-center justify-between w-full font-bold text-surface-900 mb-2 hover:text-primary transition-colors"
+          className="flex items-center justify-between w-full font-black text-slate-900 dark:text-white mb-2 hover:text-blue-600 transition-colors uppercase tracking-widest text-[10px]"
         >
-          <span className="text-xs uppercase tracking-widest">Danh mục</span>
+          <span>Danh mục</span>
           {expandedSections.categories ? <FiChevronUp /> : <FiChevronDown />}
         </button>
         {expandedSections.categories && (
           <div className="space-y-2 mt-3 max-h-48 overflow-y-auto custom-scrollbar pr-2">
             {categories.map((cat) => (
-              <label
-                key={cat.id}
-                className="flex items-center gap-3 cursor-pointer group"
-              >
+              <label key={cat.id} className="flex items-center gap-3 cursor-pointer group">
                 <input
                   type="radio"
                   name="categoryId"
                   checked={filters.categoryId === cat.id.toString()}
-                  onChange={() =>
-                    onFilterChange("categoryId", cat.id.toString())
-                  }
-                  className="w-4 h-4 text-primary border-surface-300 focus:ring-primary/20"
+                  onChange={() => onFilterChange("categoryId", cat.id.toString())}
+                  className="w-4 h-4 text-blue-600 border-slate-300 dark:border-gray-700 bg-transparent focus:ring-blue-500/20"
                 />
-                <span
-                  className={`text-sm transition-colors ${filters.categoryId === cat.id.toString() ? "text-primary font-bold" : "text-surface-600 group-hover:text-primary"}`}
-                >
+                <span className={`text-xs font-bold uppercase tracking-wide transition-colors ${filters.categoryId === cat.id.toString() ? "text-blue-600 font-black" : "text-slate-500 dark:text-slate-400 group-hover:text-blue-600"}`}>
                   {cat.name}
                 </span>
               </label>
@@ -126,12 +112,12 @@ const ProductFilter = ({ filters, onFilterChange, onClearFilters }) => {
       </div>
 
       {/* Brands */}
-      <div className="border-b border-surface-200 pb-4">
+      <div className="border-b border-slate-100 dark:border-gray-800 pb-4">
         <button
           onClick={() => toggleSection("brands")}
-          className="flex items-center justify-between w-full font-bold text-surface-900 mb-2 hover:text-primary transition-colors"
+          className="flex items-center justify-between w-full font-black text-slate-900 dark:text-white mb-2 hover:text-blue-600 transition-colors uppercase tracking-widest text-[10px]"
         >
-          <span className="text-xs uppercase tracking-widest">Thương hiệu</span>
+          <span>Thương hiệu</span>
           {expandedSections.brands ? <FiChevronUp /> : <FiChevronDown />}
         </button>
         {expandedSections.brands && (
@@ -139,18 +125,11 @@ const ProductFilter = ({ filters, onFilterChange, onClearFilters }) => {
             {brands.map((brand) => (
               <button
                 key={brand.id}
-                onClick={() =>
-                  onFilterChange(
-                    "brandId",
-                    filters.brandId === brand.id.toString()
-                      ? ""
-                      : brand.id.toString(),
-                  )
-                }
-                className={`px-2 py-2 rounded-xl border text-[10px] font-black uppercase tracking-tighter transition-all ${
+                onClick={() => onFilterChange("brandId", filters.brandId === brand.id.toString() ? "" : brand.id.toString())}
+                className={`px-2 py-2 rounded-xl border text-[9px] font-black uppercase tracking-tighter transition-all ${
                   filters.brandId === brand.id.toString()
-                    ? "bg-primary border-primary text-white shadow-md shadow-primary/20"
-                    : "bg-surface-50 border-surface-100 text-surface-600 hover:border-primary/30"
+                    ? "bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-500/20"
+                    : "bg-slate-50 dark:bg-gray-800 border-transparent text-slate-600 dark:text-slate-400 hover:border-blue-500/30"
                 }`}
               >
                 {brand.name}
@@ -160,14 +139,14 @@ const ProductFilter = ({ filters, onFilterChange, onClearFilters }) => {
         )}
       </div>
 
-      {/* Dynamic Attributes (RAM, ROM, OS...) */}
+      {/* Attributes */}
       {attributes.map((attr) => (
-        <div key={attr.id} className="border-b border-surface-200 pb-4">
+        <div key={attr.id} className="border-b border-slate-100 dark:border-gray-800 pb-4">
           <button
             onClick={() => toggleSection(attr.code)}
-            className="flex items-center justify-between w-full font-bold text-surface-900 mb-2 hover:text-primary transition-colors"
+            className="flex items-center justify-between w-full font-black text-slate-900 dark:text-white mb-2 hover:text-blue-600 transition-colors uppercase tracking-widest text-[10px]"
           >
-            <span className="flex items-center gap-2 text-xs uppercase tracking-widest">
+            <span className="flex items-center gap-2">
               {getAttrIcon(attr.code)}
               {attr.name}
             </span>
@@ -179,10 +158,10 @@ const ProductFilter = ({ filters, onFilterChange, onClearFilters }) => {
                 <button
                   key={v.id}
                   onClick={() => handleMultiSelect(attr.code, v.value)}
-                  className={`px-3 py-1.5 rounded-lg border text-[10px] font-bold transition-all ${
+                  className={`px-3 py-1.5 rounded-lg border text-[9px] font-black uppercase tracking-widest transition-all ${
                     filters[attr.code]?.split(",").includes(v.value)
-                      ? "bg-indigo-600 border-indigo-600 text-white shadow-md shadow-indigo-100"
-                      : "bg-white border-surface-200 text-surface-600 hover:border-indigo-300"
+                      ? "bg-blue-600 border-blue-600 text-white shadow-md shadow-blue-100"
+                      : "bg-white dark:bg-gray-800 border-slate-200 dark:border-gray-700 text-slate-600 dark:text-slate-400 hover:border-blue-500"
                   }`}
                 >
                   {v.value}
@@ -194,97 +173,70 @@ const ProductFilter = ({ filters, onFilterChange, onClearFilters }) => {
       ))}
 
       {/* Price Range */}
-      <div className="border-b border-surface-200 pb-4">
+      <div className="border-b border-slate-100 dark:border-gray-800 pb-4">
         <button
           onClick={() => toggleSection("price")}
-          className="flex items-center justify-between w-full font-bold text-surface-900 mb-2 hover:text-primary transition-colors"
+          className="flex items-center justify-between w-full font-black text-slate-900 dark:text-white mb-2 hover:text-blue-600 transition-colors uppercase tracking-widest text-[10px]"
         >
-          <span className="text-xs uppercase tracking-widest">Khoảng giá</span>
+          <span>Khoảng giá</span>
           {expandedSections.price ? <FiChevronUp /> : <FiChevronDown />}
         </button>
         {expandedSections.price && (
-          <div className="space-y-4 mt-3 pr-2">
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <label className="text-[9px] font-black uppercase tracking-widest text-surface-400 mb-1 block">
-                  Từ
-                </label>
-                <input
-                  type="number"
-                  value={filters.minPrice}
-                  onChange={(e) => onFilterChange("minPrice", e.target.value)}
-                  placeholder="0"
-                  className="w-full px-3 py-2 bg-surface-50 border border-surface-100 rounded-xl text-xs font-bold focus:ring-2 focus:ring-primary/10 outline-none transition-all"
-                />
-              </div>
-              <div>
-                <label className="text-[9px] font-black uppercase tracking-widest text-surface-400 mb-1 block">
-                  Đến
-                </label>
-                <input
-                  type="number"
-                  value={filters.maxPrice}
-                  onChange={(e) => onFilterChange("maxPrice", e.target.value)}
-                  placeholder="Max"
-                  className="w-full px-3 py-2 bg-surface-50 border border-surface-100 rounded-xl text-xs font-bold focus:ring-2 focus:ring-primary/10 outline-none transition-all"
-                />
-              </div>
-            </div>
+          <div className="grid grid-cols-2 gap-2 mt-3">
+            <input
+              type="number"
+              value={filters.minPrice}
+              onChange={(e) => onFilterChange("minPrice", e.target.value)}
+              placeholder="0₫"
+              className="w-full px-3 py-2 bg-slate-50 dark:bg-gray-800 border border-transparent dark:border-gray-700 rounded-xl text-[10px] font-black outline-none focus:border-blue-500 transition-all text-slate-900 dark:text-white"
+            />
+            <input
+              type="number"
+              value={filters.maxPrice}
+              onChange={(e) => onFilterChange("maxPrice", e.target.value)}
+              placeholder="Max₫"
+              className="w-full px-3 py-2 bg-slate-50 dark:bg-gray-800 border border-transparent dark:border-gray-700 rounded-xl text-[10px] font-black outline-none focus:border-blue-500 transition-all text-slate-900 dark:text-white"
+            />
           </div>
         )}
       </div>
 
-      {/* Clear Filters */}
       <button
         onClick={onClearFilters}
-        className="w-full py-3 bg-rose-50 text-rose-500 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-rose-100 transition-all flex items-center justify-center gap-2 border border-rose-100"
+        className="w-full py-3 bg-rose-50 dark:bg-rose-900/10 text-rose-500 rounded-2xl text-[9px] font-black uppercase tracking-[0.2em] hover:bg-rose-100 transition-all flex items-center justify-center gap-2 border border-rose-100 dark:border-rose-900/20"
       >
-        <FiX /> Xóa tất cả bộ lọc
+        <FiX /> Xóa bộ lọc
       </button>
     </div>
   );
 
   return (
     <>
-      {/* Desktop Filter Sidebar */}
-      <div className="hidden lg:block w-72 flex-shrink-0 bg-white p-8 rounded-[2.5rem] border border-surface-100 shadow-soft h-fit sticky top-24">
-        <div className="flex items-center gap-3 mb-8 text-primary border-b border-surface-50 pb-5">
-          <div className="w-10 h-10 bg-primary/10 rounded-2xl flex items-center justify-center text-primary shadow-sm">
+      <div className="hidden lg:block w-full flex-shrink-0 bg-white dark:bg-black p-8 rounded-[2.5rem] border border-slate-100 dark:border-gray-900 shadow-sm h-fit sticky top-24">
+        <div className="flex items-center gap-3 mb-8 border-b border-slate-50 dark:border-gray-900 pb-5">
+          <div className="w-10 h-10 bg-blue-50 dark:bg-blue-900/20 rounded-2xl flex items-center justify-center text-blue-600 shadow-sm">
             <FiFilter className="text-xl" />
           </div>
-          <h3 className="font-black text-lg text-surface-900 tracking-tight uppercase">
-            Bộ lọc
-          </h3>
+          <h3 className="font-black text-lg text-slate-900 dark:text-white tracking-tight uppercase">Bộ lọc</h3>
         </div>
-        <div className="max-h-[75vh] overflow-y-auto pr-2 custom-scrollbar">
-          <FilterContent />
-        </div>
+        <FilterContent />
       </div>
 
-      {/* Mobile Filter Button & Modal */}
       <div className="lg:hidden mb-6">
         <button
           onClick={() => setIsMobileOpen(true)}
-          className="w-full h-14 flex items-center justify-center gap-3 bg-white border border-surface-200 rounded-[1.5rem] font-black text-[11px] uppercase tracking-widest text-surface-900 shadow-sm active:scale-95 transition-all"
+          className="w-full h-14 flex items-center justify-center gap-3 bg-white dark:bg-gray-900 border border-slate-200 dark:border-gray-800 rounded-[1.5rem] font-black text-[11px] uppercase tracking-widest text-slate-900 dark:text-white shadow-sm transition-all"
         >
-          <FiFilter className="text-lg text-primary" /> Lọc sản phẩm
+          <FiFilter className="text-lg text-blue-600" /> Lọc sản phẩm
         </button>
 
         {isMobileOpen && (
           <div className="fixed inset-0 z-[1000] lg:hidden">
-            <div
-              className="absolute inset-0 bg-slate-900/60 backdrop-blur-md"
-              onClick={() => setIsMobileOpen(false)}
-            />
-            <div className="absolute right-0 top-0 bottom-0 w-80 bg-white p-8 shadow-2xl flex flex-col rounded-l-[3rem]">
-              <div className="flex items-center justify-between mb-8 pb-5 border-b border-slate-50">
-                <h3 className="font-black text-xl text-slate-900 tracking-tight uppercase">
-                  Bộ lọc
-                </h3>
-                <button
-                  onClick={() => setIsMobileOpen(false)}
-                  className="w-10 h-10 bg-slate-50 text-slate-400 hover:text-rose-500 rounded-xl flex items-center justify-center transition-all"
-                >
+            <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" onClick={() => setIsMobileOpen(false)} />
+            <div className="absolute right-0 top-0 bottom-0 w-80 bg-white dark:bg-black p-8 shadow-2xl flex flex-col rounded-l-[3rem] border-l border-gray-800">
+              <div className="flex items-center justify-between mb-8 pb-5 border-b border-slate-50 dark:border-gray-900">
+                <h3 className="font-black text-xl text-slate-900 dark:text-white tracking-tight uppercase">Bộ lọc</h3>
+                <button onClick={() => setIsMobileOpen(false)} className="w-10 h-10 bg-slate-50 dark:bg-gray-900 text-slate-400 rounded-xl flex items-center justify-center transition-all">
                   <FiX className="text-xl" />
                 </button>
               </div>
