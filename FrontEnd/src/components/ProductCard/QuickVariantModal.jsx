@@ -65,12 +65,12 @@ const QuickVariantModal = ({ product, isOpen, onClose, onAdd, onBuyNow }) => {
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          className="relative w-full max-w-lg bg-white dark:bg-dark-card rounded-3xl shadow-2xl overflow-hidden border border-slate-100 dark:border-dark-border"
+          className="relative w-full max-w-lg bg-white dark:bg-dark-surface rounded-3xl shadow-2xl overflow-hidden border border-slate-100 dark:border-dark-border transition-colors duration-300"
         >
           {/* Close Button */}
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 p-2 rounded-full bg-slate-100 dark:bg-dark-bg text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all z-10"
+            className="absolute top-4 right-4 p-2 rounded-full bg-slate-100 dark:bg-dark-bg text-slate-500 dark:text-dark-text-secondary hover:bg-slate-200 dark:hover:bg-slate-700 transition-all z-10"
           >
             <FiX size={20} />
           </button>
@@ -93,7 +93,7 @@ const QuickVariantModal = ({ product, isOpen, onClose, onAdd, onBuyNow }) => {
                     {Number(currentPrice).toLocaleString("vi-VN")} ₫
                   </span>
                   {Number(originalPrice) > Number(currentPrice) && (
-                    <span className="text-xs text-slate-400 dark:text-slate-500 line-through">
+                    <span className="text-xs text-slate-400 dark:text-dark-text-secondary line-through">
                       {Number(originalPrice).toLocaleString("vi-VN")} ₫
                     </span>
                   )}
@@ -105,7 +105,7 @@ const QuickVariantModal = ({ product, isOpen, onClose, onAdd, onBuyNow }) => {
             <div className="space-y-6 max-h-[40vh] overflow-y-auto pr-2 custom-scrollbar">
               {Object.entries(allAttributes).map(([attrName, values]) => (
                 <div key={attrName} className="space-y-3">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary">
                     Chọn {attrName}
                   </label>
                   <div className="flex flex-wrap gap-2">
@@ -124,8 +124,8 @@ const QuickVariantModal = ({ product, isOpen, onClose, onAdd, onBuyNow }) => {
                             isSelected
                               ? "bg-slate-900 dark:bg-primary border-slate-900 dark:border-primary text-white shadow-lg shadow-slate-200 dark:shadow-none"
                               : isAvailable
-                                ? "bg-white dark:bg-dark-bg border-slate-100 dark:border-dark-border hover:border-slate-300 dark:hover:border-slate-600 text-slate-600 dark:text-slate-300"
-                                : "bg-slate-50 dark:bg-dark-bg border-slate-50 dark:border-dark-border text-slate-300 dark:text-slate-600 cursor-not-allowed opacity-60"
+                                ? "bg-white dark:bg-dark-bg border-slate-100 dark:border-dark-border hover:border-slate-300 dark:hover:border-slate-600 text-slate-600 dark:text-dark-text-primary"
+                                : "bg-slate-50 dark:bg-dark-bg border-slate-50 dark:border-dark-border text-slate-300 dark:text-dark-text-secondary/40 cursor-not-allowed opacity-60"
                           }`}
                         >
                           {val}
@@ -143,7 +143,7 @@ const QuickVariantModal = ({ product, isOpen, onClose, onAdd, onBuyNow }) => {
               <div className="flex gap-3">
                 <Button
                   variant="outline"
-                  className="flex-1 h-14 rounded-2xl font-black text-xs tracking-widest border-2"
+                  className="flex-1 h-14 rounded-2xl font-black text-xs tracking-widest border-2 dark:border-dark-border dark:text-dark-text-primary dark:hover:bg-dark-bg"
                   disabled={product.variants?.length > 0 && !selectedVariant}
                   onClick={() => onAdd(selectedVariant?.id || product.id)}
                   icon={FiShoppingCart}

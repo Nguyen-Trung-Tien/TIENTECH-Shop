@@ -4,12 +4,12 @@ const SpecItem = ({ label, value }) => {
   if (!value) return null;
   return (
     <div>
-      <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1.5 ml-0.5">
+      <p className="text-[10px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest mb-2 ml-1">
         {label}
       </p>
-      <p className="text-sm font-bold text-slate-800 dark:text-slate-200 bg-slate-50 dark:bg-dark-surface px-3 py-2 rounded-xl border border-slate-100 dark:border-dark-border">
+      <div className="text-sm font-bold text-slate-800 dark:text-white bg-slate-50 dark:bg-dark-bg/50 px-4 py-3 rounded-2xl border border-slate-100 dark:border-dark-border shadow-inner transition-colors">
         {value}
-      </p>
+      </div>
     </div>
   );
 };
@@ -29,7 +29,7 @@ const ProductSpecs = ({ product }) => {
   if (specs.every(s => !s.value)) return null;
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 gap-6 pt-8 border-t border-slate-100">
+    <div className="grid grid-cols-2 md:grid-cols-3 gap-6 pt-10 border-t border-slate-100 dark:border-dark-border transition-colors">
       {specs.map((spec) => (
         <SpecItem key={spec.label} label={spec.label} value={spec.value} />
       ))}

@@ -244,12 +244,12 @@ const ProductDetailPage = () => {
 
   if (!product)
     return (
-      <div className="text-center mt-20 text-gray-500 font-medium p-8 border border-gray-100 rounded-2xl bg-gray-50 max-w-md mx-auto shadow-sm">
-        <FiInfo className="mx-auto text-4xl mb-4 text-gray-300" />
+      <div className="text-center mt-20 text-gray-500 dark:text-dark-text-secondary font-medium p-8 border border-gray-100 dark:border-dark-border rounded-2xl bg-gray-50 dark:bg-dark-surface max-w-md mx-auto shadow-sm">
+        <FiInfo className="mx-auto text-4xl mb-4 text-gray-300 dark:text-gray-600" />
         <p>Sản phẩm không tồn tại hoặc đã bị ẩn!</p>
         <button
           onClick={() => navigate("/")}
-          className="mt-6 text-blue-600 hover:underline font-bold"
+          className="mt-6 text-blue-600 dark:text-brand hover:underline font-bold"
         >
           Quay lại trang chủ
         </button>
@@ -342,18 +342,24 @@ const ProductDetailPage = () => {
     : displayVariant?.discount || 0;
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-6 md:py-10 bg-white min-h-screen">
+    <div className="max-w-6xl mx-auto px-4 py-6 md:py-10 bg-white dark:bg-dark-bg min-h-screen transition-colors duration-300">
       {/* Breadcrumb */}
-      <nav className="flex items-center space-x-2 text-xs text-gray-400 mb-6 pb-2 border-b border-gray-50">
-        <a href="/" className="hover:text-blue-600 transition-colors">
+      <nav className="flex items-center space-x-2 text-xs text-gray-400 dark:text-dark-text-secondary mb-6 pb-2 border-b border-gray-50 dark:border-dark-border">
+        <a
+          href="/"
+          className="hover:text-blue-600 dark:hover:text-brand transition-colors"
+        >
           Trang chủ
         </a>
         <FiChevronRight className="w-3 h-3" />
-        <a href="/products" className="hover:text-blue-600 transition-colors">
+        <a
+          href="/products"
+          className="hover:text-blue-600 dark:hover:text-brand transition-colors"
+        >
           Sản phẩm
         </a>
         <FiChevronRight className="w-3 h-3" />
-        <span className="text-gray-700 font-medium truncate max-w-[200px] md:max-w-none">
+        <span className="text-gray-700 dark:text-white font-medium truncate max-w-[200px] md:max-w-none">
           {product.name}
         </span>
       </nav>
@@ -361,11 +367,11 @@ const ProductDetailPage = () => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
         {/* LEFT: Image Gallery */}
         <div className="lg:col-span-5 space-y-4">
-          <div className="aspect-square rounded-2xl overflow-hidden bg-gray-50 border border-gray-100 flex items-center justify-center relative group">
+          <div className="aspect-square rounded-2xl overflow-hidden bg-gray-50 dark:bg-dark-surface border border-gray-100 dark:border-dark-border flex items-center justify-center relative group">
             <img
               src={mainImage || "/images/no-image.png"}
               alt={product.name}
-              className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105 p-4"
+              className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105 p-4 dark:mix-blend-normal"
             />
             {discountPercent > 0 && (
               <div className="absolute top-4 left-4 bg-red-500 text-white text-[11px] font-bold px-2 py-1 rounded-lg shadow-sm">
@@ -381,13 +387,13 @@ const ProductDetailPage = () => {
                 className={`flex-shrink-0 w-16 h-16 rounded-xl border-2 overflow-hidden transition-all ${
                   mainImage === img.imageUrl
                     ? "border-blue-500 scale-95 shadow-sm"
-                    : "border-transparent opacity-60 hover:opacity-100"
+                    : "border-transparent dark:border-dark-border opacity-60 hover:opacity-100"
                 }`}
               >
                 <img
                   src={img.imageUrl}
                   alt=""
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover dark:mix-blend-normal"
                 />
               </button>
             ))}
@@ -399,7 +405,7 @@ const ProductDetailPage = () => {
           <div className="space-y-3">
             <div className="flex items-center flex-wrap gap-2">
               {product.brand && (
-                <span className="bg-slate-100 text-slate-800 text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider">
+                <span className="bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider">
                   {product.brand.name}
                 </span>
               )}
@@ -409,41 +415,43 @@ const ProductDetailPage = () => {
                 </span>
               )}
             </div>
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 leading-tight tracking-tight">
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white leading-tight tracking-tight">
               {product.name}
             </h1>
             <div className="flex items-center space-x-4 text-sm">
-              <span className="text-gray-500">
+              <span className="text-gray-500 dark:text-dark-text-secondary">
                 Đã bán:{" "}
-                <span className="text-gray-900 font-semibold">
+                <span className="text-gray-900 dark:text-white font-semibold">
                   {product.sold}
                 </span>
               </span>
-              <span className="text-gray-200">|</span>
+              <span className="text-gray-200 dark:text-dark-border">|</span>
               <div className="flex items-center gap-1.5">
                 <div className="flex text-amber-400 tracking-tighter">
                   {ratingStars}
                 </div>
-                <span className="text-gray-900 font-bold">{averageRating}</span>
+                <span className="text-gray-900 dark:text-white font-bold">
+                  {averageRating}
+                </span>
               </div>
             </div>
           </div>
 
           {/* Flash Sale Countdown */}
           {isFlashSale && (
-            <div className="bg-gradient-to-r from-red-50 to-orange-50 border border-red-100 p-4 rounded-xl flex items-center justify-between">
-              <div className="flex items-center gap-2 text-red-600 font-bold text-sm uppercase">
+            <div className="bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-950/20 dark:to-orange-950/20 border border-red-100 dark:border-red-900/30 p-4 rounded-xl flex items-center justify-between">
+              <div className="flex items-center gap-2 text-red-600 dark:text-red-400 font-bold text-sm uppercase">
                 <FiClock className="text-lg" /> Kết thúc sau:
               </div>
               <div className="flex gap-1.5 font-bold text-sm">
                 <span className="bg-red-600 text-white w-8 h-8 rounded-lg flex items-center justify-center">
                   {h}
                 </span>
-                <span className="flex items-center">:</span>
+                <span className="flex items-center dark:text-white">:</span>
                 <span className="bg-red-600 text-white w-8 h-8 rounded-lg flex items-center justify-center">
                   {m}
                 </span>
-                <span className="flex items-center">:</span>
+                <span className="flex items-center dark:text-white">:</span>
                 <span className="bg-red-600 text-white w-8 h-8 rounded-lg flex items-center justify-center">
                   {s}
                 </span>
@@ -454,16 +462,16 @@ const ProductDetailPage = () => {
           {/* Price Section */}
           <div className="flex flex-col space-y-1">
             <div className="flex items-baseline gap-3">
-              <span className="text-3xl font-extrabold text-red-600">
+              <span className="text-3xl font-extrabold text-red-600 dark:text-red-500">
                 {Number(currentPrice).toLocaleString("vi-VN")}₫
               </span>
               {(isFlashSale || discountPercent > 0) && (
-                <span className="text-sm font-medium text-gray-400 line-through">
+                <span className="text-sm font-medium text-gray-400 dark:text-dark-text-secondary line-through">
                   {Number(originalPrice).toLocaleString("vi-VN")}₫
                 </span>
               )}
               {discountPercent > 0 && (
-                <span className="text-[11px] font-bold text-red-500 bg-red-50 px-2 py-0.5 rounded">
+                <span className="text-[11px] font-bold text-red-500 bg-red-50 dark:bg-red-950/30 px-2 py-0.5 rounded">
                   TIẾT KIỆM {discountPercent}%
                 </span>
               )}
@@ -472,7 +480,7 @@ const ProductDetailPage = () => {
               <div
                 className={`w-2 h-2 rounded-full ${(product.totalStock || product.stock) > 0 ? "bg-green-500" : "bg-red-500"}`}
               ></div>
-              <p className="text-xs text-gray-500 font-medium uppercase tracking-tight">
+              <p className="text-xs text-gray-500 dark:text-dark-text-secondary font-medium uppercase tracking-tight">
                 {(product.totalStock || product.stock) > 0
                   ? `Còn ${product.totalStock || product.stock} sản phẩm`
                   : "Hết hàng tạm thời"}
@@ -482,15 +490,15 @@ const ProductDetailPage = () => {
 
           {/* Variants Selection */}
           {Object.keys(allAttributes).length > 0 && (
-            <div className="space-y-5 py-4 border-y border-gray-50">
+            <div className="space-y-5 py-4 border-y border-gray-50 dark:border-dark-border">
               {Object.entries(allAttributes).map(([attrName, values]) => (
                 <div key={attrName} className="space-y-3">
                   <div className="flex justify-between items-center">
-                    <label className="text-[11px] font-bold uppercase tracking-wider text-gray-400">
+                    <label className="text-[11px] font-bold uppercase tracking-wider text-gray-400 dark:text-dark-text-secondary">
                       Chọn {attrName}
                     </label>
                     {selectedAttributes[attrName] && (
-                      <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md">
+                      <span className="text-[10px] font-bold text-blue-600 dark:text-brand bg-blue-50 dark:bg-brand/10 px-2 py-0.5 rounded-md">
                         Đã chọn: {selectedAttributes[attrName]}
                       </span>
                     )}
@@ -509,10 +517,10 @@ const ProductDetailPage = () => {
                           onClick={() => onSelectAttribute(attrName, val)}
                           className={`min-w-[60px] px-4 py-2 rounded-lg text-xs font-bold transition-all border-2 flex items-center justify-center gap-1.5 ${
                             isSelected
-                              ? "bg-blue-600 border-blue-600 text-white shadow-md shadow-blue-100"
+                              ? "bg-blue-600 border-blue-600 text-white shadow-md shadow-blue-100 dark:shadow-none"
                               : isAvailable
-                                ? "bg-white border-gray-200 hover:border-blue-300 hover:text-blue-600 text-gray-700"
-                                : "bg-gray-50 border-gray-100 text-gray-300 cursor-not-allowed opacity-60"
+                                ? "bg-white dark:bg-dark-surface border-gray-200 dark:border-dark-border hover:border-blue-300 dark:hover:border-brand hover:text-blue-600 dark:hover:text-brand text-gray-700 dark:text-dark-text-primary"
+                                : "bg-gray-50 dark:bg-dark-bg border-gray-100 dark:border-dark-border text-gray-300 dark:text-dark-text-secondary cursor-not-allowed opacity-60"
                           }`}
                         >
                           {val}
@@ -537,8 +545,8 @@ const ProductDetailPage = () => {
                 }
                 className={`flex-1 h-12 rounded-xl font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 border-2 ${
                   !selectedVariant && product.variants?.length > 0
-                    ? "bg-gray-50 text-gray-300 border-gray-100 cursor-not-allowed"
-                    : "bg-white border-slate-800 text-slate-800 hover:bg-slate-800 hover:text-white"
+                    ? "bg-gray-50 dark:bg-dark-bg text-gray-300 dark:text-dark-text-secondary border-gray-100 dark:border-dark-border cursor-not-allowed"
+                    : "bg-white dark:bg-dark-surface border-slate-800 dark:border-white text-slate-800 dark:text-white hover:bg-slate-800 dark:hover:bg-white hover:text-white dark:hover:text-slate-900"
                 }`}
               >
                 <FiShoppingCart className="text-lg" />
@@ -554,8 +562,8 @@ const ProductDetailPage = () => {
                 }
                 className={`flex-[1.5] h-12 rounded-xl font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-sm ${
                   !selectedVariant && product.variants?.length > 0
-                    ? "bg-gray-100 text-gray-300 cursor-not-allowed"
-                    : "bg-blue-600 text-white hover:bg-blue-700 active:scale-95 shadow-blue-100"
+                    ? "bg-gray-100 dark:bg-dark-bg text-gray-300 dark:text-dark-text-secondary cursor-not-allowed"
+                    : "bg-blue-600 dark:bg-brand text-white hover:bg-blue-700 dark:hover:bg-brand/80 active:scale-95 shadow-blue-100 dark:shadow-none"
                 }`}
               >
                 <FiCreditCard className="text-lg" />
@@ -567,8 +575,8 @@ const ProductDetailPage = () => {
                 disabled={loadingWishlist}
                 className={`w-12 h-12 rounded-xl border-2 flex items-center justify-center transition-all shadow-sm ${
                   isWishlisted
-                    ? "border-red-100 bg-red-50 text-red-500"
-                    : "border-gray-100 text-gray-400 hover:bg-gray-50 hover:text-red-500 hover:border-red-100"
+                    ? "border-red-100 dark:border-red-900/30 bg-red-50 dark:bg-red-900/20 text-red-500"
+                    : "border-gray-100 dark:border-dark-border text-gray-400 dark:text-dark-text-secondary hover:bg-gray-50 dark:hover:bg-dark-bg hover:text-red-500 hover:border-red-100 dark:hover:border-red-900/30"
                 }`}
               >
                 {isWishlisted ? (
@@ -582,14 +590,14 @@ const ProductDetailPage = () => {
             {/* AI Prediction Button */}
             <button
               onClick={() => setShowPrediction(true)}
-              className="w-full h-12 rounded-xl bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100 font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2"
+              className="w-full h-12 rounded-xl bg-slate-50 dark:bg-dark-surface text-slate-600 dark:text-dark-text-secondary border border-slate-200 dark:border-dark-border hover:bg-slate-100 dark:hover:bg-dark-bg font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2"
             >
-              <FiTrendingUp className="text-lg text-indigo-600" />
+              <FiTrendingUp className="text-lg text-indigo-600 dark:text-indigo-400" />
               DỰ ĐOÁN GIÁ AI
             </button>
 
             {!selectedVariant && product.variants?.length > 0 && (
-              <p className="text-center text-red-500 text-[10px] font-bold uppercase tracking-wider bg-red-50 py-2 rounded-lg">
+              <p className="text-center text-red-500 text-[10px] font-bold uppercase tracking-wider bg-red-50 dark:bg-red-950/30 py-2 rounded-lg">
                 ⚠️ Vui lòng chọn phiên bản để tiếp tục mua hàng
               </p>
             )}
@@ -597,28 +605,28 @@ const ProductDetailPage = () => {
 
           {/* Policy Section */}
           <div className="grid grid-cols-2 gap-3">
-            <div className="p-3 rounded-xl bg-gray-50 border border-gray-100 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0">
+            <div className="p-3 rounded-xl bg-gray-50 dark:bg-dark-surface border border-gray-100 dark:border-dark-border flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-brand/20 text-blue-600 dark:text-brand flex items-center justify-center flex-shrink-0">
                 <FiShield size={18} />
               </div>
               <div className="min-w-0">
-                <span className="block text-[10px] font-bold text-gray-400 uppercase leading-none mb-1">
+                <span className="block text-[10px] font-bold text-gray-400 dark:text-dark-text-secondary uppercase leading-none mb-1">
                   Bảo hành
                 </span>
-                <span className="block text-[11px] font-bold text-gray-700 truncate">
+                <span className="block text-[11px] font-bold text-gray-700 dark:text-dark-text-primary truncate">
                   12 THÁNG CHÍNH HÃNG
                 </span>
               </div>
             </div>
-            <div className="p-3 rounded-xl bg-gray-50 border border-gray-100 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center flex-shrink-0">
+            <div className="p-3 rounded-xl bg-gray-50 dark:bg-dark-surface border border-gray-100 dark:border-dark-border flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-emerald-100 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center flex-shrink-0">
                 <FiTruck size={18} />
               </div>
               <div className="min-w-0">
-                <span className="block text-[10px] font-bold text-gray-400 uppercase leading-none mb-1">
+                <span className="block text-[10px] font-bold text-gray-400 dark:text-dark-text-secondary uppercase leading-none mb-1">
                   Vận chuyển
                 </span>
-                <span className="block text-[11px] font-bold text-gray-700 truncate">
+                <span className="block text-[11px] font-bold text-gray-700 dark:text-dark-text-primary truncate">
                   MIỄN PHÍ TOÀN QUỐC
                 </span>
               </div>
@@ -628,32 +636,32 @@ const ProductDetailPage = () => {
           {/* Specifications - Dynamically showing based on variant */}
           <div className="pt-4">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-[11px] font-bold uppercase tracking-[0.2em] text-gray-400 flex items-center gap-2">
-                <span className="w-6 h-[1.5px] bg-blue-500"></span>
+              <h3 className="text-[11px] font-bold uppercase tracking-[0.2em] text-gray-400 dark:text-dark-text-secondary flex items-center gap-2">
+                <span className="w-6 h-[1.5px] bg-blue-500 dark:bg-brand"></span>
                 Thông số kỹ thuật
               </h3>
               {displayVariant && (
-                <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded-lg">
+                <span className="text-[10px] font-bold text-blue-600 dark:text-brand bg-blue-50 dark:bg-brand/10 px-2 py-1 rounded-lg">
                   Cấu hình riêng {displayVariant.sku?.split("-")[0]}
                 </span>
               )}
             </div>
 
-            <div className="rounded-2xl border border-gray-100 overflow-hidden bg-gray-50/30 shadow-sm transition-all duration-500">
+            <div className="rounded-2xl border border-gray-100 dark:border-dark-border overflow-hidden bg-gray-50/30 dark:bg-dark-surface shadow-sm transition-all duration-500">
               {mergedSpecs.length > 0 ? (
-                <div className="divide-y divide-gray-100">
+                <div className="divide-y divide-gray-100 dark:divide-dark-border">
                   {mergedSpecs.map((spec, idx) => (
                     <div
                       key={idx}
-                      className="flex justify-between items-center py-3.5 px-5 text-xs transition-colors hover:bg-white bg-white/40"
+                      className="flex justify-between items-center py-3.5 px-5 text-xs transition-colors hover:bg-white dark:hover:bg-dark-bg bg-white/40 dark:bg-transparent"
                     >
-                      <span className="text-gray-400 font-bold uppercase tracking-wider flex items-center gap-2.5">
-                        <span className="p-1.5 rounded-lg bg-white shadow-sm text-blue-500">
+                      <span className="text-gray-400 dark:text-dark-text-secondary font-bold uppercase tracking-wider flex items-center gap-2.5">
+                        <span className="p-1.5 rounded-lg bg-white dark:bg-dark-bg shadow-sm text-blue-500 dark:text-brand">
                           {spec.icon}
                         </span>
                         {spec.name}
                       </span>
-                      <span className="text-gray-900 font-extrabold">
+                      <span className="text-gray-900 dark:text-white font-extrabold">
                         {spec.value}
                       </span>
                     </div>
@@ -661,10 +669,10 @@ const ProductDetailPage = () => {
                 </div>
               ) : (
                 <div className="p-10 text-center flex flex-col items-center gap-4">
-                  <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center text-gray-200 shadow-inner">
+                  <div className="w-16 h-16 bg-white dark:bg-dark-bg rounded-full flex items-center justify-center text-gray-200 dark:text-dark-text-secondary shadow-inner">
                     <FiCpu size={32} />
                   </div>
-                  <p className="text-xs text-gray-400 font-medium italic max-w-[200px] leading-relaxed">
+                  <p className="text-xs text-gray-400 dark:text-dark-text-secondary font-medium italic max-w-[200px] leading-relaxed">
                     {displayVariant
                       ? "Phiên bản này đang được cập nhật thông số..."
                       : "Vui lòng chọn phiên bản để xem cấu hình chi tiết."}
@@ -679,23 +687,23 @@ const ProductDetailPage = () => {
       {/* Smart Recommendations Section */}
       {smartRecs.length > 0 && (
         <div className="mt-20 space-y-8">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-gray-100 pb-6">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-gray-100 dark:border-dark-border pb-6">
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-100">
+                <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-100 dark:shadow-none">
                   <FiZap className="fill-current" />
                 </div>
-                <h2 className="text-2xl font-black text-slate-900 tracking-tight uppercase">
+                <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight uppercase">
                   Gợi ý thông minh
                 </h2>
               </div>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+              <p className="text-xs font-bold text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest">
                 Dựa trên phân tích AI & Hành vi mua sắm của bạn
               </p>
             </div>
             <a
               href="/products"
-              className="text-[11px] font-black uppercase tracking-widest text-indigo-600 hover:text-indigo-700 transition-colors flex items-center gap-2 group"
+              className="text-[11px] font-black uppercase tracking-widest text-indigo-600 dark:text-brand hover:text-indigo-700 dark:hover:text-brand transition-colors flex items-center gap-2 group"
             >
               Xem tất cả sản phẩm{" "}
               <FiChevronRight className="group-hover:translate-x-1 transition-transform" />
@@ -706,8 +714,8 @@ const ProductDetailPage = () => {
             {smartRecs.map((rec) => (
               <a
                 key={rec.id}
-                href={`/product/${rec.id}`}
-                className="group bg-white rounded-3xl border border-gray-100 p-4 hover:shadow-2xl hover:shadow-indigo-100 transition-all duration-500 relative overflow-hidden"
+                href={`/product-detail/${rec.slug || rec.id}`}
+                className="group bg-white dark:bg-dark-surface rounded-3xl border border-gray-100 dark:border-dark-border p-4 hover:shadow-2xl dark:hover:shadow-none hover:shadow-indigo-100 transition-all duration-500 relative overflow-hidden"
               >
                 <div className="absolute top-3 left-3 z-10">
                   <span
@@ -722,26 +730,26 @@ const ProductDetailPage = () => {
                   </span>
                 </div>
 
-                <div className="aspect-square rounded-2xl bg-gray-50 mb-4 overflow-hidden flex items-center justify-center p-4">
+                <div className="aspect-square rounded-2xl bg-gray-50 dark:bg-dark-bg mb-4 overflow-hidden flex items-center justify-center p-4">
                   <img
                     src={rec.image}
                     alt={rec.name}
-                    className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500"
+                    className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500 dark:mix-blend-normal"
                   />
                 </div>
                 <div className="space-y-2">
-                  <h3 className="text-xs font-black text-slate-900 uppercase truncate group-hover:text-indigo-600 transition-colors">
+                  <h3 className="text-xs font-black text-slate-900 dark:text-white uppercase truncate group-hover:text-indigo-600 dark:group-hover:text-brand transition-colors">
                     {rec.name}
                   </h3>
                   <div className="flex items-baseline gap-2">
-                    <span className="text-sm font-black text-red-600">
+                    <span className="text-sm font-black text-red-600 dark:text-red-500">
                       {Number(
                         rec.basePrice * (1 - (rec.discount || 0) / 100),
                       ).toLocaleString()}
                       đ
                     </span>
                     {rec.discount > 0 && (
-                      <span className="text-[10px] font-bold text-slate-400 line-through">
+                      <span className="text-[10px] font-bold text-slate-400 dark:text-dark-text-secondary line-through">
                         {rec.basePrice.toLocaleString()}đ
                       </span>
                     )}

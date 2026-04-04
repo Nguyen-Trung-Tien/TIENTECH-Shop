@@ -45,8 +45,8 @@ const ReviewForm = ({ newReview, setNewReview, onSubmit, loading }) => {
   };
 
   return (
-    <div className="bg-slate-50/50 rounded-3xl p-6 border border-slate-100 mb-10">
-      <h3 className="text-sm font-black uppercase tracking-widest mb-6 flex items-center gap-2.5 text-slate-800">
+    <div className="bg-slate-50/50 dark:bg-dark-bg/50 rounded-3xl p-6 border border-slate-100 dark:border-dark-border mb-10 transition-colors">
+      <h3 className="text-sm font-black uppercase tracking-widest mb-6 flex items-center gap-2.5 text-slate-800 dark:text-white">
         <span className="w-8 h-8 rounded-xl bg-primary text-white flex items-center justify-center shadow-md">
           <FaStar size={14} />
         </span>
@@ -56,7 +56,7 @@ const ReviewForm = ({ newReview, setNewReview, onSubmit, loading }) => {
       <div className="space-y-6">
         {/* Rating Selection */}
         <div>
-          <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-3 ml-1">Xếp hạng sản phẩm *</p>
+          <p className="text-[9px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest mb-3 ml-1">Xếp hạng sản phẩm *</p>
           <div className="flex gap-2">
             {[1, 2, 3, 4, 5].map((star) => (
               <button
@@ -73,7 +73,7 @@ const ReviewForm = ({ newReview, setNewReview, onSubmit, loading }) => {
                   className={`transition-all duration-200 ${
                     star <= (hover || newReview.rating) 
                       ? "text-amber-400 drop-shadow-sm scale-110" 
-                      : "text-slate-200"
+                      : "text-slate-200 dark:text-dark-border"
                   }`} 
                 />
               </button>
@@ -83,11 +83,11 @@ const ReviewForm = ({ newReview, setNewReview, onSubmit, loading }) => {
 
         {/* Image Upload Area */}
         <div>
-          <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-3 ml-1">Hình ảnh thực tế (Tối đa 5)</p>
+          <p className="text-[9px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest mb-3 ml-1">Hình ảnh thực tế (Tối đa 5)</p>
           <div className="flex flex-wrap gap-3">
             {previews.map((preview, index) => (
-              <div key={index} className="relative w-20 h-20 rounded-xl overflow-hidden border border-slate-200 shadow-sm group">
-                <img src={preview} alt="preview" className="w-full h-full object-cover" />
+              <div key={index} className="relative w-20 h-20 rounded-xl overflow-hidden border border-slate-200 dark:border-dark-border shadow-sm group">
+                <img src={preview} alt="preview" className="w-full h-full object-cover dark:mix-blend-normal" />
                 <button
                   type="button"
                   onClick={() => removeImage(index)}
@@ -98,7 +98,7 @@ const ReviewForm = ({ newReview, setNewReview, onSubmit, loading }) => {
               </div>
             ))}
             {previews.length < 5 && (
-              <label className="w-20 h-20 rounded-xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center gap-1 cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-all text-slate-400 hover:text-primary">
+              <label className="w-20 h-20 rounded-xl border-2 border-dashed border-slate-200 dark:border-dark-border flex flex-col items-center justify-center gap-1 cursor-pointer hover:border-primary/50 hover:bg-primary/5 dark:hover:bg-primary/10 transition-all text-slate-400 dark:text-dark-text-secondary hover:text-primary dark:hover:text-brand">
                 <FaCamera size={20} />
                 <span className="text-[8px] font-black uppercase tracking-tighter">Thêm ảnh</span>
                 <input type="file" accept="image/*" multiple onChange={handleFileChange} className="hidden" />
@@ -109,7 +109,7 @@ const ReviewForm = ({ newReview, setNewReview, onSubmit, loading }) => {
 
         {/* Comment Area */}
         <div>
-          <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-3 ml-1">Nội dung đánh giá *</p>
+          <p className="text-[9px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest mb-3 ml-1">Nội dung đánh giá *</p>
           <textarea
             rows={3}
             placeholder="Chia sẻ trải nghiệm của bạn..."
@@ -117,7 +117,7 @@ const ReviewForm = ({ newReview, setNewReview, onSubmit, loading }) => {
             onChange={(e) =>
               setNewReview((prev) => ({ ...prev, comment: e.target.value }))
             }
-            className="w-full bg-white border border-slate-200 rounded-2xl p-4 text-sm font-medium focus:border-primary/40 focus:ring-4 focus:ring-primary/5 outline-none transition-all placeholder:text-slate-300"
+            className="w-full bg-white dark:bg-dark-surface border border-slate-200 dark:border-dark-border rounded-2xl p-4 text-sm font-medium focus:border-primary/40 focus:ring-4 focus:ring-primary/5 dark:focus:ring-brand/10 outline-none transition-all placeholder:text-slate-300 dark:placeholder:text-slate-700 text-slate-900 dark:text-white"
           />
         </div>
 

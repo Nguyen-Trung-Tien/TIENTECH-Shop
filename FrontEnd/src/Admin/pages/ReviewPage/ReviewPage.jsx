@@ -74,7 +74,7 @@ const ReviewPage = () => {
       setShowDeleteModal(false);
       fetchReviews();
       toast.success("Đã xóa bình luận");
-    } catch (e) {
+    } catch {
       toast.error("Xóa thất bại");
     }
   };
@@ -92,7 +92,7 @@ const ReviewPage = () => {
         setReplyInputs((p) => ({ ...p, [reviewId]: "" }));
       }
       toast.success("Đã phản hồi");
-    } catch (e) {
+    } catch {
       toast.error("Phản hồi thất bại");
     }
   };
@@ -113,58 +113,66 @@ const ReviewPage = () => {
   };
 
   return (
-    <div className="space-y-8 p-4 md:p-8 max-w-[1200px] mx-auto">
+    <div className="space-y-8 p-4 md:p-8 max-w-[1200px] mx-auto transition-colors duration-300">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+          <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-3">
             <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary shadow-sm">
               <FiMessageSquare />
             </div>
             Quản lý đánh giá
           </h1>
-          <p className="text-slate-500 font-bold text-xs uppercase tracking-widest mt-2 ml-15">
+          <p className="text-slate-500 dark:text-dark-text-secondary font-bold text-xs uppercase tracking-widest mt-2 ml-15">
             Lắng nghe khách hàng & Phản hồi cộng đồng
           </p>
         </div>
       </div>
 
       {/* Filter Bar */}
-      <div className="bg-white p-4 rounded-[32px] border border-slate-100 shadow-soft flex flex-wrap items-center gap-4">
-        <div className="flex items-center gap-2 px-4 h-12 bg-slate-50 border border-slate-100 rounded-2xl">
-          <FiFilter className="text-slate-400" />
+      <div className="bg-white dark:bg-dark-surface p-4 rounded-[32px] border border-slate-100 dark:border-dark-border shadow-soft flex flex-wrap items-center gap-4">
+        <div className="flex items-center gap-2 px-4 h-12 bg-slate-50 dark:bg-dark-bg border border-slate-100 dark:border-dark-border rounded-2xl">
+          <FiFilter className="text-slate-400 dark:text-dark-text-secondary" />
           <select
-            className="bg-transparent border-none text-xs font-black uppercase tracking-widest outline-none appearance-none pr-6"
+            className="bg-transparent border-none text-xs font-black uppercase tracking-widest outline-none appearance-none pr-6 dark:text-white"
             value={filters.rating}
             onChange={(e) =>
               setFilters((p) => ({ ...p, rating: e.target.value }))
             }
           >
-            <option value="">Lọc theo sao</option>
+            <option value="" className="dark:bg-dark-surface">
+              Lọc theo sao
+            </option>
             {[5, 4, 3, 2, 1].map((r) => (
-              <option key={r} value={r}>
+              <option key={r} value={r} className="dark:bg-dark-surface">
                 {r} Sao
               </option>
             ))}
           </select>
         </div>
 
-        <div className="flex items-center gap-2 px-4 h-12 bg-slate-50 border border-slate-100 rounded-2xl">
+        <div className="flex items-center gap-2 px-4 h-12 bg-slate-50 dark:bg-dark-bg border border-slate-100 dark:border-dark-border rounded-2xl">
           <select
-            className="bg-transparent border-none text-xs font-black uppercase tracking-widest outline-none appearance-none pr-6"
+            className="bg-transparent border-none text-xs font-black uppercase tracking-widest outline-none appearance-none pr-6 dark:text-white"
             value={filters.status}
             onChange={(e) =>
               setFilters((p) => ({ ...p, status: e.target.value }))
             }
           >
-            <option value="">Trạng thái</option>
-            <option value="approved">Đã duyệt</option>
-            <option value="pending">Chờ duyệt</option>
+            <option value="" className="dark:bg-dark-surface">
+              Trạng thái
+            </option>
+            <option value="approved" className="dark:bg-dark-surface">
+              Đã duyệt
+            </option>
+            <option value="pending" className="dark:bg-dark-surface">
+              Chờ duyệt
+            </option>
           </select>
         </div>
 
         <button
           onClick={() => setFilters({ rating: "", status: "" })}
-          className="h-12 px-6 bg-slate-100 text-slate-500 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-slate-200 transition-all"
+          className="h-12 px-6 bg-slate-100 dark:bg-dark-bg text-slate-500 dark:text-dark-text-secondary rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-slate-200 dark:hover:bg-slate-800 transition-all border border-transparent dark:border-dark-border"
         >
           Reset
         </button>
@@ -175,13 +183,13 @@ const ReviewPage = () => {
         {loading ? (
           <div className="flex flex-col items-center justify-center py-32">
             <FiRefreshCw className="text-4xl text-primary/20 animate-spin mb-4" />
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+            <p className="text-[10px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest">
               Đang tải đánh giá...
             </p>
           </div>
         ) : reviews.length === 0 ? (
-          <div className="bg-white rounded-[40px] border border-slate-100 p-20 text-center shadow-soft">
-            <p className="text-slate-400 font-bold">
+          <div className="bg-white dark:bg-dark-surface rounded-[40px] border border-slate-100 dark:border-dark-border p-20 text-center shadow-soft">
+            <p className="text-slate-400 dark:text-dark-text-secondary font-bold">
               Chưa có đánh giá nào phù hợp với bộ lọc.
             </p>
           </div>
@@ -192,17 +200,17 @@ const ReviewPage = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               key={review.id}
-              className="bg-white rounded-[32px] border border-slate-100 shadow-soft overflow-hidden group"
+              className="bg-white dark:bg-dark-surface rounded-[32px] border border-slate-100 dark:border-dark-border shadow-soft overflow-hidden group"
             >
               <div className="p-8">
                 {/* Header Info */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-primary/5 transition-colors">
+                    <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-dark-bg flex items-center justify-center text-slate-400 dark:text-dark-text-secondary group-hover:bg-primary/5 transition-colors border border-transparent dark:border-dark-border">
                       <FiUser size={20} />
                     </div>
                     <div>
-                      <h4 className="text-base font-black text-slate-900 leading-tight mb-1">
+                      <h4 className="text-base font-black text-slate-900 dark:text-white leading-tight mb-1">
                         {review.user?.username || "Unknown User"}
                       </h4>
                       <p className="text-[10px] font-black text-primary uppercase tracking-widest">
@@ -219,7 +227,7 @@ const ReviewPage = () => {
                           className={
                             i < review.rating
                               ? "text-amber-400"
-                              : "text-slate-200"
+                              : "text-slate-200 dark:text-slate-700"
                           }
                           size={14}
                         />
@@ -230,7 +238,7 @@ const ReviewPage = () => {
                         setSelectedReview(review);
                         setShowDeleteModal(true);
                       }}
-                      className="w-10 h-10 rounded-xl bg-rose-50 text-rose-500 flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all shadow-sm border border-rose-100"
+                      className="w-10 h-10 rounded-xl bg-rose-50 dark:bg-rose-900/20 text-rose-500 dark:text-rose-400 flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all shadow-sm border border-rose-100 dark:border-rose-900/30"
                     >
                       <FiTrash2 size={16} />
                     </button>
@@ -238,33 +246,33 @@ const ReviewPage = () => {
                 </div>
 
                 {/* Comment Content */}
-                <div className="mb-6 p-4 bg-slate-50/50 rounded-2xl border border-slate-100 text-slate-600 text-sm leading-relaxed">
+                <div className="mb-6 p-4 bg-slate-50/50 dark:bg-dark-bg/50 rounded-2xl border border-slate-100 dark:border-dark-border text-slate-600 dark:text-slate-300 text-sm leading-relaxed font-medium">
                   {review.comment}
                 </div>
 
-                <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-8">
+                <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 dark:text-dark-text-secondary uppercase tracking-[0.2em] mb-8">
                   <FiCalendar />
                   {new Date(review.createdAt).toLocaleDateString("vi-VN")}
                 </div>
 
                 {/* Replies Area */}
-                <div className="space-y-4 ml-6 border-l-2 border-slate-100 pl-6">
+                <div className="space-y-4 ml-6 border-l-2 border-slate-100 dark:border-dark-border pl-6">
                   {(replies[review.id] || []).map((rep) => (
                     <div
                       key={rep.id}
-                      className="bg-slate-50/30 p-4 rounded-2xl relative group/reply"
+                      className="bg-slate-50/30 dark:bg-dark-bg/20 p-4 rounded-2xl relative group/reply border border-transparent dark:border-dark-border/30"
                     >
-                      <FiCornerDownRight className="absolute -left-8 top-5 text-slate-200" />
+                      <FiCornerDownRight className="absolute -left-8 top-5 text-slate-200 dark:text-slate-700" />
                       <div className="flex justify-between items-start gap-4">
-                        <p className="text-sm text-slate-600">
-                          <span className="font-black text-slate-900 mr-2 uppercase text-[10px] tracking-widest bg-slate-100 px-2 py-0.5 rounded">
+                        <p className="text-sm text-slate-600 dark:text-slate-300">
+                          <span className="font-black text-slate-900 dark:text-white mr-2 uppercase text-[10px] tracking-widest bg-slate-100 dark:bg-dark-bg px-2 py-0.5 rounded border border-transparent dark:border-dark-border">
                             Admin
                           </span>
                           {rep.comment}
                         </p>
                         <button
                           onClick={() => handleDeleteReply(review.id, rep.id)}
-                          className="text-slate-300 hover:text-rose-500 transition-colors"
+                          className="text-slate-300 dark:text-slate-600 hover:text-rose-500 transition-colors"
                         >
                           <FiTrash2 size={12} />
                         </button>
@@ -287,7 +295,7 @@ const ReviewPage = () => {
                       onKeyDown={(e) =>
                         e.key === "Enter" && handleCreateReply(review.id)
                       }
-                      className="w-full h-12 bg-white border border-slate-200 rounded-2xl pl-4 pr-12 text-sm font-bold focus:border-primary focus:ring-4 focus:ring-primary/5 transition-all outline-none"
+                      className="w-full h-12 bg-white dark:bg-dark-bg border border-slate-200 dark:border-dark-border rounded-2xl pl-4 pr-12 text-sm font-bold dark:text-white focus:border-primary focus:ring-4 focus:ring-primary/5 transition-all outline-none"
                     />
                     <button
                       onClick={() => handleCreateReply(review.id)}

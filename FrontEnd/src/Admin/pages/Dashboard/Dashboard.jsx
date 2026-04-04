@@ -20,12 +20,15 @@ const Dashboard = () => {
       const url = window.URL.createObjectURL(new Blob([blob]));
       const link = document.createElement("a");
       link.href = url;
-      link.setAttribute("download", `Bao-cao-doanh-thu-${new Date().toLocaleDateString("vi-VN")}.xlsx`);
+      link.setAttribute(
+        "download",
+        `Bao-cao-doanh-thu-${new Date().toLocaleDateString("vi-VN")}.xlsx`,
+      );
       document.body.appendChild(link);
       link.click();
       link.parentNode.removeChild(link);
       toast.success("Xuất báo cáo thành công!");
-    } catch (err) {
+    } catch {
       toast.error("Lỗi khi xuất báo cáo.");
     } finally {
       setExporting(false);
@@ -43,11 +46,18 @@ const Dashboard = () => {
           if (Array.isArray(data)) data = data[0] || {};
 
           const {
-            totalProducts = 0, todayOrders = 0, totalRevenue = 0, totalUsers = 0, change = {},
+            totalProducts = 0,
+            todayOrders = 0,
+            totalRevenue = 0,
+            totalUsers = 0,
+            change = {},
           } = data;
 
           const {
-            products: changeProducts = 0, orders: changeOrders = 0, revenue: changeRevenue = 0, users: changeUsers = 0,
+            products: changeProducts = 0,
+            orders: changeOrders = 0,
+            revenue: changeRevenue = 0,
+            users: changeUsers = 0,
           } = change;
 
           const formatCurrency = (value) =>
@@ -101,40 +111,46 @@ const Dashboard = () => {
   }, []);
 
   return (
-    <div className="space-y-10 p-4 md:p-8 max-w-[1600px] mx-auto text-slate-900">
+    <div className="space-y-10 p-4 md:p-8 max-w-[1600px] mx-auto text-slate-900 dark:text-dark-text-primary transition-colors duration-300">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight mb-2">Bảng điều khiển</h1>
-          <p className="text-slate-500 font-bold text-sm tracking-widest uppercase">
+          <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight mb-2">
+            Bảng điều khiển
+          </h1>
+          <p className="text-slate-500 dark:text-dark-text-secondary font-bold text-sm tracking-widest uppercase">
             Tổng quan hệ thống & Phân tích kinh doanh
           </p>
         </div>
-        
+
         <div className="flex items-center gap-4">
-           <button 
-             onClick={handleExport}
-             disabled={exporting}
-             className="px-6 py-2.5 bg-white border border-slate-200 rounded-2xl text-xs font-black uppercase tracking-widest text-slate-600 hover:border-indigo-600 hover:text-indigo-600 transition-all shadow-sm disabled:opacity-50"
-           >
-             {exporting ? "Đang xử lý..." : "Xuất báo cáo"}
-           </button>
-           <Link 
-             to="/admin/products" 
-             className="px-6 py-2.5 bg-indigo-600 text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-lg shadow-indigo-500/20"
-           >
-             Thêm sản phẩm
-           </Link>
+          <button
+            onClick={handleExport}
+            disabled={exporting}
+            className="px-6 py-2.5 bg-white dark:bg-dark-surface border border-slate-200 dark:border-dark-border rounded-2xl text-xs font-black uppercase tracking-widest text-slate-600 dark:text-dark-text-secondary hover:border-indigo-600 hover:text-indigo-600 transition-all shadow-sm disabled:opacity-50"
+          >
+            {exporting ? "Đang xử lý..." : "Xuất báo cáo"}
+          </button>
+          <Link
+            to="/admin/products"
+            className="px-6 py-2.5 bg-indigo-600 text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-lg shadow-indigo-500/20"
+          >
+            Thêm sản phẩm
+          </Link>
         </div>
       </div>
 
       {loading ? (
-        <div className="flex flex-col items-center justify-center py-32 bg-white rounded-[40px] border border-slate-100 shadow-soft">
-          <div className="w-16 h-16 border-4 border-indigo-100 border-t-indigo-600 rounded-full animate-spin mb-6"></div>
-          <p className="text-slate-400 font-black text-[10px] tracking-[0.2em] uppercase">Đang đồng bộ dữ liệu...</p>
+        <div className="flex flex-col items-center justify-center py-32 bg-white dark:bg-dark-surface rounded-[40px] border border-slate-100 dark:border-dark-border shadow-soft">
+          <div className="w-16 h-16 border-4 border-indigo-100 dark:border-indigo-900 border-t-indigo-600 rounded-full animate-spin mb-6"></div>
+          <p className="text-slate-400 dark:text-dark-text-secondary font-black text-[10px] tracking-[0.2em] uppercase">
+            Đang đồng bộ dữ liệu...
+          </p>
         </div>
       ) : error ? (
-        <div className="p-8 bg-rose-50 border border-rose-100 rounded-3xl text-rose-600 text-sm font-bold flex items-center gap-4 shadow-sm">
-          <div className="w-12 h-12 bg-rose-500 text-white rounded-2xl flex items-center justify-center text-xl shadow-lg shadow-rose-500/20">!</div>
+        <div className="p-8 bg-rose-50 dark:bg-rose-900/10 border border-rose-100 dark:border-rose-900/20 rounded-3xl text-rose-600 dark:text-rose-400 text-sm font-bold flex items-center gap-4 shadow-sm">
+          <div className="w-12 h-12 bg-rose-500 text-white rounded-2xl flex items-center justify-center text-xl shadow-lg shadow-rose-500/20">
+            !
+          </div>
           <p>{error}</p>
         </div>
       ) : (
@@ -152,18 +168,24 @@ const Dashboard = () => {
           <AIInsightsWidget />
 
           {/* Charts Area */}
-          <div className="bg-white rounded-[40px] border border-slate-100 shadow-soft overflow-hidden p-8 md:p-10">
-             <div className="flex items-center justify-between mb-10 pb-6 border-b border-slate-50">
-                <div>
-                   <h3 className="text-xl font-black text-slate-900 tracking-tight mb-1">Dòng tiền & Hiệu suất</h3>
-                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Biểu đồ phân tích doanh thu chi tiết</p>
-                </div>
-                <div className="flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-full border border-slate-100">
-                   <div className="w-2 h-2 rounded-full bg-indigo-600 animate-pulse"></div>
-                   <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Live Updates</span>
-                </div>
-             </div>
-             <ChartCard />
+          <div className="bg-white dark:bg-dark-surface rounded-[40px] border border-slate-100 dark:border-dark-border shadow-soft overflow-hidden p-8 md:p-10">
+            <div className="flex items-center justify-between mb-10 pb-6 border-b border-slate-50 dark:border-dark-border">
+              <div>
+                <h3 className="text-xl font-black text-slate-900 dark:text-white tracking-tight mb-1">
+                  Dòng tiền & Hiệu suất
+                </h3>
+                <p className="text-[10px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest">
+                  Biểu đồ phân tích doanh thu chi tiết
+                </p>
+              </div>
+              <div className="flex items-center gap-2 px-4 py-2 bg-slate-50 dark:bg-dark-bg rounded-full border border-slate-100 dark:border-dark-border">
+                <div className="w-2 h-2 rounded-full bg-indigo-600 animate-pulse"></div>
+                <span className="text-[10px] font-black text-slate-500 dark:text-dark-text-secondary uppercase tracking-widest">
+                  Live Updates
+                </span>
+              </div>
+            </div>
+            <ChartCard />
           </div>
         </div>
       )}

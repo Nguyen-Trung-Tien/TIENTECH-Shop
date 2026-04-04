@@ -8,10 +8,12 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "dummy_key");
 if (!process.env.GEMINI_API_KEY) {
   console.error("CRITICAL ERROR: GEMINI_API_KEY is missing in .env file!");
 } else if (!process.env.GEMINI_API_KEY.startsWith("AIzaSy")) {
-  console.error("CRITICAL ERROR: GEMINI_API_KEY format seems invalid (should start with 'AIzaSy')");
+  console.error(
+    "CRITICAL ERROR: GEMINI_API_KEY format seems invalid (should start with 'AIzaSy')",
+  );
 }
 const model = genAI.getGenerativeModel({
-  model: "gemini-1.5-flash",
+  model: "gemini-2.5-flash",
   generationConfig: { responseMimeType: "application/json" },
 });
 
@@ -131,7 +133,14 @@ YÊU CẦU PHẢN HỒI:
       { role: "user", parts: [{ text: systemPrompt }] },
       ...history.slice(-6).map((msg) => ({
         role: msg.role === "user" ? "user" : "model",
-        parts: [{ text: typeof msg.content === "string" ? msg.content : JSON.stringify(msg.content) }],
+        parts: [
+          {
+            text:
+              typeof msg.content === "string"
+                ? msg.content
+                : JSON.stringify(msg.content),
+          },
+        ],
       })),
       { role: "user", parts: [{ text: message }] },
     ];
@@ -145,7 +154,10 @@ YÊU CẦU PHẢN HỒI:
       let finalRecommended = [];
       if (result.recommendedProducts && result.recommendedProducts.length > 0) {
         finalRecommended = await Product.findAll({
-          where: { id: { [Op.in]: result.recommendedProducts }, isActive: true },
+          where: {
+            id: { [Op.in]: result.recommendedProducts },
+            isActive: true,
+          },
           attributes: ["id", "name", "price", "discount", "image"],
         });
       }

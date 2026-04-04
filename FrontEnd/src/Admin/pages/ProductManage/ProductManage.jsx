@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   FiBox,
   FiPlus,
@@ -36,6 +36,10 @@ import { getAllCategoryApi } from "../../../api/categoryApi";
 import { getAllBrandApi } from "../../../api/brandApi";
 import { getAllAttributesApi } from "../../../api/attributeApi";
 import { syncEmbeddings } from "../../../api/adminApi";
+import {
+  AdminTableSkeleton,
+  AdminActionLoader,
+} from "../../components/AdminLoading";
 import AppPagination from "../../../components/Pagination/Pagination";
 import VariantManager from "./VariantManager";
 import { ConfirmModal } from "../../../components/UI/Modal";
@@ -119,7 +123,7 @@ const ProductManage = () => {
           setTotalPages(res.pagination?.totalPages || 1);
           setPage(currentPage);
         }
-      } catch (err) {
+      } catch {
         toast.error("Lỗi tải dữ liệu sản phẩm");
       } finally {
         setLoadingTable(false);
@@ -166,7 +170,7 @@ const ProductManage = () => {
       if (typeof legacySpecs === "string") {
         try {
           legacySpecs = JSON.parse(legacySpecs);
-        } catch (e) {
+        } catch {
           legacySpecs = {};
         }
       }
@@ -387,13 +391,13 @@ const ProductManage = () => {
     <div className="space-y-6 max-w-7xl mx-auto p-4 md:p-6 pb-20">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-200">
+          <h1 className="text-3xl font-black text-slate-900 dark:text-dark-text-primary tracking-tight flex items-center gap-3">
+            <div className="w-12 h-12 rounded-2xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-200 dark:shadow-none">
               <FiBox />
             </div>
             Quản lý Kho hàng
           </h1>
-          <p className="text-sm text-slate-500 font-medium mt-2 ml-1">
+          <p className="text-sm text-slate-500 dark:text-dark-text-secondary font-medium mt-2 ml-1">
             Hệ thống quản lý sản phẩm thông minh & phân loại linh hoạt.
           </p>
         </div>
@@ -402,7 +406,7 @@ const ProductManage = () => {
           <button
             onClick={handleSyncAI}
             disabled={isSyncingAI}
-            className="flex items-center gap-2 px-6 h-12 rounded-2xl bg-slate-100 hover:bg-white border border-slate-200 hover:border-indigo-400 text-slate-600 hover:text-indigo-600 font-black uppercase tracking-widest text-[11px] transition-all hover:shadow-xl hover:shadow-indigo-100 disabled:opacity-50"
+            className="flex items-center gap-2 px-6 h-12 rounded-2xl bg-slate-100 dark:bg-dark-bg hover:bg-white dark:hover:bg-dark-surface border border-slate-200 dark:border-dark-border text-slate-600 dark:text-dark-text-secondary hover:text-indigo-600 dark:hover:text-indigo-400 font-black uppercase tracking-widest text-[11px] transition-all hover:shadow-xl hover:shadow-indigo-100 dark:hover:shadow-none disabled:opacity-50"
           >
             <FiCpu className={`${isSyncingAI ? "animate-spin" : ""}`} />
             {isSyncingAI ? "Đang đồng bộ..." : "Đồng bộ AI Vector"}
@@ -419,15 +423,15 @@ const ProductManage = () => {
       </div>
 
       {/* Advanced Filter Bar */}
-      <div className="bg-white rounded-[2.5rem] shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
-        <div className="p-6 md:p-8 bg-slate-50/50 border-b border-slate-100">
+      <div className="bg-white dark:bg-dark-surface rounded-[2.5rem] shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-dark-border overflow-hidden">
+        <div className="p-6 md:p-8 bg-slate-50/50 dark:bg-dark-bg/50 border-b border-slate-100 dark:border-dark-border">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             <div className="lg:col-span-4 relative">
-              <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+              <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-dark-text-secondary" />
               <input
                 type="text"
                 placeholder="Tìm theo tên, SKU..."
-                className="input-modern h-12 pl-12 bg-white border-slate-200 focus:ring-4 focus:ring-indigo-50 font-medium w-full"
+                className="input-modern h-12 pl-12 bg-white dark:bg-dark-bg border-slate-200 dark:border-dark-border focus:ring-4 focus:ring-indigo-50 dark:focus:ring-indigo-900/10 font-medium w-full text-slate-900 dark:text-dark-text-primary"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -436,7 +440,7 @@ const ProductManage = () => {
             <div className="lg:col-span-8 flex flex-wrap gap-4">
               <div className="relative flex-1 min-w-[140px]">
                 <select
-                  className="input-modern h-12 pr-10 appearance-none bg-white font-bold text-[11px] uppercase tracking-widest"
+                  className="input-modern h-12 pr-10 appearance-none bg-white dark:bg-dark-bg border-slate-200 dark:border-dark-border font-bold text-[11px] uppercase tracking-widest text-slate-900 dark:text-dark-text-primary"
                   value={filterCategory}
                   onChange={(e) => setFilterCategory(e.target.value)}
                 >
@@ -447,12 +451,12 @@ const ProductManage = () => {
                     </option>
                   ))}
                 </select>
-                <FiChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                <FiChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-dark-text-secondary pointer-events-none" />
               </div>
 
               <div className="relative flex-1 min-w-[140px]">
                 <select
-                  className="input-modern h-12 pr-10 appearance-none bg-white font-bold text-[11px] uppercase tracking-widest"
+                  className="input-modern h-12 pr-10 appearance-none bg-white dark:bg-dark-bg border-slate-200 dark:border-dark-border font-bold text-[11px] uppercase tracking-widest text-slate-900 dark:text-dark-text-primary"
                   value={filterBrand}
                   onChange={(e) => setFilterBrand(e.target.value)}
                 >
@@ -463,14 +467,14 @@ const ProductManage = () => {
                     </option>
                   ))}
                 </select>
-                <FiChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                <FiChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-dark-text-secondary pointer-events-none" />
               </div>
 
               {/* Attr Filter Dropdowns */}
               {attributes.slice(0, 3).map((attr) => (
                 <div key={attr.id} className="relative flex-1 min-w-[120px]">
                   <select
-                    className="input-modern h-12 pr-10 appearance-none bg-white font-bold text-[11px] uppercase tracking-widest"
+                    className="input-modern h-12 pr-10 appearance-none bg-white dark:bg-dark-bg border-slate-200 dark:border-dark-border font-bold text-[11px] uppercase tracking-widest text-slate-900 dark:text-dark-text-primary"
                     value={attrFilters[attr.code] || ""}
                     onChange={(e) =>
                       setAttrFilters({
@@ -486,23 +490,23 @@ const ProductManage = () => {
                       </option>
                     ))}
                   </select>
-                  <FiChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                  <FiChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-dark-text-secondary pointer-events-none" />
                 </div>
               ))}
 
-              <label className="flex items-center gap-3 px-5 h-12 bg-white rounded-2xl border border-slate-200 cursor-pointer hover:bg-orange-50 hover:border-orange-200 transition-all group shrink-0">
+              <label className="flex items-center gap-3 px-5 h-12 bg-white dark:bg-dark-bg rounded-2xl border border-slate-200 dark:border-dark-border cursor-pointer hover:bg-orange-50 dark:hover:bg-orange-900/10 hover:border-orange-200 dark:hover:border-orange-800 transition-all group shrink-0">
                 <input
                   type="checkbox"
                   checked={flashSaleOnly}
                   onChange={(e) => setFlashSaleOnly(e.target.checked)}
-                  className="form-checkbox h-5 w-5 text-orange-500 rounded-lg border-slate-300"
+                  className="form-checkbox h-5 w-5 text-orange-500 rounded-lg border-slate-300 dark:border-dark-border dark:bg-dark-surface"
                 />
-                <span className="text-[10px] font-black uppercase tracking-widest text-slate-600 group-hover:text-orange-600 flex items-center gap-2">
+                <span className="text-[10px] font-black uppercase tracking-widest text-slate-600 dark:text-dark-text-secondary group-hover:text-orange-600 flex items-center gap-2">
                   <FiZap
                     className={
                       flashSaleOnly
                         ? "text-orange-500 fill-orange-500"
-                        : "text-slate-400"
+                        : "text-slate-400 dark:text-dark-text-secondary"
                     }
                   />{" "}
                   Flash Sale
@@ -515,49 +519,45 @@ const ProductManage = () => {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-50/30">
-                <th className="px-8 py-5 text-[11px] font-black uppercase tracking-widest text-slate-400">
+              <tr className="bg-slate-50/30 dark:bg-dark-bg/30">
+                <th className="px-8 py-5 text-[11px] font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary">
                   Sản phẩm
                 </th>
-                <th className="px-8 py-5 text-[11px] font-black uppercase tracking-widest text-slate-400">
+                <th className="px-8 py-5 text-[11px] font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary">
                   Phân loại
                 </th>
-                <th className="px-8 py-5 text-[11px] font-black uppercase tracking-widest text-slate-400 text-right">
+                <th className="px-8 py-5 text-[11px] font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary text-right">
                   Giá & Giảm giá
                 </th>
-                <th className="px-8 py-5 text-[11px] font-black uppercase tracking-widest text-slate-400 text-center">
+                <th className="px-8 py-5 text-[11px] font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary text-center">
                   Kho / Đã bán
                 </th>
-                <th className="px-8 py-5 text-[11px] font-black uppercase tracking-widest text-slate-400 text-center">
+                <th className="px-8 py-5 text-[11px] font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary text-center">
                   Trạng thái
                 </th>
-                <th className="px-8 py-5 text-[11px] font-black uppercase tracking-widest text-slate-400 text-right">
+                <th className="px-8 py-5 text-[11px] font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary text-right">
                   Thao tác
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-50">
+            <tbody className="divide-y divide-slate-50 dark:divide-dark-border">
               {loadingTable ? (
-                Array(5)
-                  .fill(0)
-                  .map((_, i) => (
-                    <tr key={i} className="animate-pulse">
-                      <td colSpan={6} className="px-8 py-8">
-                        <div className="h-14 bg-slate-100 rounded-2xl w-full"></div>
-                      </td>
-                    </tr>
-                  ))
+                <tr>
+                  <td colSpan={6} className="px-8 py-8">
+                    <AdminTableSkeleton rows={limit} cols={6} />
+                  </td>
+                </tr>
               ) : products.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="px-8 py-20 text-center">
                     <div className="max-w-xs mx-auto">
-                      <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center text-slate-300 mx-auto mb-4">
+                      <div className="w-16 h-16 bg-slate-50 dark:bg-dark-bg rounded-full flex items-center justify-center text-slate-300 dark:text-dark-text-secondary mx-auto mb-4">
                         <FiSearch size={32} />
                       </div>
-                      <p className="text-slate-900 font-bold">
+                      <p className="text-slate-900 dark:text-dark-text-primary font-bold">
                         Không tìm thấy sản phẩm
                       </p>
-                      <p className="text-xs text-slate-400 mt-1">
+                      <p className="text-xs text-slate-400 dark:text-dark-text-secondary mt-1">
                         Vui lòng điều chỉnh lại bộ lọc hoặc từ khóa tìm kiếm.
                       </p>
                     </div>
@@ -567,11 +567,11 @@ const ProductManage = () => {
                 products.map((p) => (
                   <tr
                     key={p.id}
-                    className="hover:bg-indigo-50/20 transition-all group"
+                    className="hover:bg-indigo-50/20 dark:hover:bg-indigo-500/5 transition-all group"
                   >
                     <td className="px-8 py-5">
                       <div className="flex items-center gap-4">
-                        <div className="w-16 h-16 rounded-2xl border border-slate-200 bg-white p-2 shadow-sm group-hover:scale-105 transition-transform">
+                        <div className="w-16 h-16 rounded-2xl border border-slate-200 dark:border-dark-border bg-white dark:bg-dark-bg p-2 shadow-sm group-hover:scale-105 transition-transform">
                           <img
                             src={p.image}
                             alt=""
@@ -579,16 +579,16 @@ const ProductManage = () => {
                           />
                         </div>
                         <div className="min-w-0">
-                          <p className="text-base font-bold text-slate-900 group-hover:text-indigo-600 transition-colors truncate max-w-[200px]">
+                          <p className="text-base font-bold text-slate-900 dark:text-dark-text-primary group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors truncate max-w-[200px]">
                             {p.name}
                           </p>
                           <div className="flex items-center gap-2 mt-1">
-                            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary">
                               SKU: {p.sku || "—"}
                             </p>
                             {p.embedding && (
                               <div
-                                className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-sm shadow-emerald-200"
+                                className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-sm shadow-emerald-200 dark:shadow-none"
                                 title="Đã có Vector AI"
                               ></div>
                             )}
@@ -598,29 +598,29 @@ const ProductManage = () => {
                     </td>
                     <td className="px-8 py-5">
                       <div className="space-y-1.5">
-                        <div className="flex items-center gap-2 text-xs font-bold text-slate-600">
+                        <div className="flex items-center gap-2 text-xs font-bold text-slate-600 dark:text-dark-text-secondary">
                           <FiTag className="text-indigo-400" /> {p.brand?.name}
                         </div>
-                        <div className="px-2 py-0.5 bg-slate-100 text-[9px] font-black uppercase tracking-tighter text-slate-500 rounded-md w-fit">
+                        <div className="px-2 py-0.5 bg-slate-100 dark:bg-dark-bg text-[9px] font-black uppercase tracking-tighter text-slate-500 dark:text-dark-text-secondary rounded-md w-fit">
                           {p.category?.name}
                         </div>
                       </div>
                     </td>
                     <td className="px-8 py-5 text-right">
-                      <p className="text-base font-black text-slate-900">
+                      <p className="text-base font-black text-slate-900 dark:text-dark-text-primary">
                         {Number(p.basePrice).toLocaleString()}{" "}
-                        <span className="text-[10px] text-slate-400 font-bold uppercase ml-1">
+                        <span className="text-[10px] text-slate-400 dark:text-dark-text-secondary font-bold uppercase ml-1">
                           VND
                         </span>
                       </p>
                       <div className="flex items-center justify-end gap-2 mt-1">
                         {p.discount > 0 && (
-                          <span className="px-1.5 py-0.5 bg-rose-50 text-rose-600 text-[9px] font-black rounded">
+                          <span className="px-1.5 py-0.5 bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 text-[9px] font-black rounded">
                             -{p.discount}%
                           </span>
                         )}
                         {p.isFlashSale && (
-                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-orange-100 text-orange-600 text-[9px] font-black uppercase rounded">
+                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-orange-100 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 text-[9px] font-black uppercase rounded">
                             <FiZap size={10} /> FS
                           </span>
                         )}
@@ -629,14 +629,14 @@ const ProductManage = () => {
                     <td className="px-8 py-5 text-center">
                       <div className="flex flex-col items-center gap-1">
                         <div
-                          className={`inline-flex items-center gap-2 px-3 py-1 rounded-xl border ${p.totalStock <= 5 ? "bg-rose-50 border-rose-100 text-rose-600" : "bg-emerald-50 border-emerald-100 text-emerald-600"}`}
+                          className={`inline-flex items-center gap-2 px-3 py-1 rounded-xl border ${p.totalStock <= 5 ? "bg-rose-50 dark:bg-rose-900/20 border-rose-100 dark:border-rose-900/30 text-rose-600 dark:text-rose-400" : "bg-emerald-50 dark:bg-emerald-900/20 border-emerald-100 dark:border-emerald-900/30 text-emerald-600 dark:text-emerald-400"}`}
                         >
                           <FiPackage size={12} />
                           <span className="text-xs font-bold">
                             {p.totalStock}
                           </span>
                         </div>
-                        <span className="text-[10px] font-black uppercase text-slate-400">
+                        <span className="text-[10px] font-black uppercase text-slate-400 dark:text-dark-text-secondary">
                           Đã bán: {p.sold || 0}
                         </span>
                       </div>
@@ -644,12 +644,12 @@ const ProductManage = () => {
                     <td className="px-8 py-5 text-center">
                       <div className="flex flex-col items-center gap-1.5">
                         <span
-                          className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${p.isActive ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-slate-100 text-slate-400 border-slate-200"}`}
+                          className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${p.isActive ? "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 border-emerald-100 dark:border-emerald-900/30" : "bg-slate-100 dark:bg-dark-bg text-slate-400 dark:text-dark-text-secondary border-slate-200 dark:border-dark-border"}`}
                         >
                           {p.isActive ? "Đang bán" : "Tạm ẩn"}
                         </span>
                         {p.hasVariants && (
-                          <span className="text-[9px] font-black text-indigo-500 uppercase flex items-center gap-1">
+                          <span className="text-[9px] font-black text-indigo-500 dark:text-indigo-400 uppercase flex items-center gap-1">
                             <FiLayers size={10} /> Có biến thể
                           </span>
                         )}
@@ -659,7 +659,7 @@ const ProductManage = () => {
                       <div className="flex items-center justify-end gap-2">
                         <button
                           onClick={() => handleShowModal(p)}
-                          className="p-3 rounded-2xl text-slate-400 hover:bg-white hover:text-indigo-600 hover:shadow-xl border border-transparent transition-all"
+                          className="p-3 rounded-2xl text-slate-400 dark:text-dark-text-secondary hover:bg-white dark:hover:bg-dark-bg hover:text-indigo-600 dark:hover:text-indigo-400 hover:shadow-xl dark:hover:shadow-none border border-transparent transition-all"
                         >
                           <FiEdit2 />
                         </button>
@@ -671,7 +671,7 @@ const ProductManage = () => {
                               name: p.name,
                             })
                           }
-                          className="p-3 rounded-2xl text-slate-400 hover:bg-white hover:text-rose-500 hover:shadow-xl border border-transparent transition-all"
+                          className="p-3 rounded-2xl text-slate-400 dark:text-dark-text-secondary hover:bg-white dark:hover:bg-dark-bg hover:text-rose-500 dark:hover:text-rose-400 hover:shadow-xl dark:hover:shadow-none border border-transparent transition-all"
                         >
                           <FiTrash2 />
                         </button>
@@ -683,7 +683,7 @@ const ProductManage = () => {
             </tbody>
           </table>
         </div>
-        <div className="p-8 border-t border-slate-50 bg-slate-50/20">
+        <div className="p-8 border-t border-slate-50 dark:border-dark-border bg-slate-50/20 dark:bg-dark-bg/20">
           <AppPagination
             page={page}
             totalPages={totalPages}
@@ -706,20 +706,20 @@ const ProductManage = () => {
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-6xl max-h-[95vh] bg-white rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col"
+              className="relative w-full max-w-6xl max-h-[95vh] bg-white dark:bg-dark-surface rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col border border-transparent dark:border-dark-border transition-colors duration-300"
             >
-              <div className="px-10 py-7 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+              <div className="px-10 py-7 border-b border-slate-100 dark:border-dark-border flex items-center justify-between bg-slate-50/50 dark:bg-dark-bg/50">
                 <div>
-                  <h3 className="text-2xl font-black text-slate-900">
+                  <h3 className="text-2xl font-black text-slate-900 dark:text-white">
                     {editProduct ? "Sửa sản phẩm" : "Đăng sản phẩm mới"}
                   </h3>
-                  <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest mt-1">
+                  <p className="text-[11px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest mt-1">
                     Cấu hình chi tiết & Thông số kỹ thuật chuyên sâu
                   </p>
                 </div>
                 <button
                   onClick={handleCloseModal}
-                  className="w-12 h-12 rounded-2xl flex items-center justify-center text-slate-400 hover:bg-white hover:text-slate-900 hover:shadow-xl transition-all"
+                  className="w-12 h-12 rounded-2xl flex items-center justify-center text-slate-400 hover:bg-white dark:hover:bg-dark-bg hover:text-slate-900 dark:hover:text-white hover:shadow-xl transition-all"
                 >
                   <FiX className="text-2xl" />
                 </button>
@@ -733,19 +733,19 @@ const ProductManage = () => {
                 >
                   <div className="lg:col-span-4 space-y-8">
                     <div className="space-y-3">
-                      <label className="text-xs font-black uppercase tracking-widest text-slate-400 ml-1">
+                      <label className="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary ml-1">
                         Ảnh đại diện
                       </label>
-                      <div className="group relative w-full aspect-square rounded-[2rem] bg-slate-50 border-2 border-dashed border-slate-200 flex flex-col items-center justify-center overflow-hidden transition-all hover:border-indigo-400 hover:bg-indigo-50/30 shadow-inner">
+                      <div className="group relative w-full aspect-square rounded-[2rem] bg-slate-50 dark:bg-dark-bg border-2 border-dashed border-slate-200 dark:border-dark-border flex flex-col items-center justify-center overflow-hidden transition-all hover:border-indigo-400 dark:hover:border-indigo-500 hover:bg-indigo-50/30 shadow-inner">
                         {imagePreview ? (
                           <img
                             src={imagePreview}
-                            className="w-full h-full object-contain p-4"
+                            className="w-full h-full object-contain p-4 dark:mix-blend-normal"
                           />
                         ) : (
                           <>
-                            <FiUploadCloud className="text-4xl text-slate-300 group-hover:text-indigo-400 transition-colors mb-2" />
-                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                            <FiUploadCloud className="text-4xl text-slate-300 dark:text-slate-600 group-hover:text-indigo-400 transition-colors mb-2" />
+                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary">
                               Chọn ảnh chính
                             </span>
                           </>
@@ -760,18 +760,18 @@ const ProductManage = () => {
                     </div>
 
                     <div className="space-y-4">
-                      <label className="text-xs font-black uppercase tracking-widest text-slate-400 ml-1">
+                      <label className="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary ml-1">
                         Thư viện ảnh
                       </label>
                       <div className="grid grid-cols-3 gap-3">
                         {galleryPreviews.map((url, idx) => (
                           <div
                             key={idx}
-                            className="relative aspect-square rounded-2xl border border-slate-100 overflow-hidden group shadow-sm"
+                            className="relative aspect-square rounded-2xl border border-slate-100 dark:border-dark-border overflow-hidden group shadow-sm bg-white dark:bg-dark-bg"
                           >
                             <img
                               src={url}
-                              className="w-full h-full object-cover"
+                              className="w-full h-full object-cover dark:mix-blend-normal"
                             />
                             <button
                               type="button"
@@ -781,7 +781,7 @@ const ProductManage = () => {
                             </button>
                           </div>
                         ))}
-                        <div className="relative aspect-square rounded-2xl border-2 border-dashed border-slate-200 flex items-center justify-center text-slate-300 hover:border-indigo-400 hover:text-indigo-400 transition-all bg-slate-50/50">
+                        <div className="relative aspect-square rounded-2xl border-2 border-dashed border-slate-200 dark:border-dark-border flex items-center justify-center text-slate-300 dark:text-slate-600 hover:border-indigo-400 dark:hover:border-indigo-500 hover:text-indigo-400 transition-all bg-slate-50/50 dark:bg-dark-bg/50">
                           <FiPlus />
                           <input
                             type="file"
@@ -794,17 +794,17 @@ const ProductManage = () => {
                       </div>
                     </div>
 
-                    <div className="p-6 bg-slate-50 rounded-[2rem] border border-slate-100 space-y-6 shadow-inner">
+                    <div className="p-6 bg-slate-50 dark:bg-dark-bg rounded-[2rem] border border-slate-100 dark:border-dark-border space-y-6 shadow-inner">
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-1.5">
-                          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                          <span className="text-[10px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest ml-1">
                             Giá cơ bản
                           </span>
                           <div className="relative">
-                            <FiDollarSign className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs" />
+                            <FiDollarSign className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-dark-text-secondary text-xs" />
                             <input
                               type="number"
-                              className="input-modern h-11 pl-8 font-black text-sm"
+                              className="input-modern h-11 pl-8 font-black text-sm dark:bg-dark-surface dark:text-white dark:border-dark-border"
                               value={formData.price}
                               onChange={(e) =>
                                 setFormData({
@@ -816,14 +816,14 @@ const ProductManage = () => {
                           </div>
                         </div>
                         <div className="space-y-1.5">
-                          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                          <span className="text-[10px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest ml-1">
                             Giảm giá (%)
                           </span>
                           <div className="relative">
-                            <FiPercent className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs" />
+                            <FiPercent className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-dark-text-secondary text-xs" />
                             <input
                               type="number"
-                              className="input-modern h-11 pl-8 font-black text-sm"
+                              className="input-modern h-11 pl-8 font-black text-sm dark:bg-dark-surface dark:text-white dark:border-dark-border"
                               value={formData.discount}
                               onChange={(e) =>
                                 setFormData({
@@ -838,14 +838,14 @@ const ProductManage = () => {
 
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-1.5">
-                          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                          <span className="text-[10px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest ml-1">
                             Số lượng kho
                           </span>
                           <div className="relative">
-                            <FiPackage className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs" />
+                            <FiPackage className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-dark-text-secondary text-xs" />
                             <input
                               type="number"
-                              className="input-modern h-11 pl-8 font-black text-sm"
+                              className="input-modern h-11 pl-8 font-black text-sm dark:bg-dark-surface dark:text-white dark:border-dark-border"
                               value={formData.stock}
                               onChange={(e) =>
                                 setFormData({
@@ -857,24 +857,24 @@ const ProductManage = () => {
                           </div>
                         </div>
                         <div className="space-y-1.5">
-                          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                          <span className="text-[10px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest ml-1">
                             Đã bán
                           </span>
                           <div className="relative">
-                            <FiCheckCircle className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs" />
+                            <FiCheckCircle className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-dark-text-secondary text-xs" />
                             <input
                               type="number"
                               disabled
-                              className="input-modern h-11 pl-8 font-black text-sm cursor-not-allowed"
+                              className="input-modern h-11 pl-8 font-black text-sm cursor-not-allowed dark:bg-dark-surface dark:text-slate-400 dark:border-dark-border"
                               value={editProduct?.sold || 0}
                             />
                           </div>
                         </div>
                       </div>
 
-                      <div className="pt-4 border-t border-slate-200 space-y-4">
+                      <div className="pt-4 border-t border-slate-200 dark:border-dark-border space-y-4">
                         <label className="flex items-center justify-between cursor-pointer group">
-                          <span className="text-xs font-black uppercase text-slate-700 group-hover:text-indigo-600 transition-colors">
+                          <span className="text-xs font-black uppercase text-slate-700 dark:text-dark-text-primary group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                             Trạng thái kinh doanh
                           </span>
                           <div className="relative inline-flex items-center">
@@ -889,12 +889,12 @@ const ProductManage = () => {
                               }
                               className="sr-only peer"
                             />
-                            <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                            <div className="w-11 h-6 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
                           </div>
                         </label>
 
                         <label className="flex items-center justify-between cursor-pointer group">
-                          <span className="text-xs font-black uppercase text-slate-700 group-hover:text-indigo-600 transition-colors">
+                          <span className="text-xs font-black uppercase text-slate-700 dark:text-dark-text-primary group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                             Kích hoạt Biến thể
                           </span>
                           <div className="relative inline-flex items-center">
@@ -909,12 +909,12 @@ const ProductManage = () => {
                               }
                               className="sr-only peer"
                             />
-                            <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                            <div className="w-11 h-6 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
                           </div>
                         </label>
                       </div>
 
-                      <div className="pt-4 border-t border-slate-200">
+                      <div className="pt-4 border-t border-slate-200 dark:border-dark-border">
                         <label className="flex items-center gap-3 cursor-pointer group">
                           <input
                             type="checkbox"
@@ -925,28 +925,28 @@ const ProductManage = () => {
                                 isFlashSale: e.target.checked,
                               })
                             }
-                            className="form-checkbox h-5 w-5 text-orange-500 rounded-lg border-slate-300 focus:ring-orange-200"
+                            className="form-checkbox h-5 w-5 text-orange-500 rounded-lg border-slate-300 dark:border-dark-border focus:ring-orange-200 dark:bg-dark-surface"
                           />
-                          <span className="text-xs font-black uppercase text-slate-700 group-hover:text-orange-600 transition-colors flex items-center gap-2">
+                          <span className="text-xs font-black uppercase text-slate-700 dark:text-dark-text-primary group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors flex items-center gap-2">
                             <FiZap
                               className={
                                 formData.isFlashSale
                                   ? "text-orange-500 fill-orange-500"
-                                  : "text-slate-400"
+                                  : "text-slate-400 dark:text-dark-text-secondary"
                               }
                             />
                             Thiết lập Flash Sale
                           </span>
                         </label>
                         {formData.isFlashSale && (
-                          <div className="mt-4 space-y-4 animate-in fade-in slide-in-from-top-2 bg-white p-4 rounded-2xl border border-orange-100 shadow-sm">
+                          <div className="mt-4 space-y-4 animate-in fade-in slide-in-from-top-2 bg-white dark:bg-dark-surface p-4 rounded-2xl border border-orange-100 dark:border-orange-900/30 shadow-sm">
                             <div className="space-y-1">
                               <span className="text-[9px] font-black text-orange-400 uppercase ml-1">
                                 Giá khuyến mãi
                               </span>
                               <input
                                 type="number"
-                                className="input-modern h-10 text-xs font-black bg-orange-50/30 border-orange-100 focus:border-orange-500 focus:ring-orange-50"
+                                className="input-modern h-10 text-xs font-black bg-orange-50/30 dark:bg-dark-bg border-orange-100 dark:border-orange-900/50 focus:border-orange-500 focus:ring-orange-50 dark:text-white"
                                 placeholder="Nhập giá sale..."
                                 value={formData.flashSalePrice}
                                 onChange={(e) =>
@@ -959,12 +959,12 @@ const ProductManage = () => {
                             </div>
                             <div className="grid grid-cols-1 gap-3">
                               <div className="space-y-1">
-                                <span className="text-[9px] font-black text-slate-400 uppercase ml-1">
+                                <span className="text-[9px] font-black text-slate-400 dark:text-dark-text-secondary uppercase ml-1">
                                   Thời gian bắt đầu
                                 </span>
                                 <input
                                   type="datetime-local"
-                                  className="input-modern h-10 text-[10px] font-bold"
+                                  className="input-modern h-10 text-[10px] font-bold dark:bg-dark-bg dark:text-white dark:border-dark-border"
                                   value={formData.flashSaleStart}
                                   onChange={(e) =>
                                     setFormData({
@@ -975,12 +975,12 @@ const ProductManage = () => {
                                 />
                               </div>
                               <div className="space-y-1">
-                                <span className="text-[9px] font-black text-slate-400 uppercase ml-1">
+                                <span className="text-[9px] font-black text-slate-400 dark:text-dark-text-secondary uppercase ml-1">
                                   Thời gian kết thúc
                                 </span>
                                 <input
                                   type="datetime-local"
-                                  className="input-modern h-10 text-[10px] font-bold"
+                                  className="input-modern h-10 text-[10px] font-bold dark:bg-dark-bg dark:text-white dark:border-dark-border"
                                   value={formData.flashSaleEnd}
                                   onChange={(e) =>
                                     setFormData({
@@ -999,19 +999,19 @@ const ProductManage = () => {
 
                   <div className="lg:col-span-8 space-y-8">
                     <section className="space-y-6">
-                      <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-                        <FiSmartphone className="text-indigo-600" />
-                        <h4 className="text-xs font-black uppercase tracking-tighter text-slate-900">
+                      <div className="flex items-center gap-2 border-b border-slate-100 dark:border-dark-border pb-2">
+                        <FiSmartphone className="text-indigo-600 dark:text-indigo-400" />
+                        <h4 className="text-xs font-black uppercase tracking-tighter text-slate-900 dark:text-dark-text-primary">
                           Thông tin cơ bản
                         </h4>
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
-                          <label className="text-xs font-black uppercase tracking-widest text-slate-400 ml-1">
+                          <label className="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary ml-1">
                             Tên sản phẩm *
                           </label>
                           <input
-                            className="input-modern h-12 font-bold focus:ring-4 focus:ring-indigo-50"
+                            className="input-modern h-12 font-bold focus:ring-4 focus:ring-indigo-50 dark:focus:ring-indigo-900/10 dark:bg-dark-bg dark:text-white dark:border-dark-border"
                             placeholder="VD: iPhone 15 Pro Max 256GB"
                             value={formData.name}
                             onChange={(e) =>
@@ -1020,11 +1020,11 @@ const ProductManage = () => {
                           />
                         </div>
                         <div className="space-y-2">
-                          <label className="text-xs font-black uppercase tracking-widest text-slate-400 ml-1">
+                          <label className="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary ml-1">
                             SKU / Mã quản lý
                           </label>
                           <input
-                            className="input-modern h-12 font-mono text-indigo-600 bg-indigo-50/20 border-indigo-100"
+                            className="input-modern h-12 font-mono text-indigo-600 dark:text-indigo-400 bg-indigo-50/20 dark:bg-indigo-500/10 border-indigo-100 dark:border-indigo-900/30"
                             placeholder="VD: IP15PM-256-BLK"
                             value={formData.sku}
                             onChange={(e) =>
@@ -1036,11 +1036,11 @@ const ProductManage = () => {
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2 relative">
-                          <label className="text-xs font-black uppercase tracking-widest text-slate-400 ml-1">
+                          <label className="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary ml-1">
                             Thương hiệu
                           </label>
                           <select
-                            className="input-modern h-12 font-bold appearance-none pr-10"
+                            className="input-modern h-12 font-bold appearance-none pr-10 dark:bg-dark-bg dark:text-white dark:border-dark-border"
                             value={formData.brandId}
                             onChange={(e) =>
                               setFormData({
@@ -1056,14 +1056,14 @@ const ProductManage = () => {
                               </option>
                             ))}
                           </select>
-                          <FiChevronDown className="absolute right-4 top-[42px] text-slate-400 pointer-events-none" />
+                          <FiChevronDown className="absolute right-4 top-[42px] text-slate-400 dark:text-dark-text-secondary pointer-events-none" />
                         </div>
                         <div className="space-y-2 relative">
-                          <label className="text-xs font-black uppercase tracking-widest text-slate-400 ml-1">
+                          <label className="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary ml-1">
                             Danh mục sản phẩm
                           </label>
                           <select
-                            className="input-modern h-12 font-bold appearance-none pr-10"
+                            className="input-modern h-12 font-bold appearance-none pr-10 dark:bg-dark-bg dark:text-white dark:border-dark-border"
                             value={formData.categoryId}
                             onChange={(e) =>
                               setFormData({
@@ -1079,30 +1079,30 @@ const ProductManage = () => {
                               </option>
                             ))}
                           </select>
-                          <FiChevronDown className="absolute right-4 top-[42px] text-slate-400 pointer-events-none" />
+                          <FiChevronDown className="absolute right-4 top-[42px] text-slate-400 dark:text-dark-text-secondary pointer-events-none" />
                         </div>
                       </div>
                     </section>
 
                     {/* New Attributes Section */}
-                    <section className="space-y-6 pt-6 border-t border-slate-100">
-                      <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-                        <FiLayers className="text-indigo-600" />
-                        <h4 className="text-xs font-black uppercase tracking-tighter text-slate-900">
+                    <section className="space-y-6 pt-6 border-t border-slate-100 dark:border-dark-border">
+                      <div className="flex items-center gap-2 border-b border-slate-100 dark:border-dark-border pb-2">
+                        <FiLayers className="text-indigo-600 dark:text-indigo-400" />
+                        <h4 className="text-xs font-black uppercase tracking-tighter text-slate-900 dark:text-dark-text-primary">
                           Thông số kỹ thuật (Dropdown/Manual)
                         </h4>
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 bg-slate-50/50 p-6 rounded-[2rem] border border-slate-100">
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 bg-slate-50/50 dark:bg-dark-bg/50 p-6 rounded-[2rem] border border-slate-100 dark:border-dark-border">
                         {attributes.map((attr) => (
                           <div key={attr.id} className="space-y-2">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1 flex items-center gap-2">
+                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary ml-1 flex items-center gap-2">
                               {getAttrIcon(attr.code)} {attr.name}
                             </label>
                             <div className="relative">
                               <input
                                 list={`list-${attr.code}`}
-                                className="input-modern h-11 font-bold text-xs bg-white border-slate-200 focus:ring-4 focus:ring-indigo-50"
+                                className="input-modern h-11 font-bold text-xs bg-white dark:bg-dark-surface border-slate-200 dark:border-dark-border focus:ring-4 focus:ring-indigo-50 dark:focus:ring-indigo-900/10 dark:text-white"
                                 placeholder={`Chọn hoặc nhập ${attr.name}...`}
                                 value={formData.attributes[attr.code] || ""}
                                 onChange={(e) =>
@@ -1127,11 +1127,11 @@ const ProductManage = () => {
                     </section>
 
                     <div className="space-y-2">
-                      <label className="text-xs font-black uppercase tracking-widest text-slate-400 ml-1">
+                      <label className="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary ml-1">
                         Mô tả sản phẩm
                       </label>
                       <textarea
-                        className="input-modern resize-none h-40 py-4 focus:ring-4 focus:ring-indigo-50 font-medium"
+                        className="input-modern resize-none h-40 py-4 focus:ring-4 focus:ring-indigo-50 dark:focus:ring-indigo-900/10 font-medium dark:bg-dark-bg dark:text-white dark:border-dark-border"
                         placeholder="Nhập mô tả chi tiết về sản phẩm, tính năng nổi bật..."
                         value={formData.description}
                         onChange={(e) =>
@@ -1143,7 +1143,7 @@ const ProductManage = () => {
                       />
                     </div>
 
-                    <div className="pt-8 border-t border-slate-100">
+                    <div className="pt-8 border-t border-slate-100 dark:border-dark-border">
                       <VariantManager
                         productId={editProduct?.id}
                         initialVariants={
@@ -1162,21 +1162,21 @@ const ProductManage = () => {
                 </form>
               </div>
 
-              <div className="px-10 py-6 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between">
+              <div className="px-10 py-6 border-t border-slate-100 dark:border-dark-border bg-slate-50/50 dark:bg-dark-bg/50 flex items-center justify-between">
                 <button
                   onClick={handleCloseModal}
-                  className="px-8 py-3 rounded-2xl font-bold text-slate-500 hover:bg-slate-100 transition-all"
+                  className="px-8 py-3 rounded-2xl font-bold text-slate-500 dark:text-dark-text-secondary hover:bg-slate-100 dark:hover:bg-dark-bg transition-all"
                 >
                   Đóng
                 </button>
                 <div className="flex items-center gap-4">
-                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest hidden sm:inline">
+                  <span className="text-[10px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest hidden sm:inline">
                     Kiểm tra kỹ thông tin trước khi lưu
                   </span>
                   <button
                     form="product-form"
                     disabled={saving}
-                    className="px-12 py-4 bg-indigo-600 text-white rounded-[1.5rem] font-black uppercase tracking-widest shadow-xl shadow-indigo-200 hover:bg-indigo-700 active:scale-95 transition-all disabled:opacity-50 min-w-[220px] flex items-center justify-center gap-2"
+                    className="px-12 py-4 bg-indigo-600 text-white rounded-[1.5rem] font-black uppercase tracking-widest shadow-xl shadow-indigo-200 dark:shadow-none hover:bg-indigo-700 active:scale-95 transition-all disabled:opacity-50 min-w-[220px] flex items-center justify-center gap-2"
                   >
                     {saving ? (
                       <>

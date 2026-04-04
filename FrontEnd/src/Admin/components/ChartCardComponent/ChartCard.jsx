@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import {
   LineChart,
   Line,
@@ -41,9 +41,9 @@ const convertRevenueData = (arr, labelKey, valueKey) =>
   }));
 
 const formatCurrency = (value) => {
-  if (value >= 1_000_000_000) return `${(value / 1_000_000_000).toFixed(1)} tỷ`;
-  if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}tr`;
-  if (value >= 1_000) return `${(value / 1_000).toFixed(0)}k`;
+  if (value >= 1000000000) return `${(value / 1000000000).toFixed(1)} tỷ`;
+  if (value >= 1000000) return `${(value / 1000000).toFixed(1)}tr`;
+  if (value >= 1000) return `${(value / 1000).toFixed(0)}k`;
   return value.toLocaleString("vi-VN");
 };
 
@@ -92,64 +92,60 @@ const ChartCard = ({ token }) => {
     fetchDashboard();
   }, [fetchDashboard]);
 
-  const selectedData =
-    (type === PERIOD.WEEK
+  const selectedData = useMemo(() => {
+    const data = type === PERIOD.WEEK
       ? dashboardData.revenueByWeek
       : type === PERIOD.MONTH
         ? dashboardData.revenueByMonth
-        : dashboardData.revenueByYear
-    ).length > 0
-      ? type === PERIOD.WEEK
-        ? dashboardData.revenueByWeek
-        : type === PERIOD.MONTH
-          ? dashboardData.revenueByMonth
-          : dashboardData.revenueByYear
-      : FALLBACK_DATA[type];
+        : dashboardData.revenueByYear;
+    
+    return data.length > 0 ? data : FALLBACK_DATA[type];
+  }, [type, dashboardData]);
 
   return (
     <Motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white rounded-3xl border border-slate-200 shadow-soft overflow-hidden p-6"
+      className="bg-white dark:bg-dark-surface rounded-3xl border border-slate-200 dark:border-dark-border shadow-soft overflow-hidden p-4 md:p-8 transition-colors duration-300 w-full"
     >
-      <div className="flex justify-between items-start mb-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-8">
         <div>
-          <h5 className="text-lg font-black text-slate-900 tracking-tight">
+          <h5 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">
             Biểu đồ doanh thu
           </h5>
-          <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mt-1">
-            Dữ liệu thời gian thực
+          <p className="text-[11px] font-bold text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest mt-1">
+            Dữ liệu thời gian thực (Real-time analytics)
           </p>
         </div>
         <button
           onClick={fetchDashboard}
           disabled={loading}
-          className="flex items-center gap-2 px-4 py-2 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-xl text-xs font-bold transition-all border border-slate-200 active:scale-95"
+          className="flex items-center gap-2 px-5 py-2.5 bg-slate-50 dark:bg-dark-bg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-dark-text-secondary rounded-xl text-xs font-bold transition-all border border-slate-200 dark:border-dark-border active:scale-95 shadow-sm"
         >
           <FiRefreshCw className={`${loading ? "animate-spin" : ""}`} />
-          Làm mới
+          Làm mới dữ liệu
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-        <div className="bg-primary/5 rounded-2xl p-4 border border-primary/10">
-          <p className="text-[10px] font-black text-primary/60 uppercase tracking-widest mb-1">
-            Tổng doanh thu
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+        <div className="bg-indigo-50/50 dark:bg-indigo-500/5 border border-indigo-100 dark:border-indigo-500/10 rounded-2xl p-5">
+          <p className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest mb-1">
+            Tổng doanh thu hệ thống
           </p>
-          <h3 className="text-2xl font-black text-primary tracking-tight">
+          <h3 className="text-3xl font-black text-indigo-600 dark:text-indigo-400 tracking-tight">
             {formatCurrency(dashboardData.totalRevenue)}{" "}
-            <span className="text-sm font-bold opacity-70">₫</span>
+            <span className="text-base font-bold opacity-70">₫</span>
           </h3>
         </div>
-        <div className="flex items-center justify-end gap-2">
+        <div className="flex items-center justify-end gap-2 flex-wrap">
           {Object.values(PERIOD).map((p) => (
             <button
               key={p}
               onClick={() => setType(p)}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+              className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
                 type === p
-                  ? "bg-primary text-white shadow-lg shadow-primary/20"
-                  : "bg-white border border-slate-200 text-slate-500 hover:border-slate-400"
+                  ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/20"
+                  : "bg-white dark:bg-dark-bg border border-slate-200 dark:border-dark-border text-slate-500 dark:text-dark-text-secondary hover:border-indigo-400"
               }`}
             >
               {p === "week" ? "Tuần" : p === "month" ? "Tháng" : "Năm"}
@@ -158,45 +154,58 @@ const ChartCard = ({ token }) => {
         </div>
       </div>
 
-      <div className="h-[300px] w-full bg-slate-50/50 rounded-2xl p-4 border border-slate-100">
+      <div className="h-[400px] w-full min-w-0 bg-slate-50/30 dark:bg-dark-bg/20 rounded-[2rem] p-2 md:p-6 border border-slate-100 dark:border-dark-border">
         {loading ? (
-          <div className="h-full w-full flex flex-col gap-4 animate-pulse">
-            <div className="h-4 bg-slate-200 rounded-full w-1/4"></div>
-            <div className="flex-1 bg-slate-100 rounded-xl relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full animate-[shimmer_2s_infinite]"></div>
-            </div>
+          <div className="h-full w-full flex flex-col gap-6 animate-pulse">
+            <div className="h-6 bg-slate-200 dark:bg-slate-800 rounded-full w-1/4"></div>
+            <div className="flex-1 bg-slate-100 dark:bg-slate-800/50 rounded-2xl"></div>
           </div>
         ) : (
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={selectedData}>
+            <LineChart data={selectedData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
               <CartesianGrid
                 strokeDasharray="3 3"
-                stroke="#e2e8f0"
+                stroke="currentColor"
+                className="text-slate-200 dark:text-slate-800"
                 vertical={false}
               />
               <XAxis
                 dataKey="name"
                 axisLine={false}
                 tickLine={false}
-                tick={{ fill: "#94a3b8", fontSize: 11, fontWeight: 600 }}
-                dy={10}
+                tick={{ fill: "currentColor", fontSize: 10, fontWeight: 700 }}
+                className="text-slate-400 dark:text-dark-text-secondary"
+                dy={15}
               />
-              <YAxis hide />
+              <YAxis 
+                hide={false}
+                axisLine={false}
+                tickLine={false}
+                tick={{ fill: "currentColor", fontSize: 10, fontWeight: 700 }}
+                className="text-slate-400 dark:text-dark-text-secondary"
+                tickFormatter={formatCurrency}
+              />
               <Tooltip
                 contentStyle={{
-                  borderRadius: "16px",
-                  border: "none",
-                  boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1)",
+                  backgroundColor: "var(--bg-card, #1e293b)",
+                  borderRadius: "20px",
+                  border: "1px solid var(--border-color, #334155)",
+                  boxShadow: "0 20px 25px -5px rgba(0,0,0,0.3)",
+                  padding: "12px 16px",
+                  color: "#fff"
                 }}
-                itemStyle={{ fontSize: "12px", fontWeight: "bold" }}
+                itemStyle={{ fontSize: "13px", fontWeight: "900", color: "#6366f1" }}
+                labelStyle={{ fontSize: "11px", fontWeight: "bold", color: "#94a3b8", marginBottom: "4px" }}
+                cursor={{ stroke: "#6366f1", strokeWidth: 2, strokeDasharray: "5 5" }}
               />
               <Line
                 type="monotone"
                 dataKey="value"
-                stroke="#2563eb"
+                stroke="#6366f1"
                 strokeWidth={4}
-                dot={{ fill: "#2563eb", strokeWidth: 2, r: 4, stroke: "#fff" }}
-                activeDot={{ r: 6, strokeWidth: 0 }}
+                dot={{ fill: "#6366f1", strokeWidth: 2, r: 5, stroke: "#fff" }}
+                activeDot={{ r: 8, strokeWidth: 4, stroke: "rgba(99, 102, 241, 0.2)" }}
+                animationDuration={1500}
               />
             </LineChart>
           </ResponsiveContainer>

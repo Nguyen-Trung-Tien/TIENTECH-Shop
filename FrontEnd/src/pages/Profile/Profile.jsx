@@ -132,9 +132,9 @@ const Profile = () => {
 
   if (loading && !formData.username) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-surface-50 gap-4">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-surface-50 dark:bg-dark-bg gap-4">
         <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-        <p className="text-surface-400 font-bold uppercase tracking-widest text-[11px]">
+        <p className="text-surface-400 dark:text-dark-text-secondary font-bold uppercase tracking-widest text-[11px]">
           Đang tải thông tin cá nhân...
         </p>
       </div>
@@ -142,22 +142,22 @@ const Profile = () => {
   }
 
   return (
-    <div className="min-h-screen bg-surface-50 py-12">
+    <div className="min-h-screen bg-surface-50 dark:bg-dark-bg py-12 transition-colors duration-300">
       <div className="container-custom">
         {/* Breadcrumb / Back */}
         <Link
           to="/"
-          className="inline-flex items-center gap-2 text-surface-400 hover:text-primary transition-colors mb-8 font-bold text-[13px] uppercase tracking-widest"
+          className="inline-flex items-center gap-2 text-surface-400 dark:text-dark-text-secondary hover:text-primary transition-colors mb-8 font-bold text-[13px] uppercase tracking-widest"
         >
           <FiArrowLeft size={18} /> Quay lại trang chủ
         </Link>
 
         {/* Page Header */}
         <div className="mb-10">
-          <h1 className="text-3xl font-display font-bold text-surface-900 mb-2">
+          <h1 className="text-3xl font-display font-bold text-surface-900 dark:text-white mb-2">
             Hồ sơ cá nhân
           </h1>
-          <p className="text-surface-500 font-medium">
+          <p className="text-surface-500 dark:text-dark-text-secondary font-medium">
             Quản lý thông tin tài khoản và bảo mật của bạn.
           </p>
         </div>
@@ -165,13 +165,13 @@ const Profile = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* Left Column: Avatar & Overview */}
           <div className="lg:col-span-4 space-y-6">
-            <div className="bg-white rounded-[32px] p-8 border border-surface-200 shadow-soft text-center overflow-hidden relative">
+            <div className="bg-white dark:bg-dark-surface rounded-[32px] p-8 border border-surface-200 dark:border-dark-border shadow-soft text-center overflow-hidden relative">
               {/* Profile Background Decor */}
-              <div className="absolute top-0 left-0 w-full h-24 bg-primary/5 -z-0"></div>
+              <div className="absolute top-0 left-0 w-full h-24 bg-primary/5 dark:bg-primary/10 -z-0"></div>
 
               <div className="relative z-10">
                 <div
-                  className="group relative w-32 h-32 mx-auto mb-6 rounded-full border-4 border-white shadow-xl cursor-pointer overflow-hidden"
+                  className="group relative w-32 h-32 mx-auto mb-6 rounded-full border-4 border-white dark:border-dark-surface shadow-xl cursor-pointer overflow-hidden"
                   onClick={() => setShowAvatarModal(true)}
                 >
                   <img
@@ -184,10 +184,10 @@ const Profile = () => {
                   </div>
                 </div>
 
-                <h2 className="text-xl font-bold text-surface-900 mb-1">
+                <h2 className="text-xl font-bold text-surface-900 dark:text-white mb-1">
                   {formData.username || "Người dùng"}
                 </h2>
-                <p className="text-sm text-surface-500 mb-6">
+                <p className="text-sm text-surface-500 dark:text-dark-text-secondary mb-6">
                   {formData.email}
                 </p>
 
@@ -202,7 +202,7 @@ const Profile = () => {
                   </Button>
                   <Button
                     variant="surface"
-                    className="w-full text-surface-700 font-bold"
+                    className="w-full text-surface-700 dark:text-dark-text-primary font-bold bg-white dark:bg-dark-bg border dark:border-dark-border"
                     icon={FiLock}
                     onClick={() => setShowPasswordModal(true)}
                   >
@@ -213,7 +213,7 @@ const Profile = () => {
             </div>
 
             {/* Quick Stats or Info */}
-            <div className=" bg-white dark:bg-surface-900 rounded-[32px] p-8 text-gray-900 dark:text-white shadow-xl dark:shadow-surface-900/20">
+            <div className=" bg-white dark:bg-dark-surface rounded-[32px] p-8 border border-surface-200 dark:border-dark-border shadow-soft">
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center text-primary">
                   <FiUser size={20} />
@@ -225,8 +225,8 @@ const Profile = () => {
               </div>
 
               <div className="space-y-4">
-                <div className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-white/10">
-                  <span className="text-gray-500 dark:text-white/50 text-sm font-medium">
+                <div className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-dark-border">
+                  <span className="text-gray-500 dark:text-dark-text-secondary text-sm font-medium">
                     Xếp hạng
                   </span>
 
@@ -245,8 +245,8 @@ const Profile = () => {
                   </Badge>
                 </div>
 
-                <div className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-white/10">
-                  <span className="text-gray-500 dark:text-white/50 text-sm font-medium">
+                <div className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-dark-border">
+                  <span className="text-gray-500 dark:text-dark-text-secondary text-sm font-medium">
                     Điểm tích lũy
                   </span>
 
@@ -256,11 +256,11 @@ const Profile = () => {
                 </div>
 
                 <div className="flex justify-between items-center py-2">
-                  <span className="text-gray-500 dark:text-white/50 text-sm font-medium">
+                  <span className="text-gray-500 dark:text-dark-text-secondary text-sm font-medium">
                     Tham gia từ
                   </span>
 
-                  <span className="font-bold">
+                  <span className="font-bold text-gray-900 dark:text-white">
                     {user?.createdAt
                       ? new Date(user.createdAt).toLocaleDateString("vi-VN")
                       : "N/A"}
@@ -272,9 +272,9 @@ const Profile = () => {
 
           {/* Right Column: Detailed Form */}
           <div className="lg:col-span-8 space-y-8">
-            <div className="bg-white rounded-[32px] p-8 md:p-10 border border-surface-200 shadow-soft">
-              <div className="flex items-center justify-between mb-8 pb-6 border-b border-surface-100">
-                <h3 className="text-xl font-display font-bold text-surface-900">
+            <div className="bg-white dark:bg-dark-surface rounded-[32px] p-8 md:p-10 border border-surface-200 dark:border-dark-border shadow-soft">
+              <div className="flex items-center justify-between mb-8 pb-6 border-b border-surface-100 dark:border-dark-border">
+                <h3 className="text-xl font-display font-bold text-surface-900 dark:text-white">
                   Chi tiết thông tin
                 </h3>
                 {isEditing && (
@@ -318,14 +318,14 @@ const Profile = () => {
                     key={field.name}
                     className={`${field.colSpan ? "md:col-span-2" : ""} space-y-1.5`}
                   >
-                    <label className="text-[11px] font-black text-surface-400 uppercase tracking-widest ml-1">
+                    <label className="text-[11px] font-black text-surface-400 dark:text-dark-text-secondary uppercase tracking-widest ml-1">
                       {field.label}
                     </label>
                     <div
                       className={`relative group transition-all duration-300 ${isEditing ? "opacity-100" : "opacity-80"}`}
                     >
                       <div
-                        className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors ${isEditing ? "text-primary" : "text-surface-300"}`}
+                        className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors ${isEditing ? "text-primary" : "text-surface-300 dark:text-dark-text-secondary"}`}
                       >
                         <field.icon size={18} />
                       </div>
@@ -336,10 +336,10 @@ const Profile = () => {
                         onChange={handleChange}
                         disabled={!isEditing}
                         placeholder={field.placeholder}
-                        className={`w-full h-14 pl-12 pr-4 bg-surface-50 border-2 rounded-2xl text-[15px] font-bold outline-none transition-all ${
+                        className={`w-full h-14 pl-12 pr-4 bg-surface-50 dark:bg-dark-bg border-2 rounded-2xl text-[15px] font-bold outline-none transition-all ${
                           isEditing
-                            ? "bg-white border-primary/20 focus:border-primary focus:ring-4 focus:ring-primary/5"
-                            : "border-transparent bg-surface-50 text-surface-900 cursor-not-allowed"
+                            ? "bg-white dark:bg-dark-surface border-primary/20 focus:border-primary focus:ring-4 focus:ring-primary/5 text-surface-900 dark:text-white"
+                            : "border-transparent bg-surface-50 dark:bg-dark-bg text-surface-900 dark:text-white cursor-not-allowed"
                         }`}
                       />
                     </div>
@@ -375,7 +375,7 @@ const Profile = () => {
             </div>
 
             {/* Address Management Section */}
-            <div className="bg-white rounded-[32px] p-8 md:p-10 border border-surface-200 shadow-soft">
+            <div className="bg-white dark:bg-dark-surface rounded-[32px] p-8 md:p-10 border border-surface-200 dark:border-dark-border shadow-soft">
               <AddressManager />
             </div>
           </div>
@@ -390,7 +390,7 @@ const Profile = () => {
         size="md"
       >
         <div className="space-y-6 text-center">
-          <div className="w-48 h-48 mx-auto rounded-full border-4 border-surface-100 overflow-hidden shadow-inner">
+          <div className="w-48 h-48 mx-auto rounded-full border-4 border-surface-100 dark:border-dark-border overflow-hidden shadow-inner bg-white dark:bg-dark-bg">
             <img
               src={preview || "/images/avatar-default.png"}
               alt="Preview"
@@ -405,9 +405,9 @@ const Profile = () => {
               onChange={handleFileChange}
               className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
             />
-            <div className="w-full h-14 bg-surface-50 border-2 border-dashed border-surface-200 rounded-2xl flex items-center justify-center gap-2 group-hover:border-primary/50 group-hover:bg-primary/5 transition-all">
-              <FiCamera className="text-surface-400 group-hover:text-primary" />
-              <span className="text-sm font-bold text-surface-600 group-hover:text-primary">
+            <div className="w-full h-14 bg-surface-50 dark:bg-dark-bg border-2 border-dashed border-surface-200 dark:border-dark-border rounded-2xl flex items-center justify-center gap-2 group-hover:border-primary/50 group-hover:bg-primary/5 transition-all">
+              <FiCamera className="text-surface-400 dark:text-dark-text-secondary group-hover:text-primary" />
+              <span className="text-sm font-bold text-surface-600 dark:text-dark-text-secondary group-hover:text-primary">
                 Chọn ảnh từ thiết bị
               </span>
             </div>

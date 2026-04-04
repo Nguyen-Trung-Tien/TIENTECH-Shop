@@ -78,12 +78,12 @@ const Sidebar = ({ collapsed }) => {
 
   return (
     <aside
-      className={`sticky top-0 h-screen bg-slate-950 text-slate-400 transition-all duration-300 ease-in-out z-50 flex flex-col border-r border-slate-800/50 ${
+      className={`sticky top-0 h-screen bg-white dark:bg-dark-surface text-slate-500 dark:text-dark-text-secondary transition-all duration-300 ease-in-out z-50 flex flex-col border-r border-slate-200 dark:border-dark-border ${
         collapsed ? "w-20" : "w-64"
       }`}
     >
       {/* Brand Logo / Header */}
-      <div className="h-16 flex items-center px-6 border-b border-slate-800/50">
+      <div className="h-16 flex items-center px-6 border-b border-slate-100 dark:border-dark-border">
         {collapsed ? (
           <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-black text-sm shadow-lg shadow-indigo-500/20">
             T
@@ -94,10 +94,10 @@ const Sidebar = ({ collapsed }) => {
               T
             </div>
             <div>
-              <h1 className="text-sm font-bold text-white tracking-tight leading-none">
+              <h1 className="text-sm font-bold text-slate-900 dark:text-white tracking-tight leading-none">
                 Admin<span className="text-indigo-500">Panel</span>
               </h1>
-              <p className="text-[9px] uppercase tracking-[0.1em] text-slate-400 font-bold mt-1">
+              <p className="text-[9px] uppercase tracking-[0.1em] text-slate-400 dark:text-dark-text-secondary font-bold mt-1">
                 Management System
               </p>
             </div>
@@ -108,7 +108,7 @@ const Sidebar = ({ collapsed }) => {
       {/* Navigation Menu */}
       <nav className="flex-1 px-3 py-6 space-y-1 overflow-y-auto custom-scrollbar">
         {!collapsed && (
-          <p className="px-3 mb-2 text-[10px] font-bold uppercase tracking-widest text-slate-600">
+          <p className="px-3 mb-2 text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary/50">
             Hệ thống
           </p>
         )}
@@ -125,13 +125,13 @@ const Sidebar = ({ collapsed }) => {
                   onClick={() => toggleMenu(item.label)}
                   className={`w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group ${
                     isSubActive
-                      ? "text-white bg-slate-900/50"
-                      : "hover:bg-slate-900 hover:text-white"
+                      ? "text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10"
+                      : "hover:bg-slate-50 dark:hover:bg-dark-bg text-slate-600 dark:text-dark-text-secondary"
                   }`}
                 >
                   <div className="flex items-center gap-3">
                     <span
-                      className={`text-lg flex-shrink-0 ${isSubActive ? "text-indigo-500" : "text-slate-500 group-hover:text-primary transition-colors"}`}
+                      className={`text-lg flex-shrink-0 ${isSubActive ? "text-indigo-600 dark:text-indigo-400" : "text-slate-400 dark:text-dark-text-secondary group-hover:text-primary transition-colors"}`}
                     >
                       {item.icon}
                     </span>
@@ -163,8 +163,8 @@ const Sidebar = ({ collapsed }) => {
                             to={sub.to}
                             className={`block px-3 py-2 rounded-lg text-xs font-bold transition-all ${
                               location.pathname === sub.to
-                                ? "text-indigo-500 bg-indigo-500/10"
-                                : "text-slate-500 hover:text-slate-300 hover:bg-slate-900"
+                                ? "text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10"
+                                : "text-slate-500 dark:text-dark-text-secondary hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-dark-bg"
                             }`}
                           >
                             {sub.label}
@@ -186,12 +186,12 @@ const Sidebar = ({ collapsed }) => {
               className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group relative ${
                 isActive
                   ? "bg-indigo-600 text-white shadow-xl shadow-indigo-500/20"
-                  : "hover:bg-slate-900 hover:text-white"
+                  : "hover:bg-slate-50 dark:hover:bg-dark-bg text-slate-600 dark:text-dark-text-secondary"
               }`}
               title={collapsed ? item.label : ""}
             >
               <span
-                className={`text-lg flex-shrink-0 ${isActive ? "text-white" : "text-slate-500 group-hover:text-primary transition-colors"}`}
+                className={`text-lg flex-shrink-0 ${isActive ? "text-white" : "text-slate-400 dark:text-dark-text-secondary group-hover:text-primary transition-colors"}`}
               >
                 {item.icon}
               </span>
@@ -210,11 +210,11 @@ const Sidebar = ({ collapsed }) => {
       </nav>
 
       {/* User Quick Info & Logout */}
-      <div className="p-4 border-t border-slate-800/50">
+      <div className="p-4 border-t border-slate-100 dark:border-dark-border">
         <button
           onClick={handleLogout}
           disabled={loggingOut}
-          className={`flex items-center gap-3 px-3 py-3 w-full rounded-xl text-slate-500 hover:bg-rose-500/10 hover:text-rose-400 transition-all duration-200 group ${
+          className={`flex items-center gap-3 px-3 py-3 w-full rounded-xl text-slate-500 dark:text-dark-text-secondary hover:bg-rose-50 dark:hover:bg-rose-500/10 hover:text-rose-600 dark:hover:text-rose-400 transition-all duration-200 group ${
             collapsed ? "justify-center" : ""
           }`}
           title={collapsed ? "Đăng xuất" : ""}

@@ -94,17 +94,17 @@ const Notifications = () => {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-surface-50 py-12">
+    <div className="min-h-screen bg-surface-50 dark:bg-dark-bg py-12 transition-colors duration-300">
       <div className="container-custom max-w-4xl">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
           <div>
             <Link
               to="/"
-              className="inline-flex items-center gap-2 text-surface-400 hover:text-primary transition-colors mb-4 font-bold text-[11px] uppercase tracking-widest"
+              className="inline-flex items-center gap-2 text-surface-400 dark:text-dark-text-secondary hover:text-primary transition-colors mb-4 font-bold text-[11px] uppercase tracking-widest"
             >
               <FiArrowLeft size={16} /> Quay lại
             </Link>
-            <h1 className="text-3xl font-display font-bold text-surface-900 flex items-center gap-3">
+            <h1 className="text-3xl font-display font-bold text-surface-900 dark:text-white flex items-center gap-3">
               <FiBell className="text-primary" />
               Thông báo của bạn
             </h1>
@@ -113,23 +113,23 @@ const Notifications = () => {
           {notifications.length > 0 && (
             <button
               onClick={handleMarkAllRead}
-              className="px-6 py-2.5 bg-white border border-surface-200 rounded-2xl text-[11px] font-black uppercase tracking-widest text-surface-600 hover:border-primary hover:text-primary transition-all shadow-sm flex items-center gap-2"
+              className="px-6 py-2.5 bg-white dark:bg-dark-surface border border-surface-200 dark:border-dark-border rounded-2xl text-[11px] font-black uppercase tracking-widest text-surface-600 dark:text-dark-text-secondary hover:border-primary hover:text-primary transition-all shadow-sm flex items-center gap-2"
             >
               <FiCheck /> Đánh dấu tất cả đã đọc
             </button>
           )}
         </div>
 
-        <div className="bg-white rounded-[32px] border border-surface-200 shadow-soft overflow-hidden">
+        <div className="bg-white dark:bg-dark-surface rounded-[32px] border border-surface-200 dark:border-dark-border shadow-soft overflow-hidden">
           {loading && notifications.length === 0 ? (
             <div className="p-20 text-center">
               <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-              <p className="text-surface-400 font-bold uppercase tracking-widest text-[10px]">
+              <p className="text-surface-400 dark:text-dark-text-secondary font-bold uppercase tracking-widest text-[10px]">
                 Đang tải thông báo...
               </p>
             </div>
           ) : notifications.length > 0 ? (
-            <div className="divide-y divide-surface-100">
+            <div className="divide-y divide-surface-100 dark:divide-dark-border">
               {notifications.map((n, index) => (
                 <Motion.div
                   initial={{ opacity: 0, y: 10 }}
@@ -137,15 +137,15 @@ const Notifications = () => {
                   transition={{ delay: index * 0.03 }}
                   key={n.id}
                   onClick={() => handleNotificationClick(n)}
-                  className={`p-6 md:p-8 flex gap-4 md:gap-6 cursor-pointer hover:bg-surface-50 transition-all relative group ${!n.isRead ? "bg-primary/5" : ""}`}
+                  className={`p-6 md:p-8 flex gap-4 md:gap-6 cursor-pointer hover:bg-surface-50 dark:hover:bg-dark-bg/50 transition-all relative group ${!n.isRead ? "bg-primary/5 dark:bg-primary/10" : ""}`}
                 >
                   <div
                     className={`w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 text-xl shadow-sm ${
                       n.type === "order"
-                        ? "bg-sky-100 text-sky-600"
+                        ? "bg-sky-100 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400"
                         : n.type === "promotion"
-                          ? "bg-rose-100 text-rose-600"
-                          : "bg-primary/10 text-primary"
+                          ? "bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400"
+                          : "bg-primary/10 dark:bg-primary/20 text-primary"
                     }`}
                   >
                     {n.type === "order" ? <FiPackage /> : <FiInfo />}
@@ -154,7 +154,7 @@ const Notifications = () => {
                   <div className="flex-grow min-w-0">
                     <div className="flex items-start justify-between gap-4 mb-1">
                       <h3
-                        className={`text-base font-bold text-surface-900 leading-tight ${!n.isRead ? "" : "opacity-70"}`}
+                        className={`text-base font-bold text-surface-900 dark:text-white leading-tight ${!n.isRead ? "" : "opacity-70"}`}
                       >
                         {n.title}
                       </h3>
@@ -164,13 +164,13 @@ const Notifications = () => {
                     </div>
 
                     <p
-                      className={`text-sm text-surface-500 leading-relaxed mb-4 ${!n.isRead ? "font-medium" : ""}`}
+                      className={`text-sm text-surface-500 dark:text-dark-text-secondary leading-relaxed mb-4 ${!n.isRead ? "font-medium" : ""}`}
                     >
                       {n.message}
                     </p>
 
                     <div className="flex items-center gap-4">
-                      <div className="flex items-center gap-1.5 text-[10px] font-bold text-surface-400 uppercase tracking-widest">
+                      <div className="flex items-center gap-1.5 text-[10px] font-bold text-surface-400 dark:text-dark-text-secondary uppercase tracking-widest">
                         <FiClock className="text-primary" />
                         {new Date(n.createdAt).toLocaleTimeString("vi-VN", {
                           hour: "2-digit",
@@ -181,17 +181,15 @@ const Notifications = () => {
                       </div>
                     </div>
                   </div>
-
-                  {/* Mobile tap indicator or actions would go here */}
                 </Motion.div>
               ))}
 
               {hasMore && (
-                <div className="p-8 text-center bg-surface-50/30">
+                <div className="p-8 text-center bg-surface-50/30 dark:bg-dark-bg/30">
                   <button
                     onClick={() => fetchNotifications(true)}
                     disabled={loading}
-                    className="px-10 py-3 bg-white border border-surface-200 rounded-2xl text-xs font-black uppercase tracking-widest text-surface-600 hover:border-primary hover:text-primary transition-all shadow-sm disabled:opacity-50"
+                    className="px-10 py-3 bg-white dark:bg-dark-surface border border-surface-200 dark:border-dark-border rounded-2xl text-xs font-black uppercase tracking-widest text-surface-600 dark:text-dark-text-secondary hover:border-primary hover:text-primary transition-all shadow-sm disabled:opacity-50"
                   >
                     {loading ? "Đang tải..." : "Xem thêm thông báo"}
                   </button>
@@ -200,13 +198,13 @@ const Notifications = () => {
             </div>
           ) : (
             <div className="p-32 text-center">
-              <div className="w-24 h-24 bg-surface-50 rounded-full flex items-center justify-center mx-auto mb-6">
-                <FiBell className="text-surface-200" size={48} />
+              <div className="w-24 h-24 bg-surface-50 dark:bg-dark-bg rounded-full flex items-center justify-center mx-auto mb-6">
+                <FiBell className="text-surface-200 dark:text-dark-border" size={48} />
               </div>
-              <h3 className="text-xl font-bold text-surface-900 mb-2">
+              <h3 className="text-xl font-bold text-surface-900 dark:text-white mb-2">
                 Hộp thư trống
               </h3>
-              <p className="text-surface-500 font-medium">
+              <p className="text-surface-500 dark:text-dark-text-secondary font-medium">
                 Bạn không có thông báo nào vào lúc này.
               </p>
             </div>

@@ -73,9 +73,9 @@ const PricePredictionModal = ({ productId, isOpen, onClose }) => {
         };
       default:
         return {
-          bg: "bg-slate-50",
-          text: "text-slate-600",
-          border: "border-slate-100",
+          bg: "bg-slate-50 dark:bg-dark-bg",
+          text: "text-slate-600 dark:text-dark-text-secondary",
+          border: "border-slate-100 dark:border-dark-border",
           label: "Chưa rõ",
           icon: <FiInfo />,
         };

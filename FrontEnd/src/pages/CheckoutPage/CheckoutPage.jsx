@@ -147,14 +147,14 @@ const CheckoutPage = () => {
   };
 
   return (
-    <main className="min-h-screen bg-slate-50 dark:bg-dark-bg py-12">
+    <main className="min-h-screen bg-slate-50 dark:bg-dark-bg py-12 transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-10">
           <div className="flex items-center gap-4">
             <Link
               to="/cart"
-              className="p-3 bg-white dark:bg-dark-card rounded-2xl shadow-sm text-slate-400 hover:text-primary transition-all"
+              className="p-3 bg-white dark:bg-dark-surface rounded-2xl shadow-sm text-slate-400 dark:text-dark-text-secondary hover:text-primary transition-all border border-transparent dark:border-dark-border"
             >
               <FiArrowLeft size={20} />
             </Link>
@@ -162,7 +162,7 @@ const CheckoutPage = () => {
               <h1 className="text-3xl font-black text-slate-900 dark:text-white uppercase tracking-tight">
                 Thanh toán
               </h1>
-              <div className="flex items-center gap-2 text-slate-400 text-xs font-bold uppercase tracking-widest mt-1">
+              <div className="flex items-center gap-2 text-slate-400 dark:text-dark-text-secondary text-xs font-bold uppercase tracking-widest mt-1">
                 <span>Giỏ hàng</span>
                 <FiChevronRight />
                 <span className="text-primary">Thanh toán</span>
@@ -183,7 +183,7 @@ const CheckoutPage = () => {
             />
 
             {/* List items section */}
-            <div className="bg-white dark:bg-dark-card rounded-[32px] p-8 shadow-sm border border-slate-100 dark:border-dark-border">
+            <div className="bg-white dark:bg-dark-surface rounded-[32px] p-8 shadow-sm border border-slate-100 dark:border-dark-border">
               <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-widest mb-6 flex items-center gap-2">
                 <FiShoppingBag className="text-primary" /> Sản phẩm (
                 {selectedItems.length})
@@ -194,11 +194,11 @@ const CheckoutPage = () => {
                     key={idx}
                     className="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 dark:bg-dark-bg border border-slate-100 dark:border-dark-border"
                   >
-                    <div className="w-16 h-16 bg-white rounded-xl overflow-hidden flex-shrink-0 border border-slate-100">
+                    <div className="w-16 h-16 bg-white dark:bg-dark-bg rounded-xl overflow-hidden flex-shrink-0 border border-slate-100 dark:border-dark-border">
                       <img
                         src={item.variant?.imageUrl || item.product?.image}
                         alt={item.product?.name}
-                        className="w-full h-full object-contain p-2"
+                        className="w-full h-full object-contain p-2 dark:mix-blend-normal"
                       />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -206,7 +206,7 @@ const CheckoutPage = () => {
                         {item.product?.name}
                       </h4>
                       {item.variant && (
-                        <p className="text-[10px] font-bold text-slate-400 uppercase mt-1">
+                        <p className="text-[10px] font-bold text-slate-400 dark:text-dark-text-secondary uppercase mt-1">
                           Loại:{" "}
                           {Object.values(item.variant.attributes || {}).join(
                             " / ",
@@ -222,7 +222,7 @@ const CheckoutPage = () => {
                           ).toLocaleString()}
                           ₫
                         </p>
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-200 dark:bg-dark-surface px-2 py-1 rounded-md">
+                        <p className="text-[10px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest bg-slate-200 dark:bg-dark-surface px-2 py-1 rounded-md">
                           Số lượng: {item.quantity}
                         </p>
                       </div>
@@ -233,7 +233,7 @@ const CheckoutPage = () => {
             </div>
 
             {/* Voucher Selection in Checkout */}
-            <div className="bg-white dark:bg-dark-card rounded-[32px] p-8 shadow-sm border border-slate-100 dark:border-dark-border">
+            <div className="bg-white dark:bg-dark-surface rounded-[32px] p-8 shadow-sm border border-slate-100 dark:border-dark-border">
               <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-widest mb-6 flex items-center gap-2">
                 <FiCheckCircle className="text-primary" /> Ưu đãi của bạn
               </h3>

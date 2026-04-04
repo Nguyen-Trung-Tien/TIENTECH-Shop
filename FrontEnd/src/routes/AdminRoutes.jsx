@@ -5,6 +5,7 @@ import AdminLayout from "../Admin/AdminLayout";
 
 import AdminLogin from "../Admin/pages/LoginAdmin/AdminLogin";
 import Dashboard from "../Admin/pages/Dashboard/Dashboard";
+import AdminSearch from "../Admin/pages/Dashboard/AdminSearch";
 import Categories from "../Admin/pages/Categories/Categories";
 import OrderManage from "../Admin/pages/OrderManage/OrderManage";
 import ProductManage from "../Admin/pages/ProductManage/ProductManage";
@@ -29,6 +30,7 @@ const AdminRoutes = () => {
         <Route element={<AdminLayout />}>
           <Route index element={<Dashboard />} />
           <Route path="dashboard" element={<Dashboard />} />
+          <Route path="search" element={<AdminSearch />} />
           <Route path="orders" element={<OrderManage />} />
           <Route path="order/:id" element={<OrderDetail />} />
           <Route path="orders-return" element={<OrdersReturnPage />} />

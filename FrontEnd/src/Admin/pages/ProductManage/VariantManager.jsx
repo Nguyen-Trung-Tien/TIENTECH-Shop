@@ -165,7 +165,7 @@ const VariantManager = ({
           toast.success("Cấu hình phiên bản đã được lưu!");
           onRefresh();
         }
-      } catch (err) {
+      } catch {
         toast.error("Lỗi cập nhật biến thể");
       } finally {
         setLoading(false);
@@ -186,7 +186,7 @@ const VariantManager = ({
         await deleteVariant(v.id);
         toast.success("Đã xóa phiên bản");
         onRefresh();
-      } catch (err) {
+      } catch {
         toast.error("Lỗi khi xóa");
       }
     } else {
@@ -219,30 +219,30 @@ const VariantManager = ({
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center gap-3 border-b border-slate-100 pb-3">
-        <div className="w-10 h-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-200">
+      <div className="flex items-center gap-3 border-b border-slate-100 dark:border-dark-border pb-3">
+        <div className="w-10 h-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-200 dark:shadow-none">
           <FiSettings size={20} />
         </div>
         <div>
-          <h4 className="text-sm font-black text-slate-900 uppercase tracking-widest">
+          <h4 className="text-sm font-black text-slate-900 dark:text-dark-text-primary uppercase tracking-widest">
             Cấu hình Phiên bản & Biến thể
           </h4>
-          <p className="text-[10px] font-bold text-slate-400 uppercase mt-0.5">
+          <p className="text-[10px] font-bold text-slate-400 dark:text-dark-text-secondary uppercase mt-0.5">
             Phân loại sản phẩm theo Màu sắc, Dung lượng, RAM...
           </p>
         </div>
       </div>
 
-      <div className="bg-slate-50/50 p-6 rounded-[2.5rem] border border-slate-100 space-y-6 shadow-inner">
+      <div className="bg-slate-50/50 dark:bg-dark-bg/50 p-6 rounded-[2.5rem] border border-slate-100 dark:border-dark-border space-y-6 shadow-inner">
         <div className="flex items-center justify-between">
-          <h5 className="text-[10px] font-black uppercase text-slate-500 tracking-widest flex items-center gap-2">
+          <h5 className="text-[10px] font-black uppercase text-slate-500 dark:text-dark-text-secondary tracking-widest flex items-center gap-2">
             <FiPlus className="text-indigo-500" /> 1. Thiết lập các nhóm phân
             loại
           </h5>
           <button
             type="button"
             onClick={addOption}
-            className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-[10px] font-black text-indigo-600 hover:border-indigo-400 hover:bg-indigo-50 transition-all shadow-sm"
+            className="px-4 py-2 bg-white dark:bg-dark-surface border border-slate-200 dark:border-dark-border rounded-xl text-[10px] font-black text-indigo-600 dark:text-indigo-400 hover:border-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-all shadow-sm"
           >
             THÊM NHÓM MỚI
           </button>
@@ -252,24 +252,24 @@ const VariantManager = ({
           {localOptions.map((opt, optIdx) => (
             <div
               key={optIdx}
-              className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm relative group transition-all hover:border-indigo-300 hover:shadow-md"
+              className="bg-white dark:bg-dark-surface p-6 rounded-3xl border border-slate-200 dark:border-dark-border shadow-sm relative group transition-all hover:border-indigo-300 dark:hover:border-indigo-500 hover:shadow-md"
             >
               <button
                 type="button"
                 onClick={() => removeOption(optIdx)}
-                className="absolute -top-2 -right-2 w-8 h-8 bg-white border border-slate-200 text-rose-500 rounded-2xl flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition-all z-10 hover:bg-rose-50"
+                className="absolute -top-2 -right-2 w-8 h-8 bg-white dark:bg-dark-bg border border-slate-200 dark:border-dark-border text-rose-500 rounded-2xl flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition-all z-10 hover:bg-rose-50 dark:hover:bg-rose-900/20"
               >
                 <FiX size={16} />
               </button>
               <div className="flex flex-col lg:flex-row gap-8">
                 <div className="w-full lg:w-1/3 space-y-3">
-                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                  <label className="text-[9px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest ml-1">
                     Loại thuộc tính (Chọn hoặc Nhập)
                   </label>
                   <div className="relative">
                     <input
                       list={`list-attr-${optIdx}`}
-                      className="input-modern !h-12 text-xs font-black uppercase tracking-wider pr-10"
+                      className="input-modern !h-12 text-xs font-black uppercase tracking-wider pr-10 dark:bg-dark-bg dark:text-white dark:border-dark-border"
                       placeholder="Chọn hoặc nhập..."
                       value={opt.name || opt.code || ""}
                       onChange={(e) => {
@@ -292,22 +292,22 @@ const VariantManager = ({
                         </option>
                       ))}
                     </datalist>
-                    <FiChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                    <FiChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-dark-text-secondary pointer-events-none" />
                   </div>
                 </div>
                 <div className="flex-1 space-y-3">
-                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                  <label className="text-[9px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest ml-1">
                     Các giá trị (VD: Trắng, Đen, 128GB...)
                   </label>
                   <div className="flex flex-wrap gap-3 pt-1">
                     {opt.values.map((val, valIdx) => (
                       <div
                         key={valIdx}
-                        className="flex items-center gap-2 bg-indigo-50/50 border border-indigo-100 pl-4 pr-1.5 py-1.5 rounded-2xl group/val hover:bg-indigo-100/50 transition-colors"
+                        className="flex items-center gap-2 bg-indigo-50/50 dark:bg-indigo-900/10 border border-indigo-100 dark:border-indigo-900/30 pl-4 pr-1.5 py-1.5 rounded-2xl group/val hover:bg-indigo-100/50 dark:hover:bg-indigo-900/20 transition-colors"
                       >
                         <input
                           list={`list-val-${optIdx}`}
-                          className="bg-transparent border-none outline-none text-[11px] font-black text-indigo-700 w-24 placeholder:text-indigo-300"
+                          className="bg-transparent border-none outline-none text-[11px] font-black text-indigo-700 dark:text-indigo-400 w-24 placeholder:text-indigo-300 dark:placeholder:text-indigo-800"
                           placeholder="Nhập giá trị..."
                           value={val}
                           onChange={(e) =>
@@ -324,7 +324,7 @@ const VariantManager = ({
                         <button
                           type="button"
                           onClick={() => removeOptionValue(optIdx, valIdx)}
-                          className="w-7 h-7 rounded-xl text-indigo-300 hover:text-rose-500 hover:bg-white transition-all flex items-center justify-center"
+                          className="w-7 h-7 rounded-xl text-indigo-300 dark:text-indigo-700 hover:text-rose-500 dark:hover:text-rose-400 hover:bg-white dark:hover:bg-dark-bg transition-all flex items-center justify-center"
                         >
                           <FiX size={14} />
                         </button>
@@ -333,7 +333,7 @@ const VariantManager = ({
                     <button
                       type="button"
                       onClick={() => addOptionValue(optIdx)}
-                      className="h-10 px-4 rounded-2xl border-2 border-dashed border-slate-200 text-slate-400 flex items-center justify-center hover:border-indigo-400 hover:text-indigo-600 hover:bg-white transition-all shadow-sm"
+                      className="h-10 px-4 rounded-2xl border-2 border-dashed border-slate-200 dark:border-dark-border text-slate-400 dark:text-dark-text-secondary flex items-center justify-center hover:border-indigo-400 dark:hover:border-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-white dark:hover:bg-dark-bg transition-all shadow-sm"
                     >
                       <FiPlus size={20} />
                     </button>
@@ -348,7 +348,7 @@ const VariantManager = ({
           <button
             type="button"
             onClick={generateVariants}
-            className="w-full h-14 bg-indigo-600 text-white rounded-3xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-indigo-700 transition-all flex items-center justify-center gap-4 shadow-xl shadow-indigo-200 active:scale-[0.98]"
+            className="w-full h-14 bg-indigo-600 text-white rounded-3xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-indigo-700 transition-all flex items-center justify-center gap-4 shadow-xl shadow-indigo-200 dark:shadow-none active:scale-[0.98]"
           >
             <FiRefreshCcw className="text-xl" /> TẠO DANH SÁCH BIẾN THỂ TỰ ĐỘNG
           </button>
@@ -358,7 +358,7 @@ const VariantManager = ({
       {displayVariants.length > 0 && (
         <div className="space-y-5">
           <div className="flex items-center justify-between px-2">
-            <h5 className="text-[10px] font-black uppercase text-slate-500 tracking-widest flex items-center gap-2">
+            <h5 className="text-[10px] font-black uppercase text-slate-500 dark:text-dark-text-secondary tracking-widest flex items-center gap-2">
               <FiSmartphone className="text-indigo-500" /> 2. Tùy chỉnh chi tiết
               từng phiên bản
             </h5>
@@ -386,7 +386,7 @@ const VariantManager = ({
               return (
                 <div
                   key={idx}
-                  className={`rounded-[2.5rem] border transition-all duration-500 ${isExpanded ? "border-indigo-500 shadow-2xl shadow-indigo-100 bg-white" : "border-slate-100 bg-slate-50/20 hover:bg-white hover:border-indigo-200"}`}
+                  className={`rounded-[2.5rem] border transition-all duration-500 ${isExpanded ? "border-indigo-500 shadow-2xl shadow-indigo-100 dark:shadow-none bg-white dark:bg-dark-surface" : "border-slate-100 dark:border-dark-border bg-slate-50/20 dark:bg-dark-bg/20 hover:bg-white dark:hover:bg-dark-surface hover:border-indigo-200 dark:hover:border-indigo-500"}`}
                 >
                   <div
                     onClick={() => setExpandedIdx(isExpanded ? null : idx)}
@@ -397,15 +397,15 @@ const VariantManager = ({
                         {Object.entries(variantAttrs).map(([k, val]) => (
                           <div
                             key={k}
-                            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-2xl font-black text-[10px] uppercase shadow-md shadow-indigo-100"
+                            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-2xl font-black text-[10px] uppercase shadow-md shadow-indigo-100 dark:shadow-none"
                           >
                             {getAttrIcon(k)}
                             <span>{val}</span>
                           </div>
                         ))}
                       </div>
-                      <div className="hidden lg:flex items-center gap-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                        <span className="flex items-center gap-2 border-l border-slate-200 pl-6">
+                      <div className="hidden lg:flex items-center gap-6 text-[10px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest">
+                        <span className="flex items-center gap-2 border-l border-slate-200 dark:border-dark-border pl-6">
                           <FiBox className="text-indigo-400" />{" "}
                           {v.sku || "Chưa có SKU"}
                         </span>
@@ -413,7 +413,7 @@ const VariantManager = ({
                     </div>
                     <div className="flex items-center gap-10">
                       <div className="text-right">
-                        <p className="text-lg font-black text-slate-900 leading-none">
+                        <p className="text-lg font-black text-slate-900 dark:text-dark-text-primary leading-none">
                           {Number(v.price).toLocaleString()}₫
                         </p>
                         <p
@@ -423,7 +423,7 @@ const VariantManager = ({
                         </p>
                       </div>
                       <div
-                        className={`w-10 h-10 rounded-2xl flex items-center justify-center transition-all duration-500 ${isExpanded ? "rotate-180 bg-indigo-600 text-white shadow-xl shadow-indigo-200" : "bg-white text-slate-400 border border-slate-100"}`}
+                        className={`w-10 h-10 rounded-2xl flex items-center justify-center transition-all duration-500 ${isExpanded ? "rotate-180 bg-indigo-600 text-white shadow-xl shadow-indigo-200 dark:shadow-none" : "bg-white dark:bg-dark-bg text-slate-400 dark:text-dark-text-secondary border border-slate-100 dark:border-dark-border"}`}
                       >
                         <FiChevronDown size={20} />
                       </div>
@@ -436,19 +436,19 @@ const VariantManager = ({
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: "auto", opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
-                        className="overflow-hidden border-t border-slate-50"
+                        className="overflow-hidden border-t border-slate-50 dark:border-dark-border"
                       >
-                        <div className="p-10 space-y-10 bg-white rounded-b-[2.5rem]">
+                        <div className="p-10 space-y-10 bg-white dark:bg-dark-surface rounded-b-[2.5rem]">
                           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                             <div className="space-y-2">
-                              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                              <label className="text-[10px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest ml-1">
                                 Giá bán riêng biệt
                               </label>
                               <div className="relative">
                                 <FiDollarSign className="absolute left-4 top-1/2 -translate-y-1/2 text-indigo-400" />
                                 <input
                                   type="number"
-                                  className="input-modern !h-12 pl-10 text-base font-black text-indigo-600"
+                                  className="input-modern !h-12 pl-10 text-base font-black text-indigo-600 dark:text-indigo-400 dark:bg-dark-bg dark:border-dark-border"
                                   value={v.price}
                                   onChange={(e) => {
                                     const newVariants = [...displayVariants];
@@ -462,14 +462,14 @@ const VariantManager = ({
                               </div>
                             </div>
                             <div className="space-y-2">
-                              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                              <label className="text-[10px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest ml-1">
                                 Giảm giá (%)
                               </label>
                               <div className="relative">
                                 <FiTag className="absolute left-4 top-1/2 -translate-y-1/2 text-rose-400" />
                                 <input
                                   type="number"
-                                  className="input-modern !h-12 pl-10 text-base font-black text-rose-600"
+                                  className="input-modern !h-12 pl-10 text-base font-black text-rose-600 dark:text-rose-400 dark:bg-dark-bg dark:border-dark-border"
                                   value={v.discount || 0}
                                   onChange={(e) => {
                                     const newVariants = [...displayVariants];
@@ -483,14 +483,14 @@ const VariantManager = ({
                               </div>
                             </div>
                             <div className="space-y-2">
-                              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                              <label className="text-[10px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest ml-1">
                                 Số lượng tồn kho
                               </label>
                               <div className="relative">
-                                <FiPackage className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                                <FiPackage className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-dark-text-secondary" />
                                 <input
                                   type="number"
-                                  className="input-modern !h-12 pl-10 text-base font-black text-slate-900"
+                                  className="input-modern !h-12 pl-10 text-base font-black text-slate-900 dark:text-dark-text-primary dark:bg-dark-bg dark:border-dark-border"
                                   value={v.stock}
                                   onChange={(e) => {
                                     const newVariants = [...displayVariants];
@@ -504,13 +504,13 @@ const VariantManager = ({
                               </div>
                             </div>
                             <div className="space-y-2 lg:col-span-2">
-                              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                              <label className="text-[10px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest ml-1">
                                 Mã SKU phiên bản
                               </label>
                               <div className="relative">
-                                <FiTag className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                                <FiTag className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-dark-text-secondary" />
                                 <input
-                                  className="input-modern !h-12 pl-10 text-sm font-mono font-bold text-indigo-600 bg-indigo-50/20 border-indigo-100"
+                                  className="input-modern !h-12 pl-10 text-sm font-mono font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50/20 dark:bg-indigo-500/10 border-indigo-100 dark:border-indigo-900/30"
                                   value={v.sku}
                                   onChange={(e) => {
                                     const newVariants = [...displayVariants];
@@ -527,11 +527,11 @@ const VariantManager = ({
 
                           <div className="space-y-8">
                             <div className="flex items-center gap-4">
-                              <label className="text-[11px] font-black text-indigo-600 uppercase tracking-widest flex items-center gap-2 shrink-0">
+                              <label className="text-[11px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest flex items-center gap-2 shrink-0">
                                 <FiLayers size={18} /> Hiệu chỉnh thuộc tính
                                 riêng
                               </label>
-                              <div className="h-px bg-slate-100 w-full"></div>
+                              <div className="h-px bg-slate-100 dark:bg-dark-border w-full"></div>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                               {Object.entries(variantAttrs).map(
@@ -541,13 +541,13 @@ const VariantManager = ({
                                   );
                                   return (
                                     <div key={code} className="space-y-2">
-                                      <div className="flex items-center gap-2 text-[10px] font-black text-slate-500 uppercase ml-1">
+                                      <div className="flex items-center gap-2 text-[10px] font-black text-slate-500 dark:text-dark-text-secondary uppercase ml-1">
                                         {getAttrIcon(code)} {attr?.name || code}
                                       </div>
                                       <div className="relative">
                                         <input
                                           list={`list-vattr-${idx}-${code}`}
-                                          className="input-modern !h-11 text-xs font-black border-slate-200 focus:ring-4 focus:ring-indigo-50"
+                                          className="input-modern !h-11 text-xs font-black border-slate-200 dark:border-dark-border dark:bg-dark-bg dark:text-white focus:ring-4 focus:ring-indigo-50 dark:focus:ring-indigo-900/10"
                                           placeholder={`Chọn ${attr?.name || code}...`}
                                           value={value}
                                           onChange={(e) =>
@@ -576,11 +576,11 @@ const VariantManager = ({
                             </div>
                           </div>
 
-                          <div className="flex justify-end items-center gap-6 pt-10 border-t border-slate-50">
+                          <div className="flex justify-end items-center gap-6 pt-10 border-t border-slate-50 dark:border-dark-border">
                             <button
                               type="button"
                               onClick={() => handleDelete(v, idx)}
-                              className="flex items-center gap-2 h-12 px-8 rounded-2xl text-rose-500 font-black text-[11px] uppercase hover:bg-rose-50 transition-all border border-transparent hover:border-rose-100"
+                              className="flex items-center gap-2 h-12 px-8 rounded-2xl text-rose-500 font-black text-[11px] uppercase hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-all border border-transparent hover:border-rose-100 dark:hover:border-rose-900/30"
                             >
                               <FiTrash2 /> XÓA PHIÊN BẢN
                             </button>
@@ -593,7 +593,7 @@ const VariantManager = ({
                                     attributes: variantAttrs,
                                   })
                                 }
-                                className="h-14 px-12 bg-indigo-600 text-white rounded-[1.5rem] font-black text-[11px] uppercase tracking-widest shadow-xl shadow-indigo-200 hover:bg-indigo-700 active:scale-95 transition-all flex items-center gap-3"
+                                className="h-14 px-12 bg-indigo-600 text-white rounded-[1.5rem] font-black text-[11px] uppercase tracking-widest shadow-xl shadow-indigo-200 dark:shadow-none hover:bg-indigo-700 active:scale-95 transition-all flex items-center gap-3"
                               >
                                 <FiCheck size={18} /> LƯU THAY ĐỔI
                               </button>

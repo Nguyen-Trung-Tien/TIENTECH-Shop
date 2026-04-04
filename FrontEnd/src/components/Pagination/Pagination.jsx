@@ -27,7 +27,7 @@ const AppPagination = ({
         key="first"
         disabled={loading}
         onClick={() => onPageChange(1)}
-        className="w-10 h-10 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-primary transition-all disabled:opacity-50 shadow-sm"
+        className="w-10 h-10 flex items-center justify-center rounded-xl bg-white dark:bg-dark-surface border border-slate-200 dark:border-dark-border text-slate-600 dark:text-dark-text-secondary hover:bg-slate-50 dark:hover:bg-dark-bg hover:text-primary transition-all disabled:opacity-50 shadow-sm"
       >
         <FiChevronsLeft />
       </button>
@@ -41,7 +41,7 @@ const AppPagination = ({
         key="prev"
         disabled={loading}
         onClick={() => onPageChange(page - 1)}
-        className="w-10 h-10 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-primary transition-all disabled:opacity-50 shadow-sm"
+        className="w-10 h-10 flex items-center justify-center rounded-xl bg-white dark:bg-dark-surface border border-slate-200 dark:border-dark-border text-slate-600 dark:text-dark-text-secondary hover:bg-slate-50 dark:hover:bg-dark-bg hover:text-primary transition-all disabled:opacity-50 shadow-sm"
       >
         <FiChevronLeft />
       </button>
@@ -50,7 +50,7 @@ const AppPagination = ({
 
   // …
   if (startPage > 2) {
-    items.push(<span key="start-ellipsis" className="px-2 text-slate-400 font-black">...</span>);
+    items.push(<span key="start-ellipsis" className="px-2 text-slate-400 dark:text-dark-text-secondary font-black">...</span>);
   }
 
   // 🔢 Pages
@@ -64,7 +64,7 @@ const AppPagination = ({
         className={`w-10 h-10 flex items-center justify-center rounded-xl font-bold transition-all shadow-sm ${
           isActive 
             ? "bg-primary text-white shadow-lg shadow-primary/25 border border-primary" 
-            : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 hover:border-slate-300"
+            : "bg-white dark:bg-dark-surface border border-slate-200 dark:border-dark-border text-slate-600 dark:text-dark-text-secondary hover:bg-slate-50 dark:hover:bg-dark-bg hover:border-slate-300 dark:hover:border-dark-text-secondary"
         }`}
       >
         {i}
@@ -74,7 +74,7 @@ const AppPagination = ({
 
   // …
   if (endPage < totalPages - 1) {
-    items.push(<span key="end-ellipsis" className="px-2 text-slate-400 font-black">...</span>);
+    items.push(<span key="end-ellipsis" className="px-2 text-slate-400 dark:text-dark-text-secondary font-black">...</span>);
   }
 
   // ▶ Next
@@ -84,7 +84,7 @@ const AppPagination = ({
         key="next"
         disabled={loading}
         onClick={() => onPageChange(page + 1)}
-        className="w-10 h-10 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-primary transition-all disabled:opacity-50 shadow-sm"
+        className="w-10 h-10 flex items-center justify-center rounded-xl bg-white dark:bg-dark-surface border border-slate-200 dark:border-dark-border text-slate-600 dark:text-dark-text-secondary hover:bg-slate-50 dark:hover:bg-dark-bg hover:text-primary transition-all disabled:opacity-50 shadow-sm"
       >
         <FiChevronRight />
       </button>
@@ -98,7 +98,7 @@ const AppPagination = ({
         key="last"
         disabled={loading}
         onClick={() => onPageChange(totalPages)}
-        className="w-10 h-10 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-primary transition-all disabled:opacity-50 shadow-sm"
+        className="w-10 h-10 flex items-center justify-center rounded-xl bg-white dark:bg-dark-surface border border-slate-200 dark:border-dark-border text-slate-600 dark:text-dark-text-secondary hover:bg-slate-50 dark:hover:bg-dark-bg hover:text-primary transition-all disabled:opacity-50 shadow-sm"
       >
         <FiChevronsRight />
       </button>

@@ -6,7 +6,7 @@ const { getFengShuiDetail } = require("../utils/fortuneUtils");
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || process.env.API_KEY);
 const model = genAI.getGenerativeModel({
-  model: "gemini-2.5-flash",
+  model: "gemini-2.0-flash", // Updated to stable version
   generationConfig: { responseMimeType: "application/json" },
 });
 
@@ -33,12 +33,12 @@ const handleFengShuiChat = async (req, res) => {
       where: {
         isActive: true,
         [Op.or]: allLuckyColors.map((color) => ({
-          color: { [Op.like]: `%${color}%` },
+          specifications: { [Op.like]: `%${color}%` },
         })),
         ...(brandId && { brandId }),
         ...(categoryId && { categoryId }),
-        ...(minPrice && { price: { [Op.gte]: minPrice } }),
-        ...(maxPrice && { price: { [Op.lte]: maxPrice } }),
+        ...(minPrice && { basePrice: { [Op.gte]: minPrice } }),
+        ...(maxPrice && { basePrice: { [Op.lte]: maxPrice } }),
       },
       include: [
         { model: Brand, as: "brand" },
@@ -65,8 +65,8 @@ THÔNG TIN KHÁCH HÀNG:
     if (products.length) {
       dbContext += "\nSẢN PHẨM HỢP MỆNH TRONG KHO:\n";
       products.forEach((p) => {
-        const currentPrice = p.price * (1 - p.discount / 100);
-        dbContext += `- ID: ${p.id}, Tên: ${p.name}, Màu: ${p.color}, Giá: ${currentPrice.toLocaleString()}đ\n`;
+        const currentPrice = (p.basePrice || 0) * (1 - (p.discount || 0) / 100);
+        dbContext += `- ID: ${p.id}, Tên: ${p.name}, Giá: ${currentPrice.toLocaleString()}đ\n`;
       });
     }
 
@@ -108,7 +108,7 @@ NGUYÊN TẮC TƯ VẤN:
       if (result.recommendedProducts && result.recommendedProducts.length > 0) {
         finalRecommended = await Product.findAll({
           where: { id: { [Op.in]: result.recommendedProducts }, isActive: true },
-          attributes: ["id", "name", "price", "discount", "image"],
+          attributes: ["id", "name", "basePrice", "discount", "image"],
         });
       }
 
@@ -128,8 +128,5 @@ NGUYÊN TẮC TƯ VẤN:
     res.status(500).json({ error: "Lỗi xử lý AI phong thủy." });
   }
 };
-
-module.exports = { handleFengShuiChat };
-
 
 module.exports = { handleFengShuiChat };

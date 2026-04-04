@@ -142,28 +142,28 @@ const OrderPage = () => {
   const formatCurrency = (v) => (Number(v) || 0).toLocaleString("vi-VN") + " ₫";
 
   return (
-    <div className="min-h-screen bg-slate-50/50 py-8">
+    <div className="min-h-screen bg-slate-50/50 dark:bg-dark-bg py-8 transition-colors duration-300">
       <div className="max-w-5xl mx-auto px-4">
         {/* Header Section */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
               Đơn hàng của tôi
             </h1>
-            <p className="text-slate-500 text-sm mt-1">
+            <p className="text-slate-500 dark:text-dark-text-secondary text-sm mt-1">
               Theo dõi và quản lý lịch sử mua hàng của bạn.
             </p>
           </div>
           <div className="flex items-center gap-3">
             <Link
               to="/order-history"
-              className="flex items-center justify-center gap-2 px-4 py-2 bg-primary/5 border border-primary/10 rounded-xl text-xs font-bold text-primary hover:bg-primary/10 transition-all shadow-sm"
+              className="flex items-center justify-center gap-2 px-4 py-2 bg-primary/5 dark:bg-brand/10 border border-primary/10 dark:border-brand/20 rounded-xl text-xs font-bold text-primary dark:text-brand hover:bg-primary/10 transition-all shadow-sm"
             >
               <FiCheckCircle size={14} /> Lịch sử đơn hàng
             </Link>
             <button
               onClick={() => fetchOrders(page, activeTab)}
-              className="flex items-center justify-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-600 hover:text-primary hover:border-primary/30 transition-all shadow-sm group"
+              className="flex items-center justify-center gap-2 px-4 py-2 bg-white dark:bg-dark-surface border border-slate-200 dark:border-dark-border rounded-xl text-xs font-semibold text-slate-600 dark:text-dark-text-secondary hover:text-primary dark:hover:text-brand hover:border-primary/30 dark:hover:border-brand/30 transition-all shadow-sm group"
             >
               <FiRefreshCw
                 className={`${loading ? "animate-spin" : "group-hover:rotate-180"} transition-transform duration-500`}
@@ -174,7 +174,7 @@ const OrderPage = () => {
         </div>
 
         {/* Compact Tabs */}
-        <div className="bg-white p-1.5 rounded-2xl border border-slate-200/60 shadow-sm mb-6 overflow-x-auto scrollbar-hide">
+        <div className="bg-white dark:bg-dark-surface p-1.5 rounded-2xl border border-slate-200/60 dark:border-dark-border shadow-sm mb-6 overflow-x-auto scrollbar-hide transition-colors">
           <div className="flex items-center gap-1 min-w-max">
             {STATUS_TABS.map((tab) => {
               const isActive = activeTab === tab.key;
@@ -185,8 +185,8 @@ const OrderPage = () => {
                   onClick={() => handleTabSelect(tab.key)}
                   className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition-all duration-300 ${
                     isActive
-                      ? "bg-primary text-white shadow-md shadow-primary/20"
-                      : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
+                      ? "bg-primary dark:bg-brand text-white shadow-md shadow-primary/20 dark:shadow-none"
+                      : "text-slate-500 dark:text-dark-text-secondary hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-dark-bg"
                   }`}
                 >
                   <Icon size={14} />
@@ -202,19 +202,19 @@ const OrderPage = () => {
             {[1, 2, 3].map((i) => (
               <div
                 key={i}
-                className="h-48 bg-white rounded-2xl border border-slate-100 animate-pulse"
+                className="h-48 bg-white dark:bg-dark-surface rounded-2xl border border-slate-100 dark:border-dark-border animate-pulse"
               ></div>
             ))}
           </div>
         ) : orders.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-slate-200/60 p-16 text-center shadow-sm">
-            <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-4 text-slate-300">
+          <div className="bg-white dark:bg-dark-surface rounded-2xl border border-slate-200/60 dark:border-dark-border p-16 text-center shadow-sm">
+            <div className="w-16 h-16 bg-slate-50 dark:bg-dark-bg rounded-2xl flex items-center justify-center mx-auto mb-4 text-slate-300 dark:text-dark-border">
               <FiBox className="text-3xl" />
             </div>
-            <h3 className="text-lg font-bold text-slate-900 mb-1">
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">
               Không có đơn hàng
             </h3>
-            <p className="text-slate-400 text-sm">
+            <p className="text-slate-400 dark:text-dark-text-secondary text-sm">
               Danh sách hiện đang trống ở trạng thái này.
             </p>
           </div>
@@ -226,15 +226,15 @@ const OrderPage = () => {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 key={o.id}
-                className="bg-white rounded-2xl border border-slate-200/60 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden"
+                className="bg-white dark:bg-dark-surface rounded-2xl border border-slate-200/60 dark:border-dark-border shadow-sm hover:shadow-md dark:hover:shadow-none transition-all duration-300 overflow-hidden"
               >
                 {/* Order Top Bar */}
-                <div className="px-5 py-3.5 bg-slate-50/50 border-b border-slate-100 flex flex-wrap items-center justify-between gap-4">
+                <div className="px-5 py-3.5 bg-slate-50/50 dark:bg-dark-bg/50 border-b border-slate-100 dark:border-dark-border flex flex-wrap items-center justify-between gap-4">
                   <div className="flex items-center gap-4">
-                    <span className="text-xs font-bold text-slate-900 bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm">
+                    <span className="text-xs font-bold text-slate-900 dark:text-white bg-white dark:bg-dark-bg px-3 py-1.5 rounded-lg border border-slate-200 dark:border-dark-border shadow-sm">
                       #{o.orderCode || `DH${o.id}`}
                     </span>
-                    <span className="text-[11px] text-slate-400 font-medium flex items-center gap-1.5">
+                    <span className="text-[11px] text-slate-400 dark:text-dark-text-secondary font-medium flex items-center gap-1.5">
                       <FiClock />{" "}
                       {new Date(o.createdAt).toLocaleDateString("vi-VN")}
                     </span>
@@ -259,31 +259,31 @@ const OrderPage = () => {
                     {o.orderItems?.map((i) => {
                       return (
                         <div key={i.id} className="flex gap-4 items-center">
-                          <div className="w-16 h-16 bg-slate-50 rounded-xl border border-slate-100 p-2 flex-shrink-0">
+                          <div className="w-16 h-16 bg-slate-50 dark:bg-dark-bg rounded-xl border border-slate-100 dark:border-dark-border p-2 flex-shrink-0">
                             <img
                               src={i.image}
                               alt={i.productName}
-                              className="w-full h-full object-contain"
+                              className="w-full h-full object-contain dark:mix-blend-normal"
                             />
                           </div>
                           <div className="flex-grow min-w-0">
                             <h4
-                              className="text-sm font-bold text-slate-900 line-clamp-1 hover:text-primary transition-colors cursor-pointer"
+                              className="text-sm font-bold text-slate-900 dark:text-white line-clamp-1 hover:text-primary dark:hover:text-brand transition-colors cursor-pointer"
                               onClick={() => navigate(`/orders-detail/${o.id}`)}
                             >
                               {i.productName}
                             </h4>
-                            <div className="flex items-center gap-3 mt-1 text-[11px] font-medium text-slate-400">
+                            <div className="flex items-center gap-3 mt-1 text-[11px] font-medium text-slate-400 dark:text-dark-text-secondary">
                               <span>
                                 Số lượng:{" "}
-                                <span className="text-slate-900 font-bold">
+                                <span className="text-slate-900 dark:text-white font-bold">
                                   {i.quantity}
                                 </span>
                               </span>
-                              <div className="w-1 h-1 bg-slate-200 rounded-full"></div>
+                              <div className="w-1 h-1 bg-slate-200 dark:bg-dark-border rounded-full"></div>
                               <span>
                                 Đơn giá:{" "}
-                                <span className="text-slate-900 font-bold">
+                                <span className="text-slate-900 dark:text-white font-bold">
                                   {formatCurrency(i.price)}
                                 </span>
                               </span>
@@ -295,12 +295,12 @@ const OrderPage = () => {
                   </div>
 
                   {/* Order Footer */}
-                  <div className="mt-6 pt-5 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div className="mt-6 pt-5 border-t border-slate-100 dark:border-dark-border flex flex-col sm:flex-row items-center justify-between gap-4">
                     <div className="text-center sm:text-left">
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">
+                      <p className="text-[10px] font-bold text-slate-400 dark:text-dark-text-secondary uppercase tracking-wider mb-0.5">
                         Tổng thanh toán
                       </p>
-                      <span className="text-xl font-bold text-primary">
+                      <span className="text-xl font-bold text-primary dark:text-brand">
                         {formatCurrency(o.totalPrice)}
                       </span>
                     </div>
@@ -308,7 +308,7 @@ const OrderPage = () => {
                     <div className="flex items-center gap-2 w-full sm:w-auto">
                       <button
                         onClick={() => navigate(`/orders-detail/${o.id}`)}
-                        className="flex-1 sm:flex-none h-10 px-5 bg-slate-100 text-slate-600 rounded-xl text-xs font-bold hover:bg-slate-200 transition-all flex items-center justify-center gap-2"
+                        className="flex-1 sm:flex-none h-10 px-5 bg-slate-100 dark:bg-dark-bg text-slate-600 dark:text-dark-text-secondary rounded-xl text-xs font-bold hover:bg-slate-200 dark:hover:bg-dark-border transition-all flex items-center justify-center gap-2"
                       >
                         <FiEye size={16} /> Chi tiết
                       </button>
@@ -319,7 +319,7 @@ const OrderPage = () => {
                             setOrderToCancel(o);
                             setShowCancelModal(true);
                           }}
-                          className="flex-1 sm:flex-none h-10 px-5 bg-rose-50 text-rose-600 rounded-xl text-xs font-bold hover:bg-rose-100 transition-all flex items-center justify-center gap-2 border border-rose-100"
+                          className="flex-1 sm:flex-none h-10 px-5 bg-rose-50 dark:bg-rose-900/10 text-rose-600 dark:text-rose-400 rounded-xl text-xs font-bold hover:bg-rose-100 dark:hover:bg-rose-900/20 transition-all flex items-center justify-center gap-2 border border-rose-100 dark:border-rose-900/30"
                         >
                           <FiXCircle size={16} /> Hủy đơn
                         </button>
@@ -329,7 +329,7 @@ const OrderPage = () => {
                         <button
                           disabled={receivingId === o.id}
                           onClick={() => handleReceiveOrder(o.id)}
-                          className="flex-1 sm:flex-none h-10 px-5 bg-primary text-white rounded-xl text-xs font-bold hover:bg-slate-800 transition-all shadow-md shadow-primary/20 flex items-center justify-center gap-2"
+                          className="flex-1 sm:flex-none h-10 px-5 bg-primary dark:bg-brand text-white rounded-xl text-xs font-bold hover:bg-slate-800 dark:hover:bg-brand/80 transition-all shadow-md shadow-primary/20 dark:shadow-none flex items-center justify-center gap-2"
                         >
                           {receivingId === o.id ? (
                             <FiRefreshCw className="animate-spin" />
@@ -343,7 +343,7 @@ const OrderPage = () => {
                       {o.status === "delivered" && (
                         <button
                           onClick={() => openReviewModal(o)}
-                          className="flex-1 sm:flex-none h-10 px-5 bg-emerald-500 text-white rounded-xl text-xs font-bold hover:bg-emerald-600 transition-all shadow-md shadow-emerald-500/20 flex items-center justify-center gap-2"
+                          className="flex-1 sm:flex-none h-10 px-5 bg-emerald-500 dark:bg-emerald-600 text-white rounded-xl text-xs font-bold hover:bg-emerald-600 dark:hover:bg-emerald-700 transition-all shadow-md shadow-emerald-500/20 dark:shadow-none flex items-center justify-center gap-2"
                         >
                           <FiCheckCircle size={16} /> Đánh giá
                         </button>
@@ -389,11 +389,11 @@ const OrderPage = () => {
         variant="danger"
         loading={cancelling}
         icon={FiAlertTriangle}
-        iconClassName="bg-rose-50 text-rose-500 border-rose-100"
+        iconClassName="bg-rose-50 dark:bg-rose-900/20 text-rose-500 dark:text-rose-400 border-rose-100 dark:border-rose-900/30"
       >
-        <p className="text-slate-500 text-sm mb-4">
+        <p className="text-slate-500 dark:text-dark-text-secondary text-sm mb-4">
           Bạn có chắc muốn gửi yêu cầu hủy đơn{" "}
-          <span className="text-slate-900 font-bold">
+          <span className="text-slate-900 dark:text-white font-bold">
             #{orderToCancel?.orderCode || orderToCancel?.id}
           </span>
           ?
@@ -401,7 +401,7 @@ const OrderPage = () => {
 
         <div className="mb-6 text-left w-full space-y-4">
           <div className="space-y-2">
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block">
+            <label className="text-[10px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest mb-1.5 block">
               Chọn lý do hủy đơn
             </label>
             <div className="grid grid-cols-1 gap-2">
@@ -418,8 +418,8 @@ const OrderPage = () => {
                   }}
                   className={`px-4 py-2.5 rounded-xl text-left text-xs font-bold transition-all border ${
                     selectedReason === reason
-                      ? "bg-primary/5 border-primary text-primary shadow-sm"
-                      : "bg-slate-50 border-slate-200 text-slate-600 hover:border-slate-300"
+                      ? "bg-primary/5 dark:bg-brand/10 border-primary dark:border-brand text-primary dark:text-brand shadow-sm"
+                      : "bg-slate-50 dark:bg-dark-bg border-slate-200 dark:border-dark-border text-slate-600 dark:text-dark-text-secondary hover:border-slate-300 dark:hover:border-dark-text-secondary"
                   }`}
                 >
                   {reason}
@@ -434,12 +434,12 @@ const OrderPage = () => {
               animate={{ opacity: 1, height: "auto" }}
               className="space-y-2"
             >
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block">
+              <label className="text-[10px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest mb-1.5 block">
                 Nhập lý do chi tiết
               </label>
               <textarea
                 rows={3}
-                className="w-full bg-white border border-slate-200 rounded-xl p-3 text-xs focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none transition-all"
+                className="w-full bg-white dark:bg-dark-bg border border-slate-200 dark:border-dark-border rounded-xl p-3 text-xs dark:text-white focus:ring-2 focus:ring-primary/10 dark:focus:ring-brand/10 focus:border-primary dark:focus:border-brand outline-none transition-all"
                 placeholder="Vui lòng nhập lý do cụ thể..."
                 value={cancelReason}
                 onChange={(e) => setCancelReason(e.target.value)}

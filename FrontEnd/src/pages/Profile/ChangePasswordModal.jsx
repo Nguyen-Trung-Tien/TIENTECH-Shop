@@ -77,7 +77,7 @@ const ChangePasswordModal = ({ show, onHide, userId }) => {
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="relative w-full max-w-md bg-white rounded-[32px] shadow-2xl overflow-hidden"
+            className="relative w-full max-w-md bg-white dark:bg-dark-surface rounded-[32px] shadow-2xl overflow-hidden border border-transparent dark:border-dark-border transition-colors duration-300"
           >
             {/* Header */}
             <div className="p-8 bg-primary text-white">
@@ -121,7 +121,7 @@ const ChangePasswordModal = ({ show, onHide, userId }) => {
                 },
               ].map(({ name, label, placeholder }) => (
                 <div key={name} className="space-y-1.5">
-                  <label className="text-[11px] font-black text-surface-400 uppercase tracking-widest ml-1">
+                  <label className="text-[11px] font-black text-surface-400 dark:text-dark-text-secondary uppercase tracking-widest ml-1">
                     {label}
                   </label>
                   <div className="relative group">
@@ -136,12 +136,12 @@ const ChangePasswordModal = ({ show, onHide, userId }) => {
                         }))
                       }
                       placeholder={placeholder}
-                      className="w-full h-12 px-4 bg-surface-50 border-2 border-transparent rounded-xl text-sm font-medium focus:bg-white focus:border-primary/20 outline-none transition-all placeholder:text-surface-300"
+                      className="w-full h-12 px-4 bg-surface-50 dark:bg-dark-bg border-2 border-transparent dark:border-dark-border rounded-xl text-sm font-bold dark:text-white focus:bg-white dark:focus:bg-dark-surface focus:border-primary/20 outline-none transition-all placeholder:text-surface-300 dark:placeholder:text-slate-600"
                     />
                     <button
                       type="button"
                       onClick={() => toggleShowPassword(name)}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-surface-400 hover:text-primary transition-colors"
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-surface-400 dark:text-dark-text-secondary hover:text-primary transition-colors"
                     >
                       {showPassword[name] ? (
                         <FiEyeOff size={18} />

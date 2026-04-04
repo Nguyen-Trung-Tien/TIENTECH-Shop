@@ -39,19 +39,19 @@ const ProductListPage = () => {
   }, [filters.search, isCategory, isBrand, slug]);
 
   return (
-    <main className="min-h-screen bg-slate-50/50 pb-24">
+    <main className="min-h-screen bg-slate-50/50 dark:bg-dark-bg pb-24 transition-colors duration-300">
       <ChatBot />
 
       {/* Page Header - Tối ưu phân cấp thị giác */}
-      <section className="bg-white border-b border-slate-100 pt-16 pb-12 overflow-hidden relative">
-        <div className="absolute top-0 right-0 w-1/3 h-full bg-primary/5 skew-x-12 translate-x-20 transition-all duration-1000"></div>
+      <section className="bg-white dark:bg-dark-surface border-b border-slate-100 dark:border-dark-border pt-16 pb-12 overflow-hidden relative transition-colors duration-300">
+        <div className="absolute top-0 right-0 w-1/3 h-full bg-primary/5 dark:bg-primary/10 skew-x-12 translate-x-20 transition-all duration-1000"></div>
         <div className="container-custom relative z-10">
           <div className="max-w-2xl">
             <Breadcrumbs />
-            <h1 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tighter mb-4 uppercase">
+            <h1 className="text-3xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tighter mb-4 uppercase">
               {pageTitle}
             </h1>
-            <p className="text-slate-500 font-medium text-sm">
+            <p className="text-slate-500 dark:text-dark-text-secondary font-medium text-sm">
               Hệ thống phân phối linh kiện máy tính & giải pháp công nghệ hàng
               đầu Việt Nam.
             </p>
@@ -67,7 +67,7 @@ const ProductListPage = () => {
               <div className="flex items-center justify-between mb-6 lg:hidden">
                 <button
                   onClick={() => setShowMobileFilter(true)}
-                  className="flex items-center gap-2 px-6 h-12 bg-white rounded-xl text-xs font-bold uppercase tracking-widest text-slate-700 shadow-sm border border-slate-200"
+                  className="flex items-center gap-2 px-6 h-12 bg-white dark:bg-dark-surface rounded-xl text-xs font-bold uppercase tracking-widest text-slate-700 dark:text-dark-text-primary shadow-sm border border-slate-200 dark:border-dark-border"
                 >
                   <FiFilter /> Bộ lọc
                 </button>
@@ -95,15 +95,15 @@ const ProductListPage = () => {
                     initial={{ x: "100%" }}
                     animate={{ x: 0 }}
                     exit={{ x: "100%" }}
-                    className="bg-white h-full w-full max-w-sm ml-auto rounded-3xl overflow-hidden flex flex-col shadow-2xl"
+                    className="bg-white dark:bg-dark-surface h-full w-full max-w-sm ml-auto rounded-3xl overflow-hidden flex flex-col shadow-2xl"
                   >
-                    <div className="p-6 border-b border-slate-100 flex items-center justify-between">
-                      <h2 className="text-lg font-black uppercase tracking-tight">
+                    <div className="p-6 border-b border-slate-100 dark:border-dark-border flex items-center justify-between">
+                      <h2 className="text-lg font-black uppercase tracking-tight dark:text-white">
                         Bộ lọc
                       </h2>
                       <button
                         onClick={() => setShowMobileFilter(false)}
-                        className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400"
+                        className="w-10 h-10 rounded-xl bg-slate-50 dark:bg-dark-bg flex items-center justify-center text-slate-400"
                       >
                         <FiGrid />
                       </button>
@@ -124,12 +124,12 @@ const ProductListPage = () => {
           {/* Product Content Area */}
           <div className="lg:col-span-9">
             {/* Toolbar */}
-            <div className="flex items-center justify-between mb-8 pb-4 border-b border-slate-100">
+            <div className="flex items-center justify-between mb-8 pb-4 border-b border-slate-100 dark:border-dark-border">
               <div className="flex items-center gap-3">
                 <div className="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
-                <span className="text-[10px] font-black text-slate-900 uppercase tracking-widest">
+                <span className="text-[10px] font-black text-slate-900 dark:text-white uppercase tracking-widest">
                   {products.length}{" "}
-                  <span className="text-slate-400 font-bold ml-1">
+                  <span className="text-slate-400 dark:text-dark-text-secondary font-bold ml-1">
                     Sản phẩm tìm thấy
                   </span>
                 </span>
@@ -144,15 +144,15 @@ const ProductListPage = () => {
                 ))}
               </div>
             ) : error ? (
-              <div className="bg-white rounded-[32px] border border-rose-100 p-16 text-center shadow-soft">
+              <div className="bg-white dark:bg-dark-surface rounded-[32px] border border-rose-100 dark:border-rose-900/20 p-16 text-center shadow-soft">
                 <FiAlertCircle
                   className="mx-auto text-rose-500 mb-6"
                   size={40}
                 />
-                <h3 className="text-lg font-black text-slate-900 mb-2 uppercase">
+                <h3 className="text-lg font-black text-slate-900 dark:text-white mb-2 uppercase">
                   Lỗi tải dữ liệu
                 </h3>
-                <p className="text-slate-400 text-sm mb-8 font-medium">
+                <p className="text-slate-400 dark:text-dark-text-secondary text-sm mb-8 font-medium">
                   {error}
                 </p>
                 <button
@@ -163,12 +163,12 @@ const ProductListPage = () => {
                 </button>
               </div>
             ) : products.length === 0 ? (
-              <div className="bg-white rounded-[32px] border-2 border-dashed border-slate-200 p-24 text-center">
-                <FiSearch className="mx-auto text-slate-200 mb-6" size={56} />
-                <h3 className="text-xl font-black text-slate-900 mb-2 uppercase italic">
+              <div className="bg-white dark:bg-dark-surface rounded-[32px] border-2 border-dashed border-slate-200 dark:border-dark-border p-24 text-center">
+                <FiSearch className="mx-auto text-slate-200 dark:text-slate-700 mb-6" size={56} />
+                <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2 uppercase italic">
                   Không tìm thấy
                 </h3>
-                <p className="text-slate-400 font-medium text-sm">
+                <p className="text-slate-400 dark:text-dark-text-secondary font-medium text-sm">
                   Thử thay đổi bộ lọc để tìm kiếm kết quả khác.
                 </p>
               </div>
@@ -191,7 +191,7 @@ const ProductListPage = () => {
                 </div>
 
                 {/* Load More & Pagination Indicator */}
-                <div className="flex flex-col items-center gap-8 pt-10 border-t border-slate-100">
+                <div className="flex flex-col items-center gap-8 pt-10 border-t border-slate-100 dark:border-dark-border">
                   {currentPage < totalPages && (
                     <LoadMoreButton
                       page={currentPage}
@@ -200,7 +200,7 @@ const ProductListPage = () => {
                       onLoadMore={handleLoadMore}
                     />
                   )}
-                  <span className="px-6 py-2 bg-slate-100 rounded-full text-[9px] font-black uppercase tracking-[0.4em] text-slate-400">
+                  <span className="px-6 py-2 bg-slate-100 dark:bg-dark-bg rounded-full text-[9px] font-black uppercase tracking-[0.4em] text-slate-400 dark:text-dark-text-secondary">
                     Trang {currentPage} / {totalPages}
                   </span>
                 </div>

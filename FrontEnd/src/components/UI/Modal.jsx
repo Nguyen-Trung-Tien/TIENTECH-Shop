@@ -41,18 +41,18 @@ const Modal = ({
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className={`relative w-full ${sizes[size]} bg-white rounded-[32px] shadow-2xl overflow-hidden flex flex-col ${className}`}
+            className={`relative w-full ${sizes[size]} bg-white dark:bg-dark-surface rounded-[32px] shadow-2xl overflow-hidden flex flex-col border border-transparent dark:border-dark-border transition-colors duration-300 ${className}`}
           >
             {/* Header */}
             {(title || showClose) && (
               <div className="flex items-center justify-between p-6 pb-2">
-                <h3 className="text-xl font-display font-bold text-surface-900">
+                <h3 className="text-xl font-display font-bold text-surface-900 dark:text-white">
                   {title}
                 </h3>
                 {showClose && (
                   <button
                     onClick={onClose}
-                    className="p-2 hover:bg-surface-100 rounded-xl transition-colors text-surface-400 hover:text-surface-900"
+                    className="p-2 hover:bg-surface-100 dark:hover:bg-dark-bg rounded-xl transition-colors text-surface-400 dark:text-dark-text-secondary hover:text-surface-900 dark:hover:text-white"
                   >
                     <FiX size={24} />
                   </button>
@@ -61,7 +61,7 @@ const Modal = ({
             )}
 
             {/* Body */}
-            <div className="p-6 flex-1 overflow-y-auto custom-scrollbar">
+            <div className="p-6 flex-1 overflow-y-auto custom-scrollbar dark:text-dark-text-primary">
               {children}
             </div>
 
@@ -102,13 +102,13 @@ export const ConfirmModal = ({
       <div className="flex flex-col items-center py-2">
         {Icon && (
           <div
-            className={`w-16 h-16 rounded-2xl flex items-center justify-center text-3xl mb-4 border border-surface-100 ${iconClassName}`}
+            className={`w-16 h-16 rounded-2xl flex items-center justify-center text-3xl mb-4 border border-surface-100 dark:border-dark-border ${iconClassName}`}
           >
             <Icon />
           </div>
         )}
-        <h3 className="text-xl font-bold text-surface-900 mb-2">{title}</h3>
-        {message && <p className="text-surface-500 text-sm mb-6">{message}</p>}
+        <h3 className="text-xl font-bold text-surface-900 dark:text-white mb-2">{title}</h3>
+        {message && <p className="text-surface-500 dark:text-dark-text-secondary text-sm mb-6">{message}</p>}
         {children}
 
         <div className="flex w-full gap-3 mt-6">

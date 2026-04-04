@@ -15,6 +15,10 @@ import {
   FiArrowLeft,
   FiRotateCcw,
   FiAlertTriangle,
+  FiCalendar,
+  FiInfo,
+  FiRefreshCcw,
+  FiCornerDownRight,
 } from "react-icons/fi";
 import { getOrderById, updateOrderStatus } from "../../api/orderApi";
 import { requestReturn } from "../../api/orderItemApi";
@@ -25,14 +29,14 @@ import { formatCurrency, formatDate } from "../../utils/format";
 import { returnStatusMap } from "../../utils/StatusMap";
 
 const InfoRow = ({ label, value, icon: Icon }) => (
-  <div className="flex items-center justify-between py-3 border-b border-surface-100 last:border-0">
-    <div className="flex items-center gap-2 text-surface-400">
+  <div className="flex items-center justify-between py-3 border-b border-surface-100 dark:border-dark-border last:border-0">
+    <div className="flex items-center gap-2 text-surface-400 dark:text-dark-text-secondary">
       {Icon && <Icon size={14} />}
       <span className="text-[13px] font-medium uppercase tracking-wider">
         {label}
       </span>
     </div>
-    <span className="text-[14px] font-bold text-surface-900">
+    <span className="text-[14px] font-bold text-surface-900 dark:text-white">
       {value || "-"}
     </span>
   </div>
@@ -138,7 +142,6 @@ const OrderDetail = () => {
     }
     try {
       dispatch({ type: "SET_SUBMITTING", payload: true });
-      // Gửi yêu cầu hủy kèm lý do
       const res = await updateOrderStatus(id, "cancel_requested", cancelReason);
       if (res.errCode === 0) {
         toast.success("Đã gửi yêu cầu hủy đơn hàng. Vui lòng chờ Admin duyệt.");
@@ -168,14 +171,11 @@ const OrderDetail = () => {
       if (res?.errCode === 0 && res.data?.paymentUrl) {
         window.location.href = res.data.paymentUrl;
       } else {
-        toast.error(
-          res?.message ||
-            "Không thể tạo liên kết thanh toán. Vui lòng thử lại!",
-        );
+        toast.error(res?.message || "Không thể tạo liên kết thanh toán.");
       }
     } catch (err) {
       console.error("Repay error:", err);
-      toast.error("Lỗi kết nối máy chủ hoặc yêu cầu không hợp lệ");
+      toast.error("Lỗi kết nối máy chủ");
     }
   };
 
@@ -198,21 +198,17 @@ const OrderDetail = () => {
 
   const handleSubmitReturn = async () => {
     if (submitting) return;
-    if (!returnReason.trim())
-      return toast.warning("Vui lòng nhập lý do trả hàng");
-    if (!selectedItems.length)
-      return toast.warning("Vui lòng chọn ít nhất một sản phẩm");
+    if (!returnReason.trim()) return toast.warning("Vui lòng nhập lý do trả hàng");
+    if (!selectedItems.length) return toast.warning("Vui lòng chọn ít nhất một sản phẩm");
 
     dispatch({ type: "SET_SUBMITTING", payload: true });
     try {
-      await Promise.all(
-        selectedItems.map((itemId) => requestReturn(itemId, returnReason)),
-      );
+      await Promise.all(selectedItems.map((itemId) => requestReturn(itemId, returnReason)));
       toast.success("Gửi yêu cầu trả hàng thành công");
       dispatch({ type: "CLOSE_RETURN_MODAL" });
       fetchOrderDetail();
     } catch {
-      toast.error("Một số sản phẩm không thể trả. Vui lòng thử lại.");
+      toast.error("Một số sản phẩm không thể trả.");
     } finally {
       dispatch({ type: "SET_SUBMITTING", payload: false });
     }
@@ -220,9 +216,9 @@ const OrderDetail = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-950 gap-4">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-surface-50 dark:bg-dark-bg gap-4">
         <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-        <p className="text-surface-400 font-bold uppercase tracking-widest text-[11px]">
+        <p className="text-surface-400 dark:text-dark-text-secondary font-bold uppercase tracking-widest text-[11px]">
           Đang tải chi tiết đơn hàng...
         </p>
       </div>
@@ -231,15 +227,12 @@ const OrderDetail = () => {
 
   if (!order) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-surface-50 p-6">
-        <div className="bg-white rounded-[32px] p-12 text-center shadow-soft max-w-md">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-surface-50 dark:bg-dark-bg p-6">
+        <div className="bg-white dark:bg-dark-surface rounded-[32px] p-12 text-center shadow-soft max-w-md">
           <FiXCircle className="text-5xl text-danger mx-auto mb-4" />
-          <h2 className="text-2xl font-display font-bold text-surface-900 mb-2">
+          <h2 className="text-2xl font-display font-bold text-surface-900 dark:text-white mb-2">
             Không tìm thấy đơn hàng
           </h2>
-          <p className="text-surface-500 mb-8">
-            Có lỗi xảy ra hoặc bạn không có quyền truy cập đơn hàng này.
-          </p>
           <Button onClick={() => window.history.back()}>QUAY LẠI</Button>
         </div>
       </div>
@@ -258,39 +251,29 @@ const OrderDetail = () => {
   const isCancelled = order.status === "cancelled";
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 py-12">
-      {" "}
+    <div className="min-h-screen bg-surface-50 dark:bg-dark-bg py-12 transition-colors duration-300">
       <div className="container-custom">
-        {/* Back Button */}
-        {isAdmin ? (
-          <button
-            onClick={() => navigate("/admin/orders")}
-            className="flex items-center gap-2 text-surface-400 hover:text-primary transition-colors mb-8 font-bold text-[13px] uppercase tracking-widest"
-          >
-            <FiArrowLeft size={18} /> Quay lại quản lý đơn hàng
-          </button>
-        ) : (
-          <button
-            onClick={() => window.history.back()}
-            className="flex items-center gap-2 text-surface-400 hover:text-primary transition-colors mb-8 font-bold text-[13px] uppercase tracking-widest"
-          >
-            <FiArrowLeft size={18} /> Quay lại lịch sử đơn hàng
-          </button>
-        )}
+        {/* Navigation */}
+        <button
+          onClick={() => (isAdmin ? navigate("/admin/orders") : window.history.back())}
+          className="flex items-center gap-2 text-surface-400 dark:text-dark-text-secondary hover:text-primary transition-colors mb-8 font-bold text-[13px] uppercase tracking-widest"
+        >
+          <FiArrowLeft size={18} /> Quay lại {isAdmin ? "quản lý" : "lịch sử"}
+        </button>
 
         {/* Page Header */}
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-10">
           <div>
             <div className="flex items-center gap-3 mb-2">
-              <h1 className="text-3xl font-display font-bold text-surface-900">
+              <h1 className="text-3xl font-display font-bold text-surface-900 dark:text-white uppercase tracking-tight">
                 Chi tiết Đơn hàng
               </h1>
-              <span className="px-3 py-1 bg-primary/10 text-primary text-sm font-black rounded-lg">
-                {order.orderCode}
+              <span className="px-4 py-1.5 bg-indigo-600 text-white text-sm font-black rounded-xl shadow-lg shadow-indigo-500/20">
+                #{order.orderCode}
               </span>
             </div>
-            <p className="text-surface-500 font-medium">
-              Đặt {formatDate(order.createdAt)}
+            <p className="text-surface-500 dark:text-dark-text-secondary font-medium">
+              Ngày đặt: {formatDate(order.createdAt)}
             </p>
           </div>
 
@@ -300,489 +283,153 @@ const OrderDetail = () => {
           </div>
         </div>
 
-        {/* Cancel Reason Display */}
-        {(order.status === "cancelled" ||
-          order.status === "cancel_requested") &&
-          order.cancelReason && (
-            <Motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-rose-50 border border-rose-100 rounded-[32px] p-8 mb-8 flex items-start gap-4"
-            >
-              <div className="w-12 h-12 bg-rose-500 text-white rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-rose-200">
-                <FiAlertTriangle size={24} />
-              </div>
-              <div>
-                <h4 className="text-rose-900 font-black text-lg uppercase tracking-tight mb-1">
-                  {order.status === "cancel_requested"
-                    ? "Yêu cầu hủy đơn"
-                    : "Đơn hàng đã hủy"}
-                </h4>
-                <p className="text-rose-700 font-bold text-sm mb-2 uppercase tracking-widest opacity-60">
-                  Lý do từ khách hàng:
-                </p>
-                <div className="bg-white/50 rounded-2xl p-4 border border-rose-200/50">
-                  <p className="text-rose-800 font-medium italic">
-                    "{order.cancelReason}"
-                  </p>
-                </div>
-              </div>
-            </Motion.div>
-          )}
-
-        {/* Order Stepper (Desktop) */}
+        {/* Order Stepper */}
         {!isCancelled && (
-          <div className="hidden md:block bg-white rounded-[32px] p-10 border border-surface-200 shadow-sm mb-8">
+          <div className="hidden md:block bg-white dark:bg-dark-surface rounded-[32px] p-10 border border-surface-200 dark:border-dark-border shadow-sm mb-10">
             <div className="relative flex justify-between">
-              {/* Progress Line */}
-              <div className="absolute top-1/2 left-0 w-full h-1 bg-surface-100 -translate-y-1/2 z-0"></div>
+              <div className="absolute top-1/2 left-0 w-full h-1 bg-slate-100 dark:bg-dark-bg -translate-y-1/2 z-0"></div>
               <div
-                className="absolute top-1/2 left-0 h-1 bg-primary -translate-y-1/2 z-0 transition-all duration-1000"
-                style={{
-                  width: `${(currentStepIndex / (steps.length - 1)) * 100}%`,
-                }}
+                className="absolute top-1/2 left-0 h-1 bg-primary -translate-y-1/2 z-0 transition-all duration-1000 shadow-[0_0_10px_rgba(var(--color-primary-rgb),0.5)]"
+                style={{ width: `${(currentStepIndex / (steps.length - 1)) * 100}%` }}
               ></div>
 
               {steps.map((step, idx) => {
                 const isActive = idx <= currentStepIndex;
-                const isCurrent = idx === currentStepIndex;
                 const Icon = step.icon;
-
                 return (
-                  <div
-                    key={step.key}
-                    className="relative z-10 flex flex-col items-center"
-                  >
+                  <div key={step.key} className="relative z-10 flex flex-col items-center">
                     <div
-                      className={`w-12 h-12 rounded-full flex items-center justify-center border-4 border-white transition-all duration-500 ${
-                        isActive
-                          ? "bg-primary text-white shadow-lg shadow-primary/30"
-                          : "bg-surface-100 text-surface-300"
+                      className={`w-12 h-12 rounded-full flex items-center justify-center border-4 dark:border-dark-surface transition-all duration-500 ${
+                        isActive ? "bg-primary text-white scale-110 shadow-lg" : "bg-slate-100 dark:bg-dark-bg text-slate-400 dark:text-dark-text-secondary"
                       }`}
                     >
                       <Icon size={20} />
                     </div>
-                    <span
-                      className={`absolute top-16 text-[11px] font-black uppercase tracking-wider whitespace-nowrap ${
-                        isCurrent
-                          ? "text-primary"
-                          : isActive
-                            ? "text-surface-900"
-                            : "text-surface-300"
-                      }`}
-                    >
+                    <span className={`absolute top-16 text-[10px] font-black uppercase tracking-widest whitespace-nowrap ${isActive ? "text-primary" : "text-slate-400 dark:text-dark-text-secondary"}`}>
                       {step.label}
                     </span>
                   </div>
                 );
               })}
             </div>
-            <div className="mt-20"></div> {/* Spacer for absolute labels */}
+            <div className="mt-20"></div>
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Info Column */}
-          <div className="lg:col-span-2 space-y-8">
-            {/* Delivery & Shipping Info */}
-            <div className="bg-white rounded-[32px] p-8 border border-surface-200 shadow-sm">
-              <h3 className="text-xl font-display font-bold text-surface-900 mb-6 flex items-center gap-2">
-                <FiMapPin className="text-primary" /> Thông tin Giao hàng
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          <div className="lg:col-span-8 space-y-8">
+            {/* Delivery Info */}
+            <div className="bg-white dark:bg-dark-surface p-8 rounded-[32px] border border-surface-200 dark:border-dark-border shadow-sm">
+              <h3 className="text-lg font-bold text-surface-900 dark:text-white mb-6 flex items-center gap-3">
+                <FiMapPin className="text-primary" /> Thông tin nhận hàng
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12">
                 <div className="space-y-1">
-                  <InfoRow
-                    label="Người nhận"
-                    value={
-                      order.receiverName || order.user?.username || "Khách"
-                    }
-                    icon={FiUser}
-                  />
-                  <InfoRow
-                    label="Số điện thoại"
-                    value={order.receiverPhone || order.user?.phone}
-                  />
-                  <InfoRow label="Email" value={order.user?.email} />
+                  <InfoRow label="Người nhận" value={order.receiverName || order.user?.username} icon={FiUser} />
+                  <InfoRow label="Số điện thoại" value={order.receiverPhone || order.user?.phone} icon={FiTruck} />
+                  <InfoRow label="Email" value={order.user?.email} icon={FiInfo} />
                 </div>
                 <div className="space-y-1">
-                  <InfoRow
-                    label="Địa chỉ nhận hàng"
-                    value={order.shippingAddress}
-                  />
-                  {order.note && (
-                    <InfoRow label="Ghi chú đơn hàng" value={order.note} />
-                  )}
+                  <InfoRow label="Địa chỉ" value={order.shippingAddress} icon={FiMapPin} />
+                  {order.note && <InfoRow label="Ghi chú" value={order.note} icon={FiInfo} />}
                 </div>
               </div>
             </div>
 
-            {/* Product List */}
-            <div className="bg-white rounded-[32px] p-8 border border-surface-200 shadow-sm">
-              <h3 className="text-xl font-display font-bold text-surface-900 mb-6 flex items-center gap-2">
-                <FiPackage className="text-primary" /> Danh sách Sản phẩm
-              </h3>
-              <div className="divide-y divide-surface-100">
-                {order.orderItems?.map((item) => {
-                  const product = item.product || {};
-                  return (
-                    <div
-                      key={item.id}
-                      className="py-6 first:pt-0 last:pb-0 flex gap-6"
-                    >
-                      <div className="w-24 h-24 bg-surface-50 rounded-2xl border border-surface-100 p-2 flex-shrink-0">
-                        <img
-                          src={product.image}
-                          alt={product.name}
-                          className="w-full h-full object-contain mix-blend-multiply"
-                        />
-                      </div>
-                      <div className="flex-grow min-w-0">
-                        <Link
-                          to={`/product-detail/${product.id}`}
-                          className="text-lg font-bold text-surface-900 hover:text-primary transition-colors line-clamp-1 mb-1"
-                        >
-                          {product.name || item.productName}
-                        </Link>
-                        <div className="flex items-center gap-3 text-sm text-surface-500 font-medium mb-3">
-                          <span>Số lượng: {item.quantity}</span>
-                          <div className="w-1 h-1 bg-surface-300 rounded-full"></div>
-                          <span>Đơn giá: {formatCurrency(item.price)}</span>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <StatusBadge
-                            map={returnStatusMap}
-                            status={item.returnStatus}
-                          />
-                          {item.returnReason && (
-                            <span className="text-[11px] text-surface-400 italic font-medium">
-                              Lý do: {item.returnReason}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                      <div className="text-right flex-shrink-0">
-                        <p className="text-[11px] font-black text-surface-400 uppercase tracking-widest mb-1">
-                          Thành tiền
-                        </p>
-                        <p className="text-lg font-black text-surface-900">
-                          {formatCurrency(item.price * item.quantity)}
-                        </p>
-                      </div>
+            {/* Items List */}
+            <div className="bg-white dark:bg-dark-surface rounded-[32px] border border-surface-200 dark:border-dark-border shadow-sm overflow-hidden">
+              <div className="p-8 border-b border-surface-100 dark:border-dark-border bg-slate-50/50 dark:bg-dark-bg/50 flex items-center gap-3">
+                <FiPackage className="text-primary" size={20} />
+                <h3 className="text-sm font-black uppercase tracking-widest text-slate-900 dark:text-white">Danh mục sản phẩm</h3>
+              </div>
+              <div className="divide-y divide-slate-100 dark:divide-dark-border">
+                {order.orderItems?.map((item) => (
+                  <div key={item.id} className="p-8 flex gap-6 group hover:bg-slate-50/50 dark:hover:bg-dark-bg/20 transition-all">
+                    <div className="w-24 h-24 rounded-2xl bg-white dark:bg-dark-bg border border-slate-100 dark:border-dark-border p-2 flex-shrink-0 group-hover:scale-105 transition-transform">
+                      <img src={item.image} alt="" className="w-full h-full object-contain dark:mix-blend-normal" />
                     </div>
-                  );
-                })}
+                    <div className="flex-grow min-w-0">
+                      <Link to={`/product-detail/${item.productId}`} className="text-lg font-bold text-slate-900 dark:text-white hover:text-primary transition-colors line-clamp-1 mb-1">
+                        {item.productName}
+                      </Link>
+                      <div className="flex items-center gap-3 text-sm text-slate-500 dark:text-dark-text-secondary font-medium mb-3">
+                        <span>Số lượng: {item.quantity}</span>
+                        <span>•</span>
+                        <span>Đơn giá: {formatCurrency(item.price)}</span>
+                      </div>
+                      <StatusBadge map={returnStatusMap} status={item.returnStatus} />
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <p className="text-lg font-black text-slate-900 dark:text-white">
+                        {formatCurrency(item.price * item.quantity)}
+                      </p>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
 
-          {/* Sidebar Summary Column */}
-          <div className="space-y-8">
+          <div className="lg:col-span-4 space-y-8">
             {/* Payment Summary */}
-            <div className="bg-white dark:bg-gray-900 rounded-[32px] p-8 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-800 shadow-xl">
-              <h3 className="text-xl font-display font-bold mb-6 flex items-center gap-2">
+            <div className="bg-white dark:bg-dark-surface p-8 rounded-[32px] border border-surface-200 dark:border-dark-border shadow-xl">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-3">
                 <FiCreditCard className="text-primary" /> Thanh toán
               </h3>
-
               <div className="space-y-4 mb-8">
-                <div className="flex justify-between items-center text-gray-500 dark:text-gray-400 text-sm font-medium">
-                  <span>Hình thức</span>
-                  <span className="text-gray-900 dark:text-white uppercase font-bold tracking-wider">
-                    {order.paymentMethod || "COD"}
-                  </span>
+                <div className="flex justify-between items-center text-sm font-medium">
+                  <span className="text-slate-500 dark:text-dark-text-secondary">Phương thức</span>
+                  <span className="text-slate-900 dark:text-white uppercase font-bold tracking-widest">{order.paymentMethod}</span>
                 </div>
-
-                <div className="flex justify-between items-center text-gray-500 dark:text-gray-400 text-sm font-medium">
-                  <span>Trạng thái</span>
-                  <StatusBadge
-                    map={paymentStatusMap}
-                    status={order.paymentStatus}
-                  />
+                <div className="flex justify-between items-center text-sm font-medium">
+                  <span className="text-slate-500 dark:text-dark-text-secondary">Trạng thái</span>
+                  <StatusBadge map={paymentStatusMap} status={order.paymentStatus} />
                 </div>
-
-                <div className="flex justify-between items-center text-gray-500 dark:text-gray-400 text-sm font-medium">
-                  <span>Phí vận chuyển</span>
-                  <span className="text-emerald-500 font-bold tracking-wider uppercase text-[11px]">
-                    Miễn phí
-                  </span>
-                </div>
-
                 {order.discountAmount > 0 && (
-                  <div className="flex justify-between items-center text-rose-500 text-sm font-medium">
-                    <span>
-                      Giảm giá{" "}
-                      {order.voucherCode ? `(${order.voucherCode})` : ""}
-                    </span>
-                    <span className="font-bold">
-                      -{formatCurrency(order.discountAmount)}
-                    </span>
+                  <div className="flex justify-between items-center text-rose-500 text-sm font-bold">
+                    <span>Giảm giá</span>
+                    <span>-{formatCurrency(order.discountAmount)}</span>
                   </div>
                 )}
               </div>
-
-              <div className="pt-6 border-t border-gray-200 dark:border-gray-800">
-                <p className="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2">
-                  Tổng số tiền thanh toán
-                </p>
-                <div className="text-3xl font-black tracking-tight text-primary">
-                  {formatCurrency(order.totalPrice)}
-                </div>
+              <div className="pt-6 border-t border-slate-100 dark:border-dark-border text-center md:text-left">
+                <p className="text-[10px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-[0.2em] mb-2">Tổng thanh toán</p>
+                <div className="text-3xl font-black tracking-tight text-primary">{formatCurrency(order.totalPrice)}</div>
               </div>
-
-              {order.paymentStatus === "unpaid" &&
-                order.paymentMethod === "VNPAY" &&
-                order.status !== "cancelled" && (
-                  <Button
-                    variant="primary"
-                    className="w-full mt-6 shadow-lg shadow-primary/20"
-                    size="lg"
-                    icon={FiCreditCard}
-                    onClick={handleRepay}
-                  >
-                    THANH TOÁN NGAY
-                  </Button>
-                )}
+              {order.paymentStatus === "unpaid" && order.paymentMethod === "VNPAY" && (
+                <Button variant="primary" className="w-full mt-6" icon={FiRefreshCcw} onClick={handleRepay}>THANH TOÁN LẠI</Button>
+              )}
             </div>
 
             {/* Actions */}
             <div className="space-y-3">
               {order.status === "pending" && (
-                <Button
-                  variant="danger"
-                  className="w-full"
-                  size="lg"
-                  icon={FiXCircle}
-                  onClick={() => dispatch({ type: "OPEN_CANCEL_MODAL" })}
-                >
-                  HỦY ĐƠN HÀNG
-                </Button>
+                <Button variant="danger" className="w-full" size="lg" icon={FiXCircle} onClick={() => dispatch({ type: "OPEN_CANCEL_MODAL" })}>HỦY ĐƠN HÀNG</Button>
               )}
-
-              {order.status === "delivered" &&
-                order.orderItems?.some((i) => i.returnStatus === "none") && (
-                  <Button
-                    variant="brand"
-                    className="w-full"
-                    size="lg"
-                    icon={FiRotateCcw}
-                    onClick={() => {
-                      const items =
-                        order.orderItems?.filter(
-                          (i) => i.returnStatus === "none",
-                        ) || [];
-                      dispatch({
-                        type: "OPEN_RETURN_MODAL",
-                        payload: items.map((i) => i.id),
-                      });
-                    }}
-                  >
-                    YÊU CẦU TRẢ HÀNG
-                  </Button>
-                )}
-
-              <Button
-                variant="secondary"
-                className="w-full"
-                size="lg"
-                icon={FiPackage}
-                onClick={() => window.print()}
-              >
-                IN HÓA ĐƠN
-              </Button>
+              <Button variant="secondary" className="w-full" size="lg" icon={FiPackage} onClick={() => window.print()}>IN HÓA ĐƠN</Button>
             </div>
           </div>
         </div>
       </div>
-      <Modal
-        isOpen={showReturnModal}
-        onClose={() => dispatch({ type: "CLOSE_RETURN_MODAL" })}
-        title="Yêu cầu Trả hàng"
-        size="lg"
-      >
-        <div className="space-y-6">
-          {/* Reason Selection */}
-          <div className="space-y-4">
-            <label className="text-[11px] font-black text-surface-400 uppercase tracking-widest mb-2 block">
-              Chọn lý do trả hàng
-            </label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {RETURN_REASONS.map((reason) => (
-                <button
-                  key={reason}
-                  onClick={() => {
-                    dispatch({
-                      type: "SET_SELECTED_RETURN_REASON",
-                      payload: reason,
-                    });
-                    if (reason !== "Lý do khác") {
-                      dispatch({ type: "SET_RETURN_REASON", payload: reason });
-                    } else {
-                      dispatch({ type: "SET_RETURN_REASON", payload: "" });
-                    }
-                  }}
-                  className={`px-4 py-3 rounded-2xl text-left text-xs font-bold transition-all border ${
-                    state.selectedReturnReason === reason
-                      ? "bg-primary/5 border-primary text-primary shadow-sm"
-                      : "bg-surface-50 border-surface-200 text-surface-600 hover:border-surface-300"
-                  }`}
-                >
-                  {reason}
-                </button>
-              ))}
-            </div>
 
-            {state.selectedReturnReason === "Lý do khác" && (
-              <Motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                className="pt-2"
-              >
-                <textarea
-                  rows={3}
-                  className="w-full bg-white border border-surface-200 rounded-2xl p-4 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-                  placeholder="Mô tả chi tiết lý do bạn muốn trả sản phẩm này..."
-                  value={returnReason}
-                  onChange={(e) =>
-                    dispatch({
-                      type: "SET_RETURN_REASON",
-                      payload: e.target.value,
-                    })
-                  }
-                />
-              </Motion.div>
-            )}
-          </div>
-
-          {/* Product Selection */}
-          <div>
-            <label className="text-[11px] font-black text-surface-400 uppercase tracking-widest mb-3 block">
-              Chọn sản phẩm muốn trả
-            </label>
-            <div className="space-y-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
-              {order.orderItems
-                ?.filter((item) => item.returnStatus === "none")
-                .map((item) => (
-                  <label
-                    key={item.id}
-                    className={`flex items-center gap-4 p-3 rounded-2xl border-2 transition-all cursor-pointer ${
-                      selectedItems.includes(item.id)
-                        ? "border-primary bg-primary/5"
-                        : "border-surface-100 bg-white hover:border-surface-200"
-                    }`}
-                  >
-                    <input
-                      type="checkbox"
-                      className="w-5 h-5 rounded-lg text-primary focus:ring-primary border-surface-300"
-                      checked={selectedItems.includes(item.id)}
-                      onChange={() =>
-                        dispatch({
-                          type: "TOGGLE_ITEM",
-                          payload: item.id,
-                        })
-                      }
-                    />
-                    <div className="flex-grow">
-                      <p className="text-sm font-bold text-surface-900 line-clamp-1">
-                        {item.productName}
-                      </p>
-                      <p className="text-xs text-surface-500">
-                        Số lượng: {item.quantity}
-                      </p>
-                    </div>
-                  </label>
-                ))}
-            </div>
-          </div>
-        </div>
-
-        <div className="flex gap-4 mt-10">
-          <Button
-            variant="secondary"
-            className="flex-1"
-            onClick={() => dispatch({ type: "CLOSE_RETURN_MODAL" })}
-          >
-            HỦY BỎ
-          </Button>
-          <Button
-            variant="primary"
-            className="flex-1"
-            loading={submitting}
-            onClick={handleSubmitReturn}
-          >
-            GỬI YÊU CẦU
-          </Button>
-        </div>
-      </Modal>
-      {/* Cancel Order Confirmation Modal */}
+      {/* Cancel Modal */}
       <ConfirmModal
         isOpen={showCancelModal}
         onClose={() => dispatch({ type: "CLOSE_CANCEL_MODAL" })}
         onConfirm={handleCancelOrder}
-        title="Yêu cầu Hủy đơn hàng?"
-        confirmText="Gửi yêu cầu hủy"
-        cancelText="Quay lại"
+        title="Hủy đơn hàng?"
+        message="Bạn có chắc chắn muốn hủy đơn hàng này không?"
+        confirmText="Xác nhận hủy"
         variant="danger"
         loading={submitting}
-        icon={FiXCircle}
-        iconClassName="bg-rose-50 text-rose-500 rounded-3xl"
       >
-        <p className="text-surface-500 mb-6 leading-relaxed">
-          Bạn có chắc chắn muốn gửi yêu cầu hủy đơn hàng{" "}
-          <strong>{order.orderCode}</strong> không?
-        </p>
-
-        <div className="mb-8 text-left w-full space-y-4">
-          <div className="space-y-2">
-            <label className="text-[11px] font-black text-surface-400 uppercase tracking-widest mb-1.5 block">
-              Chọn lý do hủy đơn
-            </label>
-            <div className="grid grid-cols-1 gap-2">
-              {CANCEL_REASONS.map((reason) => (
-                <button
-                  key={reason}
-                  onClick={() => {
-                    dispatch({
-                      type: "SET_SELECTED_CANCEL_REASON",
-                      payload: reason,
-                    });
-                    if (reason !== "Lý do khác") {
-                      dispatch({ type: "SET_CANCEL_REASON", payload: reason });
-                    } else {
-                      dispatch({ type: "SET_CANCEL_REASON", payload: "" });
-                    }
-                  }}
-                  className={`px-4 py-3 rounded-2xl text-left text-xs font-bold transition-all border ${
-                    state.selectedCancelReason === reason
-                      ? "bg-primary/5 border-primary text-primary shadow-sm"
-                      : "bg-surface-50 border-surface-200 text-surface-600 hover:border-surface-300"
-                  }`}
-                >
-                  {reason}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {state.selectedCancelReason === "Lý do khác" && (
-            <Motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              className="pt-2"
-            >
-              <textarea
-                rows={3}
-                className="w-full bg-white border border-surface-200 rounded-2xl p-4 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-                placeholder="Vui lòng nhập lý do cụ thể..."
-                value={cancelReason}
-                onChange={(e) =>
-                  dispatch({
-                    type: "SET_CANCEL_REASON",
-                    payload: e.target.value,
-                  })
-                }
-              />
-            </Motion.div>
-          )}
-        </div>
+        <textarea
+          className="w-full mt-4 p-4 bg-slate-50 dark:bg-dark-bg border border-slate-200 dark:border-dark-border rounded-2xl text-sm outline-none focus:ring-2 focus:ring-rose-500/20 dark:text-white"
+          rows={3}
+          placeholder="Lý do hủy đơn..."
+          value={cancelReason}
+          onChange={(e) => dispatch({ type: "SET_CANCEL_REASON", payload: e.target.value })}
+        />
       </ConfirmModal>
     </div>
   );

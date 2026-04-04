@@ -1155,15 +1155,7 @@ const searchSemanticProducts = async (query, limit = 5) => {
         isActive: true,
         embedding: { [Op.ne]: null },
       },
-      attributes: [
-        "id",
-        "name",
-        "basePrice",
-        "discount",
-        "image",
-        "embedding",
-        "description",
-      ],
+      attributes: ["id", "name", "basePrice", "discount", "embedding", "description"],
     });
 
     const results = products
@@ -1174,7 +1166,7 @@ const searchSemanticProducts = async (query, limit = 5) => {
           id: product.id,
           name: product.name,
           price: product.basePrice * (1 - (product.discount || 0) / 100),
-          image: product.image,
+          image: null,
           similarity: similarity,
         };
       })
@@ -1206,7 +1198,7 @@ const getSmartRecommendations = async (productId, limit = 6) => {
     const product = await db.Product.findByPk(productId);
     if (!product) return { errCode: 1, errMessage: "Sản phẩm không tồn tại" };
 
-    // 1. Lấy sản phẩm tương đồng về Ngữ nghĩa (Semantic)
+    // 1) Semantic similarity from embedding
     let semanticMatches = [];
     if (product.embedding) {
       const queryEmbedding = JSON.parse(product.embedding);
@@ -1216,27 +1208,36 @@ const getSmartRecommendations = async (productId, limit = 6) => {
           id: { [Op.ne]: productId },
           embedding: { [Op.ne]: null },
         },
-        attributes: [
-          "id",
-          "name",
-          "basePrice",
-          "discount",
-          "image",
-          "embedding",
+        attributes: ["id", "name", "slug", "basePrice", "discount", "embedding"],
+        include: [
+          {
+            model: db.ProductImage,
+            as: "images",
+            attributes: ["imageUrl", "isPrimary"],
+          },
         ],
       });
 
       semanticMatches = allProducts
-        .map((p) => ({
-          ...p.get({ plain: true }),
-          similarity: cosineSimilarity(queryEmbedding, JSON.parse(p.embedding)),
-          reason: "Cùng phong cách",
-        }))
+        .map((p) => {
+          const plain = p.get({ plain: true });
+          const primary = plain.images?.find((img) => img.isPrimary) || plain.images?.[0];
+          return {
+            id: plain.id,
+            name: plain.name,
+            slug: plain.slug,
+            basePrice: plain.basePrice,
+            discount: plain.discount,
+            image: primary?.imageUrl || null,
+            similarity: cosineSimilarity(queryEmbedding, JSON.parse(plain.embedding)),
+            reason: "Cùng phong cách",
+          };
+        })
         .filter((p) => p.similarity > 0.7)
         .sort((a, b) => b.similarity - a.similarity);
     }
 
-    // 2. Lấy sản phẩm thường được mua cùng (Frequently Bought Together)
+    // 2) Frequently bought together
     const orderItems = await db.OrderItem.findAll({
       where: { productId },
       attributes: ["orderId"],
@@ -1246,7 +1247,6 @@ const getSmartRecommendations = async (productId, limit = 6) => {
 
     let boughtTogether = [];
     if (orderIds.length > 0) {
-      // Step 1: Get frequent product IDs with COUNT aggregation
       const frequentProductData = await db.OrderItem.findAll({
         where: {
           orderId: { [Op.in]: orderIds },
@@ -1263,26 +1263,44 @@ const getSmartRecommendations = async (productId, limit = 6) => {
         subQuery: false,
       });
 
-      // Step 2: Get product details separately
       const productIds = frequentProductData.map((item) => item.productId);
       if (productIds.length > 0) {
         const products = await db.Product.findAll({
           where: { id: { [Op.in]: productIds } },
-          attributes: ["id", "name", "basePrice", "discount", "image"],
-          raw: true,
+          attributes: ["id", "name", "slug", "basePrice", "discount"],
+          include: [
+            {
+              model: db.ProductImage,
+              as: "images",
+              attributes: ["imageUrl", "isPrimary"],
+            },
+          ],
         });
 
-        // Step 3: Merge data while maintaining frequency order
+        const productMap = new Map();
+        products.forEach((p) => {
+          const plain = p.get({ plain: true });
+          const primary = plain.images?.find((img) => img.isPrimary) || plain.images?.[0];
+          productMap.set(plain.id, {
+            id: plain.id,
+            name: plain.name,
+            slug: plain.slug,
+            basePrice: plain.basePrice,
+            discount: plain.discount,
+            image: primary?.imageUrl || null,
+          });
+        });
+
         boughtTogether = frequentProductData
           .map((item) => {
-            const product = products.find((p) => p.id === item.productId);
-            return product ? { ...product, reason: "Thường mua cùng" } : null;
+            const productInfo = productMap.get(item.productId);
+            return productInfo ? { ...productInfo, reason: "Thường mua cùng" } : null;
           })
           .filter(Boolean);
       }
     }
 
-    // Kết hợp và loại bỏ trùng lặp
+    // Merge + dedupe
     const combined = [...boughtTogether, ...semanticMatches];
     const uniqueResults = [];
     const seenIds = new Set();
@@ -1295,7 +1313,7 @@ const getSmartRecommendations = async (productId, limit = 6) => {
       if (uniqueResults.length >= limit) break;
     }
 
-    // Fallback: Cùng danh mục nếu chưa đủ
+    // 3) Fallback by same category
     if (uniqueResults.length < limit) {
       const fallback = await db.Product.findAll({
         where: {
@@ -1309,14 +1327,29 @@ const getSmartRecommendations = async (productId, limit = 6) => {
           isActive: true,
         },
         limit: limit - uniqueResults.length,
-        attributes: ["id", "name", "basePrice", "discount", "image"],
+        attributes: ["id", "name", "slug", "basePrice", "discount"],
+        include: [
+          {
+            model: db.ProductImage,
+            as: "images",
+            attributes: ["imageUrl", "isPrimary"],
+          },
+        ],
       });
-      fallback.forEach((p) =>
+
+      fallback.forEach((p) => {
+        const plain = p.get({ plain: true });
+        const primary = plain.images?.find((img) => img.isPrimary) || plain.images?.[0];
         uniqueResults.push({
-          ...p.get({ plain: true }),
+          id: plain.id,
+          name: plain.name,
+          slug: plain.slug,
+          basePrice: plain.basePrice,
+          discount: plain.discount,
+          image: primary?.imageUrl || null,
           reason: "Cùng danh mục",
-        }),
-      );
+        });
+      });
     }
 
     return { errCode: 0, products: uniqueResults };

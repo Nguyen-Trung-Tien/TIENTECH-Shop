@@ -70,7 +70,7 @@ const CartItem = ({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, height: 0 }}
-      className={`p-6 md:p-8 flex flex-col sm:flex-row items-center gap-6 md:gap-8 ${!isLast ? "border-b border-slate-100" : ""}`}
+      className={`p-6 md:p-8 flex flex-col sm:flex-row items-center gap-6 md:gap-8 ${!isLast ? "border-b border-slate-100 dark:border-dark-border" : ""}`}
     >
       {/* Selection & Image */}
       <div className="flex items-center gap-6 w-full sm:w-auto">
@@ -81,13 +81,13 @@ const CartItem = ({
             checked={isSelected}
             onChange={() => onSelect(item.id)}
           />
-          <div className="w-6 h-6 border-2 border-slate-200 rounded-lg peer-checked:bg-primary peer-checked:border-primary transition-all duration-300 group-hover:border-primary/50 flex items-center justify-center">
+          <div className="w-6 h-6 border-2 border-slate-200 dark:border-dark-border rounded-lg peer-checked:bg-primary peer-checked:border-primary transition-all duration-300 group-hover:border-primary/50 flex items-center justify-center">
             <div className="w-2 h-2 bg-white rounded-full opacity-0 peer-checked:opacity-100 transition-opacity"></div>
           </div>
         </label>
 
         <div
-          className="w-28 h-28 flex-shrink-0 bg-slate-50 rounded-2xl border border-slate-100 p-4 overflow-hidden group cursor-pointer shadow-sm hover:shadow-md transition-all"
+          className="w-28 h-28 flex-shrink-0 bg-slate-50 dark:bg-dark-bg rounded-2xl border border-slate-100 dark:border-dark-border p-4 overflow-hidden group cursor-pointer shadow-sm hover:shadow-md transition-all"
           onClick={() =>
             navigate(
               `/product-detail/${item.product?.id}?variant=${item.variant?.id}`,
@@ -97,7 +97,7 @@ const CartItem = ({
           <img
             src={itemImage}
             alt={item.product?.name}
-            className="w-full h-full object-contain mix-blend-multiply group-hover:scale-110 transition-transform duration-500"
+            className="w-full h-full object-contain mix-blend-multiply dark:mix-blend-normal group-hover:scale-110 transition-transform duration-500"
           />
         </div>
       </div>
@@ -123,7 +123,7 @@ const CartItem = ({
 
         <div className="space-y-1">
           <h3
-            className="text-base md:text-lg font-black text-slate-900 hover:text-primary transition-colors cursor-pointer line-clamp-1 leading-tight"
+            className="text-base md:text-lg font-black text-slate-900 dark:text-white hover:text-primary transition-colors cursor-pointer line-clamp-1 leading-tight"
             onClick={() =>
               navigate(
                 `/product-detail/${item.product?.id}?variant=${item.variant?.id}`,
@@ -134,8 +134,8 @@ const CartItem = ({
           </h3>
 
           {variantOptions && (
-            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-tight flex items-center justify-center sm:justify-start gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-slate-200"></span>
+            <p className="text-[11px] font-bold text-slate-400 dark:text-dark-text-secondary uppercase tracking-tight flex items-center justify-center sm:justify-start gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-slate-200 dark:bg-dark-border"></span>
               {variantOptions}
             </p>
           )}
@@ -146,7 +146,7 @@ const CartItem = ({
             {formatCurrency(finalPrice)}
           </span>
           {discount > 0 && (
-            <span className="text-xs text-slate-400 line-through decoration-danger/30 decoration-2">
+            <span className="text-xs text-slate-400 dark:text-dark-text-secondary line-through decoration-danger/30 decoration-2">
               {formatCurrency(basePrice)}
             </span>
           )}
@@ -154,20 +154,20 @@ const CartItem = ({
       </div>
 
       {/* Control Actions */}
-      <div className="flex flex-row sm:flex-col items-center justify-between sm:justify-center gap-6 w-full sm:w-auto border-t sm:border-t-0 sm:border-l border-slate-100 pt-4 sm:pt-0 sm:pl-8">
-        <div className="flex items-center bg-slate-50 rounded-2xl border border-slate-100 p-1 shadow-inner">
+      <div className="flex flex-row sm:flex-col items-center justify-between sm:justify-center gap-6 w-full sm:w-auto border-t sm:border-t-0 sm:border-l border-slate-100 dark:border-dark-border pt-4 sm:pt-0 sm:pl-8">
+        <div className="flex items-center bg-slate-50 dark:bg-dark-bg rounded-2xl border border-slate-100 dark:border-dark-border p-1 shadow-inner">
           <button
             onClick={() => onUpdateQty(item.id, Math.max(1, item.quantity - 1))}
-            className="w-9 h-9 flex items-center justify-center bg-white rounded-xl text-slate-500 hover:text-primary transition-all shadow-sm active:scale-90"
+            className="w-9 h-9 flex items-center justify-center bg-white dark:bg-dark-surface rounded-xl text-slate-500 dark:text-dark-text-secondary hover:text-primary transition-all shadow-sm active:scale-90"
           >
             <FiMinus size={14} />
           </button>
-          <span className="w-10 text-center text-sm font-black text-slate-800">
+          <span className="w-10 text-center text-sm font-black text-slate-800 dark:text-white">
             {item.quantity}
           </span>
           <button
             onClick={() => onUpdateQty(item.id, item.quantity + 1)}
-            className="w-9 h-9 flex items-center justify-center bg-white rounded-xl text-slate-500 hover:text-primary transition-all shadow-sm active:scale-90"
+            className="w-9 h-9 flex items-center justify-center bg-white dark:bg-dark-surface rounded-xl text-slate-500 dark:text-dark-text-secondary hover:text-primary transition-all shadow-sm active:scale-90"
           >
             <FiPlus size={14} />
           </button>
@@ -175,10 +175,10 @@ const CartItem = ({
 
         <div className="flex items-center gap-6">
           <div className="text-right hidden sm:block">
-            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">
+            <p className="text-[9px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest leading-none mb-1">
               Tạm tính
             </p>
-            <p className="text-lg font-black text-slate-900 tracking-tight">
+            <p className="text-lg font-black text-slate-900 dark:text-white tracking-tight">
               {formatCurrency(finalPrice * item.quantity)}
             </p>
           </div>

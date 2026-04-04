@@ -62,7 +62,7 @@ const ReviewModal = ({ isOpen, onClose, order, onReviewSuccess }) => {
       size="lg"
     >
       <div className="space-y-6">
-        <p className="text-sm text-slate-500 font-medium">
+        <p className="text-sm text-slate-500 dark:text-dark-text-secondary font-medium">
           Cảm ơn bạn đã mua sắm! Hãy chia sẻ trải nghiệm của bạn về các sản phẩm
           trong đơn hàng này.
         </p>
@@ -76,27 +76,27 @@ const ReviewModal = ({ isOpen, onClose, order, onReviewSuccess }) => {
             return (
               <div
                 key={item.id}
-                className="bg-slate-50 rounded-[24px] p-5 border border-slate-100"
+                className="bg-slate-50 dark:bg-dark-bg rounded-[24px] p-5 border border-slate-100 dark:border-dark-border"
               >
                 <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 bg-white rounded-xl border border-slate-100 p-1 flex-shrink-0">
+                  <div className="w-14 h-14 bg-white dark:bg-dark-surface rounded-xl border border-slate-100 dark:border-dark-border p-1 flex-shrink-0">
                     <img
                       src={item.product?.image || item.image}
                       alt=""
-                      className="w-full h-full object-contain"
+                      className="w-full h-full object-contain dark:mix-blend-normal"
                     />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h4 className="font-bold text-slate-900 text-sm truncate">
+                    <h4 className="font-bold text-slate-900 dark:text-white text-sm truncate">
                       {item.productName}
                     </h4>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
+                    <p className="text-[10px] font-bold text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest mt-0.5">
                       Số lượng: {item.quantity}
                     </p>
                   </div>
 
                   {isReviewed ? (
-                    <div className="flex items-center gap-1.5 text-emerald-500 font-black text-[10px] uppercase tracking-widest bg-emerald-50 px-3 py-1.5 rounded-full">
+                    <div className="flex items-center gap-1.5 text-emerald-500 font-black text-[10px] uppercase tracking-widest bg-emerald-50 dark:bg-emerald-900/20 px-3 py-1.5 rounded-full">
                       <FiCheckCircle size={12} /> Đã đánh giá
                     </div>
                   ) : !isCurrent ? (
@@ -111,7 +111,7 @@ const ReviewModal = ({ isOpen, onClose, order, onReviewSuccess }) => {
                   ) : (
                     <button
                       onClick={() => setReviewingProductId(null)}
-                      className="text-[10px] font-bold text-slate-400 hover:text-red-500 uppercase tracking-widest px-2"
+                      className="text-[10px] font-bold text-slate-400 dark:text-dark-text-secondary hover:text-red-500 dark:hover:text-red-400 uppercase tracking-widest px-2"
                     >
                       Hủy
                     </button>
@@ -119,7 +119,7 @@ const ReviewModal = ({ isOpen, onClose, order, onReviewSuccess }) => {
                 </div>
 
                 {isCurrent && (
-                  <div className="mt-6 pt-6 border-t border-white">
+                  <div className="mt-6 pt-6 border-t border-white dark:border-dark-border">
                     <ReviewForm
                       newReview={newReview}
                       setNewReview={setNewReview}

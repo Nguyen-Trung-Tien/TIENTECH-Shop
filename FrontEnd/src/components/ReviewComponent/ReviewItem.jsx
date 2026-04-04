@@ -29,11 +29,11 @@ const ReviewItem = ({ review, user }) => {
   };
 
   return (
-    <div className="py-8 border-b border-slate-50 last:border-0 group">
+    <div className="py-8 border-b border-slate-50 dark:border-dark-border last:border-0 group transition-colors">
       <div className="flex gap-5 md:gap-6">
         {/* Avatar Cluster - Smaller */}
         <div className="hidden sm:flex flex-col items-center gap-2">
-          <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center text-primary font-black text-sm shadow-sm border-2 border-white overflow-hidden">
+          <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-dark-bg flex items-center justify-center text-primary font-black text-sm shadow-sm border-2 border-white dark:border-dark-border overflow-hidden">
             {review.user?.avatar ? (
                <img src={review.user.avatar} alt="" className="w-full h-full object-cover" />
             ) : (
@@ -41,7 +41,7 @@ const ReviewItem = ({ review, user }) => {
             )}
           </div>
           {review.isVerified && (
-            <div className="flex items-center gap-1 text-[7px] font-black text-emerald-500 bg-emerald-50 px-1.5 py-0.5 rounded-full uppercase tracking-tighter">
+            <div className="flex items-center gap-1 text-[7px] font-black text-emerald-500 bg-emerald-50 dark:bg-emerald-950/30 px-1.5 py-0.5 rounded-full uppercase tracking-tighter">
               <FaCheckCircle size={8} /> Đã mua
             </div>
           )}
@@ -52,10 +52,10 @@ const ReviewItem = ({ review, user }) => {
           <div className="flex flex-wrap items-center justify-between gap-3 mb-2.5">
             <div>
               <div className="flex items-center gap-2 mb-0.5">
-                <h4 className="text-sm font-bold text-slate-900 truncate">
+                <h4 className="text-sm font-bold text-slate-900 dark:text-white truncate">
                   {review.user?.username || "Người dùng ẩn danh"}
                 </h4>
-                <div className="sm:hidden flex items-center gap-1 text-[7px] font-black text-emerald-500 bg-emerald-50 px-1.5 py-0.5 rounded-full uppercase">
+                <div className="sm:hidden flex items-center gap-1 text-[7px] font-black text-emerald-500 bg-emerald-50 dark:bg-emerald-950/30 px-1.5 py-0.5 rounded-full uppercase">
                   <FaCheckCircle size={8} />
                 </div>
               </div>
@@ -63,10 +63,10 @@ const ReviewItem = ({ review, user }) => {
               <div className="flex items-center gap-3">
                 <div className="flex text-amber-400 gap-0.5" aria-label={`Đánh giá ${review.rating} sao`}>
                   {[1, 2, 3, 4, 5].map((s) => (
-                    <FaStar key={s} size={10} className={s <= review.rating ? "fill-current" : "text-slate-100"} />
+                    <FaStar key={s} size={10} className={s <= review.rating ? "fill-current" : "text-slate-100 dark:text-dark-border"} />
                   ))}
                 </div>
-                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+                <span className="text-[9px] font-bold text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest">
                   {new Date(review.createdAt).toLocaleDateString("vi-VN")}
                 </span>
               </div>
@@ -74,7 +74,7 @@ const ReviewItem = ({ review, user }) => {
           </div>
 
           <div className="relative">
-            <p className="text-sm text-slate-600 leading-relaxed mb-4">
+            <p className="text-sm text-slate-600 dark:text-dark-text-primary leading-relaxed mb-4">
               {review.comment}
             </p>
 
@@ -82,8 +82,8 @@ const ReviewItem = ({ review, user }) => {
             {review.images && review.images.length > 0 && (
               <div className="flex flex-wrap gap-2 mb-6">
                 {review.images.map((img) => (
-                  <div key={img.id} className="w-20 h-20 rounded-xl overflow-hidden border border-slate-100 shadow-sm cursor-zoom-in hover:scale-105 transition-transform">
-                    <img src={img.imageUrl} alt="review" className="w-full h-full object-cover" />
+                  <div key={img.id} className="w-20 h-20 rounded-xl overflow-hidden border border-slate-100 dark:border-dark-border shadow-sm cursor-zoom-in hover:scale-105 transition-transform">
+                    <img src={img.imageUrl} alt="review" className="w-full h-full object-cover dark:mix-blend-normal" />
                   </div>
                 ))}
               </div>
@@ -93,16 +93,16 @@ const ReviewItem = ({ review, user }) => {
               <button 
                 onClick={handleLike}
                 disabled={isLiking}
-                className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-slate-400 hover:text-primary transition-colors group/btn disabled:opacity-50"
+                className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary hover:text-primary dark:hover:text-brand transition-colors group/btn disabled:opacity-50"
               >
-                <span className="w-8 h-8 flex items-center justify-center bg-slate-50 rounded-lg group-hover/btn:bg-primary/5 transition-all">
+                <span className="w-8 h-8 flex items-center justify-center bg-slate-50 dark:bg-dark-bg rounded-lg group-hover/btn:bg-primary/5 dark:group-hover/btn:bg-brand/10 transition-all">
                   <FiThumbsUp size={14} className={isLiking ? "animate-bounce" : ""} />
                 </span>
                 Hữu ích ({likes})
               </button>
 
-              <button className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-slate-400 hover:text-primary transition-colors group/btn">
-                <span className="w-8 h-8 flex items-center justify-center bg-slate-50 rounded-lg group-hover/btn:bg-primary/5 transition-all">
+              <button className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary hover:text-primary dark:hover:text-brand transition-colors group/btn">
+                <span className="w-8 h-8 flex items-center justify-center bg-slate-50 dark:bg-dark-bg rounded-lg group-hover/btn:bg-primary/5 dark:group-hover/btn:bg-brand/10 transition-all">
                   <FiMessageSquare size={14} />
                 </span>
                 Phản hồi ({review.replies?.length || 0})
@@ -112,7 +112,7 @@ const ReviewItem = ({ review, user }) => {
 
           {/* Reply list - Smaller indent */}
           {review.replies?.length > 0 && (
-            <div className="mt-6 space-y-3 ps-4 border-l-2 border-slate-50">
+            <div className="mt-6 space-y-3 ps-4 border-l-2 border-slate-50 dark:border-dark-border">
               {review.replies.map((rep) => (
                 <ReplyItem key={rep.id} reply={rep} user={user} />
               ))}

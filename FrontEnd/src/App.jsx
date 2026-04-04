@@ -28,6 +28,15 @@ const App = () => {
   }, []);
 
   useEffect(() => {
+    if (theme === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+    localStorage.setItem("theme", theme);
+  }, [theme]);
+
+  useEffect(() => {
     const checkAuth = async () => {
       try {
         const res = await getMeApi();
