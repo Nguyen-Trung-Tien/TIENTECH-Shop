@@ -108,3 +108,13 @@ export const removeCartItem = async (id) => {
     throw error;
   }
 };
+
+export const validateCart = async (items) => {
+  try {
+    const res = await axiosClient.post("/cart/validate", { items });
+    return res;
+  } catch (error) {
+    console.error("Error validating cart:", error);
+    throw error;
+  }
+};

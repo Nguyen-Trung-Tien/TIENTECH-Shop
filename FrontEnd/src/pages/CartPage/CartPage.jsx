@@ -8,6 +8,8 @@ import OrderSummary from "../../components/Cart/OrderSummary";
 import CartSkeleton from "../../components/CartSkeleton/CartSkeleton";
 import VoucherSelector from "../../components/Cart/VoucherSelector";
 import { applyVoucher, removeVoucher } from "../../redux/cartSlice";
+import { validateCart } from "../../api/cartApi";
+import { toast } from "react-toastify";
 
 const CartPage = () => {
   const navigate = useNavigate();
@@ -23,6 +25,7 @@ const CartPage = () => {
 
   const [selectedItems, setSelectedItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isValidating, setIsValidating] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
@@ -70,20 +73,46 @@ const CartPage = () => {
     }
   };
 
-  const handleCheckOut = () => {
+  const handleCheckOut = async () => {
     const itemsToCheckout = cartItems.filter((i) =>
       selectedItems.includes(i.id),
     );
     if (itemsToCheckout.length === 0) {
-      return alert("Vui lòng chọn ít nhất một sản phẩm để thanh toán!");
+      return toast.warning("Vui lòng chọn ít nhất một sản phẩm để thanh toán!");
     }
-    navigate("/checkout", {
-      state: {
-        selectedItems: itemsToCheckout,
-        subtotal: subtotal,
-        appliedVoucher: appliedVoucher,
-      },
-    });
+
+    setIsValidating(true);
+    try {
+      const response = await validateCart(itemsToCheckout);
+      if (response.errCode === 0) {
+        const { items, hasChanged, totalAmount } = response.data;
+
+        if (hasChanged) {
+          toast.info(
+            "Một số thông tin sản phẩm (giá hoặc tồn kho) đã thay đổi. Vui lòng kiểm tra lại!",
+          );
+          await fetchCart();
+          return;
+        }
+
+        navigate("/checkout", {
+          state: {
+            selectedItems: items,
+            subtotal: totalAmount,
+            appliedVoucher: appliedVoucher,
+          },
+        });
+      } else {
+        toast.error(
+          response.errMessage || "Có lỗi xảy ra khi xác thực giỏ hàng",
+        );
+      }
+    } catch (error) {
+      console.error("Checkout validation error:", error);
+      toast.error("Không thể kết nối với máy chủ để xác thực giỏ hàng");
+    } finally {
+      setIsValidating(false);
+    }
   };
 
   if (loading) return <CartSkeleton />;
@@ -190,6 +219,7 @@ const CartPage = () => {
                 subtotal={subtotal}
                 appliedVoucher={appliedVoucher}
                 onCheckout={handleCheckOut}
+                loading={isValidating}
               />
             </aside>
           </div>

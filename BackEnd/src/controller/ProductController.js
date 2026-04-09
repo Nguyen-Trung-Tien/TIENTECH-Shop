@@ -12,43 +12,25 @@ const handleCreateProduct = async (req, res) => {
   try {
     const data = { ...req.body };
 
-    // Validate required fields
     if (!data.name || String(data.name).trim() === "") {
-      return res
-        .status(400)
-        .json({ errCode: 1, errMessage: "Tên sản phẩm không được để trống" });
+      return res.status(400).json({ errCode: 1, errMessage: "Tên sản phẩm không được để trống" });
     }
 
-    ["specifications", "options", "variants", "attributes"].forEach((field) => {
-      if (data[field]) {
-        if (typeof data[field] === "string") {
-          try {
-            data[field] = JSON.parse(data[field]);
-          } catch (e) {
-            console.error(`Error parsing ${field}:`, e);
-          }
+    // Tự động parse các trường JSON từ Multipart-form
+    ["specifications", "variants", "attributes"].forEach((field) => {
+      if (data[field] && typeof data[field] === "string") {
+        try {
+          data[field] = JSON.parse(data[field]);
+        } catch (e) {
+          console.warn(`[Controller] Failed to parse ${field}`);
         }
       }
     });
 
-    // Parse attributes inside variants if they exist
-    if (data.variants && Array.isArray(data.variants)) {
-      data.variants = data.variants.map((v) => {
-        if (v.attributes && typeof v.attributes === "string") {
-          try {
-            v.attributes = JSON.parse(v.attributes);
-          } catch (e) {}
-        }
-        return v;
-      });
-    }
-
+    // Ép kiểu các trường ID
     if (data.brandId) data.brandId = parseInt(data.brandId);
     if (data.categoryId) data.categoryId = parseInt(data.categoryId);
-    if (data.stock !== undefined) data.stock = parseInt(data.stock);
-    if (data.price !== undefined) data.basePrice = data.price;
-    if (data.isActive !== undefined)
-      data.isActive = parseBoolean(data.isActive);
+    if (data.isActive !== undefined) data.isActive = parseBoolean(data.isActive);
 
     const files = req.files || {};
     const primaryFile = files.image?.[0] || null;
@@ -56,40 +38,25 @@ const handleCreateProduct = async (req, res) => {
 
     const imageRecords = [];
 
+    // Xử lý upload ảnh (nếu có)
     if (primaryFile) {
       const uploaded = await uploadToCloudinary(primaryFile.buffer, "products");
-      data.image = uploaded.secure_url;
-      imageRecords.push({
-        imageUrl: uploaded.secure_url,
-        publicId: uploaded.public_id,
-        isPrimary: true,
-      });
+      imageRecords.push({ imageUrl: uploaded.secure_url, publicId: uploaded.public_id, isPrimary: true });
     }
 
     if (galleryFiles.length > 0) {
       for (const file of galleryFiles) {
-        const uploaded = await uploadToCloudinary(
-          file.buffer,
-          "products/gallery",
-        );
-        imageRecords.push({
-          imageUrl: uploaded.secure_url,
-          publicId: uploaded.public_id,
-          isPrimary: false,
-        });
+        const uploaded = await uploadToCloudinary(file.buffer, "products/gallery");
+        imageRecords.push({ imageUrl: uploaded.secure_url, publicId: uploaded.public_id, isPrimary: false });
       }
     }
 
-    const product = await ProductService.createProductWithVariants(
-      data,
-      imageRecords,
-    );
-    return res.status(201).json(product);
+    // Gọi hàm Service duy nhất
+    const result = await ProductService.createProduct(data, imageRecords);
+    return res.status(result.errCode === 0 ? 201 : 400).json(result);
   } catch (e) {
-    console.error(e);
-    return res
-      .status(500)
-      .json({ errCode: -1, errMessage: "Internal server error" });
+    console.error("[Controller] handleCreateProduct Error:", e);
+    return res.status(500).json({ errCode: -1, errMessage: "Internal server error" });
   }
 };
 
@@ -100,12 +67,16 @@ const handleGetAllProducts = async (req, res) => {
     const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 10));
     const isFlashSale =
       req.query.isFlashSale === "true" || req.query.isFlashSale === "1";
+    
+    // Check if the requester is an admin
+    const isAdmin = req.user && req.user.role === "admin";
 
     const result = await ProductService.getAllProducts(
       categoryId,
       page,
       limit,
       isFlashSale,
+      isAdmin
     );
     return res.status(200).json(result);
   } catch (e) {

@@ -196,9 +196,22 @@ const VariantManager = ({
     setConfirmModal({ show: false, v: null, idx: null });
   };
 
-  const displayVariants = productId
-    ? initialVariants
-    : formData?.variants || [];
+  const addManualVariant = () => {
+    const newV = {
+      sku: `${formData.sku || "SKU"}-NEW-${Math.random().toString(36).substr(2, 4).toUpperCase()}`,
+      price: formData.price || 0,
+      stock: 0,
+      attributes: {},
+      attributeValues: {},
+      isActive: true,
+    };
+    const currentVariants = productId ? initialVariants : formData.variants;
+    setFormData((prev) => ({ ...prev, variants: [...currentVariants, newV] }));
+    setExpandedIdx((productId ? initialVariants : formData.variants).length);
+    toast.success("Đã thêm dòng biến thể mới!");
+  };
+
+  const displayVariants = formData?.variants || [];
 
   const getAttrIcon = (code) => {
     switch (code) {
@@ -344,15 +357,23 @@ const VariantManager = ({
           ))}
         </div>
 
-        {!productId && (
+        <div className="flex flex-col sm:flex-row gap-4">
           <button
             type="button"
             onClick={generateVariants}
-            className="w-full h-14 bg-indigo-600 text-white rounded-3xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-indigo-700 transition-all flex items-center justify-center gap-4 shadow-xl shadow-indigo-200 dark:shadow-none active:scale-[0.98]"
+            className="flex-1 h-14 bg-indigo-600 text-white rounded-3xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-indigo-700 transition-all flex items-center justify-center gap-4 shadow-xl shadow-indigo-200 dark:shadow-none active:scale-[0.98]"
           >
             <FiRefreshCcw className="text-xl" /> TẠO DANH SÁCH BIẾN THỂ TỰ ĐỘNG
           </button>
-        )}
+
+          <button
+            type="button"
+            onClick={addManualVariant}
+            className="px-8 h-14 bg-emerald-500 text-white rounded-3xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-emerald-600 transition-all flex items-center justify-center gap-4 shadow-xl shadow-emerald-100 dark:shadow-none active:scale-[0.98]"
+          >
+            <FiPlus className="text-xl" /> THÊM THỦ CÔNG
+          </button>
+        </div>
       </div>
 
       {displayVariants.length > 0 && (
@@ -547,7 +568,7 @@ const VariantManager = ({
                                       <div className="relative">
                                         <input
                                           list={`list-vattr-${idx}-${code}`}
-                                          className="input-modern !h-11 text-xs font-black border-slate-200 dark:border-dark-border dark:bg-dark-bg dark:text-white focus:ring-4 focus:ring-indigo-50 dark:focus:ring-indigo-900/10"
+                                          className="input-modern !h-11 text-xs font-black border-slate-200 dark:border-dark-border dark:bg-dark-bg dark:text-white focus:ring-0"
                                           placeholder={`Chọn ${attr?.name || code}...`}
                                           value={value}
                                           onChange={(e) =>

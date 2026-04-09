@@ -12,9 +12,16 @@ const calculateChange = (current, previous) => {
   return Math.round(((current - previous) / previous) * 100);
 };
 
+const { getCache, setCache } = require("../config/redis");
+
 const getDashboardData = async (period) => {
+  const cacheKey = `dashboard_${period || "all"}`;
+  const cachedData = await getCache(cacheKey);
+  if (cachedData) return cachedData;
+
   try {
     const now = new Date();
+
     const startOfToday = new Date(
       now.getFullYear(),
       now.getMonth(),
@@ -202,7 +209,7 @@ const getDashboardData = async (period) => {
       raw: true,
     });
 
-    return {
+    const result = {
       totalProducts,
       todayOrders,
       totalRevenue: period ? totalRevenuePeriod : totalRevenueAllTime,
@@ -217,6 +224,9 @@ const getDashboardData = async (period) => {
       revenueByYear,
       topProducts: topProductsRaw,
     };
+
+    await setCache(cacheKey, result, 300); // 5 minutes cache
+    return result;
   } catch (error) {
     console.error("Error from AdminService.getDashboardData:", error);
     throw error;

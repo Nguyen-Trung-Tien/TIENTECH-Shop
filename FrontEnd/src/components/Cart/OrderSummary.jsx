@@ -18,6 +18,7 @@ const OrderSummary = ({
   onCheckout,
   appliedVoucher = null,
   isCheckoutPage = false,
+  loading = false,
 }) => {
   const shippingFee = subtotal > 5000000 ? 0 : 30000;
   const discountAmount = appliedVoucher
@@ -91,14 +92,43 @@ const OrderSummary = ({
       {!isCheckoutPage && (
         <Button
           variant="primary"
-          className="w-full h-16 rounded-2xl font-black text-sm tracking-[0.2em] mb-8 group"
+          className="w-full h-16 rounded-2xl font-black text-sm tracking-[0.2em] mb-8 group flex items-center justify-center"
           onClick={onCheckout}
-          disabled={items.length === 0}
+          disabled={items.length === 0 || loading}
         >
-          TIẾP TỤC THANH TOÁN
-          <FiArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />
+          {loading ? (
+            <div className="flex items-center gap-2">
+              <svg
+                className="animate-spin h-5 w-5 text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
+              </svg>
+              ĐANG XỬ LÝ...
+            </div>
+          ) : (
+            <>
+              TIẾP TỤC THANH TOÁN
+              <FiArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />
+            </>
+          )}
         </Button>
       )}
+
 
       {/* Trust Badges */}
       <div className="grid grid-cols-2 gap-4 pt-8 border-t border-gray-200 dark:border-gray-800">

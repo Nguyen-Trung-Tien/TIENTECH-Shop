@@ -248,7 +248,7 @@ const OrderDetail = () => {
   ];
 
   const currentStepIndex = steps.findIndex((s) => s.key === order.status);
-  const isCancelled = order.status === "cancelled";
+  const isCancelled = order.status === "cancelled" || order.status === "cancel_requested";
 
   return (
     <div className="min-h-screen bg-surface-50 dark:bg-dark-bg py-12 transition-colors duration-300">

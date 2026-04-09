@@ -31,6 +31,7 @@ const TABS = [
   { id: "shipped", label: "Đang giao", color: "bg-sky-500" },
   { id: "delivered", label: "Đã giao", color: "bg-emerald-500" },
   { id: "cancelled", label: "Đã hủy", color: "bg-rose-500" },
+  { id: "cancel_requested", label: "Yêu cầu hủy", color: "bg-rose-600" },
 ];
 
 const OrderManage = () => {

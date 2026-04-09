@@ -1,7 +1,7 @@
 const db = require("../models");
 const { Op } = require("sequelize");
 const { getLuckyColorsByYear } = require("../utils/fortuneUtils");
-const NodeCache = require("node-cache");
+const { getCache, setCache, deleteCacheByPattern } = require("../config/redis");
 const { getPagination, getPagingData } = require("../utils/paginationHelper");
 const AttributeService = require("./AttributeService");
 const { slugify } = require("../utils/slugHelper");
@@ -9,8 +9,6 @@ const {
   generateEmbedding,
   cosineSimilarity,
 } = require("../utils/embeddingHelper");
-
-const productCache = new NodeCache({ stdTTL: 600, checkperiod: 120 });
 
 // --- CÁC HÀM HELPER NỘI BỘ ---
 
@@ -50,13 +48,16 @@ const ensureUniqueSKU = async (sku, transaction) => {
   return sku;
 };
 
-const clearProductCache = () => {
-  const keys = productCache.keys();
-  keys.forEach((key) => {
-    if (key.startsWith("products_")) {
-      productCache.del(key);
-    }
-  });
+const clearProductCache = async (categoryId = null) => {
+  if (categoryId) {
+    // Chỉ xóa cache của category cụ thể
+    await deleteCacheByPattern(`products_${categoryId}_*`);
+  } else {
+    // Xóa toàn bộ cache sản phẩm
+    await deleteCacheByPattern("products_*");
+  }
+  // Xóa cache dashboard vì sản phẩm thay đổi ảnh hưởng đến dashboard
+  await deleteCacheByPattern("dashboard_*");
 };
 
 const isFlashSaleActive = (product) => {
@@ -117,145 +118,67 @@ const disableExpiredFlashSales = async () => {
   }
 };
 
-// --- CÁC HÀM XỬ LÝ CHÍNH ---
+const ProductVariantService = require("./ProductVariantService");
+
+// ... (existing helper functions) ...
 
 const createProduct = async (data, imageRecords = []) => {
   const t = await db.sequelize.transaction();
   try {
-    const newData = { ...data };
+    const { variants, attributes, ...productData } = data;
 
-    if (!newData.slug && newData.name) {
-      newData.slug = `${slugify(newData.name)}-${Date.now()}`;
-    }
-
-    newData.sku = await ensureUniqueSKU(newData.sku, t);
-
-    newData.basePrice = newData.basePrice || newData.price || 0;
-    if (newData.stock !== undefined) {
-      newData.totalStock = Number(newData.stock);
-    }
-
-    const product = await db.Product.create(newData, { transaction: t });
-
-    if (newData.attributes) {
-      const attrs =
-        typeof newData.attributes === "string"
-          ? JSON.parse(newData.attributes)
-          : newData.attributes;
-      await AttributeService.assignAttributesToProduct(product.id, attrs, t);
-    }
-
-    if (imageRecords.length > 0) {
-      const records = imageRecords.map((img) => ({
-        ...img,
-        productId: product.id,
-      }));
-      await db.ProductImage.bulkCreate(records, { transaction: t });
-    }
-
-    await t.commit();
-    clearProductCache();
-    return { errCode: 0, product };
-  } catch (e) {
-    await t.rollback();
-    console.error("Error creating product:", e);
-    return { errCode: 1, errMessage: e.message };
-  }
-};
-
-const createProductWithVariants = async (data, imageRecords = []) => {
-  const t = await db.sequelize.transaction();
-  try {
-    const { options, variants: customVariants, ...productData } = data;
-
+    // 1. Chuẩn bị dữ liệu sản phẩm chính
     if (!productData.slug && productData.name) {
       productData.slug = `${slugify(productData.name)}-${Date.now()}`;
     }
-
     productData.sku = await ensureUniqueSKU(productData.sku, t);
-    productData.hasVariants = customVariants && customVariants.length > 0;
-
-    if (productData.stock !== undefined) {
-      productData.totalStock = Number(productData.stock);
+    productData.hasVariants = Array.isArray(variants) && variants.length > 0;
+    productData.basePrice = Number(productData.basePrice || productData.price || 0);
+    
+    // Nếu có biến thể, totalStock sẽ được tính từ tổng stock biến thể
+    if (productData.hasVariants) {
+      productData.totalStock = variants.reduce((sum, v) => sum + Number(v.stock || 0), 0);
+    } else {
+      productData.totalStock = Number(productData.stock || productData.totalStock || 0);
     }
 
+    // 2. Tạo sản phẩm
     const product = await db.Product.create(productData, { transaction: t });
 
-    if (productData.attributes) {
-      const attrs =
-        typeof productData.attributes === "string"
-          ? JSON.parse(productData.attributes)
-          : productData.attributes;
+    // 3. Xử lý Thuộc tính (Attributes) - Many-to-Many
+    if (attributes) {
+      const attrs = typeof attributes === "string" ? JSON.parse(attributes) : attributes;
       await AttributeService.assignAttributesToProduct(product.id, attrs, t);
     }
 
+    // 4. Xử lý Biến thể (Variants) thông qua Service chuyên biệt
     if (productData.hasVariants) {
-      let finalTotalStock = 0;
-      for (const variant of customVariants) {
-        const variantStock = Number(variant.stock || 0);
-        finalTotalStock += variantStock;
-
-        // Lấy attributeValues từ variant (có thể là object hoặc string JSON)
-        let variantAttrs = variant.attributeValues || variant.attributes || {};
-        if (typeof variantAttrs === "string") {
-          try {
-            variantAttrs = JSON.parse(variantAttrs);
-          } catch (e) {
-            variantAttrs = {};
-          }
-        }
-
-        // Tạo variant với attributeValues được lưu dưới dạng JSON
-        const newVariant = await db.ProductVariant.create(
-          {
-            productId: product.id,
-            sku:
-              variant.sku ||
-              `${product.sku}-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
-            price: variant.price || product.basePrice,
-            stock: variantStock,
-            attributeValues: variantAttrs, // Lưu JSON object
-            isActive: true,
-          },
-          { transaction: t },
-        );
-
-        // Nếu có attributes với dữ liệu Attribute reference, hãy gán vào many-to-many
-        // (Tránh lặp lại dữ liệu, chỉ dùng khi thực sự cần)
-        if (
-          variant.attributeIds &&
-          Array.isArray(variant.attributeIds) &&
-          variant.attributeIds.length > 0
-        ) {
-          const attributeValues = await db.AttributeValue.findAll({
-            where: { id: { [Op.in]: variant.attributeIds } },
-            transaction: t,
-          });
-          if (attributeValues.length > 0) {
-            await newVariant.setAttributes(attributeValues, { transaction: t });
-          }
-        }
+      for (const v of variants) {
+        await ProductVariantService.createVariant({
+          ...v,
+          productId: product.id,
+          // Đảm bảo truyền đúng trường attributeValues
+          attributeValues: v.attributeValues || v.attributes || {}
+        }, t);
       }
-      await product.update({ totalStock: finalTotalStock }, { transaction: t });
     }
 
+    // 5. Xử lý Hình ảnh
     if (imageRecords.length > 0) {
-      const records = imageRecords.map((img) => ({
-        ...img,
-        productId: product.id,
-      }));
+      const records = imageRecords.map((img) => ({ ...img, productId: product.id }));
       await db.ProductImage.bulkCreate(records, { transaction: t });
     }
 
     await t.commit();
-    clearProductCache();
+    await clearProductCache(product.categoryId);
     return { errCode: 0, product };
   } catch (e) {
     await t.rollback();
-    console.error("Error creating product with variants:", e);
+    console.error("[ProductService] createProduct Error:", e);
     return { errCode: 1, errMessage: e.message };
   }
 };
+
 
 const updateProduct = async (id, data, imageRecords = []) => {
   const t = await db.sequelize.transaction();
@@ -317,7 +240,7 @@ const updateProduct = async (id, data, imageRecords = []) => {
         .filter((v) => v.id)
         .map((v) => v.id);
 
-      // Delete variants not in incoming list
+      // 1. Delete variants not in incoming list
       await db.ProductVariant.destroy({
         where: {
           productId: id,
@@ -326,79 +249,29 @@ const updateProduct = async (id, data, imageRecords = []) => {
         transaction: t,
       });
 
-      let finalTotalStock = 0;
-      for (const variantData of updatedData.variants) {
-        const variantStock = Number(variantData.stock || 0);
-        finalTotalStock += variantStock;
-
-        if (variantData.id) {
-          // Update existing
-          const existingVariant = await db.ProductVariant.findByPk(
-            variantData.id,
-            { transaction: t },
-          );
-          if (existingVariant) {
-            const variantAttrs =
-              variantData.attributes || variantData.attributeValues || {};
-            await existingVariant.update(
-              {
-                sku: variantData.sku || existingVariant.sku,
-                price: variantData.price || existingVariant.price,
-                discount: variantData.discount !== undefined ? variantData.discount : existingVariant.discount,
-                stock: variantStock,
-                attributeValues: variantAttrs,
-                isActive:
-                  variantData.isActive !== undefined
-                    ? variantData.isActive
-                    : existingVariant.isActive,
-              },
-              { transaction: t },
-            );
-
-            if (variantAttrs) {
-              await db.VariantAttributeValue.destroy({
-                where: { variantId: existingVariant.id },
-                transaction: t,
-              });
-              await AttributeService.assignAttributesToVariant(
-                existingVariant.id,
-                variantAttrs,
-                t,
-              );
-            }
-          }
+      // 2. Upsert (Create or Update) variants
+      for (const vData of updatedData.variants) {
+        if (vData.id) {
+          // Cập nhật biến thể hiện có
+          await ProductVariantService.updateVariant(vData.id, vData, t);
         } else {
-          // Create new
-          const newVariant = await db.ProductVariant.create(
-            {
-              productId: id,
-              sku:
-                variantData.sku ||
-                `${product.sku}-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
-              price: variantData.price || product.basePrice,
-              discount: variantData.discount || 0,
-              stock: variantStock,
-              attributeValues:
-                variantData.attributes || variantData.attributeValues || {},
-              isActive: true,
-            },
-            { transaction: t },
-          );
-
-          const variantAttrs =
-            variantData.attributes || variantData.attributeValues;
-          if (variantAttrs) {
-            await AttributeService.assignAttributesToVariant(
-              newVariant.id,
-              variantAttrs,
-              t,
-            );
-          }
+          // Thêm mới biến thể cho sản phẩm cũ
+          await ProductVariantService.createVariant({
+            ...vData,
+            productId: id,
+          }, t);
         }
       }
+
+      // 3. Tính toán lại stock tổng sau khi biến thể thay đổi
+      const finalTotalStock = await db.ProductVariant.sum("stock", {
+        where: { productId: id },
+        transaction: t,
+      });
+      
       await updatedProduct.update(
         {
-          totalStock: finalTotalStock,
+          totalStock: finalTotalStock || 0,
           hasVariants: updatedData.variants.length > 0,
         },
         { transaction: t },
@@ -437,10 +310,11 @@ const getAllProducts = async (
   page = 1,
   limit = 10,
   isFlashSale = false,
+  isAdmin = false,
 ) => {
-  const cacheKey = `products_${categoryId || "all"}_${isFlashSale ? "flash" : "all"}_${page}_${limit}`;
-  const cachedData = productCache.get(cacheKey);
-  if (cachedData) return cachedData;
+  const cacheKey = `products_${categoryId || "all"}_${isFlashSale ? "flash" : "all"}_${page}_${limit}_${isAdmin}`;
+  const cachedData = await getCache(cacheKey);
+  if (cachedData && !isAdmin) return cachedData; // Không dùng cache cho Admin để đảm bảo dữ liệu mới nhất
 
   const { offset, limit: l } = getPagination(page, limit);
   const whereCondition = {};
@@ -451,7 +325,7 @@ const getAllProducts = async (
     whereCondition.isFlashSale = true;
     whereCondition.flashSaleStart = { [Op.lte]: now };
     whereCondition.flashSaleEnd = { [Op.gte]: now };
-  } else {
+  } else if (!isAdmin) {
     whereCondition.isActive = true;
   }
 
@@ -469,6 +343,7 @@ const getAllProducts = async (
     limit: l,
     offset,
     order: [["createdAt", "DESC"]],
+    distinct: true,
   });
 
   const pagingData = getPagingData(data, page, l);
@@ -489,7 +364,9 @@ const getAllProducts = async (
     pagination: paginationMetadata,
   };
 
-  productCache.set(cacheKey, result, isFlashSale ? 60 : 600);
+  if (!isAdmin) {
+    await setCache(cacheKey, result, isFlashSale ? 60 : 600);
+  }
   return result;
 };
 
@@ -1361,7 +1238,6 @@ const getSmartRecommendations = async (productId, limit = 6) => {
 
 module.exports = {
   createProduct,
-  createProductWithVariants,
   getAllProducts,
   getProductById,
   updateProduct,

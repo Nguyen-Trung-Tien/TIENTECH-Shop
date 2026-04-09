@@ -37,4 +37,11 @@ router.delete(
   CartController.deleteCart
 );
 
+router.post(
+  "/validate",
+  authenticateToken,
+  authorizeRole(["admin", "customer"]),
+  CartController.handleValidateCart
+);
+
 module.exports = router;

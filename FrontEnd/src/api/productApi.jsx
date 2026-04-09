@@ -9,11 +9,13 @@ export const getAllProductApi = async (
   limit = 10,
   search = "",
   isFlashSale = false,
+  isAdmin = false,
 ) => {
   try {
     const params = { page, limit };
     if (search) params.search = search;
     if (isFlashSale) params.isFlashSale = true;
+    if (isAdmin) params.isAdmin = true;
 
     const res = await axiosClient.get(`/product/get-all-product`, {
       params,
@@ -180,6 +182,7 @@ export const filterProductsApi = async ({
   sort = "newest",
   page = 1,
   limit = 10,
+  isAdmin = false,
 } = {}) => {
   try {
     const res = await axiosClient.get("/product/filter", {
@@ -200,6 +203,7 @@ export const filterProductsApi = async ({
         sort,
         page,
         limit,
+        isAdmin,
       },
     });
 

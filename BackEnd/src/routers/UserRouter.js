@@ -8,7 +8,10 @@ const {
 const upload = require("./multer");
 const passport = require("../config/passport");
 
-router.post("/login", UserController.handleLogin);
+const { loginValidation, registerValidation } = require("../utils/validationSchema");
+const { validateRequest } = require("../middleware/validateMiddleware");
+
+router.post("/login", loginValidation, validateRequest, UserController.handleLogin);
 router.get(
   "/auth/google",
   passport.authenticate("google", { scope: ["profile", "email"], session: false })
@@ -21,7 +24,7 @@ router.get(
 );
 
 // Thêm upload.none() để xử lý multipart/form-data không có file, hoặc upload.single("avatar") nếu cần
-router.post("/create", upload.single("avatar"), UserController.handleCreateNewUser);
+router.post("/create", upload.single("avatar"), registerValidation, validateRequest, UserController.handleCreateNewUser);
 
 router.post("/refresh-token", UserController.handleRefreshToken);
 router.get("/get-me", authenticateToken, UserController.handleGetMe);

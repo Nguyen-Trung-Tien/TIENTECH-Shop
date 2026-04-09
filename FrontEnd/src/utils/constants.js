@@ -1,9 +1,11 @@
 export const ORDER_STATUS = {
   PENDING: "pending",
   CONFIRMED: "confirmed",
-  SHIPPING: "shipping",
+  PROCESSING: "processing",
+  SHIPPING: "shipped",
   DELIVERED: "delivered",
   CANCELLED: "cancelled",
+  CANCEL_REQUESTED: "cancel_requested",
   RETURNED: "returned",
 };
 
@@ -16,9 +18,11 @@ export const PAYMENT_STATUS = {
 export const orderStatusMap = {
   [ORDER_STATUS.PENDING]: { label: "Chờ xác nhận", variant: "warning" },
   [ORDER_STATUS.CONFIRMED]: { label: "Đã xác nhận", variant: "info" },
+  [ORDER_STATUS.PROCESSING]: { label: "Đang xử lý", variant: "primary" },
   [ORDER_STATUS.SHIPPING]: { label: "Đang giao hàng", variant: "primary" },
   [ORDER_STATUS.DELIVERED]: { label: "Đã giao hàng", variant: "success" },
   [ORDER_STATUS.CANCELLED]: { label: "Đã hủy", variant: "danger" },
+  [ORDER_STATUS.CANCEL_REQUESTED]: { label: "Yêu cầu hủy", variant: "danger" },
   [ORDER_STATUS.RETURNED]: { label: "Trả hàng", variant: "secondary" },
 };
 

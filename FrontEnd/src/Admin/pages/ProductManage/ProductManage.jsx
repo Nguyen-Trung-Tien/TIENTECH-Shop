@@ -115,6 +115,7 @@ const ProductManage = () => {
           categoryId: filterCategory,
           brandId: filterBrand,
           isFlashSale: flashSaleOnly,
+          isAdmin: true,
           ...attrFilters,
         });
 
@@ -261,7 +262,11 @@ const ProductManage = () => {
   const fetchVariants = async (productId) => {
     try {
       const res = await getVariantsByProduct(productId);
-      if (res?.errCode === 0) setVariants(res.data || []);
+      if (res?.errCode === 0) {
+        const fetchedVariants = res.data || [];
+        setVariants(fetchedVariants);
+        setFormData((prev) => ({ ...prev, variants: fetchedVariants }));
+      }
     } catch (err) {
       console.error(err);
     }
@@ -289,48 +294,57 @@ const ProductManage = () => {
 
     const data = new FormData();
 
-    // Sync variants from state to formData before saving
-    const finalVariants = editProduct ? variants : formData.variants;
+    // 1. Chuẩn bị danh sách biến thể cuối cùng
+    // Nếu là edit, dùng state variants từ VariantManager, nếu tạo mới dùng formData.variants
+    const finalVariants = (editProduct ? variants : formData.variants).map(v => ({
+      ...v,
+      // Đảm bảo attributeValues được format đúng cho backend
+      attributeValues: v.attributeValues || v.attributes || {}
+    }));
 
-    // Ensure specifications is synced with attributes for legacy support
+    // 2. Gộp thuộc tính kỹ thuật
     const finalSpecs = { ...formData.specifications, ...formData.attributes };
 
+    // 3. Đóng gói FormData
     Object.keys(formData).forEach((key) => {
       if (key === "imageFile" && formData[key]) {
         data.append("image", formData[key]);
-      } else if (
-        ["attributes", "variants", "options", "specifications"].includes(key)
-      ) {
+      } else if (["attributes", "variants", "options", "specifications"].includes(key)) {
         let value;
         if (key === "variants") value = finalVariants;
-        else if (key === "specifications") value = finalSpecs;
+        else if (key === "specifications" || key === "attributes") value = finalSpecs;
         else value = formData[key];
 
-        data.append(
-          key,
-          JSON.stringify(value || (key === "attributes" ? {} : [])),
-        );
-      } else if (formData[key] !== null && formData[key] !== "") {
+        // Gửi dưới dạng chuỗi JSON
+        data.append(key, JSON.stringify(value));
+      } else if (formData[key] !== null && formData[key] !== "" && key !== "attributes") {
         data.append(key, formData[key]);
       }
     });
+
+    // Thêm các file gallery
     galleryFiles.forEach((file) => data.append("images", file));
 
     setSaving(true);
     try {
-      let res = editProduct
-        ? await updateProductApi(editProduct.id, data)
-        : await createProductApi(data);
+      let res;
+      if (editProduct) {
+        res = await updateProductApi(editProduct.id, data);
+      } else {
+        // Luôn gọi createProductApi (vì backend đã gộp logic)
+        res = await createProductApi(data);
+      }
+
       if (res.errCode === 0) {
-        toast.success(
-          editProduct ? "Cập nhật thành công!" : "Đăng bán thành công!",
-        );
+        toast.success(editProduct ? "Cập nhật thành công!" : "Đăng bán thành công!");
         fetchProducts(page);
         handleCloseModal();
-      } else toast.error(res.errMessage || "Thao tác thất bại");
+      } else {
+        toast.error(res.errMessage || "Thao tác thất bại");
+      }
     } catch (err) {
-      console.error(err);
-      toast.error("Lỗi kết nối server");
+      console.error("Save product error:", err);
+      toast.error("Lỗi kết nối server hoặc định dạng dữ liệu không hợp lệ");
     } finally {
       setSaving(false);
     }
@@ -431,7 +445,7 @@ const ProductManage = () => {
               <input
                 type="text"
                 placeholder="Tìm theo tên, SKU..."
-                className="input-modern h-12 pl-12 bg-white dark:bg-dark-bg border-slate-200 dark:border-dark-border focus:ring-4 focus:ring-indigo-50 dark:focus:ring-indigo-900/10 font-medium w-full text-slate-900 dark:text-dark-text-primary"
+                className="input-modern h-12 pl-12 bg-white dark:bg-dark-bg border-slate-200 dark:border-dark-border focus:ring-0 font-medium w-full text-slate-900 dark:text-dark-text-primary"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -1011,7 +1025,7 @@ const ProductManage = () => {
                             Tên sản phẩm *
                           </label>
                           <input
-                            className="input-modern h-12 font-bold focus:ring-4 focus:ring-indigo-50 dark:focus:ring-indigo-900/10 dark:bg-dark-bg dark:text-white dark:border-dark-border"
+                            className="input-modern h-12 font-bold focus:ring-0 dark:bg-dark-bg dark:text-white dark:border-dark-border"
                             placeholder="VD: iPhone 15 Pro Max 256GB"
                             value={formData.name}
                             onChange={(e) =>
@@ -1102,7 +1116,7 @@ const ProductManage = () => {
                             <div className="relative">
                               <input
                                 list={`list-${attr.code}`}
-                                className="input-modern h-11 font-bold text-xs bg-white dark:bg-dark-surface border-slate-200 dark:border-dark-border focus:ring-4 focus:ring-indigo-50 dark:focus:ring-indigo-900/10 dark:text-white"
+                                className="input-modern h-11 font-bold text-xs bg-white dark:bg-dark-surface border-slate-200 dark:border-dark-border focus:ring-0 dark:text-white"
                                 placeholder={`Chọn hoặc nhập ${attr.name}...`}
                                 value={formData.attributes[attr.code] || ""}
                                 onChange={(e) =>
@@ -1131,7 +1145,7 @@ const ProductManage = () => {
                         Mô tả sản phẩm
                       </label>
                       <textarea
-                        className="input-modern resize-none h-40 py-4 focus:ring-4 focus:ring-indigo-50 dark:focus:ring-indigo-900/10 font-medium dark:bg-dark-bg dark:text-white dark:border-dark-border"
+                        className="input-modern resize-none h-40 py-4 focus:ring-0 font-medium dark:bg-dark-bg dark:text-white dark:border-dark-border"
                         placeholder="Nhập mô tả chi tiết về sản phẩm, tính năng nổi bật..."
                         value={formData.description}
                         onChange={(e) =>

@@ -139,6 +139,36 @@
     color: var(--text-main);
     border-color: var(--border-color);
     font-family: var(--font-sans);
-    @apply w-full h-10 px-3 border rounded-lg text-sm font-medium outline-none transition-all duration-200 focus:ring-2 focus:ring-primary/20;
+    @apply w-full h-10 px-3 border rounded-lg text-sm font-medium outline-none transition-all duration-200;
+  }
+
+  /* Loại bỏ border/ring xấu xí khi click vào input/select */
+  input:focus, 
+  select:focus, 
+  textarea:focus, 
+  button:focus {
+    outline: none !important;
+    box-shadow: none !important;
+    border-color: inherit; /* Giữ nguyên màu border hiện tại hoặc đổi sang màu bạn muốn */
+  }
+
+  /* Định nghĩa lại input-modern để tinh tế hơn */
+  .input-modern {
+    @apply w-full px-4 border border-slate-200/60 dark:border-dark-border/40 rounded-2xl outline-none transition-all duration-300;
+    background-color: transparent;
+  }
+  
+  .input-modern:focus {
+    @apply border-indigo-400/50 bg-indigo-50/5 dark:bg-indigo-900/5;
+    box-shadow: 0 4px 20px -2px rgba(99, 102, 241, 0.05) !important;
+  }
+
+  /* Làm mềm tất cả các border mặc định */
+  .border-slate-200 {
+    @apply border-slate-100;
+  }
+  
+  .dark .dark\:border-dark-border {
+    border-color: rgba(51, 65, 85, 0.3); /* Slate 700 với opacity thấp */
   }
 }

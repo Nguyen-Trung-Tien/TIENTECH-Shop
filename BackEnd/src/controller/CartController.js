@@ -49,10 +49,22 @@ const deleteCart = async (req, res) => {
   }
 };
 
+const handleValidateCart = async (req, res) => {
+  try {
+    const { items } = req.body;
+    const userId = req.user.id;
+    const result = await CartService.validateCart(userId, items);
+    return res.status(200).json(result);
+  } catch (e) {
+    return res.status(500).json({ errCode: -1, errMessage: e.message });
+  }
+};
+
 module.exports = {
   getAllCarts,
   getCartById,
   createCart,
   updateCart,
   deleteCart,
+  handleValidateCart,
 };

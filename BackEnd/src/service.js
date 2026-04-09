@@ -11,11 +11,16 @@ const ProductService = require("./services/ProductService");
 const rateLimit = require("express-rate-limit");
 const passport = require("passport");
 
+const { initOrderCron } = require("./cron/orderCron");
+
 dotenv.config();
 
 const app = express();
 app.use(passport.initialize());
 const server = http.createServer(app);
+// ... existing server/io setup ...
+// I will just add the initialization inside the if (process.env.NODE_ENV !== "test") block
+
 const io = new Server(server, {
   cors: {
     origin: process.env.FRONTEND_URL || "http://localhost:5173",
@@ -85,6 +90,7 @@ app.use((err, req, res, next) => {
 // Connect DB
 if (process.env.NODE_ENV !== "test") {
   connectDB();
+  initOrderCron();
 
   // Cron: disable expired flash sales every minute
   const flashSaleJob = async () => {

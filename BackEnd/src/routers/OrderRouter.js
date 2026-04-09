@@ -6,6 +6,9 @@ const {
   authorizeRole,
 } = require("../middleware/authMiddleware");
 
+const { orderValidation } = require("../utils/validationSchema");
+const { validateRequest } = require("../middleware/validateMiddleware");
+
 router.get(
   "/get-all-orders",
   authenticateToken,
@@ -28,6 +31,8 @@ router.post(
   "/create-new-order",
   authenticateToken,
   authorizeRole(["admin", "customer"]),
+  orderValidation,
+  validateRequest,
   OrderController.handleCreateOrder
 );
 router.put(
