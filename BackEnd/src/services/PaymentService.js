@@ -1,5 +1,5 @@
 const db = require("../models");
-const ProductService = require("./ProductService");
+const ProductService = require("./product/ProductService");
 
 // Temporary refund simulator for online methods to avoid runtime crash.
 // Replace with real provider integration.

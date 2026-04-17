@@ -7,7 +7,7 @@ const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const http = require("http");
 const { Server } = require("socket.io");
-const ProductService = require("./services/ProductService");
+const ProductService = require("./services/product/ProductService");
 const rateLimit = require("express-rate-limit");
 const passport = require("passport");
 

@@ -1,7 +1,9 @@
-const UserService = require("../services/UserService");
+const UserService = require("../services/user/UserService");
+const AuthService = require("../services/user/AuthService");
 const { handleError, handleResponse, handleFileUpload } = require("../utils/controllerHelper");
 const { generateAccessToken, generateRefreshToken, verifyRefreshToken } = require("../services/jwtService");
 const crypto = require("crypto");
+
 const hashToken = (token) => crypto.createHash("sha256").update(token).digest("hex");
 
 const setAuthCookies = (res, accessToken, refreshToken) => {
@@ -32,7 +34,7 @@ const handleLogin = async (req, res) => {
       return handleResponse(res, { errCode: 3, errMessage: "Email and password are required!" });
     }
 
-    const result = await UserService.handleUserLogin(email, password);
+    const result = await AuthService.login(email, password);
     if (result.errCode === 0) {
       setAuthCookies(res, result.data.accessToken, result.data.refreshToken);
     }
@@ -47,7 +49,7 @@ const handleRefreshToken = async (req, res) => {
     const refreshToken = req.cookies?.refreshToken;
     if (!refreshToken) return handleResponse(res, { errCode: 1, errMessage: "Refresh token is required" });
 
-    const result = await UserService.rotateRefreshToken(refreshToken);
+    const result = await AuthService.refreshToken(refreshToken);
     if (result.errCode === 0) {
       setAuthCookies(res, result.data.accessToken, result.data.refreshToken);
     }
@@ -129,7 +131,7 @@ const handleLogout = async (req, res) => {
     const refreshToken = req.cookies?.refreshToken;
     if (refreshToken) {
       const decoded = verifyRefreshToken(refreshToken);
-      if (decoded?.id) await UserService.revokeRefreshToken(decoded.id);
+      if (decoded?.id) await AuthService.logout(decoded.id);
     }
 
     const isProduction = process.env.NODE_ENV === "production";
@@ -145,7 +147,7 @@ const handleLogout = async (req, res) => {
 const handleChangePassword = async (req, res) => {
   try {
     const { oldPassword, newPassword } = req.body;
-    const result = await UserService.updateUserPassword(req.user.id, oldPassword, newPassword);
+    const result = await AuthService.updatePassword(req.user.id, oldPassword, newPassword);
     return handleResponse(res, result);
   } catch (e) {
     return handleError(res, e, "handleChangePassword");
@@ -154,7 +156,7 @@ const handleChangePassword = async (req, res) => {
 
 const handleForgotPassword = async (req, res) => {
   try {
-    const result = await UserService.forgotPassword(req.body.email);
+    const result = await AuthService.forgotPassword(req.body.email);
     return handleResponse(res, result);
   } catch (e) {
     return handleError(res, e, "handleForgotPassword");
@@ -163,7 +165,7 @@ const handleForgotPassword = async (req, res) => {
 
 const handleVerifyResetToken = async (req, res) => {
   try {
-    const result = await UserService.verifyResetToken(req.body.email, req.body.token);
+    const result = await AuthService.verifyResetToken(req.body.email, req.body.token);
     return handleResponse(res, result);
   } catch (e) {
     return handleError(res, e, "handleVerifyResetToken");
@@ -173,7 +175,7 @@ const handleVerifyResetToken = async (req, res) => {
 const handleResetPassword = async (req, res) => {
   try {
     const { email, token, newPassword } = req.body;
-    const result = await UserService.resetPassword(email, token, newPassword);
+    const result = await AuthService.resetPassword(email, token, newPassword);
     return handleResponse(res, result);
   } catch (e) {
     return handleError(res, e, "handleResetPassword");
@@ -182,7 +184,7 @@ const handleResetPassword = async (req, res) => {
 
 const handleVerifyEmail = async (req, res) => {
   try {
-    const result = await UserService.verifyEmail(req.body.email, req.body.token);
+    const result = await AuthService.verifyEmail(req.body.email, req.body.token);
     return handleResponse(res, result);
   } catch (e) {
     return handleError(res, e, "handleVerifyEmail");
@@ -191,7 +193,7 @@ const handleVerifyEmail = async (req, res) => {
 
 const handleResendVerification = async (req, res) => {
   try {
-    const result = await UserService.resendVerificationEmail(req.body.email);
+    const result = await AuthService.resendVerificationEmail(req.body.email);
     return handleResponse(res, result);
   } catch (e) {
     return handleError(res, e, "handleResendVerification");

@@ -9,10 +9,11 @@ import {
   FiCpu,
   FiChevronRight,
   FiZap,
+  FiCamera,
 } from "react-icons/fi";
 import { useSelector } from "react-redux";
 import { motion as Motion, AnimatePresence } from "framer-motion";
-import { sendMessage } from "../../api/chatApi";
+import { sendMessage, visualSearch } from "../../api/chatApi";
 
 const ChatBot = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -21,9 +22,11 @@ const ChatBot = () => {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [typing, setTyping] = useState("");
+  const [imagePreview, setImagePreview] = useState(null);
 
   const inputRef = useRef(null);
   const messagesEndRef = useRef(null);
+  const fileInputRef = useRef(null);
   const [hasGreeted, setHasGreeted] = useState(false);
 
   const user = useSelector((state) => state.user.user);
@@ -111,6 +114,34 @@ const ChatBot = () => {
     }
 
     setLoading(false);
+  };
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+      const base64String = reader.result;
+      setImagePreview(base64String);
+      setLoading(true);
+      addMessage("user", "Đang tìm kiếm sản phẩm qua hình ảnh...", []);
+
+      try {
+        const res = await visualSearch(base64String);
+        setImagePreview(null);
+        await streamText(
+          `Tôi tìm thấy một số sản phẩm tương tự với hình ảnh của bạn (${res.description}):`,
+          res.products || []
+        );
+      } catch (err) {
+        console.error(err);
+        await streamText("Rất tiếc, tôi không thể phân tích hình ảnh này. Hãy thử lại với ảnh khác nhé!");
+      } finally {
+        setLoading(false);
+      }
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleSend = (e) => {
@@ -262,6 +293,14 @@ const ChatBot = () => {
                 </Motion.div>
               ))}
 
+              {imagePreview && (
+                <div className="flex justify-end">
+                  <div className="max-w-[70%] p-2 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
+                    <img src={imagePreview} alt="Preview" className="w-full h-auto rounded-xl animate-pulse" />
+                  </div>
+                </div>
+              )}
+
               {(loading || typing) && (
                 <div className="flex justify-start">
                   <div className="flex gap-3 max-w-[85%]">
@@ -309,12 +348,26 @@ const ChatBot = () => {
             >
               <div className="relative flex items-center gap-3">
                 <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleImageUpload}
+                  accept="image/*"
+                  className="hidden"
+                />
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current.click()}
+                  className="w-12 h-14 flex items-center justify-center text-gray-400 hover:text-blue-600 transition-colors"
+                >
+                  <FiCamera size={22} />
+                </button>
+                <input
                   ref={inputRef}
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  placeholder="Hỏi tôi bất cứ điều gì..."
+                  placeholder="Hỏi tôi hoặc tải ảnh lên..."
                   disabled={loading}
-                  className="flex-1 h-14 pl-6 pr-14 bg-gray-50 dark:bg-gray-800 border-2 border-transparent rounded-2xl text-[15px] font-bold text-gray-900 dark:text-white focus:bg-white dark:focus:bg-gray-800 focus:border-blue-500/20 outline-none transition-all placeholder:text-gray-400"
+                  className="flex-1 h-14 pl-2 pr-14 bg-gray-50 dark:bg-gray-800 border-2 border-transparent rounded-2xl text-[15px] font-bold text-gray-900 dark:text-white focus:bg-white dark:focus:bg-gray-800 focus:border-blue-500/20 outline-none transition-all placeholder:text-gray-400"
                 />
                 <button
                   type="submit"
@@ -325,7 +378,7 @@ const ChatBot = () => {
                 </button>
               </div>
               <p className="mt-3 text-[10px] text-center text-gray-400 dark:text-gray-500 font-bold uppercase tracking-widest">
-                Được hỗ trợ bởi TienTech AI Engine v5.0
+                Được hỗ trợ bởi TienTech AI Engine v6.0 (Visual & Intent Ready)
               </p>
             </form>
           </Motion.div>

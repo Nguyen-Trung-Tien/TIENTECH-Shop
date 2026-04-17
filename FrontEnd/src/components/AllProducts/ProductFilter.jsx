@@ -96,13 +96,13 @@ const ProductFilter = ({ filters, onFilterChange, onClearFilters }) => {
             {categories.map((cat) => (
               <label key={cat.id} className="flex items-center gap-3 cursor-pointer group">
                 <input
-                  type="radio"
+                  type="checkbox"
                   name="categoryId"
-                  checked={filters.categoryId === cat.id.toString()}
-                  onChange={() => onFilterChange("categoryId", cat.id.toString())}
-                  className="w-4 h-4 text-blue-600 border-slate-300 dark:border-gray-700 bg-transparent focus:ring-blue-500/20"
+                  checked={filters.categoryId?.split(",").includes(cat.id.toString())}
+                  onChange={() => handleMultiSelect("categoryId", cat.id.toString())}
+                  className="w-4 h-4 text-blue-600 border-slate-300 dark:border-gray-700 bg-transparent rounded focus:ring-blue-500/20"
                 />
-                <span className={`text-xs font-bold uppercase tracking-wide transition-colors ${filters.categoryId === cat.id.toString() ? "text-blue-600 font-black" : "text-slate-500 dark:text-slate-400 group-hover:text-blue-600"}`}>
+                <span className={`text-xs font-bold uppercase tracking-wide transition-colors ${filters.categoryId?.split(",").includes(cat.id.toString()) ? "text-blue-600 font-black" : "text-slate-500 dark:text-slate-400 group-hover:text-blue-600"}`}>
                   {cat.name}
                 </span>
               </label>
@@ -125,9 +125,9 @@ const ProductFilter = ({ filters, onFilterChange, onClearFilters }) => {
             {brands.map((brand) => (
               <button
                 key={brand.id}
-                onClick={() => onFilterChange("brandId", filters.brandId === brand.id.toString() ? "" : brand.id.toString())}
+                onClick={() => handleMultiSelect("brandId", brand.id.toString())}
                 className={`px-2 py-2 rounded-xl border text-[9px] font-black uppercase tracking-tighter transition-all ${
-                  filters.brandId === brand.id.toString()
+                  filters.brandId?.split(",").includes(brand.id.toString())
                     ? "bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-500/20"
                     : "bg-slate-50 dark:bg-gray-800 border-transparent text-slate-600 dark:text-slate-400 hover:border-blue-500/30"
                 }`}

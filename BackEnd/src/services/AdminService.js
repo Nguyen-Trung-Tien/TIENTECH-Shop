@@ -300,7 +300,7 @@ const globalSearch = async (query) => {
   };
 };
 
-const ProductService = require("./ProductService");
+const ProductService = require("./product/ProductService");
 
 const syncEmbeddings = async () => {
   try {

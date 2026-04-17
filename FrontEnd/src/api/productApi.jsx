@@ -183,6 +183,7 @@ export const filterProductsApi = async ({
   page = 1,
   limit = 10,
   isAdmin = false,
+  isFlashSale = false,
 } = {}) => {
   try {
     const res = await axiosClient.get("/product/filter", {
@@ -204,6 +205,7 @@ export const filterProductsApi = async ({
         page,
         limit,
         isAdmin,
+        isFlashSale,
       },
     });
 

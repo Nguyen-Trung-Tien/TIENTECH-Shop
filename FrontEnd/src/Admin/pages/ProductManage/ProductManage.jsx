@@ -57,14 +57,14 @@ const ProductManage = () => {
 
   // Search & Filter State
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterCategory, setFilterCategory] = useState("");
-  const [filterBrand, setFilterBrand] = useState("");
+  const [filterCategories, setFilterCategories] = useState([]);
+  const [filterBrands, setFilterBrands] = useState([]);
   const [flashSaleOnly, setFlashSaleOnly] = useState(false);
   const [attrFilters, setAttrFilters] = useState({
-    ram: "",
-    rom: "",
-    os: "",
-    refresh_rate: "",
+    ram: [],
+    rom: [],
+    os: [],
+    refresh_rate: [],
   });
 
   const [formData, setFormData] = useState({
@@ -112,11 +112,13 @@ const ProductManage = () => {
           page: currentPage,
           limit,
           search: searchTerm.trim(),
-          categoryId: filterCategory,
-          brandId: filterBrand,
+          categoryId: filterCategories.join(","),
+          brandId: filterBrands.join(","),
           isFlashSale: flashSaleOnly,
           isAdmin: true,
-          ...attrFilters,
+          ...Object.fromEntries(
+            Object.entries(attrFilters).map(([k, v]) => [k, v.join(",")])
+          ),
         });
 
         if (res.errCode === 0) {
@@ -130,8 +132,68 @@ const ProductManage = () => {
         setLoadingTable(false);
       }
     },
-    [searchTerm, filterCategory, filterBrand, flashSaleOnly, attrFilters],
+    [searchTerm, filterCategories, filterBrands, flashSaleOnly, attrFilters],
   );
+
+  const toggleFilter = (array, value, setFn) => {
+    if (array.includes(value)) {
+      setFn(array.filter((i) => i !== value));
+    } else {
+      setFn([...array, value]);
+    }
+  };
+
+  const toggleAttrFilter = (code, value) => {
+    const current = attrFilters[code] || [];
+    if (current.includes(value)) {
+      setAttrFilters({ ...attrFilters, [code]: current.filter((v) => v !== value) });
+    } else {
+      setAttrFilters({ ...attrFilters, [code]: [...current, value] });
+    }
+  };
+
+  // UI Component cho Dropdown chọn nhiều
+  const MultiSelectDropdown = ({ label, options, selected, onToggle, icon }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    return (
+      <div className="relative flex-1 min-w-[160px]">
+        <button
+          type="button"
+          onClick={() => setIsOpen(!isOpen)}
+          className={`input-modern h-12 w-full px-4 flex items-center justify-between bg-white dark:bg-dark-bg border-slate-200 dark:border-dark-border font-bold text-[10px] uppercase tracking-widest transition-all ${selected.length > 0 ? "border-indigo-500 ring-1 ring-indigo-500/20 text-indigo-600 dark:text-indigo-400" : "text-slate-900 dark:text-dark-text-primary"}`}
+        >
+          <span className="truncate flex items-center gap-2">
+            {icon}
+            {selected.length > 0 ? `${label} (${selected.length})` : label}
+          </span>
+          <FiChevronDown className={`transition-transform ${isOpen ? "rotate-180" : ""}`} />
+        </button>
+        {isOpen && (
+          <>
+            <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)}></div>
+            <div className="absolute top-full left-0 right-0 mt-2 p-2 bg-white dark:bg-dark-surface border border-slate-200 dark:border-dark-border rounded-2xl shadow-2xl z-20 max-h-60 overflow-y-auto custom-scrollbar">
+              {options.map((opt) => (
+                <label
+                  key={opt.id || opt.value}
+                  className="flex items-center gap-3 px-3 py-2 hover:bg-slate-50 dark:hover:bg-dark-bg rounded-xl cursor-pointer group"
+                >
+                  <input
+                    type="checkbox"
+                    checked={selected.includes(opt.id || opt.value)}
+                    onChange={() => onToggle(opt.id || opt.value)}
+                    className="form-checkbox h-4 w-4 text-indigo-600 rounded border-slate-300 dark:border-dark-border dark:bg-dark-bg"
+                  />
+                  <span className="text-xs font-bold text-slate-700 dark:text-dark-text-primary group-hover:text-indigo-600 dark:group-hover:text-indigo-400">
+                    {opt.name || opt.value}
+                  </span>
+                </label>
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+    );
+  };
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -452,60 +514,32 @@ const ProductManage = () => {
             </div>
 
             <div className="lg:col-span-8 flex flex-wrap gap-4">
-              <div className="relative flex-1 min-w-[140px]">
-                <select
-                  className="input-modern h-12 pr-10 appearance-none bg-white dark:bg-dark-bg border-slate-200 dark:border-dark-border font-bold text-[11px] uppercase tracking-widest text-slate-900 dark:text-dark-text-primary"
-                  value={filterCategory}
-                  onChange={(e) => setFilterCategory(e.target.value)}
-                >
-                  <option value="">Danh mục</option>
-                  {categories.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name}
-                    </option>
-                  ))}
-                </select>
-                <FiChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-dark-text-secondary pointer-events-none" />
-              </div>
+              <MultiSelectDropdown
+                label="Danh mục"
+                options={categories}
+                selected={filterCategories}
+                onToggle={(val) => toggleFilter(filterCategories, val, setFilterCategories)}
+                icon={<FiTag className="text-indigo-400" />}
+              />
 
-              <div className="relative flex-1 min-w-[140px]">
-                <select
-                  className="input-modern h-12 pr-10 appearance-none bg-white dark:bg-dark-bg border-slate-200 dark:border-dark-border font-bold text-[11px] uppercase tracking-widest text-slate-900 dark:text-dark-text-primary"
-                  value={filterBrand}
-                  onChange={(e) => setFilterBrand(e.target.value)}
-                >
-                  <option value="">Thương hiệu</option>
-                  {brands.map((b) => (
-                    <option key={b.id} value={b.id}>
-                      {b.name}
-                    </option>
-                  ))}
-                </select>
-                <FiChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-dark-text-secondary pointer-events-none" />
-              </div>
+              <MultiSelectDropdown
+                label="Thương hiệu"
+                options={brands}
+                selected={filterBrands}
+                onToggle={(val) => toggleFilter(filterBrands, val, setFilterBrands)}
+                icon={<FiBox className="text-indigo-400" />}
+              />
 
               {/* Attr Filter Dropdowns */}
               {attributes.slice(0, 3).map((attr) => (
-                <div key={attr.id} className="relative flex-1 min-w-[120px]">
-                  <select
-                    className="input-modern h-12 pr-10 appearance-none bg-white dark:bg-dark-bg border-slate-200 dark:border-dark-border font-bold text-[11px] uppercase tracking-widest text-slate-900 dark:text-dark-text-primary"
-                    value={attrFilters[attr.code] || ""}
-                    onChange={(e) =>
-                      setAttrFilters({
-                        ...attrFilters,
-                        [attr.code]: e.target.value,
-                      })
-                    }
-                  >
-                    <option value="">{attr.name}</option>
-                    {attr.values?.map((v) => (
-                      <option key={v.id} value={v.value}>
-                        {v.value}
-                      </option>
-                    ))}
-                  </select>
-                  <FiChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-dark-text-secondary pointer-events-none" />
-                </div>
+                <MultiSelectDropdown
+                  key={attr.id}
+                  label={attr.name}
+                  options={attr.values || []}
+                  selected={attrFilters[attr.code] || []}
+                  onToggle={(val) => toggleAttrFilter(attr.code, val)}
+                  icon={getAttrIcon(attr.code)}
+                />
               ))}
 
               <label className="flex items-center gap-3 px-5 h-12 bg-white dark:bg-dark-bg rounded-2xl border border-slate-200 dark:border-dark-border cursor-pointer hover:bg-orange-50 dark:hover:bg-orange-900/10 hover:border-orange-200 dark:hover:border-orange-800 transition-all group shrink-0">

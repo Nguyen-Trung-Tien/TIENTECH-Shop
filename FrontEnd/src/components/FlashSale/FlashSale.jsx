@@ -19,7 +19,7 @@ const FlashSale = () => {
 
   // Countdown
   useEffect(() => {
-    if (!isUpcoming || timeLeft <= 0) return;
+    if (timeLeft <= 0) return;
 
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
@@ -32,7 +32,7 @@ const FlashSale = () => {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [isUpcoming, timeLeft]);
+  }, [timeLeft]);
 
   const formatTimeParts = (t) => {
     const h = Math.floor(t / 3600);

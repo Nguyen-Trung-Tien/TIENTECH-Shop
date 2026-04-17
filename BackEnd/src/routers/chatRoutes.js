@@ -3,6 +3,8 @@ const router = express.Router();
 const ChatController = require("../controller/chatController");
 const PricePredictorController = require("../controller/pricePredictorController");
 const FengShuiChatController = require("../controller/fengShuiChatController");
+const VisualSearchController = require("../controller/visualSearchController");
+
 // Validate chat message
 const validateChatRequest = (req, res, next) => {
   const { message } = req.body;
@@ -29,6 +31,7 @@ const validatePredictRequest = (req, res, next) => {
 };
 
 router.post("/ask", validateChatRequest, ChatController.handleChat);
+router.post("/visual-search", VisualSearchController.handleVisualSearch);
 router.post(
   "/predict",
   validatePredictRequest,
@@ -40,4 +43,5 @@ router.post(
   validateChatRequest,
   FengShuiChatController.handleFengShuiChat
 );
+
 module.exports = router;

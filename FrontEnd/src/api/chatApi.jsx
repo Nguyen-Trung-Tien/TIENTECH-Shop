@@ -70,3 +70,13 @@ export const fengShuiChatApi = async (data) => {
     return { error: error.response?.data?.error || "Hệ thống gặp sự cố." };
   }
 };
+
+export const visualSearch = async (image) => {
+  try {
+    const res = await API.post("/chat/visual-search", { image });
+    return res.data;
+  } catch (error) {
+    console.error("VisualSearchApi error:", error);
+    throw error;
+  }
+};

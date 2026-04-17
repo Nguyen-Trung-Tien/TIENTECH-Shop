@@ -1,4 +1,4 @@
-const ProductService = require("../services/ProductService");
+const ProductService = require("../services/product/ProductService");
 const { uploadToCloudinary } = require("../config/cloudinaryConfig");
 
 const parseBoolean = (value) => {
@@ -291,6 +291,8 @@ const handleFilterProducts = async (req, res) => {
       battery,
       os,
       refresh_rate,
+      isFlashSale,
+      isAdmin,
     } = req.query;
     const page = Math.max(1, Number(req.query.page) || 1);
     const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 12));
@@ -310,6 +312,8 @@ const handleFilterProducts = async (req, res) => {
       battery,
       os,
       refresh_rate,
+      isFlashSale,
+      isAdmin,
       page: Number(page),
       limit: Number(limit),
     };

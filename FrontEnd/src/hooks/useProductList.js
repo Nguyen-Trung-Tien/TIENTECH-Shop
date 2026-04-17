@@ -28,6 +28,8 @@ export const useProductList = (limit = 12) => {
     const filters = {
       brand: isBrand ? slug : (searchParams.get("brandId") || ""),
       category: isCategory ? slug : (searchParams.get("categoryId") || ""),
+      brandId: searchParams.get("brandId") || "",
+      categoryId: searchParams.get("categoryId") || "",
       search: searchParams.get("search") || "",
       minPrice: Number(searchParams.get("minPrice")) || 0,
       maxPrice: Number(searchParams.get("maxPrice")) || 100000000,
@@ -53,14 +55,12 @@ export const useProductList = (limit = 12) => {
         const apiParams = {
           brand: isBrand ? filtersFromUrl.brand : undefined,
           category: isCategory ? filtersFromUrl.category : undefined,
-          brandId: !isBrand ? filtersFromUrl.brand : undefined,
-          categoryId: !isCategory ? filtersFromUrl.category : undefined,
+          brandId: !isBrand ? filtersFromUrl.brandId : undefined,
+          categoryId: !isCategory ? filtersFromUrl.categoryId : undefined,
           search: filtersFromUrl.search,
           minPrice: filtersFromUrl.minPrice,
           maxPrice: filtersFromUrl.maxPrice,
           sort: filtersFromUrl.sort,
-          os: filtersFromUrl.os,
-          refresh_rate: filtersFromUrl.refresh_rate,
           page,
           limit,
         };

@@ -2,7 +2,7 @@ require("dotenv").config();
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const { Product, Order, Category, OrderItem, User } = require("../models");
 const { Op } = require("sequelize");
-const ProductService = require("../services/ProductService");
+const ProductService = require("../services/product/ProductService");
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "dummy_key");
 if (!process.env.GEMINI_API_KEY) {
@@ -13,27 +13,9 @@ if (!process.env.GEMINI_API_KEY) {
   );
 }
 const model = genAI.getGenerativeModel({
-  model: "gemini-2.5-flash",
+  model: "gemini-2.0-flash", // Sử dụng model flash để tốc độ phản hồi nhanh nhất
   generationConfig: { responseMimeType: "application/json" },
 });
-
-const extractJson = (text) => {
-  try {
-    // Try to parse directly first
-    return JSON.parse(text);
-  } catch (e) {
-    // Fallback: extract JSON from markdown code blocks or curly braces
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      try {
-        return JSON.parse(jsonMatch[0]);
-      } catch (innerError) {
-        console.error("Failed to parse extracted JSON:", innerError);
-      }
-    }
-    throw new Error("Could not parse AI response as JSON");
-  }
-};
 
 const handleChat = async (req, res) => {
   try {
@@ -43,138 +25,86 @@ const handleChat = async (req, res) => {
       return res.status(400).json({ error: "Thiếu nội dung câu hỏi." });
     }
 
+    // 1. Dùng AI để phân tích ý định (Intent Extraction)
+    const parserPrompt = `
+Phân tích câu hỏi người dùng và trả về JSON:
+"message": "${message}"
+
+Cấu trúc JSON yêu cầu:
+{
+  "category": "tên danh mục sản phẩm (nếu có)",
+  "maxPrice": số (giá tối đa nếu có),
+  "minPrice": số (giá tối thiểu nếu có),
+  "attributes": ["màu sắc", "tính năng", "đối tượng sử dụng..."],
+  "isOrderQuery": boolean (đang hỏi về đơn hàng?),
+  "semanticQuery": "câu lệnh tối ưu để tìm kiếm ngữ nghĩa"
+}
+`;
+    const parseResult = await model.generateContent(parserPrompt);
+    const intent = extractJson(parseResult.response.text());
+
     let dbContext = "";
     let suggestedProducts = [];
 
-    // 1. Tìm kiếm ngữ nghĩa (Semantic Search) - AI 2.0
-    const semanticResult = await ProductService.searchSemanticProducts(
-      message,
-      4,
-    );
-    if (semanticResult.errCode === 0 && semanticResult.products.length > 0) {
-      dbContext += "\nSản phẩm liên quan tìm thấy qua phân tích ý nghĩa:\n";
-      semanticResult.products.forEach((p) => {
-        suggestedProducts.push(p);
-        dbContext += `- ID: ${p.id}, Tên: ${p.name}, Giá: ${formatPrice(p.price)}đ (Độ phù hợp: ${Math.round(p.similarity * 100)}%)\n`;
-      });
-    }
-
-    // 2. Tìm kiếm theo từ khóa (Keyword Search) - Fallback
-    if (suggestedProducts.length < 2) {
-      const productMatch = message.match(
-        /(?:sản phẩm|sp|mua|tìm|có|bán|giá) (.+)/i,
-      );
-      const queryName = productMatch ? productMatch[1].trim() : message;
-
-      const keywordProducts = await Product.findAll({
-        where: {
-          name: { [Op.like]: `%${queryName}%` },
-          isActive: true,
-        },
-        limit: 3,
-      });
-
-      if (keywordProducts.length > 0) {
-        dbContext += "\nSản phẩm tìm thấy theo từ khóa:\n";
-        keywordProducts.forEach((p) => {
-          if (!suggestedProducts.find((sp) => sp.id === p.id)) {
-            const discountPrice = p.price * (1 - (p.discount || 0) / 100);
-            suggestedProducts.push({
-              id: p.id,
-              name: p.name,
-              price: discountPrice,
-              image: p.image,
-            });
-            dbContext += `- ID: ${p.id}, Tên: ${p.name}, Giá: ${formatPrice(discountPrice)}đ\n`;
-          }
+    // 2. Thực hiện tìm kiếm kết hợp (Hybrid Search)
+    if (intent.isOrderQuery && userId) {
+        // Xử lý tra cứu đơn hàng (như cũ nhưng tối ưu hơn)
+        const order = await Order.findOne({
+            where: { userId },
+            order: [["createdAt", "DESC"]],
+            include: [{ model: OrderItem, as: "orderItems", include: [{ model: Product, as: "product" }] }],
         });
-      }
+        if (order) dbContext += `\nĐơn hàng #${order.id}: Trạng thái ${translateStatus(order.status)}, SP: ${order.orderItems.map(i => i.product.name).join(", ")}`;
     }
 
-    // Thêm thông tin đơn hàng gần nhất của người dùng
-    if (userId) {
-      const order = await Order.findOne({
-        where: { userId },
-        order: [["createdAt", "DESC"]],
-        include: [
-          {
-            model: OrderItem,
-            as: "orderItems",
-            include: [{ model: Product, as: "product" }],
-          },
-        ],
-      });
+    // Tìm kiếm sản phẩm thông minh
+    const filterOptions = {
+        maxPrice: intent.maxPrice,
+        minPrice: intent.minPrice,
+        search: intent.semanticQuery,
+        limit: 5
+    };
 
-      if (order) {
-        const items = order.orderItems.map((i) => i.product.name).join(", ");
-        dbContext += `\nĐơn hàng gần nhất (#${order.id}): Trạng thái ${translateStatus(order.status)}, SP: ${items}\n`;
-      }
+    const searchResult = await ProductService.filterProducts(filterOptions);
+    if (searchResult.errCode === 0 && searchResult.data.length > 0) {
+        dbContext += "\nSản phẩm tìm thấy:\n";
+        searchResult.data.forEach(p => {
+            suggestedProducts.push(p);
+            dbContext += `- ID: ${p.id}, Tên: ${p.name}, Giá: ${formatPrice(p.price)}đ, Đặc điểm: ${p.description?.slice(0, 50)}...\n`;
+        });
     }
 
+    // 3. Tạo phản hồi cuối cùng
     const systemPrompt = `
-Bạn là trợ lý AI thông minh của TienTech Shop.
-Nhiệm vụ: Trả lời câu hỏi khách hàng, tư vấn sản phẩm và hỗ trợ tra cứu đơn hàng.
+Bạn là trợ lý mua sắm AI của TienTech Shop.
+DỮ LIỆU CÓ SẴN: ${dbContext || "Không tìm thấy SP phù hợp yêu cầu cụ thể."}
 
-DỮ LIỆU HỆ THỐNG:
-${dbContext || "Không tìm thấy dữ liệu liên quan trực tiếp."}
-
-YÊU CẦU PHẢN HỒI:
-1. Luôn trả lời bằng tiếng Việt, thân thiện, chuyên nghiệp.
-2. Trả về định dạng JSON THUẦN với cấu trúc:
-{
-  "reply": "Nội dung câu trả lời của bạn",
-  "recommendedProducts": [id1, id2] // Mảng ID các sản phẩm liên quan nếu có (tối đa 3)
-}
-3. Không markdown, không giải thích ngoài JSON.
+NHIỆM VỤ:
+- Tư vấn nhiệt tình dựa trên dữ liệu hệ thống.
+- Nếu không có SP đúng yêu cầu, hãy gợi ý SP gần nhất hoặc xin lỗi.
+- TRẢ VỀ JSON: {"reply": "câu trả lời", "recommendedProductIds": [id1, id2]}
 `;
 
-    // Chuẩn bị tin nhắn bao gồm lịch sử hội thoại
-    const contents = [
-      { role: "user", parts: [{ text: systemPrompt }] },
-      ...history.slice(-6).map((msg) => ({
-        role: msg.role === "user" ? "user" : "model",
-        parts: [
-          {
-            text:
-              typeof msg.content === "string"
-                ? msg.content
-                : JSON.stringify(msg.content),
-          },
-        ],
-      })),
-      { role: "user", parts: [{ text: message }] },
-    ];
+    const finalResult = await model.generateContent({
+        contents: [
+            { role: "user", parts: [{ text: systemPrompt }] },
+            ...history.slice(-4).map(h => ({ role: h.role === 'user' ? 'user' : 'model', parts: [{ text: typeof h.content === 'string' ? h.content : JSON.stringify(h.content) }] })),
+            { role: "user", parts: [{ text: message }] }
+        ]
+    });
 
-    try {
-      const resultGen = await model.generateContent({ contents });
-      const responseText = resultGen.response.text();
-      const result = extractJson(responseText);
+    const finalJson = extractJson(finalResult.response.text());
+    
+    // Lấy thông tin chi tiết sản phẩm để hiển thị trên UI
+    const products = suggestedProducts.filter(p => finalJson.recommendedProductIds?.includes(p.id));
 
-      // Lấy thông tin chi tiết của các sản phẩm được đề xuất
-      let finalRecommended = [];
-      if (result.recommendedProducts && result.recommendedProducts.length > 0) {
-        finalRecommended = await Product.findAll({
-          where: {
-            id: { [Op.in]: result.recommendedProducts },
-            isActive: true,
-          },
-          attributes: ["id", "name", "price", "discount", "image"],
-        });
-      }
+    res.json({
+      reply: finalJson.reply,
+      recommendedProducts: products.length > 0 ? products : suggestedProducts.slice(0, 3)
+    });
 
-      res.json({
-        reply: result.reply,
-        recommendedProducts: finalRecommended,
-      });
-    } catch (err) {
-      console.error("Gemini Error:", err);
-      return res.json({
-        reply: "AI đang bận, vui lòng thử lại sau giây lát ⏳",
-        recommendedProducts: [],
-      });
-    }
   } catch (error) {
-    console.error("Lỗi chatbot:", error);
+    console.error("Lỗi Assistant:", error);
     res.status(500).json({ error: "Lỗi hệ thống AI." });
   }
 };
