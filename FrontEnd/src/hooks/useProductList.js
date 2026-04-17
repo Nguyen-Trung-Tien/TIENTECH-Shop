@@ -26,15 +26,30 @@ export const useProductList = (limit = 12) => {
   // Lấy các filter từ URL
   const filtersFromUrl = useMemo(() => {
     const filters = {
-      brand: isBrand ? slug : (searchParams.get("brandId") || ""),
-      category: isCategory ? slug : (searchParams.get("categoryId") || ""),
+      search: searchParams.get("search") || "",
+      minPrice: searchParams.get("minPrice") || "",
+      maxPrice: searchParams.get("maxPrice") || "",
+      sort: searchParams.get("sort") || "",
+      // Luôn lấy từ SearchParams trước để ủng hộ việc đa chọn
       brandId: searchParams.get("brandId") || "",
       categoryId: searchParams.get("categoryId") || "",
-      search: searchParams.get("search") || "",
-      minPrice: Number(searchParams.get("minPrice")) || 0,
-      maxPrice: Number(searchParams.get("maxPrice")) || 100000000,
-      sort: searchParams.get("sort") || "",
     };
+
+    // Hỗ trợ fallback cho tham số 'price' dạng 'min,max' nếu có
+    const priceRange = searchParams.get("price");
+    if (priceRange && priceRange.includes(",")) {
+      const [min, max] = priceRange.split(",");
+      if (!filters.minPrice) filters.minPrice = min;
+      if (!filters.maxPrice) filters.maxPrice = max;
+    }
+
+    // Nếu không có trong SearchParams nhưng có trong URL slug (trang Brand/Category)
+    if (!filters.brandId && isBrand && slug) {
+      filters.brand = slug;
+    }
+    if (!filters.categoryId && isCategory && slug) {
+      filters.category = slug;
+    }
 
     // Thêm các thuộc tính động
     ATTRIBUTE_KEYS.forEach(key => {
@@ -53,22 +68,10 @@ export const useProductList = (limit = 12) => {
 
         // Chuẩn bị params cho API
         const apiParams = {
-          brand: isBrand ? filtersFromUrl.brand : undefined,
-          category: isCategory ? filtersFromUrl.category : undefined,
-          brandId: !isBrand ? filtersFromUrl.brandId : undefined,
-          categoryId: !isCategory ? filtersFromUrl.categoryId : undefined,
-          search: filtersFromUrl.search,
-          minPrice: filtersFromUrl.minPrice,
-          maxPrice: filtersFromUrl.maxPrice,
-          sort: filtersFromUrl.sort,
+          ...filtersFromUrl,
           page,
           limit,
         };
-
-        // Gán thêm các thuộc tính attributes vào apiParams
-        ATTRIBUTE_KEYS.forEach(key => {
-          if (filtersFromUrl[key]) apiParams[key] = filtersFromUrl[key];
-        });
 
         const res = await filterProductsApi(apiParams);
 

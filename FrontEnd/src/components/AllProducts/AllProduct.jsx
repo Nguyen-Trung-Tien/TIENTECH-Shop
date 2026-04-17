@@ -1,120 +1,41 @@
-import React, { useEffect, useState, useCallback, useMemo } from "react";
-import { toast } from "react-toastify";
-import { useSearchParams } from "react-router-dom";
+import React from "react";
+import { useProductList } from "../../hooks/useProductList";
 import ProductCard from "../../components/ProductCard/ProductCard";
 import SkeletonCard from "../SkeletonCard/SkeletonCard";
-import {
-  filterProductsApi,
-  getFlashSaleProductsApi,
-} from "../../api/productApi";
 import LoadMoreButton from "../LoadMoreButton/LoadMoreButton";
 import ProductFilter from "./ProductFilter";
-import { FiAlertCircle, FiSearch, FiLayers, FiZap } from "react-icons/fi";
+import { getAllCategoryApi } from "../../api/categoryApi";
+import { getAllBrandApi } from "../../api/brandApi";
+import { FiAlertCircle, FiSearch, FiLayers, FiZap, FiX } from "react-icons/fi";
 
 const AllProducts = React.memo(() => {
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [error, setError] = useState(false);
-
-  const [searchParams, setSearchParams] = useSearchParams();
-
-  // Danh sách các key thuộc tính hỗ trợ lọc
-  const ATTR_KEYS = ["ram", "rom", "os", "refresh_rate", "screen", "battery"];
-
-  // Filter States - Đồng bộ với URL
-  const filters = useMemo(() => {
-    const f = {
-      search: searchParams.get("search") || "",
-      categoryId: searchParams.get("categoryId") || "",
-      brandId: searchParams.get("brandId") || "",
-      minPrice: searchParams.get("minPrice") || "",
-      maxPrice: searchParams.get("maxPrice") || "",
-      sort: searchParams.get("sort") || "newest",
-      flashSaleOnly: searchParams.get("flashSale") === "true",
-    };
-
-    // Thêm các thuộc tính động vào filters object
-    ATTR_KEYS.forEach((key) => {
-      const val = searchParams.get(key);
-      if (val) f[key] = val;
-    });
-
-    return f;
-  }, [searchParams]);
-
   const limit = 12;
+  const {
+    products,
+    loading,
+    loadingMore,
+    currentPage,
+    totalPages,
+    error,
+    filters,
+    handleUpdateFilters,
+    handleLoadMore,
+  } = useProductList(limit);
 
-  const fetchProducts = useCallback(
-    async (currentPage = 1, append = false) => {
-      try {
-        if (append) setLoadingMore(true);
-        else {
-          setLoading(true);
-          setError(false);
-        }
+  const [categories, setCategories] = React.useState([]);
+  const [brands, setBrands] = React.useState([]);
 
-        let res;
-        if (filters.flashSaleOnly) {
-          res = await getFlashSaleProductsApi(currentPage, limit);
-        } else {
-          res = await filterProductsApi({
-            ...filters,
-            page: currentPage,
-            limit,
-          });
-        }
-
-        if (res?.errCode === 0) {
-          const newProducts = res?.products || res?.data || [];
-          const totalP = res?.pagination?.totalPages || 1;
-
-          setProducts((prev) =>
-            append ? [...prev, ...newProducts] : newProducts,
-          );
-
-          setTotalPages(totalP);
-          setPage(currentPage);
-        } else {
-          throw new Error(res?.errMessage || "Lỗi tải sản phẩm");
-        }
-      } catch (err) {
-        console.error("Fetch products error:", err);
-        setError(true);
-        toast.error("Không thể tải sản phẩm. Vui lòng thử lại!");
-      } finally {
-        setLoading(false);
-        setLoadingMore(false);
-      }
-    },
-    [filters, limit],
-  );
-
-  useEffect(() => {
-    fetchProducts(page, false);
-  }, [fetchProducts]);
-
-  const handleFilterChange = (name, value) => {
-    const newParams = new URLSearchParams(searchParams);
-    if (value) {
-      newParams.set(name, value);
-    } else {
-      newParams.delete(name);
-    }
-    newParams.delete("page"); 
-    setSearchParams(newParams);
-  };
-
-  const handleClearFilters = () => {
-    setSearchParams({});
-  };
-
-  const handleLoadMore = () => {
-    if (page >= totalPages || loadingMore) return;
-    fetchProducts(page + 1, true);
-  };
+  React.useEffect(() => {
+    const fetchData = async () => {
+      const [catRes, brandRes] = await Promise.all([
+        getAllCategoryApi(),
+        getAllBrandApi(),
+      ]);
+      if (catRes.errCode === 0) setCategories(catRes.data || []);
+      if (brandRes.errCode === 0) setBrands(brandRes.brands || brandRes.data || []);
+    };
+    fetchData();
+  }, []);
 
   const renderSkeletons = (count = 8) => (
     <div className="grid grid-cols-2 md:grid-cols-2 xl:grid-cols-4 gap-5 md:gap-6">
@@ -124,11 +45,65 @@ const AllProducts = React.memo(() => {
     </div>
   );
 
+  const handleClearFilters = () => {
+    handleUpdateFilters({
+      search: "",
+      categoryId: "",
+      brandId: "",
+      minPrice: "",
+      maxPrice: "",
+      sort: "newest",
+      flashSale: "",
+      ram: "",
+      rom: "",
+      os: "",
+      refresh_rate: "",
+      screen: "",
+      battery: "",
+    });
+  };
+
+  const removeFilterItem = (key, value) => {
+    const currentValues = filters[key] ? filters[key].split(",") : [];
+    const newValues = currentValues.filter(v => v !== value.toString());
+    handleUpdateFilters({ [key]: newValues.join(",") });
+  };
+
+  // Lấy danh sách các bộ lọc đang active để hiển thị Chip
+  const activeFilters = React.useMemo(() => {
+    const chips = [];
+    const filterKeys = ["brandId", "categoryId", "ram", "rom", "os", "refresh_rate", "screen", "battery"];
+    
+    filterKeys.forEach(key => {
+      if (filters[key]) {
+        filters[key].split(",").forEach(val => {
+          let label = val;
+          if (key === "brandId") label = brands.find(b => b.id.toString() === val)?.name || val;
+          if (key === "categoryId") label = categories.find(c => c.id.toString() === val)?.name || val;
+          
+          chips.push({ key, val, label });
+        });
+      }
+    });
+
+    if (filters.minPrice || filters.maxPrice) {
+      if (filters.minPrice !== "" || filters.maxPrice !== "") {
+        chips.push({ 
+          key: "price", 
+          val: "range", 
+          label: `${Number(filters.minPrice || 0).toLocaleString()}₫ - ${Number(filters.maxPrice || 100000000).toLocaleString()}₫` 
+        });
+      }
+    }
+
+    return chips;
+  }, [filters, brands, categories]);
+
   return (
     <section className="py-4 md:py-6 bg-white dark:bg-black transition-colors duration-300">
       <div className="container-custom">
         {/* Modern Header Section */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-8 md:mb-10 gap-6">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-6 md:mb-8 gap-6">
           <div className="space-y-1">
             <div className="flex items-center gap-2 text-blue-600 dark:text-blue-500 uppercase">
               <div className="w-6 h-[2px] bg-blue-600 rounded-full shadow-sm"></div>
@@ -149,10 +124,9 @@ const AllProducts = React.memo(() => {
             {/* Flash Sale Toggle */}
             <button
               onClick={() =>
-                handleFilterChange(
-                  "flashSale",
-                  filters.flashSaleOnly ? "" : "true",
-                )
+                handleUpdateFilters({
+                  flashSale: filters.flashSaleOnly ? "" : "true",
+                })
               }
               className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all border ${
                 filters.flashSaleOnly
@@ -168,7 +142,7 @@ const AllProducts = React.memo(() => {
             <div className="relative group">
               <select
                 value={filters.sort}
-                onChange={(e) => handleFilterChange("sort", e.target.value)}
+                onChange={(e) => handleUpdateFilters({ sort: e.target.value })}
                 className="appearance-none bg-white dark:bg-gray-900 border border-slate-200 dark:border-gray-800 text-slate-900 dark:text-white text-[10px] font-black uppercase tracking-widest rounded-xl px-5 py-2.5 pr-10 shadow-sm outline-none focus:border-blue-500 transition-all cursor-pointer"
               >
                 <option value="newest">Mới nhất</option>
@@ -182,12 +156,35 @@ const AllProducts = React.memo(() => {
           </div>
         </div>
 
+        {/* Active Filter Chips */}
+        {activeFilters.length > 0 && (
+          <div className="flex flex-wrap items-center gap-2 mb-8 animate-in fade-in slide-in-from-top-1 duration-500">
+            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 mr-2 border-r border-slate-100 dark:border-gray-800 pr-3 h-4 flex items-center">Đang lọc</span>
+            {activeFilters.map((chip, idx) => (
+              <button
+                key={`${chip.key}-${chip.val}-${idx}`}
+                onClick={() => chip.key === "price" ? handleUpdateFilters({ minPrice: "", maxPrice: "" }) : removeFilterItem(chip.key, chip.val)}
+                className="flex items-center gap-2 px-3 py-1.5 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-full text-[10px] font-bold text-blue-600 dark:text-blue-400 hover:bg-rose-50 hover:border-rose-200 hover:text-rose-500 transition-all group"
+              >
+                {chip.label}
+                <FiX className="text-blue-300 group-hover:text-rose-400" />
+              </button>
+            ))}
+            <button
+              onClick={handleClearFilters}
+              className="text-[10px] font-black text-rose-500 uppercase ml-2 hover:underline tracking-widest"
+            >
+              Xóa tất cả
+            </button>
+          </div>
+        )}
+
         <div className="flex flex-col lg:flex-row gap-10 lg:gap-12">
           {/* Dynamic Sidebar Filter */}
           <div className="lg:w-64 flex-shrink-0">
             <ProductFilter
                 filters={filters}
-                onFilterChange={handleFilterChange}
+                onFilterChange={(name, val) => handleUpdateFilters({ [name]: val })}
                 onClearFilters={handleClearFilters}
             />
           </div>
@@ -202,7 +199,7 @@ const AllProducts = React.memo(() => {
                 </div>
                 <p className="text-slate-900 dark:text-white font-black text-base mb-2">Đã có lỗi xảy ra</p>
                 <button
-                  onClick={() => fetchProducts(1, false)}
+                  onClick={() => window.location.reload()}
                   className="px-6 py-2.5 bg-blue-600 text-white font-black text-[10px] uppercase tracking-widest rounded-xl hover:bg-blue-700 shadow-lg shadow-blue-500/20 transition-all"
                 >
                   Thử lại
@@ -215,7 +212,7 @@ const AllProducts = React.memo(() => {
 
             {/* Empty State */}
             {!loading && !error && products.length === 0 && (
-              <div className="p-16 bg-white dark:bg-gray-900 rounded-[2.5rem] border border-slate-100 dark:border-gray-800 text-center shadow-sm">
+              <div className="p-16 bg-white dark:bg-gray-900 rounded-[2.5rem] border border-slate-100 border-dashed dark:border-gray-800 text-center shadow-sm">
                 <div className="w-20 h-20 bg-slate-50 dark:bg-gray-800 text-slate-300 dark:text-gray-700 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
                   <FiSearch size={32} />
                 </div>
@@ -241,10 +238,10 @@ const AllProducts = React.memo(() => {
 
                 {loadingMore && renderSkeletons(4)}
 
-                {page < totalPages && (
+                {currentPage < totalPages && (
                    <div className="flex justify-center pt-8 border-t border-slate-50 dark:border-gray-900/50">
                     <LoadMoreButton
-                        currentPage={page}
+                        currentPage={currentPage}
                         totalPages={totalPages}
                         loading={loadingMore}
                         onLoadMore={handleLoadMore}

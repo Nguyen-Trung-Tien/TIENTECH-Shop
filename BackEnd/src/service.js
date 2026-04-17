@@ -44,10 +44,10 @@ app.use(bodyParser.urlencoded({ limit: "50mb", extended: true }));
 // Cookie - Phải đặt TRƯỚC routes
 app.use(cookieParser());
 
-// General API rate limiter (100 req / 15 min per IP)
+// General API rate limiter (1000 req / 15 min per IP)
 const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 300,
+  max: 1000,
   standardHeaders: true,
   legacyHeaders: false,
   message: {

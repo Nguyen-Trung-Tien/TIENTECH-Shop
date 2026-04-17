@@ -12,23 +12,6 @@ import BlogSection from "../../components/BlogSection/BlogSection";
 import BrandSection from "../../components/BrandSection/BrandSection";
 
 const HomePage = () => {
-  const [categories, setCategories] = useState([]);
-  const [loadingCategories, setLoadingCategories] = useState(true);
-
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const res = await getAllCategoryApi();
-        if (res.errCode === 0) setCategories(res.data);
-      } catch (err) {
-        console.error("Fetch categories error:", err);
-      } finally {
-        setLoadingCategories(false);
-      }
-    };
-    fetchCategories();
-  }, []);
-
   return (
     <div className="bg-white dark:bg-black transition-colors duration-300">
       <ChatBot />
@@ -38,7 +21,7 @@ const HomePage = () => {
         {/* Sections are now stacked tightly */}
         <BrandSection />
 
-        <CategorySection categories={categories} loading={loadingCategories} />
+        <CategorySection />
 
         <div className="container-custom py-2">
           <div className="rounded-[2rem] overflow-hidden shadow-md">
@@ -48,15 +31,9 @@ const HomePage = () => {
 
         <FlashSale />
 
-        <ProductSection
-          categories={categories}
-          loadingCategories={loadingCategories}
-        />
+        <ProductSection />
 
-        <AllProducts
-          categories={categories}
-          loadingCategories={loadingCategories}
-        />
+        <AllProducts />
 
         <div className="bg-slate-50 dark:bg-gray-900/20 py-8 border-t border-slate-100 dark:border-gray-800 space-y-8">
           <Testimonials />

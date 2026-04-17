@@ -7,6 +7,10 @@ import {
   FiZap,
   FiLayers,
   FiSmartphone,
+  FiMonitor,
+  FiBattery,
+  FiSettings,
+  FiCpu,
 } from "react-icons/fi";
 import { getAllBrandApi } from "../../api/brandApi";
 import { getAllCategoryApi } from "../../api/categoryApi";
@@ -25,6 +29,8 @@ const ProductFilter = ({ filters, onFilterChange, onClearFilters }) => {
     rom: false,
     os: false,
     refresh_rate: false,
+    screen: false,
+    battery: false,
   });
 
   useEffect(() => {
@@ -41,10 +47,8 @@ const ProductFilter = ({ filters, onFilterChange, onClearFilters }) => {
         else if (brandRes?.data) setBrands(brandRes.data);
 
         if (attrRes?.errCode === 0) {
-          const importantCodes = ["ram", "rom", "os", "refresh_rate"];
-          setAttributes(
-            attrRes.data.filter((a) => importantCodes.includes(a.code)),
-          );
+          // Hỗ trợ tất cả các loại thuộc tính kỹ thuật
+          setAttributes(attrRes.data);
         }
       } catch (err) {
         console.error("Error fetching filter data:", err);
@@ -61,7 +65,23 @@ const ProductFilter = ({ filters, onFilterChange, onClearFilters }) => {
   };
 
   const handleMultiSelect = (name, value) => {
-    const currentValues = filters[name] ? filters[name].split(",") : [];
+    let currentValues = filters[name] ? filters[name].split(",") : [];
+    
+    if (currentValues.length === 0) {
+      if (name === "brandId" && filters.brand) {
+        const currentBrandObj = brands.find(b => b.slug === filters.brand);
+        if (currentBrandObj && currentBrandObj.id.toString() !== value) {
+          currentValues.push(currentBrandObj.id.toString());
+        }
+      }
+      if (name === "categoryId" && filters.category) {
+        const currentCatObj = categories.find(c => c.slug === filters.category);
+        if (currentCatObj && currentCatObj.id.toString() !== value) {
+          currentValues.push(currentCatObj.id.toString());
+        }
+      }
+    }
+
     const index = currentValues.indexOf(value);
     if (index > -1) {
       currentValues.splice(index, 1);
@@ -75,71 +95,115 @@ const ProductFilter = ({ filters, onFilterChange, onClearFilters }) => {
     switch (code) {
       case "ram": return <FiLayers className="text-blue-500" />;
       case "rom": return <FiSmartphone className="text-indigo-500" />;
-      case "os": return <FiZap className="text-orange-500" />;
+      case "os": return <FiSettings className="text-orange-500" />;
+      case "screen": return <FiMonitor className="text-emerald-500" />;
+      case "battery": return <FiBattery className="text-rose-500" />;
+      case "refresh_rate": return <FiZap className="text-amber-500" />;
+      case "cpu": return <FiCpu className="text-purple-500" />;
       default: return <FiFilter className="text-slate-400" />;
     }
+  };
+
+  const isSelected = (name, id, value) => {
+    const currentValues = filters[name] ? filters[name].split(",") : [];
+    if (currentValues.includes(id?.toString() || value)) return true;
+    if (name === "brandId" && filters.brand === value && currentValues.length === 0) return true;
+    if (name === "categoryId" && filters.category === value && currentValues.length === 0) return true;
+    return false;
   };
 
   const FilterContent = () => (
     <div className="space-y-6">
       {/* Categories */}
-      <div className="border-b border-slate-100 dark:border-gray-800 pb-4">
-        <button
-          onClick={() => toggleSection("categories")}
-          className="flex items-center justify-between w-full font-black text-slate-900 dark:text-white mb-2 hover:text-blue-600 transition-colors uppercase tracking-widest text-[10px]"
-        >
-          <span>Danh mục</span>
-          {expandedSections.categories ? <FiChevronUp /> : <FiChevronDown />}
-        </button>
-        {expandedSections.categories && (
-          <div className="space-y-2 mt-3 max-h-48 overflow-y-auto custom-scrollbar pr-2">
-            {categories.map((cat) => (
-              <label key={cat.id} className="flex items-center gap-3 cursor-pointer group">
-                <input
-                  type="checkbox"
-                  name="categoryId"
-                  checked={filters.categoryId?.split(",").includes(cat.id.toString())}
-                  onChange={() => handleMultiSelect("categoryId", cat.id.toString())}
-                  className="w-4 h-4 text-blue-600 border-slate-300 dark:border-gray-700 bg-transparent rounded focus:ring-blue-500/20"
-                />
-                <span className={`text-xs font-bold uppercase tracking-wide transition-colors ${filters.categoryId?.split(",").includes(cat.id.toString()) ? "text-blue-600 font-black" : "text-slate-500 dark:text-slate-400 group-hover:text-blue-600"}`}>
-                  {cat.name}
-                </span>
-              </label>
-            ))}
-          </div>
-        )}
-      </div>
+      {!filters.category && (
+        <div className="border-b border-slate-100 dark:border-gray-800 pb-4">
+          <button
+            onClick={() => toggleSection("categories")}
+            className="flex items-center justify-between w-full font-black text-slate-900 dark:text-white mb-2 hover:text-blue-600 transition-colors uppercase tracking-widest text-[10px]"
+          >
+            <span>Danh mục</span>
+            {expandedSections.categories ? <FiChevronUp /> : <FiChevronDown />}
+          </button>
+          {expandedSections.categories && (
+            <div className="space-y-2 mt-3 max-h-48 overflow-y-auto custom-scrollbar pr-2">
+              {categories
+                .filter((cat) => {
+                  const selectedIds = filters.categoryId ? filters.categoryId.split(",") : [];
+                  return selectedIds.length === 0 || selectedIds.includes(cat.id.toString());
+                })
+                .map((cat) => (
+                  <label key={cat.id} className="flex items-center gap-3 cursor-pointer group animate-in fade-in duration-300">
+                    <input
+                      type="checkbox"
+                      name="categoryId"
+                      checked={isSelected("categoryId", cat.id, cat.slug)}
+                      onChange={() => handleMultiSelect("categoryId", cat.id.toString())}
+                      className="w-4 h-4 text-blue-600 border-slate-300 dark:border-gray-700 bg-transparent rounded focus:ring-blue-500/20"
+                    />
+                    <span className={`text-xs font-bold uppercase tracking-wide transition-colors ${isSelected("categoryId", cat.id, cat.slug) ? "text-blue-600 font-black" : "text-slate-500 dark:text-slate-400 group-hover:text-blue-600"}`}>
+                      {cat.name}
+                    </span>
+                  </label>
+                ))}
+              {filters.categoryId && (
+                <button 
+                  onClick={() => onFilterChange("categoryId", "")}
+                  className="text-[9px] font-black text-blue-500 uppercase mt-2 hover:underline"
+                >
+                  + Hiện tất cả danh mục
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Brands */}
-      <div className="border-b border-slate-100 dark:border-gray-800 pb-4">
-        <button
-          onClick={() => toggleSection("brands")}
-          className="flex items-center justify-between w-full font-black text-slate-900 dark:text-white mb-2 hover:text-blue-600 transition-colors uppercase tracking-widest text-[10px]"
-        >
-          <span>Thương hiệu</span>
-          {expandedSections.brands ? <FiChevronUp /> : <FiChevronDown />}
-        </button>
-        {expandedSections.brands && (
-          <div className="grid grid-cols-2 gap-2 mt-3">
-            {brands.map((brand) => (
-              <button
-                key={brand.id}
-                onClick={() => handleMultiSelect("brandId", brand.id.toString())}
-                className={`px-2 py-2 rounded-xl border text-[9px] font-black uppercase tracking-tighter transition-all ${
-                  filters.brandId?.split(",").includes(brand.id.toString())
-                    ? "bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-500/20"
-                    : "bg-slate-50 dark:bg-gray-800 border-transparent text-slate-600 dark:text-slate-400 hover:border-blue-500/30"
-                }`}
-              >
-                {brand.name}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
+      {!filters.brand && (
+        <div className="border-b border-slate-100 dark:border-gray-800 pb-4">
+          <button
+            onClick={() => toggleSection("brands")}
+            className="flex items-center justify-between w-full font-black text-slate-900 dark:text-white mb-2 hover:text-blue-600 transition-colors uppercase tracking-widest text-[10px]"
+          >
+            <span>Thương hiệu</span>
+            {expandedSections.brands ? <FiChevronUp /> : <FiChevronDown />}
+          </button>
+          {expandedSections.brands && (
+            <div className="space-y-2 mt-3">
+              <div className="grid grid-cols-2 gap-2">
+                {brands
+                  .filter((brand) => {
+                    const selectedIds = filters.brandId ? filters.brandId.split(",") : [];
+                    return selectedIds.length === 0 || selectedIds.includes(brand.id.toString());
+                  })
+                  .map((brand) => (
+                    <button
+                      key={brand.id}
+                      onClick={() => handleMultiSelect("brandId", brand.id.toString())}
+                      className={`px-2 py-2 rounded-xl border text-[9px] font-black uppercase tracking-tighter transition-all animate-in fade-in duration-300 ${
+                        isSelected("brandId", brand.id, brand.slug)
+                          ? "bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-500/20"
+                          : "bg-slate-50 dark:bg-gray-800 border-transparent text-slate-600 dark:text-slate-400 hover:border-blue-500/30"
+                      }`}
+                    >
+                      {brand.name}
+                    </button>
+                  ))}
+              </div>
+              {filters.brandId && (
+                <button 
+                  onClick={() => onFilterChange("brandId", "")}
+                  className="text-[9px] font-black text-blue-500 uppercase mt-1 hover:underline"
+                >
+                  + Hiện tất cả thương hiệu
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
-      {/* Attributes */}
+      {/* Dynamic Attributes */}
       {attributes.map((attr) => (
         <div key={attr.id} className="border-b border-slate-100 dark:border-gray-800 pb-4">
           <button
@@ -154,11 +218,16 @@ const ProductFilter = ({ filters, onFilterChange, onClearFilters }) => {
           </button>
           {expandedSections[attr.code] && (
             <div className="flex flex-wrap gap-2 mt-3">
-              {attr.values?.map((v) => (
+              {attr.values
+                ?.filter((v) => {
+                  const selected = filters[attr.code] ? filters[attr.code].split(",") : [];
+                  return selected.length === 0 || selected.includes(v.value);
+                })
+                .map((v) => (
                 <button
                   key={v.id}
                   onClick={() => handleMultiSelect(attr.code, v.value)}
-                  className={`px-3 py-1.5 rounded-lg border text-[9px] font-black uppercase tracking-widest transition-all ${
+                  className={`px-3 py-1.5 rounded-lg border text-[9px] font-black uppercase tracking-widest transition-all animate-in fade-in duration-300 ${
                     filters[attr.code]?.split(",").includes(v.value)
                       ? "bg-blue-600 border-blue-600 text-white shadow-md shadow-blue-100"
                       : "bg-white dark:bg-gray-800 border-slate-200 dark:border-gray-700 text-slate-600 dark:text-slate-400 hover:border-blue-500"
@@ -167,6 +236,14 @@ const ProductFilter = ({ filters, onFilterChange, onClearFilters }) => {
                   {v.value}
                 </button>
               ))}
+              {filters[attr.code] && (
+                <button 
+                  onClick={() => onFilterChange(attr.code, "")}
+                  className="w-full text-left text-[9px] font-black text-blue-500 uppercase mt-1 hover:underline"
+                >
+                  + Hiện tất cả {attr.name.toLowerCase()}
+                </button>
+              )}
             </div>
           )}
         </div>

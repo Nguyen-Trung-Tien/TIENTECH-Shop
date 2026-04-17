@@ -200,6 +200,37 @@ const filterProducts = async ({
 
     if (search && search !== "") conditions.name = { [Op.like]: `%${search}%` };
 
+    // Xử lý lọc thuộc tính (Attributes filtering) - Sử dụng Subquery để đảm bảo phép AND giữa các loại
+    const filterParams = { ram, rom, screen, battery, os, refresh_rate };
+    const andConditions = [];
+
+    Object.keys(filterParams).forEach((key) => {
+      const val = filterParams[key];
+      if (val && val !== "") {
+        const values = Array.isArray(val) ? val : String(val).split(",").map(v => v.trim());
+        if (values.length > 0) {
+          // Mỗi loại thuộc tính phải thỏa mãn ít nhất một trong các giá trị đã chọn (OR trong nhóm, AND giữa các nhóm)
+          // Sửa cú pháp quote cho MySQL (sử dụng backticks thay vì double quotes)
+          const escapedValues = values.map(v => `'${v.replace(/'/g, "''")}'`).join(",");
+          andConditions.push({
+            id: {
+              [Op.in]: db.sequelize.literal(`(
+                SELECT pav.productId 
+                FROM ProductAttributeValues AS pav
+                JOIN AttributeValues AS av ON pav.attributeValueId = av.id
+                JOIN Attributes AS a ON av.attributeId = a.id
+                WHERE a.code = '${key}' AND av.value IN (${escapedValues})
+              )`)
+            }
+          });
+        }
+      }
+    });
+
+    if (andConditions.length > 0) {
+      conditions[Op.and] = [...(conditions[Op.and] || []), ...andConditions];
+    }
+
     const include = [
       { model: db.Brand, as: "brand" },
       { model: db.Category, as: "category" },
@@ -209,32 +240,6 @@ const filterProducts = async ({
         attributes: ["imageUrl", "isPrimary"],
       },
     ];
-
-    // Xử lý lọc thuộc tính (Attributes filtering)
-    const filterParams = { ram, rom, screen, battery, os, refresh_rate };
-    const selectedAttrValues = [];
-    let attributeTypeCount = 0;
-
-    Object.keys(filterParams).forEach((key) => {
-      const val = filterParams[key];
-      if (val && val !== "") {
-        const values = Array.isArray(val) ? val : String(val).split(",").map(v => v.trim());
-        if (values.length > 0) {
-          selectedAttrValues.push(...values);
-          attributeTypeCount++; // Đếm số loại thuộc tính khác nhau được chọn
-        }
-      }
-    });
-
-    if (selectedAttrValues.length > 0) {
-      include.push({
-        model: db.AttributeValue,
-        as: "attributes",
-        where: { value: { [Op.in]: selectedAttrValues } },
-        through: { attributes: [] },
-        required: true
-      });
-    }
 
     let order = [];
     if (sort === "price_asc") order = [["basePrice", "ASC"]];
