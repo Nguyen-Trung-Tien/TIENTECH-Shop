@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: project-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+        - name: frontend
+          image: project-app-frontend:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 80
+          env:
+            - name: VITE_API_URL
+              value: "http://localhost:30080/api/v1"
+            - name: VITE_SOCKET_URL
+              value: "http://localhost:30080"
+            - name: VITE_PAYPAL_CLIENT_ID
+              value: "sb"
+            - name: VITE_PAYPAL_CURRENCY
+              value: "USD"
+            - name: VITE_SHOW_REACT_QUERY_DEVTOOLS
+              value: "false"
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 80
+            initialDelaySeconds: 15
+            periodSeconds: 15

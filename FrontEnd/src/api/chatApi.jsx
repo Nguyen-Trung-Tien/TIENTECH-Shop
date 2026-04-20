@@ -1,7 +1,8 @@
 import axios from "axios";
+import { appConfig } from "../config/runtimeConfig";
 
 const API = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL: appConfig.apiUrl,
   timeout: 10000,
 });
 
@@ -19,7 +20,7 @@ export const sendMessage = async (message, userId = null, history = []) => {
 
     const res = await API.post("/chat/ask", payload);
 
-    return res.data; // Trả về { reply, recommendedProducts }
+    return res.data;
   } catch (error) {
     console.error("Chatbot error:", error);
 
@@ -40,12 +41,14 @@ export const sendMessage = async (message, userId = null, history = []) => {
 export const predictPrice = async (productId) => {
   try {
     const id = Number(productId);
-    if (!id || isNaN(id) || id <= 0) throw new Error("productId không hợp lệ");
+    if (!id || isNaN(id) || id <= 0) {
+      throw new Error("productId không hợp lệ");
+    }
 
     const response = await API.post(
       "/chat/predict",
       { productId: id },
-      { timeout: 125000 }
+      { timeout: 125000 },
     );
 
     return response.data;

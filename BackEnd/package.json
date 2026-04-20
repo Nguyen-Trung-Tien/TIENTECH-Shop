@@ -6,6 +6,7 @@
   "scripts": {
     "start": "nodemon src/service.js",
     "dev": "nodemon src/service.js",
+    "start:prod": "node src/service.js",
     "test": "cross-env NODE_ENV=test jest --testTimeout=10000"
   },
   "keywords": [],

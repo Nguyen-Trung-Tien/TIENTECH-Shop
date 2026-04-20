@@ -1,10 +1,11 @@
 import axios from "axios";
+import { appConfig } from "../config/runtimeConfig";
 import { removeUser } from "../redux/userSlice";
 import { store } from "../redux/store";
 
 const axiosClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
-  withCredentials: true, // Quan trọng: Cho phép gửi/nhận cookie
+  baseURL: appConfig.apiUrl,
+  withCredentials: true,
 });
 
 let isRefreshing = false;
@@ -18,28 +19,27 @@ const processQueue = (error, token = null) => {
   failedQueue = [];
 };
 
-// Request Interceptor
 axiosClient.interceptors.request.use(
   (config) => {
-    // Đảm bảo mọi request đều mang theo credentials
     config.withCredentials = true;
     config.headers["Cache-Control"] = "no-cache";
     config.headers["Pragma"] = "no-cache";
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
-// Response Interceptor
 axiosClient.interceptors.response.use(
   (response) => response.data,
   async (error) => {
     const originalRequest = error.config;
-
-    // Nếu lỗi 401 và không phải request refresh token
     const isRefreshRequest = originalRequest.url.includes("/user/refresh-token");
 
-    if (error.response?.status === 401 && !originalRequest._retry && !isRefreshRequest) {
+    if (
+      error.response?.status === 401 &&
+      !originalRequest._retry &&
+      !isRefreshRequest
+    ) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
@@ -52,9 +52,12 @@ axiosClient.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        // Gọi Refresh Token
-        await axios.post(`${import.meta.env.VITE_API_URL}/user/refresh-token`, {}, { withCredentials: true });
-        
+        await axios.post(
+          `${appConfig.apiUrl}/user/refresh-token`,
+          {},
+          { withCredentials: true },
+        );
+
         isRefreshing = false;
         processQueue(null);
 
@@ -62,21 +65,23 @@ axiosClient.interceptors.response.use(
       } catch (refreshError) {
         isRefreshing = false;
         processQueue(refreshError);
-        
-        // Chỉ logout nếu thực sự hết phiên (tránh logout nhầm khi mất mạng)
-        if (refreshError.response?.status === 403 || refreshError.response?.status === 400) {
-            store.dispatch(removeUser());
-            if (!window.location.pathname.includes("/login")) {
-                window.location.href = `/login?from=${window.location.pathname}`;
-            }
+
+        if (
+          refreshError.response?.status === 403 ||
+          refreshError.response?.status === 400
+        ) {
+          store.dispatch(removeUser());
+          if (!window.location.pathname.includes("/login")) {
+            window.location.href = `/login?from=${window.location.pathname}`;
+          }
         }
-        
+
         return Promise.reject(refreshError);
       }
     }
 
     return Promise.reject(error);
-  }
+  },
 );
 
 export default axiosClient;

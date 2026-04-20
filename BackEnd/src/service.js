@@ -16,6 +16,7 @@ const { initOrderCron } = require("./cron/orderCron");
 dotenv.config();
 
 const app = express();
+app.set("trust proxy", 1);
 app.use(passport.initialize());
 const server = http.createServer(app);
 // ... existing server/io setup ...
@@ -73,6 +74,14 @@ app.use("/api/v1/user/forgot-password", forgotPasswordLimiter);
 
 // Static
 app.use(express.static("public"));
+
+app.get("/healthz", (req, res) => {
+  res.status(200).json({
+    status: "ok",
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString(),
+  });
+});
 
 // Mount routes
 routes(app);

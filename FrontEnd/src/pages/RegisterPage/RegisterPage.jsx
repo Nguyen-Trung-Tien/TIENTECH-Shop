@@ -16,6 +16,7 @@ import { FcGoogle } from "react-icons/fc";
 import { registerUser } from "../../api/userApi";
 import Loading from "../../components/Loading/Loading";
 import logoImage from "../../assets/TienTech Shop.png";
+import { appConfig } from "../../config/runtimeConfig";
 
 // Di chuyển FloatingInput ra ngoài để tránh việc re-mount component khi state của cha thay đổi
 const FloatingInput = ({
@@ -265,7 +266,7 @@ const RegisterPage = () => {
               <button
                 type="button"
                 onClick={() => {
-                  window.location.href = `${import.meta.env.VITE_API_URL || "http://localhost:8080/api/v1"}/user/auth/google`;
+                  window.location.href = `${appConfig.apiUrl}/user/auth/google`;
                 }}
                 className="w-full h-12 bg-white dark:bg-dark-surface border-2 border-surface-200 dark:border-dark-border text-surface-700 dark:text-white font-bold rounded-2xl flex items-center justify-center gap-2 text-sm transition-all hover:bg-surface-50 dark:hover:bg-dark-bg hover:border-surface-300 active:scale-[0.98]"
               >

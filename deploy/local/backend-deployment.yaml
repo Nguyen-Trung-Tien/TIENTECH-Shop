@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: project-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+        - name: backend
+          image: project-app-backend:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          env:
+            - name: PORT
+              value: "8080"
+            - name: NODE_ENV
+              value: "production"
+            - name: FRONTEND_URL
+              value: "http://localhost:30000"
+            - name: URL_REACT
+              value: "http://localhost:30000/"
+            - name: DB_HOST
+              value: "mysql"
+            - name: DB_PORT
+              value: "3306"
+            - name: DB_DIALECT
+              value: "mysql"
+            - name: DB_DATABASE_NAME
+              value: "project_app"
+            - name: DB_PROD_NAME
+              value: "project_app"
+            - name: DB_USERNAME
+              value: "root"
+            - name: DB_PASSWORD
+              value: "123456"
+            - name: JWT_SECRET
+              value: "change-me-jwt-secret"
+            - name: JWT_ACCESS_SECRET
+              value: "change-me-access-secret"
+            - name: JWT_REFRESH_SECRET
+              value: "change-me-refresh-secret"
+            - name: GOOGLE_CLIENT_ID
+              value: "dummy-client-id"
+            - name: GOOGLE_CLIENT_SECRET
+              value: "dummy-client-secret"
+            - name: JWT_ACCESS_EXPIRES
+              value: "15m"
+            - name: JWT_REFRESH_EXPIRES
+              value: "7d"
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 20
+            periodSeconds: 15

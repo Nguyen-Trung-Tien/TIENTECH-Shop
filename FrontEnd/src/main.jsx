@@ -9,6 +9,7 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import App from "./App";
 import "./tailwind.css";
 import { store, persistor } from "./redux/store";
+import { appConfig } from "./config/runtimeConfig";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -20,8 +21,8 @@ const queryClient = new QueryClient({
 });
 
 const initialOptions = {
-  "client-id": import.meta.env.VITE_PAYPAL_CLIENT_ID,
-  currency: import.meta.env.VITE_PAYPAL_CURRENCY,
+  "client-id": appConfig.paypalClientId,
+  currency: appConfig.paypalCurrency,
   intent: "capture",
 };
 
@@ -33,7 +34,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
           <PayPalScriptProvider options={initialOptions}>
             <App />
           </PayPalScriptProvider>
-          {import.meta.env.VITE_SHOW_REACT_QUERY_DEVTOOLS === "true" && (
+          {appConfig.showReactQueryDevtools && (
             <ReactQueryDevtools initialIsOpen={false} />
           )}
         </BrowserRouter>

@@ -8,6 +8,7 @@ import {
 import { io } from "socket.io-client";
 import { useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
+import { appConfig } from "../../config/runtimeConfig";
 
 const NotificationBell = () => {
   const navigate = useNavigate();
@@ -33,10 +34,7 @@ const NotificationBell = () => {
   useEffect(() => {
     fetchNotifications();
 
-    // Socket.io integration
-    const socket = io(
-      import.meta.env.VITE_SOCKET_URL || "http://localhost:8080",
-    );
+    const socket = io(appConfig.socketUrl);
 
     if (user) {
       socket.emit("join", `user_${user.id}`);
@@ -88,6 +86,13 @@ const NotificationBell = () => {
 
   if (!user) return null;
 
+  const handleNotificationKeyDown = (event, notification) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      handleNotificationClick(notification);
+    }
+  };
+
   return (
     <div className="relative" ref={dropdownRef}>
       <button
@@ -122,6 +127,9 @@ const NotificationBell = () => {
                 <div
                   key={n.id}
                   onClick={() => handleNotificationClick(n)}
+                  onKeyDown={(event) => handleNotificationKeyDown(event, n)}
+                  role="button"
+                  tabIndex={0}
                   className={`p-4 border-b border-surface-50 dark:border-dark-border flex gap-3 cursor-pointer hover:bg-surface-50 dark:hover:bg-dark-bg transition-colors ${!n.isRead ? "bg-primary/5 dark:bg-brand/5" : ""}`}
                 >
                   <div
