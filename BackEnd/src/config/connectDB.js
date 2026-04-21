@@ -10,19 +10,23 @@ const sequelize = new Sequelize(
     port: process.env.DB_PORT,
     dialect: process.env.DB_DIALECT,
     logging: false,
-    query: {
-      raw: true,
-    },
     timezone: "+07:00",
-  }
+
+    dialectOptions: {
+      ssl: {
+        require: true,
+        rejectUnauthorized: false,
+      },
+    },
+  },
 );
 
 let connectDB = async () => {
   try {
     await sequelize.authenticate();
-    console.log("Connection has been established successfully.");
+    console.log("Database connected successfully");
   } catch (error) {
-    console.error("Unable to connect to the database:", error);
+    console.error("Unable to connect to database:", error);
   }
 };
 
