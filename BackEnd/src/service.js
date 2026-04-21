@@ -24,7 +24,11 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    origin: [
+      process.env.FRONTEND_URL,
+      "http://localhost:5173",
+      "https://tientech-shop-9247.vercel.app",
+    ],
     credentials: true,
   },
 });
@@ -32,13 +36,35 @@ const io = new Server(server, {
 // Gắn io vào app để dùng ở các controller khác (req.app.get("io"))
 app.set("io", io);
 
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://tientech-shop-9247.vercel.app",
+];
+
+if (process.env.FRONTEND_URL) {
+  allowedOrigins.push(process.env.FRONTEND_URL);
+}
+
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        console.log("Blocked by CORS:", origin);
+        callback(new Error("CORS blocked"));
+      }
+    },
     credentials: true,
   }),
 );
 
+const io = new Server(server, {
+  cors: {
+    origin: allowedOrigins,
+    credentials: true,
+  },
+});
 // Body parser
 app.use(bodyParser.json({ limit: "50mb" }));
 app.use(bodyParser.urlencoded({ limit: "50mb", extended: true }));
