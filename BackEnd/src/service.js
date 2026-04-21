@@ -17,24 +17,16 @@ dotenv.config();
 
 const app = express();
 app.set("trust proxy", 1);
+
 app.use(passport.initialize());
+
 const server = http.createServer(app);
-// ... existing server/io setup ...
-// I will just add the initialization inside the if (process.env.NODE_ENV !== "test") block
 
-const io = new Server(server, {
-  cors: {
-    origin: [
-      process.env.FRONTEND_URL,
-      "http://localhost:5173",
-      "https://tientech-shop-9247.vercel.app",
-    ],
-    credentials: true,
-  },
-});
-
-// Gắn io vào app để dùng ở các controller khác (req.app.get("io"))
-app.set("io", io);
+/*
+================================
+CORS CONFIG (PRODUCTION READY)
+================================
+*/
 
 const allowedOrigins = [
   "http://localhost:5173",
@@ -59,19 +51,44 @@ app.use(
   }),
 );
 
+/*
+================================
+SOCKET.IO CONFIG
+================================
+*/
+
 const io = new Server(server, {
   cors: {
     origin: allowedOrigins,
     credentials: true,
   },
 });
-// Body parser
+
+app.set("io", io);
+
+/*
+================================
+BODY PARSER
+================================
+*/
+
 app.use(bodyParser.json({ limit: "50mb" }));
 app.use(bodyParser.urlencoded({ limit: "50mb", extended: true }));
-// Cookie - Phải đặt TRƯỚC routes
+
+/*
+================================
+COOKIE PARSER
+================================
+*/
+
 app.use(cookieParser());
 
-// General API rate limiter (1000 req / 15 min per IP)
+/*
+================================
+RATE LIMITER
+================================
+*/
+
 const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 1000,
@@ -82,9 +99,9 @@ const generalLimiter = rateLimit({
     errMessage: "Too many requests, please try again later.",
   },
 });
+
 app.use("/api/", generalLimiter);
 
-// Forgot password: stricter rate limit (5 requests / 15 min per IP)
 const forgotPasswordLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 5,
@@ -96,10 +113,22 @@ const forgotPasswordLimiter = rateLimit({
       "Too many password reset requests. Please try again in 15 minutes.",
   },
 });
+
 app.use("/api/v1/user/forgot-password", forgotPasswordLimiter);
 
-// Static
+/*
+================================
+STATIC FILES
+================================
+*/
+
 app.use(express.static("public"));
+
+/*
+================================
+HEALTH CHECK
+================================
+*/
 
 app.get("/healthz", (req, res) => {
   res.status(200).json({
@@ -109,25 +138,40 @@ app.get("/healthz", (req, res) => {
   });
 });
 
-// Mount routes
+/*
+================================
+ROUTES
+================================
+*/
+
 routes(app);
 
-// Global error handler — phải đặt SAU routes
-// eslint-disable-next-line no-unused-vars
+/*
+================================
+GLOBAL ERROR HANDLER
+================================
+*/
+
 app.use((err, req, res, next) => {
   console.error("[GlobalErrorHandler]", err.stack || err);
+
   res.status(err.status || 500).json({
     errCode: -1,
     errMessage: err.message || "Internal Server Error",
   });
 });
 
-// Connect DB
+/*
+================================
+DATABASE + CRON JOBS
+================================
+*/
+
 if (process.env.NODE_ENV !== "test") {
   connectDB();
+
   initOrderCron();
 
-  // Cron: disable expired flash sales every minute
   const flashSaleJob = async () => {
     try {
       await ProductService.disableExpiredFlashSales();
@@ -137,10 +181,16 @@ if (process.env.NODE_ENV !== "test") {
   };
 
   flashSaleJob();
+
   setInterval(flashSaleJob, 60 * 1000);
 }
 
-// Socket.io connection logic
+/*
+================================
+SOCKET CONNECTION
+================================
+*/
+
 io.on("connection", (socket) => {
   console.log(`User connected: ${socket.id}`);
 
@@ -154,10 +204,17 @@ io.on("connection", (socket) => {
   });
 });
 
+/*
+================================
+START SERVER
+================================
+*/
+
 const port = process.env.PORT || 8080;
+
 if (require.main === module) {
   server.listen(port, () => {
-    console.log(`Connect server success, ${port}`);
+    console.log(`🚀 Server running on port ${port}`);
   });
 }
 
