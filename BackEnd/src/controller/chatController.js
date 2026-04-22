@@ -13,7 +13,7 @@ if (!process.env.GEMINI_API_KEY) {
   );
 }
 const model = genAI.getGenerativeModel({
-  model: "gemini-2.0-flash", // Sử dụng model flash để tốc độ phản hồi nhanh nhất
+  model: "gemini-3-flash-preview", 
   generationConfig: { responseMimeType: "application/json" },
 });
 
@@ -40,8 +40,15 @@ Cấu trúc JSON yêu cầu:
   "semanticQuery": "câu lệnh tối ưu để tìm kiếm ngữ nghĩa"
 }
 `;
-    const parseResult = await model.generateContent(parserPrompt);
-    const intent = extractJson(parseResult.response.text());
+    let intent = {};
+    try {
+        const parseResult = await model.generateContent(parserPrompt);
+        intent = extractJson(parseResult.response.text());
+    } catch (aiError) {
+        console.error("Lỗi AI Intent Extraction:", aiError);
+        // Fallback intent if AI fails
+        intent = { semanticQuery: message };
+    }
 
     let dbContext = "";
     let suggestedProducts = [];
@@ -49,29 +56,37 @@ Cấu trúc JSON yêu cầu:
     // 2. Thực hiện tìm kiếm kết hợp (Hybrid Search)
     if (intent.isOrderQuery && userId) {
         // Xử lý tra cứu đơn hàng (như cũ nhưng tối ưu hơn)
-        const order = await Order.findOne({
-            where: { userId },
-            order: [["createdAt", "DESC"]],
-            include: [{ model: OrderItem, as: "orderItems", include: [{ model: Product, as: "product" }] }],
-        });
-        if (order) dbContext += `\nĐơn hàng #${order.id}: Trạng thái ${translateStatus(order.status)}, SP: ${order.orderItems.map(i => i.product.name).join(", ")}`;
+        try {
+            const order = await Order.findOne({
+                where: { userId },
+                order: [["createdAt", "DESC"]],
+                include: [{ model: OrderItem, as: "orderItems", include: [{ model: Product, as: "product" }] }],
+            });
+            if (order) dbContext += `\nĐơn hàng #${order.id}: Trạng thái ${translateStatus(order.status)}, SP: ${order.orderItems.map(i => i.product.name).join(", ")}`;
+        } catch (dbError) {
+            console.error("Lỗi DB Order Query:", dbError);
+        }
     }
 
     // Tìm kiếm sản phẩm thông minh
     const filterOptions = {
         maxPrice: intent.maxPrice,
         minPrice: intent.minPrice,
-        search: intent.semanticQuery,
+        search: intent.semanticQuery || message,
         limit: 5
     };
 
-    const searchResult = await ProductService.filterProducts(filterOptions);
-    if (searchResult.errCode === 0 && searchResult.data.length > 0) {
-        dbContext += "\nSản phẩm tìm thấy:\n";
-        searchResult.data.forEach(p => {
-            suggestedProducts.push(p);
-            dbContext += `- ID: ${p.id}, Tên: ${p.name}, Giá: ${formatPrice(p.price)}đ, Đặc điểm: ${p.description?.slice(0, 50)}...\n`;
-        });
+    try {
+        const searchResult = await ProductService.filterProducts(filterOptions);
+        if (searchResult.errCode === 0 && searchResult.data && searchResult.data.length > 0) {
+            dbContext += "\nSản phẩm tìm thấy:\n";
+            searchResult.data.forEach(p => {
+                suggestedProducts.push(p);
+                dbContext += `- ID: ${p.id}, Tên: ${p.name}, Giá: ${formatPrice(p.price)}đ, Đặc điểm: ${p.description?.slice(0, 50)}...\n`;
+            });
+        }
+    } catch (searchError) {
+        console.error("Lỗi Product Search:", searchError);
     }
 
     // 3. Tạo phản hồi cuối cùng
@@ -85,26 +100,34 @@ NHIỆM VỤ:
 - TRẢ VỀ JSON: {"reply": "câu trả lời", "recommendedProductIds": [id1, id2]}
 `;
 
-    const finalResult = await model.generateContent({
-        contents: [
-            { role: "user", parts: [{ text: systemPrompt }] },
-            ...history.slice(-4).map(h => ({ role: h.role === 'user' ? 'user' : 'model', parts: [{ text: typeof h.content === 'string' ? h.content : JSON.stringify(h.content) }] })),
-            { role: "user", parts: [{ text: message }] }
-        ]
-    });
+    try {
+        const finalResult = await model.generateContent({
+            contents: [
+                { role: "user", parts: [{ text: systemPrompt }] },
+                ...history.slice(-4).map(h => ({ role: h.role === 'user' ? 'user' : 'model', parts: [{ text: typeof h.content === 'string' ? h.content : JSON.stringify(h.content) }] })),
+                { role: "user", parts: [{ text: message }] }
+            ]
+        });
 
-    const finalJson = extractJson(finalResult.response.text());
-    
-    // Lấy thông tin chi tiết sản phẩm để hiển thị trên UI
-    const products = suggestedProducts.filter(p => finalJson.recommendedProductIds?.includes(p.id));
+        const finalJson = extractJson(finalResult.response.text());
+        
+        // Lấy thông tin chi tiết sản phẩm để hiển thị trên UI
+        const products = suggestedProducts.filter(p => finalJson.recommendedProductIds?.includes(p.id));
 
-    res.json({
-      reply: finalJson.reply,
-      recommendedProducts: products.length > 0 ? products : suggestedProducts.slice(0, 3)
-    });
+        res.json({
+          reply: finalJson.reply || "Xin lỗi, tôi gặp chút khó khăn khi xử lý yêu cầu. Bạn có thể hỏi lại không?",
+          recommendedProducts: products.length > 0 ? products : suggestedProducts.slice(0, 3)
+        });
+    } catch (finalAiError) {
+        console.error("Lỗi AI Final Response:", finalAiError);
+        res.json({
+            reply: "Hệ thống AI đang bận hoặc hết hạn ngạch (Quota exceeded). Vui lòng thử lại sau vài giây hoặc liên hệ hỗ trợ.",
+            recommendedProducts: suggestedProducts.slice(0, 3)
+        });
+    }
 
   } catch (error) {
-    console.error("Lỗi Assistant:", error);
+    console.error("Lỗi Assistant Tổng quát:", error);
     res.status(500).json({ error: "Lỗi hệ thống AI." });
   }
 };

@@ -6,7 +6,7 @@ const { getFengShuiDetail } = require("../utils/fortuneUtils");
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || process.env.API_KEY);
 const model = genAI.getGenerativeModel({
-  model: "gemini-2.0-flash", // Updated to stable version
+  model: "gemini-3-flash-preview", 
   generationConfig: { responseMimeType: "application/json" },
 });
 
@@ -29,27 +29,32 @@ const handleFengShuiChat = async (req, res) => {
     const fs = getFengShuiDetail(Number(birthYear), gender);
     const allLuckyColors = [...fs.luckyColors, ...fs.supportColors];
 
-    const products = await Product.findAll({
-      where: {
-        isActive: true,
-        [Op.or]: allLuckyColors.map((color) => ({
-          specifications: { [Op.like]: `%${color}%` },
-        })),
-        ...(brandId && { brandId }),
-        ...(categoryId && { categoryId }),
-        ...(minPrice && { basePrice: { [Op.gte]: minPrice } }),
-        ...(maxPrice && { basePrice: { [Op.lte]: maxPrice } }),
-      },
-      include: [
-        { model: Brand, as: "brand" },
-        { model: Category, as: "category" },
-      ],
-      order: [
-        ["sold", "DESC"],
-        ["discount", "DESC"],
-      ],
-      limit: 6,
-    });
+    let products = [];
+    try {
+        products = await Product.findAll({
+            where: {
+              isActive: true,
+              [Op.or]: allLuckyColors.map((color) => ({
+                specifications: { [Op.like]: `%${color}%` },
+              })),
+              ...(brandId && { brandId }),
+              ...(categoryId && { categoryId }),
+              ...(minPrice && { basePrice: { [Op.gte]: minPrice } }),
+              ...(maxPrice && { basePrice: { [Op.lte]: maxPrice } }),
+            },
+            include: [
+              { model: Brand, as: "brand" },
+              { model: Category, as: "category" },
+            ],
+            order: [
+              ["sold", "DESC"],
+              ["discount", "DESC"],
+            ],
+            limit: 6,
+        });
+    } catch (dbError) {
+        console.error("Lỗi DB FengShui Products:", dbError);
+    }
 
     let dbContext = `
 THÔNG TIN KHÁCH HÀNG:
@@ -106,25 +111,29 @@ NGUYÊN TẮC TƯ VẤN:
       // Lấy thông tin chi tiết của các sản phẩm được đề xuất
       let finalRecommended = [];
       if (result.recommendedProducts && result.recommendedProducts.length > 0) {
-        finalRecommended = await Product.findAll({
-          where: { id: { [Op.in]: result.recommendedProducts }, isActive: true },
-          attributes: ["id", "name", "basePrice", "discount", "image"],
-        });
+        try {
+            finalRecommended = await Product.findAll({
+              where: { id: { [Op.in]: result.recommendedProducts }, isActive: true },
+              attributes: ["id", "name", "basePrice", "discount", "image"],
+            });
+        } catch (dbError2) {
+            console.error("Lỗi DB Recommended Products:", dbError2);
+        }
       }
 
       res.json({
-        reply: result.reply,
-        recommendedProducts: finalRecommended,
+        reply: result.reply || "Tôi đã xem quẻ cho bạn nhưng gặp chút khó khăn khi diễn đạt. Bạn hãy thử lại nhé!",
+        recommendedProducts: finalRecommended.length > 0 ? finalRecommended : products.slice(0, 3),
       });
     } catch (err) {
       console.error("Gemini FengShui Error:", err);
       return res.json({
-        reply: "Thầy phong thủy đang bận bấm quẻ, vui lòng quay lại sau! 🔮",
-        recommendedProducts: [],
+        reply: "Thầy phong thủy đang bận bấm quẻ hoặc hết lượt tư vấn hôm nay. Vui lòng quay lại sau ít phút! 🔮",
+        recommendedProducts: products.slice(0, 3),
       });
     }
   } catch (error) {
-    console.error("Lỗi chatbot phong thủy:", error);
+    console.error("Lỗi chatbot phong thủy Tổng quát:", error);
     res.status(500).json({ error: "Lỗi xử lý AI phong thủy." });
   }
 };
