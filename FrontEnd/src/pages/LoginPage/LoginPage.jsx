@@ -17,7 +17,7 @@ import { loginUser } from "../../api/userApi";
 import { setUser } from "../../redux/userSlice";
 import ForgotPasswordModal from "../../components/ForgotPasswordModal/ForgotPasswordModal";
 import Loading from "../../components/Loading/Loading";
-import logoImage from "../../assets/TienTech Shop.png";
+import logoImage from "../../assets/logo.png";
 import { appConfig } from "../../config/runtimeConfig";
 
 // TÁCH FloatingInput RA NGOÀI Component chính để không bị re-mount khi gõ phím

@@ -131,6 +131,8 @@ const getOrderById = async (id, user) => {
           as: "orderItems",
           attributes: [
             "id",
+            "productId",
+            "variantId",
             "quantity",
             "price",
             "subtotal",
@@ -143,7 +145,7 @@ const getOrderById = async (id, user) => {
             {
               model: db.Product,
               as: "product",
-              attributes: ["id", "name", "basePrice", "specifications"],
+              attributes: ["id", "name", "slug", "basePrice", "specifications"],
               include: [{ model: db.ProductImage, as: "images", attributes: ["imageUrl", "isPrimary"] }],
             },
           ],
@@ -630,6 +632,12 @@ const updateOrderStatus = async (id, status, user = null, reason = "") => {
     }
 
     const prevStatus = order.status;
+
+    // PREVENT DUPLICATE STOCK REFUND IF ALREADY CANCELLED
+    if (status === "cancelled" && prevStatus === "cancelled") {
+      await t.rollback();
+      return { errCode: 0, errMessage: "Order is already cancelled", data: order };
+    }
 
     const history = Array.isArray(order.confirmationHistory)
       ? order.confirmationHistory

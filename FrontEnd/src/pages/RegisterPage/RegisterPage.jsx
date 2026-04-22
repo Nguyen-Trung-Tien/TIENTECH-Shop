@@ -15,7 +15,7 @@ import { FcGoogle } from "react-icons/fc";
 
 import { registerUser } from "../../api/userApi";
 import Loading from "../../components/Loading/Loading";
-import logoImage from "../../assets/TienTech Shop.png";
+import logoImage from "../../assets/logo.png";
 import { appConfig } from "../../config/runtimeConfig";
 
 // Di chuyển FloatingInput ra ngoài để tránh việc re-mount component khi state của cha thay đổi

@@ -1,10 +1,11 @@
 import React from "react";
 import { FiUsers, FiTarget, FiEye, FiAward, FiTrendingUp, FiShield } from "react-icons/fi";
 import { motion as Motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import imgPro1 from "../../assets/1759303601055.png";
 import imgPro2 from "../../assets/1759303601055.png";
 import imgPro3 from "../../assets/1759555519030.png";
-import logoImage from "../../assets/TienTech Shop.png";
+import logoImage from "../../assets/logo.png";
 import Button from "../../components/UI/Button";
 
 const teamMembers = [
@@ -29,6 +30,8 @@ const teamMembers = [
 ];
 
 const AboutPage = () => {
+  const navigate = useNavigate();
+
   return (
     <div className="min-h-screen bg-white dark:bg-black transition-colors duration-300">
       
@@ -68,7 +71,7 @@ const AboutPage = () => {
                 <Button
                 variant="primary"
                 className="px-10 h-14 !rounded-2xl text-sm font-black bg-blue-600 hover:bg-blue-700 shadow-xl shadow-blue-500/20"
-                onClick={() => (window.location.href = "/products")}
+                onClick={() => navigate("/products")}
                 >
                 KHÁM PHÁ SẢN PHẨM
                 </Button>
@@ -130,7 +133,7 @@ const AboutPage = () => {
               </h2>
               <div className="space-y-6 text-slate-600 dark:text-slate-400 text-base md:text-lg leading-relaxed font-medium">
                 <p>
-                  <strong className="text-slate-900 dark:text-white">TienTech</strong> ra đời với tâm thế của những người trẻ khao khát mang những tinh hoa công nghệ thế giới đến gần hơn với người dùng Việt Nam.
+                  <strong className="text-slate-900 dark:text-white">TienTech</strong> ra đời with tâm thế của những người trẻ khao khát mang những tinh hoa công nghệ thế giới đến gần hơn với người dùng Việt Nam.
                 </p>
                 <p>
                   Chúng tôi không chỉ tập trung vào việc bán hàng, mà chú trọng vào việc tư vấn và hỗ trợ người dùng tìm ra những thiết bị thực sự phù hợp với nhu cầu và phong cách sống của họ.
@@ -236,13 +239,13 @@ const AboutPage = () => {
                 <div className="flex flex-wrap justify-center gap-4">
                     <button
                         className="h-14 px-10 bg-white text-blue-600 font-black text-sm rounded-2xl hover:bg-blue-50 transition-all shadow-xl active:scale-95"
-                        onClick={() => (window.location.href = "/contact")}
+                        onClick={() => navigate("/contact")}
                     >
                         LIÊN HỆ TƯ VẤN
                     </button>
                     <button
                         className="h-14 px-10 bg-blue-700 text-white font-black text-sm rounded-2xl hover:bg-blue-800 transition-all border border-blue-500/30 active:scale-95"
-                        onClick={() => (window.location.href = "/products")}
+                        onClick={() => navigate("/products")}
                     >
                         MUA SẮM NGAY
                     </button>

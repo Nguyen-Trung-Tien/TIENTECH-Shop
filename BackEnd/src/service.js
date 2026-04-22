@@ -15,6 +15,8 @@ const { initOrderCron } = require("./cron/orderCron");
 
 dotenv.config();
 
+const isProduction = process.env.NODE_ENV === "production";
+
 const app = express();
 app.set("trust proxy", 1);
 
@@ -23,13 +25,14 @@ app.use(passport.initialize());
 const server = http.createServer(app);
 
 /*
-================================
 CORS CONFIG (PRODUCTION READY)
-================================
 */
-
 const allowedOrigins = [
   "http://localhost:5173",
+  "http://127.0.0.1:5173",
+  "http://localhost:5174",
+  "http://127.0.0.1:5174",
+  "http://localhost:3000",
   "https://tientech-shop-9247.vercel.app",
 ];
 
@@ -40,21 +43,31 @@ if (process.env.FRONTEND_URL) {
 app.use(
   cors({
     origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
+      // Allow requests with no origin (like mobile apps or curl requests)
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.indexOf(origin) !== -1 || isProduction) {
         callback(null, true);
       } else {
         console.log("Blocked by CORS:", origin);
-        callback(new Error("CORS blocked"));
+        callback(new Error("Not allowed by CORS"));
       }
     },
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "X-Requested-With",
+      "Accept",
+      "Cache-Control",
+      "Pragma",
+    ],
   }),
 );
 
 /*
-================================
 SOCKET.IO CONFIG
-================================
 */
 
 const io = new Server(server, {
@@ -67,26 +80,20 @@ const io = new Server(server, {
 app.set("io", io);
 
 /*
-================================
 BODY PARSER
-================================
 */
 
 app.use(bodyParser.json({ limit: "50mb" }));
 app.use(bodyParser.urlencoded({ limit: "50mb", extended: true }));
 
 /*
-================================
 COOKIE PARSER
-================================
 */
 
 app.use(cookieParser());
 
 /*
-================================
 RATE LIMITER
-================================
 */
 
 const generalLimiter = rateLimit({
@@ -117,17 +124,13 @@ const forgotPasswordLimiter = rateLimit({
 app.use("/api/v1/user/forgot-password", forgotPasswordLimiter);
 
 /*
-================================
 STATIC FILES
-================================
 */
 
 app.use(express.static("public"));
 
 /*
-================================
 HEALTH CHECK
-================================
 */
 
 app.get("/healthz", (req, res) => {
@@ -139,17 +142,13 @@ app.get("/healthz", (req, res) => {
 });
 
 /*
-================================
 ROUTES
-================================
 */
 
 routes(app);
 
 /*
-================================
 GLOBAL ERROR HANDLER
-================================
 */
 
 app.use((err, req, res, next) => {
@@ -161,11 +160,7 @@ app.use((err, req, res, next) => {
   });
 });
 
-/*
-================================
-DATABASE + CRON JOBS
-================================
-*/
+/*DATABASE + CRON JOBS*/
 
 if (process.env.NODE_ENV !== "test") {
   connectDB();
@@ -185,11 +180,7 @@ if (process.env.NODE_ENV !== "test") {
   setInterval(flashSaleJob, 60 * 1000);
 }
 
-/*
-================================
-SOCKET CONNECTION
-================================
-*/
+/*SOCKET CONNECTION*/
 
 io.on("connection", (socket) => {
   console.log(`User connected: ${socket.id}`);
@@ -205,9 +196,7 @@ io.on("connection", (socket) => {
 });
 
 /*
-================================
 START SERVER
-================================
 */
 
 const port = process.env.PORT || 8080;

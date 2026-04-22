@@ -10,7 +10,7 @@ import {
   FiArrowUp,
 } from "react-icons/fi";
 import { Link } from "react-router-dom";
-import logoImage from "../../assets/TienTech Shop.png";
+import logoImage from "../../assets/logo.png";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();

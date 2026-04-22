@@ -22,7 +22,7 @@ import { clearCart } from "../../../redux/cartSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import { useCurrentUser } from "../../../hooks/useUser";
-import logoImage from "../../../assets/TienTech Shop.png";
+import logoImage from "../../../assets/logo.png";
 import NotificationBell from "../../../components/HeaderComponent/NotificationBell";
 import { debounce } from "lodash";
 import { motion as Motion, AnimatePresence } from "framer-motion";

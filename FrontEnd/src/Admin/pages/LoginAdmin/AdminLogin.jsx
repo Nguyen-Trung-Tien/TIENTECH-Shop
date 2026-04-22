@@ -12,7 +12,7 @@ import { useDispatch } from "react-redux";
 import { toast } from "react-toastify";
 import { loginUser } from "../../../api/userApi";
 import { setUser } from "../../../redux/userSlice";
-import logoImage from "../../../assets/TienTech Shop.png";
+import logoImage from "../../../assets/logo.png";
 import ForgotPasswordModal from "../../../components/ForgotPasswordModal/ForgotPasswordModal";
 
 const AdminLogin = () => {

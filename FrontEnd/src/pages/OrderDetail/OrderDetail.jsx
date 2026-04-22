@@ -349,7 +349,7 @@ const OrderDetail = () => {
                       <img src={item.image} alt="" className="w-full h-full object-contain dark:mix-blend-normal" />
                     </div>
                     <div className="flex-grow min-w-0">
-                      <Link to={`/product-detail/${item.productId}`} className="text-lg font-bold text-slate-900 dark:text-white hover:text-primary transition-colors line-clamp-1 mb-1">
+                      <Link to={`/product-detail/${item.product?.slug}`} className="text-lg font-bold text-slate-900 dark:text-white hover:text-primary transition-colors line-clamp-1 mb-1">
                         {item.productName}
                       </Link>
                       <div className="flex items-center gap-3 text-sm text-slate-500 dark:text-dark-text-secondary font-medium mb-3">

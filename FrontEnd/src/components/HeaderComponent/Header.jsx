@@ -28,7 +28,7 @@ import { searchSuggestionsApi } from "../../api/productApi";
 import { getAllCarts } from "../../api/cartApi";
 import { useCurrentUser } from "../../hooks/useUser";
 import { debounce } from "lodash";
-import logoImage from "../../assets/TienTech Shop.png";
+import logoImage from "../../assets/logo.png";
 import { toast } from "react-toastify";
 import NotificationBell from "./NotificationBell";
 
