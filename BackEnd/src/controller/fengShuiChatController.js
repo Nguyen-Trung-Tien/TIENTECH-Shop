@@ -101,7 +101,7 @@ NGUYÊN TẮC TƯ VẤN:
     try {
       const resultGen = await model.generateContent({ contents });
       const responseText = resultGen.response.text();
-      const result = JSON.parse(responseText);
+      const result = extractJson(responseText);
 
       // Lấy thông tin chi tiết của các sản phẩm được đề xuất
       let finalRecommended = [];
@@ -128,5 +128,18 @@ NGUYÊN TẮC TƯ VẤN:
     res.status(500).json({ error: "Lỗi xử lý AI phong thủy." });
   }
 };
+
+function extractJson(text) {
+  try {
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      return JSON.parse(jsonMatch[0]);
+    }
+    return JSON.parse(text);
+  } catch (e) {
+    console.error("Failed to extract JSON:", text);
+    return {};
+  }
+}
 
 module.exports = { handleFengShuiChat };

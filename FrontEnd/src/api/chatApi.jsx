@@ -1,26 +1,13 @@
-import axios from "axios";
-import { appConfig } from "../config/runtimeConfig";
-
-const API = axios.create({
-  baseURL: appConfig.apiUrl,
-  timeout: 10000,
-});
-
-API.interceptors.request.use((config) => {
-  const token = localStorage.getItem("accessToken");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
+import axiosClient from "../utils/axiosClient";
 
 export const sendMessage = async (message, userId = null, history = []) => {
   try {
     const payload = { message, userId, history };
 
-    const res = await API.post("/chat/ask", payload);
+    // Sử dụng axiosClient để đồng nhất config (baseURL, credentials, interceptors)
+    const res = await axiosClient.post("/chat/ask", payload);
 
-    return res.data;
+    return res; // axiosClient đã return res.data trong interceptor
   } catch (error) {
     console.error("Chatbot error:", error);
 
@@ -45,13 +32,13 @@ export const predictPrice = async (productId) => {
       throw new Error("productId không hợp lệ");
     }
 
-    const response = await API.post(
+    const response = await axiosClient.post(
       "/chat/predict",
       { productId: id },
       { timeout: 125000 },
     );
 
-    return response.data;
+    return response;
   } catch (error) {
     console.error("PricePredict error:", error);
 
@@ -66,8 +53,8 @@ export const predictPrice = async (productId) => {
 
 export const fengShuiChatApi = async (data) => {
   try {
-    const res = await API.post("chat/fengshui", data);
-    return res.data;
+    const res = await axiosClient.post("/chat/fengshui", data);
+    return res;
   } catch (error) {
     console.error("FengShuiChatApi error:", error);
     return { error: error.response?.data?.error || "Hệ thống gặp sự cố." };
@@ -76,8 +63,8 @@ export const fengShuiChatApi = async (data) => {
 
 export const visualSearch = async (image) => {
   try {
-    const res = await API.post("/chat/visual-search", { image });
-    return res.data;
+    const res = await axiosClient.post("/chat/visual-search", { image });
+    return res;
   } catch (error) {
     console.error("VisualSearchApi error:", error);
     throw error;

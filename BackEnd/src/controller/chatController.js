@@ -109,6 +109,19 @@ NHIỆM VỤ:
   }
 };
 
+function extractJson(text) {
+  try {
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      return JSON.parse(jsonMatch[0]);
+    }
+    return JSON.parse(text);
+  } catch (e) {
+    console.error("Failed to extract JSON:", text);
+    return {};
+  }
+}
+
 function formatPrice(price) {
   return parseFloat(price).toLocaleString("vi-VN");
 }
