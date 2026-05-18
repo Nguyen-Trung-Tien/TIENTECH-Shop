@@ -20,7 +20,7 @@ const ImageGallery = ({ mainImage, setMainImage, displayImages, discountPercent,
           <button
             key={idx}
             onClick={() => setMainImage(img.imageUrl)}
-            className={`flex-shrink-0 w-16 h-16 rounded-xl border-2 overflow-hidden transition-all ${
+            className={`flex-shrink-0 size-16 rounded-xl border-2 overflow-hidden transition-all ${
               mainImage === img.imageUrl
                 ? "border-blue-500 scale-95 shadow-sm"
                 : "border-transparent dark:border-dark-border opacity-60 hover:opacity-100"

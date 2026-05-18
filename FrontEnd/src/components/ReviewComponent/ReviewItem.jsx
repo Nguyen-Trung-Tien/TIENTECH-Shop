@@ -33,7 +33,7 @@ const ReviewItem = ({ review, user }) => {
       <div className="flex gap-5 md:gap-6">
         {/* Avatar Cluster - Smaller */}
         <div className="hidden sm:flex flex-col items-center gap-2">
-          <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-dark-bg flex items-center justify-center text-primary font-black text-sm shadow-sm border-2 border-white dark:border-dark-border overflow-hidden">
+          <div className="size-12 rounded-2xl bg-slate-100 dark:bg-dark-bg flex items-center justify-center text-primary font-black text-sm shadow-sm border-2 border-white dark:border-dark-border overflow-hidden">
             {review.user?.avatar ? (
                <img src={review.user.avatar} alt="" className="w-full h-full object-cover" />
             ) : (
@@ -82,7 +82,7 @@ const ReviewItem = ({ review, user }) => {
             {review.images && review.images.length > 0 && (
               <div className="flex flex-wrap gap-2 mb-6">
                 {review.images.map((img) => (
-                  <div key={img.id} className="w-20 h-20 rounded-xl overflow-hidden border border-slate-100 dark:border-dark-border shadow-sm cursor-zoom-in hover:scale-105 transition-transform">
+                  <div key={img.id} className="size-20 rounded-xl overflow-hidden border border-slate-100 dark:border-dark-border shadow-sm cursor-zoom-in hover:scale-105 transition-transform">
                     <img src={img.imageUrl} alt="review" className="w-full h-full object-cover dark:mix-blend-normal" />
                   </div>
                 ))}
@@ -95,14 +95,14 @@ const ReviewItem = ({ review, user }) => {
                 disabled={isLiking}
                 className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary hover:text-primary dark:hover:text-brand transition-colors group/btn disabled:opacity-50"
               >
-                <span className="w-8 h-8 flex items-center justify-center bg-slate-50 dark:bg-dark-bg rounded-lg group-hover/btn:bg-primary/5 dark:group-hover/btn:bg-brand/10 transition-all">
+                <span className="size-8 flex items-center justify-center bg-slate-50 dark:bg-dark-bg rounded-lg group-hover/btn:bg-primary/5 dark:group-hover/btn:bg-brand/10 transition-all">
                   <FiThumbsUp size={14} className={isLiking ? "animate-bounce" : ""} />
                 </span>
                 Hữu ích ({likes})
               </button>
 
               <button className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary hover:text-primary dark:hover:text-brand transition-colors group/btn">
-                <span className="w-8 h-8 flex items-center justify-center bg-slate-50 dark:bg-dark-bg rounded-lg group-hover/btn:bg-primary/5 dark:group-hover/btn:bg-brand/10 transition-all">
+                <span className="size-8 flex items-center justify-center bg-slate-50 dark:bg-dark-bg rounded-lg group-hover/btn:bg-primary/5 dark:group-hover/btn:bg-brand/10 transition-all">
                   <FiMessageSquare size={14} />
                 </span>
                 Phản hồi ({review.replies?.length || 0})

@@ -4,6 +4,7 @@
   processing: { label: "Đang xử lý", variant: "primary" },
   shipped: { label: "Đang giao", variant: "primary" },
   delivered: { label: "Đã giao", variant: "success" },
+  completed: { label: "Đã nhận hàng", variant: "success" },
   cancelled: { label: "Đã hủy", variant: "danger" },
   cancel_requested: { label: "Yêu cầu hủy", variant: "danger" }, // Đổi sang danger (màu đỏ) để admin dễ chú ý
 };

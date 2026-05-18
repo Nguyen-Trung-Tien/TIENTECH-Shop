@@ -45,7 +45,7 @@ const SmallBanner = () => {
               className="flex items-center gap-5 p-6 bg-white rounded-[2rem] border border-surface-200 shadow-sm hover:shadow-soft hover:border-primary/20 transition-all duration-300 cursor-default group"
             >
               <div
-                className={`w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 transition-transform duration-500 group-hover:scale-110 ${item.color}`}
+                className={`size-14 rounded-2xl flex items-center justify-center flex-shrink-0 transition-transform duration-500 group-hover:scale-110 ${item.color}`}
               >
                 <Icon size={24} />
               </div>

@@ -188,7 +188,7 @@ const LoginPage = () => {
                       id="rememberMe"
                       className="peer sr-only"
                     />
-                    <div className="w-4 h-4 border-2 border-surface-200 rounded-md peer-checked:bg-primary peer-checked:border-primary transition-all"></div>
+                    <div className="size-4 border-2 border-surface-200 rounded-md peer-checked:bg-primary peer-checked:border-primary transition-all"></div>
                     <svg
                       className="absolute w-2.5 h-2.5 text-white opacity-0 peer-checked:opacity-100 transition-opacity"
                       fill="none"
@@ -219,7 +219,7 @@ const LoginPage = () => {
               >
                 <div className="relative z-10 flex items-center justify-center gap-2 text-sm">
                   {loading ? (
-                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                    <div className="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                   ) : (
                     <>
                       <FiUser className="text-base" />

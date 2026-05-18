@@ -170,7 +170,7 @@ const GenericAdminModal = ({
                         name={field.name}
                         checked={!!formData[field.name]}
                         onChange={handleChange}
-                        className="w-5 h-5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                        className="size-5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
                       />
                       <span className="text-sm font-bold text-slate-700">
                         {field.placeholder || "Kích hoạt"}

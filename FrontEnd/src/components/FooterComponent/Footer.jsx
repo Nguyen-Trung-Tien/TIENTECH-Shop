@@ -52,7 +52,7 @@ const Footer = () => {
                   <a
                     key={idx}
                     href="#"
-                    className="w-10 h-10 flex items-center justify-center rounded-xl bg-white dark:bg-gray-900 text-slate-400 dark:text-slate-500 hover:bg-blue-600 hover:text-white dark:hover:text-white border border-slate-200 dark:border-gray-800 transition-all duration-300 shadow-sm"
+                    className="size-10 flex items-center justify-center rounded-xl bg-white dark:bg-gray-900 text-slate-400 dark:text-slate-500 hover:bg-blue-600 hover:text-white dark:hover:text-white border border-slate-200 dark:border-gray-800 transition-all duration-300 shadow-sm"
                   >
                     <Icon className="text-lg" />
                   </a>
@@ -155,7 +155,7 @@ const Footer = () => {
             
             <button 
                 onClick={scrollToTop}
-                className="w-10 h-10 rounded-full bg-white dark:bg-gray-900 border border-slate-200 dark:border-gray-800 flex items-center justify-center text-slate-900 dark:text-white hover:bg-blue-600 hover:text-white dark:hover:bg-blue-600 transition-all shadow-sm group"
+                className="size-10 rounded-full bg-white dark:bg-gray-900 border border-slate-200 dark:border-gray-800 flex items-center justify-center text-slate-900 dark:text-white hover:bg-blue-600 hover:text-white dark:hover:bg-blue-600 transition-all shadow-sm group"
             >
                 <FiArrowUp className="group-hover:-translate-y-1 transition-transform" />
             </button>

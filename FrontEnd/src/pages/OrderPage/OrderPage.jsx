@@ -16,10 +16,15 @@ import { useNavigate, Link } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import { motion as Motion, AnimatePresence } from "framer-motion";
+
 import { ConfirmModal } from "../../components/UI";
 import { getOrdersByUserId, updateOrderStatus } from "../../api/orderApi";
 import AppPagination from "../../components/Pagination/Pagination";
-import { statusMap, paymentStatusMap } from "../../utils/StatusMap";
+import {
+  statusMap,
+  paymentStatusMap,
+  returnStatusMap,
+} from "../../utils/StatusMap";
 import { StatusBadge } from "../../utils/StatusBadge";
 import ReviewModal from "../../components/ReviewComponent/ReviewModal";
 
@@ -48,6 +53,13 @@ const OrderPage = () => {
   const [cancelReason, setCancelReason] = useState("");
   const [selectedReason, setSelectedReason] = useState("");
 
+  const [showReturnModal, setShowReturnModal] = useState(false);
+  const [orderToReturn, setOrderToReturn] = useState(null);
+  const [returnReason, setReturnReason] = useState("");
+  const [selectedReturnReason, setSelectedReturnReason] = useState("");
+  const [selectedReturnItems, setSelectedReturnItems] = useState([]);
+  const [returning, setReturning] = useState(false);
+
   const [selectedOrderForReview, setSelectedOrderForReview] = useState(null);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
 
@@ -57,6 +69,14 @@ const OrderPage = () => {
     "Đặt nhầm sản phẩm",
     "Phí vận chuyển quá cao",
     "Thời gian giao hàng quá lâu",
+    "Lý do khác",
+  ];
+
+  const RETURN_REASONS = [
+    "Sản phẩm bị lỗi/hỏng",
+    "Giao sai sản phẩm",
+    "Sản phẩm không giống mô tả",
+    "Không còn nhu cầu sử dụng",
     "Lý do khác",
   ];
 
@@ -134,6 +154,33 @@ const OrderPage = () => {
     }
   };
 
+  const handleReturnOrder = async () => {
+    if (!orderToReturn) return;
+    if (!returnReason.trim())
+      return toast.warning("Vui lòng nhập lý do trả hàng");
+    if (!selectedReturnItems.length)
+      return toast.warning("Vui lòng chọn sản phẩm");
+
+    setReturning(true);
+    try {
+      const { requestReturn } = await import("../../api/orderItemApi");
+      await Promise.all(
+        selectedReturnItems.map((itemId) =>
+          requestReturn(itemId, returnReason),
+        ),
+      );
+      toast.success("Đã gửi yêu cầu trả hàng!");
+      fetchOrders(page, activeTab);
+    } catch {
+      toast.error("Không thể gửi yêu cầu trả hàng");
+    } finally {
+      setShowReturnModal(false);
+      setReturning(false);
+      setReturnReason("");
+      setSelectedReturnItems([]);
+    }
+  };
+
   const openReviewModal = (order) => {
     setSelectedOrderForReview(order);
     setIsReviewModalOpen(true);
@@ -208,10 +255,10 @@ const OrderPage = () => {
           </div>
         ) : orders.length === 0 ? (
           <div className="bg-white dark:bg-dark-surface rounded-2xl border border-slate-200/60 dark:border-dark-border p-16 text-center shadow-sm">
-            <div className="w-16 h-16 bg-slate-50 dark:bg-dark-bg rounded-2xl flex items-center justify-center mx-auto mb-4 text-slate-300 dark:text-dark-border">
+            <div className="size-16 bg-slate-50 dark:bg-dark-bg rounded-2xl flex items-center justify-center mx-auto mb-4 text-slate-300 dark:text-dark-border">
               <FiBox className="text-3xl" />
             </div>
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-1">
               Không có đơn hàng
             </h3>
             <p className="text-slate-400 dark:text-dark-text-secondary text-sm">
@@ -258,37 +305,51 @@ const OrderPage = () => {
                   <div className="space-y-4">
                     {o.orderItems?.map((i) => {
                       return (
-                        <div key={i.id} className="flex gap-4 items-center">
-                          <div className="w-16 h-16 bg-slate-50 dark:bg-dark-bg rounded-xl border border-slate-100 dark:border-dark-border p-2 flex-shrink-0">
-                            <img
-                              src={i.image}
-                              alt={i.productName}
-                              className="w-full h-full object-contain dark:mix-blend-normal"
-                            />
-                          </div>
-                          <div className="flex-grow min-w-0">
-                            <h4
-                              className="text-sm font-bold text-slate-900 dark:text-white line-clamp-1 hover:text-primary dark:hover:text-brand transition-colors cursor-pointer"
-                              onClick={() => navigate(`/orders-detail/${o.id}`)}
-                            >
-                              {i.productName}
-                            </h4>
-                            <div className="flex items-center gap-3 mt-1 text-[11px] font-medium text-slate-400 dark:text-dark-text-secondary">
-                              <span>
-                                Số lượng:{" "}
-                                <span className="text-slate-900 dark:text-white font-bold">
-                                  {i.quantity}
+                        <div key={i.id} className="flex flex-col gap-3">
+                          <div className="flex gap-4 items-center">
+                            <div className="size-16 bg-slate-50 dark:bg-dark-bg rounded-xl border border-slate-100 dark:border-dark-border p-2 flex-shrink-0">
+                              <img
+                                src={i.image}
+                                alt={i.productName}
+                                className="w-full h-full object-contain dark:mix-blend-normal"
+                              />
+                            </div>
+                            <div className="flex-grow min-w-0">
+                              <h4
+                                className="text-sm font-bold text-slate-900 dark:text-white line-clamp-1 hover:text-primary dark:hover:text-brand transition-colors cursor-pointer"
+                                onClick={() =>
+                                  navigate(`/orders-detail/${o.id}`)
+                                }
+                              >
+                                {i.productName}
+                              </h4>
+                              <div className="flex items-center gap-3 mt-1 text-[11px] font-medium text-slate-400 dark:text-dark-text-secondary">
+                                <span>
+                                  Số lượng:{" "}
+                                  <span className="text-slate-900 dark:text-white font-bold">
+                                    {i.quantity}
+                                  </span>
                                 </span>
-                              </span>
-                              <div className="w-1 h-1 bg-slate-200 dark:bg-dark-border rounded-full"></div>
-                              <span>
-                                Đơn giá:{" "}
-                                <span className="text-slate-900 dark:text-white font-bold">
-                                  {formatCurrency(i.price)}
+                                <div className="size-1 bg-slate-200 dark:bg-dark-border rounded-full"></div>
+                                <span>
+                                  Đơn giá:{" "}
+                                  <span className="text-slate-900 dark:text-white font-bold">
+                                    {formatCurrency(i.price)}
+                                  </span>
                                 </span>
-                              </span>
+                              </div>
                             </div>
                           </div>
+                          {i.returnStatus !== "none" && i.returnReason && (
+                            <div className="ml-20 p-3 bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/20 rounded-xl">
+                              <p className="text-[9px] font-black text-amber-600 dark:text-amber-500 uppercase tracking-widest mb-1 flex items-center gap-2">
+                                <FiRefreshCw size={10} /> Lý do trả hàng
+                              </p>
+                              <p className="text-xs text-amber-700 dark:text-amber-300 font-medium italic">
+                                "{i.returnReason}"
+                              </p>
+                            </div>
+                          )}
                         </div>
                       );
                     })}
@@ -313,7 +374,7 @@ const OrderPage = () => {
                         <FiEye size={16} /> Chi tiết
                       </button>
 
-                      {o.status === "pending" && (
+                      {["pending", "confirmed"].includes(o.status) && (
                         <button
                           onClick={() => {
                             setOrderToCancel(o);
@@ -341,15 +402,37 @@ const OrderPage = () => {
                       )}
 
                       {o.status === "delivered" && (
-                        <button
-                          onClick={() => openReviewModal(o)}
-                          className="flex-1 sm:flex-none h-10 px-5 bg-emerald-500 dark:bg-emerald-600 text-white rounded-xl text-xs font-bold hover:bg-emerald-600 dark:hover:bg-emerald-700 transition-all shadow-md shadow-emerald-500/20 dark:shadow-none flex items-center justify-center gap-2"
-                        >
-                          <FiCheckCircle size={16} /> Đánh giá
-                        </button>
+                        <>
+                          <button
+                            onClick={() => {
+                              setOrderToReturn(o);
+                              setShowReturnModal(true);
+                            }}
+                            className="flex-1 sm:flex-none h-10 px-5 bg-slate-100 dark:bg-dark-bg text-slate-600 dark:text-dark-text-secondary rounded-xl text-xs font-bold hover:bg-slate-200 dark:hover:bg-dark-border transition-all flex items-center justify-center gap-2"
+                          >
+                            <FiRefreshCw size={16} /> Trả hàng
+                          </button>
+                          <button
+                            onClick={() => openReviewModal(o)}
+                            className="flex-1 sm:flex-none h-10 px-5 bg-emerald-500 dark:bg-emerald-600 text-white rounded-xl text-xs font-bold hover:bg-emerald-600 dark:hover:bg-emerald-700 transition-all shadow-md shadow-emerald-500/20 dark:shadow-none flex items-center justify-center gap-2"
+                          >
+                            <FiCheckCircle size={16} /> Đánh giá
+                          </button>
+                        </>
                       )}
                     </div>
                   </div>
+                  {/* Cancel Reason Display in List */}
+                  {o.cancelReason && (
+                    <div className="mt-4 p-3 bg-rose-50 dark:bg-rose-900/10 border border-rose-100 dark:border-rose-900/20 rounded-xl">
+                      <p className="text-[9px] font-black text-rose-600 dark:text-rose-400 uppercase tracking-widest mb-1 flex items-center gap-2">
+                        <FiAlertTriangle size={10} /> Lý do hủy đơn
+                      </p>
+                      <p className="text-xs text-rose-700 dark:text-rose-300 font-medium italic">
+                        "{o.cancelReason}"
+                      </p>
+                    </div>
+                  )}
                 </div>
               </Motion.div>
             ))}
@@ -375,6 +458,7 @@ const OrderPage = () => {
         onReviewSuccess={() => fetchOrders(page, activeTab)}
       />
 
+      {/* Cancel Modal */}
       <ConfirmModal
         isOpen={showCancelModal}
         onClose={() => {
@@ -401,9 +485,9 @@ const OrderPage = () => {
 
         <div className="mb-6 text-left w-full space-y-4">
           <div className="space-y-2">
-            <label className="text-[10px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest mb-1.5 block">
+            <p className="text-[10px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest mb-1.5 block">
               Chọn lý do hủy đơn
-            </label>
+            </p>
             <div className="grid grid-cols-1 gap-2">
               {CANCEL_REASONS.map((reason) => (
                 <button
@@ -430,14 +514,19 @@ const OrderPage = () => {
 
           {selectedReason === "Lý do khác" && (
             <Motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
+              layout
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
               className="space-y-2"
             >
-              <label className="text-[10px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest mb-1.5 block">
+              <label
+                className="text-[10px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest mb-1.5 block"
+                htmlFor="cancelReason"
+              >
                 Nhập lý do chi tiết
               </label>
               <textarea
+                id="cancelReason"
                 rows={3}
                 className="w-full bg-white dark:bg-dark-bg border border-slate-200 dark:border-dark-border rounded-xl p-3 text-xs dark:text-white focus:ring-2 focus:ring-primary/10 dark:focus:ring-brand/10 focus:border-primary dark:focus:border-brand outline-none transition-all"
                 placeholder="Vui lòng nhập lý do cụ thể..."
@@ -446,6 +535,91 @@ const OrderPage = () => {
               />
             </Motion.div>
           )}
+        </div>
+      </ConfirmModal>
+
+      {/* Return Modal */}
+      <ConfirmModal
+        isOpen={showReturnModal}
+        onClose={() => {
+          setShowReturnModal(false);
+          setReturnReason("");
+          setSelectedReturnItems([]);
+        }}
+        onConfirm={handleReturnOrder}
+        title="Yêu cầu Trả hàng?"
+        confirmText="Gửi yêu cầu"
+        variant="primary"
+        loading={returning}
+        icon={FiRefreshCw}
+      >
+        <div className="mb-6 text-left w-full space-y-6">
+          <div className="space-y-3">
+            <p className="text-[10px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest mb-1 block">
+              Chọn sản phẩm muốn trả
+            </p>
+            <div className="max-h-48 overflow-y-auto space-y-2 pr-2 custom-scrollbar">
+              {orderToReturn?.orderItems?.map((item) => (
+                <label
+                  key={item.id}
+                  className={`flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer ${
+                    selectedReturnItems.includes(item.id)
+                      ? "bg-primary/5 dark:bg-brand/10 border-primary dark:border-brand"
+                      : "bg-slate-50 dark:bg-dark-bg border-slate-200 dark:border-dark-border"
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    className="size-4 rounded border-slate-300 text-primary focus:ring-primary/20"
+                    checked={selectedReturnItems.includes(item.id)}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSelectedReturnItems([
+                          ...selectedReturnItems,
+                          item.id,
+                        ]);
+                      } else {
+                        setSelectedReturnItems(
+                          selectedReturnItems.filter((id) => id !== item.id),
+                        );
+                      }
+                    }}
+                  />
+                  <span className="text-xs font-bold text-slate-700 dark:text-white truncate">
+                    {item.productName}
+                  </span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <p className="text-[10px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest mb-1 block">
+              Lý do trả hàng
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              {RETURN_REASONS.map((reason) => (
+                <button
+                  key={reason}
+                  onClick={() => setReturnReason(reason)}
+                  className={`px-3 py-2 rounded-lg text-left text-[10px] font-bold transition-all border ${
+                    returnReason === reason
+                      ? "bg-primary text-white border-primary"
+                      : "bg-white dark:bg-dark-surface border-slate-200 dark:border-dark-border text-slate-600 dark:text-dark-text-secondary"
+                  }`}
+                >
+                  {reason}
+                </button>
+              ))}
+            </div>
+            <textarea
+              rows={3}
+              className="w-full bg-slate-50 dark:bg-dark-bg border border-slate-200 dark:border-dark-border rounded-xl p-3 text-xs dark:text-white outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+              placeholder="Nhập lý do chi tiết (nếu có)..."
+              value={returnReason}
+              onChange={(e) => setReturnReason(e.target.value)}
+            />
+          </div>
         </div>
       </ConfirmModal>
     </div>

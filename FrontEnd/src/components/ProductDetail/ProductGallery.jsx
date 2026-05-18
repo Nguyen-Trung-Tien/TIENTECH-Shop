@@ -42,14 +42,14 @@ const ProductGallery = ({ images = [], primaryImage, discount }) => {
           <>
             <button
               onClick={goPrev}
-              className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-xl bg-white/90 backdrop-blur shadow-md flex items-center justify-center text-slate-900 opacity-0 group-hover:opacity-100 transition-all hover:bg-white active:scale-90"
+              className="absolute left-4 top-1/2 -translate-y-1/2 size-10 rounded-xl bg-white/90 backdrop-blur shadow-md flex items-center justify-center text-slate-900 opacity-0 group-hover:opacity-100 transition-all hover:bg-white active:scale-90"
               aria-label="Previous image"
             >
               <FiChevronLeft size={20} />
             </button>
             <button
               onClick={goNext}
-              className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-xl bg-white/90 backdrop-blur shadow-md flex items-center justify-center text-slate-900 opacity-0 group-hover:opacity-100 transition-all hover:bg-white active:scale-90"
+              className="absolute right-4 top-1/2 -translate-y-1/2 size-10 rounded-xl bg-white/90 backdrop-blur shadow-md flex items-center justify-center text-slate-900 opacity-0 group-hover:opacity-100 transition-all hover:bg-white active:scale-90"
               aria-label="Next image"
             >
               <FiChevronRight size={20} />
@@ -73,7 +73,7 @@ const ProductGallery = ({ images = [], primaryImage, discount }) => {
             <button
               key={`${url}-${idx}`}
               onClick={() => setCurrentIndex(idx)}
-              className={`w-16 h-16 md:w-20 md:h-20 rounded-2xl overflow-hidden border-2 transition-all p-2 bg-white ${
+              className={`size-16 md:w-20 md:h-20 rounded-2xl overflow-hidden border-2 transition-all p-2 bg-white ${
                 currentIndex === idx
                   ? "border-primary shadow-md"
                   : "border-transparent opacity-50 hover:opacity-100 hover:border-slate-200"

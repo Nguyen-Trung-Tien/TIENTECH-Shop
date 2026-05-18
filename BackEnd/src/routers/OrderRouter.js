@@ -6,8 +6,8 @@ const {
   authorizeRole,
 } = require("../middleware/authMiddleware");
 
-const { orderValidation } = require("../utils/validationSchema");
-const { validateRequest } = require("../middleware/validateMiddleware");
+const { validate } = require("../middleware/zodMiddleware");
+const { orderSchema } = require("../utils/zodSchemas");
 
 router.get(
   "/get-all-orders",
@@ -31,8 +31,7 @@ router.post(
   "/create-new-order",
   authenticateToken,
   authorizeRole(["admin", "customer"]),
-  orderValidation,
-  validateRequest,
+  validate(orderSchema),
   OrderController.handleCreateOrder
 );
 router.put(

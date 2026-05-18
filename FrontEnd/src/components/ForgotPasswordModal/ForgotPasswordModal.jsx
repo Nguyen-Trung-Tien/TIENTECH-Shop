@@ -109,7 +109,7 @@ const ForgotPasswordModal = ({ show, onClose }) => {
       onClose={handleClose}
       title={
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary">
+          <div className="size-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary">
             {step === 1 && <FiMail size={20} />}
             {step === 2 && <FiShield size={20} />}
             {step === 3 && <FiKey size={20} />}

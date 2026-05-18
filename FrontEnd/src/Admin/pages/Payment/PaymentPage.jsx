@@ -142,7 +142,7 @@ const PaymentPage = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
           <h1 className="text-3xl font-black text-slate-900 dark:text-dark-text-primary tracking-tight flex items-center gap-3">
-            <div className="w-12 h-12 bg-indigo-600/10 dark:bg-indigo-500/10 rounded-2xl flex items-center justify-center text-indigo-600 dark:text-indigo-400 shadow-sm">
+            <div className="size-12 bg-indigo-600/10 dark:bg-indigo-500/10 rounded-2xl flex items-center justify-center text-indigo-600 dark:text-indigo-400 shadow-sm">
               <FiDollarSign />
             </div>
             Quản lý thanh toán
@@ -252,7 +252,7 @@ const PaymentPage = () => {
                     </td>
                     <td className="px-6 py-5">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-slate-100 dark:bg-dark-bg rounded-xl flex items-center justify-center text-slate-400 dark:text-dark-text-secondary">
+                        <div className="size-10 bg-slate-100 dark:bg-dark-bg rounded-xl flex items-center justify-center text-slate-400 dark:text-dark-text-secondary">
                           <FiUser />
                         </div>
                         <div>
@@ -288,7 +288,7 @@ const PaymentPage = () => {
                       <div className="flex items-center justify-center gap-2">
                         <button
                           onClick={() => setSelectedPayment(p)}
-                          className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-dark-bg text-slate-500 dark:text-dark-text-secondary flex items-center justify-center hover:bg-indigo-600 hover:text-white dark:hover:bg-indigo-600 transition-all shadow-sm"
+                          className="size-10 rounded-xl bg-slate-100 dark:bg-dark-bg text-slate-500 dark:text-dark-text-secondary flex items-center justify-center hover:bg-indigo-600 hover:text-white dark:hover:bg-indigo-600 transition-all shadow-sm"
                         >
                           <FiInfo size={16} />
                         </button>
@@ -302,7 +302,7 @@ const PaymentPage = () => {
                                 "Xác nhận đã nhận tiền?",
                               )
                             }
-                            className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center hover:bg-emerald-600 hover:text-white transition-all shadow-sm border border-emerald-100 dark:border-emerald-900/30"
+                            className="size-10 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center hover:bg-emerald-600 hover:text-white transition-all shadow-sm border border-emerald-100 dark:border-emerald-900/30"
                           >
                             <FiCheckCircle size={16} />
                           </button>
@@ -317,7 +317,7 @@ const PaymentPage = () => {
                                 "Hoàn tiền cho khách?",
                               )
                             }
-                            className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 flex items-center justify-center hover:bg-amber-600 hover:text-white transition-all shadow-sm border border-amber-100 dark:border-amber-900/30"
+                            className="size-10 rounded-xl bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 flex items-center justify-center hover:bg-amber-600 hover:text-white transition-all shadow-sm border border-amber-100 dark:border-amber-900/30"
                           >
                             <FiArrowLeft size={16} />
                           </button>
@@ -331,7 +331,7 @@ const PaymentPage = () => {
                               "Xóa vĩnh viễn?",
                             )
                           }
-                          className="w-10 h-10 rounded-xl bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 flex items-center justify-center hover:bg-rose-600 hover:text-white transition-all shadow-sm border border-rose-100 dark:border-rose-900/30"
+                          className="size-10 rounded-xl bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 flex items-center justify-center hover:bg-rose-600 hover:text-white transition-all shadow-sm border border-rose-100 dark:border-rose-900/30"
                         >
                           <FiTrash2 size={16} />
                         </button>
@@ -381,7 +381,7 @@ const PaymentPage = () => {
                 </h3>
                 <button
                   onClick={() => setSelectedPayment(null)}
-                  className="w-10 h-10 rounded-2xl bg-slate-50 dark:bg-dark-bg flex items-center justify-center text-slate-400 dark:text-dark-text-secondary hover:text-rose-500 transition-colors"
+                  className="size-10 rounded-2xl bg-slate-50 dark:bg-dark-bg flex items-center justify-center text-slate-400 dark:text-dark-text-secondary hover:text-rose-500 transition-colors"
                 >
                   <FiX size={24} />
                 </button>
@@ -507,7 +507,7 @@ const PaymentPage = () => {
               exit={{ scale: 0.9, opacity: 0 }}
               className="relative w-full max-w-md bg-white dark:bg-dark-surface rounded-[32px] p-8 shadow-2xl border border-slate-100 dark:border-dark-border text-center"
             >
-              <div className="w-20 h-20 bg-rose-50 dark:bg-rose-900/20 rounded-3xl flex items-center justify-center text-rose-500 mx-auto mb-6">
+              <div className="size-20 bg-rose-50 dark:bg-rose-900/20 rounded-3xl flex items-center justify-center text-rose-500 mx-auto mb-6">
                 <FiAlertTriangle size={40} />
               </div>
               <h3 className="text-xl font-black text-slate-900 dark:text-dark-text-primary mb-2">

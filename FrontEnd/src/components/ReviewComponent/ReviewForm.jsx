@@ -47,7 +47,7 @@ const ReviewForm = ({ newReview, setNewReview, onSubmit, loading }) => {
   return (
     <div className="bg-slate-50/50 dark:bg-dark-bg/50 rounded-3xl p-6 border border-slate-100 dark:border-dark-border mb-10 transition-colors">
       <h3 className="text-sm font-black uppercase tracking-widest mb-6 flex items-center gap-2.5 text-slate-800 dark:text-white">
-        <span className="w-8 h-8 rounded-xl bg-primary text-white flex items-center justify-center shadow-md">
+        <span className="size-8 rounded-xl bg-primary text-white flex items-center justify-center shadow-md">
           <FaStar size={14} />
         </span>
         Viết đánh giá của bạn
@@ -86,19 +86,19 @@ const ReviewForm = ({ newReview, setNewReview, onSubmit, loading }) => {
           <p className="text-[9px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest mb-3 ml-1">Hình ảnh thực tế (Tối đa 5)</p>
           <div className="flex flex-wrap gap-3">
             {previews.map((preview, index) => (
-              <div key={index} className="relative w-20 h-20 rounded-xl overflow-hidden border border-slate-200 dark:border-dark-border shadow-sm group">
+              <div key={index} className="relative size-20 rounded-xl overflow-hidden border border-slate-200 dark:border-dark-border shadow-sm group">
                 <img src={preview} alt="preview" className="w-full h-full object-cover dark:mix-blend-normal" />
                 <button
                   type="button"
                   onClick={() => removeImage(index)}
-                  className="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="absolute top-1 right-1 size-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                 >
                   <FaTimes size={10} />
                 </button>
               </div>
             ))}
             {previews.length < 5 && (
-              <label className="w-20 h-20 rounded-xl border-2 border-dashed border-slate-200 dark:border-dark-border flex flex-col items-center justify-center gap-1 cursor-pointer hover:border-primary/50 hover:bg-primary/5 dark:hover:bg-primary/10 transition-all text-slate-400 dark:text-dark-text-secondary hover:text-primary dark:hover:text-brand">
+              <label className="size-20 rounded-xl border-2 border-dashed border-slate-200 dark:border-dark-border flex flex-col items-center justify-center gap-1 cursor-pointer hover:border-primary/50 hover:bg-primary/5 dark:hover:bg-primary/10 transition-all text-slate-400 dark:text-dark-text-secondary hover:text-primary dark:hover:text-brand">
                 <FaCamera size={20} />
                 <span className="text-[8px] font-black uppercase tracking-tighter">Thêm ảnh</span>
                 <input type="file" accept="image/*" multiple onChange={handleFileChange} className="hidden" />

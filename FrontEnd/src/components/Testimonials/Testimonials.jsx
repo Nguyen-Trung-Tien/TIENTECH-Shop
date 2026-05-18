@@ -83,7 +83,7 @@ const Testimonials = ({ limit = 3 }) => {
                 </p>
 
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-2xl overflow-hidden border-2 border-blue-600/10 shadow-md group-hover:border-blue-600 transition-all p-0.5">
+                  <div className="size-12 rounded-2xl overflow-hidden border-2 border-blue-600/10 shadow-md group-hover:border-blue-600 transition-all p-0.5">
                     <img
                       src={t.avatar}
                       alt={t.name}

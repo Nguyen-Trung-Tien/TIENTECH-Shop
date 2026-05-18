@@ -203,7 +203,7 @@ const ProductDetailPage = () => {
   if (loading)
     return (
       <div className="flex flex-col justify-center items-center h-[70vh] space-y-4">
-        <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+        <div className="size-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
         <p className="text-gray-500 font-medium">Đang tải sản phẩm...</p>
       </div>
     );
@@ -269,9 +269,9 @@ const ProductDetailPage = () => {
     <div className="max-w-6xl mx-auto px-4 py-6 md:py-10 bg-white dark:bg-dark-bg min-h-screen transition-colors duration-300">
       <nav className="flex items-center space-x-2 text-xs text-gray-400 dark:text-dark-text-secondary mb-6 pb-2 border-b border-gray-50 dark:border-dark-border">
         <a href="/" className="hover:text-blue-600 dark:hover:text-brand transition-colors">Trang chủ</a>
-        <FiChevronRight className="w-3 h-3" />
+        <FiChevronRight className="size-3" />
         <a href="/products" className="hover:text-blue-600 dark:hover:text-brand transition-colors">Sản phẩm</a>
-        <FiChevronRight className="w-3 h-3" />
+        <FiChevronRight className="size-3" />
         <span className="text-gray-700 dark:text-white font-medium truncate max-w-[200px] md:max-w-none">{product.name}</span>
       </nav>
 

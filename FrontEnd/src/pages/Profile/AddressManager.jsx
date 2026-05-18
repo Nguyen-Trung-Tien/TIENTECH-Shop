@@ -148,7 +148,7 @@ const AddressManager = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h3 className="text-xl font-display font-bold text-surface-900 dark:text-white">
+        <h3 className="text-xl font-display font-semibold text-surface-900 dark:text-white">
           Sổ địa chỉ
         </h3>
         <Button
@@ -336,7 +336,7 @@ const AddressManager = () => {
               name="isDefault"
               checked={formData.isDefault}
               onChange={handleInputChange}
-              className="w-5 h-5 rounded border-surface-300 dark:border-dark-border text-primary focus:ring-primary dark:bg-dark-bg"
+              className="size-5 rounded border-surface-300 dark:border-dark-border text-primary focus:ring-primary dark:bg-dark-bg"
             />
             <span className="text-sm font-bold text-surface-600 dark:text-dark-text-secondary group-hover:text-surface-900 dark:group-hover:text-white transition-colors">
               Đặt làm địa chỉ mặc định

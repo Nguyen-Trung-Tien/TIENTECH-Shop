@@ -133,7 +133,7 @@ const Profile = () => {
   if (loading && !formData.username) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-surface-50 dark:bg-dark-bg gap-4">
-        <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+        <div className="size-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
         <p className="text-surface-400 dark:text-dark-text-secondary font-bold uppercase tracking-widest text-[11px]">
           Đang tải thông tin cá nhân...
         </p>
@@ -171,7 +171,7 @@ const Profile = () => {
 
               <div className="relative z-10">
                 <div
-                  className="group relative w-32 h-32 mx-auto mb-6 rounded-full border-4 border-white dark:border-dark-surface shadow-xl cursor-pointer overflow-hidden"
+                  className="group relative size-32 mx-auto mb-6 rounded-full border-4 border-white dark:border-dark-surface shadow-xl cursor-pointer overflow-hidden"
                   onClick={() => setShowAvatarModal(true)}
                 >
                   <img
@@ -215,11 +215,11 @@ const Profile = () => {
             {/* Quick Stats or Info */}
             <div className=" bg-white dark:bg-dark-surface rounded-[32px] p-8 border border-surface-200 dark:border-dark-border shadow-soft">
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center text-primary">
+                <div className="size-10 bg-primary/20 rounded-xl flex items-center justify-center text-primary">
                   <FiUser size={20} />
                 </div>
 
-                <h3 className="text-lg font-display font-bold text-gray-900 dark:text-white">
+                <h3 className="text-lg font-display font-semibold text-gray-900 dark:text-white">
                   Thành viên
                 </h3>
               </div>
@@ -274,7 +274,7 @@ const Profile = () => {
           <div className="lg:col-span-8 space-y-8">
             <div className="bg-white dark:bg-dark-surface rounded-[32px] p-8 md:p-10 border border-surface-200 dark:border-dark-border shadow-soft">
               <div className="flex items-center justify-between mb-8 pb-6 border-b border-surface-100 dark:border-dark-border">
-                <h3 className="text-xl font-display font-bold text-surface-900 dark:text-white">
+                <h3 className="text-xl font-display font-semibold text-surface-900 dark:text-white">
                   Chi tiết thông tin
                 </h3>
                 {isEditing && (
@@ -390,7 +390,7 @@ const Profile = () => {
         size="md"
       >
         <div className="space-y-6 text-center">
-          <div className="w-48 h-48 mx-auto rounded-full border-4 border-surface-100 dark:border-dark-border overflow-hidden shadow-inner bg-white dark:bg-dark-bg">
+          <div className="size-48 mx-auto rounded-full border-4 border-surface-100 dark:border-dark-border overflow-hidden shadow-inner bg-white dark:bg-dark-bg">
             <img
               src={preview || "/images/avatar-default.png"}
               alt="Preview"

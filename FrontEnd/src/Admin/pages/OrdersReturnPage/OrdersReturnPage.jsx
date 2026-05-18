@@ -118,10 +118,10 @@ const OrdersReturnPage = () => {
           </div>
         ) : orders.length === 0 ? (
           <div className="bg-white dark:bg-dark-surface rounded-3xl border border-slate-200 dark:border-dark-border p-20 text-center shadow-sm">
-            <div className="w-20 h-20 bg-slate-50 dark:bg-dark-bg rounded-3xl flex items-center justify-center mx-auto mb-6 text-slate-300 dark:text-slate-700">
+            <div className="size-20 bg-slate-50 dark:bg-dark-bg rounded-3xl flex items-center justify-center mx-auto mb-6 text-slate-300 dark:text-slate-700">
               <FiPackage className="text-4xl" />
             </div>
-            <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2 uppercase">
+            <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2 uppercase">
               Không có yêu cầu trả hàng
             </h3>
             <p className="text-slate-500 dark:text-dark-text-secondary font-medium">
@@ -151,7 +151,7 @@ const OrdersReturnPage = () => {
 
                 <div className="p-5 flex-grow space-y-5">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-indigo-600/10 dark:bg-indigo-500/20 rounded-xl flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+                    <div className="size-10 bg-indigo-600/10 dark:bg-indigo-500/20 rounded-xl flex items-center justify-center text-indigo-600 dark:text-indigo-400">
                       <FiUser />
                     </div>
                     <div>
@@ -170,7 +170,7 @@ const OrdersReturnPage = () => {
                         key={item.id}
                         className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-dark-bg rounded-xl border border-slate-100 dark:border-dark-border transition-colors hover:bg-slate-100 dark:hover:bg-slate-800"
                       >
-                        <div className="w-10 h-10 bg-white dark:bg-dark-surface rounded-lg p-1 border border-slate-100 dark:border-dark-border shrink-0">
+                        <div className="size-10 bg-white dark:bg-dark-surface rounded-lg p-1 border border-slate-100 dark:border-dark-border shrink-0">
                           <img
                             src={item.image}
                             className="w-full h-full object-contain dark:mix-blend-normal"
@@ -250,7 +250,7 @@ const OrdersReturnPage = () => {
               className="relative bg-white dark:bg-dark-surface rounded-[2.5rem] shadow-2xl max-w-xl w-full overflow-hidden border border-transparent dark:border-dark-border transition-colors duration-300"
             >
               <div className="p-8 md:p-10">
-                <div className="w-20 h-20 bg-indigo-600/10 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 rounded-3xl flex items-center justify-center text-4xl mx-auto mb-8 shadow-inner">
+                <div className="size-20 bg-indigo-600/10 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 rounded-3xl flex items-center justify-center text-4xl mx-auto mb-8 shadow-inner">
                   <FiRotateCw />
                 </div>
                 <h3 className="text-2xl font-black text-center text-slate-900 dark:text-white mb-2 uppercase tracking-tight">
@@ -270,7 +270,7 @@ const OrdersReturnPage = () => {
                       className="p-5 bg-slate-50 dark:bg-dark-bg rounded-[2rem] border border-slate-100 dark:border-dark-border"
                     >
                       <div className="flex gap-5 items-center mb-4">
-                        <div className="w-16 h-16 bg-white dark:bg-dark-surface rounded-2xl p-2 border border-slate-100 dark:border-dark-border overflow-hidden shrink-0">
+                        <div className="size-16 bg-white dark:bg-dark-surface rounded-2xl p-2 border border-slate-100 dark:border-dark-border overflow-hidden shrink-0">
                           <img
                             src={item.image}
                             className="w-full h-full object-contain dark:mix-blend-normal"

@@ -12,6 +12,7 @@ import {
 } from "react-icons/fi";
 import { toast } from "react-toastify";
 import { motion as Motion, AnimatePresence } from "framer-motion";
+
 import { getAllOrders, updateOrderStatus } from "../../../api/orderApi";
 import AppPagination from "../../../components/Pagination/Pagination";
 import { paymentStatusMap } from "../../../utils/StatusMap";
@@ -112,10 +113,10 @@ const OrdersCancelManage = () => {
           </div>
         ) : orders.length === 0 ? (
           <div className="bg-white dark:bg-dark-surface rounded-3xl border border-slate-200 dark:border-dark-border p-20 text-center shadow-sm">
-            <div className="w-20 h-20 bg-slate-50 dark:bg-dark-bg rounded-3xl flex items-center justify-center mx-auto mb-6 text-slate-300 dark:text-slate-700">
+            <div className="size-20 bg-slate-50 dark:bg-dark-bg rounded-3xl flex items-center justify-center mx-auto mb-6 text-slate-300 dark:text-slate-700">
               <FiCheckCircle className="text-4xl" />
             </div>
-            <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2 uppercase">
+            <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2 uppercase">
               Không có yêu cầu nào
             </h3>
             <p className="text-slate-500 dark:text-dark-text-secondary font-medium">
@@ -145,7 +146,7 @@ const OrdersCancelManage = () => {
 
                 <div className="p-5 flex-grow space-y-5">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-indigo-600/10 dark:bg-indigo-500/20 rounded-xl flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+                    <div className="size-10 bg-indigo-600/10 dark:bg-indigo-500/20 rounded-xl flex items-center justify-center text-indigo-600 dark:text-indigo-400">
                       <FiUser />
                     </div>
                     <div>
@@ -158,9 +159,36 @@ const OrdersCancelManage = () => {
                     </div>
                   </div>
 
+                  {/* Item List Preview */}
+                  <div className="space-y-2">
+                    {order.orderItems?.map((item) => (
+                      <div
+                        key={item.id}
+                        className="flex items-center gap-3 p-2 bg-slate-50 dark:bg-dark-bg rounded-xl border border-slate-100 dark:border-dark-border"
+                      >
+                        <div className="size-8 bg-white dark:bg-dark-surface rounded-lg p-1 border border-slate-100 dark:border-dark-border shrink-0">
+                          <img
+                            src={item.image}
+                            className="w-full h-full object-contain dark:mix-blend-normal"
+                            alt=""
+                          />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-[10px] font-black text-slate-900 dark:text-white truncate uppercase">
+                            {item.productName}
+                          </p>
+                          <p className="text-[9px] text-slate-500 dark:text-dark-text-secondary font-bold">
+                            SL: {item.quantity}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
                   <div className="bg-rose-50 dark:bg-rose-900/20 border border-rose-100 dark:border-rose-900/30 rounded-2xl p-4 shadow-inner">
                     <p className="text-[10px] font-black text-rose-400 uppercase tracking-widest mb-2 flex items-center gap-2">
-                      <FiAlertTriangle className="animate-pulse" /> Lý do hủy từ khách
+                      <FiAlertTriangle className="animate-pulse" /> Lý do hủy từ
+                      khách
                     </p>
                     <p className="text-sm text-rose-700 dark:text-rose-300 font-medium italic line-clamp-3 leading-relaxed">
                       "{order.cancelReason || "Không có lý do chi tiết"}"
@@ -227,7 +255,7 @@ const OrdersCancelManage = () => {
               className="relative bg-white dark:bg-dark-surface rounded-[2.5rem] shadow-2xl max-w-lg w-full overflow-hidden border border-transparent dark:border-dark-border transition-colors duration-300"
             >
               <div className="p-8 md:p-10 text-center">
-                <div className="w-20 h-20 bg-rose-50 dark:bg-rose-900/20 text-rose-500 dark:text-rose-400 rounded-3xl flex items-center justify-center text-4xl mx-auto mb-8 shadow-inner border border-rose-100 dark:border-rose-900/30">
+                <div className="size-20 bg-rose-50 dark:bg-rose-900/20 text-rose-500 dark:text-rose-400 rounded-3xl flex items-center justify-center text-4xl mx-auto mb-8 shadow-inner border border-rose-100 dark:border-rose-900/30">
                   <FiAlertTriangle />
                 </div>
                 <h3 className="text-2xl font-black text-slate-900 dark:text-white mb-2 uppercase tracking-tight">
@@ -243,11 +271,39 @@ const OrdersCancelManage = () => {
 
                 <div className="bg-slate-50 dark:bg-dark-bg rounded-[2rem] p-6 text-left mb-10 border border-slate-100 dark:border-dark-border shadow-inner">
                   <p className="text-[10px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest mb-3 flex items-center gap-2">
-                    <FiPackage className="text-indigo-500" /> Lý do của khách hàng
+                    <FiPackage className="text-indigo-500" /> Lý do của khách
+                    hàng
                   </p>
                   <p className="text-sm text-slate-700 dark:text-slate-300 font-medium italic leading-relaxed">
                     "{selectedOrder.cancelReason || "Không có lý do chi tiết"}"
                   </p>
+                </div>
+
+                {/* Item List in Modal */}
+                <div className="space-y-3 mb-10 max-h-[30vh] overflow-y-auto pr-2 custom-scrollbar">
+                  {selectedOrder.orderItems?.map((item) => (
+                    <div
+                      key={item.id}
+                      className="p-4 bg-slate-50 dark:bg-dark-bg rounded-2xl border border-slate-100 dark:border-dark-border flex items-center gap-4"
+                    >
+                      <div className="size-12 bg-white dark:bg-dark-surface rounded-xl p-1.5 border border-slate-100 dark:border-dark-border shrink-0">
+                        <img
+                          src={item.image}
+                          className="w-full h-full object-contain dark:mix-blend-normal"
+                          alt=""
+                        />
+                      </div>
+                      <div className="min-w-0 flex-1 text-left">
+                        <p className="text-xs font-bold text-slate-900 dark:text-white truncate uppercase">
+                          {item.productName}
+                        </p>
+                        <p className="text-[10px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest mt-0.5">
+                          SL: {item.quantity} •{" "}
+                          {Number(item.price).toLocaleString()} ₫
+                        </p>
+                      </div>
+                    </div>
+                  ))}
                 </div>
 
                 <div className="flex gap-4">

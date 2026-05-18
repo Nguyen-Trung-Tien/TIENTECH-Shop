@@ -50,9 +50,9 @@ const ProductInfo = ({ product, avgRating, totalReviews }) => {
 
       <div className="flex items-center gap-4 text-xs font-semibold text-slate-500">
         <span className="flex items-center gap-1"><span className="text-slate-300">SKU:</span> {product.sku}</span>
-        <span className="w-1 h-1 bg-slate-300 rounded-full"></span>
+        <span className="size-1 bg-slate-300 rounded-full"></span>
         <span>Đã bán {product.sold}</span>
-        <span className="w-1 h-1 bg-slate-300 rounded-full"></span>
+        <span className="size-1 bg-slate-300 rounded-full"></span>
         <span className={`flex items-center gap-1.5 ${status.color}`}>
           <status.icon size={14} />
           {status.label}

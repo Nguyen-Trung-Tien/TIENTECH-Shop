@@ -20,7 +20,7 @@ const SkeletonCard = () => {
 
         <div className="pt-4 flex items-center justify-between">
            <div className="h-6 w-24 bg-primary/10 rounded-lg"></div>
-           <div className="h-8 w-8 bg-surface-50 rounded-xl"></div>
+           <div className="size-8 bg-surface-50 rounded-xl"></div>
         </div>
       </div>
     </div>

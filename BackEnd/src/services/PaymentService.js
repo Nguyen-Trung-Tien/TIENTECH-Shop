@@ -1,5 +1,6 @@
 const db = require("../models");
 const ProductService = require("./product/ProductService");
+const { sendOrderConfirmedEmail } = require("./sendEmail");
 
 // Temporary refund simulator for online methods to avoid runtime crash.
 // Replace with real provider integration.
@@ -167,10 +168,16 @@ const createPayment = async (data, actor = null) => {
     );
 
     if (isAutoPaid) {
+      const prevStatus = order.status;
       // Cập nhật trạng thái Order ngay
       order.paymentStatus = "paid";
       if (order.status === "pending") order.status = "confirmed";
       await order.save({ transaction: t });
+
+      if (order.status === "confirmed" && prevStatus !== "confirmed") {
+        const user = await db.User.findByPk(order.userId, { transaction: t });
+        await sendOrderConfirmedEmail(user, order);
+      }
     }
 
     await t.commit();
@@ -295,9 +302,15 @@ const completePayment = async (id, transactionId) => {
     });
 
     if (order) {
+      const prevStatus = order.status;
       order.paymentStatus = "paid";
       if (order.status === "pending") order.status = "confirmed";
       await order.save({ transaction: t });
+
+      if (order.status === "confirmed" && prevStatus !== "confirmed") {
+        const user = await db.User.findByPk(order.userId, { transaction: t });
+        await sendOrderConfirmedEmail(user, order);
+      }
     }
 
     await t.commit();
@@ -309,12 +322,12 @@ const completePayment = async (id, transactionId) => {
   }
 };
 
-const refundPayment = async (id, note = "") => {
-  const t = await db.sequelize.transaction();
+const refundPayment = async (id, note = "", t_external = null) => {
+  const t = t_external || await db.sequelize.transaction();
   try {
     const payment = await db.Payment.findByPk(id, { transaction: t });
     if (!payment) {
-      await t.rollback();
+      if (!t_external) await t.rollback();
       return { errCode: 1, errMessage: "Payment not found" };
     }
 
@@ -328,10 +341,10 @@ const refundPayment = async (id, note = "") => {
       await order.save({ transaction: t });
     }
 
-    await t.commit();
+    if (!t_external) await t.commit();
     return { errCode: 0, errMessage: "Payment refunded", data: payment };
   } catch (e) {
-    await t.rollback();
+    if (!t_external) await t.rollback();
     console.error("Error refundPayment:", e);
     return { errCode: 1, errMessage: e.message || "Error refunding payment" };
   }

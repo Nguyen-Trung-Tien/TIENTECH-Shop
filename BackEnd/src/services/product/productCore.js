@@ -83,6 +83,23 @@ const updateProduct = async (id, data, imageRecords = []) => {
       updatedData.sku = await ensureUniqueSKU(updatedData.sku, t);
     }
 
+    // Handle Image Deletion
+    if (updatedData.deletedImages) {
+      const imagesToDelete = Array.isArray(updatedData.deletedImages) 
+        ? updatedData.deletedImages 
+        : JSON.parse(updatedData.deletedImages);
+      
+      if (imagesToDelete.length > 0) {
+        await db.ProductImage.destroy({
+          where: {
+            productId: id,
+            imageUrl: { [Op.in]: imagesToDelete }
+          },
+          transaction: t
+        });
+      }
+    }
+
     const updatedProduct = await product.update(updatedData, {
       transaction: t,
     });
@@ -143,17 +160,30 @@ const updateProduct = async (id, data, imageRecords = []) => {
         transaction: t,
       });
       
+      // Use user's hasVariants toggle if provided, otherwise derive from variants length
+      const hasVariantsFinal = updatedData.hasVariants !== undefined 
+        ? updatedData.hasVariants 
+        : updatedData.variants.length > 0;
+
       await updatedProduct.update(
         {
           totalStock: finalTotalStock || 0,
-          hasVariants: updatedData.variants.length > 0,
+          hasVariants: hasVariantsFinal,
         },
         { transaction: t },
       );
     } else if (updatedData.stock !== undefined) {
       await updatedProduct.update(
-        { totalStock: Number(updatedData.stock) },
+        { 
+          totalStock: Number(updatedData.stock),
+          hasVariants: updatedData.hasVariants !== undefined ? updatedData.hasVariants : product.hasVariants
+        },
         { transaction: t },
+      );
+    } else if (updatedData.hasVariants !== undefined) {
+      await updatedProduct.update(
+        { hasVariants: updatedData.hasVariants },
+        { transaction: t }
       );
     }
 
@@ -293,6 +323,23 @@ const getProductById = async (id) => {
 
 const deleteProduct = async (id) => {
   try {
+    const product = await db.Product.findByPk(id, {
+      include: [{ model: db.OrderItem, as: "orderItems", attributes: ["id"], limit: 1 }],
+    });
+
+    if (!product) return { errCode: 1, errMessage: "Product not found" };
+
+    if (product.orderItems && product.orderItems.length > 0) {
+      // If product has order history, just deactivate it instead of hard delete
+      product.isActive = false;
+      await product.save();
+      clearProductCache();
+      return {
+        errCode: 0,
+        errMessage: "Sản phẩm đã có lịch sử đơn hàng. Đã chuyển sang trạng thái ngưng kinh doanh.",
+      };
+    }
+
     const deleted = await ProductRepository.destroy(id);
     if (!deleted) return { errCode: 1, errMessage: "Product not found" };
     clearProductCache();

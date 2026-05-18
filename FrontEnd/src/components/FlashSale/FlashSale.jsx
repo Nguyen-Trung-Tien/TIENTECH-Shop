@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { motion as Motion } from "framer-motion";
+import { m as Motion } from "framer-motion";
 import { getFlashSaleProductsApi } from "../../api/productApi";
 import ProductCard from "../../components/ProductCard/ProductCard";
 import SkeletonCard from "../SkeletonCard/SkeletonCard";
@@ -119,7 +119,7 @@ const FlashSale = () => {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
           <div className="flex items-center gap-4">
-            <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-500/20 animate-pulse">
+            <div className="size-10 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-500/20 animate-pulse">
               <FiZap className="text-xl fill-current" />
             </div>
             <div>
@@ -139,10 +139,14 @@ const FlashSale = () => {
           {(products.length > 0 || isUpcoming) && (
             <div className="flex items-center gap-4 bg-slate-50 dark:bg-gray-900 p-2 pr-4 rounded-2xl border border-slate-100 dark:border-gray-800">
               <div className="flex gap-1.5">
-                {[h, m, s].map((unit, idx) => (
-                  <React.Fragment key={idx}>
-                    <div className="w-10 h-10 bg-slate-900 dark:bg-blue-600 rounded-lg flex items-center justify-center text-white font-black text-lg shadow-sm">
-                      {unit}
+                {[
+                  { val: h, label: "hours" },
+                  { val: m, label: "minutes" },
+                  { val: s, label: "seconds" },
+                ].map((item, idx) => (
+                  <React.Fragment key={item.label}>
+                    <div className="size-10 bg-slate-900 dark:bg-blue-600 rounded-lg flex items-center justify-center text-white font-black text-lg shadow-sm">
+                      {item.val}
                     </div>
                     {idx < 2 && (
                       <span className="text-xl font-black text-slate-300 dark:text-gray-700 self-center">
@@ -201,7 +205,7 @@ const FlashSale = () => {
           <div className="space-y-6">
             <div className="py-6 px-6 bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/20 rounded-2xl text-center">
               <FiClock className="mx-auto text-2xl text-blue-600 mb-2" />
-              <h3 className="text-lg font-bold text-blue-800 dark:text-blue-400">
+              <h3 className="text-lg font-semibold text-blue-800 dark:text-blue-400">
                 Flash Sale sẽ bắt đầu sớm
               </h3>
               <p className="text-sm text-blue-600/70 dark:text-blue-400/70">
@@ -220,7 +224,7 @@ const FlashSale = () => {
         ) : (
           <div className="py-12 bg-slate-50 dark:bg-gray-900/50 rounded-3xl flex flex-col items-center justify-center text-center px-6 border-2 border-dashed border-slate-200 dark:border-gray-800">
             <FiZap className="text-3xl text-slate-300 dark:text-gray-700 mb-4" />
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
               Chưa có Flash Sale
             </h3>
             <p className="text-slate-500 dark:text-slate-400 text-xs uppercase tracking-widest font-bold">

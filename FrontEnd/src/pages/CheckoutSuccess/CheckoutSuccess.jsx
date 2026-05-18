@@ -49,7 +49,7 @@ const CheckoutSuccess = () => {
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ type: "spring", stiffness: 200, delay: 0.2 }}
-          className="w-16 h-16 bg-emerald-500 rounded-2xl flex items-center justify-center text-white mx-auto mb-6 shadow-lg shadow-emerald-500/30 dark:shadow-none"
+          className="size-16 bg-emerald-500 rounded-2xl flex items-center justify-center text-white mx-auto mb-6 shadow-lg shadow-emerald-500/30 dark:shadow-none"
         >
           <FiCheckCircle size={32} />
         </Motion.div>

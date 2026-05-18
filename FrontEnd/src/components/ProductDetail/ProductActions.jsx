@@ -32,7 +32,7 @@ const ProductActions = ({
         <div className="flex items-center bg-surface-100 rounded-2xl p-1 shadow-inner border border-slate-200">
           <button
             onClick={() => setQuantity(Math.max(1, quantity - 1))}
-            className="w-10 h-10 flex items-center justify-center font-bold text-slate-500 hover:text-primary transition-colors bg-white rounded-xl shadow-sm active:scale-90 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="size-10 flex items-center justify-center font-bold text-slate-500 hover:text-primary transition-colors bg-white rounded-xl shadow-sm active:scale-90 disabled:opacity-50 disabled:cursor-not-allowed"
             disabled={!canAction}
           >
             -
@@ -48,7 +48,7 @@ const ProductActions = ({
           />
           <button
             onClick={() => setQuantity(stock > 0 ? Math.min(stock, quantity + 1) : quantity + 1)}
-            className="w-10 h-10 flex items-center justify-center font-bold text-slate-500 hover:text-primary transition-colors bg-white rounded-xl shadow-sm active:scale-90 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="size-10 flex items-center justify-center font-bold text-slate-500 hover:text-primary transition-colors bg-white rounded-xl shadow-sm active:scale-90 disabled:opacity-50 disabled:cursor-not-allowed"
             disabled={!canAction}
           >
             +

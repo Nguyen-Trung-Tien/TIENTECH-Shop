@@ -93,7 +93,7 @@ const Revenue = () => {
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
         <div>
           <h1 className="text-3xl md:text-4xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-600/20">
+            <div className="size-14 rounded-2xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-600/20">
               <FiBarChart2 size={28} />
             </div>
             Phân tích Doanh thu
@@ -136,7 +136,7 @@ const Revenue = () => {
             className="bg-white dark:bg-dark-surface p-6 rounded-[2rem] border border-slate-100 dark:border-dark-border shadow-sm relative overflow-hidden group hover:shadow-xl transition-all duration-500"
           >
             <div
-              className={`w-14 h-14 ${card.color} text-white rounded-2xl flex items-center justify-center text-2xl mb-6 shadow-lg group-hover:scale-110 transition-transform`}
+              className={`size-14 ${card.color} text-white rounded-2xl flex items-center justify-center text-2xl mb-6 shadow-lg group-hover:scale-110 transition-transform`}
             >
               {card.icon}
             </div>
@@ -187,7 +187,7 @@ const Revenue = () => {
         </div>
 
         <div className="bg-white dark:bg-dark-surface p-8 rounded-[2.5rem] text-slate-900 dark:text-white border border-slate-100 dark:border-dark-border shadow-sm relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-200/20 dark:bg-indigo-500/5 rounded-full blur-[80px] -mr-32 -mt-32"></div>
+          <div className="absolute top-0 right-0 size-64 bg-indigo-200/20 dark:bg-indigo-500/5 rounded-full blur-[80px] -mr-32 -mt-32"></div>
 
           <div className="relative z-10 space-y-10">
             <div>
@@ -204,7 +204,7 @@ const Revenue = () => {
                     key={i}
                     className="flex items-center gap-4 group cursor-pointer"
                   >
-                    <div className="w-12 h-12 rounded-xl bg-slate-50 dark:bg-dark-bg border border-slate-100 dark:border-dark-border flex items-center justify-center font-black text-indigo-500 group-hover:bg-indigo-600 group-hover:text-white transition-all shadow-sm">
+                    <div className="size-12 rounded-xl bg-slate-50 dark:bg-dark-bg border border-slate-100 dark:border-dark-border flex items-center justify-center font-black text-indigo-500 group-hover:bg-indigo-600 group-hover:text-white transition-all shadow-sm">
                       #{i + 1}
                     </div>
 

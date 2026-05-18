@@ -1,4 +1,4 @@
-import { motion as Motion } from "framer-motion";
+import { m } from "framer-motion";
 
 /**
  * AdminTableSkeleton - Giữ chỗ cho bảng dữ liệu admin
@@ -29,7 +29,7 @@ export const AdminTableSkeleton = ({ rows = 5, cols = 5 }) => {
                     <div
                       className="h-4 animate-pulse rounded bg-slate-100"
                       style={{
-                        width: `${Math.floor(Math.random() * (100 - 40 + 1) + 40)}%`,
+                        width: `${70 + (j % 3) * 10}%`,
                       }}
                     />
                   </td>
@@ -50,9 +50,9 @@ export const AdminTableSkeleton = ({ rows = 5, cols = 5 }) => {
 export const AdminPageLoader = () => {
   return (
     <div className="flex min-h-[400px] w-full flex-col items-center justify-center space-y-4 rounded-2xl bg-white/50 border border-slate-100/50 backdrop-blur-sm">
-      <div className="relative flex h-16 w-16 items-center justify-center">
+      <div className="relative flex size-16 items-center justify-center">
         <div className="absolute h-full w-full animate-spin rounded-full border-4 border-slate-100 border-t-primary" />
-        <div className="h-8 w-8 animate-pulse rounded-full bg-primary/20" />
+        <div className="size-8 animate-pulse rounded-full bg-primary/20" />
       </div>
       <p className="animate-pulse text-xs font-bold uppercase tracking-widest text-slate-400">
         Đang tải phân hệ quản trị...
@@ -73,7 +73,7 @@ export const AdminActionLoader = ({ message = "Đang xử lý..." }) => {
         animate={{ opacity: 1, scale: 1 }}
         className="flex flex-col items-center gap-4 rounded-2xl bg-white p-6 shadow-2xl border border-slate-100"
       >
-        <div className="h-10 w-10 animate-spin rounded-full border-4 border-slate-100 border-t-primary" />
+        <div className="size-10 animate-spin rounded-full border-4 border-slate-100 border-t-primary" />
         <span className="text-sm font-semibold text-slate-600">{message}</span>
       </Motion.div>
     </div>

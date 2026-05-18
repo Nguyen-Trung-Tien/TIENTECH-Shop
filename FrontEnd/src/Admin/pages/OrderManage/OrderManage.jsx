@@ -11,6 +11,7 @@ import {
   FiRefreshCw,
 } from "react-icons/fi";
 import { motion as Motion, AnimatePresence } from "framer-motion";
+
 import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
 import {
@@ -30,6 +31,7 @@ const TABS = [
   { id: "processing", label: "Đang xử lý", color: "bg-indigo-500" },
   { id: "shipped", label: "Đang giao", color: "bg-sky-500" },
   { id: "delivered", label: "Đã giao", color: "bg-emerald-500" },
+  { id: "completed", label: "Hoàn tất", color: "bg-indigo-600" },
   { id: "cancelled", label: "Đã hủy", color: "bg-rose-500" },
   { id: "cancel_requested", label: "Yêu cầu hủy", color: "bg-rose-600" },
 ];
@@ -167,7 +169,7 @@ const OrderManage = () => {
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
         <div>
           <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-600/20">
+            <div className="size-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-600/20">
               <FiPackage />
             </div>
             Quản lý đơn hàng
@@ -190,7 +192,7 @@ const OrderManage = () => {
           </div>
           <button
             onClick={() => fetchOrders(1, searchTerm, activeTab)}
-            className="w-11 h-11 bg-indigo-600 text-white rounded-xl flex items-center justify-center hover:bg-slate-800 transition-all shadow-md shadow-indigo-600/10"
+            className="size-11 bg-indigo-600 text-white rounded-xl flex items-center justify-center hover:bg-slate-800 transition-all shadow-md shadow-indigo-600/10"
           >
             <FiRefreshCw className={loading ? "animate-spin" : ""} />
           </button>
@@ -281,7 +283,7 @@ const OrderManage = () => {
                           {order.orderItems?.slice(0, 3).map((item, idx) => (
                             <div
                               key={idx}
-                              className="inline-block h-8 w-8 rounded-lg ring-2 ring-white dark:ring-dark-surface bg-slate-50 dark:bg-dark-bg border border-slate-100 dark:border-dark-border overflow-hidden"
+                              className="inline-block size-8 rounded-lg ring-2 ring-white dark:ring-dark-surface bg-slate-50 dark:bg-dark-bg border border-slate-100 dark:border-dark-border overflow-hidden"
                             >
                               <img
                                 src={item.image}
@@ -291,7 +293,7 @@ const OrderManage = () => {
                             </div>
                           ))}
                           {order.orderItems?.length > 3 && (
-                            <div className="flex items-center justify-center h-8 w-8 rounded-lg ring-2 ring-white dark:ring-dark-surface bg-slate-100 dark:bg-dark-bg text-[10px] font-black text-slate-400 dark:text-dark-text-secondary">
+                            <div className="flex items-center justify-center size-8 rounded-lg ring-2 ring-white dark:ring-dark-surface bg-slate-100 dark:bg-dark-bg text-[10px] font-black text-slate-400 dark:text-dark-text-secondary">
                               +{order.orderItems.length - 3}
                             </div>
                           )}
@@ -300,7 +302,7 @@ const OrderManage = () => {
                     </td>
                     <td className="px-8 py-6">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-slate-100 dark:bg-dark-bg rounded-xl flex items-center justify-center text-slate-400 dark:text-dark-text-secondary">
+                        <div className="size-10 bg-slate-100 dark:bg-dark-bg rounded-xl flex items-center justify-center text-slate-400 dark:text-dark-text-secondary">
                           <FiUser />
                         </div>
                         <div>
@@ -347,7 +349,7 @@ const OrderManage = () => {
                       <div className="flex items-center justify-end gap-2">
                         <button
                           onClick={() => navigate(`/admin/order/${order.id}`)}
-                          className="w-10 h-10 rounded-2xl bg-slate-100 dark:bg-dark-bg text-slate-500 dark:text-dark-text-secondary flex items-center justify-center hover:bg-indigo-600 hover:text-white transition-all shadow-sm"
+                          className="size-10 rounded-2xl bg-slate-100 dark:bg-dark-bg text-slate-500 dark:text-dark-text-secondary flex items-center justify-center hover:bg-indigo-600 hover:text-white transition-all shadow-sm"
                         >
                           <FiInfo size={18} />
                         </button>
@@ -358,7 +360,7 @@ const OrderManage = () => {
                                 activeDropdown === order.id ? null : order.id,
                               )
                             }
-                            className="w-10 h-10 rounded-2xl bg-white dark:bg-dark-surface border border-slate-100 dark:border-dark-border text-slate-400 dark:text-dark-text-secondary flex items-center justify-center hover:border-indigo-600 hover:text-indigo-600 transition-all"
+                            className="size-10 rounded-2xl bg-white dark:bg-dark-surface border border-slate-100 dark:border-dark-border text-slate-400 dark:text-dark-text-secondary flex items-center justify-center hover:border-indigo-600 hover:text-indigo-600 transition-all"
                           >
                             <FiRefreshCcw
                               size={16}
@@ -413,7 +415,7 @@ const OrderManage = () => {
                               orderCode: order.orderCode,
                             });
                           }}
-                          className="w-10 h-10 rounded-2xl bg-rose-50 dark:bg-rose-500/10 text-rose-500 flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all shadow-sm border border-rose-100 dark:border-rose-500/20"
+                          className="size-10 rounded-2xl bg-rose-50 dark:bg-rose-500/10 text-rose-500 flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all shadow-sm border border-rose-100 dark:border-rose-500/20"
                         >
                           <FiTrash2 size={18} />
                         </button>

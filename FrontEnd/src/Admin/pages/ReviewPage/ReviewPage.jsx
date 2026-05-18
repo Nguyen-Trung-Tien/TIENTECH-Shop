@@ -117,7 +117,7 @@ const ReviewPage = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
           <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-3">
-            <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary shadow-sm">
+            <div className="size-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary shadow-sm">
               <FiMessageSquare />
             </div>
             Quản lý đánh giá
@@ -206,7 +206,7 @@ const ReviewPage = () => {
                 {/* Header Info */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-dark-bg flex items-center justify-center text-slate-400 dark:text-dark-text-secondary group-hover:bg-primary/5 transition-colors border border-transparent dark:border-dark-border">
+                    <div className="size-12 rounded-2xl bg-slate-100 dark:bg-dark-bg flex items-center justify-center text-slate-400 dark:text-dark-text-secondary group-hover:bg-primary/5 transition-colors border border-transparent dark:border-dark-border">
                       <FiUser size={20} />
                     </div>
                     <div>
@@ -238,7 +238,7 @@ const ReviewPage = () => {
                         setSelectedReview(review);
                         setShowDeleteModal(true);
                       }}
-                      className="w-10 h-10 rounded-xl bg-rose-50 dark:bg-rose-900/20 text-rose-500 dark:text-rose-400 flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all shadow-sm border border-rose-100 dark:border-rose-900/30"
+                      className="size-10 rounded-xl bg-rose-50 dark:bg-rose-900/20 text-rose-500 dark:text-rose-400 flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all shadow-sm border border-rose-100 dark:border-rose-900/30"
                     >
                       <FiTrash2 size={16} />
                     </button>
@@ -299,7 +299,7 @@ const ReviewPage = () => {
                     />
                     <button
                       onClick={() => handleCreateReply(review.id)}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-primary text-white rounded-xl flex items-center justify-center hover:bg-slate-800 transition-all shadow-md"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 size-8 bg-primary text-white rounded-xl flex items-center justify-center hover:bg-slate-800 transition-all shadow-md"
                     >
                       <FiSend size={14} />
                     </button>

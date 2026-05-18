@@ -43,7 +43,7 @@ const GenericAdminTable = ({
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
         <div>
           <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-600/20">
+            <div className="size-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-600/20">
               {Icon && <Icon />}
             </div>
             {title}
@@ -112,7 +112,7 @@ const GenericAdminTable = ({
                     className="px-8 py-20 text-center"
                   >
                     <div className="max-w-xs mx-auto">
-                      <div className="w-16 h-16 bg-slate-50 dark:bg-dark-bg rounded-full flex items-center justify-center text-slate-300 dark:text-slate-700 mx-auto mb-4">
+                      <div className="size-16 bg-slate-50 dark:bg-dark-bg rounded-full flex items-center justify-center text-slate-300 dark:text-slate-700 mx-auto mb-4">
                         <FiSearch size={32} />
                       </div>
                       <p className="text-slate-900 dark:text-white font-bold">Không tìm thấy dữ liệu</p>

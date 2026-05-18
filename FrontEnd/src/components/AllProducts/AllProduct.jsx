@@ -194,7 +194,7 @@ const AllProducts = React.memo(() => {
             {/* Error State */}
             {error && (
               <div className="p-10 bg-white dark:bg-gray-900 rounded-[2.5rem] border border-rose-100 dark:border-rose-900/20 text-center shadow-sm">
-                <div className="w-16 h-16 bg-rose-50 dark:bg-rose-900/20 text-rose-500 rounded-2xl flex items-center justify-center mx-auto mb-5">
+                <div className="size-16 bg-rose-50 dark:bg-rose-900/20 text-rose-500 rounded-2xl flex items-center justify-center mx-auto mb-5">
                   <FiAlertCircle size={28} />
                 </div>
                 <p className="text-slate-900 dark:text-white font-black text-base mb-2">Đã có lỗi xảy ra</p>
@@ -213,7 +213,7 @@ const AllProducts = React.memo(() => {
             {/* Empty State */}
             {!loading && !error && products.length === 0 && (
               <div className="p-16 bg-white dark:bg-gray-900 rounded-[2.5rem] border border-slate-100 border-dashed dark:border-gray-800 text-center shadow-sm">
-                <div className="w-20 h-20 bg-slate-50 dark:bg-gray-800 text-slate-300 dark:text-gray-700 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
+                <div className="size-20 bg-slate-50 dark:bg-gray-800 text-slate-300 dark:text-gray-700 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
                   <FiSearch size={32} />
                 </div>
                 <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2 uppercase tracking-tight">Không tìm thấy sản phẩm</h3>

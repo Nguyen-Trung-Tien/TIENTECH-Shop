@@ -33,7 +33,7 @@ const Categories = () => {
     {
       header: "Hình ảnh",
       render: (item) => (
-        <div className="w-12 h-12 rounded-xl bg-slate-100 overflow-hidden">
+        <div className="size-12 rounded-xl bg-slate-100 overflow-hidden">
           {item.image ? (
             <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
           ) : (

@@ -51,18 +51,21 @@ const handleCreateOrder = async (req, res) => {
         link: `/admin/orders`
       });
 
-      // 2. Gửi real-time tới Admin
-      io.to("admin_room").emit("new_order", {
-        message: "Có đơn hàng mới!",
-        order: result.data,
-      });
+      // 2. Gửi real-time tới Admin nếu io tồn tại
+      if (io) {
+        io.to("admin_room").emit("new_order", {
+          message: "Có đơn hàng mới!",
+          order: result.data,
+        });
+      }
+      return res.status(201).json(result);
     }
-    return res.status(201).json(result);
+    return res.status(400).json(result);
   } catch (e) {
-    console.error(e);
+    console.error("Error in handleCreateOrder:", e);
     return res.status(500).json({
       errCode: -1,
-      errMessage: "Internal server error",
+      errMessage: e.message || "Internal server error",
     });
   }
 };
@@ -86,12 +89,14 @@ const handleUpdateOrderStatus = async (req, res) => {
         link: `/orders-detail/${id}`
       });
 
-      // 2. Gửi real-time tới User (room được đặt theo userId)
-      io.to(`user_${order.userId}`).emit("order_status_updated", {
-        orderId: id,
-        status: status,
-        message: `Đơn hàng #${id} của bạn đã chuyển sang trạng thái: ${status}`
-      });
+      // 2. Gửi real-time tới User (room được đặt theo userId) nếu io tồn tại
+      if (io) {
+        io.to(`user_${order.userId}`).emit("order_status_updated", {
+          orderId: id,
+          status: status,
+          message: `Đơn hàng #${id} của bạn đã chuyển sang trạng thái: ${status}`
+        });
+      }
     }
     
     return res.status(result.status || 200).json(result);

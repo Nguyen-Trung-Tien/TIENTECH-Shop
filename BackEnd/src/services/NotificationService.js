@@ -1,8 +1,8 @@
 const db = require("../models");
 
-const createNotification = async (data) => {
+const createNotification = async (data, t = null) => {
   try {
-    const notification = await db.Notification.create(data);
+    const notification = await db.Notification.create(data, { transaction: t });
     return { errCode: 0, data: notification };
   } catch (error) {
     console.error("Error creating notification:", error);

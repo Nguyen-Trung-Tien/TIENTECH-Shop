@@ -34,7 +34,9 @@ module.exports = {
           "processing",
           "shipped",
           "delivered",
+          "completed", // đã nhận hàng
           "cancelled", // khách hủy đơn
+          "cancel_requested", // đang yêu cầu hủy
         ),
         defaultValue: "pending",
       },

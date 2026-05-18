@@ -24,9 +24,9 @@ const HeroSection = () => {
               transition={{ duration: 0.5 }}
             >
               <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-600 dark:text-blue-400 text-[10px] font-black uppercase tracking-widest mb-6">
-                <span className="relative flex h-2 w-2">
+                <span className="relative flex size-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-500 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                  <span className="relative inline-flex rounded-full size-2 bg-blue-500"></span>
                 </span>
                 Ưu đãi công nghệ mỗi ngày
               </span>
@@ -133,7 +133,7 @@ const HeroSection = () => {
                 }}
                 className="absolute -bottom-4 -left-4 p-4 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-slate-100 dark:border-gray-800 flex items-center gap-4 max-w-[180px]"
               >
-                <div className="w-9 h-9 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-xl flex items-center justify-center flex-shrink-0">
+                <div className="size-9 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-xl flex items-center justify-center flex-shrink-0">
                   <FiShoppingBag />
                 </div>
                 <div>

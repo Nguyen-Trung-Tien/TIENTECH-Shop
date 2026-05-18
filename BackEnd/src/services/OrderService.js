@@ -1,6 +1,8 @@
 const db = require("../models");
 const { Op } = require("sequelize");
-const { sendOrderDeliveredEmail } = require("./sendEmail");
+const { sendOrderDeliveredEmail, sendOrderConfirmedEmail } = require("./sendEmail");
+const NotificationService = require("./NotificationService");
+const PaymentService = require("./PaymentService");
 
 const { getPagination, getPagingData } = require("../utils/paginationHelper");
 
@@ -53,6 +55,10 @@ const getAllOrders = async (page = 1, limit = 10, searchTerm = "", status = "", 
           { 
             model: db.OrderItem, 
             as: "orderItems",
+            attributes: [
+              "id", "productId", "variantId", "quantity", "price", 
+              "subtotal", "productName", "image", "returnStatus", "returnReason"
+            ],
             where: { returnStatus: "requested" },
             required: true,
             include: [
@@ -217,6 +223,7 @@ const getOrdersByUserId = async (
         "paymentMethod",
         "paymentStatus",
         "orderCode",
+        "cancelReason",
         "createdAt",
         "deliveredAt",
       ],
@@ -232,6 +239,7 @@ const getOrdersByUserId = async (
             "productName",
             "image",
             "returnStatus",
+            "returnReason",
           ],
           include: [
             {
@@ -576,6 +584,7 @@ const updateOrderStatus = async (id, status, user = null, reason = "") => {
       "processing",
       "shipped",
       "delivered",
+      "completed",
       "cancelled",
       "cancel_requested",
     ];
@@ -611,13 +620,16 @@ const updateOrderStatus = async (id, status, user = null, reason = "") => {
           };
         }
         order.cancelReason = reason;
-      } else if (status === "delivered" && order.status !== "shipped") {
+      } else if (status === "completed" && order.status !== "delivered") {
         await t.rollback();
         return {
           errCode: 4,
-          errMessage: "Cannot confirm delivery for this order",
+          errMessage: "Bạn chỉ có thể xác nhận nhận hàng sau khi Admin đã xác nhận giao thành công",
           status: 400,
         };
+      } else if (status === "completed" && order.status === "delivered") {
+        // Khách xác nhận đã nhận hàng
+        order.status = "completed";
       } else {
         // Customer cannot set other statuses directly (like cancelled, shipped, etc.)
         await t.rollback();
@@ -629,6 +641,16 @@ const updateOrderStatus = async (id, status, user = null, reason = "") => {
     if (user && user.role === "admin" && order.status === "cancel_requested") {
       // If admin sets to cancelled, it's an approval.
       // If admin sets back to pending/confirmed/etc, it's a rejection.
+      if (status !== "cancelled") {
+        // Notify user about rejection
+        await NotificationService.createNotification({
+          userId: order.userId,
+          title: "Yêu cầu hủy đơn bị từ chối",
+          content: `Yêu cầu hủy đơn hàng ${order.orderCode} của bạn đã bị từ chối. Đơn hàng tiếp tục trạng thái: ${status}.`,
+          type: "order",
+          isRead: false
+        }, t);
+      }
     }
 
     const prevStatus = order.status;
@@ -639,10 +661,29 @@ const updateOrderStatus = async (id, status, user = null, reason = "") => {
       return { errCode: 0, errMessage: "Order is already cancelled", data: order };
     }
 
+    // SYNC LOGIC FOR CANCELLATION
+    if (status === "cancelled") {
+      if (reason) order.cancelReason = reason;
+      await syncOrderCancellationSideEffects(order, reason || order.cancelReason, user, t);
+    }
+
+    // Capture reason for cancel_requested regardless of user role
+    if (status === "cancel_requested") {
+      if (reason) order.cancelReason = reason;
+      
+      await NotificationService.createNotification({
+        userId: null, // Admin
+        title: "Yêu cầu hủy đơn hàng",
+        content: `Khách hàng yêu cầu hủy đơn hàng ${order.orderCode}. Lý do: ${reason || order.cancelReason || "Không có lý do chi tiết"}`,
+        type: "order",
+        isRead: false
+      }, t);
+    }
+
     const history = Array.isArray(order.confirmationHistory)
       ? order.confirmationHistory
       : [];
-    history.push({ status, date: new Date().toISOString() });
+    history.push({ status, date: new Date().toISOString(), actor: user?.username || "system" });
 
     order.status = status;
     order.confirmationHistory = history;
@@ -726,9 +767,13 @@ const updateOrderStatus = async (id, status, user = null, reason = "") => {
 
     await order.save({ transaction: t });
 
-    if (status === "delivered") {
+    if (status === "delivered" || status === "confirmed") {
       const user = await db.User.findByPk(order.userId);
-      await sendOrderDeliveredEmail(user, order);
+      if (status === "delivered" && prevStatus !== "delivered") {
+        await sendOrderDeliveredEmail(user, order);
+      } else if (status === "confirmed" && prevStatus !== "confirmed") {
+        await sendOrderConfirmedEmail(user, order);
+      }
     }
     await t.commit();
 
@@ -747,10 +792,76 @@ const updateOrderStatus = async (id, status, user = null, reason = "") => {
   }
 };
 
+const syncOrderCancellationSideEffects = async (order, reason, user = null, t, pointsOverride = null) => {
+  // 1. Refund Voucher
+  const voucherUsage = await db.VoucherUsage.findOne({
+    where: { orderId: order.id, status: "used" },
+    transaction: t
+  });
+  if (voucherUsage) {
+    await voucherUsage.update({ status: "cancelled" }, { transaction: t });
+    const voucher = await db.Voucher.findByPk(voucherUsage.voucherId, { transaction: t });
+    if (voucher) {
+      await voucher.decrement("usedCount", { by: 1, transaction: t });
+    }
+  }
+
+  // 2. Refund Payment
+  if (order.paymentStatus === "paid") {
+    const payment = await db.Payment.findOne({
+      where: { orderId: order.id },
+      transaction: t
+    });
+    if (payment) {
+      await PaymentService.refundPayment(payment.id, reason || "Order cancelled", t);
+    } else {
+      order.paymentStatus = "refunded";
+      await order.save({ transaction: t });
+    }
+  }
+
+  // 3. Deduct Loyalty Points if it was delivered
+  const wasDelivered = order.deliveredAt || (Array.isArray(order.confirmationHistory) && order.confirmationHistory.some(h => ["delivered", "completed"].includes(h.status)));
+
+  if (wasDelivered && pointsOverride !== 0) {
+    const userToUpdate = await db.User.findByPk(order.userId, { transaction: t });
+    if (userToUpdate) {
+      const pointsToDeduct = pointsOverride !== null ? pointsOverride : Math.floor(Number(order.totalPrice) / 10000);
+      const newPoints = Math.max(0, (userToUpdate.points || 0) - pointsToDeduct);
+      
+      let newRank = "Bronze";
+      if (newPoints >= 10000) newRank = "Platinum";
+      else if (newPoints >= 5000) newRank = "Gold";
+      else if (newPoints >= 1000) newRank = "Silver";
+
+      await userToUpdate.update({
+        points: newPoints,
+        rank: newRank
+      }, { transaction: t });
+    }
+  }
+
+  // 4. Notification to User
+  await NotificationService.createNotification({
+    userId: order.userId,
+    title: "Đơn hàng đã bị hủy",
+    content: `Đơn hàng ${order.orderCode} của bạn đã bị hủy. Lý do: ${reason || order.cancelReason || "Không có lý do cụ thể."}`,
+    type: "order",
+    isRead: false
+  }, t);
+};
+
 const deleteOrder = async (id) => {
   try {
     const order = await db.Order.findByPk(id);
     if (!order) return { errCode: 1, errMessage: "Order not found" };
+
+    if (["paid", "refunded"].includes(order.paymentStatus) || ["delivered", "completed"].includes(order.status)) {
+      return {
+        errCode: 2,
+        errMessage: "Không thể xóa đơn hàng đã thanh toán hoặc đã giao hàng. Vui lòng sử dụng chức năng hủy hoặc trả hàng.",
+      };
+    }
 
     await order.destroy();
     return { errCode: 0, errMessage: "Order deleted successfully" };
@@ -793,11 +904,17 @@ const updatePaymentStatus = async (orderId, paymentStatus) => {
     // NOTE: Stock already decremented at createOrder
     if (order.paymentStatus === "unpaid" && paymentStatus === "paid") {
       order.paymentStatus = "paid";
+      const prevStatus = order.status;
       // Nếu đơn hàng đang chờ xử lý, tự động chuyển sang xác nhận khi đã trả tiền
       if (order.status === "pending") {
         order.status = "confirmed";
       }
       await order.save({ transaction: t });
+
+      if (order.status === "confirmed" && prevStatus !== "confirmed") {
+        const user = await db.User.findByPk(order.userId);
+        await sendOrderConfirmedEmail(user, order);
+      }
     }
 
     // refunded
@@ -859,4 +976,5 @@ module.exports = {
   getOrdersByUserId,
   getActiveOrdersByUserId,
   getOrderByCode,
+  syncOrderCancellationSideEffects,
 };

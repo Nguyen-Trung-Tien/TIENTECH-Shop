@@ -53,7 +53,7 @@ const AboutPage = () => {
             transition={{ duration: 0.8 }}
             className="flex flex-col items-center"
           >
-            <div className="w-40 h-40 md:w-56 md:h-48 mb-8 p-6 bg-white/5 backdrop-blur-xl rounded-[3rem] border border-white/10 flex items-center justify-center shadow-2xl">
+            <div className="size-40 md:w-56 md:h-48 mb-8 p-6 bg-white/5 backdrop-blur-xl rounded-[3rem] border border-white/10 flex items-center justify-center shadow-2xl">
               <img
                 src={logoImage}
                 alt="TienTech Logo"
@@ -117,7 +117,7 @@ const AboutPage = () => {
                   className="w-full h-auto grayscale hover:grayscale-0 transition-all duration-700"
                 />
               </div>
-              <div className="absolute -bottom-6 -right-6 w-40 h-40 bg-blue-600/10 rounded-full blur-3xl"></div>
+              <div className="absolute -bottom-6 -right-6 size-40 bg-blue-600/10 rounded-full blur-3xl"></div>
             </Motion.div>
 
             <Motion.div
@@ -154,7 +154,7 @@ const AboutPage = () => {
               viewport={{ once: true }}
               className="group p-8 md:p-12 bg-gray-50 dark:bg-gray-900 rounded-[3rem] border border-transparent hover:border-blue-500/20 transition-all duration-500"
             >
-              <div className="w-14 h-14 bg-blue-600 rounded-2xl flex items-center justify-center text-white mb-8 shadow-lg shadow-blue-500/20 group-hover:scale-110 transition-transform">
+              <div className="size-14 bg-blue-600 rounded-2xl flex items-center justify-center text-white mb-8 shadow-lg shadow-blue-500/20 group-hover:scale-110 transition-transform">
                 <FiTarget size={28} />
               </div>
               <h4 className="text-2xl font-black text-slate-900 dark:text-white mb-4 uppercase tracking-tight">Sứ mệnh</h4>
@@ -170,7 +170,7 @@ const AboutPage = () => {
               transition={{ delay: 0.1 }}
               className="group p-8 md:p-12 bg-blue-600 rounded-[3rem] text-white shadow-2xl shadow-blue-500/20 hover:-translate-y-2 transition-all duration-500"
             >
-              <div className="w-14 h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-white mb-8 border border-white/20 group-hover:scale-110 transition-transform">
+              <div className="size-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-white mb-8 border border-white/20 group-hover:scale-110 transition-transform">
                 <FiEye size={28} />
               </div>
               <h4 className="text-2xl font-black text-white mb-4 uppercase tracking-tight">Tầm nhìn</h4>
@@ -228,8 +228,8 @@ const AboutPage = () => {
       <section className="py-16 md:py-24 bg-white dark:bg-black transition-colors overflow-hidden">
         <div className="container mx-auto px-4">
           <div className="bg-blue-600 rounded-[3rem] md:rounded-[4rem] p-10 md:p-20 text-center relative overflow-hidden shadow-2xl shadow-blue-500/30">
-            <div className="absolute top-0 left-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
-            <div className="absolute bottom-0 right-0 w-64 h-64 bg-black/10 rounded-full blur-3xl translate-x-1/2 translate-y-1/2"></div>
+            <div className="absolute top-0 left-0 size-64 bg-white/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
+            <div className="absolute bottom-0 right-0 size-64 bg-black/10 rounded-full blur-3xl translate-x-1/2 translate-y-1/2"></div>
             
             <div className="relative z-10">
                 <h2 className="text-3xl md:text-5xl font-black text-white mb-6 uppercase tracking-tight">Sẵn sàng trải nghiệm cùng TienTech?</h2>

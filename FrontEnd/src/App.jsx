@@ -6,12 +6,26 @@ import AdminRoutes from "./routes/AdminRoutes";
 import { ToastContainer } from "react-toastify";
 import { getMeApi } from "./api/userApi";
 import { setUser, removeUser, setInitializing } from "./redux/userSlice";
+import { LazyMotion, domAnimation } from "framer-motion";
 
 const App = () => {
   const dispatch = useDispatch();
-  const [theme, setTheme] = useState(
-    () => localStorage.getItem("theme") || "light",
-  );
+  const [theme, setTheme] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("theme") || "light";
+    }
+    return "light";
+  });
+
+  useEffect(() => {
+    const root = window.document.documentElement;
+    if (theme === "dark") {
+      root.classList.add("dark");
+    } else {
+      root.classList.remove("dark");
+    }
+    localStorage.setItem("theme", theme);
+  }, [theme]);
 
   useEffect(() => {
     const handleStorage = (event) => {
@@ -22,19 +36,6 @@ const App = () => {
     window.addEventListener("storage", handleStorage);
     return () => window.removeEventListener("storage", handleStorage);
   }, []);
-
-  useEffect(() => {
-    setTheme(localStorage.getItem("theme") || "light");
-  }, []);
-
-  useEffect(() => {
-    if (theme === "dark") {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-    localStorage.setItem("theme", theme);
-  }, [theme]);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -58,10 +59,12 @@ const App = () => {
 
   return (
     <div className="min-h-screen bg-white dark:bg-dark-bg text-gray-900 dark:text-dark-text-primary transition-colors duration-300">
-      <Routes>
-        <Route path="/admin/*" element={<AdminRoutes />} />
-        <Route path="/*" element={<UserRoutes />} />
-      </Routes>
+      <LazyMotion features={domAnimation}>
+        <Routes>
+          <Route path="/admin/*" element={<AdminRoutes />} />
+          <Route path="/*" element={<UserRoutes />} />
+        </Routes>
+      </LazyMotion>
 
       <ToastContainer
         position="bottom-right"

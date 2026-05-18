@@ -77,7 +77,7 @@ const QuickVariantModal = ({ product, isOpen, onClose, onAdd, onBuyNow }) => {
 
           <div className="p-6 md:p-8">
             <div className="flex gap-6 mb-8">
-              <div className="w-24 h-24 rounded-2xl bg-slate-50 dark:bg-dark-bg border border-slate-100 dark:border-dark-border p-2 overflow-hidden flex-shrink-0">
+              <div className="size-24 rounded-2xl bg-slate-50 dark:bg-dark-bg border border-slate-100 dark:border-dark-border p-2 overflow-hidden flex-shrink-0">
                 <img
                   src={displayImage}
                   alt={product.name}
@@ -85,7 +85,7 @@ const QuickVariantModal = ({ product, isOpen, onClose, onAdd, onBuyNow }) => {
                 />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white line-clamp-2 mb-2">
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white line-clamp-2 mb-2">
                   {product.name}
                 </h3>
                 <div className="flex items-baseline gap-2">
@@ -129,7 +129,7 @@ const QuickVariantModal = ({ product, isOpen, onClose, onAdd, onBuyNow }) => {
                           }`}
                         >
                           {val}
-                          {isSelected && <FiCheck className="w-3 h-3" />}
+                          {isSelected && <FiCheck className="size-3" />}
                         </button>
                       );
                     })}

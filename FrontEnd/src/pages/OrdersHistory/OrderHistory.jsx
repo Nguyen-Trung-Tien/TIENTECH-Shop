@@ -1,16 +1,18 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { FiEye, FiShoppingBag, FiClock, FiCheckCircle } from "react-icons/fi";
+import { FiEye, FiShoppingBag, FiClock, FiCheckCircle, FiRotateCcw, FiAlertTriangle } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { getOrdersByUserId } from "../../api/orderApi";
+import { getOrdersByUserId, updateOrderStatus } from "../../api/orderApi";
 import AppPagination from "../../components/Pagination/Pagination";
 import { orderStatusMap, paymentStatusMap } from "../../utils/constants";
+import { returnStatusMap } from "../../utils/StatusMap";
 import { formatCurrency, formatDate } from "../../utils/format";
 import { StatusBadge } from "../../utils/StatusBadge";
 import ClickableText from "../../components/ClickableText/ClickableText";
 import Button from "../../components/UI/Button";
 import Badge from "../../components/UI/Badge";
 import ReviewModal from "../../components/ReviewComponent/ReviewModal";
+import { toast } from "react-toastify";
 
 const OrderHistoryPage = () => {
   const navigate = useNavigate();
@@ -23,6 +25,7 @@ const OrderHistoryPage = () => {
 
   const [selectedOrderForReview, setSelectedOrderForReview] = useState(null);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const fetchOrders = useCallback(async () => {
     if (!user?.id) return;
@@ -49,6 +52,23 @@ const OrderHistoryPage = () => {
     setIsReviewModalOpen(true);
   };
 
+  const handleConfirmReceipt = async (orderId) => {
+    try {
+      setIsSubmitting(true);
+      const res = await updateOrderStatus(orderId, "completed");
+      if (res.errCode === 0) {
+        toast.success("Xác nhận đã nhận hàng thành công!");
+        fetchOrders();
+      } else {
+        toast.error(res.errMessage);
+      }
+    } catch (error) {
+      toast.error("Lỗi khi xác nhận nhận hàng");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-surface-50 dark:bg-dark-bg py-12 transition-colors duration-300">
       <div className="container-custom">
@@ -72,17 +92,17 @@ const OrderHistoryPage = () => {
 
         {loading ? (
           <div className="flex flex-col items-center justify-center py-24 gap-4">
-            <div className="w-12 h-12 border-4 border-primary dark:border-brand border-t-transparent rounded-full animate-spin"></div>
+            <div className="size-12 border-4 border-primary dark:border-brand border-t-transparent rounded-full animate-spin"></div>
             <p className="text-surface-400 dark:text-dark-text-secondary font-bold uppercase tracking-widest text-[11px]">
               Đang tải dữ liệu...
             </p>
           </div>
         ) : orders.length === 0 ? (
           <div className="bg-white dark:bg-dark-surface rounded-[32px] border border-surface-200 dark:border-dark-border p-16 text-center shadow-sm">
-            <div className="w-20 h-20 bg-surface-50 dark:bg-dark-bg rounded-full flex items-center justify-center mx-auto mb-6">
+            <div className="size-20 bg-surface-50 dark:bg-dark-bg rounded-full flex items-center justify-center mx-auto mb-6">
               <FiShoppingBag className="text-3xl text-surface-300 dark:text-dark-border" />
             </div>
-            <h3 className="text-xl font-bold text-surface-900 dark:text-white mb-2">
+            <h3 className="text-xl font-semibold text-surface-900 dark:text-white mb-2">
               Chưa có đơn hàng nào
             </h3>
             <p className="text-surface-500 dark:text-dark-text-secondary mb-8 max-w-sm mx-auto">
@@ -124,7 +144,7 @@ const OrderHistoryPage = () => {
                       const p = i.product;
                       return (
                         <div key={i.id} className="flex gap-4 md:gap-6">
-                          <div className="w-20 h-20 md:w-24 md:h-24 bg-surface-50 dark:bg-dark-bg rounded-2xl border border-surface-100 dark:border-dark-border p-2 flex-shrink-0 group-hover:border-primary/10 dark:group-hover:border-brand/10 transition-colors">
+                          <div className="size-20 md:w-24 md:h-24 bg-surface-50 dark:bg-dark-bg rounded-2xl border border-surface-100 dark:border-dark-border p-2 flex-shrink-0 group-hover:border-primary/10 dark:group-hover:border-brand/10 transition-colors">
                             <img
                               src={p?.image || "/images/no-image.png"}
                               alt={p?.name || i.productName}
@@ -142,29 +162,32 @@ const OrderHistoryPage = () => {
                               <span className="text-sm text-surface-500 dark:text-dark-text-secondary font-medium">
                                 Số lượng: {i.quantity}
                               </span>
-                              <div className="w-1 h-1 bg-surface-300 dark:bg-dark-border rounded-full"></div>
+                              <div className="size-1 bg-surface-300 dark:bg-dark-border rounded-full"></div>
                               <span className="text-sm text-surface-500 dark:text-dark-text-secondary font-medium">
                                 Phân loại: {p?.category?.name || "Điện tử"}
                               </span>
                             </div>
-                            <div className="flex items-center gap-2 mt-2">
-                              {p?.discount > 0 && (
-                                <span className="text-sm text-surface-400 dark:text-dark-text-secondary line-through">
-                                  {formatCurrency(p.price)}
-                                </span>
-                              )}
-                              <span className="text-lg font-black text-surface-900 dark:text-white">
-                                {formatCurrency(i.price)}
-                              </span>
-                              {p?.discount > 0 && (
-                                <Badge
-                                  variant="danger"
-                                  className="scale-90 origin-left"
+                            <div className="flex items-center gap-3 mt-3">
+                              <StatusBadge map={returnStatusMap} status={i.returnStatus} />
+                              {o.status === "delivered" && (!i.returnStatus || i.returnStatus === "none") && (
+                                <button
+                                  onClick={() => navigate(`/orders-detail/${o.id}`)}
+                                  className="text-[10px] font-black uppercase tracking-widest text-primary hover:underline"
                                 >
-                                  -{p.discount}%
-                                </Badge>
+                                  Yêu cầu trả hàng
+                                </button>
                               )}
                             </div>
+                            {i.returnStatus !== "none" && i.returnReason && (
+                              <div className="mt-2 p-3 bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/20 rounded-xl">
+                                <p className="text-[9px] font-black text-amber-600 dark:text-amber-500 uppercase tracking-widest mb-1 flex items-center gap-2">
+                                  <FiRotateCcw size={10} /> Lý do trả hàng
+                                </p>
+                                <p className="text-xs text-amber-700 dark:text-amber-300 font-medium italic">
+                                  "{i.returnReason}"
+                                </p>
+                              </div>
+                            )}
                           </div>
                         </div>
                       );
@@ -198,6 +221,18 @@ const OrderHistoryPage = () => {
                           size="md"
                           className="flex-1 sm:flex-none"
                           icon={FiCheckCircle}
+                          onClick={() => handleConfirmReceipt(o.id)}
+                          loading={isSubmitting}
+                        >
+                          XÁC NHẬN
+                        </Button>
+                      )}
+                      {["delivered", "completed"].includes(o.status) && (
+                        <Button
+                          variant="primary"
+                          size="md"
+                          className="flex-1 sm:flex-none"
+                          icon={FiCheckCircle}
                           onClick={() => openReviewModal(o)}
                         >
                           ĐÁNH GIÁ
@@ -205,6 +240,17 @@ const OrderHistoryPage = () => {
                       )}
                     </div>
                   </div>
+                  {/* Cancel Reason Display in List */}
+                  {o.cancelReason && (
+                    <div className="mt-4 p-4 bg-rose-50 dark:bg-rose-900/10 border border-rose-100 dark:border-rose-900/20 rounded-2xl">
+                      <p className="text-[10px] font-black text-rose-600 dark:text-rose-400 uppercase tracking-widest mb-1 flex items-center gap-2">
+                        <FiAlertTriangle size={12} /> Lý do hủy đơn
+                      </p>
+                      <p className="text-sm text-rose-700 dark:text-rose-300 font-medium italic">
+                        "{o.cancelReason}"
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}

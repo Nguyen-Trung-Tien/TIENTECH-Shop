@@ -73,12 +73,12 @@ const VerifyEmail = () => {
       <div className="max-width-md w-full bg-white dark:bg-dark-card rounded-2xl shadow-xl p-8 text-center border border-gray-100 dark:border-gray-800">
         <div className="flex justify-center mb-6">
           {status === "verifying" && (
-            <Loader2 className="w-16 h-16 text-blue-500 animate-spin" />
+            <Loader2 className="size-16 text-blue-500 animate-spin" />
           )}
           {status === "success" && (
-            <CheckCircle className="w-16 h-16 text-green-500" />
+            <CheckCircle className="size-16 text-green-500" />
           )}
-          {status === "error" && <XCircle className="w-16 h-16 text-red-500" />}
+          {status === "error" && <XCircle className="size-16 text-red-500" />}
         </div>
 
         <h1 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">
@@ -107,9 +107,9 @@ const VerifyEmail = () => {
                 className="flex items-center justify-center w-full py-3 px-4 bg-white border border-gray-300 dark:border-gray-600 dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 font-semibold rounded-lg transition-colors disabled:opacity-50"
               >
                 {isResending ? (
-                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                  <Loader2 className="size-5 mr-2 animate-spin" />
                 ) : (
-                  <Mail className="w-5 h-5 mr-2" />
+                  <Mail className="size-5 mr-2" />
                 )}
                 Gửi lại email xác nhận
               </button>

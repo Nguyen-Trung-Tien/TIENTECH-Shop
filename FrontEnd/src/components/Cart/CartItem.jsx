@@ -69,7 +69,7 @@ const CartItem = ({
       layout
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, height: 0 }}
+      exit={{ opacity: 0, scale: 0.95 }}
       className={`p-6 md:p-8 flex flex-col sm:flex-row items-center gap-6 md:gap-8 ${!isLast ? "border-b border-slate-100 dark:border-dark-border" : ""}`}
     >
       {/* Selection & Image */}
@@ -81,13 +81,13 @@ const CartItem = ({
             checked={isSelected}
             onChange={() => onSelect(item.id)}
           />
-          <div className="w-6 h-6 border-2 border-slate-200 dark:border-dark-border rounded-lg peer-checked:bg-primary peer-checked:border-primary transition-all duration-300 group-hover:border-primary/50 flex items-center justify-center">
-            <div className="w-2 h-2 bg-white rounded-full opacity-0 peer-checked:opacity-100 transition-opacity"></div>
+          <div className="size-6 border-2 border-slate-200 dark:border-dark-border rounded-lg peer-checked:bg-primary peer-checked:border-primary transition-all duration-300 group-hover:border-primary/50 flex items-center justify-center">
+            <div className="size-2 bg-white rounded-full opacity-0 peer-checked:opacity-100 transition-opacity"></div>
           </div>
         </label>
 
         <div
-          className="w-28 h-28 flex-shrink-0 bg-slate-50 dark:bg-dark-bg rounded-2xl border border-slate-100 dark:border-dark-border p-4 overflow-hidden group cursor-pointer shadow-sm hover:shadow-md transition-all"
+          className="size-28 flex-shrink-0 bg-slate-50 dark:bg-dark-bg rounded-2xl border border-slate-100 dark:border-dark-border p-4 overflow-hidden group cursor-pointer shadow-sm hover:shadow-md transition-all"
           onClick={() =>
             navigate(
               `/product-detail/${item.product?.id}?variant=${item.variant?.id}`,
@@ -158,7 +158,7 @@ const CartItem = ({
         <div className="flex items-center bg-slate-50 dark:bg-dark-bg rounded-2xl border border-slate-100 dark:border-dark-border p-1 shadow-inner">
           <button
             onClick={() => onUpdateQty(item.id, Math.max(1, item.quantity - 1))}
-            className="w-9 h-9 flex items-center justify-center bg-white dark:bg-dark-surface rounded-xl text-slate-500 dark:text-dark-text-secondary hover:text-primary transition-all shadow-sm active:scale-90"
+            className="size-9 flex items-center justify-center bg-white dark:bg-dark-surface rounded-xl text-slate-500 dark:text-dark-text-secondary hover:text-primary transition-all shadow-sm active:scale-90"
           >
             <FiMinus size={14} />
           </button>
@@ -167,7 +167,7 @@ const CartItem = ({
           </span>
           <button
             onClick={() => onUpdateQty(item.id, item.quantity + 1)}
-            className="w-9 h-9 flex items-center justify-center bg-white dark:bg-dark-surface rounded-xl text-slate-500 dark:text-dark-text-secondary hover:text-primary transition-all shadow-sm active:scale-90"
+            className="size-9 flex items-center justify-center bg-white dark:bg-dark-surface rounded-xl text-slate-500 dark:text-dark-text-secondary hover:text-primary transition-all shadow-sm active:scale-90"
           >
             <FiPlus size={14} />
           </button>
@@ -184,7 +184,7 @@ const CartItem = ({
           </div>
           <button
             onClick={() => onRemove(item.id)}
-            className="w-11 h-11 flex items-center justify-center text-danger hover:bg-danger/5 rounded-2xl transition-all active:scale-90"
+            className="size-11 flex items-center justify-center text-danger hover:bg-danger/5 rounded-2xl transition-all active:scale-90"
             title="Xóa khỏi giỏ"
           >
             <FiTrash2 size={20} />

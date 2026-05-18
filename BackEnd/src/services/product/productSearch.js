@@ -321,14 +321,22 @@ const searchSemanticProducts = async (query, limit = 5) => {
 
 const syncAllProductEmbeddings = async () => {
   const products = await db.Product.findAll();
-  let count = 0;
+  let successCount = 0;
+  let failCount = 0;
   for (const product of products) {
-    await updateProductEmbedding(product);
-    count++;
-    if (count % 10 === 0)
-      console.log(`Đã đồng bộ ${count}/${products.length} sản phẩm...`);
+    const success = await updateProductEmbedding(product);
+    if (success) successCount++;
+    else failCount++;
+    
+    if ((successCount + failCount) % 10 === 0)
+      console.log(`Đã xử lý ${successCount + failCount}/${products.length} sản phẩm...`);
   }
-  return { errCode: 0, message: `Đã đồng bộ xong ${count} sản phẩm.` };
+  return { 
+    errCode: 0, 
+    message: `Đồng bộ hoàn tất: ${successCount} thành công, ${failCount} thất bại.`,
+    successCount,
+    failCount
+  };
 };
 
 module.exports = {

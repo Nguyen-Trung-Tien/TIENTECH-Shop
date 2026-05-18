@@ -95,7 +95,38 @@ class CategoryService extends BaseService {
   }
 
   async deleteCategory(id) {
-    return await this.delete(id);
+    try {
+      const category = await db.Category.findByPk(id, {
+        include: [
+          { model: db.Product, as: "products", attributes: ["id"] },
+          { model: db.Category, as: "subcategories", attributes: ["id"] },
+        ],
+      });
+
+      if (!category) {
+        return { errCode: 1, errMessage: "Danh mục không tồn tại" };
+      }
+
+      if (category.products && category.products.length > 0) {
+        return {
+          errCode: 2,
+          errMessage: "Không thể xóa danh mục đang có sản phẩm. Vui lòng chuyển sản phẩm sang danh mục khác trước.",
+        };
+      }
+
+      if (category.subcategories && category.subcategories.length > 0) {
+        return {
+          errCode: 3,
+          errMessage: "Không thể xóa danh mục đang có danh mục con.",
+        };
+      }
+
+      await category.destroy();
+      return { errCode: 0, errMessage: "Xóa danh mục thành công" };
+    } catch (e) {
+      console.error("Error in CategoryService.deleteCategory:", e);
+      return { errCode: -1, errMessage: e.message };
+    }
   }
 }
 

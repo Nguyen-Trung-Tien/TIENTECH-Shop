@@ -13,6 +13,27 @@ import {
 import { getAddressesApi } from "../../api/addressApi";
 import { FaPaypal } from "react-icons/fa";
 
+const InputField = React.memo(({ label, name, value, icon: Icon, placeholder, type = "text", required = false, readOnly = false, onChange }) => (
+  <div className="space-y-1.5 flex-1">
+    <label className="text-[11px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest ml-1" htmlFor={name}>{label}</label>
+    <div className="relative group">
+      <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-dark-text-secondary group-focus-within:text-primary transition-colors">
+         <Icon size={16} />
+      </div>
+      <input 
+        type={type}
+        id={name} name={name}
+        value={value}
+        onChange={onChange}
+        required={required}
+        readOnly={readOnly}
+        placeholder={placeholder}
+        className={`w-full h-12 pl-11 pr-4 bg-slate-50 dark:bg-dark-bg border-2 border-transparent rounded-xl text-sm font-medium focus:bg-white dark:focus:bg-dark-surface focus:border-primary/20 outline-none transition-all placeholder:text-slate-300 dark:placeholder:text-slate-700 text-slate-900 dark:text-white ${readOnly ? 'cursor-not-allowed opacity-70' : ''}`}
+      />
+    </div>
+  </div>
+));
+
 const CheckoutForm = ({ formData, setFormData, user }) => {
   const [addresses, setAddresses] = useState([]);
   const [showManual, setShowManual] = useState(false);
@@ -64,33 +85,12 @@ const CheckoutForm = ({ formData, setFormData, user }) => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const InputField = ({ label, name, value, icon: Icon, placeholder, type = "text", required = false, readOnly = false }) => (
-    <div className="space-y-1.5 flex-1">
-      <label className="text-[11px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest ml-1">{label}</label>
-      <div className="relative group">
-        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-dark-text-secondary group-focus-within:text-primary transition-colors">
-           <Icon size={16} />
-        </div>
-        <input 
-          type={type}
-          name={name}
-          value={value}
-          onChange={handleChange}
-          required={required}
-          readOnly={readOnly}
-          placeholder={placeholder}
-          className={`w-full h-12 pl-11 pr-4 bg-slate-50 dark:bg-dark-bg border-2 border-transparent rounded-xl text-sm font-medium focus:bg-white dark:focus:bg-dark-surface focus:border-primary/20 outline-none transition-all placeholder:text-slate-300 dark:placeholder:text-slate-700 text-slate-900 dark:text-white ${readOnly ? 'cursor-not-allowed opacity-70' : ''}`}
-        />
-      </div>
-    </div>
-  );
-
   return (
     <div className="space-y-8">
       {/* Shipping Info */}
       <section className="bg-white dark:bg-dark-surface rounded-[32px] p-8 shadow-sm border border-slate-100 dark:border-dark-border">
         <div className="flex items-center gap-3 mb-8">
-          <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+          <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
             <FiTruck size={20} />
           </div>
           <h2 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-widest">Thông tin giao hàng</h2>
@@ -100,7 +100,7 @@ const CheckoutForm = ({ formData, setFormData, user }) => {
           {/* Address Selector */}
           {addresses.length > 0 && (
             <div className="space-y-4">
-              <label className="text-[11px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest ml-1">Chọn địa chỉ đã lưu</label>
+              <p className="text-[11px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest ml-1">Chọn địa chỉ đã lưu</p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {addresses.map((addr) => {
                   const fullAddrStr = [addr.detailAddress, addr.ward, addr.province]
@@ -164,12 +164,12 @@ const CheckoutForm = ({ formData, setFormData, user }) => {
 
           {(showManual || addresses.length === 0) && (
             <div className="space-y-1.5">
-              <label className="text-[11px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest ml-1">Nhập địa chỉ nhận hàng</label>
+              <label className="text-[11px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest ml-1" htmlFor="shippingAddress">Nhập địa chỉ nhận hàng</label>
               <div className="relative group">
                 <div className="absolute left-4 top-6 text-slate-400 dark:text-dark-text-secondary group-focus-within:text-primary transition-colors">
                   <FiMapPin size={16} />
                 </div>
-                <textarea 
+                <textarea id="shippingAddress" 
                   name="shippingAddress"
                   value={formData.shippingAddress}
                   onChange={handleChange}
@@ -193,7 +193,7 @@ const CheckoutForm = ({ formData, setFormData, user }) => {
       {/* Payment Method */}
       <section className="bg-white dark:bg-dark-surface rounded-[32px] p-8 shadow-sm border border-slate-100 dark:border-dark-border">
         <div className="flex items-center gap-3 mb-8">
-          <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+          <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
             <FiCreditCard size={20} />
           </div>
           <h2 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-widest">Phương thức thanh toán</h2>
@@ -209,7 +209,7 @@ const CheckoutForm = ({ formData, setFormData, user }) => {
                 : "border-slate-50 dark:border-dark-bg bg-slate-50 dark:bg-dark-bg hover:border-slate-200 dark:hover:border-slate-700"
             }`}
           >
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${formData.paymentMethod === "COD" ? "bg-primary text-white" : "bg-slate-100 dark:bg-dark-surface text-slate-400 dark:text-dark-text-secondary"}`}>
+            <div className={`size-10 rounded-xl flex items-center justify-center ${formData.paymentMethod === "COD" ? "bg-primary text-white" : "bg-slate-100 dark:bg-dark-surface text-slate-400 dark:text-dark-text-secondary"}`}>
               <FiDollarSign size={20} />
             </div>
             <div className="text-left">
@@ -227,7 +227,7 @@ const CheckoutForm = ({ formData, setFormData, user }) => {
                 : "border-slate-50 dark:border-dark-bg bg-slate-50 dark:bg-dark-bg hover:border-slate-200 dark:hover:border-slate-700"
             }`}
           >
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${formData.paymentMethod === "VNPAY" ? "bg-primary text-white" : "bg-slate-100 dark:bg-dark-surface text-slate-400 dark:text-dark-text-secondary"}`}>
+            <div className={`size-10 rounded-xl flex items-center justify-center ${formData.paymentMethod === "VNPAY" ? "bg-primary text-white" : "bg-slate-100 dark:bg-dark-surface text-slate-400 dark:text-dark-text-secondary"}`}>
               <FiCreditCard size={20} />
             </div>
             <div className="text-left">
@@ -245,7 +245,7 @@ const CheckoutForm = ({ formData, setFormData, user }) => {
                 : "border-slate-50 dark:border-dark-bg bg-slate-50 dark:bg-dark-bg hover:border-slate-200 dark:hover:border-slate-700"
             }`}
           >
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${formData.paymentMethod === "PAYPAL" ? "bg-primary text-white" : "bg-slate-100 dark:bg-dark-surface text-slate-400 dark:text-dark-text-secondary"}`}>
+            <div className={`size-10 rounded-xl flex items-center justify-center ${formData.paymentMethod === "PAYPAL" ? "bg-primary text-white" : "bg-slate-100 dark:bg-dark-surface text-slate-400 dark:text-dark-text-secondary"}`}>
               <FaPaypal size={20} />
             </div>
             <div className="text-left">

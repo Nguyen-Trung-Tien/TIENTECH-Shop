@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { FaSpinner } from "react-icons/fa";
 import { FiX, FiSend, FiZap } from "react-icons/fi";
 import { motion as Motion, AnimatePresence } from "framer-motion";
+
 import { fengShuiChatApi } from "../../api/chatApi";
 
 const STEP = { WELCOME: 0, BIRTH: 1, GENDER: 2, GOAL: 3 };
@@ -104,17 +105,29 @@ const FengShuiChat = ({ setGlobalBirthYear }) => {
             message: text,
           });
 
-          if (res.fsData) setFsData(res.fsData);
+          if (res.errCode === 0) {
+            const data = res.data;
+            if (data.fsData) setFsData(data.fsData);
 
-          setMessages((prev) => [
-            ...prev.filter((m) => m.type !== "loading"),
-            {
-              sender: "bot",
-              text: res.reply,
-              recommendedProducts: res.recommendedProducts,
-              fsInfo: res.fsData,
-            },
-          ]);
+            setMessages((prev) => [
+              ...prev.filter((m) => m.type !== "loading"),
+              {
+                sender: "bot",
+                text: data.reply,
+                recommendedProducts: data.recommendedProducts,
+                fsInfo: data.fsData,
+              },
+            ]);
+          } else {
+            setMessages((prev) => [
+              ...prev.filter((m) => m.type !== "loading"),
+              {
+                sender: "bot",
+                text:
+                  res.errMessage || "Xin lỗi, tôi chưa thể gieo quẻ cho bạn.",
+              },
+            ]);
+          }
         } catch (err) {
           setMessages((prev) => [
             ...prev.filter((m) => m.type !== "loading"),
@@ -134,7 +147,7 @@ const FengShuiChat = ({ setGlobalBirthYear }) => {
     <>
       <button
         onClick={handleShow}
-        className="fixed bottom-24 right-6 w-14 h-14 bg-blue-600 text-white rounded-full shadow-xl shadow-blue-900/20 flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-[999] border-4 border-blue-100 dark:border-blue-900/30 overflow-hidden group"
+        className="fixed bottom-24 right-6 size-14 bg-blue-600 text-white rounded-full shadow-xl shadow-blue-900/20 flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-[999] border-4 border-blue-100 dark:border-blue-900/30 overflow-hidden group"
       >
         <div className="absolute inset-0 bg-gradient-to-tr from-blue-700 to-blue-400 opacity-0 group-hover:opacity-100 transition-opacity" />
         <FiZap size={24} className="relative z-10 animate-pulse" />
@@ -160,7 +173,7 @@ const FengShuiChat = ({ setGlobalBirthYear }) => {
               {/* Header */}
               <div className="px-6 py-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-gradient-to-r from-blue-700 to-blue-500 text-white">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30 shadow-inner">
+                  <div className="size-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30 shadow-inner">
                     <FiZap size={24} />
                   </div>
                   <div>
@@ -174,7 +187,7 @@ const FengShuiChat = ({ setGlobalBirthYear }) => {
                 </div>
                 <button
                   onClick={handleClose}
-                  className="w-10 h-10 rounded-xl flex items-center justify-center hover:bg-white/10 transition-all border border-white/10"
+                  className="size-10 rounded-xl flex items-center justify-center hover:bg-white/10 transition-all border border-white/10"
                 >
                   <FiX size={24} />
                 </button>
@@ -185,7 +198,7 @@ const FengShuiChat = ({ setGlobalBirthYear }) => {
                 <div className="px-6 py-3 flex items-center justify-between border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900">
                   <div className="flex items-center gap-3">
                     <div
-                      className="w-2 h-2 rounded-full animate-ping"
+                      className="size-2 rounded-full animate-ping"
                       style={{ backgroundColor: fsData.hex || "#3b82f6" }}
                     />
                     <span className="text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">
@@ -196,7 +209,7 @@ const FengShuiChat = ({ setGlobalBirthYear }) => {
                     {fsData.luckyNumbers.map((n) => (
                       <span
                         key={n}
-                        className="w-5 h-5 rounded-md bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-[10px] font-black text-blue-600 shadow-sm"
+                        className="size-5 rounded-md bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-[10px] font-black text-blue-600 shadow-sm"
                       >
                         {n}
                       </span>
@@ -235,7 +248,11 @@ const FengShuiChat = ({ setGlobalBirthYear }) => {
                         <div className="overflow-hidden rounded-3xl border border-slate-100 dark:border-slate-700 shadow-xl shadow-slate-200/50 dark:shadow-none">
                           <div
                             className="h-2"
-                            style={{ background: msg.fsInfo.gradient || "linear-gradient(to right, #3b82f6, #2563eb)" }}
+                            style={{
+                              background:
+                                msg.fsInfo.gradient ||
+                                "linear-gradient(to right, #3b82f6, #2563eb)",
+                            }}
                           />
                           <div className="p-4 bg-white dark:bg-slate-800 space-y-4">
                             <div className="flex justify-between items-end">
@@ -291,7 +308,7 @@ const FengShuiChat = ({ setGlobalBirthYear }) => {
                                 href={`/product-detail/${prod.slug || prod.id}`}
                                 className="flex items-center gap-4 p-3 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 hover:border-blue-400 dark:hover:border-blue-600 transition-all group shadow-sm"
                               >
-                                <div className="w-14 h-14 rounded-xl bg-slate-50 dark:bg-slate-900 overflow-hidden flex-shrink-0 border border-slate-100 dark:border-slate-700 group-hover:scale-105 transition-transform">
+                                <div className="size-14 rounded-xl bg-slate-50 dark:bg-slate-900 overflow-hidden flex-shrink-0 border border-slate-100 dark:border-slate-700 group-hover:scale-105 transition-transform">
                                   <img
                                     src={prod.image}
                                     alt={prod.name}
@@ -365,7 +382,7 @@ const FengShuiChat = ({ setGlobalBirthYear }) => {
                   <button
                     onClick={handleSend}
                     disabled={loading || !input.trim()}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center bg-blue-600 text-white rounded-xl shadow-lg shadow-blue-900/20 hover:bg-blue-700 active:scale-95 disabled:opacity-50 transition-all"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 size-10 flex items-center justify-center bg-blue-600 text-white rounded-xl shadow-lg shadow-blue-900/20 hover:bg-blue-700 active:scale-95 disabled:opacity-50 transition-all"
                   >
                     <FiSend size={18} />
                   </button>

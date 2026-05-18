@@ -29,7 +29,7 @@ const CheckoutFailed = () => {
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ type: "spring", stiffness: 200, delay: 0.2 }}
-          className="w-24 h-24 bg-danger rounded-3xl flex items-center justify-center text-white mx-auto mb-10 shadow-xl shadow-danger/30 dark:shadow-none"
+          className="size-24 bg-danger rounded-3xl flex items-center justify-center text-white mx-auto mb-10 shadow-xl shadow-danger/30 dark:shadow-none"
         >
           <FiXCircle size={48} />
         </Motion.div>

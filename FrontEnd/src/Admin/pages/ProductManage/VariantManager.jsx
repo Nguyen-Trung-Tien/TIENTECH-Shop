@@ -18,7 +18,7 @@ import {
   FiPackage,
 } from "react-icons/fi";
 import { toast } from "react-toastify";
-import { motion as Motion, AnimatePresence } from "framer-motion";
+import { m as Motion, AnimatePresence } from "framer-motion";
 import { deleteVariant, updateVariant } from "../../../api/variantApi";
 import { getAllAttributesApi } from "../../../api/attributeApi";
 import { ConfirmModal } from "../../../components/UI/Modal";
@@ -233,7 +233,7 @@ const VariantManager = ({
   return (
     <div className="space-y-8">
       <div className="flex items-center gap-3 border-b border-slate-100 dark:border-dark-border pb-3">
-        <div className="w-10 h-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-200 dark:shadow-none">
+        <div className="size-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-200 dark:shadow-none">
           <FiSettings size={20} />
         </div>
         <div>
@@ -270,7 +270,7 @@ const VariantManager = ({
               <button
                 type="button"
                 onClick={() => removeOption(optIdx)}
-                className="absolute -top-2 -right-2 w-8 h-8 bg-white dark:bg-dark-bg border border-slate-200 dark:border-dark-border text-rose-500 rounded-2xl flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition-all z-10 hover:bg-rose-50 dark:hover:bg-rose-900/20"
+                className="absolute -top-2 -right-2 size-8 bg-white dark:bg-dark-bg border border-slate-200 dark:border-dark-border text-rose-500 rounded-2xl flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition-all z-10 hover:bg-rose-50 dark:hover:bg-rose-900/20"
               >
                 <FiX size={16} />
               </button>
@@ -337,7 +337,7 @@ const VariantManager = ({
                         <button
                           type="button"
                           onClick={() => removeOptionValue(optIdx, valIdx)}
-                          className="w-7 h-7 rounded-xl text-indigo-300 dark:text-indigo-700 hover:text-rose-500 dark:hover:text-rose-400 hover:bg-white dark:hover:bg-dark-bg transition-all flex items-center justify-center"
+                          className="size-7 rounded-xl text-indigo-300 dark:text-indigo-700 hover:text-rose-500 dark:hover:text-rose-400 hover:bg-white dark:hover:bg-dark-bg transition-all flex items-center justify-center"
                         >
                           <FiX size={14} />
                         </button>
@@ -391,6 +391,7 @@ const VariantManager = ({
           <div className="grid grid-cols-1 gap-4">
             {displayVariants.map((v, idx) => {
               const isExpanded = expandedIdx === idx;
+              const variantKey = v.id || v.sku || `variant-${idx}`;
 
               // Normalize attributes for display and editing
               let variantAttrs = {};
@@ -406,7 +407,7 @@ const VariantManager = ({
 
               return (
                 <div
-                  key={idx}
+                  key={variantKey}
                   className={`rounded-[2.5rem] border transition-all duration-500 ${isExpanded ? "border-indigo-500 shadow-2xl shadow-indigo-100 dark:shadow-none bg-white dark:bg-dark-surface" : "border-slate-100 dark:border-dark-border bg-slate-50/20 dark:bg-dark-bg/20 hover:bg-white dark:hover:bg-dark-surface hover:border-indigo-200 dark:hover:border-indigo-500"}`}
                 >
                   <div
@@ -444,7 +445,7 @@ const VariantManager = ({
                         </p>
                       </div>
                       <div
-                        className={`w-10 h-10 rounded-2xl flex items-center justify-center transition-all duration-500 ${isExpanded ? "rotate-180 bg-indigo-600 text-white shadow-xl shadow-indigo-200 dark:shadow-none" : "bg-white dark:bg-dark-bg text-slate-400 dark:text-dark-text-secondary border border-slate-100 dark:border-dark-border"}`}
+                        className={`size-10 rounded-2xl flex items-center justify-center transition-all duration-500 ${isExpanded ? "rotate-180 bg-indigo-600 text-white shadow-xl shadow-indigo-200 dark:shadow-none" : "bg-white dark:bg-dark-bg text-slate-400 dark:text-dark-text-secondary border border-slate-100 dark:border-dark-border"}`}
                       >
                         <FiChevronDown size={20} />
                       </div>
@@ -454,9 +455,11 @@ const VariantManager = ({
                   <AnimatePresence>
                     {isExpanded && (
                       <Motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
+                        layout
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.3, ease: "easeInOut" }}
                         className="overflow-hidden border-t border-slate-50 dark:border-dark-border"
                       >
                         <div className="p-10 space-y-10 bg-white dark:bg-dark-surface rounded-b-[2.5rem]">

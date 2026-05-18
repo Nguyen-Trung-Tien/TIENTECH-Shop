@@ -6,7 +6,26 @@ import {
 } from "react-icons/fi";
 import { globalSearchApi } from "../../../api/adminApi";
 import { AdminTableSkeleton } from "../../components/AdminLoading";
-import { motion as Motion } from "framer-motion";
+import { m } from "framer-motion";
+
+const priceFormatter = new Intl.NumberFormat("vi-VN", {
+  style: "currency",
+  currency: "VND",
+});
+
+const SectionHeader = React.memo(({ icon: Icon, title, count, colorClass }) => (
+  <div className="flex items-center justify-between mb-6 bg-white dark:bg-dark-surface p-4 rounded-2xl border border-slate-100 dark:border-dark-border shadow-sm transition-colors">
+    <div className="flex items-center gap-3">
+      <div className={`size-10 rounded-xl ${colorClass} flex items-center justify-center text-white shadow-lg`}>
+        <Icon />
+      </div>
+      <div>
+        <h3 className="text-sm font-black uppercase tracking-widest text-slate-800 dark:text-white">{title}</h3>
+        <p className="text-[10px] text-slate-400 dark:text-dark-text-secondary font-bold uppercase">Tìm thấy {count} kết quả</p>
+      </div>
+    </div>
+  </div>
+));
 
 const AdminSearch = () => {
   const [searchParams] = useSearchParams();
@@ -47,25 +66,8 @@ const AdminSearch = () => {
   }, [fetchResults]);
 
   const formatPrice = (price) => {
-    return new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: "VND",
-    }).format(price);
+    return priceFormatter.format(price);
   };
-
-  const SectionHeader = ({ icon: Icon, title, count, colorClass }) => (
-    <div className="flex items-center justify-between mb-6 bg-white dark:bg-dark-surface p-4 rounded-2xl border border-slate-100 dark:border-dark-border shadow-sm transition-colors">
-      <div className="flex items-center gap-3">
-        <div className={`w-10 h-10 rounded-xl ${colorClass} flex items-center justify-center text-white shadow-lg`}>
-          <Icon />
-        </div>
-        <div>
-          <h3 className="text-sm font-black uppercase tracking-widest text-slate-800 dark:text-white">{title}</h3>
-          <p className="text-[10px] text-slate-400 dark:text-dark-text-secondary font-bold uppercase">Tìm thấy {count} kết quả</p>
-        </div>
-      </div>
-    </div>
-  );
 
   // Tính tổng kết quả an toàn
   const totalCount = (results?.products?.length || 0) + 
@@ -127,7 +129,7 @@ const AdminSearch = () => {
                     className="bg-white dark:bg-dark-surface rounded-[2rem] border border-slate-100 dark:border-dark-border p-5 shadow-soft hover:shadow-xl dark:hover:shadow-none transition-all group"
                   >
                     <div className="flex gap-4">
-                      <div className="w-20 h-20 rounded-2xl bg-slate-50 dark:bg-dark-bg border border-slate-100 dark:border-dark-border p-2 shrink-0 overflow-hidden group-hover:scale-105 transition-transform">
+                      <div className="size-20 rounded-2xl bg-slate-50 dark:bg-dark-bg border border-slate-100 dark:border-dark-border p-2 shrink-0 overflow-hidden group-hover:scale-105 transition-transform">
                         <img src={p.image} alt="" className="w-full h-full object-contain" />
                       </div>
                       <div className="min-w-0 flex-1">
@@ -236,7 +238,7 @@ const AdminSearch = () => {
                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                   {results.users.map((u) => (
                     <div key={u.id} className="bg-white dark:bg-dark-surface rounded-[2rem] border border-slate-100 dark:border-dark-border p-6 shadow-soft hover:shadow-xl dark:hover:shadow-none transition-all group text-center">
-                       <div className="w-16 h-16 rounded-2xl bg-rose-50 dark:bg-rose-900/20 flex items-center justify-center text-rose-500 dark:text-rose-400 text-2xl font-black mx-auto mb-4 group-hover:bg-rose-500 dark:group-hover:bg-rose-500 group-hover:text-white transition-all shadow-inner">
+                       <div className="size-16 rounded-2xl bg-rose-50 dark:bg-rose-900/20 flex items-center justify-center text-rose-500 dark:text-rose-400 text-2xl font-black mx-auto mb-4 group-hover:bg-rose-500 dark:group-hover:bg-rose-500 group-hover:text-white transition-all shadow-inner">
                           {u.username?.charAt(0).toUpperCase() || "U"}
                        </div>
                        <h4 className="font-black text-slate-800 dark:text-white truncate">{u.username}</h4>
@@ -262,7 +264,7 @@ const AdminSearch = () => {
       {/* Empty State */}
       {!loading && totalCount === 0 && (
         <div className="py-20 text-center bg-white dark:bg-dark-surface rounded-[3rem] border border-slate-100 dark:border-dark-border shadow-xl transition-colors">
-           <div className="w-24 h-24 bg-slate-50 dark:bg-dark-bg rounded-full flex items-center justify-center mx-auto mb-6 transition-colors">
+           <div className="size-24 bg-slate-50 dark:bg-dark-bg rounded-full flex items-center justify-center mx-auto mb-6 transition-colors">
               <FiX className="text-slate-200 dark:text-dark-border text-5xl" />
            </div>
            <h2 className="text-2xl font-black text-slate-900 dark:text-white">Rất tiếc, không có kết quả nào!</h2>

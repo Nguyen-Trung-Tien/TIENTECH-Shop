@@ -33,7 +33,7 @@ const BrandManage = () => {
     {
       header: "Logo",
       render: (item) => (
-        <div className="w-14 h-14 rounded-2xl bg-slate-100 overflow-hidden border border-slate-100 shadow-inner">
+        <div className="size-14 rounded-2xl bg-slate-100 overflow-hidden border border-slate-100 shadow-inner">
           {item.image ? (
             <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
           ) : (

@@ -53,7 +53,7 @@ const AIInsightsWidget = () => {
       >
         <div className="flex items-center gap-4">
           <div
-            className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-lg transition-all ${isExpanded ? "bg-indigo-600 text-white scale-110 shadow-indigo-600/20" : "bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-dark-text-secondary"}`}
+            className={`size-10 rounded-xl flex items-center justify-center shadow-lg transition-all ${isExpanded ? "bg-indigo-600 text-white scale-110 shadow-indigo-600/20" : "bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-dark-text-secondary"}`}
           >
             <FiCpu className={isExpanded ? "animate-pulse" : ""} />
           </div>
@@ -73,7 +73,7 @@ const AIInsightsWidget = () => {
             </span>
           )}
           <div
-            className={`w-8 h-8 rounded-lg flex items-center justify-center bg-slate-100 dark:bg-white/5 text-slate-400 transition-transform ${isExpanded ? "rotate-0" : "rotate-180"}`}
+            className={`size-8 rounded-lg flex items-center justify-center bg-slate-100 dark:bg-white/5 text-slate-400 transition-transform ${isExpanded ? "rotate-0" : "rotate-180"}`}
           >
             <FiChevronUp />
           </div>
@@ -83,14 +83,15 @@ const AIInsightsWidget = () => {
       <AnimatePresence>
         {isExpanded && (
           <Motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
+            layout
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             className="overflow-hidden"
           >
             {loading ? (
               <div className="p-12 flex flex-col items-center gap-4">
-                <div className="w-8 h-8 border-2 border-indigo-600/20 border-t-indigo-600 rounded-full animate-spin"></div>
+                <div className="size-8 border-2 border-indigo-600/20 border-t-indigo-600 rounded-full animate-spin"></div>
                 <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-dark-text-secondary">
                   Đang phân tích dữ liệu hệ thống...
                 </p>
@@ -109,7 +110,7 @@ const AIInsightsWidget = () => {
                           key={i}
                           className="flex items-start gap-3 text-xs text-slate-600 dark:text-slate-300 leading-relaxed"
                         >
-                          <span className="w-1 h-1 rounded-full bg-rose-500 mt-1.5 flex-shrink-0"></span>
+                          <span className="size-1 rounded-full bg-rose-500 mt-1.5 flex-shrink-0"></span>
                           {item}
                         </li>
                       ))}
@@ -129,7 +130,7 @@ const AIInsightsWidget = () => {
                           key={i}
                           className="flex items-start gap-3 text-xs text-slate-600 dark:text-slate-300 leading-relaxed"
                         >
-                          <span className="w-1 h-1 rounded-full bg-sky-500 mt-1.5 flex-shrink-0"></span>
+                          <span className="size-1 rounded-full bg-sky-500 mt-1.5 flex-shrink-0"></span>
                           {item}
                         </li>
                       ))}
@@ -140,7 +141,7 @@ const AIInsightsWidget = () => {
                 {/* Strategic Advice */}
                 <div className="md:col-span-2 border-t border-slate-100 dark:border-dark-border pt-6 mt-2">
                   <div className="bg-indigo-50/50 dark:bg-indigo-500/5 border border-indigo-100 dark:border-indigo-500/10 rounded-2xl p-6 flex items-start gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0">
+                    <div className="size-10 rounded-xl bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0">
                       <FiAlertCircle size={20} />
                     </div>
                     <div>

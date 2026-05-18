@@ -7,6 +7,7 @@ export const ORDER_STATUS = {
   CANCELLED: "cancelled",
   CANCEL_REQUESTED: "cancel_requested",
   RETURNED: "returned",
+  COMPLETED: "completed",
 };
 
 export const PAYMENT_STATUS = {
@@ -21,6 +22,7 @@ export const orderStatusMap = {
   [ORDER_STATUS.PROCESSING]: { label: "Đang xử lý", variant: "primary" },
   [ORDER_STATUS.SHIPPING]: { label: "Đang giao hàng", variant: "primary" },
   [ORDER_STATUS.DELIVERED]: { label: "Đã giao hàng", variant: "success" },
+  [ORDER_STATUS.COMPLETED]: { label: "Đã nhận hàng", variant: "success" },
   [ORDER_STATUS.CANCELLED]: { label: "Đã hủy", variant: "danger" },
   [ORDER_STATUS.CANCEL_REQUESTED]: { label: "Yêu cầu hủy", variant: "danger" },
   [ORDER_STATUS.RETURNED]: { label: "Trả hàng", variant: "secondary" },

@@ -31,6 +31,7 @@ const handleCreateProduct = async (req, res) => {
     if (data.brandId) data.brandId = parseInt(data.brandId);
     if (data.categoryId) data.categoryId = parseInt(data.categoryId);
     if (data.isActive !== undefined) data.isActive = parseBoolean(data.isActive);
+    if (data.hasVariants !== undefined) data.hasVariants = parseBoolean(data.hasVariants);
 
     const files = req.files || {};
     const primaryFile = files.image?.[0] || null;
@@ -134,8 +135,8 @@ const handleUpdateProduct = async (req, res) => {
     if (data.categoryId) data.categoryId = parseInt(data.categoryId);
     if (data.stock !== undefined) data.stock = parseInt(data.stock);
     if (data.price !== undefined) data.basePrice = data.price;
-    if (data.isActive !== undefined)
-      data.isActive = parseBoolean(data.isActive);
+    if (data.isActive !== undefined) data.isActive = parseBoolean(data.isActive);
+    if (data.hasVariants !== undefined) data.hasVariants = parseBoolean(data.hasVariants);
 
     if (data.flashSaleStart) {
       const startDate = new Date(data.flashSaleStart);

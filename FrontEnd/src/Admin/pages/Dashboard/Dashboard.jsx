@@ -141,14 +141,14 @@ const Dashboard = () => {
 
       {loading ? (
         <div className="flex flex-col items-center justify-center py-32 bg-white dark:bg-dark-surface rounded-[40px] border border-slate-100 dark:border-dark-border shadow-soft">
-          <div className="w-16 h-16 border-4 border-indigo-100 dark:border-indigo-900 border-t-indigo-600 rounded-full animate-spin mb-6"></div>
+          <div className="size-16 border-4 border-indigo-100 dark:border-indigo-900 border-t-indigo-600 rounded-full animate-spin mb-6"></div>
           <p className="text-slate-400 dark:text-dark-text-secondary font-black text-[10px] tracking-[0.2em] uppercase">
             Đang đồng bộ dữ liệu...
           </p>
         </div>
       ) : error ? (
         <div className="p-8 bg-rose-50 dark:bg-rose-900/10 border border-rose-100 dark:border-rose-900/20 rounded-3xl text-rose-600 dark:text-rose-400 text-sm font-bold flex items-center gap-4 shadow-sm">
-          <div className="w-12 h-12 bg-rose-500 text-white rounded-2xl flex items-center justify-center text-xl shadow-lg shadow-rose-500/20">
+          <div className="size-12 bg-rose-500 text-white rounded-2xl flex items-center justify-center text-xl shadow-lg shadow-rose-500/20">
             !
           </div>
           <p>{error}</p>
@@ -179,7 +179,7 @@ const Dashboard = () => {
                 </p>
               </div>
               <div className="flex items-center gap-2 px-4 py-2 bg-slate-50 dark:bg-dark-bg rounded-full border border-slate-100 dark:border-dark-border">
-                <div className="w-2 h-2 rounded-full bg-indigo-600 animate-pulse"></div>
+                <div className="size-2 rounded-full bg-indigo-600 animate-pulse"></div>
                 <span className="text-[10px] font-black text-slate-500 dark:text-dark-text-secondary uppercase tracking-widest">
                   Live Updates
                 </span>

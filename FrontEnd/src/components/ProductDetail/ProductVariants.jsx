@@ -171,7 +171,7 @@ const ProductVariants = ({ product = {}, selectedVariantId, onSelect }) => {
                 key={i}
                 className="flex items-center gap-3 p-3.5 bg-slate-50 border border-slate-100 rounded-2xl"
               >
-                <div className="w-8 h-8 rounded-xl bg-white shadow-sm flex items-center justify-center text-primary">
+                <div className="size-8 rounded-xl bg-white shadow-sm flex items-center justify-center text-primary">
                   <spec.icon size={16} />
                 </div>
                 <div className="min-w-0">

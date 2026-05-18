@@ -41,7 +41,8 @@
     "sequelize": "^6.37.7",
     "socket.io": "^4.8.3",
     "uuid": "^13.0.0",
-    "vnpay": "^2.4.4"
+    "vnpay": "^2.4.4",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "cross-env": "^7.0.3",

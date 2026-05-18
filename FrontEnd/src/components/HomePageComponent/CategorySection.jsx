@@ -39,10 +39,11 @@ const CategorySection = React.memo(({ categories = [], loading }) => {
             Danh Mục Nổi Bật
           </Motion.h2>
           <Motion.div
-            initial={{ width: 0 }}
-            whileInView={{ width: 60 }}
+            initial={{ scaleX: 0 }}
+            whileInView={{ scaleX: 1 }}
+            style={{ originX: 0 }}
             viewport={{ once: true }}
-            className="h-1.5 bg-blue-600 mt-3 rounded-full shadow-lg shadow-blue-500/20"
+            className="h-1.5 w-[60px] bg-blue-600 mt-3 rounded-full shadow-lg shadow-blue-500/20"
           ></Motion.div>
         </div>
 
@@ -76,7 +77,7 @@ const CategorySection = React.memo(({ categories = [], loading }) => {
                 )}
 
                 <div className="absolute inset-x-0 bottom-0 p-3 text-center">
-                  <h3 className="text-white font-bold text-xs md:text-sm tracking-wide uppercase transition-transform duration-300 group-hover:translate-y-[-2px]">
+                  <h3 className="text-white font-semibold text-xs md:text-sm tracking-wide uppercase transition-transform duration-300 group-hover:translate-y-[-2px]">
                     {cat.name}
                   </h3>
                   <div className="h-0.5 w-0 bg-blue-500 mx-auto group-hover:w-8 transition-all duration-300 rounded-full mt-1.5"></div>

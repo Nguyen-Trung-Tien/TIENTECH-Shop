@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   FiBox,
   FiPlus,
@@ -22,6 +22,7 @@ import {
   FiSettings,
 } from "react-icons/fi";
 import { motion as Motion, AnimatePresence } from "framer-motion";
+
 import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import {
@@ -42,6 +43,7 @@ import {
 } from "../../components/AdminLoading";
 import AppPagination from "../../../components/Pagination/Pagination";
 import VariantManager from "./VariantManager";
+import MultiSelectDropdown from "./components/MultiSelectDropdown";
 import { ConfirmModal } from "../../../components/UI/Modal";
 
 const ProductManage = () => {
@@ -77,6 +79,7 @@ const ProductManage = () => {
     categoryId: "",
     brandId: "",
     isActive: true,
+    hasVariants: false,
     isFlashSale: false,
     flashSalePrice: "",
     flashSaleStart: "",
@@ -89,6 +92,7 @@ const ProductManage = () => {
   const [imagePreview, setImagePreview] = useState(null);
   const [galleryFiles, setGalleryFiles] = useState([]);
   const [galleryPreviews, setGalleryPreviews] = useState([]);
+  const [deletedImages, setDeletedImages] = useState([]);
   const [variants, setVariants] = useState([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -117,7 +121,7 @@ const ProductManage = () => {
           isFlashSale: flashSaleOnly,
           isAdmin: true,
           ...Object.fromEntries(
-            Object.entries(attrFilters).map(([k, v]) => [k, v.join(",")])
+            Object.entries(attrFilters).map(([k, v]) => [k, v.join(",")]),
           ),
         });
 
@@ -135,65 +139,29 @@ const ProductManage = () => {
     [searchTerm, filterCategories, filterBrands, flashSaleOnly, attrFilters],
   );
 
-  const toggleFilter = (array, value, setFn) => {
-    if (array.includes(value)) {
-      setFn(array.filter((i) => i !== value));
-    } else {
-      setFn([...array, value]);
-    }
-  };
-
-  const toggleAttrFilter = (code, value) => {
-    const current = attrFilters[code] || [];
-    if (current.includes(value)) {
-      setAttrFilters({ ...attrFilters, [code]: current.filter((v) => v !== value) });
-    } else {
-      setAttrFilters({ ...attrFilters, [code]: [...current, value] });
-    }
-  };
-
-  // UI Component cho Dropdown chọn nhiều
-  const MultiSelectDropdown = ({ label, options, selected, onToggle, icon }) => {
-    const [isOpen, setIsOpen] = useState(false);
-    return (
-      <div className="relative flex-1 min-w-[160px]">
-        <button
-          type="button"
-          onClick={() => setIsOpen(!isOpen)}
-          className={`input-modern h-12 w-full px-4 flex items-center justify-between bg-white dark:bg-dark-bg border-slate-200 dark:border-dark-border font-bold text-[10px] uppercase tracking-widest transition-all ${selected.length > 0 ? "border-indigo-500 ring-1 ring-indigo-500/20 text-indigo-600 dark:text-indigo-400" : "text-slate-900 dark:text-dark-text-primary"}`}
-        >
-          <span className="truncate flex items-center gap-2">
-            {icon}
-            {selected.length > 0 ? `${label} (${selected.length})` : label}
-          </span>
-          <FiChevronDown className={`transition-transform ${isOpen ? "rotate-180" : ""}`} />
-        </button>
-        {isOpen && (
-          <>
-            <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)}></div>
-            <div className="absolute top-full left-0 right-0 mt-2 p-2 bg-white dark:bg-dark-surface border border-slate-200 dark:border-dark-border rounded-2xl shadow-2xl z-20 max-h-60 overflow-y-auto custom-scrollbar">
-              {options.map((opt) => (
-                <label
-                  key={opt.id || opt.value}
-                  className="flex items-center gap-3 px-3 py-2 hover:bg-slate-50 dark:hover:bg-dark-bg rounded-xl cursor-pointer group"
-                >
-                  <input
-                    type="checkbox"
-                    checked={selected.includes(opt.id || opt.value)}
-                    onChange={() => onToggle(opt.id || opt.value)}
-                    className="form-checkbox h-4 w-4 text-indigo-600 rounded border-slate-300 dark:border-dark-border dark:bg-dark-bg"
-                  />
-                  <span className="text-xs font-bold text-slate-700 dark:text-dark-text-primary group-hover:text-indigo-600 dark:group-hover:text-indigo-400">
-                    {opt.name || opt.value}
-                  </span>
-                </label>
-              ))}
-            </div>
-          </>
-        )}
-      </div>
+  const onToggleCategory = useCallback((val) => {
+    setFilterCategories((prev) =>
+      prev.includes(val) ? prev.filter((i) => i !== val) : [...prev, val],
     );
-  };
+  }, []);
+
+  const onToggleBrand = useCallback((val) => {
+    setFilterBrands((prev) =>
+      prev.includes(val) ? prev.filter((i) => i !== val) : [...prev, val],
+    );
+  }, []);
+
+  const onToggleAttrFilter = useCallback((code, value) => {
+    setAttrFilters((prev) => {
+      const current = prev[code] || [];
+      return {
+        ...prev,
+        [code]: current.includes(value)
+          ? current.filter((v) => v !== value)
+          : [...current, value],
+      };
+    });
+  }, []);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -251,6 +219,7 @@ const ProductManage = () => {
         categoryId: product.categoryId || "",
         brandId: product.brandId || "",
         isActive: product.isActive ?? true,
+        hasVariants: product.hasVariants ?? false,
         isFlashSale: product.isFlashSale ?? false,
         flashSalePrice: product.flashSalePrice || "",
         flashSaleStart: product.flashSaleStart
@@ -266,6 +235,7 @@ const ProductManage = () => {
       setImagePreview(product.image || null);
       setGalleryPreviews(product.images?.map((img) => img.imageUrl) || []);
       setGalleryFiles([]);
+      setDeletedImages([]);
       setEditProduct(product);
       fetchVariants(product.id);
     } else {
@@ -279,6 +249,7 @@ const ProductManage = () => {
         categoryId: "",
         brandId: "",
         isActive: true,
+        hasVariants: false,
         isFlashSale: false,
         flashSalePrice: "",
         flashSaleStart: "",
@@ -289,6 +260,7 @@ const ProductManage = () => {
       setImagePreview(null);
       setGalleryPreviews([]);
       setGalleryFiles([]);
+      setDeletedImages([]);
       setEditProduct(null);
       setVariants([]);
     }
@@ -316,6 +288,7 @@ const ProductManage = () => {
     setEditProduct(null);
     setImagePreview(null);
     setGalleryPreviews([]);
+    setDeletedImages([]);
     if (editId) {
       navigate("/admin/products");
     }
@@ -337,16 +310,37 @@ const ProductManage = () => {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setFormData({ ...formData, imageFile: file });
+      setFormData((prev) => ({ ...prev, imageFile: file }));
       setImagePreview(URL.createObjectURL(file));
     }
   };
 
   const handleGalleryChange = (e) => {
     const files = Array.from(e.target.files);
-    setGalleryFiles([...galleryFiles, ...files]);
+    setGalleryFiles((prev) => [...prev, ...files]);
     const newPreviews = files.map((file) => URL.createObjectURL(file));
-    setGalleryPreviews([...galleryPreviews, ...newPreviews]);
+    setGalleryPreviews((prev) => [...prev, ...newPreviews]);
+  };
+
+  const handleDeleteGalleryImage = (idx) => {
+    const urlToRemove = galleryPreviews[idx];
+
+    // Nếu là ảnh cũ (đã có trong DB), lưu lại để xóa ở backend
+    if (editProduct?.images?.some((img) => img.imageUrl === urlToRemove)) {
+      setDeletedImages((prev) => [...prev, urlToRemove]);
+    } else {
+      // Nếu là ảnh mới vừa chọn (trong galleryFiles), lọc ra khỏi files
+      // Ta cần tìm index tương đối trong galleryFiles
+      // galleryPreviews chứa [ảnh cũ..., ảnh mới...]
+      const oldImagesCount = editProduct?.images?.length || 0;
+      if (idx >= oldImagesCount) {
+        const fileIdx = idx - oldImagesCount;
+        setGalleryFiles((prev) => prev.filter((_, i) => i !== fileIdx));
+      }
+    }
+
+    // Xóa khỏi UI preview
+    setGalleryPreviews((prev) => prev.filter((_, i) => i !== idx));
   };
 
   const handleSave = async (e) => {
@@ -358,11 +352,13 @@ const ProductManage = () => {
 
     // 1. Chuẩn bị danh sách biến thể cuối cùng
     // Nếu là edit, dùng state variants từ VariantManager, nếu tạo mới dùng formData.variants
-    const finalVariants = (editProduct ? variants : formData.variants).map(v => ({
-      ...v,
-      // Đảm bảo attributeValues được format đúng cho backend
-      attributeValues: v.attributeValues || v.attributes || {}
-    }));
+    const finalVariants = (editProduct ? variants : formData.variants).map(
+      (v) => ({
+        ...v,
+        // Đảm bảo attributeValues được format đúng cho backend
+        attributeValues: v.attributeValues || v.attributes || {},
+      }),
+    );
 
     // 2. Gộp thuộc tính kỹ thuật
     const finalSpecs = { ...formData.specifications, ...formData.attributes };
@@ -371,21 +367,33 @@ const ProductManage = () => {
     Object.keys(formData).forEach((key) => {
       if (key === "imageFile" && formData[key]) {
         data.append("image", formData[key]);
-      } else if (["attributes", "variants", "options", "specifications"].includes(key)) {
+      } else if (
+        ["attributes", "variants", "options", "specifications"].includes(key)
+      ) {
         let value;
         if (key === "variants") value = finalVariants;
-        else if (key === "specifications" || key === "attributes") value = finalSpecs;
+        else if (key === "specifications" || key === "attributes")
+          value = finalSpecs;
         else value = formData[key];
 
         // Gửi dưới dạng chuỗi JSON
         data.append(key, JSON.stringify(value));
-      } else if (formData[key] !== null && formData[key] !== "" && key !== "attributes") {
+      } else if (
+        formData[key] !== null &&
+        formData[key] !== "" &&
+        key !== "attributes"
+      ) {
         data.append(key, formData[key]);
       }
     });
 
     // Thêm các file gallery
     galleryFiles.forEach((file) => data.append("images", file));
+
+    // Thêm danh sách ảnh cần xóa
+    if (deletedImages.length > 0) {
+      data.append("deletedImages", JSON.stringify(deletedImages));
+    }
 
     setSaving(true);
     try {
@@ -398,7 +406,9 @@ const ProductManage = () => {
       }
 
       if (res.errCode === 0) {
-        toast.success(editProduct ? "Cập nhật thành công!" : "Đăng bán thành công!");
+        toast.success(
+          editProduct ? "Cập nhật thành công!" : "Đăng bán thành công!",
+        );
         fetchProducts(page);
         handleCloseModal();
       } else {
@@ -429,7 +439,8 @@ const ProductManage = () => {
     try {
       const res = await syncEmbeddings();
       if (res.errCode === 0) {
-        toast.success("Đồng bộ dữ liệu AI Vector thành công!");
+        toast.success(res.message || "Đồng bộ dữ liệu AI Vector thành công!");
+        fetchProducts(page);
       } else {
         toast.error(res.errMessage || "Đồng bộ thất bại");
       }
@@ -468,7 +479,7 @@ const ProductManage = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
           <h1 className="text-3xl font-black text-slate-900 dark:text-dark-text-primary tracking-tight flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-200 dark:shadow-none">
+            <div className="size-12 rounded-2xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-200 dark:shadow-none">
               <FiBox />
             </div>
             Quản lý Kho hàng
@@ -518,7 +529,7 @@ const ProductManage = () => {
                 label="Danh mục"
                 options={categories}
                 selected={filterCategories}
-                onToggle={(val) => toggleFilter(filterCategories, val, setFilterCategories)}
+                onToggle={onToggleCategory}
                 icon={<FiTag className="text-indigo-400" />}
               />
 
@@ -526,7 +537,7 @@ const ProductManage = () => {
                 label="Thương hiệu"
                 options={brands}
                 selected={filterBrands}
-                onToggle={(val) => toggleFilter(filterBrands, val, setFilterBrands)}
+                onToggle={onToggleBrand}
                 icon={<FiBox className="text-indigo-400" />}
               />
 
@@ -537,7 +548,7 @@ const ProductManage = () => {
                   label={attr.name}
                   options={attr.values || []}
                   selected={attrFilters[attr.code] || []}
-                  onToggle={(val) => toggleAttrFilter(attr.code, val)}
+                  onToggle={(val) => onToggleAttrFilter(attr.code, val)}
                   icon={getAttrIcon(attr.code)}
                 />
               ))}
@@ -545,9 +556,10 @@ const ProductManage = () => {
               <label className="flex items-center gap-3 px-5 h-12 bg-white dark:bg-dark-bg rounded-2xl border border-slate-200 dark:border-dark-border cursor-pointer hover:bg-orange-50 dark:hover:bg-orange-900/10 hover:border-orange-200 dark:hover:border-orange-800 transition-all group shrink-0">
                 <input
                   type="checkbox"
+                  id="flash-sale-toggle"
                   checked={flashSaleOnly}
                   onChange={(e) => setFlashSaleOnly(e.target.checked)}
-                  className="form-checkbox h-5 w-5 text-orange-500 rounded-lg border-slate-300 dark:border-dark-border dark:bg-dark-surface"
+                  className="form-checkbox size-5 text-orange-500 rounded-lg border-slate-300 dark:border-dark-border dark:bg-dark-surface"
                 />
                 <span className="text-[10px] font-black uppercase tracking-widest text-slate-600 dark:text-dark-text-secondary group-hover:text-orange-600 flex items-center gap-2">
                   <FiZap
@@ -599,7 +611,7 @@ const ProductManage = () => {
                 <tr>
                   <td colSpan={6} className="px-8 py-20 text-center">
                     <div className="max-w-xs mx-auto">
-                      <div className="w-16 h-16 bg-slate-50 dark:bg-dark-bg rounded-full flex items-center justify-center text-slate-300 dark:text-dark-text-secondary mx-auto mb-4">
+                      <div className="size-16 bg-slate-50 dark:bg-dark-bg rounded-full flex items-center justify-center text-slate-300 dark:text-dark-text-secondary mx-auto mb-4">
                         <FiSearch size={32} />
                       </div>
                       <p className="text-slate-900 dark:text-dark-text-primary font-bold">
@@ -619,7 +631,7 @@ const ProductManage = () => {
                   >
                     <td className="px-8 py-5">
                       <div className="flex items-center gap-4">
-                        <div className="w-16 h-16 rounded-2xl border border-slate-200 dark:border-dark-border bg-white dark:bg-dark-bg p-2 shadow-sm group-hover:scale-105 transition-transform">
+                        <div className="size-16 rounded-2xl border border-slate-200 dark:border-dark-border bg-white dark:bg-dark-bg p-2 shadow-sm group-hover:scale-105 transition-transform">
                           <img
                             src={p.image}
                             alt=""
@@ -634,11 +646,20 @@ const ProductManage = () => {
                             <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary">
                               SKU: {p.sku || "—"}
                             </p>
-                            {p.embedding && (
+                            {p.embedding ? (
                               <div
-                                className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-sm shadow-emerald-200 dark:shadow-none"
-                                title="Đã có Vector AI"
-                              ></div>
+                                className="px-1.5 py-0.5 rounded-md bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 text-[8px] font-black uppercase tracking-tighter flex items-center gap-1 border border-emerald-200 dark:border-emerald-800"
+                                title="Sản phẩm đã được đồng bộ Vector AI cho tìm kiếm thông minh"
+                              >
+                                <FiCpu size={8} /> AI READY
+                              </div>
+                            ) : (
+                              <div
+                                className="px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-dark-bg text-slate-400 dark:text-dark-text-secondary text-[8px] font-black uppercase tracking-tighter border border-slate-200 dark:border-dark-border"
+                                title="Chưa đồng bộ AI Vector"
+                              >
+                                NO AI
+                              </div>
                             )}
                           </div>
                         </div>
@@ -767,7 +788,7 @@ const ProductManage = () => {
                 </div>
                 <button
                   onClick={handleCloseModal}
-                  className="w-12 h-12 rounded-2xl flex items-center justify-center text-slate-400 hover:bg-white dark:hover:bg-dark-bg hover:text-slate-900 dark:hover:text-white hover:shadow-xl transition-all"
+                  className="size-12 rounded-2xl flex items-center justify-center text-slate-400 hover:bg-white dark:hover:bg-dark-bg hover:text-slate-900 dark:hover:text-white hover:shadow-xl transition-all"
                 >
                   <FiX className="text-2xl" />
                 </button>
@@ -781,13 +802,17 @@ const ProductManage = () => {
                 >
                   <div className="lg:col-span-4 space-y-8">
                     <div className="space-y-3">
-                      <label className="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary ml-1">
+                      <label
+                        className="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary ml-1"
+                        htmlFor="imageFile"
+                      >
                         Ảnh đại diện
                       </label>
                       <div className="group relative w-full aspect-square rounded-[2rem] bg-slate-50 dark:bg-dark-bg border-2 border-dashed border-slate-200 dark:border-dark-border flex flex-col items-center justify-center overflow-hidden transition-all hover:border-indigo-400 dark:hover:border-indigo-500 hover:bg-indigo-50/30 shadow-inner">
                         {imagePreview ? (
                           <img
                             src={imagePreview}
+                            alt="Product Preview"
                             className="w-full h-full object-contain p-4 dark:mix-blend-normal"
                           />
                         ) : (
@@ -799,6 +824,7 @@ const ProductManage = () => {
                           </>
                         )}
                         <input
+                          id="imageFile"
                           type="file"
                           accept="image/*"
                           onChange={handleImageChange}
@@ -808,7 +834,10 @@ const ProductManage = () => {
                     </div>
 
                     <div className="space-y-4">
-                      <label className="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary ml-1">
+                      <label
+                        className="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary ml-1"
+                        htmlFor="galleryFiles"
+                      >
                         Thư viện ảnh
                       </label>
                       <div className="grid grid-cols-3 gap-3">
@@ -819,10 +848,12 @@ const ProductManage = () => {
                           >
                             <img
                               src={url}
+                              alt={`Gallery Preview ${idx + 1}`}
                               className="w-full h-full object-cover dark:mix-blend-normal"
                             />
                             <button
                               type="button"
+                              onClick={() => handleDeleteGalleryImage(idx)}
                               className="absolute inset-0 bg-rose-500/80 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                             >
                               <FiTrash2 />
@@ -832,6 +863,7 @@ const ProductManage = () => {
                         <div className="relative aspect-square rounded-2xl border-2 border-dashed border-slate-200 dark:border-dark-border flex items-center justify-center text-slate-300 dark:text-slate-600 hover:border-indigo-400 dark:hover:border-indigo-500 hover:text-indigo-400 transition-all bg-slate-50/50 dark:bg-dark-bg/50">
                           <FiPlus />
                           <input
+                            id="galleryFiles"
                             type="file"
                             multiple
                             accept="image/*"
@@ -855,10 +887,10 @@ const ProductManage = () => {
                               className="input-modern h-11 pl-8 font-black text-sm dark:bg-dark-surface dark:text-white dark:border-dark-border"
                               value={formData.price}
                               onChange={(e) =>
-                                setFormData({
-                                  ...formData,
+                                setFormData((prev) => ({
+                                  ...prev,
                                   price: e.target.value,
-                                })
+                                }))
                               }
                             />
                           </div>
@@ -874,10 +906,10 @@ const ProductManage = () => {
                               className="input-modern h-11 pl-8 font-black text-sm dark:bg-dark-surface dark:text-white dark:border-dark-border"
                               value={formData.discount}
                               onChange={(e) =>
-                                setFormData({
-                                  ...formData,
+                                setFormData((prev) => ({
+                                  ...prev,
                                   discount: e.target.value,
-                                })
+                                }))
                               }
                             />
                           </div>
@@ -896,10 +928,10 @@ const ProductManage = () => {
                               className="input-modern h-11 pl-8 font-black text-sm dark:bg-dark-surface dark:text-white dark:border-dark-border"
                               value={formData.stock}
                               onChange={(e) =>
-                                setFormData({
-                                  ...formData,
+                                setFormData((prev) => ({
+                                  ...prev,
                                   stock: e.target.value,
-                                })
+                                }))
                               }
                             />
                           </div>
@@ -913,6 +945,7 @@ const ProductManage = () => {
                             <input
                               type="number"
                               disabled
+                              readOnly
                               className="input-modern h-11 pl-8 font-black text-sm cursor-not-allowed dark:bg-dark-surface dark:text-slate-400 dark:border-dark-border"
                               value={editProduct?.sold || 0}
                             />
@@ -930,10 +963,10 @@ const ProductManage = () => {
                               type="checkbox"
                               checked={formData.isActive}
                               onChange={(e) =>
-                                setFormData({
-                                  ...formData,
+                                setFormData((prev) => ({
+                                  ...prev,
                                   isActive: e.target.checked,
-                                })
+                                }))
                               }
                               className="sr-only peer"
                             />
@@ -950,10 +983,10 @@ const ProductManage = () => {
                               type="checkbox"
                               checked={formData.hasVariants}
                               onChange={(e) =>
-                                setFormData({
-                                  ...formData,
+                                setFormData((prev) => ({
+                                  ...prev,
                                   hasVariants: e.target.checked,
-                                })
+                                }))
                               }
                               className="sr-only peer"
                             />
@@ -968,12 +1001,12 @@ const ProductManage = () => {
                             type="checkbox"
                             checked={formData.isFlashSale}
                             onChange={(e) =>
-                              setFormData({
-                                ...formData,
+                              setFormData((prev) => ({
+                                ...prev,
                                 isFlashSale: e.target.checked,
-                              })
+                              }))
                             }
-                            className="form-checkbox h-5 w-5 text-orange-500 rounded-lg border-slate-300 dark:border-dark-border focus:ring-orange-200 dark:bg-dark-surface"
+                            className="form-checkbox size-5 text-orange-500 rounded-lg border-slate-300 dark:border-dark-border focus:ring-orange-200 dark:bg-dark-surface"
                           />
                           <span className="text-xs font-black uppercase text-slate-700 dark:text-dark-text-primary group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors flex items-center gap-2">
                             <FiZap
@@ -998,10 +1031,10 @@ const ProductManage = () => {
                                 placeholder="Nhập giá sale..."
                                 value={formData.flashSalePrice}
                                 onChange={(e) =>
-                                  setFormData({
-                                    ...formData,
+                                  setFormData((prev) => ({
+                                    ...prev,
                                     flashSalePrice: e.target.value,
-                                  })
+                                  }))
                                 }
                               />
                             </div>
@@ -1015,10 +1048,10 @@ const ProductManage = () => {
                                   className="input-modern h-10 text-[10px] font-bold dark:bg-dark-bg dark:text-white dark:border-dark-border"
                                   value={formData.flashSaleStart}
                                   onChange={(e) =>
-                                    setFormData({
-                                      ...formData,
+                                    setFormData((prev) => ({
+                                      ...prev,
                                       flashSaleStart: e.target.value,
-                                    })
+                                    }))
                                   }
                                 />
                               </div>
@@ -1031,10 +1064,10 @@ const ProductManage = () => {
                                   className="input-modern h-10 text-[10px] font-bold dark:bg-dark-bg dark:text-white dark:border-dark-border"
                                   value={formData.flashSaleEnd}
                                   onChange={(e) =>
-                                    setFormData({
-                                      ...formData,
+                                    setFormData((prev) => ({
+                                      ...prev,
                                       flashSaleEnd: e.target.value,
-                                    })
+                                    }))
                                   }
                                 />
                               </div>
@@ -1055,28 +1088,42 @@ const ProductManage = () => {
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
-                          <label className="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary ml-1">
+                          <label
+                            className="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary ml-1"
+                            htmlFor="productName"
+                          >
                             Tên sản phẩm *
                           </label>
                           <input
+                            id="productName"
                             className="input-modern h-12 font-bold focus:ring-0 dark:bg-dark-bg dark:text-white dark:border-dark-border"
                             placeholder="VD: iPhone 15 Pro Max 256GB"
                             value={formData.name}
                             onChange={(e) =>
-                              setFormData({ ...formData, name: e.target.value })
+                              setFormData((prev) => ({
+                                ...prev,
+                                name: e.target.value,
+                              }))
                             }
                           />
                         </div>
                         <div className="space-y-2">
-                          <label className="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary ml-1">
+                          <label
+                            className="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary ml-1"
+                            htmlFor="sku"
+                          >
                             SKU / Mã quản lý
                           </label>
                           <input
+                            id="sku"
                             className="input-modern h-12 font-mono text-indigo-600 dark:text-indigo-400 bg-indigo-50/20 dark:bg-indigo-500/10 border-indigo-100 dark:border-indigo-900/30"
                             placeholder="VD: IP15PM-256-BLK"
                             value={formData.sku}
                             onChange={(e) =>
-                              setFormData({ ...formData, sku: e.target.value })
+                              setFormData((prev) => ({
+                                ...prev,
+                                sku: e.target.value,
+                              }))
                             }
                           />
                         </div>
@@ -1084,17 +1131,21 @@ const ProductManage = () => {
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2 relative">
-                          <label className="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary ml-1">
+                          <label
+                            className="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary ml-1"
+                            htmlFor="brandId"
+                          >
                             Thương hiệu
                           </label>
                           <select
+                            id="brandId"
                             className="input-modern h-12 font-bold appearance-none pr-10 dark:bg-dark-bg dark:text-white dark:border-dark-border"
                             value={formData.brandId}
                             onChange={(e) =>
-                              setFormData({
-                                ...formData,
+                              setFormData((prev) => ({
+                                ...prev,
                                 brandId: e.target.value,
-                              })
+                              }))
                             }
                           >
                             <option value="">Chọn hãng</option>
@@ -1107,17 +1158,21 @@ const ProductManage = () => {
                           <FiChevronDown className="absolute right-4 top-[42px] text-slate-400 dark:text-dark-text-secondary pointer-events-none" />
                         </div>
                         <div className="space-y-2 relative">
-                          <label className="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary ml-1">
+                          <label
+                            className="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary ml-1"
+                            htmlFor="categoryId"
+                          >
                             Danh mục sản phẩm
                           </label>
                           <select
+                            id="categoryId"
                             className="input-modern h-12 font-bold appearance-none pr-10 dark:bg-dark-bg dark:text-white dark:border-dark-border"
                             value={formData.categoryId}
                             onChange={(e) =>
-                              setFormData({
-                                ...formData,
+                              setFormData((prev) => ({
+                                ...prev,
                                 categoryId: e.target.value,
-                              })
+                              }))
                             }
                           >
                             <option value="">Chọn loại sản phẩm</option>
@@ -1149,18 +1204,19 @@ const ProductManage = () => {
                             </label>
                             <div className="relative">
                               <input
+                                id={`attr-${attr.code}`}
                                 list={`list-${attr.code}`}
                                 className="input-modern h-11 font-bold text-xs bg-white dark:bg-dark-surface border-slate-200 dark:border-dark-border focus:ring-0 dark:text-white"
                                 placeholder={`Chọn hoặc nhập ${attr.name}...`}
                                 value={formData.attributes[attr.code] || ""}
                                 onChange={(e) =>
-                                  setFormData({
-                                    ...formData,
+                                  setFormData((prev) => ({
+                                    ...prev,
                                     attributes: {
-                                      ...formData.attributes,
+                                      ...prev.attributes,
                                       [attr.code]: e.target.value,
                                     },
-                                  })
+                                  }))
                                 }
                               />
                               <datalist id={`list-${attr.code}`}>
@@ -1175,18 +1231,22 @@ const ProductManage = () => {
                     </section>
 
                     <div className="space-y-2">
-                      <label className="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary ml-1">
+                      <label
+                        className="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary ml-1"
+                        htmlFor="description"
+                      >
                         Mô tả sản phẩm
                       </label>
                       <textarea
+                        id="description"
                         className="input-modern resize-none h-40 py-4 focus:ring-0 font-medium dark:bg-dark-bg dark:text-white dark:border-dark-border"
                         placeholder="Nhập mô tả chi tiết về sản phẩm, tính năng nổi bật..."
                         value={formData.description}
                         onChange={(e) =>
-                          setFormData({
-                            ...formData,
+                          setFormData((prev) => ({
+                            ...prev,
                             description: e.target.value,
-                          })
+                          }))
                         }
                       />
                     </div>
@@ -1228,7 +1288,7 @@ const ProductManage = () => {
                   >
                     {saving ? (
                       <>
-                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>{" "}
+                        <div className="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>{" "}
                         Đang lưu...
                       </>
                     ) : editProduct ? (

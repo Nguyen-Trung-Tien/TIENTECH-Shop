@@ -79,7 +79,7 @@ const ReviewModal = ({ isOpen, onClose, order, onReviewSuccess }) => {
                 className="bg-slate-50 dark:bg-dark-bg rounded-[24px] p-5 border border-slate-100 dark:border-dark-border"
               >
                 <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 bg-white dark:bg-dark-surface rounded-xl border border-slate-100 dark:border-dark-border p-1 flex-shrink-0">
+                  <div className="size-14 bg-white dark:bg-dark-surface rounded-xl border border-slate-100 dark:border-dark-border p-1 flex-shrink-0">
                     <img
                       src={item.product?.image || item.image}
                       alt=""

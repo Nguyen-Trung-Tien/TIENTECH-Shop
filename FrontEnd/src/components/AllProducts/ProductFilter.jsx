@@ -112,191 +112,28 @@ const ProductFilter = ({ filters, onFilterChange, onClearFilters }) => {
     return false;
   };
 
-  const FilterContent = () => (
-    <div className="space-y-6">
-      {/* Categories */}
-      {!filters.category && (
-        <div className="border-b border-slate-100 dark:border-gray-800 pb-4">
-          <button
-            onClick={() => toggleSection("categories")}
-            className="flex items-center justify-between w-full font-black text-slate-900 dark:text-white mb-2 hover:text-blue-600 transition-colors uppercase tracking-widest text-[10px]"
-          >
-            <span>Danh mục</span>
-            {expandedSections.categories ? <FiChevronUp /> : <FiChevronDown />}
-          </button>
-          {expandedSections.categories && (
-            <div className="space-y-2 mt-3 max-h-48 overflow-y-auto custom-scrollbar pr-2">
-              {categories
-                .filter((cat) => {
-                  const selectedIds = filters.categoryId ? filters.categoryId.split(",") : [];
-                  return selectedIds.length === 0 || selectedIds.includes(cat.id.toString());
-                })
-                .map((cat) => (
-                  <label key={cat.id} className="flex items-center gap-3 cursor-pointer group animate-in fade-in duration-300">
-                    <input
-                      type="checkbox"
-                      name="categoryId"
-                      checked={isSelected("categoryId", cat.id, cat.slug)}
-                      onChange={() => handleMultiSelect("categoryId", cat.id.toString())}
-                      className="w-4 h-4 text-blue-600 border-slate-300 dark:border-gray-700 bg-transparent rounded focus:ring-blue-500/20"
-                    />
-                    <span className={`text-xs font-bold uppercase tracking-wide transition-colors ${isSelected("categoryId", cat.id, cat.slug) ? "text-blue-600 font-black" : "text-slate-500 dark:text-slate-400 group-hover:text-blue-600"}`}>
-                      {cat.name}
-                    </span>
-                  </label>
-                ))}
-              {filters.categoryId && (
-                <button 
-                  onClick={() => onFilterChange("categoryId", "")}
-                  className="text-[9px] font-black text-blue-500 uppercase mt-2 hover:underline"
-                >
-                  + Hiện tất cả danh mục
-                </button>
-              )}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Brands */}
-      {!filters.brand && (
-        <div className="border-b border-slate-100 dark:border-gray-800 pb-4">
-          <button
-            onClick={() => toggleSection("brands")}
-            className="flex items-center justify-between w-full font-black text-slate-900 dark:text-white mb-2 hover:text-blue-600 transition-colors uppercase tracking-widest text-[10px]"
-          >
-            <span>Thương hiệu</span>
-            {expandedSections.brands ? <FiChevronUp /> : <FiChevronDown />}
-          </button>
-          {expandedSections.brands && (
-            <div className="space-y-2 mt-3">
-              <div className="grid grid-cols-2 gap-2">
-                {brands
-                  .filter((brand) => {
-                    const selectedIds = filters.brandId ? filters.brandId.split(",") : [];
-                    return selectedIds.length === 0 || selectedIds.includes(brand.id.toString());
-                  })
-                  .map((brand) => (
-                    <button
-                      key={brand.id}
-                      onClick={() => handleMultiSelect("brandId", brand.id.toString())}
-                      className={`px-2 py-2 rounded-xl border text-[9px] font-black uppercase tracking-tighter transition-all animate-in fade-in duration-300 ${
-                        isSelected("brandId", brand.id, brand.slug)
-                          ? "bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-500/20"
-                          : "bg-slate-50 dark:bg-gray-800 border-transparent text-slate-600 dark:text-slate-400 hover:border-blue-500/30"
-                      }`}
-                    >
-                      {brand.name}
-                    </button>
-                  ))}
-              </div>
-              {filters.brandId && (
-                <button 
-                  onClick={() => onFilterChange("brandId", "")}
-                  className="text-[9px] font-black text-blue-500 uppercase mt-1 hover:underline"
-                >
-                  + Hiện tất cả thương hiệu
-                </button>
-              )}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Dynamic Attributes */}
-      {attributes.map((attr) => (
-        <div key={attr.id} className="border-b border-slate-100 dark:border-gray-800 pb-4">
-          <button
-            onClick={() => toggleSection(attr.code)}
-            className="flex items-center justify-between w-full font-black text-slate-900 dark:text-white mb-2 hover:text-blue-600 transition-colors uppercase tracking-widest text-[10px]"
-          >
-            <span className="flex items-center gap-2">
-              {getAttrIcon(attr.code)}
-              {attr.name}
-            </span>
-            {expandedSections[attr.code] ? <FiChevronUp /> : <FiChevronDown />}
-          </button>
-          {expandedSections[attr.code] && (
-            <div className="flex flex-wrap gap-2 mt-3">
-              {attr.values
-                ?.filter((v) => {
-                  const selected = filters[attr.code] ? filters[attr.code].split(",") : [];
-                  return selected.length === 0 || selected.includes(v.value);
-                })
-                .map((v) => (
-                <button
-                  key={v.id}
-                  onClick={() => handleMultiSelect(attr.code, v.value)}
-                  className={`px-3 py-1.5 rounded-lg border text-[9px] font-black uppercase tracking-widest transition-all animate-in fade-in duration-300 ${
-                    filters[attr.code]?.split(",").includes(v.value)
-                      ? "bg-blue-600 border-blue-600 text-white shadow-md shadow-blue-100"
-                      : "bg-white dark:bg-gray-800 border-slate-200 dark:border-gray-700 text-slate-600 dark:text-slate-400 hover:border-blue-500"
-                  }`}
-                >
-                  {v.value}
-                </button>
-              ))}
-              {filters[attr.code] && (
-                <button 
-                  onClick={() => onFilterChange(attr.code, "")}
-                  className="w-full text-left text-[9px] font-black text-blue-500 uppercase mt-1 hover:underline"
-                >
-                  + Hiện tất cả {attr.name.toLowerCase()}
-                </button>
-              )}
-            </div>
-          )}
-        </div>
-      ))}
-
-      {/* Price Range */}
-      <div className="border-b border-slate-100 dark:border-gray-800 pb-4">
-        <button
-          onClick={() => toggleSection("price")}
-          className="flex items-center justify-between w-full font-black text-slate-900 dark:text-white mb-2 hover:text-blue-600 transition-colors uppercase tracking-widest text-[10px]"
-        >
-          <span>Khoảng giá</span>
-          {expandedSections.price ? <FiChevronUp /> : <FiChevronDown />}
-        </button>
-        {expandedSections.price && (
-          <div className="grid grid-cols-2 gap-2 mt-3">
-            <input
-              type="number"
-              value={filters.minPrice}
-              onChange={(e) => onFilterChange("minPrice", e.target.value)}
-              placeholder="0₫"
-              className="w-full px-3 py-2 bg-slate-50 dark:bg-gray-800 border border-transparent dark:border-gray-700 rounded-xl text-[10px] font-black outline-none focus:border-blue-500 transition-all text-slate-900 dark:text-white"
-            />
-            <input
-              type="number"
-              value={filters.maxPrice}
-              onChange={(e) => onFilterChange("maxPrice", e.target.value)}
-              placeholder="Max₫"
-              className="w-full px-3 py-2 bg-slate-50 dark:bg-gray-800 border border-transparent dark:border-gray-700 rounded-xl text-[10px] font-black outline-none focus:border-blue-500 transition-all text-slate-900 dark:text-white"
-            />
-          </div>
-        )}
-      </div>
-
-      <button
-        onClick={onClearFilters}
-        className="w-full py-3 bg-rose-50 dark:bg-rose-900/10 text-rose-500 rounded-2xl text-[9px] font-black uppercase tracking-[0.2em] hover:bg-rose-100 transition-all flex items-center justify-center gap-2 border border-rose-100 dark:border-rose-900/20"
-      >
-        <FiX /> Xóa bộ lọc
-      </button>
-    </div>
-  );
-
   return (
     <>
       <div className="hidden lg:block w-full flex-shrink-0 bg-white dark:bg-black p-8 rounded-[2.5rem] border border-slate-100 dark:border-gray-900 shadow-sm h-fit sticky top-24">
         <div className="flex items-center gap-3 mb-8 border-b border-slate-50 dark:border-gray-900 pb-5">
-          <div className="w-10 h-10 bg-blue-50 dark:bg-blue-900/20 rounded-2xl flex items-center justify-center text-blue-600 shadow-sm">
+          <div className="size-10 bg-blue-50 dark:bg-blue-900/20 rounded-2xl flex items-center justify-center text-blue-600 shadow-sm">
             <FiFilter className="text-xl" />
           </div>
           <h3 className="font-black text-lg text-slate-900 dark:text-white tracking-tight uppercase">Bộ lọc</h3>
         </div>
-        <FilterContent />
+        <FilterContent 
+          filters={filters}
+          categories={categories}
+          brands={brands}
+          attributes={attributes}
+          expandedSections={expandedSections}
+          toggleSection={toggleSection}
+          handleMultiSelect={handleMultiSelect}
+          isSelected={isSelected}
+          getAttrIcon={getAttrIcon}
+          onFilterChange={onFilterChange}
+          onClearFilters={onClearFilters}
+        />
       </div>
 
       <div className="lg:hidden mb-6">
@@ -313,12 +150,24 @@ const ProductFilter = ({ filters, onFilterChange, onClearFilters }) => {
             <div className="absolute right-0 top-0 bottom-0 w-80 bg-white dark:bg-black p-8 shadow-2xl flex flex-col rounded-l-[3rem] border-l border-gray-800">
               <div className="flex items-center justify-between mb-8 pb-5 border-b border-slate-50 dark:border-gray-900">
                 <h3 className="font-black text-xl text-slate-900 dark:text-white tracking-tight uppercase">Bộ lọc</h3>
-                <button onClick={() => setIsMobileOpen(false)} className="w-10 h-10 bg-slate-50 dark:bg-gray-900 text-slate-400 rounded-xl flex items-center justify-center transition-all">
+                <button onClick={() => setIsMobileOpen(false)} className="size-10 bg-slate-50 dark:bg-gray-900 text-slate-400 rounded-xl flex items-center justify-center transition-all">
                   <FiX className="text-xl" />
                 </button>
               </div>
               <div className="overflow-y-auto flex-1 pr-2 custom-scrollbar">
-                <FilterContent />
+                <FilterContent 
+                  filters={filters}
+                  categories={categories}
+                  brands={brands}
+                  attributes={attributes}
+                  expandedSections={expandedSections}
+                  toggleSection={toggleSection}
+                  handleMultiSelect={handleMultiSelect}
+                  isSelected={isSelected}
+                  getAttrIcon={getAttrIcon}
+                  onFilterChange={onFilterChange}
+                  onClearFilters={onClearFilters}
+                />
               </div>
             </div>
           </div>
@@ -327,5 +176,192 @@ const ProductFilter = ({ filters, onFilterChange, onClearFilters }) => {
     </>
   );
 };
+
+const FilterContent = ({
+  filters,
+  categories,
+  brands,
+  attributes,
+  expandedSections,
+  toggleSection,
+  handleMultiSelect,
+  isSelected,
+  getAttrIcon,
+  onFilterChange,
+  onClearFilters
+}) => (
+  <div className="space-y-6">
+    {/* Categories */}
+    {!filters.category && (
+      <div className="border-b border-slate-100 dark:border-gray-800 pb-4">
+        <button
+          onClick={() => toggleSection("categories")}
+          className="flex items-center justify-between w-full font-black text-slate-900 dark:text-white mb-2 hover:text-blue-600 transition-colors uppercase tracking-widest text-[10px]"
+        >
+          <span>Danh mục</span>
+          {expandedSections.categories ? <FiChevronUp /> : <FiChevronDown />}
+        </button>
+        {expandedSections.categories && (
+          <div className="space-y-2 mt-3 max-h-48 overflow-y-auto custom-scrollbar pr-2">
+            {categories
+              .filter((cat) => {
+                const selectedIds = filters.categoryId ? filters.categoryId.split(",") : [];
+                return selectedIds.length === 0 || selectedIds.includes(cat.id.toString());
+              })
+              .map((cat) => (
+                <label key={cat.id} className="flex items-center gap-3 cursor-pointer group animate-in fade-in duration-300">
+                  <input
+                    type="checkbox"
+                    name="categoryId"
+                    checked={isSelected("categoryId", cat.id, cat.slug)}
+                    onChange={() => handleMultiSelect("categoryId", cat.id.toString())}
+                    className="size-4 text-blue-600 border-slate-300 dark:border-gray-700 bg-transparent rounded focus:ring-blue-500/20"
+                  />
+                  <span className={`text-xs font-bold uppercase tracking-wide transition-colors ${isSelected("categoryId", cat.id, cat.slug) ? "text-blue-600 font-black" : "text-slate-500 dark:text-slate-400 group-hover:text-blue-600"}`}>
+                    {cat.name}
+                  </span>
+                </label>
+              ))}
+            {filters.categoryId && (
+              <button 
+                onClick={() => onFilterChange("categoryId", "")}
+                className="text-[9px] font-black text-blue-500 uppercase mt-2 hover:underline"
+              >
+                + Hiện tất cả danh mục
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+    )}
+
+    {/* Brands */}
+    {!filters.brand && (
+      <div className="border-b border-slate-100 dark:border-gray-800 pb-4">
+        <button
+          onClick={() => toggleSection("brands")}
+          className="flex items-center justify-between w-full font-black text-slate-900 dark:text-white mb-2 hover:text-blue-600 transition-colors uppercase tracking-widest text-[10px]"
+        >
+          <span>Thương hiệu</span>
+          {expandedSections.brands ? <FiChevronUp /> : <FiChevronDown />}
+        </button>
+        {expandedSections.brands && (
+          <div className="space-y-2 mt-3">
+            <div className="grid grid-cols-2 gap-2">
+              {brands
+                .filter((brand) => {
+                  const selectedIds = filters.brandId ? filters.brandId.split(",") : [];
+                  return selectedIds.length === 0 || selectedIds.includes(brand.id.toString());
+                })
+                .map((brand) => (
+                  <button
+                    key={brand.id}
+                    onClick={() => handleMultiSelect("brandId", brand.id.toString())}
+                    className={`px-2 py-2 rounded-xl border text-[9px] font-black uppercase tracking-tighter transition-all animate-in fade-in duration-300 ${
+                      isSelected("brandId", brand.id, brand.slug)
+                        ? "bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-500/20"
+                        : "bg-slate-50 dark:bg-gray-800 border-transparent text-slate-600 dark:text-slate-400 hover:border-blue-500/30"
+                    }`}
+                  >
+                    {brand.name}
+                  </button>
+                ))}
+            </div>
+            {filters.brandId && (
+              <button 
+                onClick={() => onFilterChange("brandId", "")}
+                className="text-[9px] font-black text-blue-500 uppercase mt-1 hover:underline"
+              >
+                + Hiện tất cả thương hiệu
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+    )}
+
+    {/* Dynamic Attributes */}
+    {attributes.map((attr) => (
+      <div key={attr.id} className="border-b border-slate-100 dark:border-gray-800 pb-4">
+        <button
+          onClick={() => toggleSection(attr.code)}
+          className="flex items-center justify-between w-full font-black text-slate-900 dark:text-white mb-2 hover:text-blue-600 transition-colors uppercase tracking-widest text-[10px]"
+        >
+          <span className="flex items-center gap-2">
+            {getAttrIcon(attr.code)}
+            {attr.name}
+          </span>
+          {expandedSections[attr.code] ? <FiChevronUp /> : <FiChevronDown />}
+        </button>
+        {expandedSections[attr.code] && (
+          <div className="flex flex-wrap gap-2 mt-3">
+            {attr.values
+              ?.filter((v) => {
+                const selected = filters[attr.code] ? filters[attr.code].split(",") : [];
+                return selected.length === 0 || selected.includes(v.value);
+              })
+              .map((v) => (
+              <button
+                key={v.id}
+                onClick={() => handleMultiSelect(attr.code, v.value)}
+                className={`px-3 py-1.5 rounded-lg border text-[9px] font-black uppercase tracking-widest transition-all animate-in fade-in duration-300 ${
+                  filters[attr.code]?.split(",").includes(v.value)
+                    ? "bg-blue-600 border-blue-600 text-white shadow-md shadow-blue-100"
+                    : "bg-white dark:bg-gray-800 border-slate-200 dark:border-gray-700 text-slate-600 dark:text-slate-400 hover:border-blue-500"
+                }`}
+              >
+                {v.value}
+              </button>
+            ))}
+            {filters[attr.code] && (
+              <button 
+                onClick={() => onFilterChange(attr.code, "")}
+                className="w-full text-left text-[9px] font-black text-blue-500 uppercase mt-1 hover:underline"
+              >
+                + Hiện tất cả {attr.name.toLowerCase()}
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+    ))}
+
+    {/* Price Range */}
+    <div className="border-b border-slate-100 dark:border-gray-800 pb-4">
+      <button
+        onClick={() => toggleSection("price")}
+        className="flex items-center justify-between w-full font-black text-slate-900 dark:text-white mb-2 hover:text-blue-600 transition-colors uppercase tracking-widest text-[10px]"
+      >
+        <span>Khoảng giá</span>
+        {expandedSections.price ? <FiChevronUp /> : <FiChevronDown />}
+      </button>
+      {expandedSections.price && (
+        <div className="grid grid-cols-2 gap-2 mt-3">
+          <input
+            type="number"
+            value={filters.minPrice}
+            onChange={(e) => onFilterChange("minPrice", e.target.value)}
+            placeholder="0₫"
+            className="w-full px-3 py-2 bg-slate-50 dark:bg-gray-800 border border-transparent dark:border-gray-700 rounded-xl text-[10px] font-black outline-none focus:border-blue-500 transition-all text-slate-900 dark:text-white"
+          />
+          <input
+            type="number"
+            value={filters.maxPrice}
+            onChange={(e) => onFilterChange("maxPrice", e.target.value)}
+            placeholder="Max₫"
+            className="w-full px-3 py-2 bg-slate-50 dark:bg-gray-800 border border-transparent dark:border-gray-700 rounded-xl text-[10px] font-black outline-none focus:border-blue-500 transition-all text-slate-900 dark:text-white"
+          />
+        </div>
+      )}
+    </div>
+
+    <button
+      onClick={onClearFilters}
+      className="w-full py-3 bg-rose-50 dark:bg-rose-900/10 text-rose-500 rounded-2xl text-[9px] font-black uppercase tracking-[0.2em] hover:bg-rose-100 transition-all flex items-center justify-center gap-2 border border-rose-100 dark:border-rose-900/20"
+    >
+      <FiX /> Xóa bộ lọc
+    </button>
+  </div>
+);
 
 export default ProductFilter;

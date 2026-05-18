@@ -24,9 +24,12 @@ const updateProductEmbedding = async (product, transaction) => {
         { embedding: JSON.stringify(embedding) },
         { transaction },
       );
+      return true;
     }
+    return false;
   } catch (error) {
     console.error(`Lỗi cập nhật embedding cho SP ${product.id}:`, error);
+    return false;
   }
 };
 

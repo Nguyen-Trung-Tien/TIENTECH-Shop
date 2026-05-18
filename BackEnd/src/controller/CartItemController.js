@@ -60,7 +60,11 @@ const updateCartItem = async (req, res) => {
     );
     res.status(200).json({ errCode: 0, data: updatedItem });
   } catch (err) {
-    res.status(404).json({ errCode: 1, errMessage: err.message });
+    console.error("Error in updateCartItem controller:", err);
+    if (err.message === "CartItem not found") {
+      return res.status(404).json({ errCode: 1, errMessage: err.message });
+    }
+    res.status(500).json({ errCode: 1, errMessage: err.message });
   }
 };
 

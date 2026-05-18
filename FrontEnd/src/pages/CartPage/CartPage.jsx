@@ -139,7 +139,7 @@ const CartPage = () => {
 
         {cartItems.length === 0 ? (
           <div className="bg-white dark:bg-dark-surface rounded-[40px] p-20 text-center shadow-sm border border-slate-100 dark:border-dark-border">
-            <div className="w-24 h-24 bg-slate-50 dark:bg-dark-bg rounded-full flex items-center justify-center mx-auto mb-8">
+            <div className="size-24 bg-slate-50 dark:bg-dark-bg rounded-full flex items-center justify-center mx-auto mb-8">
               <FiShoppingBag className="text-slate-200 dark:text-dark-border" size={40} />
             </div>
             <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-4 uppercase">
@@ -164,7 +164,7 @@ const CartPage = () => {
                   <div className="flex items-center gap-3">
                     <input
                       type="checkbox"
-                      className="w-5 h-5 rounded-lg border-2 border-slate-200 dark:border-dark-border text-primary focus:ring-primary dark:bg-dark-bg"
+                      className="size-5 rounded-lg border-2 border-slate-200 dark:border-dark-border text-primary focus:ring-primary dark:bg-dark-bg"
                       checked={
                         selectedItems.length === cartItems.length &&
                         cartItems.length > 0

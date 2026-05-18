@@ -6,11 +6,15 @@ const {
   authorizeRole,
 } = require("../middleware/authMiddleware");
 
+const { validate } = require("../middleware/zodMiddleware");
+const { reviewSchema } = require("../utils/zodSchemas");
+
 router.get("/product/:productId", ReviewController.handleGetReviewsByProduct);
 router.post(
   "/create",
   authenticateToken,
   authorizeRole(["admin", "customer"]),
+  validate(reviewSchema),
   ReviewController.handleCreateReview
 );
 router.put(

@@ -40,14 +40,21 @@ const NotificationBell = () => {
       socket.emit("join", `user_${user.id}`);
       if (user.role === "admin") {
         socket.emit("join_admin");
-        socket.on("new_order", () => fetchNotifications());
+        socket.on("new_order", fetchNotifications);
       }
 
-      socket.on("order_status_updated", () => fetchNotifications());
-      socket.on("notification", () => fetchNotifications());
+      socket.on("order_status_updated", fetchNotifications);
+      socket.on("notification", fetchNotifications);
     }
 
-    return () => socket.disconnect();
+    return () => {
+      if (user) {
+        socket.off("new_order", fetchNotifications);
+        socket.off("order_status_updated", fetchNotifications);
+        socket.off("notification", fetchNotifications);
+      }
+      socket.disconnect();
+    };
   }, [user]);
 
   useEffect(() => {
@@ -101,7 +108,7 @@ const NotificationBell = () => {
       >
         <FiBell size={22} />
         {unreadCount > 0 && (
-          <span className="absolute top-0 right-0 w-5 h-5 bg-brand text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-white dark:border-dark-bg">
+          <span className="absolute top-0 right-0 size-5 bg-brand text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-white dark:border-dark-bg">
             {unreadCount > 9 ? "9+" : unreadCount}
           </span>
         )}
@@ -133,7 +140,7 @@ const NotificationBell = () => {
                   className={`p-4 border-b border-surface-50 dark:border-dark-border flex gap-3 cursor-pointer hover:bg-surface-50 dark:hover:bg-dark-bg transition-colors ${!n.isRead ? "bg-primary/5 dark:bg-brand/5" : ""}`}
                 >
                   <div
-                    className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${n.type === "order" ? "bg-sky-100 text-sky-600" : "bg-primary/10 text-primary"}`}
+                    className={`size-10 rounded-xl flex items-center justify-center flex-shrink-0 ${n.type === "order" ? "bg-sky-100 text-sky-600" : "bg-primary/10 text-primary"}`}
                   >
                     {n.type === "order" ? <FiPackage /> : <FiInfo />}
                   </div>
@@ -152,7 +159,7 @@ const NotificationBell = () => {
                     </p>
                   </div>
                   {!n.isRead && (
-                    <div className="w-2 h-2 rounded-full bg-brand mt-2 flex-shrink-0"></div>
+                    <div className="size-2 rounded-full bg-brand mt-2 flex-shrink-0"></div>
                   )}
                 </div>
               ))

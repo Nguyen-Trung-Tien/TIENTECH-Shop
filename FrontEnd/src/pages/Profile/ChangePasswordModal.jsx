@@ -83,10 +83,10 @@ const ChangePasswordModal = ({ show, onHide, userId }) => {
             <div className="p-8 bg-primary text-white">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+                  <div className="size-10 bg-white/20 rounded-xl flex items-center justify-center">
                     <FiLock size={20} />
                   </div>
-                  <h3 className="text-2xl font-display font-bold">
+                  <h3 className="text-2xl font-display font-semibold">
                     Đổi mật khẩu
                   </h3>
                 </div>

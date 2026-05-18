@@ -63,7 +63,7 @@ const VoucherSelector = ({ subtotal, onApply, appliedVoucher, onRemove }) => {
       {appliedVoucher ? (
         <div className="flex items-center justify-between p-4 bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-900/30 rounded-2xl transition-colors">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-200 dark:shadow-none">
+            <div className="size-10 rounded-xl bg-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-200 dark:shadow-none">
               <FiTag size={20} />
             </div>
             <div>
@@ -145,7 +145,7 @@ const VoucherSelector = ({ subtotal, onApply, appliedVoucher, onRemove }) => {
               <div className="p-6 max-h-[60vh] overflow-y-auto space-y-4 custom-scrollbar bg-white dark:bg-dark-surface">
                 {loading ? (
                   <div className="py-10 text-center space-y-3">
-                    <div className="w-8 h-8 border-4 border-primary dark:border-brand border-t-transparent rounded-full animate-spin mx-auto"></div>
+                    <div className="size-8 border-4 border-primary dark:border-brand border-t-transparent rounded-full animate-spin mx-auto"></div>
                     <p className="text-xs font-bold text-slate-400 dark:text-dark-text-secondary animate-pulse uppercase">
                       Đang tải mã...
                     </p>

@@ -88,7 +88,8 @@ const handleProcessReturn = async (req, res) => {
   try {
     const result = await OrderItemService.processReturn(
       req.params.id,
-      req.body.status
+      req.body.status,
+      req.user
     );
     return res.status(200).json(result);
   } catch (e) {

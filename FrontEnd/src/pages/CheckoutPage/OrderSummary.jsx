@@ -27,7 +27,7 @@ const OrderSummary = ({
   return (
     <div className="bg-white dark:bg-dark-surface rounded-[32px] p-8 text-gray-900 dark:text-white shadow-xl border border-gray-200 dark:border-dark-border overflow-hidden relative">
       {/* Decorative Gradient */}
-      <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 blur-3xl rounded-full -mr-16 -mt-16" />
+      <div className="absolute top-0 right-0 size-32 bg-primary/10 blur-3xl rounded-full -mr-16 -mt-16" />
 
       <h2 className="text-xl font-black uppercase tracking-widest mb-8 flex items-center gap-3 relative z-10">
         <FiCheckCircle className="text-primary" />
@@ -114,7 +114,7 @@ const OrderSummary = ({
       {/* Trust Badges */}
       <div className="grid grid-cols-2 gap-4 pt-8 border-t border-gray-200 dark:border-dark-border relative z-10">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-dark-bg flex items-center justify-center text-gray-500">
+          <div className="size-8 rounded-lg bg-gray-100 dark:bg-dark-bg flex items-center justify-center text-gray-500">
             <FiShield size={14} />
           </div>
           <span className="text-[9px] font-bold text-gray-400 dark:text-dark-text-secondary uppercase tracking-widest leading-tight">
@@ -123,7 +123,7 @@ const OrderSummary = ({
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-dark-bg flex items-center justify-center text-gray-500">
+          <div className="size-8 rounded-lg bg-gray-100 dark:bg-dark-bg flex items-center justify-center text-gray-500">
             <FiRefreshCw size={14} />
           </div>
           <span className="text-[9px] font-bold text-gray-400 dark:text-dark-text-secondary uppercase tracking-widest leading-tight">

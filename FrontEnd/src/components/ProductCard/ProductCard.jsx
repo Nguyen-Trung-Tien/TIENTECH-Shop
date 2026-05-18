@@ -245,7 +245,7 @@ const ProductCard = ({ product }) => {
           <p className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1 truncate">
             Official Store
           </p>
-          <h3 className="text-xs md:text-sm font-bold text-slate-800 dark:text-white line-clamp-2 leading-tight mb-2 h-8 group-hover:text-primary transition-colors">
+          <h3 className="text-xs md:text-sm font-semibold text-slate-800 dark:text-white line-clamp-2 leading-tight mb-2 h-8 group-hover:text-primary transition-colors">
             {name}
           </h3>
 

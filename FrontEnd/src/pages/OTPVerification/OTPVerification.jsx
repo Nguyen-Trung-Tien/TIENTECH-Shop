@@ -108,8 +108,8 @@ const OTPVerification = () => {
         className="max-w-md w-full bg-white dark:bg-dark-card rounded-3xl shadow-2xl p-8 border border-gray-100 dark:border-gray-800"
       >
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Mail className="w-8 h-8 text-blue-600" />
+          <div className="size-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Mail className="size-8 text-blue-600" />
           </div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
             Xác thực tài khoản
@@ -145,7 +145,7 @@ const OTPVerification = () => {
             className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-2xl shadow-lg shadow-blue-500/30 active:scale-[0.98] transition-all disabled:opacity-70 flex items-center justify-center gap-2"
           >
             {loading ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
+              <Loader2 className="size-5 animate-spin" />
             ) : (
               "XÁC NHẬN"
             )}
@@ -174,7 +174,7 @@ const OTPVerification = () => {
             to="/register"
             className="inline-flex items-center gap-2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 text-sm font-medium transition-colors"
           >
-            <ArrowLeft className="w-4 h-4" /> Quay lại đăng ký
+            <ArrowLeft className="size-4" /> Quay lại đăng ký
           </Link>
         </div>
       </Motion.div>

@@ -5,7 +5,7 @@ const SpecificationSection = ({ mergedSpecs, displayVariant }) => {
   return (
     <div className="pt-4">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-[11px] font-bold uppercase tracking-[0.2em] text-gray-400 dark:text-dark-text-secondary flex items-center gap-2">
+        <h3 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-gray-400 dark:text-dark-text-secondary flex items-center gap-2">
           <span className="w-6 h-[1.5px] bg-blue-500 dark:bg-brand"></span>
           Thông số kỹ thuật
         </h3>
@@ -38,7 +38,7 @@ const SpecificationSection = ({ mergedSpecs, displayVariant }) => {
           </div>
         ) : (
           <div className="p-10 text-center flex flex-col items-center gap-4">
-            <div className="w-16 h-16 bg-white dark:bg-dark-bg rounded-full flex items-center justify-center text-gray-200 dark:text-dark-text-secondary shadow-inner">
+            <div className="size-16 bg-white dark:bg-dark-bg rounded-full flex items-center justify-center text-gray-200 dark:text-dark-text-secondary shadow-inner">
               <FiCpu size={32} />
             </div>
             <p className="text-xs text-gray-400 dark:text-dark-text-secondary font-medium italic max-w-[200px] leading-relaxed">

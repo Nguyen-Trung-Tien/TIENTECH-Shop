@@ -42,6 +42,16 @@ module.exports = (sequelize, DataTypes) => {
         as: "wishlistItems",
         onDelete: "CASCADE",
       });
+      User.hasMany(models.Notification, {
+        foreignKey: "userId",
+        as: "notifications",
+        onDelete: "CASCADE",
+      });
+      User.hasMany(models.VoucherUsage, {
+        foreignKey: "userId",
+        as: "voucherUsages",
+        onDelete: "CASCADE",
+      });
     }
   }
 

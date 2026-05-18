@@ -114,6 +114,66 @@ const sendOrderDeliveredEmail = async (user, order) => {
   return await sendEmail(user.email, subject, html);
 };
 
+const sendOrderConfirmedEmail = async (user, order) => {
+  if (!user?.email) return false;
+
+  const displayOrderCode = order.orderCode || order.id;
+  const subject = `✅ Đơn hàng ${displayOrderCode} đã được xác nhận!`;
+  const clientUrl = process.env.URL_REACT;
+
+  const html = `
+  <div style="font-family: Arial, sans-serif; background-color: #f9fafb; padding: 24px;">
+    <div style="max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); overflow: hidden;">
+      <div style="background-color: #0d6efd; color: white; text-align: center; padding: 16px 0;">
+        <h2 style="margin: 0; font-size: 22px;">TienTech Shop</h2>
+      </div>
+
+      <div style="padding: 24px;">
+        <h3 style="color: #2c3e50;">Xin chào ${
+          user.username || "quý khách"
+        },</h3>
+        <p style="font-size: 15px; color: #333;">
+          Đơn hàng <strong style="color: #0d6efd;">${displayOrderCode}</strong> của bạn đã được <b>xác nhận thành công</b> và đang được chuẩn bị để giao đến bạn.
+        </p>
+
+        <div style="margin: 20px 0; background: #f3f4f6; border-radius: 8px; padding: 16px;">
+          <h4 style="margin-bottom: 10px;">📦 Thông tin đơn hàng</h4>
+          <ul style="list-style: none; padding: 0; margin: 0; font-size: 14px; line-height: 1.6;">
+            <li><strong>Mã đơn hàng:</strong> <span style="color: #0d6efd; font-weight: bold;">${displayOrderCode}</span></li>
+            <li><strong>Ngày đặt:</strong> ${new Date(order.createdAt).toLocaleDateString("vi-VN")}</li>
+            <li><strong>Địa chỉ giao hàng:</strong> ${
+              order.shippingAddress
+            }</li>
+            <li><strong>Tổng thanh toán:</strong> <span style="color: #d32f2f; font-weight: bold;">${Number(order.totalPrice).toLocaleString()}₫</span></li>
+          </ul>
+        </div>
+
+        <div style="text-align: center; margin-top: 30px; margin-bottom: 30px;">
+          <a href="${clientUrl}/order-detail/${order.id}" 
+            style="display: inline-block; background-color: #0d6efd; color: white; text-decoration: none; padding: 14px 28px; border-radius: 8px; font-weight: bold; font-size: 16px; box-shadow: 0 4px 6px rgba(13, 110, 253, 0.2);">
+            Xem chi tiết đơn hàng
+          </a>
+        </div>
+
+        <p style="margin-top: 24px; color: #555; font-size: 14px;">
+          Cảm ơn bạn đã tin tưởng và mua sắm tại <b>TienTech Shop</b>! ❤️<br/>
+          Chúng tôi sẽ thông báo cho bạn ngay khi đơn hàng được gửi đi.
+        </p>
+      </div>
+
+      <div style="background-color: #f3f4f6; text-align: center; padding: 16px; border-top: 1px solid #eee;">
+        <p style="font-size: 12px; color: #888; margin: 0;">
+          Đây là email tự động, vui lòng không trả lời trực tiếp.<br/>
+          © ${new Date().getFullYear()} TienTech Shop. All rights reserved.
+        </p>
+      </div>
+    </div>
+  </div>
+  `;
+
+  return await sendEmail(user.email, subject, html);
+};
+
 const sendVerificationEmail = async (user, token) => {
   const subject = "📧 Xác nhận tài khoản - TienTech Shop";
 
@@ -164,5 +224,6 @@ module.exports = {
   sendEmail,
   sendForgotPasswordEmail,
   sendOrderDeliveredEmail,
+  sendOrderConfirmedEmail,
   sendVerificationEmail,
 };

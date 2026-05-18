@@ -9,7 +9,7 @@ const Loading = ({ message = "Đang tải dữ liệu..." }) => {
         className="flex flex-col items-center p-8 rounded-3xl bg-white shadow-2xl border border-slate-100"
       >
         {/* Modern Spinner */}
-        <div className="relative w-16 h-16">
+        <div className="relative size-16">
           <Motion.div className="absolute inset-0 border-4 border-slate-100 rounded-full" />
           <Motion.div
             className="absolute inset-0 border-4 border-primary rounded-full border-t-transparent"

@@ -19,6 +19,7 @@ import { removeUser } from "../../../redux/userSlice";
 import { clearCart } from "../../../redux/cartSlice";
 import { toast } from "react-toastify";
 import { motion as Motion, AnimatePresence } from "framer-motion";
+
 import logoImage from "../../../assets/logo.png";
 
 const MENU_ITEMS = [
@@ -98,7 +99,8 @@ const Sidebar = ({ collapsed }) => {
             <img src={logoImage} alt="Logo" className="h-9 w-auto" />
             <div className="min-w-0">
               <h1 className="text-[13px] font-black text-slate-900 dark:text-white tracking-tighter leading-none uppercase truncate">
-                TienTech <span className="text-primary dark:text-brand">Shop</span>
+                TienTech{" "}
+                <span className="text-primary dark:text-brand">Shop</span>
               </h1>
               <p className="text-[8px] uppercase tracking-[0.2em] text-slate-400 dark:text-dark-text-secondary font-black mt-1">
                 ADMIN PANEL
@@ -155,9 +157,10 @@ const Sidebar = ({ collapsed }) => {
                   <AnimatePresence>
                     {isExpanded && (
                       <Motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
+                        layout
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
                         className="overflow-hidden ml-9 space-y-1"
                       >
                         {item.subItems.map((sub) => (

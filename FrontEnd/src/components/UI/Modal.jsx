@@ -1,10 +1,12 @@
 import React from "react";
 import { motion as Motion, AnimatePresence } from "framer-motion";
+
 import { FiX } from "react-icons/fi";
 import Button from "./Button";
 
 const Modal = ({
   isOpen,
+  show, // Added compatibility
   onClose,
   title,
   children,
@@ -14,6 +16,7 @@ const Modal = ({
   closeOnOverlayClick = true,
   className = "",
 }) => {
+  const isModalOpen = isOpen || show; // Combined check
   const sizes = {
     sm: "max-w-sm",
     md: "max-w-md",
@@ -25,7 +28,7 @@ const Modal = ({
 
   return (
     <AnimatePresence>
-      {isOpen && (
+      {isModalOpen && (
         <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
           {/* Overlay */}
           <Motion.div
@@ -46,7 +49,7 @@ const Modal = ({
             {/* Header */}
             {(title || showClose) && (
               <div className="flex items-center justify-between p-6 pb-2">
-                <h3 className="text-xl font-display font-bold text-surface-900 dark:text-white">
+                <h3 className="text-xl font-display font-semibold text-surface-900 dark:text-white">
                   {title}
                 </h3>
                 {showClose && (
@@ -78,6 +81,7 @@ const Modal = ({
 
 export const ConfirmModal = ({
   isOpen,
+  show, // Added compatibility
   onClose,
   onConfirm,
   title = "Xác nhận",
@@ -92,7 +96,7 @@ export const ConfirmModal = ({
 }) => {
   return (
     <Modal
-      isOpen={isOpen}
+      isOpen={isOpen || show} // Combined check
       onClose={onClose}
       size="sm"
       title={null}
@@ -102,13 +106,19 @@ export const ConfirmModal = ({
       <div className="flex flex-col items-center py-2">
         {Icon && (
           <div
-            className={`w-16 h-16 rounded-2xl flex items-center justify-center text-3xl mb-4 border border-surface-100 dark:border-dark-border ${iconClassName}`}
+            className={`size-16 rounded-2xl flex items-center justify-center text-3xl mb-4 border border-surface-100 dark:border-dark-border ${iconClassName}`}
           >
             <Icon />
           </div>
         )}
-        <h3 className="text-xl font-bold text-surface-900 dark:text-white mb-2">{title}</h3>
-        {message && <p className="text-surface-500 dark:text-dark-text-secondary text-sm mb-6">{message}</p>}
+        <h3 className="text-xl font-semibold text-surface-900 dark:text-white mb-2">
+          {title}
+        </h3>
+        {message && (
+          <p className="text-surface-500 dark:text-dark-text-secondary text-sm mb-6">
+            {message}
+          </p>
+        )}
         {children}
 
         <div className="flex w-full gap-3 mt-6">

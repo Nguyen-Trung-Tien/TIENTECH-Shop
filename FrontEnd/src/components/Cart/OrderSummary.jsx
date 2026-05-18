@@ -99,7 +99,7 @@ const OrderSummary = ({
           {loading ? (
             <div className="flex items-center gap-2">
               <svg
-                className="animate-spin h-5 w-5 text-white"
+                className="animate-spin size-5 text-white"
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
@@ -133,7 +133,7 @@ const OrderSummary = ({
       {/* Trust Badges */}
       <div className="grid grid-cols-2 gap-4 pt-8 border-t border-gray-200 dark:border-gray-800">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-500">
+          <div className="size-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-500">
             <FiShield size={14} />
           </div>
           <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest leading-tight">
@@ -142,7 +142,7 @@ const OrderSummary = ({
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-500">
+          <div className="size-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-500">
             <FiRefreshCw size={14} />
           </div>
           <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest leading-tight">

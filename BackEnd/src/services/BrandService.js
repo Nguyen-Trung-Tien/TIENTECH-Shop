@@ -79,7 +79,28 @@ class BrandService extends BaseService {
   }
 
   async deleteBrand(id) {
-    return await this.delete(id);
+    try {
+      const brand = await db.Brand.findByPk(id, {
+        include: [{ model: db.Product, as: "products", attributes: ["id"] }],
+      });
+
+      if (!brand) {
+        return { errCode: 1, errMessage: "Thương hiệu không tồn tại" };
+      }
+
+      if (brand.products && brand.products.length > 0) {
+        return {
+          errCode: 2,
+          errMessage: "Không thể xóa thương hiệu đang có sản phẩm. Vui lòng chuyển sản phẩm sang thương hiệu khác trước.",
+        };
+      }
+
+      await brand.destroy();
+      return { errCode: 0, errMessage: "Xóa thương hiệu thành công" };
+    } catch (e) {
+      console.error("Error in BrandService.deleteBrand:", e);
+      return { errCode: -1, errMessage: e.message };
+    }
   }
 }
 

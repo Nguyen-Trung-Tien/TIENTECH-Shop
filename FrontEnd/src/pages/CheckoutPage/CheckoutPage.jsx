@@ -194,7 +194,7 @@ const CheckoutPage = () => {
                     key={idx}
                     className="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 dark:bg-dark-bg border border-slate-100 dark:border-dark-border"
                   >
-                    <div className="w-16 h-16 bg-white dark:bg-dark-bg rounded-xl overflow-hidden flex-shrink-0 border border-slate-100 dark:border-dark-border">
+                    <div className="size-16 bg-white dark:bg-dark-bg rounded-xl overflow-hidden flex-shrink-0 border border-slate-100 dark:border-dark-border">
                       <img
                         src={item.variant?.imageUrl || item.product?.image}
                         alt={item.product?.name}

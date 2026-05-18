@@ -92,9 +92,9 @@ const ProductSection = () => {
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-16 bg-white dark:bg-gray-900 rounded-[2.5rem] border border-dashed border-slate-200 dark:border-gray-800">
-            <div className="w-14 h-14 bg-slate-50 dark:bg-gray-800 text-slate-300 dark:text-gray-700 rounded-full flex items-center justify-center mb-4 shadow-inner">
+            <div className="size-14 bg-slate-50 dark:bg-gray-800 text-slate-300 dark:text-gray-700 rounded-full flex items-center justify-center mb-4 shadow-inner">
               <svg
-                className="w-7 h-7"
+                className="size-7"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"

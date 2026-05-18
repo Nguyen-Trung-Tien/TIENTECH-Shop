@@ -119,7 +119,7 @@ const ReviewHistory = () => {
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h3 className="text-xl font-display font-bold text-surface-900">
+          <h3 className="text-xl font-display font-semibold text-surface-900">
             Đánh giá sản phẩm
           </h3>
           <p className="text-xs text-slate-400 font-medium mt-1">
@@ -153,7 +153,7 @@ const ReviewHistory = () => {
 
       {loading ? (
         <div className="py-20 text-center">
-          <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <div className="size-10 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">
             Đang tải dữ liệu...
           </p>
@@ -186,7 +186,7 @@ const ReviewHistory = () => {
                         <img
                           src={product.image}
                           alt=""
-                          className="w-12 h-12 rounded-lg object-cover"
+                          className="size-12 rounded-lg object-cover"
                         />
                         <h4 className="font-bold text-sm text-slate-900">
                           {product.name}
@@ -207,7 +207,7 @@ const ReviewHistory = () => {
                     </div>
                   ) : (
                     <div className="flex items-center gap-6">
-                      <div className="w-16 h-16 rounded-xl overflow-hidden border border-slate-50 flex-shrink-0">
+                      <div className="size-16 rounded-xl overflow-hidden border border-slate-50 flex-shrink-0">
                         <img
                           src={product.image}
                           alt={product.name}
@@ -264,7 +264,7 @@ const ReviewHistory = () => {
                     <div className="flex flex-col md:flex-row gap-6">
                       {/* Product Info */}
                       <div className="flex items-center gap-4 md:w-1/3 md:border-r border-slate-50 pr-6">
-                        <div className="w-16 h-16 bg-slate-50 rounded-xl overflow-hidden flex-shrink-0 border border-slate-100">
+                        <div className="size-16 bg-slate-50 rounded-xl overflow-hidden flex-shrink-0 border border-slate-100">
                           <img
                             src={
                               review.product?.variants?.[0]?.image ||
@@ -335,7 +335,7 @@ const ReviewHistory = () => {
                             {review.images.map((img) => (
                               <div
                                 key={img.id}
-                                className="w-12 h-12 rounded-lg overflow-hidden border border-slate-100"
+                                className="size-12 rounded-lg overflow-hidden border border-slate-100"
                               >
                                 <img
                                   src={img.imageUrl}

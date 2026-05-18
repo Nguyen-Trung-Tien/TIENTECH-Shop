@@ -119,7 +119,7 @@ const handleDeleteUser = async (req, res) => {
     if (req.user.role !== "admin" && String(req.user.id) !== String(id)) {
       return res.status(403).json({ errCode: 403, errMessage: "Forbidden" });
     }
-    const result = await UserService.deleteUser(id);
+    const result = await UserService.deleteUser(id, req.user.id);
     return handleResponse(res, result);
   } catch (e) {
     return handleError(res, e, "handleDeleteUser");

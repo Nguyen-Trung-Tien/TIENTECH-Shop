@@ -1,0 +1,150 @@
+const db = require("../models");
+const { Op } = require("sequelize");
+const { GoogleGenerativeAI } = require("@google/generative-ai");
+const { getFengShuiDetail } = require("../utils/fortuneUtils");
+
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || process.env.API_KEY);
+const model = genAI.getGenerativeModel({
+  model: "gemini-3-flash-preview",
+  generationConfig: { responseMimeType: "application/json" },
+});
+
+const extractJson = (text) => {
+  try {
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      return JSON.parse(jsonMatch[0]);
+    }
+    return JSON.parse(text);
+  } catch (e) {
+    console.error("Failed to extract JSON:", text);
+    return {};
+  }
+};
+
+const getFengShuiAdvice = async (data) => {
+  try {
+    const {
+      birthYear,
+      gender = "male",
+      message,
+      brandId,
+      categoryId,
+      minPrice,
+      maxPrice,
+      history = [],
+    } = data;
+
+    const fs = getFengShuiDetail(Number(birthYear), gender);
+    const allLuckyColors = [...fs.luckyColors, ...fs.supportColors];
+
+    let products = [];
+    try {
+      products = await db.Product.findAll({
+        where: {
+          isActive: true,
+          [Op.or]: allLuckyColors.map((color) => ({
+            specifications: { [Op.like]: `%${color}%` },
+          })),
+          ...(brandId && { brandId }),
+          ...(categoryId && { categoryId }),
+          ...(minPrice && { basePrice: { [Op.gte]: minPrice } }),
+          ...(maxPrice && { basePrice: { [Op.lte]: maxPrice } }),
+        },
+        include: [
+          { model: db.Brand, as: "brand" },
+          { model: db.Category, as: "category" },
+        ],
+        order: [
+          ["sold", "DESC"],
+          ["discount", "DESC"],
+        ],
+        limit: 6,
+      });
+    } catch (dbError) {
+      console.error("Lỗi DB FengShui Products:", dbError);
+    }
+
+    let dbContext = `
+THÔNG TIN KHÁCH HÀNG:
+- Năm sinh: ${birthYear} (${fs.gender})
+- Mệnh Niên: ${fs.menhNien}
+- Cung Phi: ${fs.cungPhi} (Hành ${fs.element})
+- Màu Đại Cát (Tương sinh): ${fs.supportColors.join(", ")}
+- Màu Bình An (Bản mệnh): ${fs.luckyColors.join(", ")}
+- Màu Đại Kỵ: ${fs.badColors.join(", ")}
+- Con số may mắn: ${fs.luckyNumbers.join(", ")}
+`;
+
+    if (products.length) {
+      dbContext += "\nSẢN PHẨM HỢP MỆNH TRONG KHO:\n";
+      products.forEach((p) => {
+        const currentPrice = (p.basePrice || 0) * (1 - (p.discount || 0) / 100);
+        dbContext += `- ID: ${p.id}, Tên: ${p.name}, Giá: ${currentPrice.toLocaleString()}đ\n`;
+      });
+    }
+
+    const systemPrompt = `
+Bạn là "TienTech FengShui Master" - Bậc thầy phong thủy công nghệ.
+Nhiệm vụ: Tư vấn chọn sản phẩm (Laptop, iPhone, Tablet...) dựa trên bản mệnh chuyên sâu.
+
+NGUYÊN TẮC TƯ VẤN:
+1. Chào hỏi theo phong cách chuyên gia (VD: "Kính thưa quý khách sinh năm ${birthYear}...").
+2. Phân tích sự kết hợp giữa cung phi ${fs.cungPhi} và sản phẩm người dùng đang quan tâm.
+3. Ưu tiên gợi ý màu sắc Đại Cát trước, sau đó mới đến màu Bình An. Tuyệt đối khuyên tránh màu Đại Kỵ.
+4. Nhắc đến các con số may mắn (${fs.luckyNumbers.join(", ")}) có thể xuất hiện trong giá tiền hoặc mã máy.
+5. Tư vấn thêm về hướng đặt thiết bị trên bàn làm việc để kích tài lộc (Ví dụ: Mệnh ${fs.element} đặt hướng nào).
+6. Trả về JSON THUẦN:
+{
+  "reply": "Lời tư vấn tâm huyết và chi tiết",
+  "recommendedProducts": [id1, id2, id3],
+  "fsData": ${JSON.stringify(fs)}
+}
+`;
+
+    const contents = [
+      { role: "user", parts: [{ text: systemPrompt }] },
+      ...history.slice(-6).map((msg) => ({
+        role: msg.role === "user" ? "user" : "model",
+        parts: [{ text: typeof msg.content === "string" ? msg.content : JSON.stringify(msg.content) }],
+      })),
+      { role: "user", parts: [{ text: message }] },
+    ];
+
+    const resultGen = await model.generateContent({ contents });
+    const responseText = resultGen.response.text();
+    const result = extractJson(responseText);
+
+    let finalRecommended = [];
+    if (result.recommendedProducts && result.recommendedProducts.length > 0) {
+      try {
+        finalRecommended = await db.Product.findAll({
+          where: { id: { [Op.in]: result.recommendedProducts }, isActive: true },
+          attributes: ["id", "name", "basePrice", "discount", "image"],
+        });
+      } catch (dbError2) {
+        console.error("Lỗi DB Recommended Products:", dbError2);
+      }
+    }
+
+    return {
+      errCode: 0,
+      errMessage: "OK",
+      data: {
+        reply: result.reply || "Tôi đã xem quẻ cho bạn nhưng gặp chút khó khăn khi diễn đạt. Bạn hãy thử lại nhé!",
+        recommendedProducts: finalRecommended.length > 0 ? finalRecommended : products.slice(0, 3),
+      },
+    };
+  } catch (error) {
+    console.error("FengShuiService Error:", error);
+    return {
+      errCode: -1,
+      errMessage: "Lỗi hệ thống khi tư vấn phong thủy.",
+      data: null,
+    };
+  }
+};
+
+module.exports = {
+  getFengShuiAdvice,
+};

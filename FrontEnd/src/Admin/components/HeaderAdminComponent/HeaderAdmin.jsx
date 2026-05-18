@@ -24,8 +24,13 @@ import { toast } from "react-toastify";
 import { useCurrentUser } from "../../../hooks/useUser";
 import logoImage from "../../../assets/logo.png";
 import NotificationBell from "../../../components/HeaderComponent/NotificationBell";
-import { debounce } from "lodash";
-import { motion as Motion, AnimatePresence } from "framer-motion";
+import debounce from "lodash/debounce";
+import { m as Motion, AnimatePresence } from "framer-motion";
+
+const priceFormatter = new Intl.NumberFormat("vi-VN", {
+  style: "currency",
+  currency: "VND",
+});
 
 const HeaderAdmin = ({ toggleSidebar, isCollapsed, theme, toggleTheme }) => {
   const dispatch = useDispatch();
@@ -125,10 +130,7 @@ const HeaderAdmin = ({ toggleSidebar, isCollapsed, theme, toggleTheme }) => {
   };
 
   const formatPrice = (price) => {
-    return new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: "VND",
-    }).format(price);
+    return priceFormatter.format(price);
   };
 
   return (
@@ -137,7 +139,7 @@ const HeaderAdmin = ({ toggleSidebar, isCollapsed, theme, toggleTheme }) => {
         {/* Toggle Sidebar Button */}
         <button
           onClick={toggleSidebar}
-          className="flex h-10 w-10 items-center justify-center rounded-lg text-slate-500 dark:text-dark-text-secondary hover:bg-slate-100 dark:hover:bg-dark-bg transition-colors"
+          className="flex size-10 items-center justify-center rounded-lg text-slate-500 dark:text-dark-text-secondary hover:bg-slate-100 dark:hover:bg-dark-bg transition-colors"
           title={isCollapsed ? "Mở rộng" : "Thu gọn"}
         >
           <FiMenu className="text-xl" />
@@ -175,7 +177,7 @@ const HeaderAdmin = ({ toggleSidebar, isCollapsed, theme, toggleTheme }) => {
               >
                 {isLoading ? (
                   <div className="py-8 text-center space-y-2">
-                    <div className="inline-block w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                    <div className="inline-block size-6 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
                     <p className="text-xs text-slate-500 dark:text-dark-text-secondary font-medium italic">
                       Đang tìm kiếm hệ thống...
                     </p>
@@ -300,7 +302,7 @@ const HeaderAdmin = ({ toggleSidebar, isCollapsed, theme, toggleTheme }) => {
                               }}
                               className="flex items-center gap-3 w-full px-3 py-2 hover:bg-slate-50 dark:hover:bg-dark-bg rounded-xl transition-all group text-left"
                             >
-                              <div className="h-8 w-8 rounded-lg bg-rose-50 dark:bg-rose-900/30 flex items-center justify-center text-rose-500 text-xs font-bold group-hover:bg-rose-500 group-hover:text-white transition-all">
+                              <div className="size-8 rounded-lg bg-rose-50 dark:bg-rose-900/30 flex items-center justify-center text-rose-500 text-xs font-bold group-hover:bg-rose-500 group-hover:text-white transition-all">
                                 {u.username?.charAt(0).toUpperCase() || "U"}
                               </div>
                               <div className="min-w-0">
@@ -322,7 +324,7 @@ const HeaderAdmin = ({ toggleSidebar, isCollapsed, theme, toggleTheme }) => {
                       suggestions.orders.length === 0 &&
                       suggestions.users.length === 0 && (
                         <div className="py-12 text-center space-y-2">
-                          <div className="h-12 w-12 bg-slate-50 dark:bg-dark-bg rounded-full flex items-center justify-center mx-auto">
+                          <div className="size-12 bg-slate-50 dark:bg-dark-bg rounded-full flex items-center justify-center mx-auto">
                             <FiX className="text-slate-300 dark:text-slate-600 text-xl" />
                           </div>
                           <p className="text-xs text-slate-400 dark:text-dark-text-secondary font-medium italic">
@@ -356,7 +358,7 @@ const HeaderAdmin = ({ toggleSidebar, isCollapsed, theme, toggleTheme }) => {
         {/* Theme Toggle */}
         <button
           onClick={toggleTheme}
-          className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-50 dark:bg-dark-bg text-slate-500 dark:text-dark-text-secondary border border-slate-200 dark:border-dark-border hover:text-primary transition-all shadow-sm"
+          className="flex size-10 items-center justify-center rounded-xl bg-slate-50 dark:bg-dark-bg text-slate-500 dark:text-dark-text-secondary border border-slate-200 dark:border-dark-border hover:text-primary transition-all shadow-sm"
           title={theme === "dark" ? "Chế độ sáng" : "Chế độ tối"}
         >
           {theme === "dark" ? <FiSun className="text-amber-500" /> : <FiMoon />}
@@ -386,10 +388,10 @@ const HeaderAdmin = ({ toggleSidebar, isCollapsed, theme, toggleTheme }) => {
               <img
                 src={user.avatar}
                 alt="Avatar"
-                className="h-8 w-8 rounded-lg object-cover ring-2 ring-primary/10"
+                className="size-8 rounded-lg object-cover ring-2 ring-primary/10"
               />
             ) : (
-              <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+              <div className="size-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
                 <FiUser className="text-lg" />
               </div>
             )}

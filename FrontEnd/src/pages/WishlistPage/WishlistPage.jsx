@@ -46,7 +46,7 @@ const WishlistPage = () => {
                 className="flex flex-col md:flex-row md:items-center justify-between gap-6"
             >
                 <div className="flex items-center gap-5">
-                    <Link to="/" className="w-12 h-12 bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-slate-100 dark:border-gray-800 flex items-center justify-center text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-all active:scale-95">
+                    <Link to="/" className="size-12 bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-slate-100 dark:border-gray-800 flex items-center justify-center text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-all active:scale-95">
                         <FiArrowLeft size={20} />
                     </Link>
                     <div>
@@ -96,7 +96,7 @@ const WishlistPage = () => {
                 animate={{ opacity: 1, scale: 1 }}
                 className="max-w-2xl mx-auto bg-gray-50 dark:bg-gray-950 rounded-[3rem] p-12 md:p-20 text-center border border-slate-100 dark:border-gray-900 shadow-sm"
             >
-                <div className="relative w-24 h-24 mx-auto mb-8">
+                <div className="relative size-24 mx-auto mb-8">
                     <Motion.div 
                         animate={{ scale: [1, 1.2, 1] }}
                         transition={{ repeat: Infinity, duration: 2 }}

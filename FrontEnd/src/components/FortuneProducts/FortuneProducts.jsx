@@ -17,7 +17,8 @@ import { getAllCategoryApi } from "../../api/categoryApi";
 import ProductCard from "../ProductCard/ProductCard";
 import FengShuiChat from "../ChatBot/FengShui";
 import AppPagination from "../Pagination/Pagination";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion as Motion, AnimatePresence } from "framer-motion";
+
 import Button from "../UI/Button";
 
 const FortuneProducts = () => {
@@ -102,13 +103,13 @@ const FortuneProducts = () => {
       borderRadius: "14px",
       padding: "4px",
       borderColor: state.isFocused ? "#3b82f6" : "transparent",
-      backgroundColor: "rgb(249 250 251)", 
+      backgroundColor: "rgb(249 250 251)",
       boxShadow: "none",
       "&:hover": { borderColor: "#3b82f6" },
       ".dark &": {
         backgroundColor: "rgb(31 41 55)",
         borderColor: state.isFocused ? "#3b82f6" : "rgb(55 65 81)",
-      }
+      },
     }),
     singleValue: (base) => ({
       ...base,
@@ -116,9 +117,9 @@ const FortuneProducts = () => {
       fontWeight: "600",
     }),
     placeholder: (base) => ({
-        ...base,
-        color: "#94a3b8",
-        fontSize: "14px",
+      ...base,
+      color: "#94a3b8",
+      fontSize: "14px",
     }),
     menu: (base) => ({
       ...base,
@@ -129,7 +130,7 @@ const FortuneProducts = () => {
       ".dark &": {
         backgroundColor: "#111827",
         borderColor: "#374151",
-      }
+      },
     }),
     option: (base, state) => ({
       ...base,
@@ -142,7 +143,6 @@ const FortuneProducts = () => {
 
   return (
     <div className="min-h-screen bg-white dark:bg-black transition-colors duration-300 pb-20 relative">
-      
       {/* CHATBOT AI - ĐẶT Ở NGOÀI CÙNG ĐỂ KHÔNG BỊ LỖI HIỂN THỊ */}
       <FengShuiChat setGlobalBirthYear={setBirthYear} />
 
@@ -154,37 +154,40 @@ const FortuneProducts = () => {
 
       <div className="container mx-auto px-4 relative z-10 pt-8 md:pt-12">
         {/* HERO HEADER */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           className="relative mb-12 bg-gray-50 dark:bg-gray-900 rounded-[2.5rem] p-8 md:p-12 border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden"
         >
-            <div className="absolute top-0 right-0 p-4 opacity-5 select-none pointer-events-none">
-                <FiZap size={140} className="text-blue-500" />
+          <div className="absolute top-0 right-0 p-4 opacity-5 select-none pointer-events-none">
+            <FiZap size={140} className="text-blue-500" />
+          </div>
+
+          <Link
+            to="/"
+            className="inline-flex items-center gap-2 text-slate-400 hover:text-blue-500 transition-all mb-8 font-bold text-[11px] uppercase tracking-[0.2em]"
+          >
+            <FiArrowLeft size={16} /> Quay lại trang chủ
+          </Link>
+
+          <div className="max-w-3xl">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500 text-white text-[10px] font-black uppercase tracking-widest mb-6 shadow-lg shadow-blue-500/20">
+              <FiActivity size={12} />
+              AI Phong Thủy v5.0
             </div>
 
-            <Link
-                to="/"
-                className="inline-flex items-center gap-2 text-slate-400 hover:text-blue-500 transition-all mb-8 font-bold text-[11px] uppercase tracking-[0.2em]"
-            >
-                <FiArrowLeft size={16} /> Quay lại trang chủ
-            </Link>
+            <h1 className="text-4xl md:text-6xl font-black text-slate-900 dark:text-white mb-6 leading-[1.1] tracking-tight">
+              Khám Phá <span className="text-blue-500">Bản Mệnh</span> <br />
+              <span className="text-slate-400 dark:text-slate-500 font-serif italic font-light">
+                Cho Thiết Bị Công Nghệ
+              </span>
+            </h1>
 
-            <div className="max-w-3xl">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500 text-white text-[10px] font-black uppercase tracking-widest mb-6 shadow-lg shadow-blue-500/20">
-                    <FiActivity size={12} />
-                    AI Phong Thủy v5.0
-                </div>
-                
-                <h1 className="text-4xl md:text-6xl font-black text-slate-900 dark:text-white mb-6 leading-[1.1] tracking-tight">
-                    Khám Phá <span className="text-blue-500">Bản Mệnh</span> <br />
-                    <span className="text-slate-400 dark:text-slate-500 font-serif italic font-light">Cho Thiết Bị Công Nghệ</span>
-                </h1>
-                
-                <p className="text-slate-600 dark:text-slate-400 text-lg font-medium leading-relaxed max-w-2xl">
-                    Sử dụng trí tuệ nhân tạo để phân tích quẻ mệnh, giúp bạn lựa chọn những thiết bị mang lại sự hanh thông và tài lộc.
-                </p>
-            </div>
+            <p className="text-slate-600 dark:text-slate-400 text-lg font-medium leading-relaxed max-w-2xl">
+              Sử dụng trí tuệ nhân tạo để phân tích quẻ mệnh, giúp bạn lựa chọn
+              những thiết bị mang lại sự hanh thông và tài lộc.
+            </p>
+          </div>
         </motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
@@ -192,10 +195,12 @@ const FortuneProducts = () => {
           <div className="lg:col-span-4 space-y-8">
             <section className="bg-white dark:bg-gray-900 rounded-3xl p-8 border border-gray-100 dark:border-gray-800 shadow-xl space-y-8">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center text-blue-500">
-                    <FiFilter size={18} />
+                <div className="size-10 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center text-blue-500">
+                  <FiFilter size={18} />
                 </div>
-                <h3 className="text-sm font-black uppercase tracking-widest text-slate-900 dark:text-white">Bộ lọc tinh chỉnh</h3>
+                <h3 className="text-sm font-black uppercase tracking-widest text-slate-900 dark:text-white">
+                  Bộ lọc tinh chỉnh
+                </h3>
               </div>
 
               <div className="space-y-6">
@@ -205,7 +210,9 @@ const FortuneProducts = () => {
                   </label>
                   <Select
                     options={yearOptions}
-                    value={birthYear ? { value: birthYear, label: birthYear } : null}
+                    value={
+                      birthYear ? { value: birthYear, label: birthYear } : null
+                    }
                     onChange={(opt) => setBirthYear(opt.value)}
                     placeholder="Chọn năm sinh..."
                     styles={selectStyles}
@@ -214,7 +221,9 @@ const FortuneProducts = () => {
 
                 <div className="grid grid-cols-1 gap-6">
                   <div>
-                    <label className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em] mb-3 block">Thương hiệu</label>
+                    <label className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em] mb-3 block">
+                      Thương hiệu
+                    </label>
                     <select
                       className="w-full h-12 bg-gray-50 dark:bg-gray-800 border border-transparent dark:border-gray-700 rounded-xl px-5 text-sm font-semibold text-slate-900 dark:text-white outline-none focus:border-blue-500 transition-all appearance-none"
                       value={brandId}
@@ -222,13 +231,17 @@ const FortuneProducts = () => {
                     >
                       <option value="">Tất cả thương hiệu</option>
                       {brands.map((b) => (
-                        <option key={b.id} value={b.id}>{b.name}</option>
+                        <option key={b.id} value={b.id}>
+                          {b.name}
+                        </option>
                       ))}
                     </select>
                   </div>
 
                   <div>
-                    <label className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em] mb-3 block">Danh mục</label>
+                    <label className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em] mb-3 block">
+                      Danh mục
+                    </label>
                     <select
                       className="w-full h-12 bg-gray-50 dark:bg-gray-800 border border-transparent dark:border-gray-700 rounded-xl px-5 text-sm font-semibold text-slate-900 dark:text-white outline-none focus:border-blue-500 transition-all appearance-none"
                       value={categoryId}
@@ -236,25 +249,27 @@ const FortuneProducts = () => {
                     >
                       <option value="">Mọi danh mục</option>
                       {categories.map((c) => (
-                        <option key={c.id} value={c.id}>{c.name}</option>
+                        <option key={c.id} value={c.id}>
+                          {c.name}
+                        </option>
                       ))}
                     </select>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <input
-                        type="number"
-                        placeholder="Giá từ"
-                        className="w-full h-12 bg-gray-50 dark:bg-gray-800 border border-transparent dark:border-gray-700 rounded-xl px-5 text-sm font-semibold text-slate-900 dark:text-white outline-none focus:border-blue-500 transition-all"
-                        value={minPrice}
-                        onChange={(e) => setMinPrice(e.target.value)}
+                      type="number"
+                      placeholder="Giá từ"
+                      className="w-full h-12 bg-gray-50 dark:bg-gray-800 border border-transparent dark:border-gray-700 rounded-xl px-5 text-sm font-semibold text-slate-900 dark:text-white outline-none focus:border-blue-500 transition-all"
+                      value={minPrice}
+                      onChange={(e) => setMinPrice(e.target.value)}
                     />
                     <input
-                        type="number"
-                        placeholder="Đến giá"
-                        className="w-full h-12 bg-gray-50 dark:bg-gray-800 border border-transparent dark:border-gray-700 rounded-xl px-5 text-sm font-semibold text-slate-900 dark:text-white outline-none focus:border-blue-500 transition-all"
-                        value={maxPrice}
-                        onChange={(e) => setMaxPrice(e.target.value)}
+                      type="number"
+                      placeholder="Đến giá"
+                      className="w-full h-12 bg-gray-50 dark:bg-gray-800 border border-transparent dark:border-gray-700 rounded-xl px-5 text-sm font-semibold text-slate-900 dark:text-white outline-none focus:border-blue-500 transition-all"
+                      value={maxPrice}
+                      onChange={(e) => setMaxPrice(e.target.value)}
                     />
                   </div>
                 </div>
@@ -272,12 +287,19 @@ const FortuneProducts = () => {
 
             {/* INFO CARD - ĐỒNG BỘ MÀU TRẮNG SÁNG */}
             <div className="bg-gray-50 dark:bg-gray-900 p-8 rounded-3xl text-slate-900 dark:text-white relative overflow-hidden border border-gray-100 dark:border-gray-800 shadow-sm">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full blur-2xl"></div>
-                <FiInfo className="mb-4 text-blue-500" size={24} />
-                <h4 className="text-lg font-bold mb-2 uppercase tracking-tight">Mẹo Phong Thủy</h4>
-                <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed font-medium">
-                    Màu sắc tương sinh sẽ giúp cân bằng năng lượng và hỗ trợ công việc hiệu quả hơn. Hãy ưu tiên chọn các thiết bị có màu sắc <span className="text-blue-600 dark:text-blue-400 font-bold">Đại Cát</span> để tối ưu tài lộc.
-                </p>
+              <div className="absolute top-0 right-0 size-32 bg-blue-500/5 rounded-full blur-2xl"></div>
+              <FiInfo className="mb-4 text-blue-500" size={24} />
+              <h4 className="text-lg font-bold mb-2 uppercase tracking-tight">
+                Mẹo Phong Thủy
+              </h4>
+              <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed font-medium">
+                Màu sắc tương sinh sẽ giúp cân bằng năng lượng và hỗ trợ công
+                việc hiệu quả hơn. Hãy ưu tiên chọn các thiết bị có màu sắc{" "}
+                <span className="text-blue-600 dark:text-blue-400 font-bold">
+                  Đại Cát
+                </span>{" "}
+                để tối ưu tài lộc.
+              </p>
             </div>
           </div>
 
@@ -285,46 +307,47 @@ const FortuneProducts = () => {
           <div className="lg:col-span-8 space-y-10">
             {/* ANALYSIS RESULTS BAR */}
             <AnimatePresence>
-                {luckyColors.length > 0 && (
+              {luckyColors.length > 0 && (
                 <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="bg-blue-50 dark:bg-blue-900/10 p-8 rounded-3xl border border-blue-100 dark:border-blue-900/30 flex flex-col md:flex-row items-center gap-8"
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="bg-blue-50 dark:bg-blue-900/10 p-8 rounded-3xl border border-blue-100 dark:border-blue-900/30 flex flex-col md:flex-row items-center gap-8"
                 >
-                    <div className="flex items-center gap-3 text-blue-600 dark:text-blue-400 font-black uppercase tracking-widest text-[11px]">
-                        <FiActivity size={18} />
-                        <span>Màu sắc đại cát:</span>
-                    </div>
-                    <div className="flex flex-wrap gap-3">
-                        {luckyColors.map((c, i) => (
-                            <span
-                                key={i}
-                                className="px-5 py-2 bg-white dark:bg-gray-800 text-slate-900 dark:text-white border border-gray-100 dark:border-gray-700 rounded-xl text-[11px] font-black uppercase tracking-widest shadow-sm border-b-4 border-blue-500/20"
-                            >
-                                {c}
-                            </span>
-                        ))}
-                    </div>
+                  <div className="flex items-center gap-3 text-blue-600 dark:text-blue-400 font-black uppercase tracking-widest text-[11px]">
+                    <FiActivity size={18} />
+                    <span>Màu sắc đại cát:</span>
+                  </div>
+                  <div className="flex flex-wrap gap-3">
+                    {luckyColors.map((c, i) => (
+                      <span
+                        key={i}
+                        className="px-5 py-2 bg-white dark:bg-gray-800 text-slate-900 dark:text-white border border-gray-100 dark:border-gray-700 rounded-xl text-[11px] font-black uppercase tracking-widest shadow-sm border-b-4 border-blue-500/20"
+                      >
+                        {c}
+                      </span>
+                    ))}
+                  </div>
                 </motion.div>
-                )}
+              )}
             </AnimatePresence>
 
             <div className="min-h-[500px]">
               {loading ? (
                 <div className="flex flex-col items-center justify-center py-40 gap-6">
-                    <div className="w-14 h-14 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-                    <p className="text-slate-400 font-black uppercase tracking-widest text-[11px]">
-                        Đang truy vấn thiên cơ...
-                    </p>
+                  <div className="size-14 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                  <p className="text-slate-400 font-black uppercase tracking-widest text-[11px]">
+                    Đang truy vấn thiên cơ...
+                  </p>
                 </div>
               ) : products.length === 0 ? (
                 <div className="bg-gray-50 dark:bg-gray-900/50 rounded-[3rem] p-24 text-center border-2 border-dashed border-gray-100 dark:border-gray-800">
                   <FiLayers className="text-5xl text-gray-200 dark:text-gray-700 mx-auto mb-6" />
-                  <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
+                  <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">
                     Chưa có quẻ mệnh
                   </h3>
                   <p className="text-slate-500 dark:text-slate-400 text-sm max-w-xs mx-auto font-medium">
-                    Hãy nhập năm sinh hoặc trò chuyện với trợ lý AI để nhận gợi ý.
+                    Hãy nhập năm sinh hoặc trò chuyện với trợ lý AI để nhận gợi
+                    ý.
                   </p>
                 </div>
               ) : (
@@ -339,7 +362,11 @@ const FortuneProducts = () => {
                       >
                         <ProductCard
                           product={p}
-                          highlightColor={luckyColors.some(color => p.color?.toLowerCase().includes(color.toLowerCase()))}
+                          highlightColor={luckyColors.some((color) =>
+                            p.color
+                              ?.toLowerCase()
+                              .includes(color.toLowerCase()),
+                          )}
                         />
                       </motion.div>
                     ))}

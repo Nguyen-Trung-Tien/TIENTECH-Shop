@@ -371,7 +371,7 @@ function ProductFilter({
     return (
       <div className="w-full bg-white rounded-[2.5rem] border border-slate-100 shadow-soft p-8">
         <div className="flex items-center gap-3 mb-10 pb-6 border-b border-slate-50">
-          <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600 shadow-sm">
+          <div className="size-10 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600 shadow-sm">
             <FiFilter />
           </div>
           <h3 className="text-xl font-black text-slate-900 tracking-tight uppercase">
@@ -407,7 +407,7 @@ function ProductFilter({
             </h3>
             <button
               onClick={onClose}
-              className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400 hover:text-rose-500 transition-all"
+              className="size-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400 hover:text-rose-500 transition-all"
             >
               <FiX size={24} />
             </button>

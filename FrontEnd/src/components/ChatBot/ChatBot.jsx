@@ -13,6 +13,7 @@ import {
 } from "react-icons/fi";
 import { useSelector } from "react-redux";
 import { motion as Motion, AnimatePresence } from "framer-motion";
+
 import { sendMessage, visualSearch } from "../../api/chatApi";
 
 const ChatBot = () => {
@@ -44,9 +45,11 @@ const ChatBot = () => {
   }, [messages, typing]);
 
   useEffect(() => {
+    let timer;
     if (isOpen) {
-      setTimeout(() => inputRef.current?.focus(), 200);
+      timer = setTimeout(() => inputRef.current?.focus(), 200);
     }
+    return () => clearTimeout(timer);
   }, [isOpen]);
 
   const formatTime = (date) =>
@@ -55,24 +58,26 @@ const ChatBot = () => {
       .toString()
       .padStart(2, "0")}`;
 
-  const addMessage = (role, content, recommendedProducts = []) => {
+  const addMessage = useCallback((role, content, recommendedProducts = []) => {
     setMessages((prev) => [
       ...prev,
       { role, content, time: new Date(), recommendedProducts },
     ]);
-  };
+  }, []);
 
   useEffect(() => {
+    let timer;
     if (isOpen && messages.length === 0 && !hasGreeted) {
       setHasGreeted(true);
-      setTimeout(() => {
+      timer = setTimeout(() => {
         addMessage(
           "assistant",
           "👋 Xin chào! Tôi là TienTech AI. Tôi có thể giúp gì cho bạn hôm nay?",
         );
       }, 600);
     }
-  }, [isOpen, messages.length, hasGreeted]);
+    return () => clearTimeout(timer);
+  }, [isOpen, messages.length, hasGreeted, addMessage]);
 
   const streamText = useCallback(
     async (text, recommendedProducts = []) => {
@@ -101,10 +106,22 @@ const ChatBot = () => {
 
       const res = await sendMessage(text, userId, history);
 
-      if (typeof res === "string") {
-        await streamText(res);
+      if (res.errCode === 0) {
+        const data = res.data;
+        if (typeof data === "string") {
+          await streamText(data);
+        } else if (data && data.reply) {
+          await streamText(data.reply, data.recommendedProducts || []);
+        } else {
+          await streamText(
+            "Tôi đã nhận được thông tin, nhưng không có phản hồi cụ thể.",
+          );
+        }
       } else {
-        await streamText(res.reply, res.recommendedProducts || []);
+        await streamText(
+          res.errMessage ||
+            "Xin lỗi, tôi không thể xử lý yêu cầu của bạn lúc này.",
+        );
       }
     } catch (err) {
       console.error(err);
@@ -130,13 +147,21 @@ const ChatBot = () => {
       try {
         const res = await visualSearch(base64String);
         setImagePreview(null);
-        await streamText(
-          `Tôi tìm thấy một số sản phẩm tương tự với hình ảnh của bạn (${res.description}):`,
-          res.products || []
-        );
+        if (res.errCode === 0) {
+          await streamText(
+            `Tôi tìm thấy một số sản phẩm tương tự với hình ảnh của bạn (${res.data.description}):`,
+            res.data.products || [],
+          );
+        } else {
+          await streamText(
+            res.errMessage || "Không thể phân tích hình ảnh này.",
+          );
+        }
       } catch (err) {
         console.error(err);
-        await streamText("Rất tiếc, tôi không thể phân tích hình ảnh này. Hãy thử lại với ảnh khác nhé!");
+        await streamText(
+          "Rất tiếc, tôi không thể phân tích hình ảnh này. Hãy thử lại với ảnh khác nhé!",
+        );
       } finally {
         setLoading(false);
       }
@@ -158,7 +183,7 @@ const ChatBot = () => {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={() => setIsOpen(!isOpen)}
-          className={`relative w-16 h-16 rounded-full flex items-center justify-center text-white shadow-2xl transition-all duration-500 ${
+          className={`relative size-16 rounded-full flex items-center justify-center text-white shadow-2xl transition-all duration-500 ${
             isOpen ? "bg-gray-900 rotate-90" : "bg-blue-600"
           }`}
         >
@@ -188,7 +213,7 @@ const ChatBot = () => {
           >
             <div className="px-6 py-5 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 text-gray-900 dark:text-white flex items-center justify-between shrink-0">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center text-white shadow-md">
+                <div className="size-10 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center text-white shadow-md">
                   <FiCpu size={20} />
                 </div>
                 <div>
@@ -235,7 +260,7 @@ const ChatBot = () => {
                     className={`flex gap-3 max-w-[85%] ${msg.role === "user" ? "flex-row-reverse" : "flex-row"}`}
                   >
                     <div
-                      className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-1 shadow-sm ${msg.role === "user" ? "bg-white dark:bg-gray-800 text-gray-400" : "bg-blue-600 text-white"}`}
+                      className={`size-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-1 shadow-sm ${msg.role === "user" ? "bg-white dark:bg-gray-800 text-gray-400" : "bg-blue-600 text-white"}`}
                     >
                       {msg.role === "user" ? (
                         <FiUser size={14} />
@@ -261,7 +286,7 @@ const ChatBot = () => {
                                     href={`/product/${prod.id}`}
                                     className="flex items-center gap-3 p-2 rounded-xl bg-gray-50 dark:bg-gray-900/50 hover:bg-blue-50 dark:hover:bg-blue-900/20 border border-transparent hover:border-blue-100 dark:hover:border-blue-900/30 transition-all group"
                                   >
-                                    <div className="w-12 h-12 rounded-lg bg-white overflow-hidden flex-shrink-0 border border-gray-100 dark:border-gray-800">
+                                    <div className="size-12 rounded-lg bg-white overflow-hidden flex-shrink-0 border border-gray-100 dark:border-gray-800">
                                       <img
                                         src={prod.image}
                                         alt={prod.name}
@@ -296,7 +321,11 @@ const ChatBot = () => {
               {imagePreview && (
                 <div className="flex justify-end">
                   <div className="max-w-[70%] p-2 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
-                    <img src={imagePreview} alt="Preview" className="w-full h-auto rounded-xl animate-pulse" />
+                    <img
+                      src={imagePreview}
+                      alt="Preview"
+                      className="w-full h-auto rounded-xl animate-pulse"
+                    />
                   </div>
                 </div>
               )}
@@ -304,7 +333,7 @@ const ChatBot = () => {
               {(loading || typing) && (
                 <div className="flex justify-start">
                   <div className="flex gap-3 max-w-[85%]">
-                    <div className="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center flex-shrink-0 shadow-sm">
+                    <div className="size-8 rounded-lg bg-blue-600 text-white flex items-center justify-center flex-shrink-0 shadow-sm">
                       <FiCpu size={14} />
                     </div>
                     <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 px-4 py-3 rounded-2xl rounded-tl-none shadow-sm min-w-[60px]">
@@ -372,7 +401,7 @@ const ChatBot = () => {
                 <button
                   type="submit"
                   disabled={loading || !input.trim()}
-                  className={`absolute right-2 w-10 h-10 rounded-xl flex items-center justify-center transition-all ${input.trim() ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20 hover:scale-105" : "text-gray-300 dark:text-gray-600"}`}
+                  className={`absolute right-2 size-10 rounded-xl flex items-center justify-center transition-all ${input.trim() ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20 hover:scale-105" : "text-gray-300 dark:text-gray-600"}`}
                 >
                   <FiSend size={18} />
                 </button>

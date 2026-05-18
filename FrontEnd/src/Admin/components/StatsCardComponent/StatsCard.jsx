@@ -9,11 +9,11 @@ const StatsCard = ({ title, value, icon, change, isIncrease }) => {
       className="bg-white dark:bg-dark-surface p-6 rounded-3xl border border-slate-200 dark:border-dark-border shadow-soft group cursor-pointer h-full flex flex-col justify-between relative overflow-hidden"
     >
       {/* Background decoration */}
-      <div className="absolute -right-4 -top-4 w-24 h-24 bg-primary/5 dark:bg-primary/10 rounded-full blur-2xl group-hover:bg-primary/10 transition-colors"></div>
+      <div className="absolute -right-4 -top-4 size-24 bg-primary/5 dark:bg-primary/10 rounded-full blur-2xl group-hover:bg-primary/10 transition-colors"></div>
 
       <div className="relative z-10">
         <div className="flex items-center justify-between mb-6">
-          <div className="w-14 h-14 rounded-2xl bg-slate-50 dark:bg-dark-bg flex items-center justify-center text-primary text-2xl group-hover:bg-primary group-hover:text-white transition-all duration-300 shadow-sm border border-slate-100 dark:border-dark-border">
+          <div className="size-14 rounded-2xl bg-slate-50 dark:bg-dark-bg flex items-center justify-center text-primary text-2xl group-hover:bg-primary group-hover:text-white transition-all duration-300 shadow-sm border border-slate-100 dark:border-dark-border">
             {icon}
           </div>
 

@@ -45,6 +45,7 @@ module.exports = (sequelize, DataTypes) => {
           "processing",
           "shipped",
           "delivered",
+          "completed", // đã nhận hàng
           "cancelled", // đã hủy
           "cancel_requested", // đang yêu cầu hủy
         ),

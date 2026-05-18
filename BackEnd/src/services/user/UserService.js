@@ -83,6 +83,41 @@ class UserService extends BaseService {
       return { errCode: 2, errMessage: e.message };
     }
   }
+
+  async deleteUser(userId, currentUserId = null) {
+    try {
+      if (currentUserId && String(userId) === String(currentUserId)) {
+        return { errCode: 4, errMessage: "Bạn không thể tự xóa chính mình." };
+      }
+
+      const user = await this.model.findByPk(userId);
+      if (!user) return { errCode: 1, errMessage: "User not found" };
+
+      if (user.role === "root") {
+        return { errCode: 2, errMessage: "Cannot delete root user" };
+      }
+
+      // Check if user has orders - If they do, we MUST NOT delete due to financial records
+      const orderCount = await db.Order.count({ where: { userId } });
+      if (orderCount > 0) {
+        // Soft delete/Deactivate
+        user.isActive = false;
+        await user.save();
+        return {
+          errCode: 0,
+          errMessage: "Người dùng đã có lịch sử mua hàng. Hệ thống đã chuyển trạng thái thành Ngưng hoạt động để bảo toàn dữ liệu đơn hàng.",
+        };
+      }
+
+      // If no orders, we can try to hard delete
+      // Sequelize CASCADE (defined in models) will handle Notifications, Wishlist, etc.
+      await user.destroy();
+      return { errCode: 0, errMessage: "Người dùng đã được xóa hoàn toàn khỏi hệ thống." };
+    } catch (e) {
+      console.error("UserService.deleteUser error:", e);
+      return { errCode: 3, errMessage: "Lỗi hệ thống: " + e.message };
+    }
+  }
 }
 
 module.exports = new UserService();

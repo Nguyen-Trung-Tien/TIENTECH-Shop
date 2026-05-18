@@ -118,7 +118,7 @@ export const useAdminCrud = (api, options = {}) => {
     try {
       const res = await api.delete(deletingItem.id);
       if (res.errCode === 0) {
-        toast.success(`Đã xóa ${itemName}!`);
+        toast.success(res.errMessage || `Đã xóa ${itemName}!`);
         // If last item on page and not first page, go back one page
         const newPage = data.length === 1 && page > 1 ? page - 1 : page;
         fetchData(newPage, searchTerm);

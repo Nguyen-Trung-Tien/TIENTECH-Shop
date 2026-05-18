@@ -48,7 +48,7 @@ const ProductInfo = ({
           )}
           {isFlashSale && (
             <span className="bg-orange-500 text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider flex items-center gap-1 shadow-sm">
-              <FiZap className="fill-current w-3 h-3" /> FLASH SALE
+              <FiZap className="fill-current size-3" /> FLASH SALE
             </span>
           )}
         </div>
@@ -80,11 +80,11 @@ const ProductInfo = ({
             <FiClock className="text-lg" /> Kết thúc sau:
           </div>
           <div className="flex gap-1.5 font-bold text-sm">
-            <span className="bg-red-600 text-white w-8 h-8 rounded-lg flex items-center justify-center">{h}</span>
+            <span className="bg-red-600 text-white size-8 rounded-lg flex items-center justify-center">{h}</span>
             <span className="flex items-center dark:text-white">:</span>
-            <span className="bg-red-600 text-white w-8 h-8 rounded-lg flex items-center justify-center">{m}</span>
+            <span className="bg-red-600 text-white size-8 rounded-lg flex items-center justify-center">{m}</span>
             <span className="flex items-center dark:text-white">:</span>
-            <span className="bg-red-600 text-white w-8 h-8 rounded-lg flex items-center justify-center">{s}</span>
+            <span className="bg-red-600 text-white size-8 rounded-lg flex items-center justify-center">{s}</span>
           </div>
         </div>
       )}
@@ -106,7 +106,7 @@ const ProductInfo = ({
           )}
         </div>
         <div className="flex items-center gap-2 pt-2">
-          <div className={`w-2 h-2 rounded-full ${(product.totalStock || product.stock) > 0 ? "bg-green-500" : "bg-red-500"}`}></div>
+          <div className={`size-2 rounded-full ${(product.totalStock || product.stock) > 0 ? "bg-green-500" : "bg-red-500"}`}></div>
           <p className="text-xs text-gray-500 dark:text-dark-text-secondary font-medium uppercase tracking-tight">
             {(product.totalStock || product.stock) > 0
               ? `Còn ${product.totalStock || product.stock} sản phẩm`
@@ -147,7 +147,7 @@ const ProductInfo = ({
                       }`}
                     >
                       {val}
-                      {isSelected && <FiCheck className="w-3 h-3" />}
+                      {isSelected && <FiCheck className="size-3" />}
                     </button>
                   );
                 })}
@@ -188,7 +188,7 @@ const ProductInfo = ({
           <button
             onClick={handleWishlist}
             disabled={loadingWishlist}
-            className={`w-12 h-12 rounded-xl border-2 flex items-center justify-center transition-all shadow-sm ${
+            className={`size-12 rounded-xl border-2 flex items-center justify-center transition-all shadow-sm ${
               isWishlisted
                 ? "border-red-100 dark:border-red-900/30 bg-red-50 dark:bg-red-900/20 text-red-500"
                 : "border-gray-100 dark:border-dark-border text-gray-400 dark:text-dark-text-secondary hover:bg-gray-50 dark:hover:bg-dark-bg hover:text-red-500 hover:border-red-100 dark:hover:border-red-900/30"

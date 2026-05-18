@@ -123,7 +123,7 @@ const Notifications = () => {
         <div className="bg-white dark:bg-dark-surface rounded-[32px] border border-surface-200 dark:border-dark-border shadow-soft overflow-hidden">
           {loading && notifications.length === 0 ? (
             <div className="p-20 text-center">
-              <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+              <div className="size-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
               <p className="text-surface-400 dark:text-dark-text-secondary font-bold uppercase tracking-widest text-[10px]">
                 Đang tải thông báo...
               </p>
@@ -140,7 +140,7 @@ const Notifications = () => {
                   className={`p-6 md:p-8 flex gap-4 md:gap-6 cursor-pointer hover:bg-surface-50 dark:hover:bg-dark-bg/50 transition-all relative group ${!n.isRead ? "bg-primary/5 dark:bg-primary/10" : ""}`}
                 >
                   <div
-                    className={`w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 text-xl shadow-sm ${
+                    className={`size-14 rounded-2xl flex items-center justify-center flex-shrink-0 text-xl shadow-sm ${
                       n.type === "order"
                         ? "bg-sky-100 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400"
                         : n.type === "promotion"
@@ -154,7 +154,7 @@ const Notifications = () => {
                   <div className="flex-grow min-w-0">
                     <div className="flex items-start justify-between gap-4 mb-1">
                       <h3
-                        className={`text-base font-bold text-surface-900 dark:text-white leading-tight ${!n.isRead ? "" : "opacity-70"}`}
+                        className={`text-base font-semibold text-surface-900 dark:text-white leading-tight ${!n.isRead ? "" : "opacity-70"}`}
                       >
                         {n.title}
                       </h3>
@@ -198,10 +198,10 @@ const Notifications = () => {
             </div>
           ) : (
             <div className="p-32 text-center">
-              <div className="w-24 h-24 bg-surface-50 dark:bg-dark-bg rounded-full flex items-center justify-center mx-auto mb-6">
+              <div className="size-24 bg-surface-50 dark:bg-dark-bg rounded-full flex items-center justify-center mx-auto mb-6">
                 <FiBell className="text-surface-200 dark:text-dark-border" size={48} />
               </div>
-              <h3 className="text-xl font-bold text-surface-900 dark:text-white mb-2">
+              <h3 className="text-xl font-semibold text-surface-900 dark:text-white mb-2">
                 Hộp thư trống
               </h3>
               <p className="text-surface-500 dark:text-dark-text-secondary font-medium">

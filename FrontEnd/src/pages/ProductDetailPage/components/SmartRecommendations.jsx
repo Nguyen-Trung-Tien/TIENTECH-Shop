@@ -9,7 +9,7 @@ const SmartRecommendations = ({ smartRecs }) => {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-gray-100 dark:border-dark-border pb-6">
         <div className="space-y-2">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-100 dark:shadow-none">
+            <div className="size-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-100 dark:shadow-none">
               <FiZap className="fill-current" />
             </div>
             <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight uppercase">

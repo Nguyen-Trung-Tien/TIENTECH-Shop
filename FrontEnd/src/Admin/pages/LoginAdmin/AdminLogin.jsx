@@ -157,7 +157,7 @@ const AdminLogin = () => {
                 <label className="flex items-center gap-3 cursor-pointer">
                   <input
                     type="checkbox"
-                    className="w-5 h-5 rounded-lg border-2 border-slate-200 text-primary focus:ring-primary"
+                    className="size-5 rounded-lg border-2 border-slate-200 text-primary focus:ring-primary"
                     checked={rememberMe}
                     onChange={(e) => setRememberMe(e.target.checked)}
                   />
