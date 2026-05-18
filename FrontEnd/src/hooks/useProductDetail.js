@@ -22,7 +22,6 @@ export const useProductDetail = (slug) => {
 
   const [recommended, setRecommended] = useState([]);
   const [smartRecs, setSmartRecs] = useState([]);
-  const [loadingRecommended, setLoadingRecommended] = useState(false);
   const [addingCart, setAddingCart] = useState(false);
   const [submittingReview, setSubmittingReview] = useState(false);
 
@@ -37,7 +36,7 @@ export const useProductDetail = (slug) => {
       } else {
         toast.error(res.errMessage || "Không tìm thấy sản phẩm!");
       }
-    } catch (err) {
+    } catch {
       toast.error("Lỗi khi tải thông tin sản phẩm!");
     } finally {
       setLoading(false);
@@ -125,7 +124,7 @@ export const useProductDetail = (slug) => {
         toast.error(res.errMessage);
         return null;
       }
-    } catch (err) {
+    } catch {
       toast.error("Lỗi khi thêm vào giỏ hàng!");
       return null;
     } finally {
@@ -149,7 +148,7 @@ export const useProductDetail = (slug) => {
         toast.error(res.errMessage || "Lỗi khi gửi đánh giá");
         return false;
       }
-    } catch (error) {
+    } catch {
       toast.error("Không thể gửi đánh giá lúc này");
       return false;
     } finally {
@@ -164,7 +163,6 @@ export const useProductDetail = (slug) => {
     pagination,
     recommended,
     smartRecs,
-    loadingRecommended,
     addingCart,
     submittingReview,
     handleAddToCart,

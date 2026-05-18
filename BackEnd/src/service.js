@@ -152,12 +152,35 @@ GLOBAL ERROR HANDLER
 */
 
 app.use((err, req, res, next) => {
-  console.error("[GlobalErrorHandler]", err.stack || err);
+  err.statusCode = err.statusCode || 500;
+  err.status = err.status || "error";
+  err.errCode = err.errCode || -1;
 
-  res.status(err.status || 500).json({
-    errCode: -1,
-    errMessage: err.message || "Internal Server Error",
-  });
+  if (process.env.NODE_ENV === "development") {
+    res.status(err.statusCode).json({
+      status: err.status,
+      errCode: err.errCode,
+      errMessage: err.message,
+      stack: err.stack,
+      error: err,
+    });
+  } else {
+    // Production: Don't leak stack traces
+    if (err.isOperational) {
+      res.status(err.statusCode).json({
+        status: err.status,
+        errCode: err.errCode,
+        errMessage: err.message,
+      });
+    } else {
+      console.error("ERROR 💥", err);
+      res.status(500).json({
+        status: "error",
+        errCode: -1,
+        errMessage: "Something went very wrong!",
+      });
+    }
+  }
 });
 
 /*DATABASE + CRON JOBS*/

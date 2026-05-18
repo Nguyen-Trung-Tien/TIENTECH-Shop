@@ -178,6 +178,8 @@ const updateProduct = async (id, data, imageRecords = []) => {
   }
 };
 
+const ProductRepository = require("../../repository/ProductRepository");
+
 const getAllProducts = async (
   categoryId,
   page = 1,
@@ -202,21 +204,19 @@ const getAllProducts = async (
     whereCondition.isActive = true;
   }
 
-  const data = await db.Product.findAndCountAll({
-    where: whereCondition,
+  const data = await ProductRepository.getAllOptimized({
+    whereCondition,
+    offset,
+    limit: l,
     include: [
-      { model: db.Category, as: "category" },
-      { model: db.Brand, as: "brand" },
+      { model: db.Category, as: "category", attributes: ["id", "name", "slug"] },
+      { model: db.Brand, as: "brand", attributes: ["id", "name"] },
       {
         model: db.ProductImage,
         as: "images",
         attributes: ["imageUrl", "isPrimary"],
       },
     ],
-    limit: l,
-    offset,
-    order: [["createdAt", "DESC"]],
-    distinct: true,
   });
 
   const pagingData = getPagingData(data, page, l);
@@ -225,7 +225,7 @@ const getAllProducts = async (
   const result = {
     errCode: 0,
     products: items.map((p) => {
-      const pJSON = p.toJSON();
+      const pJSON = p.get({ plain: true });
       const primary =
         pJSON.images?.find((i) => i.isPrimary) || pJSON.images?.[0];
       return applyFlashSaleToProduct({
@@ -245,31 +245,28 @@ const getAllProducts = async (
 
 const getProductById = async (id) => {
   try {
-    const product = await db.Product.findByPk(id, {
-      include: [
-        { model: db.Category, as: "category" },
-        { model: db.Brand, as: "brand" },
-        {
-          model: db.AttributeValue,
-          as: "attributes",
-          include: [{ model: db.Attribute, as: "attribute" }],
-        },
-        { model: db.ProductImage, as: "images" },
-        {
-          model: db.ProductVariant,
-          as: "variants",
-          include: [
-            {
-              model: db.AttributeValue,
-              as: "attributes",
-              include: [{ model: db.Attribute, as: "attribute" }],
-            },
-            { model: db.ProductImage, as: "images" },
-          ],
-          distinct: true,
-        },
-      ],
-    });
+    const product = await ProductRepository.getByIdOptimized(id, [
+      { model: db.Category, as: "category", attributes: ["id", "name", "slug"] },
+      { model: db.Brand, as: "brand", attributes: ["id", "name"] },
+      {
+        model: db.AttributeValue,
+        as: "attributes",
+        include: [{ model: db.Attribute, as: "attribute", attributes: ["id", "name", "code"] }],
+      },
+      { model: db.ProductImage, as: "images" },
+      {
+        model: db.ProductVariant,
+        as: "variants",
+        include: [
+          {
+            model: db.AttributeValue,
+            as: "attributes",
+            include: [{ model: db.Attribute, as: "attribute", attributes: ["id", "name", "code"] }],
+          },
+          { model: db.ProductImage, as: "images" },
+        ],
+      },
+    ]);
 
     if (!product) return { errCode: 1, errMessage: "Product not found" };
 
@@ -296,9 +293,8 @@ const getProductById = async (id) => {
 
 const deleteProduct = async (id) => {
   try {
-    const product = await db.Product.findByPk(id);
-    if (!product) return { errCode: 1, errMessage: "Product not found" };
-    await product.destroy();
+    const deleted = await ProductRepository.destroy(id);
+    if (!deleted) return { errCode: 1, errMessage: "Product not found" };
     clearProductCache();
     return { errCode: 0, errMessage: "Product deleted successfully" };
   } catch (e) {
@@ -316,15 +312,15 @@ const getProductBySlug = async (slug) => {
       whereCondition.slug = slug;
     }
 
-    const product = await db.Product.findOne({
+    const product = await ProductRepository.findOne({
       where: whereCondition,
       include: [
-        { model: db.Category, as: "category" },
-        { model: db.Brand, as: "brand" },
+        { model: db.Category, as: "category", attributes: ["id", "name", "slug"] },
+        { model: db.Brand, as: "brand", attributes: ["id", "name"] },
         {
           model: db.AttributeValue,
           as: "attributes",
-          include: [{ model: db.Attribute, as: "attribute" }],
+          include: [{ model: db.Attribute, as: "attribute", attributes: ["id", "name", "code"] }],
         },
         { model: db.ProductImage, as: "images" },
         {
@@ -334,11 +330,10 @@ const getProductBySlug = async (slug) => {
             {
               model: db.AttributeValue,
               as: "attributes",
-              include: [{ model: db.Attribute, as: "attribute" }],
+              include: [{ model: db.Attribute, as: "attribute", attributes: ["id", "name", "code"] }],
             },
             { model: db.ProductImage, as: "images" },
           ],
-          distinct: true,
         },
       ],
     });

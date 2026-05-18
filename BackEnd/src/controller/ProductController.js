@@ -60,33 +60,33 @@ const handleCreateProduct = async (req, res) => {
   }
 };
 
-const handleGetAllProducts = async (req, res) => {
-  try {
-    const categoryId = req.query.categoryId;
-    const page = Math.max(1, parseInt(req.query.page) || 1);
-    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 10));
-    const isFlashSale =
-      req.query.isFlashSale === "true" || req.query.isFlashSale === "1";
-    
-    // Check if the requester is an admin
-    const isAdmin = req.user && req.user.role === "admin";
+const catchAsync = require("../utils/catchAsync");
+const AppError = require("../utils/AppError");
 
-    const result = await ProductService.getAllProducts(
-      categoryId,
-      page,
-      limit,
-      isFlashSale,
-      isAdmin
-    );
-    return res.status(200).json(result);
-  } catch (e) {
-    console.error("Error in handleGetAllProducts:", e);
-    return res.status(500).json({
-      errCode: -1,
-      errMessage: "Internal server error",
-    });
+const handleGetAllProducts = catchAsync(async (req, res, next) => {
+  const categoryId = req.query.categoryId;
+  const page = Math.max(1, parseInt(req.query.page) || 1);
+  const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 10));
+  const isFlashSale =
+    req.query.isFlashSale === "true" || req.query.isFlashSale === "1";
+  
+  // Check if the requester is an admin
+  const isAdmin = req.user && req.user.role === "admin";
+
+  const result = await ProductService.getAllProducts(
+    categoryId,
+    page,
+    limit,
+    isFlashSale,
+    isAdmin
+  );
+  
+  if (result.errCode !== 0) {
+    return next(new AppError(result.errMessage, 400, result.errCode));
   }
-};
+
+  return res.status(200).json(result);
+});
 
 const handleGetProductById = async (req, res) => {
   try {
