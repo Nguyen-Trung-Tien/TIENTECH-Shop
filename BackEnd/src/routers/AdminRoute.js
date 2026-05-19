@@ -15,6 +15,13 @@ router.get(
 );
 
 router.get(
+  "/counters",
+  authenticateToken,
+  authorizeRole(["admin"]),
+  AdminController.getAdminCounters
+);
+
+router.get(
   "/export-revenue",
   authenticateToken,
   authorizeRole(["admin"]),

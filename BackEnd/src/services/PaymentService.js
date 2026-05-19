@@ -97,6 +97,7 @@ const getAllPayments = async ({
   page = 1,
   limit = 10,
   status = null,
+  method = null,
   search = "",
   startDate = null,
   endDate = null,
@@ -108,6 +109,7 @@ const getAllPayments = async ({
 
     let where = {};
     if (status && status !== "all") where.status = status;
+    if (method && method !== "all") where.method = method;
     
     if (startDate || endDate) {
       where.createdAt = {};
@@ -246,7 +248,7 @@ const createPayment = async (data, actor = null) => {
       };
     }
 
-    const transactionId = `DH${Date.now()}${orderId}`;
+    const transactionId = data.transactionId || `DH${Date.now()}${orderId}`;
 
     const autoPaidMethods = ["momo", "paypal", "vnpay", "bank"];
     const isAutoPaid = autoPaidMethods.includes(method);
@@ -264,6 +266,8 @@ const createPayment = async (data, actor = null) => {
       { transaction: t }
     );
 
+    let shouldSendConfirmedEmail = false;
+
     if (isAutoPaid) {
       const prevStatus = order.status;
       // Cập nhật trạng thái Order ngay
@@ -272,12 +276,16 @@ const createPayment = async (data, actor = null) => {
       await order.save({ transaction: t });
 
       if (order.status === "confirmed" && prevStatus !== "confirmed") {
-        const user = await db.User.findByPk(order.userId, { transaction: t });
-        await sendOrderConfirmedEmail(user, order);
+        shouldSendConfirmedEmail = true;
       }
     }
 
     await t.commit();
+
+    if (shouldSendConfirmedEmail) {
+      const user = await db.User.findByPk(order.userId);
+      await sendOrderConfirmedEmail(user, order);
+    }
 
     return {
       errCode: 0,
@@ -329,6 +337,7 @@ const updatePayment = async (orderId, data) => {
         amount: data.amount || order.totalPrice,
         method: data.method || order.paymentMethod || "cod",
         status: paymentStatus,
+        transactionId: data.transactionId || `DH${Date.now()}${orderId}`,
         note: data.note || "",
       });
     } else {
@@ -336,6 +345,7 @@ const updatePayment = async (orderId, data) => {
         amount: data.amount || payment.amount,
         method: data.method || payment.method,
         status: paymentStatus,
+        transactionId: data.transactionId || payment.transactionId,
         note: data.note || payment.note,
       });
     }
@@ -395,8 +405,10 @@ const completePayment = async (id, transactionId) => {
 
     const order = await db.Order.findByPk(payment.orderId, {
       include: [{ model: db.OrderItem, as: "orderItems" }],
-      transaction: t
+      transaction: t,
     });
+
+    let shouldSendConfirmedEmail = false;
 
     if (order) {
       const prevStatus = order.status;
@@ -405,17 +417,36 @@ const completePayment = async (id, transactionId) => {
       await order.save({ transaction: t });
 
       if (order.status === "confirmed" && prevStatus !== "confirmed") {
-        const user = await db.User.findByPk(order.userId, { transaction: t });
-        await sendOrderConfirmedEmail(user, order);
+        shouldSendConfirmedEmail = true;
       }
     }
 
     await t.commit();
+
+    // Send email after commit and handle errors gracefully to avoid breaking the response
+    if (shouldSendConfirmedEmail) {
+      try {
+        const user = await db.User.findByPk(order.userId);
+        if (user && user.email) {
+          await sendOrderConfirmedEmail(user, order);
+        }
+      } catch (emailErr) {
+        console.error("Failed to send confirmation email:", emailErr);
+      }
+    }
+
     return { errCode: 0, errMessage: "Payment completed", data: payment };
   } catch (e) {
-    await t.rollback();
+    // Only rollback if transaction hasn't been committed
+    if (t && !t.finished) {
+      try {
+        await t.rollback();
+      } catch (rollbackErr) {
+        console.error("Rollback failed:", rollbackErr);
+      }
+    }
     console.error("Error completePayment:", e);
-    throw e;
+    return { errCode: -1, errMessage: e.message || "Internal server error" };
   }
 };
 

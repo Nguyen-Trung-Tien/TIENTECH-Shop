@@ -193,6 +193,37 @@ const requestReturn = async (id, reason) => {
   }
 };
 
+const cancelReturnRequest = async (id) => {
+  try {
+    const item = await db.OrderItem.findByPk(id);
+    if (!item) {
+      return { errCode: 1, errMessage: "OrderItem not found" };
+    }
+
+    if (item.returnStatus !== "requested") {
+      return { errCode: 2, errMessage: "Chỉ có thể thu hồi yêu cầu khi đang ở trạng thái 'requested'." };
+    }
+
+    const requestedAt = new Date(item.returnRequestedAt);
+    const now = new Date();
+    const diffHours = (now - requestedAt) / (1000 * 60 * 60);
+
+    if (diffHours > 12) {
+      return { errCode: 3, errMessage: "Đã quá thời hạn 12 giờ để thu hồi yêu cầu trả hàng." };
+    }
+
+    item.returnStatus = "none";
+    item.returnReason = null;
+    item.returnRequestedAt = null;
+    await item.save();
+
+    return { errCode: 0, errMessage: "Thu hồi yêu cầu trả hàng thành công", data: item };
+  } catch (e) {
+    console.error("Error cancelReturnRequest:", e);
+    throw e;
+  }
+};
+
 const processReturn = async (id, status, adminUser = null) => {
   const t = await db.sequelize.transaction();
   try {

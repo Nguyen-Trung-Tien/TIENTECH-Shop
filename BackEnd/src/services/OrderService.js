@@ -701,6 +701,13 @@ const updateOrderStatus = async (id, status, user = null, reason = "") => {
       order.deliveredAt = new Date();
       order.paymentStatus = "paid";
 
+      // Cập nhật record Payment tương ứng
+      await PaymentService.updatePayment(order.id, {
+        paymentStatus: "paid",
+        amount: order.totalPrice,
+        userId: order.userId,
+      });
+
       // Add loyalty points
       const userToUpdate = await db.User.findByPk(order.userId, { transaction: t });
       if (userToUpdate) {
@@ -766,6 +773,7 @@ const updateOrderStatus = async (id, status, user = null, reason = "") => {
     }
 
     await order.save({ transaction: t });
+    await t.commit();
 
     if (status === "delivered" || status === "confirmed") {
       const user = await db.User.findByPk(order.userId);
@@ -775,7 +783,6 @@ const updateOrderStatus = async (id, status, user = null, reason = "") => {
         await sendOrderConfirmedEmail(user, order);
       }
     }
-    await t.commit();
 
     return {
       errCode: 0,
@@ -900,10 +907,20 @@ const updatePaymentStatus = async (orderId, paymentStatus) => {
       };
     }
 
+    let shouldSendConfirmedEmail = false;
+
     // CHỈ XỬ LÝ KHI unpaid → paid
     // NOTE: Stock already decremented at createOrder
     if (order.paymentStatus === "unpaid" && paymentStatus === "paid") {
       order.paymentStatus = "paid";
+      
+      // Đồng bộ sang bảng Payments
+      await PaymentService.updatePayment(order.id, {
+        paymentStatus: "paid",
+        amount: order.totalPrice,
+        userId: order.userId,
+      });
+
       const prevStatus = order.status;
       // Nếu đơn hàng đang chờ xử lý, tự động chuyển sang xác nhận khi đã trả tiền
       if (order.status === "pending") {
@@ -912,8 +929,7 @@ const updatePaymentStatus = async (orderId, paymentStatus) => {
       await order.save({ transaction: t });
 
       if (order.status === "confirmed" && prevStatus !== "confirmed") {
-        const user = await db.User.findByPk(order.userId);
-        await sendOrderConfirmedEmail(user, order);
+        shouldSendConfirmedEmail = true;
       }
     }
 
@@ -930,6 +946,11 @@ const updatePaymentStatus = async (orderId, paymentStatus) => {
     }
 
     await t.commit();
+
+    if (shouldSendConfirmedEmail) {
+      const user = await db.User.findByPk(order.userId);
+      await sendOrderConfirmedEmail(user, order);
+    }
 
     return {
       errCode: 0,
@@ -957,10 +978,6 @@ const getOrderByCode = async (orderCode) => {
 
   if (!order) {
     return { errCode: 1, errMessage: "Order not found" };
-  }
-
-  if (order.paymentStatus === "paid") {
-    return { errCode: 2, errMessage: "Order already paid", data: order };
   }
 
   return { errCode: 0, data: order };

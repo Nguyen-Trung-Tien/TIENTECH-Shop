@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   FiHome,
@@ -15,6 +15,7 @@ import {
 } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
 import { logoutUserApi } from "../../../api/userApi";
+import { getAdminCounters } from "../../../api/adminApi";
 import { removeUser } from "../../../redux/userSlice";
 import { clearCart } from "../../../redux/cartSlice";
 import { toast } from "react-toastify";
@@ -30,8 +31,8 @@ const MENU_ITEMS = [
     icon: <FiShoppingCart />,
     subItems: [
       { to: "/admin/orders", label: "Tất cả đơn hàng" },
-      { to: "/admin/orders-return", label: "Duyệt trả hàng" },
-      { to: "/admin/orders-cancel", label: "Duyệt hủy hàng" },
+      { to: "/admin/orders-return", label: "Duyệt trả hàng", badgeKey: "returnRequestedCount" },
+      { to: "/admin/orders-cancel", label: "Duyệt hủy hàng", badgeKey: "cancelRequestedCount" },
     ],
   },
   { to: "/admin/payment", icon: <FiDollarSign />, label: "Thanh toán" },
@@ -51,6 +52,30 @@ const Sidebar = ({ collapsed }) => {
 
   const [loggingOut, setLoggingOut] = useState(false);
   const [expandedMenus, setExpandedMenus] = useState(["Đơn hàng"]);
+  const [counters, setCounters] = useState({
+    cancelRequestedCount: 0,
+    returnRequestedCount: 0,
+  });
+
+  useEffect(() => {
+    const fetchCounters = async () => {
+      try {
+        const res = await getAdminCounters();
+        if (res.errCode === 0) {
+          setCounters(res.data);
+        }
+      } catch (error) {
+        console.error("Error fetching counters:", error);
+      }
+    };
+
+    if (user && user.role === "admin") {
+      fetchCounters();
+      // Tùy chọn: Refresh mỗi 30s
+      const interval = setInterval(fetchCounters, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [user]);
 
   const toggleMenu = (label) => {
     setExpandedMenus((prev) =>
@@ -147,9 +172,16 @@ const Sidebar = ({ collapsed }) => {
                     )}
                   </div>
                   {!collapsed && (
-                    <FiChevronDown
-                      className={`transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`}
-                    />
+                    <div className="flex items-center gap-2">
+                      {item.label === "Đơn hàng" && (counters.cancelRequestedCount + counters.returnRequestedCount) > 0 && (
+                        <span className="flex items-center justify-center min-w-[18px] h-[18px] px-1 bg-rose-500 text-white text-[10px] rounded-full shadow-lg shadow-rose-500/20 animate-pulse">
+                          {(counters.cancelRequestedCount + counters.returnRequestedCount) > 99 ? "99+" : (counters.cancelRequestedCount + counters.returnRequestedCount)}
+                        </span>
+                      )}
+                      <FiChevronDown
+                        className={`transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`}
+                      />
+                    </div>
                   )}
                 </button>
 
@@ -162,19 +194,27 @@ const Sidebar = ({ collapsed }) => {
                         exit={{ opacity: 0, height: 0 }}
                         className="overflow-hidden ml-9 space-y-1"
                       >
-                        {item.subItems.map((sub) => (
-                          <Link
-                            key={sub.to}
-                            to={sub.to}
-                            className={`block px-3 py-2 rounded-lg text-xs font-bold transition-all ${
-                              location.pathname === sub.to
-                                ? "text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10"
-                                : "text-slate-500 dark:text-dark-text-secondary hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-dark-bg"
-                            }`}
-                          >
-                            {sub.label}
-                          </Link>
-                        ))}
+                        {item.subItems.map((sub) => {
+                          const badgeCount = sub.badgeKey ? counters[sub.badgeKey] : 0;
+                          return (
+                            <Link
+                              key={sub.to}
+                              to={sub.to}
+                              className={`flex items-center justify-between px-3 py-2 rounded-lg text-xs font-bold transition-all ${
+                                location.pathname === sub.to
+                                  ? "text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10"
+                                  : "text-slate-500 dark:text-dark-text-secondary hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-dark-bg"
+                              }`}
+                            >
+                              <span>{sub.label}</span>
+                              {badgeCount > 0 && (
+                                <span className="flex items-center justify-center min-w-[18px] h-[18px] px-1 bg-rose-500 text-white text-[10px] rounded-full shadow-lg shadow-rose-500/20">
+                                  {badgeCount > 99 ? "99+" : badgeCount}
+                                </span>
+                              )}
+                            </Link>
+                          );
+                        })}
                       </Motion.div>
                     )}
                   </AnimatePresence>

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { FaBox, FaShoppingCart, FaDollarSign, FaUsers } from "react-icons/fa";
+import { FaBox, FaShoppingCart, FaDollarSign, FaUsers, FaUndo, FaTimesCircle } from "react-icons/fa";
 import StatsCard from "../../components/StatsCardComponent/StatsCard";
 import ChartCard from "../../components/ChartCardComponent/ChartCard";
 import AIInsightsWidget from "../../components/AIInsightsWidget/AIInsightsWidget";
@@ -50,6 +50,8 @@ const Dashboard = () => {
             todayOrders = 0,
             totalRevenue = 0,
             totalUsers = 0,
+            cancelRequestedCount = 0,
+            returnRequestedCount = 0,
             change = {},
           } = data;
 
@@ -95,6 +97,22 @@ const Dashboard = () => {
               change: `${changeUsers > 0 ? "+" : ""}${changeUsers}%`,
               isIncrease: changeUsers >= 0,
               link: "/admin/users",
+            },
+            {
+              title: "Yêu cầu hủy",
+              value: Number(cancelRequestedCount).toLocaleString(),
+              icon: <FaTimesCircle className="text-rose-500" />,
+              change: "Cần xử lý",
+              isIncrease: false,
+              link: "/admin/orders-cancel",
+            },
+            {
+              title: "Yêu cầu trả hàng",
+              value: Number(returnRequestedCount).toLocaleString(),
+              icon: <FaUndo className="text-amber-500" />,
+              change: "Cần duyệt",
+              isIncrease: false,
+              link: "/admin/orders-return",
             },
           ]);
         } else {

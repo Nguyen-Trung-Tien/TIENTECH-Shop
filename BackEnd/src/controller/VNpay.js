@@ -37,11 +37,20 @@ const handleCreateVnpayPayment = async (req, res) => {
     if (orderResult.errCode !== 0 || !orderResult.data) {
       return res.status(404).json({
         errCode: 2,
-        message: "Order not found or already paid",
+        message: "Order not found",
       });
     }
 
     const order = orderResult.data;
+
+    // Không cho phép thanh toán lại đơn đã trả tiền
+    if (order.paymentStatus === "paid") {
+      return res.status(400).json({
+        errCode: 4,
+        message: "Order has already been paid",
+      });
+    }
+
     // Ưu tiên dùng giá từ DB để bảo mật, nếu không có thì dùng amount từ client gửi lên (ép kiểu)
     const secureAmount = order.totalPrice || amount;
 
@@ -165,7 +174,15 @@ const handleVnpayReturn = async (req, res) => {
 
     // THANH TOÁN THÀNH CÔNG
     if (rspCode === "00") {
-      await OrderService.updatePaymentStatus(order.id, "paid");
+      const PaymentService = require("../services/PaymentService");
+      await PaymentService.createPayment({
+        orderId: order.id,
+        userId: order.userId,
+        amount: order.totalPrice,
+        method: "vnpay",
+        note: "VNPay Return Auto Confirm",
+        transactionId: vnp_Params.vnp_TransactionNo,
+      });
 
       return res.redirect(
         `${process.env.FRONTEND_URL}/checkout-success/${orderCode}`
@@ -231,9 +248,7 @@ const handleVnpayIPN = async (req, res) => {
 
     if (rspCode === "00") {
       // Thành công
-      await OrderService.updatePaymentStatus(order.id, "paid");
-      
-      // Tạo bản ghi Payment nếu chưa có
+      // Tạo bản ghi Payment nếu chưa có (Hàm này cũng sẽ tự update trạng thái Order sang paid)
       const PaymentService = require("../services/PaymentService");
       await PaymentService.createPayment({
         orderId: order.id,

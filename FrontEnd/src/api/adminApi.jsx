@@ -42,6 +42,16 @@ export const globalSearchApi = async (query) => {
   }
 };
 
+export const getAdminCounters = async () => {
+  try {
+    const res = await axiosClient.get("/admin/counters");
+    return res;
+  } catch (error) {
+    console.error("Error getting admin counters:", error);
+    throw error;
+  }
+};
+
 export const syncEmbeddings = async () => {
   try {
     const res = await axiosClient.post("/admin/sync-embeddings");

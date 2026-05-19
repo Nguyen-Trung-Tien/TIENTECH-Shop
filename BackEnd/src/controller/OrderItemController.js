@@ -84,6 +84,19 @@ const handleRequestReturn = async (req, res) => {
   }
 };
 
+const handleCancelReturnRequest = async (req, res) => {
+  try {
+    const result = await OrderItemService.cancelReturnRequest(req.params.id);
+    return res.status(200).json(result);
+  } catch (e) {
+    console.error(e);
+    return res.status(500).json({
+      errCode: -1,
+      errMessage: "Internal server error",
+    });
+  }
+};
+
 const handleProcessReturn = async (req, res) => {
   try {
     const result = await OrderItemService.processReturn(
@@ -108,5 +121,6 @@ module.exports = {
   handleUpdateOrderItem,
   handleDeleteOrderItem,
   handleRequestReturn,
+  handleCancelReturnRequest,
   handleProcessReturn,
 };

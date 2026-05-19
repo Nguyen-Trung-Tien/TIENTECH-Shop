@@ -71,6 +71,40 @@ const getReviewsByProduct = async (productId, page = 1, limit = 10) => {
 
 const createReview = async (data) => {
   try {
+    // 1. Kiểm tra xem người dùng đã mua sản phẩm này và đơn hàng đã ở trạng thái 'delivered' hoặc 'completed' chưa
+    const orderWithProduct = await db.Order.findOne({
+      where: {
+        userId: data.userId,
+        status: { [db.Sequelize.Op.in]: ["delivered", "completed"] },
+      },
+      include: [
+        {
+          model: db.OrderItem,
+          as: "orderItems",
+          where: { productId: data.productId },
+        },
+      ],
+    });
+
+    if (!orderWithProduct) {
+      return {
+        errCode: 2,
+        errMessage: "Bạn chỉ có thể đánh giá sản phẩm sau khi đã nhận hàng",
+      };
+    }
+
+    // 2. Kiểm tra xem người dùng đã đánh giá sản phẩm này chưa
+    const existingReview = await db.Review.findOne({
+      where: { userId: data.userId, productId: data.productId },
+    });
+
+    if (existingReview) {
+      return {
+        errCode: 3,
+        errMessage: "Bạn đã đánh giá sản phẩm này rồi",
+      };
+    }
+
     const newReview = await db.Review.create({
       userId: data.userId,
       productId: data.productId,
@@ -267,9 +301,12 @@ const getReviewsByUser = async (userId, page = 1, limit = 10) => {
 
 const getPendingReviewProducts = async (userId) => {
   try {
-    // 1. Lấy tất cả các OrderItems từ các đơn hàng đã "delivered" của user này
+    // 1. Lấy tất cả các OrderItems từ các đơn hàng đã "delivered" hoặc "completed" của user này
     const deliveredOrders = await db.Order.findAll({
-      where: { userId, status: "delivered" },
+      where: {
+        userId,
+        status: { [db.Sequelize.Op.in]: ["delivered", "completed"] },
+      },
       include: [
         {
           model: db.OrderItem,

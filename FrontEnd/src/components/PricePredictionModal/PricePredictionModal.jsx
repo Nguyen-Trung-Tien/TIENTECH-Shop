@@ -11,6 +11,7 @@ import {
   FiActivity,
 } from "react-icons/fi";
 import { motion as Motion, AnimatePresence } from "framer-motion";
+import { Button, Loader } from "../UI";
 
 import {
   AreaChart,
@@ -282,7 +283,7 @@ const PricePredictionModal = ({ productId, isOpen, onClose }) => {
           <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
             {loading ? (
               <div className="flex flex-col items-center justify-center py-20 gap-4">
-                <div className="size-12 border-4 border-indigo-600/30 border-t-indigo-600 rounded-full animate-spin" />
+                <Loader size="lg" className="text-indigo-600" />
                 <p className="text-xs font-black text-slate-400 uppercase tracking-widest animate-pulse">
                   AI đang phân tích thị trường...
                 </p>
@@ -353,12 +354,13 @@ const PricePredictionModal = ({ productId, isOpen, onClose }) => {
                 Dữ liệu được cập nhật dựa trên thời gian thực
               </span>
             </div>
-            <button
+            <Button
               onClick={onClose}
-              className="px-8 py-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl font-black uppercase tracking-widest text-[11px] hover:scale-105 active:scale-95 transition-all shadow-xl shadow-slate-900/10"
+              variant="primary"
+              className="px-8 !rounded-2xl font-black uppercase tracking-widest text-[11px] shadow-xl shadow-slate-900/10"
             >
               Đã hiểu
-            </button>
+            </Button>
           </div>
         </Motion.div>
       </div>

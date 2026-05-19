@@ -9,7 +9,7 @@ import {
   FiEye,
   FiEyeOff,
 } from "react-icons/fi";
-import { Modal, Button } from "../UI";
+import { Modal, Button, Loader } from "../UI";
 import {
   forgotPasswordApi,
   resetPasswordApi,
@@ -177,13 +177,15 @@ const ForgotPasswordModal = ({ show, onClose }) => {
                         onChange={(e) => setToken(e.target.value.trim())}
                       />
                     </div>
-                    <button
+                    <Button
+                      variant="secondary"
+                      size="icon"
+                      className="shrink-0"
                       onClick={handleSendEmail}
-                      disabled={loading}
-                      className="px-4 bg-surface-100 text-surface-600 hover:bg-surface-200 rounded-xl transition-all disabled:opacity-50"
+                      loading={loading}
                     >
-                      <FiRefreshCw className={loading ? "animate-spin" : ""} />
-                    </button>
+                      <FiRefreshCw />
+                    </Button>
                   </div>
                 </div>
               </div>

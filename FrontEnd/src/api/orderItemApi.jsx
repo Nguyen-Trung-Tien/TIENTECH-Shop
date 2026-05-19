@@ -71,6 +71,18 @@ export const requestReturn = async (id, reason) => {
   }
 };
 
+export const cancelReturnRequest = async (id) => {
+  try {
+    const res = await axiosClient.put(
+      `/order-item/request/${id}/cancel-return`
+    );
+    return res;
+  } catch (error) {
+    console.error(`Error cancelling return request for order item ${id}:`, error);
+    throw error;
+  }
+};
+
 export const processReturn = async (id, status) => {
   try {
     const res = await axiosClient.put(

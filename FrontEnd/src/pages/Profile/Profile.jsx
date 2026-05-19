@@ -18,7 +18,7 @@ import {
   FiLock,
 } from "react-icons/fi";
 import { motion as Motion } from "framer-motion";
-import { Button, Modal } from "../../components/UI";
+import { Button, Modal, Loader } from "../../components/UI";
 import Badge from "../../components/UI/Badge";
 import AddressManager from "./AddressManager";
 
@@ -133,7 +133,7 @@ const Profile = () => {
   if (loading && !formData.username) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-surface-50 dark:bg-dark-bg gap-4">
-        <div className="size-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+        <Loader size="lg" className="text-primary" />
         <p className="text-surface-400 dark:text-dark-text-secondary font-bold uppercase tracking-widest text-[11px]">
           Đang tải thông tin cá nhân...
         </p>

@@ -44,6 +44,12 @@ router.put(
   OrderItemController.handleRequestReturn
 );
 router.put(
+  "/request/:id/cancel-return",
+  authenticateToken,
+  authorizeRole(["admin", "customer"]),
+  OrderItemController.handleCancelReturnRequest
+);
+router.put(
   "/process/:id/process-return",
   authenticateToken,
   authorizeRole(["admin", "customer"]),

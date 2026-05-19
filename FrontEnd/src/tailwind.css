@@ -129,6 +129,10 @@
   .heading-section {
     @apply text-xl md:text-2xl font-bold mb-6;
   }
+
+  .btn-modern-primary {
+    @apply flex items-center justify-center gap-2 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-all shadow-sm active:scale-95;
+  }
   
   .text-label {
     @apply text-[10px] font-bold uppercase tracking-widest text-surface-400 dark:text-dark-text-secondary;

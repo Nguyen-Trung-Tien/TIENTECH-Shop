@@ -66,10 +66,12 @@ const PaymentPage = () => {
   const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState("all");
+  const [filterMethod, setFilterMethod] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [refundNote, setRefundNote] = useState("");
+  const [transactionCodeInput, setTransactionCodeInput] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10;
   const [totalPages, setTotalPages] = useState(1);
@@ -92,11 +94,12 @@ const PaymentPage = () => {
   }, [startDate, endDate]);
 
   const loadPayments = useCallback(
-    async (page = 1, status = filterStatus, search = searchTerm) => {
+    async (page = 1, status = filterStatus, method = filterMethod, search = searchTerm) => {
       setLoading(true);
       try {
         const res = await getAllPayments({
           status: status === "all" ? "" : status,
+          method: method === "all" ? "" : method,
           page,
           limit: pageSize,
           search: search.trim(),
@@ -108,14 +111,18 @@ const PaymentPage = () => {
           setCurrentPage(res.pagination.currentPage);
           setTotalPages(res.pagination.totalPages);
           setTotalItems(res.pagination.totalItems);
+        } else {
+          console.error("Error loading payments:", res.errMessage);
+          toast.error(res.errMessage || "Lỗi tải danh sách thanh toán");
         }
-      } catch (_error) {
-        console.error(_error);
+      } catch (error) {
+        console.error("loadPayments error:", error);
+        toast.error("Không thể kết nối đến máy chủ");
       } finally {
         setLoading(false);
       }
     },
-    [pageSize, filterStatus, searchTerm, startDate, endDate],
+    [pageSize, filterStatus, filterMethod, searchTerm, startDate, endDate],
   );
 
   useEffect(() => {
@@ -124,10 +131,10 @@ const PaymentPage = () => {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      loadPayments(1, filterStatus, searchTerm);
+      loadPayments(1, filterStatus, filterMethod, searchTerm);
     }, 400);
     return () => clearTimeout(timer);
-  }, [filterStatus, searchTerm, pageSize, startDate, endDate, loadPayments]);
+  }, [filterStatus, filterMethod, searchTerm, pageSize, startDate, endDate, loadPayments]);
 
   const handleActionClick = (actionFn, paymentId, message) => {
     setActionModal({ show: true, actionFn, paymentId, message });
@@ -141,18 +148,31 @@ const PaymentPage = () => {
         : actionModal.actionFn === refundPayment
           ? "Hoàn tiền"
           : "Xóa";
+    
     try {
+      let res;
       if (actionModal.actionFn === refundPayment) {
-        await actionModal.actionFn(actionModal.paymentId, refundNote);
+        res = await actionModal.actionFn(actionModal.paymentId, refundNote);
         setRefundNote("");
+      } else if (actionModal.actionFn === completePayment) {
+        res = await actionModal.actionFn(actionModal.paymentId, transactionCodeInput);
+        setTransactionCodeInput("");
       } else {
-        await actionModal.actionFn(actionModal.paymentId);
+        res = await actionModal.actionFn(actionModal.paymentId);
       }
-      loadPayments(currentPage, filterStatus, searchTerm);
-      loadSummary();
-      toast.success(`${actionName} thành công.`);
-    } catch {
-      toast.error(`${actionName} thất bại.`);
+
+      if (res && res.errCode === 0) {
+        toast.success(`${actionName} thành công.`);
+        await Promise.all([
+          loadPayments(currentPage, filterStatus, filterMethod, searchTerm),
+          loadSummary()
+        ]);
+      } else {
+        toast.error(res?.errMessage || `${actionName} thất bại.`);
+      }
+    } catch (error) {
+      console.error("confirmAction error:", error);
+      toast.error(`${actionName} thất bại do lỗi hệ thống.`);
     } finally {
       setActionModal({
         show: false,
@@ -165,9 +185,10 @@ const PaymentPage = () => {
 
   const handleExportCSV = () => {
     if (!payments || payments.length === 0) return toast.info("Không có dữ liệu để xuất");
-    const headers = ["Mã Đơn", "Ngày", "Khách Hàng", "Email", "Số Tiền (VND)", "Phương Thức", "Trạng Thái"];
+    const headers = ["Mã Đơn", "Mã Giao Dịch", "Ngày", "Khách Hàng", "Email", "Số Tiền (VND)", "Phương Thức", "Trạng Thái"];
     const csvRows = payments.map(p => [
       p.order?.orderCode || p.id,
+      p.transactionId || "N/A",
       new Date(p.createdAt).toLocaleDateString("vi-VN"),
       `"${p.user?.username || "Ẩn danh"}"`,
       `"${p.user?.email || ""}"`,
@@ -294,6 +315,22 @@ const PaymentPage = () => {
           <FiChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
         </div>
 
+        <div className="relative min-w-[160px]">
+          <select
+            value={filterMethod}
+            onChange={(e) => setFilterMethod(e.target.value)}
+            className="w-full h-12 bg-slate-50 dark:bg-dark-bg border border-slate-100 dark:border-dark-border rounded-2xl px-4 text-xs font-black uppercase tracking-widest outline-none focus:ring-4 focus:ring-indigo-600/5 transition-all appearance-none pr-10 text-slate-900 dark:text-dark-text-primary"
+          >
+            <option value="all">Phương thức</option>
+            <option value="cod">COD</option>
+            <option value="vnpay">VNPay</option>
+            <option value="momo">Momo</option>
+            <option value="paypal">Paypal</option>
+            <option value="bank">Chuyển khoản</option>
+          </select>
+          <FiChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+        </div>
+
         <div className="relative flex-1 min-w-[200px] group">
           <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-600 transition-colors" />
           <input
@@ -321,6 +358,9 @@ const PaymentPage = () => {
               <tr className="bg-slate-50/50 dark:bg-dark-bg/50 border-b border-slate-100 dark:border-dark-border">
                 <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-dark-text-secondary">
                   Giao dịch
+                </th>
+                <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-dark-text-secondary">
+                  Mã GD
                 </th>
                 <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-dark-text-secondary">
                   Khách hàng
@@ -373,6 +413,11 @@ const PaymentPage = () => {
                         <FiCalendar />
                         {new Date(p.createdAt).toLocaleDateString("vi-VN")}
                       </div>
+                    </td>
+                    <td className="px-6 py-5">
+                      <p className="text-xs font-mono font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 px-2 py-1 rounded-lg inline-block">
+                        {p.transactionId || "N/A"}
+                      </p>
                     </td>
                     <td className="px-6 py-5">
                       <div className="flex items-center gap-3">
@@ -476,7 +521,7 @@ const PaymentPage = () => {
             page={currentPage}
             totalPages={totalPages}
             loading={loading}
-            onPageChange={(p) => loadPayments(p, filterStatus, searchTerm)}
+            onPageChange={(p) => loadPayments(p, filterStatus, filterMethod, searchTerm)}
           />
         </div>
       </div>
@@ -573,16 +618,14 @@ const PaymentPage = () => {
                     )}
                   </p>
                 </div>
-                {selectedPayment.vnp_TransactionNo && (
-                  <div className="col-span-2 space-y-1 pt-4 border-t border-slate-50 dark:border-dark-border">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary">
-                      Mã giao dịch VNPAY
-                    </p>
-                    <p className="text-xs font-mono font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 px-3 py-2 rounded-xl">
-                      {selectedPayment.vnp_TransactionNo}
-                    </p>
-                  </div>
-                )}
+                <div className="col-span-2 space-y-1 pt-4 border-t border-slate-50 dark:border-dark-border">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary">
+                    Mã giao dịch
+                  </p>
+                  <p className="text-xs font-mono font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 px-3 py-2 rounded-xl">
+                    {selectedPayment.transactionId || "N/A"}
+                  </p>
+                </div>
                 {selectedPayment.status === "refunded" && (
                   <div className="col-span-2 space-y-1 pt-4 border-t border-slate-50 dark:border-dark-border">
                     <p className="text-[10px] font-black uppercase tracking-widest text-rose-400">
@@ -659,6 +702,21 @@ const PaymentPage = () => {
                     onChange={(e) => setRefundNote(e.target.value)}
                     placeholder="Nhập lý do hoàn tiền..."
                     className="w-full h-24 bg-slate-50 dark:bg-dark-bg border border-slate-100 dark:border-dark-border rounded-2xl p-4 text-sm font-bold focus:ring-4 focus:ring-indigo-600/5 outline-none transition-all resize-none text-slate-900 dark:text-dark-text-primary"
+                  />
+                </div>
+              )}
+
+              {actionModal.actionFn === completePayment && (
+                <div className="mb-8 text-left">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary ml-2 mb-2 block">
+                    Mã giao dịch (Nếu có)
+                  </label>
+                  <input
+                    type="text"
+                    value={transactionCodeInput}
+                    onChange={(e) => setTransactionCodeInput(e.target.value)}
+                    placeholder="Nhập mã giao dịch..."
+                    className="w-full h-12 bg-slate-50 dark:bg-dark-bg border border-slate-100 dark:border-dark-border rounded-2xl px-4 text-sm font-bold focus:ring-4 focus:ring-indigo-600/5 outline-none transition-all text-slate-900 dark:text-dark-text-primary"
                   />
                 </div>
               )}

@@ -20,6 +20,8 @@ import {
   FiBattery,
   FiSmartphone,
   FiSettings,
+  FiRefreshCw,
+  FiInfo,
 } from "react-icons/fi";
 import { motion as Motion, AnimatePresence } from "framer-motion";
 
@@ -106,6 +108,21 @@ const ProductManage = () => {
     productId: null,
     name: "",
   });
+
+  const [modalTab, setModalTab] = useState("basic"); // basic, attributes, variants, flashsale
+
+  const clearFilters = () => {
+    setSearchTerm("");
+    setFilterCategories([]);
+    setFilterBrands([]);
+    setFlashSaleOnly(false);
+    setAttrFilters({
+      ram: [],
+      rom: [],
+      os: [],
+      refresh_rate: [],
+    });
+  };
 
   // Fetch Products with all filters
   const fetchProducts = useCallback(
@@ -512,19 +529,36 @@ const ProductManage = () => {
       {/* Advanced Filter Bar */}
       <div className="bg-white dark:bg-dark-surface rounded-[2.5rem] shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-dark-border overflow-hidden">
         <div className="p-6 md:p-8 bg-slate-50/50 dark:bg-dark-bg/50 border-b border-slate-100 dark:border-dark-border">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            <div className="lg:col-span-4 relative">
-              <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-dark-text-secondary" />
-              <input
-                type="text"
-                placeholder="Tìm theo tên, SKU..."
-                className="input-modern h-12 pl-12 bg-white dark:bg-dark-bg border-slate-200 dark:border-dark-border focus:ring-0 font-medium w-full text-slate-900 dark:text-dark-text-primary"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
+          <div className="flex flex-col gap-6">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+              <div className="relative flex-1">
+                <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-dark-text-secondary" />
+                <input
+                  type="text"
+                  placeholder="Tìm theo tên, SKU..."
+                  className="input-modern h-12 pl-12 bg-white dark:bg-dark-bg border-slate-200 dark:border-dark-border focus:ring-0 font-medium w-full text-slate-900 dark:text-dark-text-primary"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={clearFilters}
+                  className="flex items-center gap-2 px-5 h-12 rounded-2xl bg-white dark:bg-dark-bg border border-slate-200 dark:border-dark-border text-slate-500 hover:text-rose-500 font-bold text-xs transition-all hover:border-rose-200"
+                >
+                  <FiTrash2 /> Xóa bộ lọc
+                </button>
+                <button
+                  onClick={() => fetchProducts(1)}
+                  className="size-12 bg-indigo-600 text-white rounded-2xl flex items-center justify-center hover:bg-slate-800 transition-all shadow-lg shadow-indigo-200 dark:shadow-none"
+                >
+                  <FiRefreshCw className={loadingTable ? "animate-spin" : ""} />
+                </button>
+              </div>
             </div>
 
-            <div className="lg:col-span-8 flex flex-wrap gap-4">
+            <div className="flex flex-wrap gap-4">
               <MultiSelectDropdown
                 label="Danh mục"
                 options={categories}
@@ -587,10 +621,10 @@ const ProductManage = () => {
                   Phân loại
                 </th>
                 <th className="px-8 py-5 text-[11px] font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary text-right">
-                  Giá & Giảm giá
+                  Giá bán
                 </th>
                 <th className="px-8 py-5 text-[11px] font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary text-center">
-                  Kho / Đã bán
+                  Tồn kho
                 </th>
                 <th className="px-8 py-5 text-[11px] font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary text-center">
                   Trạng thái
@@ -627,11 +661,11 @@ const ProductManage = () => {
                 products.map((p) => (
                   <tr
                     key={p.id}
-                    className="hover:bg-indigo-50/20 dark:hover:bg-indigo-500/5 transition-all group"
+                    className="hover:bg-slate-50/50 dark:hover:bg-dark-bg/30 transition-all group"
                   >
                     <td className="px-8 py-5">
                       <div className="flex items-center gap-4">
-                        <div className="size-16 rounded-2xl border border-slate-200 dark:border-dark-border bg-white dark:bg-dark-bg p-2 shadow-sm group-hover:scale-105 transition-transform">
+                        <div className="size-16 rounded-2xl border border-slate-200 dark:border-dark-border bg-white dark:bg-dark-bg p-2 shadow-sm group-hover:scale-105 transition-transform overflow-hidden">
                           <img
                             src={p.image}
                             alt=""
@@ -639,26 +673,19 @@ const ProductManage = () => {
                           />
                         </div>
                         <div className="min-w-0">
-                          <p className="text-base font-bold text-slate-900 dark:text-dark-text-primary group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors truncate max-w-[200px]">
+                          <p className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-indigo-600 transition-colors truncate max-w-[200px]">
                             {p.name}
                           </p>
                           <div className="flex items-center gap-2 mt-1">
                             <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary">
                               SKU: {p.sku || "—"}
                             </p>
-                            {p.embedding ? (
+                            {p.embedding && (
                               <div
                                 className="px-1.5 py-0.5 rounded-md bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 text-[8px] font-black uppercase tracking-tighter flex items-center gap-1 border border-emerald-200 dark:border-emerald-800"
                                 title="Sản phẩm đã được đồng bộ Vector AI cho tìm kiếm thông minh"
                               >
                                 <FiCpu size={8} /> AI READY
-                              </div>
-                            ) : (
-                              <div
-                                className="px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-dark-bg text-slate-400 dark:text-dark-text-secondary text-[8px] font-black uppercase tracking-tighter border border-slate-200 dark:border-dark-border"
-                                title="Chưa đồng bộ AI Vector"
-                              >
-                                NO AI
                               </div>
                             )}
                           </div>
@@ -666,21 +693,18 @@ const ProductManage = () => {
                       </div>
                     </td>
                     <td className="px-8 py-5">
-                      <div className="space-y-1.5">
-                        <div className="flex items-center gap-2 text-xs font-bold text-slate-600 dark:text-dark-text-secondary">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2 text-[11px] font-bold text-slate-600 dark:text-dark-text-secondary">
                           <FiTag className="text-indigo-400" /> {p.brand?.name}
                         </div>
-                        <div className="px-2 py-0.5 bg-slate-100 dark:bg-dark-bg text-[9px] font-black uppercase tracking-tighter text-slate-500 dark:text-dark-text-secondary rounded-md w-fit">
+                        <div className="px-2 py-0.5 bg-slate-100 dark:bg-dark-bg text-[9px] font-black uppercase tracking-tighter text-slate-400 dark:text-dark-text-secondary rounded w-fit">
                           {p.category?.name}
                         </div>
                       </div>
                     </td>
                     <td className="px-8 py-5 text-right">
-                      <p className="text-base font-black text-slate-900 dark:text-dark-text-primary">
-                        {Number(p.basePrice).toLocaleString()}{" "}
-                        <span className="text-[10px] text-slate-400 dark:text-dark-text-secondary font-bold uppercase ml-1">
-                          VND
-                        </span>
+                      <p className="text-sm font-black text-slate-900 dark:text-white">
+                        {Number(p.basePrice).toLocaleString()} đ
                       </p>
                       <div className="flex items-center justify-end gap-2 mt-1">
                         {p.discount > 0 && (
@@ -689,7 +713,7 @@ const ProductManage = () => {
                           </span>
                         )}
                         {p.isFlashSale && (
-                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-orange-100 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 text-[9px] font-black uppercase rounded">
+                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-orange-100 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 text-[9px] font-black uppercase rounded animate-pulse">
                             <FiZap size={10} /> FS
                           </span>
                         )}
@@ -700,26 +724,25 @@ const ProductManage = () => {
                         <div
                           className={`inline-flex items-center gap-2 px-3 py-1 rounded-xl border ${p.totalStock <= 5 ? "bg-rose-50 dark:bg-rose-900/20 border-rose-100 dark:border-rose-900/30 text-rose-600 dark:text-rose-400" : "bg-emerald-50 dark:bg-emerald-900/20 border-emerald-100 dark:border-emerald-900/30 text-emerald-600 dark:text-emerald-400"}`}
                         >
-                          <FiPackage size={12} />
-                          <span className="text-xs font-bold">
+                          <span className="text-xs font-black">
                             {p.totalStock}
                           </span>
                         </div>
-                        <span className="text-[10px] font-black uppercase text-slate-400 dark:text-dark-text-secondary">
-                          Đã bán: {p.sold || 0}
+                        <span className="text-[9px] font-black uppercase text-slate-400 dark:text-dark-text-secondary">
+                          Bán: {p.sold || 0}
                         </span>
                       </div>
                     </td>
                     <td className="px-8 py-5 text-center">
                       <div className="flex flex-col items-center gap-1.5">
                         <span
-                          className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${p.isActive ? "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 border-emerald-100 dark:border-emerald-900/30" : "bg-slate-100 dark:bg-dark-bg text-slate-400 dark:text-dark-text-secondary border-slate-200 dark:border-dark-border"}`}
+                          className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${p.isActive ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-slate-100 text-slate-400 border-slate-200"}`}
                         >
                           {p.isActive ? "Đang bán" : "Tạm ẩn"}
                         </span>
                         {p.hasVariants && (
-                          <span className="text-[9px] font-black text-indigo-500 dark:text-indigo-400 uppercase flex items-center gap-1">
-                            <FiLayers size={10} /> Có biến thể
+                          <span className="text-[8px] font-black text-indigo-500 uppercase flex items-center gap-1">
+                            <FiLayers size={8} /> Biến thể
                           </span>
                         )}
                       </div>
@@ -728,9 +751,9 @@ const ProductManage = () => {
                       <div className="flex items-center justify-end gap-2">
                         <button
                           onClick={() => handleShowModal(p)}
-                          className="p-3 rounded-2xl text-slate-400 dark:text-dark-text-secondary hover:bg-white dark:hover:bg-dark-bg hover:text-indigo-600 dark:hover:text-indigo-400 hover:shadow-xl dark:hover:shadow-none border border-transparent transition-all"
+                          className="size-10 rounded-xl text-slate-400 hover:bg-white hover:text-indigo-600 hover:shadow-lg transition-all border border-transparent"
                         >
-                          <FiEdit2 />
+                          <FiEdit2 className="mx-auto" />
                         </button>
                         <button
                           onClick={() =>
@@ -740,9 +763,9 @@ const ProductManage = () => {
                               name: p.name,
                             })
                           }
-                          className="p-3 rounded-2xl text-slate-400 dark:text-dark-text-secondary hover:bg-white dark:hover:bg-dark-bg hover:text-rose-500 dark:hover:text-rose-400 hover:shadow-xl dark:hover:shadow-none border border-transparent transition-all"
+                          className="size-10 rounded-xl text-slate-400 hover:bg-white hover:text-rose-500 hover:shadow-lg transition-all border border-transparent"
                         >
-                          <FiTrash2 />
+                          <FiTrash2 className="mx-auto" />
                         </button>
                       </div>
                     </td>
@@ -794,479 +817,349 @@ const ProductManage = () => {
                 </button>
               </div>
 
-              <div className="flex-1 overflow-y-auto p-10 custom-scrollbar">
+              {/* Modal Tabs Selector */}
+              <div className="px-10 py-0 border-b border-slate-100 dark:border-dark-border bg-white dark:bg-dark-surface flex items-center gap-8 overflow-x-auto no-scrollbar">
+                {[
+                  { id: "basic", label: "Thông tin cơ bản", icon: <FiInfo /> },
+                  { id: "attributes", label: "Thông số kỹ thuật", icon: <FiLayers /> },
+                  { id: "variants", label: "Biến thể sản phẩm", icon: <FiPackage /> },
+                  { id: "flashsale", label: "Cấu hình Sale", icon: <FiZap /> },
+                ].map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setModalTab(tab.id)}
+                    className={`flex items-center gap-2 py-5 border-b-2 transition-all text-xs font-black uppercase tracking-widest whitespace-nowrap ${
+                      modalTab === tab.id
+                        ? "border-indigo-600 text-indigo-600"
+                        : "border-transparent text-slate-400 hover:text-slate-600"
+                    }`}
+                  >
+                    {tab.icon} {tab.label}
+                  </button>
+                ))}
+              </div>
+
+              <div className="flex-1 overflow-y-auto p-10 custom-scrollbar bg-slate-50/30 dark:bg-dark-bg/10">
                 <form
                   id="product-form"
                   onSubmit={handleSave}
-                  className="grid grid-cols-1 lg:grid-cols-12 gap-12"
+                  className="max-w-4xl mx-auto"
                 >
-                  <div className="lg:col-span-4 space-y-8">
-                    <div className="space-y-3">
-                      <label
-                        className="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary ml-1"
-                        htmlFor="imageFile"
+                  <AnimatePresence mode="wait">
+                    {modalTab === "basic" && (
+                      <Motion.div
+                        key="basic"
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: 10 }}
+                        className="space-y-8"
                       >
-                        Ảnh đại diện
-                      </label>
-                      <div className="group relative w-full aspect-square rounded-[2rem] bg-slate-50 dark:bg-dark-bg border-2 border-dashed border-slate-200 dark:border-dark-border flex flex-col items-center justify-center overflow-hidden transition-all hover:border-indigo-400 dark:hover:border-indigo-500 hover:bg-indigo-50/30 shadow-inner">
-                        {imagePreview ? (
-                          <img
-                            src={imagePreview}
-                            alt="Product Preview"
-                            className="w-full h-full object-contain p-4 dark:mix-blend-normal"
-                          />
-                        ) : (
-                          <>
-                            <FiUploadCloud className="text-4xl text-slate-300 dark:text-slate-600 group-hover:text-indigo-400 transition-colors mb-2" />
-                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary">
-                              Chọn ảnh chính
-                            </span>
-                          </>
-                        )}
-                        <input
-                          id="imageFile"
-                          type="file"
-                          accept="image/*"
-                          onChange={handleImageChange}
-                          className="absolute inset-0 opacity-0 cursor-pointer"
-                        />
-                      </div>
-                    </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                          {/* Image Upload Area */}
+                          <div className="space-y-6">
+                            <div className="space-y-3">
+                              <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">
+                                Ảnh đại diện sản phẩm
+                              </label>
+                              <div className="group relative w-full aspect-square rounded-[2rem] bg-white dark:bg-dark-bg border-2 border-dashed border-slate-200 dark:border-dark-border flex flex-col items-center justify-center overflow-hidden transition-all hover:border-indigo-400 shadow-sm hover:shadow-xl">
+                                {imagePreview ? (
+                                  <img
+                                    src={imagePreview}
+                                    alt="Preview"
+                                    className="w-full h-full object-contain p-6"
+                                  />
+                                ) : (
+                                  <>
+                                    <FiUploadCloud className="text-4xl text-slate-300 group-hover:text-indigo-400 transition-colors mb-2" />
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Tải ảnh lên</span>
+                                  </>
+                                )}
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={handleImageChange}
+                                  className="absolute inset-0 opacity-0 cursor-pointer"
+                                />
+                              </div>
+                            </div>
 
-                    <div className="space-y-4">
-                      <label
-                        className="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary ml-1"
-                        htmlFor="galleryFiles"
-                      >
-                        Thư viện ảnh
-                      </label>
-                      <div className="grid grid-cols-3 gap-3">
-                        {galleryPreviews.map((url, idx) => (
-                          <div
-                            key={idx}
-                            className="relative aspect-square rounded-2xl border border-slate-100 dark:border-dark-border overflow-hidden group shadow-sm bg-white dark:bg-dark-bg"
-                          >
-                            <img
-                              src={url}
-                              alt={`Gallery Preview ${idx + 1}`}
-                              className="w-full h-full object-cover dark:mix-blend-normal"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => handleDeleteGalleryImage(idx)}
-                              className="absolute inset-0 bg-rose-500/80 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                            >
-                              <FiTrash2 />
-                            </button>
+                            <div className="space-y-3">
+                              <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">
+                                Thư viện ảnh chi tiết
+                              </label>
+                              <div className="grid grid-cols-3 gap-3">
+                                {galleryPreviews.map((url, idx) => (
+                                  <div key={idx} className="relative aspect-square rounded-2xl border border-slate-100 dark:border-dark-border overflow-hidden group shadow-sm bg-white dark:bg-dark-bg">
+                                    <img src={url} alt="" className="w-full h-full object-cover" />
+                                    <button
+                                      type="button"
+                                      onClick={() => handleDeleteGalleryImage(idx)}
+                                      className="absolute inset-0 bg-rose-500/80 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                    >
+                                      <FiTrash2 />
+                                    </button>
+                                  </div>
+                                ))}
+                                <div className="relative aspect-square rounded-2xl border-2 border-dashed border-slate-200 dark:border-dark-border flex items-center justify-center text-slate-300 hover:border-indigo-400 hover:text-indigo-400 transition-all bg-white dark:bg-dark-bg">
+                                  <FiPlus />
+                                  <input
+                                    type="file"
+                                    multiple
+                                    accept="image/*"
+                                    onChange={handleGalleryChange}
+                                    className="absolute inset-0 opacity-0 cursor-pointer"
+                                  />
+                                </div>
+                              </div>
+                            </div>
                           </div>
-                        ))}
-                        <div className="relative aspect-square rounded-2xl border-2 border-dashed border-slate-200 dark:border-dark-border flex items-center justify-center text-slate-300 dark:text-slate-600 hover:border-indigo-400 dark:hover:border-indigo-500 hover:text-indigo-400 transition-all bg-slate-50/50 dark:bg-dark-bg/50">
-                          <FiPlus />
-                          <input
-                            id="galleryFiles"
-                            type="file"
-                            multiple
-                            accept="image/*"
-                            onChange={handleGalleryChange}
-                            className="absolute inset-0 opacity-0 cursor-pointer"
-                          />
-                        </div>
-                      </div>
-                    </div>
 
-                    <div className="p-6 bg-slate-50 dark:bg-dark-bg rounded-[2rem] border border-slate-100 dark:border-dark-border space-y-6 shadow-inner">
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-1.5">
-                          <span className="text-[10px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest ml-1">
-                            Giá cơ bản
-                          </span>
-                          <div className="relative">
-                            <FiDollarSign className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-dark-text-secondary text-xs" />
-                            <input
-                              type="number"
-                              className="input-modern h-11 pl-8 font-black text-sm dark:bg-dark-surface dark:text-white dark:border-dark-border"
-                              value={formData.price}
-                              onChange={(e) =>
-                                setFormData((prev) => ({
-                                  ...prev,
-                                  price: e.target.value,
-                                }))
-                              }
-                            />
-                          </div>
-                        </div>
-                        <div className="space-y-1.5">
-                          <span className="text-[10px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest ml-1">
-                            Giảm giá (%)
-                          </span>
-                          <div className="relative">
-                            <FiPercent className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-dark-text-secondary text-xs" />
-                            <input
-                              type="number"
-                              className="input-modern h-11 pl-8 font-black text-sm dark:bg-dark-surface dark:text-white dark:border-dark-border"
-                              value={formData.discount}
-                              onChange={(e) =>
-                                setFormData((prev) => ({
-                                  ...prev,
-                                  discount: e.target.value,
-                                }))
-                              }
-                            />
-                          </div>
-                        </div>
-                      </div>
+                          {/* Basic Information */}
+                          <div className="space-y-6">
+                            <div className="space-y-2">
+                              <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Tên sản phẩm *</label>
+                              <input
+                                className="input-modern h-12 font-bold focus:ring-indigo-500 dark:bg-dark-surface dark:text-white"
+                                placeholder="VD: Samsung Galaxy S24 Ultra"
+                                value={formData.name}
+                                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                              />
+                            </div>
 
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-1.5">
-                          <span className="text-[10px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest ml-1">
-                            Số lượng kho
-                          </span>
-                          <div className="relative">
-                            <FiPackage className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-dark-text-secondary text-xs" />
-                            <input
-                              type="number"
-                              className="input-modern h-11 pl-8 font-black text-sm dark:bg-dark-surface dark:text-white dark:border-dark-border"
-                              value={formData.stock}
-                              onChange={(e) =>
-                                setFormData((prev) => ({
-                                  ...prev,
-                                  stock: e.target.value,
-                                }))
-                              }
-                            />
-                          </div>
-                        </div>
-                        <div className="space-y-1.5">
-                          <span className="text-[10px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest ml-1">
-                            Đã bán
-                          </span>
-                          <div className="relative">
-                            <FiCheckCircle className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-dark-text-secondary text-xs" />
-                            <input
-                              type="number"
-                              disabled
-                              readOnly
-                              className="input-modern h-11 pl-8 font-black text-sm cursor-not-allowed dark:bg-dark-surface dark:text-slate-400 dark:border-dark-border"
-                              value={editProduct?.sold || 0}
-                            />
-                          </div>
-                        </div>
-                      </div>
+                            <div className="space-y-2">
+                              <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Mã sản phẩm (SKU)</label>
+                              <input
+                                className="input-modern h-12 font-mono text-indigo-600 bg-indigo-50/30 dark:bg-indigo-500/5 dark:text-indigo-400 border-indigo-100 dark:border-indigo-900/30"
+                                placeholder="VD: SS-S24U-512-GRY"
+                                value={formData.sku}
+                                onChange={(e) => setFormData(prev => ({ ...prev, sku: e.target.value }))}
+                              />
+                            </div>
 
-                      <div className="pt-4 border-t border-slate-200 dark:border-dark-border space-y-4">
-                        <label className="flex items-center justify-between cursor-pointer group">
-                          <span className="text-xs font-black uppercase text-slate-700 dark:text-dark-text-primary group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                            Trạng thái kinh doanh
-                          </span>
-                          <div className="relative inline-flex items-center">
-                            <input
-                              type="checkbox"
-                              checked={formData.isActive}
-                              onChange={(e) =>
-                                setFormData((prev) => ({
-                                  ...prev,
-                                  isActive: e.target.checked,
-                                }))
-                              }
-                              className="sr-only peer"
-                            />
-                            <div className="w-11 h-6 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
-                          </div>
-                        </label>
+                            <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-100 dark:border-dark-border">
+                              <div className="space-y-1.5">
+                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Giá cơ bản (đ)</span>
+                                <input
+                                  type="number"
+                                  className="input-modern h-11 font-black text-sm dark:bg-dark-surface dark:text-white"
+                                  value={formData.price}
+                                  onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
+                                />
+                              </div>
+                              <div className="space-y-1.5">
+                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Giảm giá (%)</span>
+                                <input
+                                  type="number"
+                                  className="input-modern h-11 font-black text-sm dark:bg-dark-surface dark:text-white"
+                                  value={formData.discount}
+                                  onChange={(e) => setFormData(prev => ({ ...prev, discount: e.target.value }))}
+                                />
+                              </div>
+                            </div>
 
-                        <label className="flex items-center justify-between cursor-pointer group">
-                          <span className="text-xs font-black uppercase text-slate-700 dark:text-dark-text-primary group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                            Kích hoạt Biến thể
-                          </span>
-                          <div className="relative inline-flex items-center">
-                            <input
-                              type="checkbox"
-                              checked={formData.hasVariants}
-                              onChange={(e) =>
-                                setFormData((prev) => ({
-                                  ...prev,
-                                  hasVariants: e.target.checked,
-                                }))
-                              }
-                              className="sr-only peer"
-                            />
-                            <div className="w-11 h-6 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
-                          </div>
-                        </label>
-                      </div>
-
-                      <div className="pt-4 border-t border-slate-200 dark:border-dark-border">
-                        <label className="flex items-center gap-3 cursor-pointer group">
-                          <input
-                            type="checkbox"
-                            checked={formData.isFlashSale}
-                            onChange={(e) =>
-                              setFormData((prev) => ({
-                                ...prev,
-                                isFlashSale: e.target.checked,
-                              }))
-                            }
-                            className="form-checkbox size-5 text-orange-500 rounded-lg border-slate-300 dark:border-dark-border focus:ring-orange-200 dark:bg-dark-surface"
-                          />
-                          <span className="text-xs font-black uppercase text-slate-700 dark:text-dark-text-primary group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors flex items-center gap-2">
-                            <FiZap
-                              className={
-                                formData.isFlashSale
-                                  ? "text-orange-500 fill-orange-500"
-                                  : "text-slate-400 dark:text-dark-text-secondary"
-                              }
-                            />
-                            Thiết lập Flash Sale
-                          </span>
-                        </label>
-                        {formData.isFlashSale && (
-                          <div className="mt-4 space-y-4 animate-in fade-in slide-in-from-top-2 bg-white dark:bg-dark-surface p-4 rounded-2xl border border-orange-100 dark:border-orange-900/30 shadow-sm">
-                            <div className="space-y-1">
-                              <span className="text-[9px] font-black text-orange-400 uppercase ml-1">
-                                Giá khuyến mãi
-                              </span>
+                            <div className="space-y-1.5">
+                              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Số lượng trong kho</span>
                               <input
                                 type="number"
-                                className="input-modern h-10 text-xs font-black bg-orange-50/30 dark:bg-dark-bg border-orange-100 dark:border-orange-900/50 focus:border-orange-500 focus:ring-orange-50 dark:text-white"
-                                placeholder="Nhập giá sale..."
-                                value={formData.flashSalePrice}
-                                onChange={(e) =>
-                                  setFormData((prev) => ({
-                                    ...prev,
-                                    flashSalePrice: e.target.value,
-                                  }))
-                                }
+                                className="input-modern h-11 font-black text-sm dark:bg-dark-surface dark:text-white"
+                                value={formData.stock}
+                                onChange={(e) => setFormData(prev => ({ ...prev, stock: e.target.value }))}
                               />
                             </div>
-                            <div className="grid grid-cols-1 gap-3">
-                              <div className="space-y-1">
-                                <span className="text-[9px] font-black text-slate-400 dark:text-dark-text-secondary uppercase ml-1">
-                                  Thời gian bắt đầu
-                                </span>
-                                <input
-                                  type="datetime-local"
-                                  className="input-modern h-10 text-[10px] font-bold dark:bg-dark-bg dark:text-white dark:border-dark-border"
-                                  value={formData.flashSaleStart}
-                                  onChange={(e) =>
-                                    setFormData((prev) => ({
-                                      ...prev,
-                                      flashSaleStart: e.target.value,
-                                    }))
-                                  }
-                                />
-                              </div>
-                              <div className="space-y-1">
-                                <span className="text-[9px] font-black text-slate-400 dark:text-dark-text-secondary uppercase ml-1">
-                                  Thời gian kết thúc
-                                </span>
-                                <input
-                                  type="datetime-local"
-                                  className="input-modern h-10 text-[10px] font-bold dark:bg-dark-bg dark:text-white dark:border-dark-border"
-                                  value={formData.flashSaleEnd}
-                                  onChange={(e) =>
-                                    setFormData((prev) => ({
-                                      ...prev,
-                                      flashSaleEnd: e.target.value,
-                                    }))
-                                  }
-                                />
-                              </div>
+
+                            <div className="p-4 bg-white dark:bg-dark-surface rounded-2xl border border-slate-100 dark:border-dark-border space-y-4">
+                              <label className="flex items-center justify-between cursor-pointer group">
+                                <span className="text-[10px] font-black uppercase text-slate-500">Trạng thái kinh doanh</span>
+                                <div className="relative inline-flex items-center">
+                                  <input
+                                    type="checkbox"
+                                    checked={formData.isActive}
+                                    onChange={(e) => setFormData(prev => ({ ...prev, isActive: e.target.checked }))}
+                                    className="sr-only peer"
+                                  />
+                                  <div className="w-11 h-6 bg-slate-200 dark:bg-slate-700 rounded-full peer peer-checked:bg-emerald-500 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full"></div>
+                                </div>
+                              </label>
+
+                              <label className="flex items-center justify-between cursor-pointer group">
+                                <span className="text-[10px] font-black uppercase text-slate-500">Cho phép chọn biến thể</span>
+                                <div className="relative inline-flex items-center">
+                                  <input
+                                    type="checkbox"
+                                    checked={formData.hasVariants}
+                                    onChange={(e) => setFormData(prev => ({ ...prev, hasVariants: e.target.checked }))}
+                                    className="sr-only peer"
+                                  />
+                                  <div className="w-11 h-6 bg-slate-200 dark:bg-slate-700 rounded-full peer peer-checked:bg-indigo-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full"></div>
+                                </div>
+                              </label>
                             </div>
                           </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="lg:col-span-8 space-y-8">
-                    <section className="space-y-6">
-                      <div className="flex items-center gap-2 border-b border-slate-100 dark:border-dark-border pb-2">
-                        <FiSmartphone className="text-indigo-600 dark:text-indigo-400" />
-                        <h4 className="text-xs font-black uppercase tracking-tighter text-slate-900 dark:text-dark-text-primary">
-                          Thông tin cơ bản
-                        </h4>
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="space-y-2">
-                          <label
-                            className="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary ml-1"
-                            htmlFor="productName"
-                          >
-                            Tên sản phẩm *
-                          </label>
-                          <input
-                            id="productName"
-                            className="input-modern h-12 font-bold focus:ring-0 dark:bg-dark-bg dark:text-white dark:border-dark-border"
-                            placeholder="VD: iPhone 15 Pro Max 256GB"
-                            value={formData.name}
-                            onChange={(e) =>
-                              setFormData((prev) => ({
-                                ...prev,
-                                name: e.target.value,
-                              }))
-                            }
-                          />
                         </div>
-                        <div className="space-y-2">
-                          <label
-                            className="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary ml-1"
-                            htmlFor="sku"
-                          >
-                            SKU / Mã quản lý
-                          </label>
-                          <input
-                            id="sku"
-                            className="input-modern h-12 font-mono text-indigo-600 dark:text-indigo-400 bg-indigo-50/20 dark:bg-indigo-500/10 border-indigo-100 dark:border-indigo-900/30"
-                            placeholder="VD: IP15PM-256-BLK"
-                            value={formData.sku}
-                            onChange={(e) =>
-                              setFormData((prev) => ({
-                                ...prev,
-                                sku: e.target.value,
-                              }))
-                            }
-                          />
-                        </div>
-                      </div>
+                      </Motion.div>
+                    )}
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="space-y-2 relative">
-                          <label
-                            className="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary ml-1"
-                            htmlFor="brandId"
-                          >
-                            Thương hiệu
-                          </label>
-                          <select
-                            id="brandId"
-                            className="input-modern h-12 font-bold appearance-none pr-10 dark:bg-dark-bg dark:text-white dark:border-dark-border"
-                            value={formData.brandId}
-                            onChange={(e) =>
-                              setFormData((prev) => ({
-                                ...prev,
-                                brandId: e.target.value,
-                              }))
-                            }
-                          >
-                            <option value="">Chọn hãng</option>
-                            {brands.map((b) => (
-                              <option key={b.id} value={b.id}>
-                                {b.name}
-                              </option>
-                            ))}
-                          </select>
-                          <FiChevronDown className="absolute right-4 top-[42px] text-slate-400 dark:text-dark-text-secondary pointer-events-none" />
-                        </div>
-                        <div className="space-y-2 relative">
-                          <label
-                            className="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary ml-1"
-                            htmlFor="categoryId"
-                          >
-                            Danh mục sản phẩm
-                          </label>
-                          <select
-                            id="categoryId"
-                            className="input-modern h-12 font-bold appearance-none pr-10 dark:bg-dark-bg dark:text-white dark:border-dark-border"
-                            value={formData.categoryId}
-                            onChange={(e) =>
-                              setFormData((prev) => ({
-                                ...prev,
-                                categoryId: e.target.value,
-                              }))
-                            }
-                          >
-                            <option value="">Chọn loại sản phẩm</option>
-                            {categories.map((c) => (
-                              <option key={c.id} value={c.id}>
-                                {c.name}
-                              </option>
-                            ))}
-                          </select>
-                          <FiChevronDown className="absolute right-4 top-[42px] text-slate-400 dark:text-dark-text-secondary pointer-events-none" />
-                        </div>
-                      </div>
-                    </section>
-
-                    {/* New Attributes Section */}
-                    <section className="space-y-6 pt-6 border-t border-slate-100 dark:border-dark-border">
-                      <div className="flex items-center gap-2 border-b border-slate-100 dark:border-dark-border pb-2">
-                        <FiLayers className="text-indigo-600 dark:text-indigo-400" />
-                        <h4 className="text-xs font-black uppercase tracking-tighter text-slate-900 dark:text-dark-text-primary">
-                          Thông số kỹ thuật (Dropdown/Manual)
-                        </h4>
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 bg-slate-50/50 dark:bg-dark-bg/50 p-6 rounded-[2rem] border border-slate-100 dark:border-dark-border">
-                        {attributes.map((attr) => (
-                          <div key={attr.id} className="space-y-2">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary ml-1 flex items-center gap-2">
-                              {getAttrIcon(attr.code)} {attr.name}
-                            </label>
-                            <div className="relative">
-                              <input
-                                id={`attr-${attr.code}`}
-                                list={`list-${attr.code}`}
-                                className="input-modern h-11 font-bold text-xs bg-white dark:bg-dark-surface border-slate-200 dark:border-dark-border focus:ring-0 dark:text-white"
-                                placeholder={`Chọn hoặc nhập ${attr.name}...`}
-                                value={formData.attributes[attr.code] || ""}
-                                onChange={(e) =>
-                                  setFormData((prev) => ({
-                                    ...prev,
-                                    attributes: {
-                                      ...prev.attributes,
-                                      [attr.code]: e.target.value,
-                                    },
-                                  }))
-                                }
-                              />
-                              <datalist id={`list-${attr.code}`}>
-                                {attr.values?.map((v) => (
-                                  <option key={v.id} value={v.value} />
-                                ))}
-                              </datalist>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </section>
-
-                    <div className="space-y-2">
-                      <label
-                        className="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary ml-1"
-                        htmlFor="description"
+                    {modalTab === "attributes" && (
+                      <Motion.div
+                        key="attributes"
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: 10 }}
+                        className="space-y-8"
                       >
-                        Mô tả sản phẩm
-                      </label>
-                      <textarea
-                        id="description"
-                        className="input-modern resize-none h-40 py-4 focus:ring-0 font-medium dark:bg-dark-bg dark:text-white dark:border-dark-border"
-                        placeholder="Nhập mô tả chi tiết về sản phẩm, tính năng nổi bật..."
-                        value={formData.description}
-                        onChange={(e) =>
-                          setFormData((prev) => ({
-                            ...prev,
-                            description: e.target.value,
-                          }))
-                        }
-                      />
-                    </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div className="space-y-2 relative">
+                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Thương hiệu</label>
+                            <select
+                              className="input-modern h-12 font-bold appearance-none dark:bg-dark-surface dark:text-white"
+                              value={formData.brandId}
+                              onChange={(e) => setFormData(prev => ({ ...prev, brandId: e.target.value }))}
+                            >
+                              <option value="">Chọn hãng</option>
+                              {brands.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+                            </select>
+                            <FiChevronDown className="absolute right-4 top-[38px] text-slate-400 pointer-events-none" />
+                          </div>
+                          <div className="space-y-2 relative">
+                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Danh mục</label>
+                            <select
+                              className="input-modern h-12 font-bold appearance-none dark:bg-dark-surface dark:text-white"
+                              value={formData.categoryId}
+                              onChange={(e) => setFormData(prev => ({ ...prev, categoryId: e.target.value }))}
+                            >
+                              <option value="">Chọn loại</option>
+                              {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                            </select>
+                            <FiChevronDown className="absolute right-4 top-[38px] text-slate-400 pointer-events-none" />
+                          </div>
+                        </div>
 
-                    <div className="pt-8 border-t border-slate-100 dark:border-dark-border">
-                      <VariantManager
-                        productId={editProduct?.id}
-                        initialVariants={
-                          editProduct ? variants : formData.variants
-                        }
-                        formData={formData}
-                        setFormData={setFormData}
-                        onRefresh={
-                          editProduct
-                            ? () => fetchVariants(editProduct.id)
-                            : null
-                        }
-                      />
-                    </div>
-                  </div>
+                        <div className="p-8 bg-white dark:bg-dark-surface rounded-[2.5rem] border border-slate-100 dark:border-dark-border shadow-sm">
+                          <h4 className="text-sm font-black uppercase tracking-tighter text-indigo-600 mb-6 flex items-center gap-2">
+                            <FiSettings /> Thông số kỹ thuật chi tiết
+                          </h4>
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {attributes.map((attr) => (
+                              <div key={attr.id} className="space-y-1.5">
+                                <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1 flex items-center gap-2">
+                                  {getAttrIcon(attr.code)} {attr.name}
+                                </label>
+                                <div className="relative">
+                                  <input
+                                    list={`list-${attr.code}`}
+                                    className="input-modern h-10 font-bold text-xs focus:border-indigo-500 dark:bg-dark-bg dark:text-white"
+                                    placeholder={`Nhập ${attr.name}...`}
+                                    value={formData.attributes[attr.code] || ""}
+                                    onChange={(e) => setFormData(prev => ({
+                                      ...prev,
+                                      attributes: { ...prev.attributes, [attr.code]: e.target.value }
+                                    }))}
+                                  />
+                                  <datalist id={`list-${attr.code}`}>
+                                    {attr.values?.map(v => <option key={v.id} value={v.value} />)}
+                                  </datalist>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Mô tả sản phẩm</label>
+                          <textarea
+                            className="input-modern resize-none h-40 py-4 font-medium dark:bg-dark-surface dark:text-white"
+                            placeholder="Mô tả chi tiết về sản phẩm..."
+                            value={formData.description}
+                            onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                          />
+                        </div>
+                      </Motion.div>
+                    )}
+
+                    {modalTab === "variants" && (
+                      <Motion.div
+                        key="variants"
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: 10 }}
+                      >
+                        {!formData.hasVariants ? (
+                          <div className="p-20 text-center bg-white dark:bg-dark-surface rounded-[3rem] border-2 border-dashed border-slate-200 dark:border-dark-border">
+                            <FiLayers className="text-5xl text-slate-200 mx-auto mb-4" />
+                            <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">Vui lòng kích hoạt "Biến thể" ở tab Cơ bản để thiết lập.</p>
+                          </div>
+                        ) : (
+                          <VariantManager
+                            productId={editProduct?.id}
+                            initialVariants={editProduct ? variants : formData.variants}
+                            formData={formData}
+                            setFormData={setFormData}
+                            onRefresh={editProduct ? () => fetchVariants(editProduct.id) : null}
+                          />
+                        )}
+                      </Motion.div>
+                    )}
+
+                    {modalTab === "flashsale" && (
+                      <Motion.div
+                        key="flashsale"
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: 10 }}
+                        className="space-y-8"
+                      >
+                        <div className="p-10 bg-orange-50/30 dark:bg-orange-900/10 rounded-[3rem] border border-orange-100 dark:border-orange-900/30">
+                          <label className="flex items-center gap-4 cursor-pointer mb-8">
+                            <input
+                              type="checkbox"
+                              checked={formData.isFlashSale}
+                              onChange={(e) => setFormData(prev => ({ ...prev, isFlashSale: e.target.checked }))}
+                              className="form-checkbox size-6 text-orange-500 rounded-lg"
+                            />
+                            <div>
+                              <span className="text-lg font-black uppercase text-orange-600 flex items-center gap-2">
+                                <FiZap className={formData.isFlashSale ? "fill-orange-500" : ""} /> Kích hoạt Flash Sale
+                              </span>
+                              <p className="text-xs text-orange-400 font-medium">Sản phẩm sẽ được hiển thị trong khu vực khuyến mãi giới hạn thời gian.</p>
+                            </div>
+                          </label>
+
+                          {formData.isFlashSale && (
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-in fade-in slide-in-from-top-4">
+                              <div className="space-y-1.5">
+                                <span className="text-[10px] font-black text-orange-400 uppercase tracking-widest ml-1">Giá khuyến mãi</span>
+                                <input
+                                  type="number"
+                                  className="input-modern h-12 bg-white dark:bg-dark-surface border-orange-200 font-black text-orange-600"
+                                  placeholder="0 đ"
+                                  value={formData.flashSalePrice}
+                                  onChange={(e) => setFormData(prev => ({ ...prev, flashSalePrice: e.target.value }))}
+                                />
+                              </div>
+                              <div className="space-y-1.5">
+                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Bắt đầu</span>
+                                <input
+                                  type="datetime-local"
+                                  className="input-modern h-12 dark:bg-dark-surface dark:text-white"
+                                  value={formData.flashSaleStart}
+                                  onChange={(e) => setFormData(prev => ({ ...prev, flashSaleStart: e.target.value }))}
+                                />
+                              </div>
+                              <div className="space-y-1.5">
+                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Kết thúc</span>
+                                <input
+                                  type="datetime-local"
+                                  className="input-modern h-12 dark:bg-dark-surface dark:text-white"
+                                  value={formData.flashSaleEnd}
+                                  onChange={(e) => setFormData(prev => ({ ...prev, flashSaleEnd: e.target.value }))}
+                                />
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </Motion.div>
+                    )}
+                  </AnimatePresence>
                 </form>
               </div>
 

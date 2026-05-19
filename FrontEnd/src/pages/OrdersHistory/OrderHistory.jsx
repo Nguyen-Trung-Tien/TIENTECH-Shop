@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { FiEye, FiShoppingBag, FiClock, FiCheckCircle, FiRotateCcw, FiAlertTriangle } from "react-icons/fi";
+import { FiEye, FiShoppingBag, FiClock, FiCheckCircle, FiRotateCcw, FiAlertTriangle, FiEdit3 } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { getOrdersByUserId, updateOrderStatus } from "../../api/orderApi";
@@ -169,7 +169,7 @@ const OrderHistoryPage = () => {
                             </div>
                             <div className="flex items-center gap-3 mt-3">
                               <StatusBadge map={returnStatusMap} status={i.returnStatus} />
-                              {o.status === "delivered" && (!i.returnStatus || i.returnStatus === "none") && (
+                              {["delivered", "completed"].includes(o.status) && (!i.returnStatus || i.returnStatus === "none") && (
                                 <button
                                   onClick={() => navigate(`/orders-detail/${o.id}`)}
                                   className="text-[10px] font-black uppercase tracking-widest text-primary hover:underline"
@@ -209,7 +209,7 @@ const OrderHistoryPage = () => {
                       <Button
                         variant="secondary"
                         size="md"
-                        className="flex-1 sm:flex-none"
+                        className="flex-1 sm:flex-none !rounded-2xl text-[10px] font-black uppercase tracking-widest px-6"
                         icon={FiEye}
                         onClick={() => navigate(`/orders-detail/${o.id}`)}
                       >
@@ -219,7 +219,7 @@ const OrderHistoryPage = () => {
                         <Button
                           variant="primary"
                           size="md"
-                          className="flex-1 sm:flex-none"
+                          className="flex-1 sm:flex-none !rounded-2xl text-[10px] font-black uppercase tracking-widest px-6 shadow-lg shadow-primary/20"
                           icon={FiCheckCircle}
                           onClick={() => handleConfirmReceipt(o.id)}
                           loading={isSubmitting}
@@ -231,8 +231,8 @@ const OrderHistoryPage = () => {
                         <Button
                           variant="primary"
                           size="md"
-                          className="flex-1 sm:flex-none"
-                          icon={FiCheckCircle}
+                          className="flex-1 sm:flex-none !rounded-2xl text-[10px] font-black uppercase tracking-widest px-8 shadow-lg shadow-primary/20 bg-gradient-to-r from-primary to-indigo-600 border-none hover:scale-105 transition-transform"
+                          icon={FiEdit3}
                           onClick={() => openReviewModal(o)}
                         >
                           ĐÁNH GIÁ

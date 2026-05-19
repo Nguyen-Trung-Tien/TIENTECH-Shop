@@ -6,6 +6,7 @@ const handleGetAllPayments = async (req, res) => {
       page = 1,
       limit = 10,
       status,
+      method,
       search,
       startDate,
       endDate,
@@ -14,11 +15,13 @@ const handleGetAllPayments = async (req, res) => {
     } = req.query;
 
     const statusFilter = status === "all" ? null : status;
+    const methodFilter = method === "all" ? null : method;
 
     const result = await PaymentService.getAllPayments({
       page: parseInt(page),
       limit: parseInt(limit),
       status: statusFilter,
+      method: methodFilter,
       search: search?.trim() || "",
       startDate,
       endDate,

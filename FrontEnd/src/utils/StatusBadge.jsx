@@ -4,7 +4,7 @@ import React from "react";
  * Common Status Badge component for Order and Payment statuses
  * Mang phong cách Modern UI: Soft background, high-contrast text, dot indicator.
  */
-export const StatusBadge = ({ map, status, className = "" }) => {
+export const StatusBadge = ({ map, status, className = "", loading = false }) => {
   const current = map[status] || { label: status, variant: "secondary" };
   
   const getVariantStyles = (variant) => {
@@ -36,11 +36,15 @@ export const StatusBadge = ({ map, status, className = "" }) => {
 
   return (
     <span
-      className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${getVariantStyles(current.variant)} ${className}`}
+      className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${getVariantStyles(current.variant)} ${className} ${loading ? 'opacity-70' : ''}`}
       style={{ border: '1px solid currentColor', borderOpacity: 0.1 }}
     >
-      <span className={`w-1.5 h-1.5 rounded-full ${getDotStyles(current.variant)} animate-pulse shadow-[0_0_8px_rgba(0,0,0,0.1)]`} />
-      {current.label}
+      {loading ? (
+        <span className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" />
+      ) : (
+        <span className={`w-1.5 h-1.5 rounded-full ${getDotStyles(current.variant)} animate-pulse shadow-[0_0_8px_rgba(0,0,0,0.1)]`} />
+      )}
+      {loading ? "Đang cập nhật..." : current.label}
     </span>
   );
 };

@@ -20,9 +20,10 @@ import {
   FiInfo,
   FiRefreshCcw,
   FiCornerDownRight,
+  FiEdit3,
 } from "react-icons/fi";
 import { getOrderById, updateOrderStatus } from "../../api/orderApi";
-import { requestReturn } from "../../api/orderItemApi";
+import { requestReturn, cancelReturnRequest } from "../../api/orderItemApi";
 import { createVnpayPaymentApi } from "../../api/paymentApi";
 import { StatusBadge } from "../../utils/StatusBadge";
 import { orderStatusMap, paymentStatusMap } from "../../utils/constants";
@@ -248,6 +249,31 @@ const OrderDetail = () => {
     }
   };
 
+  const isWithin12Hours = (dateString) => {
+    if (!dateString) return false;
+    const requestedAt = new Date(dateString);
+    const now = new Date();
+    const diffHours = (now - requestedAt) / (1000 * 60 * 60);
+    return diffHours <= 12;
+  };
+
+  const handleCancelReturn = async (itemId) => {
+    try {
+      dispatch({ type: "SET_SUBMITTING", payload: true });
+      const res = await cancelReturnRequest(itemId);
+      if (res.errCode === 0) {
+        toast.success("Đã thu hồi yêu cầu trả hàng thành công");
+        fetchOrderDetail();
+      } else {
+        toast.error(res.errMessage);
+      }
+    } catch (error) {
+      toast.error("Lỗi khi thu hồi yêu cầu trả hàng");
+    } finally {
+      dispatch({ type: "SET_SUBMITTING", payload: false });
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-surface-50 dark:bg-dark-bg gap-4">
@@ -286,6 +312,14 @@ const OrderDetail = () => {
   const isCancelled =
     order.status === "cancelled" || order.status === "cancel_requested";
 
+  const hasRecallableItems = order?.orderItems?.some(
+    (item) => item.returnStatus === "requested" && isWithin12Hours(item.returnRequestedAt)
+  );
+
+  const hasReturnableItems = order?.orderItems?.some(
+    (item) => !item.returnStatus || item.returnStatus === "none"
+  );
+
   return (
     <div className="min-h-screen bg-surface-50 dark:bg-dark-bg py-12 transition-colors duration-300">
       <div className="container-custom">
@@ -316,7 +350,7 @@ const OrderDetail = () => {
           </div>
 
           <div className="flex items-center gap-3">
-            <StatusBadge map={orderStatusMap} status={order.status} />
+            <StatusBadge map={orderStatusMap} status={order.status} loading={submitting} />
             <StatusBadge map={paymentStatusMap} status={order.paymentStatus} />
           </div>
         </div>
@@ -472,6 +506,14 @@ const OrderDetail = () => {
                                 Yêu cầu trả hàng
                               </button>
                             )}
+                          {item.returnStatus === "requested" && isWithin12Hours(item.returnRequestedAt) && (
+                            <button
+                              onClick={() => handleCancelReturn(item.id)}
+                              className="text-[10px] font-black uppercase tracking-widest text-rose-500 hover:underline flex items-center gap-1"
+                            >
+                              <FiRefreshCcw size={10} /> Thu hồi yêu cầu
+                            </button>
+                          )}
                         </div>
                       </div>
                       <div className="text-right flex-shrink-0">
@@ -578,28 +620,62 @@ const OrderDetail = () => {
               {["delivered", "completed"].includes(order.status) && (
                 <>
                   <Button
-                    variant="default"
-                    className="w-full"
+                    variant="primary"
+                    className="w-full !rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 bg-gradient-to-r from-primary to-indigo-600 border-none h-12"
                     size="lg"
-                    icon={FiCheckCircle}
+                    icon={FiEdit3}
                     onClick={() => dispatch({ type: "OPEN_REVIEW_MODAL" })}
                   >
                     ĐÁNH GIÁ ĐƠN HÀNG
                   </Button>
-                  <Button
-                    variant="secondary"
-                    className="w-full"
-                    size="lg"
-                    icon={FiRotateCcw}
-                    onClick={() => dispatch({ type: "OPEN_RETURN_MODAL" })}
-                  >
-                    YÊU CẦU TRẢ HÀNG
-                  </Button>
+                  {hasReturnableItems && (
+                    <Button
+                      variant="secondary"
+                      className="w-full !rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] h-12 border-surface-200 dark:border-dark-border"
+                      size="lg"
+                      icon={FiRotateCcw}
+                      onClick={() => dispatch({ type: "OPEN_RETURN_MODAL" })}
+                    >
+                      YÊU CẦU TRẢ HÀNG
+                    </Button>
+                  )}
+                  {hasRecallableItems && (
+                    <Button
+                      variant="destructive"
+                      className="w-full !rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] h-12"
+                      size="lg"
+                      icon={FiRefreshCcw}
+                      onClick={() => {
+                        const recallableItems = order.orderItems.filter(
+                          (item) =>
+                            item.returnStatus === "requested" &&
+                            isWithin12Hours(item.returnRequestedAt),
+                        );
+                        dispatch({ type: "SET_SUBMITTING", payload: true });
+                        Promise.all(
+                          recallableItems.map((item) =>
+                            cancelReturnRequest(item.id),
+                          ),
+                        )
+                          .then(() => {
+                            toast.success("Đã thu hồi các yêu cầu trả hàng");
+                            fetchOrderDetail();
+                          })
+                          .catch(() => toast.error("Lỗi khi thu hồi yêu cầu"))
+                          .finally(() =>
+                            dispatch({ type: "SET_SUBMITTING", payload: false }),
+                          );
+                      }}
+                      loading={submitting}
+                    >
+                      THU HỒI TẤT CẢ YÊU CẦU TRẢ HÀNG
+                    </Button>
+                  )}
                 </>
               )}
               <Button
-                variant="secondary"
-                className="w-full"
+                variant="ghost"
+                className="w-full !rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] text-slate-400"
                 size="lg"
                 icon={FiPackage}
                 onClick={() => window.print()}
@@ -617,72 +693,97 @@ const OrderDetail = () => {
         onClose={() => dispatch({ type: "CLOSE_RETURN_MODAL" })}
         onConfirm={handleSubmitReturn}
         title="Yêu cầu trả hàng"
-        confirmText="Gửi yêu cầu"
-        variant="default"
+        confirmText="Gửi yêu cầu ngay"
+        variant="primary"
         loading={submitting}
-        icon={FiRefreshCcw}
+        icon={FiRotateCcw}
+        iconClassName="bg-amber-50 text-amber-500 border-amber-100"
       >
-        <div className="mb-6 text-left w-full space-y-6">
-          <div className="space-y-3">
-            <p className="text-[10px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest mb-1 block">
-              Chọn sản phẩm muốn trả
-            </p>
-            <div className="max-h-48 overflow-y-auto space-y-2 pr-2 custom-scrollbar">
-              {order.orderItems?.map((item) => (
-                <label
-                  key={item.id}
-                  className={`flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer ${
-                    selectedItems.includes(item.id)
-                      ? "bg-primary/5 dark:bg-brand/10 border-primary dark:border-brand"
-                      : "bg-slate-50 dark:bg-dark-bg border-slate-200 dark:border-dark-border"
-                  }`}
-                >
-                  <input
-                    type="checkbox"
-                    className="size-4 rounded border-slate-300 text-primary focus:ring-primary/20"
-                    checked={selectedItems.includes(item.id)}
-                    onChange={() =>
-                      dispatch({ type: "TOGGLE_ITEM", payload: item.id })
-                    }
-                  />
-                  <span className="text-xs font-bold text-slate-700 dark:text-white truncate">
-                    {item.productName}
-                  </span>
+        <div className="mb-6 text-left w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <p className="text-[10px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-[0.2em]">
+                Chọn sản phẩm muốn trả
+              </p>
+              <p className="text-[10px] font-bold text-primary dark:text-brand bg-primary/5 dark:bg-brand/10 px-2 py-1 rounded-lg">
+                {selectedItems.length} sản phẩm đã chọn
+              </p>
+            </div>
+            <div className="max-h-60 overflow-y-auto space-y-3 pr-2 custom-scrollbar">
+              {order.orderItems
+                ?.filter(
+                  (item) => !item.returnStatus || item.returnStatus === "none",
+                )
+                .map((item) => (
+                  <label
+                    key={item.id}
+                    className={`group flex items-center gap-4 p-4 rounded-2xl border transition-all cursor-pointer ${
+                      selectedItems.includes(item.id)
+                        ? "bg-primary/5 dark:bg-brand/10 border-primary dark:border-brand shadow-sm"
+                        : "bg-white dark:bg-dark-bg border-slate-100 dark:border-dark-border hover:border-slate-200 dark:hover:border-dark-text-secondary"
+                    }`}
+                  >
+                  <div className="relative flex items-center justify-center">
+                    <input
+                      type="checkbox"
+                      className="peer size-5 rounded-lg border-slate-200 text-primary focus:ring-primary/20 transition-all cursor-pointer"
+                      checked={selectedItems.includes(item.id)}
+                      onChange={() =>
+                        dispatch({ type: "TOGGLE_ITEM", payload: item.id })
+                      }
+                    />
+                  </div>
+                  <div className="size-12 rounded-xl bg-slate-50 dark:bg-dark-surface p-1 border border-slate-100 dark:border-dark-border flex-shrink-0 group-hover:scale-110 transition-transform">
+                    <img src={item.image} alt="" className="w-full h-full object-contain" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <span className="text-sm font-bold text-slate-700 dark:text-white truncate block">
+                      {item.productName}
+                    </span>
+                    <span className="text-[10px] font-medium text-slate-400">
+                      Số lượng: {item.quantity} • {formatCurrency(item.price)}
+                    </span>
+                  </div>
                 </label>
               ))}
             </div>
           </div>
 
-          <div className="space-y-3">
-            <p className="text-[10px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest mb-1 block">
-              Lý do trả hàng
+          <div className="space-y-4">
+            <p className="text-[10px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-[0.2em]">
+              Lý do trả hàng <span className="text-red-500">*</span>
             </p>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {RETURN_REASONS.map((reason) => (
                 <button
                   key={reason}
                   onClick={() =>
                     dispatch({ type: "SET_RETURN_REASON", payload: reason })
                   }
-                  className={`px-3 py-2 rounded-lg text-left text-[10px] font-bold transition-all border ${
+                  className={`px-4 py-3 rounded-xl text-left text-[11px] font-bold transition-all border ${
                     returnReason === reason
-                      ? "bg-primary text-white border-primary"
-                      : "bg-white dark:bg-dark-surface border-slate-200 dark:border-dark-border text-slate-600 dark:text-dark-text-secondary"
+                      ? "bg-primary text-white border-primary shadow-lg shadow-primary/20 scale-[1.02]"
+                      : "bg-slate-50 dark:bg-dark-bg border-slate-100 dark:border-dark-border text-slate-600 dark:text-dark-text-secondary hover:border-slate-200"
                   }`}
                 >
                   {reason}
                 </button>
               ))}
             </div>
-            <textarea
-              rows={3}
-              className="w-full bg-slate-50 dark:bg-dark-bg border border-slate-200 dark:border-dark-border rounded-xl p-3 text-xs dark:text-white outline-none focus:ring-2 focus:ring-primary/20 transition-all"
-              placeholder="Nhập lý do chi tiết (nếu có)..."
-              value={returnReason}
-              onChange={(e) =>
-                dispatch({ type: "SET_RETURN_REASON", payload: e.target.value })
-              }
-            />
+            <div className="relative">
+              <textarea
+                rows={3}
+                className="w-full bg-slate-50 dark:bg-dark-bg border border-slate-100 dark:border-dark-border rounded-2xl p-4 text-sm font-medium dark:text-white outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/40 transition-all placeholder:text-slate-300 resize-none"
+                placeholder="Vui lòng cung cấp thêm thông tin chi tiết về tình trạng sản phẩm..."
+                value={returnReason}
+                onChange={(e) =>
+                  dispatch({ type: "SET_RETURN_REASON", payload: e.target.value })
+                }
+              />
+              <div className="absolute bottom-3 right-3 text-[10px] font-black text-slate-300 uppercase tracking-widest">
+                Bắt buộc
+              </div>
+            </div>
           </div>
         </div>
       </ConfirmModal>

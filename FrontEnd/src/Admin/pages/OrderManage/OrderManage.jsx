@@ -329,6 +329,7 @@ const OrderManage = () => {
                           map={statusMap}
                           status={order.status}
                           className="text-[10px] px-4 py-1.5 font-black uppercase tracking-[0.1em] rounded-xl shadow-sm"
+                          loading={loadingId === order.id}
                         />
                         {order.cancelReason && (
                           <span

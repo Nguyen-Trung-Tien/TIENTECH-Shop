@@ -209,6 +209,23 @@ const getDashboardData = async (period) => {
       raw: true,
     });
 
+    // Added counts for badges/stats
+    const cancelRequestedCount = await db.Order.count({
+      where: { status: "cancel_requested" },
+    });
+
+    const returnRequestedCount = await db.Order.count({
+      include: [
+        {
+          model: db.OrderItem,
+          as: "orderItems",
+          where: { returnStatus: "requested" },
+          required: true,
+        },
+      ],
+      distinct: true,
+    });
+
     const result = {
       totalProducts,
       todayOrders,
@@ -223,12 +240,45 @@ const getDashboardData = async (period) => {
       revenueByMonth,
       revenueByYear,
       topProducts: topProductsRaw,
+      cancelRequestedCount,
+      returnRequestedCount,
     };
 
     await setCache(cacheKey, result, 300); // 5 minutes cache
     return result;
   } catch (error) {
     console.error("Error from AdminService.getDashboardData:", error);
+    throw error;
+  }
+};
+
+const getAdminCounters = async () => {
+  try {
+    const cancelRequestedCount = await db.Order.count({
+      where: { status: "cancel_requested" },
+    });
+
+    const returnRequestedCount = await db.Order.count({
+      include: [
+        {
+          model: db.OrderItem,
+          as: "orderItems",
+          where: { returnStatus: "requested" },
+          required: true,
+        },
+      ],
+      distinct: true,
+    });
+
+    return {
+      errCode: 0,
+      data: {
+        cancelRequestedCount,
+        returnRequestedCount,
+      },
+    };
+  } catch (error) {
+    console.error("Error from AdminService.getAdminCounters:", error);
     throw error;
   }
 };
@@ -314,6 +364,7 @@ const syncEmbeddings = async () => {
 
 module.exports = {
   getDashboardData,
+  getAdminCounters,
   exportRevenueExcel,
   globalSearch,
   syncEmbeddings,

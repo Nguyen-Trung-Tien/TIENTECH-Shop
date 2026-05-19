@@ -30,8 +30,10 @@ export const updatePayment = async (orderId, data) => {
   return await axiosClient.put(`/payment/update-payment/${orderId}`, data);
 };
 
-export const completePayment = async (id, data = {}) => {
-  return await axiosClient.put(`/payment/payment-complete/${id}/complete`, data);
+export const completePayment = async (id, transactionId = "") => {
+  return await axiosClient.put(`/payment/payment-complete/${id}/complete`, {
+    transactionId,
+  });
 };
 
 export const refundPayment = async (id, note = "") => {

@@ -19,6 +19,19 @@ const getDashboard = async (req, res) => {
   }
 };
 
+const getAdminCounters = async (req, res) => {
+  try {
+    const result = await AdminService.getAdminCounters();
+    res.status(200).json(result);
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({
+      errCode: 1,
+      errMessage: "Lỗi khi lấy số liệu thống kê.",
+    });
+  }
+};
+
 const handleExportRevenue = async (req, res) => {
   try {
     const buffer = await AdminService.exportRevenueExcel();
@@ -82,6 +95,7 @@ const handleSyncEmbeddings = async (req, res) => {
 
 module.exports = {
   getDashboard,
+  getAdminCounters,
   handleExportRevenue,
   handleAIInsights,
   handleGlobalSearch,

@@ -3,6 +3,7 @@ import { motion as Motion, AnimatePresence } from "framer-motion";
 import { FiTag, FiX, FiCheck, FiInfo, FiChevronRight } from "react-icons/fi";
 import { getActiveVouchersApi } from "../../api/voucherApi";
 import { toast } from "react-toastify";
+import { Loader } from "../UI";
 
 const VoucherSelector = ({ subtotal, onApply, appliedVoucher, onRemove }) => {
   const [vouchers, setVouchers] = useState([]);
@@ -145,7 +146,7 @@ const VoucherSelector = ({ subtotal, onApply, appliedVoucher, onRemove }) => {
               <div className="p-6 max-h-[60vh] overflow-y-auto space-y-4 custom-scrollbar bg-white dark:bg-dark-surface">
                 {loading ? (
                   <div className="py-10 text-center space-y-3">
-                    <div className="size-8 border-4 border-primary dark:border-brand border-t-transparent rounded-full animate-spin mx-auto"></div>
+                    <Loader size="lg" className="mx-auto text-primary dark:text-brand" />
                     <p className="text-xs font-bold text-slate-400 dark:text-dark-text-secondary animate-pulse uppercase">
                       Đang tải mã...
                     </p>
