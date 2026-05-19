@@ -1,42 +1,20 @@
-import React, { useId } from "react";
+import React from "react";
+import { cn } from "../../utils/cn";
 
-const Input = React.forwardRef(({ label, error, className = "", id: externalId, ...props }, ref) => {
-  const internalId = useId();
-  const id = externalId || internalId;
-
+const Input = ({ className, type, ref, ...props }) => {
   return (
-    <div className={`w-full ${className}`}>
-      {label && (
-        <label 
-          htmlFor={id} 
-          className="block text-[11px] font-bold uppercase tracking-wider text-surface-500 dark:text-dark-text-secondary mb-1.5 ml-0.5 cursor-pointer"
-        >
-          {label}
-        </label>
+    <input
+      type={type}
+      className={cn(
+        "flex h-10 w-full rounded-lg border border-[var(--border-color)] bg-white px-3 py-2 text-sm text-[var(--text-main)] ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-[var(--text-muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-[var(--color-dark-bg)] dark:border-[var(--color-dark-border)]",
+        className
       )}
-      <input
-        id={id}
-        ref={ref}
-        className={`input-base ${
-          error ? "border-danger focus:ring-danger/10 focus:border-danger" : ""
-        }`}
-        aria-invalid={error ? "true" : "false"}
-        aria-describedby={error ? `${id}-error` : undefined}
-        {...props}
-      />
-      {error && (
-        <p 
-          id={`${id}-error`} 
-          className="mt-1 text-[10px] text-danger font-semibold uppercase tracking-tight ml-0.5 animate-in fade-in slide-in-from-top-1"
-          role="alert"
-        >
-          {error}
-        </p>
-      )}
-    </div>
+      ref={ref}
+      {...props}
+    />
   );
-});
-
+};
 Input.displayName = "Input";
 
+export { Input };
 export default Input;

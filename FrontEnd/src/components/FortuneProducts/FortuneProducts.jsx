@@ -154,7 +154,7 @@ const FortuneProducts = () => {
 
       <div className="container mx-auto px-4 relative z-10 pt-8 md:pt-12">
         {/* HERO HEADER */}
-        <motion.div
+        <Motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           className="relative mb-12 bg-gray-50 dark:bg-gray-900 rounded-[2.5rem] p-8 md:p-12 border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden"
@@ -188,7 +188,7 @@ const FortuneProducts = () => {
               những thiết bị mang lại sự hanh thông và tài lộc.
             </p>
           </div>
-        </motion.div>
+        </Motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
           {/* LEFT COLUMN: FILTERS */}
@@ -308,7 +308,7 @@ const FortuneProducts = () => {
             {/* ANALYSIS RESULTS BAR */}
             <AnimatePresence>
               {luckyColors.length > 0 && (
-                <motion.div
+                <Motion.div
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   className="bg-blue-50 dark:bg-blue-900/10 p-8 rounded-3xl border border-blue-100 dark:border-blue-900/30 flex flex-col md:flex-row items-center gap-8"
@@ -327,7 +327,7 @@ const FortuneProducts = () => {
                       </span>
                     ))}
                   </div>
-                </motion.div>
+                </Motion.div>
               )}
             </AnimatePresence>
 
@@ -354,7 +354,7 @@ const FortuneProducts = () => {
                 <div className="space-y-16">
                   <div className="grid grid-cols-2 md:grid-cols-2 xl:grid-cols-3 gap-8">
                     {products.map((p, index) => (
-                      <motion.div
+                      <Motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: index * 0.05 }}
@@ -368,7 +368,7 @@ const FortuneProducts = () => {
                               .includes(color.toLowerCase()),
                           )}
                         />
-                      </motion.div>
+                      </Motion.div>
                     ))}
                   </div>
 

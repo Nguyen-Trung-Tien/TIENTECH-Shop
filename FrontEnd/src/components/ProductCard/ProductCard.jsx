@@ -10,8 +10,8 @@ import { FiShoppingCart, FiHeart } from "react-icons/fi";
 import { FaStar, FaHeart } from "react-icons/fa";
 import { addToWishlistApi, removeFromWishlistApi } from "../../api/wishlistApi";
 import { formatCurrency } from "../../utils/format";
-import Button from "../UI/Button";
-import Badge from "../UI/Badge";
+import { Button } from "../ui/Button";
+import { Badge } from "../ui/Badge";
 import QuickVariantModal from "./QuickVariantModal";
 
 const ProductCard = ({ product }) => {
@@ -194,7 +194,7 @@ const ProductCard = ({ product }) => {
               </Badge>
             )}
             {!flashSaleActive && discount > 0 && (
-              <Badge variant="brand">-{discount}%</Badge>
+              <Badge variant="default">-{discount}%</Badge>
             )}
           </div>
 
@@ -216,25 +216,26 @@ const ProductCard = ({ product }) => {
           {/* Mobile quick add button */}
           <div className="absolute bottom-2 right-2 lg:hidden">
             <Button
-              variant="primary"
+              variant="default"
               size="icon"
-              icon={FiShoppingCart}
-              onClick={handleAddToCartClick}
-              loading={loadingCart}
               className="rounded-full shadow-lg"
-            />
+              onClick={handleAddToCartClick}
+              disabled={loadingCart}
+            >
+              <FiShoppingCart />
+            </Button>
           </div>
 
           {/* Desktop hover action */}
           <div className="absolute inset-x-0 bottom-0 p-3 translate-y-full group-hover:translate-y-0 transition-transform duration-300 z-20 bg-gradient-to-t from-white/90 dark:from-dark-card/90 to-transparent hidden lg:block">
             <Button
-              variant="primary"
+              variant="default"
               size="sm"
               className="w-full"
-              icon={FiShoppingCart}
               onClick={handleAddToCartClick}
-              loading={loadingCart}
+              disabled={loadingCart}
             >
+              <FiShoppingCart className="mr-2" />
               THÊM GIỎ HÀNG
             </Button>
           </div>

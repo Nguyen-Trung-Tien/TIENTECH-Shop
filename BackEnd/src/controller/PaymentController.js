@@ -7,6 +7,8 @@ const handleGetAllPayments = async (req, res) => {
       limit = 10,
       status,
       search,
+      startDate,
+      endDate,
       orderBy = "createdAt",
       order = "DESC",
     } = req.query;
@@ -18,6 +20,8 @@ const handleGetAllPayments = async (req, res) => {
       limit: parseInt(limit),
       status: statusFilter,
       search: search?.trim() || "",
+      startDate,
+      endDate,
       orderBy,
       order: order.toUpperCase(),
     });
@@ -25,6 +29,20 @@ const handleGetAllPayments = async (req, res) => {
     return res.status(200).json(result);
   } catch (e) {
     console.error("handleGetAllPayments error:", e);
+    return res.status(500).json({
+      errCode: -1,
+      errMessage: "Internal server error",
+    });
+  }
+};
+
+const handleGetPaymentSummary = async (req, res) => {
+  try {
+    const { startDate, endDate } = req.query;
+    const result = await PaymentService.getPaymentSummary(startDate, endDate);
+    return res.status(200).json(result);
+  } catch (e) {
+    console.error("handleGetPaymentSummary error:", e);
     return res.status(500).json({
       errCode: -1,
       errMessage: "Internal server error",
@@ -117,6 +135,7 @@ const handleRefundPayment = async (req, res) => {
 
 module.exports = {
   handleGetAllPayments,
+  handleGetPaymentSummary,
   handleGetPaymentById,
   handleCreatePayment,
   handleUpdatePayment,

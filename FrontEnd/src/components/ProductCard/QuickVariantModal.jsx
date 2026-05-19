@@ -2,7 +2,7 @@ import React from "react";
 import { motion as Motion, AnimatePresence } from "framer-motion";
 import { FiX, FiCheck, FiShoppingCart, FiCreditCard } from "react-icons/fi";
 import { useProductVariants } from "../../hooks/useProductVariants";
-import Button from "../UI/Button";
+import { Button } from "../ui/Button";
 
 const QuickVariantModal = ({ product, isOpen, onClose, onAdd, onBuyNow }) => {
   const {
@@ -146,17 +146,17 @@ const QuickVariantModal = ({ product, isOpen, onClose, onAdd, onBuyNow }) => {
                   className="flex-1 h-14 rounded-2xl font-black text-xs tracking-widest border-2 dark:border-dark-border dark:text-dark-text-primary dark:hover:bg-dark-bg"
                   disabled={product.variants?.length > 0 && !selectedVariant}
                   onClick={() => onAdd(selectedVariant?.id || product.id)}
-                  icon={FiShoppingCart}
                 >
+                  <FiShoppingCart className="mr-2" />
                   THÊM GIỎ HÀNG
                 </Button>
                 <Button
-                  variant="primary"
+                  variant="default"
                   className="flex-[1.5] h-14 rounded-2xl font-black text-xs tracking-widest shadow-xl shadow-primary/20"
                   disabled={product.variants?.length > 0 && !selectedVariant}
                   onClick={() => onBuyNow(selectedVariant?.id || product.id)}
-                  icon={FiCreditCard}
                 >
+                  <FiCreditCard className="mr-2" />
                   MUA NGAY
                 </Button>
               </div>

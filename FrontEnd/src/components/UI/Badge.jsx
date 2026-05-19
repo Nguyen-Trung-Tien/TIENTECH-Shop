@@ -1,24 +1,34 @@
-const Badge = ({ children, variant = "primary", className = "" }) => {
-  // Giảm font-black xuống font-bold để bớt nhiễu thị giác
-  const baseStyles =
-    "inline-flex items-center px-2.5 py-0.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-colors";
+import React from "react";
+import { cva } from "class-variance-authority";
+import { cn } from "../../utils/cn";
 
-  const variants = {
-    primary: "bg-primary/10 text-primary border border-primary/20",
-    brand: "bg-brand/10 text-brand border border-brand/20",
-    success: "bg-success/10 text-success border border-success/20",
-    warning: "bg-warning/10 text-warning border border-warning/20",
-    danger: "bg-danger/10 text-danger border border-danger/20",
-    info: "bg-info/10 text-info border border-info/20",
-    surface:
-      "bg-surface-100 text-surface-600 border border-surface-200 dark:bg-dark-surface dark:text-dark-text-secondary dark:border-dark-border",
-  };
+const badgeVariants = cva(
+  "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+  {
+    variants: {
+      variant: {
+        default:
+          "border-transparent bg-[var(--color-primary)] text-white shadow hover:bg-[var(--color-primary-hover)]",
+        secondary:
+          "border-transparent bg-[var(--color-surface-100)] text-[var(--text-main)] hover:bg-[var(--color-surface-200)]",
+        destructive:
+          "border-transparent bg-[var(--color-danger)] text-white shadow hover:bg-red-600",
+        outline: "text-[var(--text-main)] border-[var(--border-color)]",
+        success: "border-transparent bg-[var(--color-success)] text-white shadow",
+        warning: "border-transparent bg-[var(--color-warning)] text-white shadow",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+    },
+  }
+);
 
+function Badge({ className, variant, ...props }) {
   return (
-    <span className={`${baseStyles} ${variants[variant]} ${className}`}>
-      {children}
-    </span>
+    <div className={cn(badgeVariants({ variant }), className)} {...props} />
   );
-};
+}
 
+export { Badge, badgeVariants };
 export default Badge;

@@ -1,60 +1,46 @@
-const Button = ({
-  children,
-  variant = "primary",
-  size = "md",
-  className = "",
-  disabled = false,
-  loading = false,
-  icon: Icon,
-  ...props
-}) => {
-  // Use focus-visible for accessibility
-  const baseStyles =
-    "inline-flex items-center justify-center font-bold transition-standard active:scale-[0.98] disabled:opacity-60 disabled:pointer-events-none rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2";
+import React from "react";
+import { cva } from "class-variance-authority";
+import { cn } from "../../utils/cn";
 
-  const variants = {
-    primary:
-      "bg-primary text-white shadow-md hover:bg-primary-hover focus-visible:ring-primary",
-    secondary:
-      "bg-white text-surface-900 border border-surface-200 hover:bg-surface-50 focus-visible:ring-surface-200 dark:bg-dark-surface dark:text-dark-text-primary dark:border-dark-border dark:hover:bg-dark-border",
-    brand:
-      "bg-brand text-white shadow-md hover:bg-brand-hover focus-visible:ring-brand",
-    ghost:
-      "bg-transparent text-surface-600 hover:bg-surface-100 hover:text-surface-900 focus-visible:ring-surface-200 dark:text-dark-text-secondary dark:hover:bg-dark-surface dark:hover:text-dark-text-primary",
-    danger:
-      "bg-danger text-white shadow-md hover:bg-danger/90 focus-visible:ring-danger",
-  };
+const buttonVariants = cva(
+  "inline-flex items-center justify-center whitespace-nowrap rounded-lg text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+  {
+    variants: {
+      variant: {
+        default: "bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-hover)] shadow-sm",
+        brand: "bg-[var(--color-brand)] text-white hover:bg-[var(--color-brand-hover)] shadow-sm",
+        destructive: "bg-[var(--color-danger)] text-white hover:bg-red-600 shadow-sm",
+        outline: "border border-[var(--border-color)] bg-transparent hover:bg-[var(--bg-main)] text-[var(--text-main)]",
+        secondary: "bg-[var(--color-surface-100)] text-[var(--text-main)] hover:bg-[var(--color-surface-200)]",
+        ghost: "hover:bg-[var(--color-surface-100)] hover:text-[var(--text-main)]",
+        link: "text-[var(--color-primary)] underline-offset-4 hover:underline",
+      },
+      size: {
+        default: "h-10 px-4 py-2",
+        sm: "h-9 rounded-md px-3",
+        lg: "h-11 rounded-lg px-8",
+        icon: "h-10 w-10",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+      size: "default",
+    },
+  }
+);
 
-  const sizes = {
-    sm: "px-3 py-1.5 text-[11px]",
-    md: "px-5 py-2 text-xs",
-    lg: "px-6 py-2.5 text-sm",
-    icon: "p-2",
-  };
-
+const Button = ({ className, variant, size, asChild = false, ref, ...props }) => {
+  const Comp = asChild ? "span" : "button";
   return (
-    <button
-      className={`${baseStyles} ${variants[variant]} ${sizes[size]} ${className}`}
-      disabled={disabled || loading}
-      aria-disabled={disabled || loading}
-      aria-busy={loading}
+    <Comp
+      className={cn(buttonVariants({ variant, size, className }))}
+      ref={ref}
       {...props}
-    >
-      {loading ? (
-        <div
-          className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin mr-2"
-          aria-hidden="true"
-        />
-      ) : Icon ? (
-        <Icon
-          className={children ? "mr-1.5" : ""}
-          size={size === "sm" ? 14 : 16}
-          aria-hidden="true"
-        />
-      ) : null}
-      {children}
-    </button>
+    />
   );
 };
 
+Button.displayName = "Button";
+
+export { Button, buttonVariants };
 export default Button;

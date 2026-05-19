@@ -1,4 +1,4 @@
-import { m } from "framer-motion";
+import { motion as Motion } from "framer-motion";
 
 /**
  * AdminTableSkeleton - Giữ chỗ cho bảng dữ liệu admin

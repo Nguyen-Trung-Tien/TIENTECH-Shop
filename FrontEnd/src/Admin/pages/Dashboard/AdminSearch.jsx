@@ -6,7 +6,7 @@ import {
 } from "react-icons/fi";
 import { globalSearchApi } from "../../../api/adminApi";
 import { AdminTableSkeleton } from "../../components/AdminLoading";
-import { m } from "framer-motion";
+import { motion as Motion } from "framer-motion";
 
 const priceFormatter = new Intl.NumberFormat("vi-VN", {
   style: "currency",

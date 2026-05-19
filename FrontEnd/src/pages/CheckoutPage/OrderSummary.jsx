@@ -7,7 +7,7 @@ import {
   FiCheckCircle,
 } from "react-icons/fi";
 import { PayPalButtons } from "@paypal/react-paypal-js";
-import Button from "../../components/UI/Button";
+import { Button } from "../../components/UI/Button";
 
 const OrderSummary = ({
   selectedItems = [],
@@ -99,7 +99,7 @@ const OrderSummary = ({
           </div>
         ) : (
           <Button
-            variant="primary"
+            variant="default"
             className="w-full h-16 rounded-2xl font-black text-sm tracking-[0.2em] mb-8 group shadow-xl shadow-primary/20"
             onClick={onPlaceOrder}
             loading={loading}

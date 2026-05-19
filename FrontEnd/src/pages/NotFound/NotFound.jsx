@@ -11,7 +11,7 @@ const NotFound = () => {
       <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-indigo-600/5 rounded-full blur-[120px]" />
 
       <div className="text-center relative z-10 max-w-2xl">
-        <motion.div
+        <Motion.div
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
@@ -19,9 +19,9 @@ const NotFound = () => {
           <h1 className="text-[12rem] md:text-[16rem] font-black leading-none text-transparent bg-clip-text bg-gradient-to-b from-blue-600 to-indigo-600/20 tracking-tighter">
             404
           </h1>
-        </motion.div>
+        </Motion.div>
 
-        <motion.div
+        <Motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.6 }}
@@ -31,11 +31,12 @@ const NotFound = () => {
             Oops! Trang không tồn tại
           </h2>
           <p className="mt-4 text-gray-500 dark:text-gray-400 font-medium text-lg max-w-lg mx-auto leading-relaxed">
-            Có vẻ như bạn đã đi lạc vào một không gian không có dữ liệu. Hãy quay lại hoặc tìm kiếm thứ gì đó mới mẻ hơn.
+            Có vẻ như bạn đã đi lạc vào một không gian không có dữ liệu. Hãy
+            quay lại hoặc tìm kiếm thứ gì đó mới mẻ hơn.
           </p>
-        </motion.div>
+        </Motion.div>
 
-        <motion.div
+        <Motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4, duration: 0.6 }}
@@ -55,9 +56,9 @@ const NotFound = () => {
             <FiArrowLeft size={18} />
             Quay lại
           </button>
-        </motion.div>
+        </Motion.div>
 
-        <motion.div
+        <Motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 0.5 }}
           transition={{ delay: 0.8 }}
@@ -66,7 +67,7 @@ const NotFound = () => {
           <div className="h-px w-12 bg-current" />
           <FiSearch size={24} />
           <div className="h-px w-12 bg-current" />
-        </motion.div>
+        </Motion.div>
       </div>
     </div>
   );

@@ -7,7 +7,7 @@ import {
 } from "react-icons/fi";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { motion as Motion } from "framer-motion";
-import Button from "../../components/UI/Button";
+import { Button } from "../../components/UI/Button";
 
 const CheckoutSuccess = () => {
   const navigate = useNavigate();
@@ -86,7 +86,7 @@ const CheckoutSuccess = () => {
         {/* ACTIONS */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-6">
           <Button
-            variant="primary"
+            variant="default"
             size="md"
             className="w-full sm:w-auto min-w-[140px]"
             icon={FiHome}

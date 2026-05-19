@@ -10,8 +10,24 @@ import FlashSale from "../../components/FlashSale/FlashSale";
 import Testimonials from "../../components/Testimonials/Testimonials";
 import BlogSection from "../../components/BlogSection/BlogSection";
 import BrandSection from "../../components/BrandSection/BrandSection";
+import AISmartPicks from "../../components/HomePageComponent/AISmartPicks";
+import { getSmartRecommendationsApi } from "../../api/productApi";
 
 const HomePage = () => {
+  const [smartRecs, setSmartRecs] = useState([]);
+
+  useEffect(() => {
+    const fetchRecs = async () => {
+      try {
+        const res = await getSmartRecommendationsApi("random", 5);
+        if (res?.errCode === 0) setSmartRecs(res.data);
+      } catch (e) {
+        console.error("Failed to load AI Smart Picks");
+      }
+    };
+    fetchRecs();
+  }, []);
+
   return (
     <div className="bg-white dark:bg-black transition-colors duration-300">
       <ChatBot />
@@ -22,6 +38,8 @@ const HomePage = () => {
         <BrandSection />
 
         <CategorySection />
+        
+        <AISmartPicks products={smartRecs} />
 
         <div className="container-custom py-2">
           <div className="rounded-[2rem] overflow-hidden shadow-md">

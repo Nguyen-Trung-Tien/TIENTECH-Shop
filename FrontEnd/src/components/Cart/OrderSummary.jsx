@@ -6,7 +6,7 @@ import {
   FiArrowRight,
   FiCheckCircle,
 } from "react-icons/fi";
-import Button from "../UI/Button";
+import { Button } from "../UI/Button";
 
 /**
  * OrderSummary Component
@@ -91,7 +91,7 @@ const OrderSummary = ({
 
       {!isCheckoutPage && (
         <Button
-          variant="primary"
+          variant="default"
           className="w-full h-16 rounded-2xl font-black text-sm tracking-[0.2em] mb-8 group flex items-center justify-center"
           onClick={onCheckout}
           disabled={items.length === 0 || loading}

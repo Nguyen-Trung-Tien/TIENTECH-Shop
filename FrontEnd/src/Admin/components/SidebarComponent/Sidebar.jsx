@@ -157,10 +157,9 @@ const Sidebar = ({ collapsed }) => {
                   <AnimatePresence>
                     {isExpanded && (
                       <Motion.div
-                        layout
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
                         className="overflow-hidden ml-9 space-y-1"
                       >
                         {item.subItems.map((sub) => (

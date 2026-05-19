@@ -13,6 +13,12 @@ router.get(
   PaymentController.handleGetAllPayments
 );
 router.get(
+  "/get-payment-summary",
+  authenticateToken,
+  authorizeRole(["admin"]),
+  PaymentController.handleGetPaymentSummary
+);
+router.get(
   "/get-payment/:id",
   authenticateToken,
   authorizeRole(["admin"]),

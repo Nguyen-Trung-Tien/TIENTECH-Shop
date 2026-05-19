@@ -12,6 +12,12 @@ export const getAllPayments = async (params = {}) => {
   });
 };
 
+export const getPaymentSummary = async (params = {}) => {
+  return await axiosClient.get("/payment/get-payment-summary", {
+    params,
+  });
+};
+
 export const getPaymentById = async (id) => {
   return await axiosClient.get(`/payment/get-payment/${id}`);
 };

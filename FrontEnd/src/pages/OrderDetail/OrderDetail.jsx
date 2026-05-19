@@ -554,7 +554,7 @@ const OrderDetail = () => {
             <div className="space-y-3">
               {["pending", "confirmed"].includes(order.status) && (
                 <Button
-                  variant="danger"
+                  variant="destructive"
                   className="w-full"
                   size="lg"
                   icon={FiXCircle}
@@ -565,7 +565,7 @@ const OrderDetail = () => {
               )}
               {order.status === "delivered" && (
                 <Button
-                  variant="primary"
+                  variant="default"
                   className="w-full"
                   size="lg"
                   icon={FiCheckCircle}
@@ -578,7 +578,7 @@ const OrderDetail = () => {
               {["delivered", "completed"].includes(order.status) && (
                 <>
                   <Button
-                    variant="primary"
+                    variant="default"
                     className="w-full"
                     size="lg"
                     icon={FiCheckCircle}
@@ -618,7 +618,7 @@ const OrderDetail = () => {
         onConfirm={handleSubmitReturn}
         title="Yêu cầu trả hàng"
         confirmText="Gửi yêu cầu"
-        variant="primary"
+        variant="default"
         loading={submitting}
         icon={FiRefreshCcw}
       >

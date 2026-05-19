@@ -2,7 +2,7 @@ import React from "react";
 import { motion as Motion, AnimatePresence } from "framer-motion";
 
 import { FiX } from "react-icons/fi";
-import Button from "./Button";
+import { Button } from "./Button";
 
 const Modal = ({
   isOpen,
@@ -131,7 +131,7 @@ export const ConfirmModal = ({
             {cancelText}
           </Button>
           <Button
-            variant={variant}
+            variant={variant === "danger" ? "destructive" : variant}
             className="flex-1"
             onClick={onConfirm}
             loading={loading}
