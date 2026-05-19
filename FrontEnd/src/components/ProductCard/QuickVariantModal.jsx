@@ -2,7 +2,7 @@ import React from "react";
 import { motion as Motion, AnimatePresence } from "framer-motion";
 import { FiX, FiCheck, FiShoppingCart, FiCreditCard } from "react-icons/fi";
 import { useProductVariants } from "../../hooks/useProductVariants";
-import { Button } from "../ui/Button";
+import { Button } from "../UI/Button";
 
 const QuickVariantModal = ({ product, isOpen, onClose, onAdd, onBuyNow }) => {
   const {

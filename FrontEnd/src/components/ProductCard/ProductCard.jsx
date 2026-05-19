@@ -10,8 +10,8 @@ import { FiShoppingCart, FiHeart } from "react-icons/fi";
 import { FaStar, FaHeart } from "react-icons/fa";
 import { addToWishlistApi, removeFromWishlistApi } from "../../api/wishlistApi";
 import { formatCurrency } from "../../utils/format";
-import { Button } from "../ui/Button";
-import { Badge } from "../ui/Badge";
+import { Button } from "../UI/Button";
+import { Badge } from "../UI/Badge";
 import QuickVariantModal from "./QuickVariantModal";
 
 const ProductCard = ({ product }) => {

@@ -4,7 +4,7 @@ import { motion as Motion, AnimatePresence } from "framer-motion";
 import { visualSearch } from "../../api/chatApi";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { Button } from "../ui/Button";
+import { Button } from "../UI/Button";
 
 export default function VisualSearchModal({ isOpen, onClose }) {
   const [imageFile, setImageFile] = useState(null);
