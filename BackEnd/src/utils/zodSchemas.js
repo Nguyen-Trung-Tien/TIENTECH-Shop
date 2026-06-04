@@ -66,9 +66,8 @@ const addressSchema = z.object({
     fullName: z.string().min(1, "Họ tên không được để trống"),
     phone: z.string().min(1, "Số điện thoại không được để trống"),
     province: z.string().min(1, "Tỉnh/Thành phố không được để trống"),
-    district: z.string().min(1, "Quận/Huyện không được để trống"),
     ward: z.string().min(1, "Phường/Xã không được để trống"),
-    addressLine: z.string().min(1, "Địa chỉ chi tiết không được để trống"),
+    detailAddress: z.string().min(1, "Địa chỉ chi tiết không được để trống"),
     isDefault: z.boolean().optional().default(false),
   }),
 });

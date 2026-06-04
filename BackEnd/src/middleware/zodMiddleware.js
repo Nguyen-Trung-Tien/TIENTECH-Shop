@@ -9,7 +9,7 @@ const validate = (schema) => (req, res, next) => {
     });
     next();
   } catch (error) {
-    if (error instanceof z.ZodError || error.name === "ZodError") {
+    if (error.name === "ZodError") {
       const firstError = error.errors[0];
       const customMessage = firstError ? firstError.message : "Dữ liệu không hợp lệ.";
       
@@ -22,10 +22,10 @@ const validate = (schema) => (req, res, next) => {
         })),
       });
     }
-    console.error("Zod Middleware Error:", error);
+    console.error("Zod Middleware Unexpected Error:", error);
     return res.status(500).json({
       errCode: -1,
-      errMessage: "Internal server error during validation.",
+      errMessage: "Internal server error during validation: " + error.message,
     });
   }
 };
