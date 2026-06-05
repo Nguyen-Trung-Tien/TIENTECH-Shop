@@ -242,6 +242,16 @@ export const getSmartRecommendationsApi = async (id, limit = 6) => {
   }
 };
 
+export const getPersonalizedRecommendationsApi = async (limit = 6) => {
+  try {
+    const res = await axiosClient.get(`/product/personalized`, { params: { limit } });
+    return res;
+  } catch (error) {
+    console.error("Error fetching personalized recommendations:", error);
+    throw error;
+  }
+};
+
 export const fetchFortuneProducts = async ({
   birthYear,
   brandId,

@@ -983,6 +983,135 @@ const getOrderByCode = async (orderCode) => {
   return { errCode: 0, data: order };
 };
 
+const requestReturn = async (orderItemId, userId, reason) => {
+  const t = await db.sequelize.transaction();
+  try {
+    const orderItem = await db.OrderItem.findByPk(orderItemId, {
+      include: [{ model: db.Order, as: "order" }],
+      transaction: t,
+    });
+
+    if (!orderItem) {
+      await t.rollback();
+      return { errCode: 1, errMessage: "Sản phẩm trong đơn hàng không tồn tại." };
+    }
+
+    if (String(orderItem.order.userId) !== String(userId)) {
+      await t.rollback();
+      return { errCode: 403, errMessage: "Bạn không có quyền thực hiện hành động này." };
+    }
+
+    if (!["delivered", "completed"].includes(orderItem.order.status)) {
+      await t.rollback();
+      return { errCode: 2, errMessage: "Chỉ có thể yêu cầu trả hàng sau khi đã nhận hàng thành công." };
+    }
+
+    if (orderItem.returnStatus !== "none") {
+      await t.rollback();
+      return { errCode: 3, errMessage: "Sản phẩm này đã được yêu cầu trả hàng trước đó." };
+    }
+
+    orderItem.returnStatus = "requested";
+    orderItem.returnReason = reason;
+    orderItem.returnRequestedAt = new Date();
+    await orderItem.save({ transaction: t });
+
+    await NotificationService.createNotification({
+      userId: null, // Admin
+      title: "Yêu cầu trả hàng mới",
+      content: `Khách hàng yêu cầu trả lại sản phẩm "${orderItem.productName}" trong đơn #${orderItem.order.orderCode}. Lý do: ${reason}`,
+      type: "order",
+      link: `/admin/orders`
+    }, t);
+
+    await t.commit();
+    return { errCode: 0, errMessage: "Gửi yêu cầu trả hàng thành công." };
+  } catch (error) {
+    await t.rollback();
+    console.error("requestReturn error:", error);
+    return { errCode: -1, errMessage: error.message };
+  }
+};
+
+const handleReturnAction = async (orderItemId, action, adminId) => {
+  const t = await db.sequelize.transaction();
+  try {
+    const orderItem = await db.OrderItem.findByPk(orderItemId, {
+      include: [
+        { model: db.Order, as: "order" },
+        { model: db.Product, as: "product" }
+      ],
+      transaction: t,
+    });
+
+    if (!orderItem) {
+      await t.rollback();
+      return { errCode: 1, errMessage: "Không tìm thấy yêu cầu trả hàng." };
+    }
+
+    if (orderItem.returnStatus !== "requested") {
+      await t.rollback();
+      return { errCode: 2, errMessage: "Yêu cầu này không còn ở trạng thái chờ xử lý." };
+    }
+
+    if (action === "approve") {
+      orderItem.returnStatus = "approved";
+      orderItem.returnProcessedAt = new Date();
+      
+      // Hoàn tồn kho
+      if (orderItem.variantId) {
+        const variant = await db.ProductVariant.findByPk(orderItem.variantId, { transaction: t });
+        if (variant) await variant.increment("stock", { by: orderItem.quantity, transaction: t });
+      }
+      if (orderItem.product) {
+        await orderItem.product.increment("totalStock", { by: orderItem.quantity, transaction: t });
+        orderItem.product.sold = Math.max(0, (orderItem.product.sold || 0) - orderItem.quantity);
+        await orderItem.product.save({ transaction: t });
+      }
+
+      // Xử lý hoàn tiền (Trigger refund logic if paid)
+      const order = orderItem.order;
+      if (order.paymentStatus === "paid") {
+        const payment = await db.Payment.findOne({ where: { orderId: order.id }, transaction: t });
+        if (payment) {
+          // Ghi nhận note hoàn tiền cho admin xử lý tiếp hoặc gọi API refund phần nhỏ
+          payment.note = (payment.note || "") + `\n[Approved Return] Hoàn trả SP: ${orderItem.productName} (${orderItem.subtotal})`;
+          await payment.save({ transaction: t });
+        }
+      }
+
+      await NotificationService.createNotification({
+        userId: orderItem.order.userId,
+        title: "Yêu cầu trả hàng đã được chấp nhận",
+        content: `Yêu cầu trả lại sản phẩm "${orderItem.productName}" đã được duyệt. Chúng tôi sẽ sớm liên hệ để thực hiện hoàn tiền/thu hồi.`,
+        type: "order"
+      }, t);
+
+    } else if (action === "reject") {
+      orderItem.returnStatus = "rejected";
+      orderItem.returnProcessedAt = new Date();
+
+      await NotificationService.createNotification({
+        userId: orderItem.order.userId,
+        title: "Yêu cầu trả hàng bị từ chối",
+        content: `Yêu cầu trả lại sản phẩm "${orderItem.productName}" không được chấp nhận.`,
+        type: "order"
+      }, t);
+    } else {
+      await t.rollback();
+      return { errCode: 3, errMessage: "Hành động không hợp lệ." };
+    }
+
+    await orderItem.save({ transaction: t });
+    await t.commit();
+    return { errCode: 0, errMessage: "Xử lý yêu cầu trả hàng thành công." };
+  } catch (error) {
+    await t.rollback();
+    console.error("handleReturnAction error:", error);
+    return { errCode: -1, errMessage: error.message };
+  }
+};
+
 module.exports = {
   getAllOrders,
   getOrderById,
@@ -994,4 +1123,6 @@ module.exports = {
   getActiveOrdersByUserId,
   getOrderByCode,
   syncOrderCancellationSideEffects,
+  requestReturn,
+  handleReturnAction,
 };

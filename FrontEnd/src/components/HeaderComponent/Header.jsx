@@ -176,13 +176,14 @@ function Header() {
   ];
 
   return (
-    <header
-      className={`sticky top-0 z-[100] w-full duration-500 will-change-transform ${
-        isScrolled
-          ? "bg-white/90 dark:bg-dark-bg/90 backdrop-blur-xl shadow-md py-2"
-          : "bg-white dark:bg-dark-bg py-4"
-      }`}
-    >
+    <>
+      <header
+        className={`sticky top-0 z-[100] w-full duration-500 will-change-transform ${
+          isScrolled
+            ? "bg-white/90 dark:bg-dark-bg/90 backdrop-blur-xl shadow-md py-2"
+            : "bg-white dark:bg-dark-bg py-4"
+        }`}
+      >
       <div className="container-custom flex items-center justify-between gap-10">
         {/* Logo */}
         <Link
@@ -250,7 +251,7 @@ function Header() {
             </div>
           </form>
 
-          {/* Suggestions Dropdown (Centered) */}
+          {/* Suggestions Dropdown */}
           <AnimatePresence>
             {showSuggestions && (
               <>
@@ -258,20 +259,20 @@ function Header() {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="fixed inset-0 z-[150] bg-black/40 backdrop-blur-sm"
+                  className="fixed inset-0 z-[40]"
                   onClick={() => setShowSuggestions(false)}
                 />
                 <Motion.div
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  className="fixed inset-0 z-[160] flex items-center justify-center p-4 pointer-events-none"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 10 }}
+                  className="absolute top-full left-0 right-0 mt-3 z-[50]"
                 >
-                  <div className="w-full max-w-4xl bg-white dark:bg-dark-surface rounded-3xl shadow-2xl border border-slate-100 dark:border-dark-border overflow-hidden pointer-events-auto max-h-[80vh] overflow-y-auto">
+                  <div className="w-full bg-white dark:bg-dark-surface rounded-3xl shadow-2xl border border-slate-100 dark:border-dark-border overflow-hidden max-h-[70vh] overflow-y-auto">
                     {/* ... Content ... */}
                     {suggestions.keywords?.length > 0 && (
                       <div className="mb-2 p-2 border-b border-slate-100 dark:border-dark-border">
-                        <div className="flex items-center gap-2 px-3 py-2">
+                        <div className="flex items-center gap-2 px-3 py-2 flex-wrap">
                           {suggestions.keywords.map((kw, idx) => (
                             <button
                               key={idx}
@@ -288,13 +289,13 @@ function Header() {
                         </div>
                       </div>
                     )}
-                    {/* Grid content omitted for brevity in instruction, will copy original grid structure here */}
-                    <div className="grid grid-cols-1 md:grid-cols-12 gap-2 p-4">
-                      {/* Left: Brands & Categories */}
+                    
+                    <div className="grid grid-cols-1 gap-2 p-4">
+                      {/* Top: Brands & Categories */}
                       {(suggestions.brands?.length > 0 || suggestions.categories?.length > 0) && (
-                        <div className="md:col-span-4 space-y-4 border-r border-slate-50 dark:border-dark-border/50">
+                        <div className="flex gap-4 border-b border-slate-50 dark:border-dark-border/50 pb-4 mb-2">
                           {suggestions.brands?.length > 0 && (
-                            <div>
+                            <div className="flex-1">
                               <p className="px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-dark-text-secondary bg-slate-50 dark:bg-dark-bg/50 rounded-lg mb-2">Thương hiệu</p>
                               {suggestions.brands.map((brand) => (
                                 <button key={brand.id} onClick={() => { navigate(`/product-list?brandId=${brand.id}`); setShowSuggestions(false); }} className="flex items-center gap-3 w-full px-3 py-2 text-[13px] font-bold text-slate-600 dark:text-dark-text-secondary hover:bg-primary/5 dark:hover:bg-brand/5 hover:text-primary dark:hover:text-brand rounded-xl transition-all text-left group">
@@ -305,7 +306,7 @@ function Header() {
                             </div>
                           )}
                           {suggestions.categories?.length > 0 && (
-                            <div>
+                            <div className="flex-1">
                               <p className="px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-dark-text-secondary bg-slate-50 dark:bg-dark-bg/50 rounded-lg mb-2">Danh mục</p>
                               {suggestions.categories.map((cat) => (
                                 <button key={cat.id} onClick={() => { navigate(`/product-list?categoryId=${cat.id}`); setShowSuggestions(false); }} className="flex items-center gap-3 w-full px-3 py-2 text-[13px] font-bold text-slate-600 dark:text-dark-text-secondary hover:bg-primary/5 dark:hover:bg-brand/5 hover:text-primary dark:hover:text-brand rounded-xl transition-all text-left group">
@@ -317,8 +318,9 @@ function Header() {
                           )}
                         </div>
                       )}
-                      {/* Right: Products */}
-                      <div className={`${suggestions.brands?.length > 0 || suggestions.categories?.length > 0 ? "md:col-span-8" : "md:col-span-12"}`}>
+                      
+                      {/* Bottom: Products */}
+                      <div>
                         <p className="px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-dark-text-secondary bg-slate-50 dark:bg-dark-bg/50 rounded-lg mb-2">Sản phẩm phổ biến</p>
                         {suggestions.products?.length > 0 ? (
                           suggestions.products.map((product) => (
@@ -526,8 +528,9 @@ function Header() {
           </Motion.div>
         )}
       </AnimatePresence>
-      <VisualSearchModal isOpen={isVisualSearchOpen} onClose={() => setIsVisualSearchOpen(false)} />
     </header>
+    <VisualSearchModal isOpen={isVisualSearchOpen} onClose={() => setIsVisualSearchOpen(false)} />
+    </>
   );
 }
 

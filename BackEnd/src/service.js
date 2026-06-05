@@ -12,6 +12,7 @@ const rateLimit = require("express-rate-limit");
 const passport = require("passport");
 
 const { initOrderCron } = require("./cron/orderCron");
+const { initInventoryCron } = require("./cron/inventoryCron");
 
 dotenv.config();
 
@@ -189,6 +190,7 @@ if (process.env.NODE_ENV !== "test") {
   connectDB();
 
   initOrderCron();
+  initInventoryCron();
 
   const flashSaleJob = async () => {
     try {

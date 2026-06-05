@@ -35,6 +35,20 @@ router.get(
   AdminController.handleAIInsights
 );
 
+router.post(
+  "/generate-description",
+  authenticateToken,
+  authorizeRole(["admin"]),
+  AdminController.handleGenerateDescription
+);
+
+router.get(
+  "/revenue-forecast",
+  authenticateToken,
+  authorizeRole(["admin"]),
+  AdminController.handleRevenueForecast
+);
+
 router.get(
   "/global-search",
   authenticateToken,

@@ -321,7 +321,21 @@ const processReturn = async (id, status, adminUser = null) => {
         });
 
         if (payment) {
-          const refundNote = `[Refund] Hoàn tiền ${Number(refundAmount).toLocaleString()}đ cho sản phẩm ${item.productName} (ID: ${item.id})`;
+          const method = (payment.method || order.paymentMethod || "").toLowerCase();
+          const isOnlineMethod = ["momo", "paypal", "vnpay", "bank"].includes(method);
+          let refundSuccess = false;
+
+          if (isOnlineMethod) {
+            const PaymentService = require("./PaymentService");
+            const refundResult = await PaymentService.executeRefund(order, payment, method, refundAmount);
+            if (!refundResult.success) {
+              await t.rollback();
+              return { errCode: 3, errMessage: `Lỗi hoàn tiền: ${refundResult.message}` };
+            }
+            refundSuccess = true;
+          }
+
+          const refundNote = `[Refund] Hoàn tiền ${refundSuccess ? "thành công" : "thủ công"} ${Number(refundAmount).toLocaleString()}đ cho sản phẩm ${item.productName} (ID: ${item.id})`;
           payment.note = payment.note ? `${payment.note}\n${refundNote}` : refundNote;
           await payment.save({ transaction: t });
         }

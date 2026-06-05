@@ -32,6 +32,16 @@ export const getAIInsights = async () => {
   }
 };
 
+export const getRevenueForecastApi = async () => {
+  try {
+    const res = await axiosClient.get("/admin/revenue-forecast");
+    return res;
+  } catch (error) {
+    console.error("Error getting revenue forecast:", error);
+    throw error;
+  }
+};
+
 export const globalSearchApi = async (query) => {
   try {
     const res = await axiosClient.get(`/admin/global-search?q=${encodeURIComponent(query)}`);
@@ -68,6 +78,16 @@ export const getRevenueStats = async (period) => {
     return res;
   } catch (error) {
     console.error("Error getting revenue stats:", error);
+    throw error;
+  }
+};
+
+export const generateProductDescriptionApi = async (name, keywords) => {
+  try {
+    const res = await axiosClient.post("/admin/generate-description", { name, keywords });
+    return res;
+  } catch (error) {
+    console.error("Error generating AI description:", error);
     throw error;
   }
 };

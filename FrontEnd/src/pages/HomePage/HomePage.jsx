@@ -11,18 +11,18 @@ import Testimonials from "../../components/Testimonials/Testimonials";
 import BlogSection from "../../components/BlogSection/BlogSection";
 import BrandSection from "../../components/BrandSection/BrandSection";
 import AISmartPicks from "../../components/HomePageComponent/AISmartPicks";
-import { getSmartRecommendationsApi } from "../../api/productApi";
+import { getPersonalizedRecommendationsApi } from "../../api/productApi";
 
 const HomePage = () => {
-  const [smartRecs, setSmartRecs] = useState([]);
+  const [personalizedRecs, setPersonalizedRecs] = useState([]);
 
   useEffect(() => {
     const fetchRecs = async () => {
       try {
-        const res = await getSmartRecommendationsApi("random", 5);
-        if (res?.errCode === 0) setSmartRecs(res.data);
+        const res = await getPersonalizedRecommendationsApi(6);
+        if (res?.errCode === 0) setPersonalizedRecs(res.products);
       } catch (e) {
-        console.error("Failed to load AI Smart Picks");
+        console.error("Failed to load Personalized Recommendations");
       }
     };
     fetchRecs();
@@ -39,7 +39,7 @@ const HomePage = () => {
 
         <CategorySection />
         
-        <AISmartPicks products={smartRecs} />
+        {personalizedRecs.length > 0 && <AISmartPicks products={personalizedRecs} title="Dành Riêng Cho Bạn" />}
 
         <div className="container-custom py-2">
           <div className="rounded-[2rem] overflow-hidden shadow-md">

@@ -5,7 +5,7 @@ const { getFengShuiDetail } = require("../utils/fortuneUtils");
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || process.env.API_KEY);
 const model = genAI.getGenerativeModel({
-  model: "gemini-3-flash-preview",
+  model: "gemini-2.0-flash",
   generationConfig: { responseMimeType: "application/json" },
 });
 

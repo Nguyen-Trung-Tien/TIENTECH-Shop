@@ -58,4 +58,19 @@ router.get(
   authorizeRole(["admin", "customer"]),
   OrderController.getActiveOrdersByUserId
 );
+
+router.post(
+  "/return-request",
+  authenticateToken,
+  authorizeRole(["customer", "admin"]),
+  OrderController.handleRequestReturn
+);
+
+router.post(
+  "/return-action",
+  authenticateToken,
+  authorizeRole(["admin"]),
+  OrderController.handleReturnAction
+);
+
 module.exports = router;

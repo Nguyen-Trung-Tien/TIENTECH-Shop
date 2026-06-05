@@ -23,7 +23,7 @@ import {
   FiRefreshCw,
   FiInfo,
 } from "react-icons/fi";
-import { motion as Motion, AnimatePresence } from "framer-motion";
+import { LazyMotion, domAnimation, m as Motion, AnimatePresence } from "framer-motion";
 
 import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -38,7 +38,7 @@ import { getVariantsByProduct } from "../../../api/variantApi";
 import { getAllCategoryApi } from "../../../api/categoryApi";
 import { getAllBrandApi } from "../../../api/brandApi";
 import { getAllAttributesApi } from "../../../api/attributeApi";
-import { syncEmbeddings } from "../../../api/adminApi";
+import { syncEmbeddings, generateProductDescriptionApi } from "../../../api/adminApi";
 import {
   AdminTableSkeleton,
   AdminActionLoader,
@@ -102,6 +102,32 @@ const ProductManage = () => {
   const [loadingTable, setLoadingTable] = useState(false);
   const [saving, setSaving] = useState(false);
   const [isSyncingAI, setIsSyncingAI] = useState(false);
+  const [isGeneratingDesc, setIsGeneratingDesc] = useState(false);
+
+  const handleGenerateDesc = async () => {
+    if (!formData.name) {
+      return toast.warning("Vui lòng nhập tên sản phẩm trước khi tạo mô tả bằng AI!");
+    }
+    setIsGeneratingDesc(true);
+    try {
+      const keywords = Object.values(formData.attributes || {})
+        .map(v => typeof v === "object" ? v.value || "" : v)
+        .filter(Boolean)
+        .join(", ");
+      const res = await generateProductDescriptionApi(formData.name, keywords);
+      if (res.errCode === 0) {
+        setFormData((prev) => ({ ...prev, description: res.data }));
+        toast.success("Đã tạo mô tả sản phẩm bằng AI!");
+      } else {
+        toast.error(res.errMessage || "Lỗi tạo mô tả AI");
+      }
+    } catch (e) {
+      console.error(e);
+      toast.error("Lỗi kết nối khi gọi AI");
+    } finally {
+      setIsGeneratingDesc(false);
+    }
+  };
 
   const [confirmModal, setConfirmModal] = useState({
     show: false,
@@ -492,7 +518,8 @@ const ProductManage = () => {
   };
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto p-4 md:p-6 pb-20">
+    <LazyMotion features={domAnimation}>
+      <div className="space-y-6 max-w-7xl mx-auto p-4 md:p-6 pb-20">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
           <h1 className="text-3xl font-black text-slate-900 dark:text-dark-text-primary tracking-tight flex items-center gap-3">
@@ -1065,7 +1092,18 @@ const ProductManage = () => {
                         </div>
 
                         <div className="space-y-2">
-                          <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Mô tả sản phẩm</label>
+                          <div className="flex items-center justify-between">
+                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Mô tả sản phẩm</label>
+                            <button
+                              type="button"
+                              onClick={handleGenerateDesc}
+                              disabled={isGeneratingDesc || !formData.name}
+                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 text-[10px] font-black uppercase tracking-widest transition-all disabled:opacity-50"
+                            >
+                              <FiCpu className={isGeneratingDesc ? "animate-spin" : ""} />
+                              {isGeneratingDesc ? "Đang viết..." : "Viết bằng AI ✨"}
+                            </button>
+                          </div>
                           <textarea
                             className="input-modern resize-none h-40 py-4 font-medium dark:bg-dark-surface dark:text-white"
                             placeholder="Mô tả chi tiết về sản phẩm..."
@@ -1211,6 +1249,7 @@ const ProductManage = () => {
         iconClassName="bg-rose-50 text-rose-500"
       />
     </div>
+    </LazyMotion>
   );
 };
 

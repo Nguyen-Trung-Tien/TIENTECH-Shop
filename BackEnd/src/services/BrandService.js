@@ -1,6 +1,7 @@
 const db = require("../models");
 const BaseService = require("./BaseService");
 const { slugify } = require("../utils/slugHelper");
+const { getCache, setCache, deleteCacheByPattern } = require("../config/redis");
 
 class BrandService extends BaseService {
   constructor() {
@@ -12,11 +13,20 @@ class BrandService extends BaseService {
     if (data.name && !data.slug) {
       data.slug = slugify(data.name);
     }
-    return await this.create(data);
+    const result = await this.create(data);
+    await deleteCacheByPattern("brands_page_*");
+    return result;
   }
 
   // Specialized method for all brands with product count
   async getAllBrands(page = 1, limit = 10, searchTerm = "") {
+    const cacheKey = `brands_page_${page}_limit_${limit}_search_${searchTerm || "all"}`;
+    const cachedData = await getCache(cacheKey);
+
+    if (cachedData) {
+      return cachedData;
+    }
+
     const options = {
       searchFields: ["name"],
       include: [
@@ -41,6 +51,9 @@ class BrandService extends BaseService {
         };
       });
       delete result.data;
+
+      // Cache for 1 hour
+      await setCache(cacheKey, result, 3600);
     }
     return result;
   }
@@ -75,7 +88,9 @@ class BrandService extends BaseService {
     if (data.name && !data.slug) {
       data.slug = slugify(data.name);
     }
-    return await this.update(id, data);
+    const result = await this.update(id, data);
+    await deleteCacheByPattern("brands_page_*");
+    return result;
   }
 
   async deleteBrand(id) {
@@ -96,6 +111,7 @@ class BrandService extends BaseService {
       }
 
       await brand.destroy();
+      await deleteCacheByPattern("brands_page_*");
       return { errCode: 0, errMessage: "Xóa thương hiệu thành công" };
     } catch (e) {
       console.error("Error in BrandService.deleteBrand:", e);

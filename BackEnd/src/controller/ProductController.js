@@ -421,6 +421,21 @@ const handleSemanticSearch = async (req, res) => {
   }
 };
 
+const handleGetPersonalizedRecommendations = async (req, res) => {
+  try {
+    const userId = req.user?.id; // Assuming authenticateToken middleware is used
+    const limit = parseInt(req.query.limit) || 6;
+    const result = await ProductService.getPersonalizedRecommendations(userId, limit);
+    return res.status(200).json(result);
+  } catch (e) {
+    console.error("Error in handleGetPersonalizedRecommendations:", e);
+    return res.status(500).json({
+      errCode: -1,
+      errMessage: "Internal server error",
+    });
+  }
+};
+
 module.exports = {
   handleCreateProduct,
   handleGetAllProducts,
@@ -437,4 +452,5 @@ module.exports = {
   handleRecommendFortuneProducts,
   handleGetSmartRecommendations,
   handleSemanticSearch,
+  handleGetPersonalizedRecommendations,
 };

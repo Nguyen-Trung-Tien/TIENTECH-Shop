@@ -1,13 +1,18 @@
 const db = require("../../models");
 const { Op } = require("sequelize");
 const { getPagination, getPagingData } = require("../../utils/paginationHelper");
+const { getCache, setCache } = require("../../config/redis");
 const {
   applyFlashSaleToProduct,
   clearProductCache,
 } = require("./productHelper");
 
 const getFlashSaleProducts = async (page = 1, limit = 10) => {
+  const cacheKey = `flash_sale_products_${page}_${limit}`;
   try {
+    const cachedData = await getCache(cacheKey);
+    if (cachedData) return cachedData;
+
     const now = new Date();
     const { offset, limit: l } = getPagination(page, limit);
     
@@ -82,7 +87,7 @@ const getFlashSaleProducts = async (page = 1, limit = 10) => {
       };
     });
 
-    return {
+    const result = {
       errCode: 0,
       products,
       upcomingProducts,
@@ -95,6 +100,11 @@ const getFlashSaleProducts = async (page = 1, limit = 10) => {
       currentPage: pagingData.currentPage,
       totalPages: pagingData.totalPages
     };
+
+    // Cache for short duration since flash sales are time-sensitive
+    await setCache(cacheKey, result, 60);
+
+    return result;
   } catch (error) {
     console.error("Error in getFlashSaleProducts:", error);
     return { errCode: 1, errMessage: error.message };
@@ -102,49 +112,62 @@ const getFlashSaleProducts = async (page = 1, limit = 10) => {
 };
 
 const getDiscountedProducts = async (page = 1, limit = 10) => {
-  const { offset, limit: l } = getPagination(page, limit);
-  const now = new Date();
-  const data = await db.Product.findAndCountAll({
-    where: {
-      isActive: true,
-      [Op.or]: [
+  const cacheKey = `discounted_products_${page}_${limit}`;
+  try {
+    const cachedData = await getCache(cacheKey);
+    if (cachedData) return cachedData;
+
+    const { offset, limit: l } = getPagination(page, limit);
+    const now = new Date();
+    const data = await db.Product.findAndCountAll({
+      where: {
+        isActive: true,
+        [Op.or]: [
+          {
+            isFlashSale: true,
+            flashSaleStart: { [Op.lte]: now },
+            flashSaleEnd: { [Op.gte]: now },
+          },
+        ],
+      },
+      include: [
+        { model: db.Category, as: "category" },
+        { model: db.Brand, as: "brand" },
         {
-          isFlashSale: true,
-          flashSaleStart: { [Op.lte]: now },
-          flashSaleEnd: { [Op.gte]: now },
+          model: db.ProductImage,
+          as: "images",
+          attributes: ["imageUrl", "isPrimary"],
         },
       ],
-    },
-    include: [
-      { model: db.Category, as: "category" },
-      { model: db.Brand, as: "brand" },
-      {
-        model: db.ProductImage,
-        as: "images",
-        attributes: ["imageUrl", "isPrimary"],
-      },
-    ],
-    limit: l,
-    offset,
-    order: [["createdAt", "DESC"]],
-  });
+      limit: l,
+      offset,
+      order: [["createdAt", "DESC"]],
+    });
 
-  const pagingData = getPagingData(data, page, l);
-  const { items, ...paginationMetadata } = pagingData;
+    const pagingData = getPagingData(data, page, l);
+    const { items, ...paginationMetadata } = pagingData;
 
-  return {
-    errCode: 0,
-    products: items.map((p) => {
-      const pJSON = p.toJSON();
-      const primary =
-        pJSON.images?.find((i) => i.isPrimary) || pJSON.images?.[0];
-      return applyFlashSaleToProduct({
-        ...pJSON,
-        image: primary?.imageUrl || null,
-      });
-    }),
-    pagination: paginationMetadata,
-  };
+    const result = {
+      errCode: 0,
+      products: items.map((p) => {
+        const pJSON = p.toJSON();
+        const primary =
+          pJSON.images?.find((i) => i.isPrimary) || pJSON.images?.[0];
+        return applyFlashSaleToProduct({
+          ...pJSON,
+          image: primary?.imageUrl || null,
+        });
+      }),
+      pagination: paginationMetadata,
+    };
+
+    await setCache(cacheKey, result, 300);
+
+    return result;
+  } catch (error) {
+    console.error("Error in getDiscountedProducts:", error);
+    return { errCode: 1, errMessage: error.message };
+  }
 };
 
 const disableExpiredFlashSales = async () => {

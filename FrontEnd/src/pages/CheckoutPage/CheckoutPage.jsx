@@ -208,9 +208,12 @@ const CheckoutPage = () => {
                       {item.variant && (
                         <p className="text-[10px] font-bold text-slate-400 dark:text-dark-text-secondary uppercase mt-1">
                           Loại:{" "}
-                          {Object.values(item.variant.attributes || {}).join(
-                            " / ",
-                          )}
+                          {Object.values(item.variant.attributes || {})
+                            .flatMap(v => {
+                              const val = typeof v === "object" ? v.value || "" : v;
+                              return val ? [val] : [];
+                            })
+                            .join(" / ")}
                         </p>
                       )}
                       <div className="flex items-center justify-between mt-2">

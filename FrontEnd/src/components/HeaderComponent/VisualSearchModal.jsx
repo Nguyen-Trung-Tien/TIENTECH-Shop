@@ -1,52 +1,34 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { FiX, FiCamera, FiUploadCloud } from "react-icons/fi";
 import { motion as Motion, AnimatePresence } from "framer-motion";
 import { visualSearch } from "../../api/chatApi";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { Button } from "../UI/Button";
 
 export default function VisualSearchModal({ isOpen, onClose }) {
-  const [imageFile, setImageFile] = useState(null);
-  const [previewUrl, setPreviewUrl] = useState(null);
   const [isSearching, setIsSearching] = useState(false);
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
 
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setImageFile(file);
-      setPreviewUrl(URL.createObjectURL(file));
+  // Clean up state when closed
+  useEffect(() => {
+    if (!isOpen) {
+      setIsSearching(false);
     }
-  };
+  }, [isOpen]);
 
-  const handleDrop = (e) => {
-    e.preventDefault();
-    const file = e.dataTransfer.files[0];
-    if (file) {
-      setImageFile(file);
-      setPreviewUrl(URL.createObjectURL(file));
-    }
-  };
-
-  const onSearch = async () => {
-    if (!imageFile) return;
+  const handleFile = async (file) => {
+    if (!file) return;
     setIsSearching(true);
     try {
-      // Assuming visualSearch returns keywords or direct product data
-      // For now, let's say it returns a keyword we can navigate to, or list of product ids.
-      // Wait, let's check chatApi visualSearch.
-      // We will upload as base64 or form data.
       const reader = new FileReader();
-      reader.readAsDataURL(imageFile);
+      reader.readAsDataURL(file);
       reader.onloadend = async () => {
         const base64data = reader.result;
         try {
           const res = await visualSearch(base64data);
-          // Assuming res contains keywords or extracted text
           const keyword = res.keyword || res.extractedText || "smart";
-          toast.success("Đã phân tích xong hình ảnh!");
+          toast.success("Đã tìm thấy kết quả phù hợp!");
           navigate(`/product-list?search=${encodeURIComponent(keyword)}`);
           onClose();
         } catch (error) {
@@ -61,84 +43,114 @@ export default function VisualSearchModal({ isOpen, onClose }) {
     }
   };
 
+  const handleFileChange = (e) => {
+    handleFile(e.target.files[0]);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    handleFile(e.dataTransfer.files[0]);
+  };
+
   return (
     <AnimatePresence>
       {isOpen && (
         <>
+          {/* Backdrop - Click ra ngoài để đóng */}
           <Motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[110] bg-black/60 backdrop-blur-sm"
-            onClick={onClose}
+            className="fixed inset-0 z-[110] bg-slate-900/60 backdrop-blur-sm"
+            onClick={!isSearching ? onClose : undefined}
           />
-          <Motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="fixed left-1/2 top-1/2 z-[120] w-full max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-white p-6 shadow-2xl dark:bg-[var(--color-dark-surface)] border border-[var(--border-color)] overflow-y-auto max-h-[80vh] flex flex-col"
-          >
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-[var(--text-main)] flex items-center gap-2">
-                <FiCamera className="text-[var(--color-primary)]" />
-                Tìm kiếm bằng hình ảnh
-              </h2>
-              <button
-                onClick={onClose}
-                className="rounded-full p-2 text-[var(--text-muted)] hover:bg-[var(--color-surface-100)] dark:hover:bg-[var(--color-surface-800)] transition-colors"
-              >
-                <FiX size={20} />
-              </button>
-            </div>
 
-            <div
-              className={`relative flex h-48 w-full cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed transition-all ${
-                previewUrl ? "border-[var(--color-primary)] bg-[var(--color-primary)]/5" : "border-[var(--border-color)] hover:border-[var(--color-primary)] hover:bg-[var(--color-surface-50)] dark:hover:bg-[var(--color-surface-800)]"
-              }`}
-              onClick={() => fileInputRef.current?.click()}
-              onDragOver={(e) => e.preventDefault()}
-              onDrop={handleDrop}
+          {/* Modal Container - Flexbox center */}
+          <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 pointer-events-none">
+            <Motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="w-full max-w-md rounded-[2rem] bg-white p-6 sm:p-8 shadow-2xl dark:bg-dark-surface border border-slate-100 dark:border-dark-border overflow-hidden pointer-events-auto"
             >
-              <input
-                type="file"
-                ref={fileInputRef}
-                className="hidden"
-                accept="image/*"
-                onChange={handleFileChange}
-              />
-              
-              {previewUrl ? (
-                <img
-                  src={previewUrl}
-                  alt="Preview"
-                  className="h-full w-full object-contain p-2 rounded-lg"
-                />
-              ) : (
-                <div className="text-center flex flex-col items-center justify-center gap-3 h-full">
-                  <div className="p-4 rounded-full bg-[var(--color-surface-100)] dark:bg-[var(--color-surface-800)] text-[var(--color-primary)]">
-                    <FiUploadCloud size={32} />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-[var(--text-main)]">
-                      Kéo thả hình ảnh vào đây
-                    </p>
-                    <p className="text-xs text-[var(--text-muted)]">
-                      hoặc click để chọn từ thiết bị
-                    </p>
-                  </div>
+              <div className="flex items-center justify-between mb-8">
+                <div>
+                  <h2 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-3 tracking-tight">
+                    <div className="size-10 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+                      <FiCamera size={20} />
+                    </div>
+                    Tìm bằng hình ảnh
+                  </h2>
+                  <p className="text-[11px] font-bold text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest mt-2">
+                    Tải ảnh lên để tìm sản phẩm tương tự
+                  </p>
                 </div>
-              )}
-            </div>
+                <button
+                  onClick={onClose}
+                  disabled={isSearching}
+                  className="size-10 flex items-center justify-center rounded-full text-slate-400 hover:bg-slate-100 dark:hover:bg-dark-bg transition-colors disabled:opacity-50"
+                >
+                  <FiX size={20} />
+                </button>
+              </div>
 
-            <div className="mt-8 flex justify-center gap-3">
-              <Button variant="ghost" onClick={onClose} disabled={isSearching} className="w-full">
-                Hủy
-              </Button>
-              <Button onClick={onSearch} disabled={!imageFile || isSearching} className="w-full">
-                {isSearching ? "Đang phân tích..." : "Tìm kiếm"}
-              </Button>
-            </div>
-          </Motion.div>
+              <div
+                className={`relative flex h-56 w-full cursor-pointer flex-col items-center justify-center rounded-3xl border-2 border-dashed transition-all duration-300 group ${
+                  isSearching ? "border-indigo-400 bg-indigo-50/50 dark:bg-indigo-900/10 pointer-events-none" : "border-slate-200 dark:border-dark-border hover:border-indigo-400 hover:bg-indigo-50/30 dark:hover:bg-dark-bg"
+                }`}
+                onClick={() => !isSearching && fileInputRef.current?.click()}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={handleDrop}
+              >
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  className="hidden"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                />
+                
+                {isSearching ? (
+                  <div className="text-center flex flex-col items-center justify-center gap-4">
+                    <div className="size-16 rounded-full bg-white dark:bg-dark-surface shadow-xl shadow-indigo-200 dark:shadow-none flex items-center justify-center relative">
+                      <div className="absolute inset-0 rounded-full border-4 border-indigo-100 dark:border-indigo-900/30"></div>
+                      <div className="absolute inset-0 rounded-full border-4 border-indigo-600 border-t-transparent animate-spin"></div>
+                      <FiCamera className="text-indigo-600 text-xl animate-pulse" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-black text-slate-900 dark:text-white">AI đang phân tích ảnh...</p>
+                      <p className="text-[11px] font-bold text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest mt-1">Vui lòng chờ trong giây lát</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center flex flex-col items-center justify-center gap-4">
+                    <div className="size-16 rounded-2xl bg-slate-50 dark:bg-dark-bg text-slate-400 flex items-center justify-center group-hover:scale-110 group-hover:text-indigo-500 transition-all shadow-inner">
+                      <FiUploadCloud size={28} />
+                    </div>
+                    <div>
+                      <p className="text-sm font-black text-slate-700 dark:text-white">
+                        Kéo thả hình ảnh vào đây
+                      </p>
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary mt-1">
+                        hoặc click để chọn từ thiết bị
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Nút Hủy */}
+              <div className="mt-6 flex justify-end">
+                <button
+                  onClick={onClose}
+                  disabled={isSearching}
+                  className="px-6 py-2.5 rounded-xl font-bold text-slate-500 hover:text-slate-700 hover:bg-slate-100 dark:hover:bg-dark-bg transition-all disabled:opacity-50"
+                >
+                  Hủy bỏ
+                </button>
+              </div>
+            </Motion.div>
+          </div>
         </>
       )}
     </AnimatePresence>

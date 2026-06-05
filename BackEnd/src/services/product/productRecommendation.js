@@ -287,8 +287,95 @@ const getSmartRecommendations = async (productId, limit = 6) => {
   }
 };
 
+const getPersonalizedRecommendations = async (userId, limit = 6) => {
+  try {
+    if (!userId) {
+      // Fallback for non-logged in users: trending products
+      const trending = await db.Product.findAll({
+        where: { isActive: true },
+        order: [["sold", "DESC"]],
+        limit,
+        include: [{ model: db.ProductImage, as: "images", where: { isPrimary: true }, required: false }],
+      });
+      return {
+        errCode: 0,
+        products: trending.map(p => {
+          const plain = p.get({ plain: true });
+          return { ...plain, image: plain.images?.[0]?.imageUrl || null, reason: "Xu hướng" };
+        })
+      };
+    }
+
+    // 1. Get user's interaction history (Orders and Wishlist)
+    const [orders, wishlist] = await Promise.all([
+      db.Order.findAll({
+        where: { userId },
+        include: [{ model: db.OrderItem, as: "orderItems", include: [{ model: db.Product, as: "product" }] }],
+      }),
+      db.Wishlist.findAll({
+        where: { userId },
+        include: [{ model: db.Product, as: "product" }],
+      }),
+    ]);
+
+    const historyProducts = [];
+    orders.forEach(o => o.orderItems.forEach(item => { if (item.product) historyProducts.push(item.product); }));
+    wishlist.forEach(w => { if (wishlist.product) historyProducts.push(wishlist.product); });
+
+    if (historyProducts.length === 0) {
+      // Fallback if no history
+      return getPersonalizedRecommendations(null, limit);
+    }
+
+    // 2. Average the embeddings of history products to find "User Taste"
+    const validEmbeddings = historyProducts
+      .filter(p => p.embedding)
+      .map(p => JSON.parse(p.embedding));
+
+    if (validEmbeddings.length === 0) {
+      return getPersonalizedRecommendations(null, limit);
+    }
+
+    const userTasteVector = validEmbeddings[0].map((_, i) => 
+      validEmbeddings.reduce((acc, curr) => acc + curr[i], 0) / validEmbeddings.length
+    );
+
+    // 3. Find semantically similar products
+    const allProducts = await db.Product.findAll({
+      where: {
+        isActive: true,
+        id: { [Op.notIn]: historyProducts.map(p => p.id) }, // Don't recommend what they already have/wishlisted
+        embedding: { [Op.ne]: null },
+      },
+      attributes: ["id", "name", "slug", "basePrice", "discount", "embedding"],
+      include: [{ model: db.ProductImage, as: "images", where: { isPrimary: true }, required: false }],
+    });
+
+    const recommendations = allProducts
+      .map(p => {
+        const plain = p.get({ plain: true });
+        const similarity = cosineSimilarity(userTasteVector, JSON.parse(plain.embedding));
+        return {
+          ...plain,
+          image: plain.images?.[0]?.imageUrl || null,
+          similarity,
+          reason: "Dựa trên sở thích của bạn"
+        };
+      })
+      .filter(p => p.similarity > 0.6)
+      .sort((a, b) => b.similarity - a.similarity)
+      .slice(0, limit);
+
+    return { errCode: 0, products: recommendations };
+  } catch (e) {
+    console.error("Lỗi getPersonalizedRecommendations:", e);
+    return { errCode: 1, errMessage: e.message };
+  }
+};
+
 module.exports = {
   recommendProducts,
   recommendFortuneProducts,
   getSmartRecommendations,
+  getPersonalizedRecommendations,
 };

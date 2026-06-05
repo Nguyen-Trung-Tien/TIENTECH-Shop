@@ -261,9 +261,27 @@ const ProductDetailPage = () => {
   };
 
   const isFlashSale = product.flashSale?.isActive && timeLeft > 0;
-  const currentPrice = isFlashSale ? product.flashSale.price : (displayVariant ? (Number(displayVariant.salePrice) > 0 ? displayVariant.salePrice : displayVariant.price) : (product.basePrice || product.price));
   const originalPrice = displayVariant ? displayVariant.price : (product.basePrice || product.price);
-  const discountPercent = isFlashSale ? Math.round(((originalPrice - currentPrice) / originalPrice) * 100) : (displayVariant?.discount || 0);
+  
+  let currentPrice = originalPrice;
+  let discountPercent = 0;
+
+  if (isFlashSale) {
+    currentPrice = product.flashSale.price;
+    discountPercent = Math.round(((originalPrice - currentPrice) / originalPrice) * 100);
+  } else {
+    // If there is a variant specific salePrice that is > 0, use it
+    if (displayVariant && Number(displayVariant.salePrice) > 0) {
+      currentPrice = displayVariant.salePrice;
+      discountPercent = Math.round(((originalPrice - currentPrice) / originalPrice) * 100);
+    } else {
+      // Apply global product discount if any
+      discountPercent = Number(displayVariant?.discount || product.discount || 0);
+      if (discountPercent > 0) {
+        currentPrice = originalPrice * (1 - discountPercent / 100);
+      }
+    }
+  }
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-6 md:py-10 bg-white dark:bg-dark-bg min-h-screen transition-colors duration-300">

@@ -281,6 +281,7 @@ const filterProducts = async ({
 
 const searchSemanticProducts = async (query, limit = 5) => {
   try {
+    const { getCache, setCache } = require("../../config/redis");
     const queryEmbedding = await generateEmbedding(query);
     if (!queryEmbedding)
       return {
@@ -288,23 +289,46 @@ const searchSemanticProducts = async (query, limit = 5) => {
         errMessage: "Không thể tạo embedding cho truy vấn.",
       };
 
-    const products = await db.Product.findAll({
-      where: {
-        isActive: true,
-        embedding: { [Op.ne]: null },
-      },
-      attributes: ["id", "name", "basePrice", "discount", "embedding", "description"],
-    });
+    let productsData = await getCache("semantic_embeddings");
 
-    const results = products
+    if (!productsData) {
+      const products = await db.Product.findAll({
+        where: {
+          isActive: true,
+          embedding: { [Op.ne]: null },
+        },
+        attributes: ["id", "name", "basePrice", "discount", "embedding", "description"],
+        include: [
+          {
+            model: db.ProductImage,
+            as: "images",
+            where: { isPrimary: true },
+            attributes: ["imageUrl"],
+            required: false,
+          },
+        ],
+      });
+
+      productsData = products.map((product) => ({
+        id: product.id,
+        name: product.name,
+        price: product.basePrice * (1 - (product.discount || 0) / 100),
+        image: product.images?.[0]?.imageUrl || null,
+        embedding: JSON.parse(product.embedding)
+      }));
+
+      // Cache for 24 hours
+      await setCache("semantic_embeddings", productsData, 86400);
+    }
+
+    const results = productsData
       .map((product) => {
-        const productEmbedding = JSON.parse(product.embedding);
-        const similarity = cosineSimilarity(queryEmbedding, productEmbedding);
+        const similarity = cosineSimilarity(queryEmbedding, product.embedding);
         return {
           id: product.id,
           name: product.name,
-          price: product.basePrice * (1 - (product.discount || 0) / 100),
-          image: null,
+          price: product.price,
+          image: product.image,
           similarity: similarity,
         };
       })
@@ -320,6 +344,7 @@ const searchSemanticProducts = async (query, limit = 5) => {
 };
 
 const syncAllProductEmbeddings = async () => {
+  const { deleteCacheByPattern } = require("../../config/redis");
   const products = await db.Product.findAll();
   let successCount = 0;
   let failCount = 0;
@@ -331,6 +356,9 @@ const syncAllProductEmbeddings = async () => {
     if ((successCount + failCount) % 10 === 0)
       console.log(`Đã xử lý ${successCount + failCount}/${products.length} sản phẩm...`);
   }
+  
+  await deleteCacheByPattern("semantic_embeddings");
+
   return { 
     errCode: 0, 
     message: `Đồng bộ hoàn tất: ${successCount} thành công, ${failCount} thất bại.`,

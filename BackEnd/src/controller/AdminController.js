@@ -1,5 +1,6 @@
 const AdminService = require("../services/AdminService");
 const AdminAIService = require("../services/AdminAIService");
+const RevenueForecastService = require("../services/RevenueForecastService");
 
 const getDashboard = async (req, res) => {
   try {
@@ -66,6 +67,23 @@ const handleAIInsights = async (req, res) => {
   }
 };
 
+const handleGenerateDescription = async (req, res) => {
+  try {
+    const { name, keywords } = req.body;
+    if (!name) {
+      return res.status(400).json({ errCode: 1, errMessage: "Thiếu tên sản phẩm." });
+    }
+    const result = await AdminAIService.generateProductDescription(name, keywords);
+    res.status(200).json(result);
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({
+      errCode: 1,
+      errMessage: "Lỗi AI sinh mô tả sản phẩm.",
+    });
+  }
+};
+
 const handleGlobalSearch = async (req, res) => {
   try {
     const { q } = req.query;
@@ -93,11 +111,26 @@ const handleSyncEmbeddings = async (req, res) => {
   }
 };
 
+const handleRevenueForecast = async (req, res) => {
+  try {
+    const result = await RevenueForecastService.getRevenueForecast();
+    res.status(200).json(result);
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({
+      errCode: 1,
+      errMessage: "Lỗi AI dự báo doanh thu.",
+    });
+  }
+};
+
 module.exports = {
   getDashboard,
   getAdminCounters,
   handleExportRevenue,
   handleAIInsights,
+  handleGenerateDescription,
   handleGlobalSearch,
   handleSyncEmbeddings,
+  handleRevenueForecast,
 };

@@ -284,7 +284,55 @@ const getAdminCounters = async () => {
 };
 
 const exportRevenueExcel = async () => {
-  // ... (giữ nguyên code cũ)
+  try {
+    const orders = await db.Order.findAll({
+      where: {
+        [Op.or]: [{ paymentStatus: "paid" }, { status: "delivered" }],
+      },
+      include: [
+        { model: db.User, as: "user", attributes: ["username", "email"] },
+        { model: db.OrderItem, as: "orderItems" },
+      ],
+      order: [["createdAt", "DESC"]],
+    });
+
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Báo cáo doanh thu");
+
+    worksheet.columns = [
+      { header: "Mã đơn hàng", key: "orderCode", width: 20 },
+      { header: "Ngày đặt", key: "createdAt", width: 20 },
+      { header: "Khách hàng", key: "customerName", width: 25 },
+      { header: "Email", key: "email", width: 25 },
+      { header: "Tổng tiền", key: "totalPrice", width: 15 },
+      { header: "Phương thức thanh toán", key: "paymentMethod", width: 25 },
+      { header: "Trạng thái thanh toán", key: "paymentStatus", width: 20 },
+      { header: "Trạng thái đơn hàng", key: "status", width: 20 },
+    ];
+
+    orders.forEach((order) => {
+      worksheet.addRow({
+        orderCode: order.orderCode,
+        createdAt: order.createdAt.toLocaleString("vi-VN"),
+        customerName: order.receiverName || order.user?.username,
+        email: order.user?.email || "N/A",
+        totalPrice: order.totalPrice,
+        paymentMethod: order.paymentMethod,
+        paymentStatus: order.paymentStatus,
+        status: order.status,
+      });
+    });
+
+    // Định dạng tiêu đề
+    worksheet.getRow(1).font = { bold: true };
+    worksheet.getRow(1).alignment = { vertical: "middle", horizontal: "center" };
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    return buffer;
+  } catch (error) {
+    console.error("Error from AdminService.exportRevenueExcel:", error);
+    throw error;
+  }
 };
 
 const globalSearch = async (query) => {

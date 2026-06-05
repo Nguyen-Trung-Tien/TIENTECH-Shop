@@ -24,6 +24,23 @@ const authenticateToken = (req, res, next) => {
   next();
 };
 
+const optionalAuthenticateToken = (req, res, next) => {
+  const authHeader = req.headers["authorization"];
+  let token = authHeader && authHeader.split(" ")[1];
+
+  if (!token) {
+    token = req.cookies?.accessToken;
+  }
+
+  if (token) {
+    const decoded = verifyAccessToken(token);
+    if (decoded) {
+      req.user = decoded;
+    }
+  }
+  next();
+};
+
 const authorizeRole = (roles) => {
   return (req, res, next) => {
     if (!roles.includes(req.user.role)) {
@@ -36,4 +53,4 @@ const authorizeRole = (roles) => {
   };
 };
 
-module.exports = { authenticateToken, authorizeRole };
+module.exports = { authenticateToken, optionalAuthenticateToken, authorizeRole };

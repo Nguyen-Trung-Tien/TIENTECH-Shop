@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { FiMinus, FiPlus, FiTrash2 } from "react-icons/fi";
-import { motion as Motion } from "framer-motion";
+import { LazyMotion, domAnimation, m as Motion } from "framer-motion";
 import { formatCurrency } from "../../utils/format";
 
 /**
@@ -58,20 +58,34 @@ const CartItem = ({
         return null;
       }
     }
-    return Object.values(processedAttrs).join(" - ");
+    
+    // Nếu là array (từ DB join)
+    if (Array.isArray(processedAttrs)) {
+      return processedAttrs
+        .flatMap(a => (a && a.value) ? [a.value] : [])
+        .join(" - ");
+    }
+    
+    // Nếu là object, cẩn thận TH properties là object
+    const values = Object.values(processedAttrs).filter(Boolean);
+    return values.flatMap(v => {
+      const val = typeof v === "object" ? v.value || "" : v;
+      return val ? [val] : [];
+    }).join(" - ");
   }, [item.variant]);
 
   const itemImage = item.variant?.imageUrl || item.product?.image;
 
   return (
-    <Motion.div
-      ref={lastItemRef}
-      layout
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.95 }}
-      className={`p-6 md:p-8 flex flex-col sm:flex-row items-center gap-6 md:gap-8 ${!isLast ? "border-b border-slate-100 dark:border-dark-border" : ""}`}
-    >
+    <LazyMotion features={domAnimation}>
+      <Motion.div
+        ref={lastItemRef}
+        layout
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95 }}
+        className={`p-6 md:p-8 flex flex-col sm:flex-row items-center gap-6 md:gap-8 ${!isLast ? "border-b border-slate-100 dark:border-dark-border" : ""}`}
+      >
       {/* Selection & Image */}
       <div className="flex items-center gap-6 w-full sm:w-auto">
         <label className="flex items-center cursor-pointer group">
@@ -192,6 +206,7 @@ const CartItem = ({
         </div>
       </div>
     </Motion.div>
+    </LazyMotion>
   );
 };
 

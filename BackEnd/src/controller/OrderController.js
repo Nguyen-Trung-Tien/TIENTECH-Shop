@@ -191,6 +191,30 @@ const getActiveOrdersByUserId = async (req, res) => {
   }
 };
 
+const handleRequestReturn = async (req, res) => {
+  try {
+    const { orderItemId, reason } = req.body;
+    const userId = req.user.id;
+    const result = await OrderService.requestReturn(orderItemId, userId, reason);
+    return res.status(result.errCode === 0 ? 200 : 400).json(result);
+  } catch (e) {
+    console.error(e);
+    return res.status(500).json({ errCode: -1, errMessage: "Internal server error" });
+  }
+};
+
+const handleReturnAction = async (req, res) => {
+  try {
+    const { orderItemId, action } = req.body;
+    const adminId = req.user.id;
+    const result = await OrderService.handleReturnAction(orderItemId, action, adminId);
+    return res.status(result.errCode === 0 ? 200 : 400).json(result);
+  } catch (e) {
+    console.error(e);
+    return res.status(500).json({ errCode: -1, errMessage: "Internal server error" });
+  }
+};
+
 module.exports = {
   handleGetAllOrders,
   handleGetOrderById,
@@ -200,4 +224,6 @@ module.exports = {
   handleUpdatePaymentStatus,
   handleGetOrdersByUserId,
   getActiveOrdersByUserId,
+  handleRequestReturn,
+  handleReturnAction,
 };

@@ -4,7 +4,7 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || process.env.API_KEY);
 const geminiModel = genAI.getGenerativeModel({
-  model: "gemini-2.5-flash",
+  model: "gemini-2.0-flash",
 });
 
 const getAIInsights = async () => {
@@ -74,6 +74,40 @@ Trả về kết quả bằng tiếng Việt, súc tích, định dạng JSON:
   }
 };
 
+const generateProductDescription = async (name, keywords = "") => {
+  try {
+    const context = `
+Bạn là một chuyên gia Content Marketing và SEO chuyên nghiệp.
+Hãy viết một đoạn mô tả sản phẩm thật hấp dẫn, thuyết phục và chuẩn SEO cho sản phẩm sau:
+
+- Tên sản phẩm: ${name}
+${keywords ? `- Từ khóa/Đặc điểm chính: ${keywords}` : ""}
+
+Yêu cầu định dạng HTML:
+- Sử dụng thẻ <h3> hoặc <h4> cho các tiêu đề phụ.
+- Sử dụng thẻ <ul> và <li> cho các tính năng nổi bật.
+- Sử dụng <strong> cho các từ khóa quan trọng.
+- Viết thành 2-3 đoạn văn bản rõ ràng, súc tích nhưng đầy đủ thông tin.
+- Không bao gồm thẻ <html>, <body>, <head>. Chỉ trả về phần nội dung bên trong.
+
+Hãy tập trung vào lợi ích (benefits) mà sản phẩm mang lại cho người dùng, thay vì chỉ liệt kê tính năng (features).
+    `;
+
+    const result = await geminiModel.generateContent(context);
+    let description = result.response.text();
+    description = description.replace(/```html/gi, "").replace(/```/g, "").trim();
+
+    return {
+      errCode: 0,
+      data: description,
+    };
+  } catch (error) {
+    console.error("AI Description Error:", error);
+    return { errCode: -1, errMessage: "Lỗi khi AI sinh mô tả sản phẩm." };
+  }
+};
+
 module.exports = {
   getAIInsights,
+  generateProductDescription,
 };
