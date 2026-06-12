@@ -320,7 +320,7 @@ const getPersonalizedRecommendations = async (userId, limit = 6) => {
 
     const historyProducts = [];
     orders.forEach(o => o.orderItems.forEach(item => { if (item.product) historyProducts.push(item.product); }));
-    wishlist.forEach(w => { if (wishlist.product) historyProducts.push(wishlist.product); });
+    wishlist.forEach(w => { if (w.product) historyProducts.push(w.product); });
 
     if (historyProducts.length === 0) {
       // Fallback if no history

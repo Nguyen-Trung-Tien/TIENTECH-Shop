@@ -393,5 +393,6 @@ module.exports = {
   updateOrderItem,
   deleteOrderItem,
   requestReturn,
+  cancelReturnRequest,
   processReturn,
 };

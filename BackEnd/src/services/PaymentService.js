@@ -20,6 +20,7 @@ const executeRefund = async (order, payment, method, amountToRefund = null) => {
       
       const vnp_RequestId = moment().format("HHmmss");
       const vnp_Version = "2.1.0";
+      const vnp_Command = "refund";
       const isPartial = amountToRefund && Number(amountToRefund) < Number(payment.amount);
       const vnp_TransactionType = isPartial ? "03" : "02"; // 02: Full Refund, 03: Partial Refund
       
@@ -541,6 +542,7 @@ const getPaymentSummary = async (startDate, endDate) => {
 };
 
 module.exports = {
+  executeRefund,
   getAllPayments,
   getPaymentById,
   createPayment,
