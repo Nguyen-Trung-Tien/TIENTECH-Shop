@@ -31,8 +31,16 @@ const MENU_ITEMS = [
     icon: <FiShoppingCart />,
     subItems: [
       { to: "/admin/orders", label: "Tất cả đơn hàng" },
-      { to: "/admin/orders-return", label: "Duyệt trả hàng", badgeKey: "returnRequestedCount" },
-      { to: "/admin/orders-cancel", label: "Duyệt hủy hàng", badgeKey: "cancelRequestedCount" },
+      {
+        to: "/admin/orders-return",
+        label: "Duyệt trả hàng",
+        badgeKey: "returnRequestedCount",
+      },
+      {
+        to: "/admin/orders-cancel",
+        label: "Duyệt hủy hàng",
+        badgeKey: "cancelRequestedCount",
+      },
     ],
   },
   { to: "/admin/payment", icon: <FiDollarSign />, label: "Thanh toán" },
@@ -64,8 +72,8 @@ const Sidebar = ({ collapsed }) => {
         if (res.errCode === 0) {
           setCounters(res.data);
         }
-      } catch (error) {
-        console.error("Error fetching counters:", error);
+      } catch {
+        console.error("Error fetching counters:");
       }
     };
 
@@ -173,11 +181,19 @@ const Sidebar = ({ collapsed }) => {
                   </div>
                   {!collapsed && (
                     <div className="flex items-center gap-2">
-                      {item.label === "Đơn hàng" && (counters.cancelRequestedCount + counters.returnRequestedCount) > 0 && (
-                        <span className="flex items-center justify-center min-w-[18px] h-[18px] px-1 bg-rose-500 text-white text-[10px] rounded-full shadow-lg shadow-rose-500/20 animate-pulse">
-                          {(counters.cancelRequestedCount + counters.returnRequestedCount) > 99 ? "99+" : (counters.cancelRequestedCount + counters.returnRequestedCount)}
-                        </span>
-                      )}
+                      {item.label === "Đơn hàng" &&
+                        counters.cancelRequestedCount +
+                          counters.returnRequestedCount >
+                          0 && (
+                          <span className="flex items-center justify-center min-w-[18px] h-[18px] px-1 bg-rose-500 text-white text-[10px] rounded-full shadow-lg shadow-rose-500/20 animate-pulse">
+                            {counters.cancelRequestedCount +
+                              counters.returnRequestedCount >
+                            99
+                              ? "99+"
+                              : counters.cancelRequestedCount +
+                                counters.returnRequestedCount}
+                          </span>
+                        )}
                       <FiChevronDown
                         className={`transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`}
                       />
@@ -195,7 +211,9 @@ const Sidebar = ({ collapsed }) => {
                         className="overflow-hidden ml-9 space-y-1"
                       >
                         {item.subItems.map((sub) => {
-                          const badgeCount = sub.badgeKey ? counters[sub.badgeKey] : 0;
+                          const badgeCount = sub.badgeKey
+                            ? counters[sub.badgeKey]
+                            : 0;
                           return (
                             <Link
                               key={sub.to}

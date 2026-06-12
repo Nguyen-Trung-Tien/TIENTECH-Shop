@@ -17,7 +17,7 @@ import {
   FiTrendingUp,
   FiClock,
   FiCornerDownLeft,
-  FiPieChart
+  FiPieChart,
 } from "react-icons/fi";
 import {
   getAllPayments,
@@ -94,7 +94,12 @@ const PaymentPage = () => {
   }, [startDate, endDate]);
 
   const loadPayments = useCallback(
-    async (page = 1, status = filterStatus, method = filterMethod, search = searchTerm) => {
+    async (
+      page = 1,
+      status = filterStatus,
+      method = filterMethod,
+      search = searchTerm,
+    ) => {
       setLoading(true);
       try {
         const res = await getAllPayments({
@@ -104,7 +109,7 @@ const PaymentPage = () => {
           limit: pageSize,
           search: search.trim(),
           startDate,
-          endDate
+          endDate,
         });
         if (res.errCode === 0) {
           setPayments(res.data || []);
@@ -134,7 +139,15 @@ const PaymentPage = () => {
       loadPayments(1, filterStatus, filterMethod, searchTerm);
     }, 400);
     return () => clearTimeout(timer);
-  }, [filterStatus, filterMethod, searchTerm, pageSize, startDate, endDate, loadPayments]);
+  }, [
+    filterStatus,
+    filterMethod,
+    searchTerm,
+    pageSize,
+    startDate,
+    endDate,
+    loadPayments,
+  ]);
 
   const handleActionClick = (actionFn, paymentId, message) => {
     setActionModal({ show: true, actionFn, paymentId, message });
@@ -148,14 +161,17 @@ const PaymentPage = () => {
         : actionModal.actionFn === refundPayment
           ? "Hoàn tiền"
           : "Xóa";
-    
+
     try {
       let res;
       if (actionModal.actionFn === refundPayment) {
         res = await actionModal.actionFn(actionModal.paymentId, refundNote);
         setRefundNote("");
       } else if (actionModal.actionFn === completePayment) {
-        res = await actionModal.actionFn(actionModal.paymentId, transactionCodeInput);
+        res = await actionModal.actionFn(
+          actionModal.paymentId,
+          transactionCodeInput,
+        );
         setTransactionCodeInput("");
       } else {
         res = await actionModal.actionFn(actionModal.paymentId);
@@ -165,7 +181,7 @@ const PaymentPage = () => {
         toast.success(`${actionName} thành công.`);
         await Promise.all([
           loadPayments(currentPage, filterStatus, filterMethod, searchTerm),
-          loadSummary()
+          loadSummary(),
         ]);
       } else {
         toast.error(res?.errMessage || `${actionName} thất bại.`);
@@ -184,9 +200,19 @@ const PaymentPage = () => {
   };
 
   const handleExportCSV = () => {
-    if (!payments || payments.length === 0) return toast.info("Không có dữ liệu để xuất");
-    const headers = ["Mã Đơn", "Mã Giao Dịch", "Ngày", "Khách Hàng", "Email", "Số Tiền (VND)", "Phương Thức", "Trạng Thái"];
-    const csvRows = payments.map(p => [
+    if (!payments || payments.length === 0)
+      return toast.info("Không có dữ liệu để xuất");
+    const headers = [
+      "Mã Đơn",
+      "Mã Giao Dịch",
+      "Ngày",
+      "Khách Hàng",
+      "Email",
+      "Số Tiền (VND)",
+      "Phương Thức",
+      "Trạng Thái",
+    ];
+    const csvRows = payments.map((p) => [
       p.order?.orderCode || p.id,
       p.transactionId || "N/A",
       new Date(p.createdAt).toLocaleDateString("vi-VN"),
@@ -194,14 +220,22 @@ const PaymentPage = () => {
       `"${p.user?.email || ""}"`,
       p.amount,
       p.method,
-      p.status
+      p.status,
     ]);
-    const csvContent = [headers.join(","), ...csvRows.map(e => e.join(","))].join("\n");
-    const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
+    const csvContent = [
+      headers.join(","),
+      ...csvRows.map((e) => e.join(",")),
+    ].join("\n");
+    const blob = new Blob(["\uFEFF" + csvContent], {
+      type: "text/csv;charset=utf-8;",
+    });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.setAttribute("href", url);
-    link.setAttribute("download", `payments_export_${new Date().getTime()}.csv`);
+    link.setAttribute(
+      "download",
+      `payments_export_${new Date().getTime()}.csv`,
+    );
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -240,7 +274,9 @@ const PaymentPage = () => {
               <FiTrendingUp size={24} />
             </div>
             <div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary mb-1">Tổng Doanh Thu</p>
+              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary mb-1">
+                Tổng Doanh Thu
+              </p>
               <h3 className="text-2xl font-black text-slate-900 dark:text-dark-text-primary tracking-tight">
                 {Number(summary.totalRevenue).toLocaleString("vi-VN")} ₫
               </h3>
@@ -251,7 +287,9 @@ const PaymentPage = () => {
               <FiClock size={24} />
             </div>
             <div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary mb-1">Chờ Xử Lý</p>
+              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary mb-1">
+                Chờ Xử Lý
+              </p>
               <h3 className="text-2xl font-black text-slate-900 dark:text-dark-text-primary tracking-tight">
                 {Number(summary.pendingAmount).toLocaleString("vi-VN")} ₫
               </h3>
@@ -262,7 +300,9 @@ const PaymentPage = () => {
               <FiCornerDownLeft size={24} />
             </div>
             <div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary mb-1">Đã Hoàn Tiền</p>
+              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary mb-1">
+                Đã Hoàn Tiền
+              </p>
               <h3 className="text-2xl font-black text-slate-900 dark:text-dark-text-primary tracking-tight">
                 {Number(summary.refundedAmount).toLocaleString("vi-VN")} ₫
               </h3>
@@ -273,7 +313,9 @@ const PaymentPage = () => {
               <FiPieChart size={24} />
             </div>
             <div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary mb-1">Giao dịch Online / COD</p>
+              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary mb-1">
+                Giao dịch Online / COD
+              </p>
               <h3 className="text-2xl font-black text-slate-900 dark:text-dark-text-primary tracking-tight">
                 {summary.onlineCount} / {summary.codCount}
               </h3>
@@ -343,7 +385,10 @@ const PaymentPage = () => {
         </div>
 
         <button
-          onClick={() => { loadPayments(1); loadSummary(); }}
+          onClick={() => {
+            loadPayments(1);
+            loadSummary();
+          }}
           className="h-12 px-8 bg-indigo-600 text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-slate-800 dark:hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-600/20 whitespace-nowrap"
         >
           Lọc
@@ -521,7 +566,9 @@ const PaymentPage = () => {
             page={currentPage}
             totalPages={totalPages}
             loading={loading}
-            onPageChange={(p) => loadPayments(p, filterStatus, filterMethod, searchTerm)}
+            onPageChange={(p) =>
+              loadPayments(p, filterStatus, filterMethod, searchTerm)
+            }
           />
         </div>
       </div>
@@ -545,7 +592,8 @@ const PaymentPage = () => {
             >
               <div className="p-8 border-b border-slate-50 dark:border-dark-border flex items-center justify-between">
                 <h3 className="text-xl font-black text-slate-900 dark:text-dark-text-primary tracking-tight">
-                  Biên Lai Giao Dịch #{selectedPayment.order?.orderCode || selectedPayment.id}
+                  Biên Lai Giao Dịch #
+                  {selectedPayment.order?.orderCode || selectedPayment.id}
                 </h3>
                 <div className="flex items-center gap-3 print:hidden">
                   <button

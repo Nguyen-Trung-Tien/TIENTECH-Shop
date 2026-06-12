@@ -199,7 +199,10 @@ const Notifications = () => {
           ) : (
             <div className="p-32 text-center">
               <div className="size-24 bg-surface-50 dark:bg-dark-bg rounded-full flex items-center justify-center mx-auto mb-6">
-                <FiBell className="text-surface-200 dark:text-dark-border" size={48} />
+                <FiBell
+                  className="text-surface-200 dark:text-dark-border"
+                  size={48}
+                />
               </div>
               <h3 className="text-xl font-semibold text-surface-900 dark:text-white mb-2">
                 Hộp thư trống

@@ -93,7 +93,7 @@ const OTPVerification = () => {
       } else {
         toast.error(res.errMessage);
       }
-    } catch (error) {
+    } catch {
       toast.error("Lỗi khi gửi lại mã");
     } finally {
       setResending(false);
@@ -144,11 +144,7 @@ const OTPVerification = () => {
             disabled={loading}
             className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-2xl shadow-lg shadow-blue-500/30 active:scale-[0.98] transition-all disabled:opacity-70 flex items-center justify-center gap-2"
           >
-            {loading ? (
-              <Loader2 className="size-5 animate-spin" />
-            ) : (
-              "XÁC NHẬN"
-            )}
+            {loading ? <Loader2 className="size-5 animate-spin" /> : "XÁC NHẬN"}
           </button>
         </form>
 

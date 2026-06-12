@@ -123,11 +123,12 @@ const ProductDetailPage = () => {
       });
     }
 
-    let legacySpecs = displayVariant?.specifications || product.specifications || {};
+    let legacySpecs =
+      displayVariant?.specifications || product.specifications || {};
     if (typeof legacySpecs === "string") {
       try {
         legacySpecs = JSON.parse(legacySpecs);
-      } catch (e) {
+      } catch {
         legacySpecs = {};
       }
     }
@@ -150,7 +151,8 @@ const ProductDetailPage = () => {
 
   useEffect(() => {
     if (product?.images?.length > 0) {
-      const primary = product.images.find((img) => img.isPrimary) || product.images[0];
+      const primary =
+        product.images.find((img) => img.isPrimary) || product.images[0];
       setMainImage(primary.imageUrl);
     }
   }, [product]);
@@ -187,7 +189,9 @@ const ProductDetailPage = () => {
 
   useEffect(() => {
     if (displayVariant) {
-      const variantImg = product?.images?.find((img) => img.variantId === displayVariant.id);
+      const variantImg = product?.images?.find(
+        (img) => img.variantId === displayVariant.id,
+      );
       if (variantImg) setMainImage(variantImg.imageUrl);
       else if (displayVariant.imageUrl) setMainImage(displayVariant.imageUrl);
     }
@@ -196,7 +200,9 @@ const ProductDetailPage = () => {
   const displayImages = useMemo(() => {
     if (!product?.images) return [];
     if (!selectedVariant) return product.images;
-    const variantImages = product.images.filter((img) => img.variantId === selectedVariant.id);
+    const variantImages = product.images.filter(
+      (img) => img.variantId === selectedVariant.id,
+    );
     return variantImages.length > 0 ? variantImages : product.images;
   }, [product, selectedVariant]);
 
@@ -213,7 +219,10 @@ const ProductDetailPage = () => {
       <div className="text-center mt-20 text-gray-500 dark:text-dark-text-secondary font-medium p-8 border border-gray-100 dark:border-dark-border rounded-2xl bg-gray-50 dark:bg-dark-surface max-w-md mx-auto shadow-sm">
         <FiInfo className="mx-auto text-4xl mb-4 text-gray-300 dark:text-gray-600" />
         <p>Sản phẩm không tồn tại hoặc đã bị ẩn!</p>
-        <button onClick={() => navigate("/")} className="mt-6 text-blue-600 dark:text-brand hover:underline font-bold">
+        <button
+          onClick={() => navigate("/")}
+          className="mt-6 text-blue-600 dark:text-brand hover:underline font-bold"
+        >
           Quay lại trang chủ
         </button>
       </div>
@@ -232,7 +241,7 @@ const ProductDetailPage = () => {
         setIsWishlisted(true);
         toast.success("Đã thêm vào danh sách yêu thích");
       }
-    } catch (error) {
+    } catch {
       toast.error("Không thể cập nhật danh sách yêu thích");
     } finally {
       setLoadingWishlist(false);
@@ -247,7 +256,8 @@ const ProductDetailPage = () => {
     }
     const itemId = product?.variants?.length > 0 ? selectedVariant?.id : null;
     const addedItem = await handleAddToCart(itemId, 1);
-    if (addedItem) navigate("/checkout", { state: { selectedItems: [addedItem] } });
+    if (addedItem)
+      navigate("/checkout", { state: { selectedItems: [addedItem] } });
   };
 
   const onAddToCart = (e) => {
@@ -261,22 +271,30 @@ const ProductDetailPage = () => {
   };
 
   const isFlashSale = product.flashSale?.isActive && timeLeft > 0;
-  const originalPrice = displayVariant ? displayVariant.price : (product.basePrice || product.price);
-  
+  const originalPrice = displayVariant
+    ? displayVariant.price
+    : product.basePrice || product.price;
+
   let currentPrice = originalPrice;
   let discountPercent = 0;
 
   if (isFlashSale) {
     currentPrice = product.flashSale.price;
-    discountPercent = Math.round(((originalPrice - currentPrice) / originalPrice) * 100);
+    discountPercent = Math.round(
+      ((originalPrice - currentPrice) / originalPrice) * 100,
+    );
   } else {
     // If there is a variant specific salePrice that is > 0, use it
     if (displayVariant && Number(displayVariant.salePrice) > 0) {
       currentPrice = displayVariant.salePrice;
-      discountPercent = Math.round(((originalPrice - currentPrice) / originalPrice) * 100);
+      discountPercent = Math.round(
+        ((originalPrice - currentPrice) / originalPrice) * 100,
+      );
     } else {
       // Apply global product discount if any
-      discountPercent = Number(displayVariant?.discount || product.discount || 0);
+      discountPercent = Number(
+        displayVariant?.discount || product.discount || 0,
+      );
       if (discountPercent > 0) {
         currentPrice = originalPrice * (1 - discountPercent / 100);
       }
@@ -286,23 +304,35 @@ const ProductDetailPage = () => {
   return (
     <div className="max-w-6xl mx-auto px-4 py-6 md:py-10 bg-white dark:bg-dark-bg min-h-screen transition-colors duration-300">
       <nav className="flex items-center space-x-2 text-xs text-gray-400 dark:text-dark-text-secondary mb-6 pb-2 border-b border-gray-50 dark:border-dark-border">
-        <a href="/" className="hover:text-blue-600 dark:hover:text-brand transition-colors">Trang chủ</a>
+        <a
+          href="/"
+          className="hover:text-blue-600 dark:hover:text-brand transition-colors"
+        >
+          Trang chủ
+        </a>
         <FiChevronRight className="size-3" />
-        <a href="/products" className="hover:text-blue-600 dark:hover:text-brand transition-colors">Sản phẩm</a>
+        <a
+          href="/products"
+          className="hover:text-blue-600 dark:hover:text-brand transition-colors"
+        >
+          Sản phẩm
+        </a>
         <FiChevronRight className="size-3" />
-        <span className="text-gray-700 dark:text-white font-medium truncate max-w-[200px] md:max-w-none">{product.name}</span>
+        <span className="text-gray-700 dark:text-white font-medium truncate max-w-[200px] md:max-w-none">
+          {product.name}
+        </span>
       </nav>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
-        <ImageGallery 
-          mainImage={mainImage} 
-          setMainImage={setMainImage} 
-          displayImages={displayImages} 
-          discountPercent={discountPercent} 
-          productName={product.name} 
+        <ImageGallery
+          mainImage={mainImage}
+          setMainImage={setMainImage}
+          displayImages={displayImages}
+          discountPercent={discountPercent}
+          productName={product.name}
         />
 
-        <ProductInfo 
+        <ProductInfo
           product={product}
           isFlashSale={isFlashSale}
           timeLeft={timeLeft}
@@ -329,7 +359,10 @@ const ProductDetailPage = () => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 mt-10">
         <div className="lg:col-span-5 hidden lg:block"></div>
         <div className="lg:col-span-7">
-          <SpecificationSection mergedSpecs={mergedSpecs} displayVariant={displayVariant} />
+          <SpecificationSection
+            mergedSpecs={mergedSpecs}
+            displayVariant={displayVariant}
+          />
         </div>
       </div>
 
@@ -339,7 +372,11 @@ const ProductDetailPage = () => {
         <ReviewComponent reviews={reviews} user={user} />
       </div>
 
-      <PricePredictionModal productId={product?.id} isOpen={showPrediction} onClose={() => setShowPrediction(false)} />
+      <PricePredictionModal
+        productId={product?.id}
+        isOpen={showPrediction}
+        onClose={() => setShowPrediction(false)}
+      />
     </div>
   );
 };

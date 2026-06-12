@@ -176,3 +176,79 @@
     border-color: rgba(51, 65, 85, 0.3); /* Slate 700 với opacity thấp */
   }
 }
+
+/* Print Invoice Styles */
+@media print {
+  /* Hide standard header, footer, navigation and interactive elements */
+  header, footer, nav, aside,
+  .no-print,
+  .print\:hidden {
+    display: none !important;
+  }
+
+  /* Force display of background colors/images during print */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Reset main layouts and spacing for printing */
+  body, html, main {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    font-size: 11pt !important;
+  }
+
+  /* Dark mode overrides for print */
+  .dark body, .dark html, .dark main {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+  }
+
+  .dark .bg-white, .dark .bg-dark-surface, .dark .bg-surface-50, .dark .bg-dark-bg {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    border-color: #cbd5e1 !important;
+  }
+
+  .dark .text-white, .dark .text-slate-900, .dark .text-slate-600, .dark .text-slate-500, .dark .text-slate-400, .dark .text-dark-text-primary, .dark .text-dark-text-secondary {
+    color: #000000 !important;
+  }
+
+  /* Make containers full width */
+  .container-custom {
+    max-width: 100% !important;
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Convert grids to block display so left column expands full width */
+  .grid {
+    display: block !important;
+  }
+
+  .print\:w-full {
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: 0 0 100% !important;
+  }
+
+  .print\:shadow-none {
+    box-shadow: none !important;
+  }
+
+  /* Add light borders for clean printed sections */
+  .print\:border {
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 16px !important;
+  }
+
+  /* Avoid page breaks inside layout cards */
+  .print\:avoid-break {
+    page-break-inside: avoid !important;
+  }
+}

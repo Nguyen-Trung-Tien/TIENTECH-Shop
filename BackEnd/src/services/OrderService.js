@@ -233,6 +233,8 @@ const getOrdersByUserId = async (
           as: "orderItems",
           attributes: [
             "id",
+            "productId",
+            "variantId",
             "quantity",
             "price",
             "subtotal",

@@ -1,5 +1,13 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { FiEye, FiShoppingBag, FiClock, FiCheckCircle, FiRotateCcw, FiAlertTriangle, FiEdit3 } from "react-icons/fi";
+import {
+  FiEye,
+  FiShoppingBag,
+  FiClock,
+  FiCheckCircle,
+  FiRotateCcw,
+  FiAlertTriangle,
+  FiEdit3,
+} from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { getOrdersByUserId, updateOrderStatus } from "../../api/orderApi";
@@ -62,7 +70,7 @@ const OrderHistoryPage = () => {
       } else {
         toast.error(res.errMessage);
       }
-    } catch (error) {
+    } catch {
       toast.error("Lỗi khi xác nhận nhận hàng");
     } finally {
       setIsSubmitting(false);
@@ -168,15 +176,22 @@ const OrderHistoryPage = () => {
                               </span>
                             </div>
                             <div className="flex items-center gap-3 mt-3">
-                              <StatusBadge map={returnStatusMap} status={i.returnStatus} />
-                              {["delivered", "completed"].includes(o.status) && (!i.returnStatus || i.returnStatus === "none") && (
-                                <button
-                                  onClick={() => navigate(`/orders-detail/${o.id}`)}
-                                  className="text-[10px] font-black uppercase tracking-widest text-primary hover:underline"
-                                >
-                                  Yêu cầu trả hàng
-                                </button>
-                              )}
+                              <StatusBadge
+                                map={returnStatusMap}
+                                status={i.returnStatus}
+                              />
+                              {["delivered", "completed"].includes(o.status) &&
+                                (!i.returnStatus ||
+                                  i.returnStatus === "none") && (
+                                  <button
+                                    onClick={() =>
+                                      navigate(`/orders-detail/${o.id}`)
+                                    }
+                                    className="text-[10px] font-black uppercase tracking-widest text-warning hover:underline"
+                                  >
+                                    Yêu cầu trả hàng
+                                  </button>
+                                )}
                             </div>
                             {i.returnStatus !== "none" && i.returnReason && (
                               <div className="mt-2 p-3 bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/20 rounded-xl">
@@ -209,7 +224,7 @@ const OrderHistoryPage = () => {
                       <Button
                         variant="secondary"
                         size="md"
-                        className="flex-1 sm:flex-none !rounded-2xl text-[10px] font-black uppercase tracking-widest px-6"
+                        className="flex-1 sm:flex-none !rounded-2xl text-xs font-bold uppercase tracking-wider px-5"
                         icon={FiEye}
                         onClick={() => navigate(`/orders-detail/${o.id}`)}
                       >
@@ -219,7 +234,7 @@ const OrderHistoryPage = () => {
                         <Button
                           variant="primary"
                           size="md"
-                          className="flex-1 sm:flex-none !rounded-2xl text-[10px] font-black uppercase tracking-widest px-6 shadow-lg shadow-primary/20"
+                          className="flex-1 sm:flex-none !rounded-2xl text-xs font-bold uppercase tracking-wider px-5 shadow-lg shadow-primary/20"
                           icon={FiCheckCircle}
                           onClick={() => handleConfirmReceipt(o.id)}
                           loading={isSubmitting}
@@ -231,7 +246,7 @@ const OrderHistoryPage = () => {
                         <Button
                           variant="primary"
                           size="md"
-                          className="flex-1 sm:flex-none !rounded-2xl text-[10px] font-black uppercase tracking-widest px-8 shadow-lg shadow-primary/20 bg-gradient-to-r from-primary to-indigo-600 border-none hover:scale-105 transition-transform"
+                          className="flex-1 sm:flex-none !rounded-2xl text-xs font-bold uppercase tracking-wider px-6 shadow-lg shadow-primary/20 bg-gradient-to-r from-primary to-indigo-600 border-none hover:scale-105 transition-transform"
                           icon={FiEdit3}
                           onClick={() => openReviewModal(o)}
                         >

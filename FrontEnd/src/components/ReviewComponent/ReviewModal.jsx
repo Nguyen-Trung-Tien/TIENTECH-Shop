@@ -96,17 +96,19 @@ const ReviewModal = ({ isOpen, onClose, order, onReviewSuccess }) => {
             </div>
           ) : (
             order.orderItems?.map((item) => {
-              const productId = String(item.product?.id || item.productId);
+              const rawProductId = item.productId || item.product?.id;
+              const productId = rawProductId ? String(rawProductId) : null;
               
               // Đã đánh giá nếu:
               // 1. Vừa đánh giá trong modal này (reviewedProductIds)
               // 2. Không nằm trong danh sách "chưa đánh giá" (pendingProductIds)
-              const isReviewed =
-                reviewedProductIds.includes(productId) ||
-                (pendingProductIds !== null &&
-                  !pendingProductIds.includes(productId));
+              const isReviewed = productId
+                ? (reviewedProductIds.includes(productId) ||
+                   (pendingProductIds !== null &&
+                    !pendingProductIds.includes(productId)))
+                : true;
 
-              const isCurrent = reviewingProductId === item.product?.id || reviewingProductId === item.productId;
+              const isCurrent = reviewingProductId !== null && productId !== null && String(reviewingProductId) === productId;
 
             return (
               <div
@@ -145,7 +147,7 @@ const ReviewModal = ({ isOpen, onClose, order, onReviewSuccess }) => {
                       <Button
                         variant="primary"
                         size="md"
-                        className="!rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] px-6 shadow-lg shadow-primary/10"
+                        className="!rounded-2xl text-xs font-bold uppercase tracking-wider px-5 shadow-lg shadow-primary/10"
                         onClick={() => handleOpenForm(productId)}
                       >
                         ĐÁNH GIÁ

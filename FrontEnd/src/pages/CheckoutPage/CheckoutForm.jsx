@@ -8,31 +8,49 @@ import {
   FiEdit3,
   FiDollarSign,
   FiPlus,
-  FiHome
+  FiHome,
 } from "react-icons/fi";
 import { getAddressesApi } from "../../api/addressApi";
 import { FaPaypal } from "react-icons/fa";
 
-const InputField = React.memo(({ label, name, value, icon: Icon, placeholder, type = "text", required = false, readOnly = false, onChange }) => (
-  <div className="space-y-1.5 flex-1">
-    <label className="text-[11px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest ml-1" htmlFor={name}>{label}</label>
-    <div className="relative group">
-      <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-dark-text-secondary group-focus-within:text-primary transition-colors">
-         <Icon size={16} />
+const InputField = React.memo(
+  ({
+    label,
+    name,
+    value,
+    icon: Icon,
+    placeholder,
+    type = "text",
+    required = false,
+    readOnly = false,
+    onChange,
+  }) => (
+    <div className="space-y-1.5 flex-1">
+      <label
+        className="text-[11px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest ml-1"
+        htmlFor={name}
+      >
+        {label}
+      </label>
+      <div className="relative group">
+        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-dark-text-secondary group-focus-within:text-primary transition-colors">
+          <Icon size={16} />
+        </div>
+        <input
+          type={type}
+          id={name}
+          name={name}
+          value={value}
+          onChange={onChange}
+          required={required}
+          readOnly={readOnly}
+          placeholder={placeholder}
+          className={`w-full h-12 pl-11 pr-4 bg-slate-50 dark:bg-dark-bg border-2 border-transparent rounded-xl text-sm font-medium focus:bg-white dark:focus:bg-dark-surface focus:border-primary/20 outline-none transition-all placeholder:text-slate-300 dark:placeholder:text-slate-700 text-slate-900 dark:text-white ${readOnly ? "cursor-not-allowed opacity-70" : ""}`}
+        />
       </div>
-      <input 
-        type={type}
-        id={name} name={name}
-        value={value}
-        onChange={onChange}
-        required={required}
-        readOnly={readOnly}
-        placeholder={placeholder}
-        className={`w-full h-12 pl-11 pr-4 bg-slate-50 dark:bg-dark-bg border-2 border-transparent rounded-xl text-sm font-medium focus:bg-white dark:focus:bg-dark-surface focus:border-primary/20 outline-none transition-all placeholder:text-slate-300 dark:placeholder:text-slate-700 text-slate-900 dark:text-white ${readOnly ? 'cursor-not-allowed opacity-70' : ''}`}
-      />
     </div>
-  </div>
-));
+  ),
+);
 
 const CheckoutForm = ({ formData, setFormData, user }) => {
   const [addresses, setAddresses] = useState([]);
@@ -45,16 +63,20 @@ const CheckoutForm = ({ formData, setFormData, user }) => {
         if (res.errCode === 0) {
           setAddresses(res.data);
           // Auto-select default address
-          const defaultAddr = res.data.find(a => a.isDefault);
+          const defaultAddr = res.data.find((a) => a.isDefault);
           if (defaultAddr && !formData.shippingAddress) {
-            const fullAddress = [defaultAddr.detailAddress, defaultAddr.ward, defaultAddr.province]
-              .filter(part => part && part !== "undefined")
+            const fullAddress = [
+              defaultAddr.detailAddress,
+              defaultAddr.ward,
+              defaultAddr.province,
+            ]
+              .filter((part) => part && part !== "undefined")
               .join(", ");
-            setFormData(prev => ({
+            setFormData((prev) => ({
               ...prev,
               shippingAddress: fullAddress,
               phone: defaultAddr.phone || user?.phone || "",
-              fullName: defaultAddr.fullName || user?.username || ""
+              fullName: defaultAddr.fullName || user?.username || "",
             }));
           } else if (res.data.length === 0) {
             setShowManual(true);
@@ -69,20 +91,20 @@ const CheckoutForm = ({ formData, setFormData, user }) => {
 
   const handleSelectAddress = (addr) => {
     const fullAddress = [addr.detailAddress, addr.ward, addr.province]
-      .filter(part => part && part !== "undefined")
+      .filter((part) => part && part !== "undefined")
       .join(", ");
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       shippingAddress: fullAddress,
       phone: addr.phone || user?.phone || "",
-      fullName: addr.fullName || user?.username || ""
+      fullName: addr.fullName || user?.username || "",
     }));
     setShowManual(false);
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   return (
@@ -93,18 +115,26 @@ const CheckoutForm = ({ formData, setFormData, user }) => {
           <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
             <FiTruck size={20} />
           </div>
-          <h2 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-widest">Thông tin giao hàng</h2>
+          <h2 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-widest">
+            Thông tin giao hàng
+          </h2>
         </div>
 
         <div className="space-y-6">
           {/* Address Selector */}
           {addresses.length > 0 && (
             <div className="space-y-4">
-              <p className="text-[11px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest ml-1">Chọn địa chỉ đã lưu</p>
+              <p className="text-[11px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest ml-1">
+                Chọn địa chỉ đã lưu
+              </p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {addresses.map((addr) => {
-                  const fullAddrStr = [addr.detailAddress, addr.ward, addr.province]
-                    .filter(part => part && part !== "undefined")
+                  const fullAddrStr = [
+                    addr.detailAddress,
+                    addr.ward,
+                    addr.province,
+                  ]
+                    .filter((part) => part && part !== "undefined")
                     .join(", ");
                   const isSelected = formData.shippingAddress === fullAddrStr;
                   return (
@@ -113,18 +143,30 @@ const CheckoutForm = ({ formData, setFormData, user }) => {
                       type="button"
                       onClick={() => handleSelectAddress(addr)}
                       className={`text-left p-4 rounded-2xl border-2 transition-all relative ${
-                        isSelected ? "border-primary bg-primary/5 dark:bg-primary/10 shadow-md" : "border-slate-50 dark:border-dark-bg hover:border-slate-200 dark:hover:border-slate-700 bg-slate-50 dark:bg-dark-bg"
+                        isSelected
+                          ? "border-primary bg-primary/5 dark:bg-primary/10 shadow-md"
+                          : "border-slate-50 dark:border-dark-bg hover:border-slate-200 dark:hover:border-slate-700 bg-slate-50 dark:bg-dark-bg"
                       }`}
                     >
                       {addr.isDefault && (
-                        <span className="absolute top-2 right-2 bg-primary text-white text-[8px] font-black uppercase px-2 py-1 rounded-full">Mặc định</span>
+                        <span className="absolute top-2 right-2 bg-primary text-white text-[8px] font-black uppercase px-2 py-1 rounded-full">
+                          Mặc định
+                        </span>
                       )}
                       <div className="flex items-start gap-3">
-                        <FiHome className={`mt-1 ${isSelected ? 'text-primary' : 'text-slate-400 dark:text-dark-text-secondary'}`} />
+                        <FiHome
+                          className={`mt-1 ${isSelected ? "text-primary" : "text-slate-400 dark:text-dark-text-secondary"}`}
+                        />
                         <div>
-                          <p className="text-xs font-black text-slate-900 dark:text-white uppercase mb-1">{addr.fullName || "Địa chỉ"}</p>
-                          <p className="text-[11px] font-bold text-slate-500 dark:text-dark-text-secondary line-clamp-2 leading-relaxed">{fullAddrStr}</p>
-                          <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 mt-1">{addr.phone}</p>
+                          <p className="text-xs font-black text-slate-900 dark:text-white uppercase mb-1">
+                            {addr.fullName || "Địa chỉ"}
+                          </p>
+                          <p className="text-[11px] font-bold text-slate-500 dark:text-dark-text-secondary line-clamp-2 leading-relaxed">
+                            {fullAddrStr}
+                          </p>
+                          <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 mt-1">
+                            {addr.phone}
+                          </p>
                         </div>
                       </div>
                     </button>
@@ -134,29 +176,33 @@ const CheckoutForm = ({ formData, setFormData, user }) => {
                   type="button"
                   onClick={() => setShowManual(true)}
                   className={`text-left p-4 rounded-2xl border-2 border-dashed transition-all flex items-center justify-center gap-2 ${
-                    showManual ? "border-primary bg-primary/5 dark:bg-primary/10 text-primary" : "border-slate-200 dark:border-dark-border text-slate-400 dark:text-dark-text-secondary hover:border-primary dark:hover:border-primary hover:text-primary dark:hover:text-primary bg-slate-50 dark:bg-dark-bg"
+                    showManual
+                      ? "border-primary bg-primary/5 dark:bg-primary/10 text-primary"
+                      : "border-slate-200 dark:border-dark-border text-slate-400 dark:text-dark-text-secondary hover:border-primary dark:hover:border-primary hover:text-primary dark:hover:text-primary bg-slate-50 dark:bg-dark-bg"
                   }`}
                 >
                   <FiPlus />
-                  <span className="text-xs font-black uppercase">Địa chỉ mới</span>
+                  <span className="text-xs font-black uppercase">
+                    Địa chỉ mới
+                  </span>
                 </button>
               </div>
             </div>
           )}
 
           <div className="flex flex-col md:flex-row gap-6">
-            <InputField 
-              label="Họ và tên" 
-              icon={FiUser} 
-              placeholder="Nguyễn Văn A" 
-              value={user?.username || ""} 
+            <InputField
+              label="Họ và tên"
+              icon={FiUser}
+              placeholder="Nguyễn Văn A"
+              value={user?.username || ""}
               readOnly
             />
-            <InputField 
-              label="Số điện thoại nhận hàng" 
+            <InputField
+              label="Số điện thoại nhận hàng"
               name="phone"
-              icon={FiPhone} 
-              placeholder="090 xxx xxxx" 
+              icon={FiPhone}
+              placeholder="090 xxx xxxx"
               value={formData.phone || user?.phone || ""}
               required
             />
@@ -164,12 +210,18 @@ const CheckoutForm = ({ formData, setFormData, user }) => {
 
           {(showManual || addresses.length === 0) && (
             <div className="space-y-1.5">
-              <label className="text-[11px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest ml-1" htmlFor="shippingAddress">Nhập địa chỉ nhận hàng</label>
+              <label
+                className="text-[11px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest ml-1"
+                htmlFor="shippingAddress"
+              >
+                Nhập địa chỉ nhận hàng
+              </label>
               <div className="relative group">
                 <div className="absolute left-4 top-6 text-slate-400 dark:text-dark-text-secondary group-focus-within:text-primary transition-colors">
                   <FiMapPin size={16} />
                 </div>
-                <textarea id="shippingAddress" 
+                <textarea
+                  id="shippingAddress"
                   name="shippingAddress"
                   value={formData.shippingAddress}
                   onChange={handleChange}
@@ -180,11 +232,11 @@ const CheckoutForm = ({ formData, setFormData, user }) => {
             </div>
           )}
 
-          <InputField 
-            label="Ghi chú đơn hàng" 
+          <InputField
+            label="Ghi chú đơn hàng"
             name="note"
-            icon={FiEdit3} 
-            placeholder="Lưu ý cho người giao hàng..." 
+            icon={FiEdit3}
+            placeholder="Lưu ý cho người giao hàng..."
             value={formData.note}
           />
         </div>
@@ -196,61 +248,87 @@ const CheckoutForm = ({ formData, setFormData, user }) => {
           <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
             <FiCreditCard size={20} />
           </div>
-          <h2 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-widest">Phương thức thanh toán</h2>
+          <h2 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-widest">
+            Phương thức thanh toán
+          </h2>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <button
             type="button"
-            onClick={() => setFormData(prev => ({ ...prev, paymentMethod: "COD" }))}
+            onClick={() =>
+              setFormData((prev) => ({ ...prev, paymentMethod: "COD" }))
+            }
             className={`flex items-center gap-4 p-5 rounded-2xl border-2 transition-all ${
-              formData.paymentMethod === "COD" 
-                ? "border-primary bg-primary/5 dark:bg-primary/10 shadow-lg shadow-primary/5" 
+              formData.paymentMethod === "COD"
+                ? "border-primary bg-primary/5 dark:bg-primary/10 shadow-lg shadow-primary/5"
                 : "border-slate-50 dark:border-dark-bg bg-slate-50 dark:bg-dark-bg hover:border-slate-200 dark:hover:border-slate-700"
             }`}
           >
-            <div className={`size-10 rounded-xl flex items-center justify-center ${formData.paymentMethod === "COD" ? "bg-primary text-white" : "bg-slate-100 dark:bg-dark-surface text-slate-400 dark:text-dark-text-secondary"}`}>
+            <div
+              className={`size-10 rounded-xl flex items-center justify-center ${formData.paymentMethod === "COD" ? "bg-primary text-white" : "bg-slate-100 dark:bg-dark-surface text-slate-400 dark:text-dark-text-secondary"}`}
+            >
               <FiDollarSign size={20} />
             </div>
             <div className="text-left">
-              <p className="text-xs font-black text-slate-900 dark:text-white uppercase">Thanh toán khi nhận hàng</p>
-              <p className="text-[10px] font-bold text-slate-400 dark:text-dark-text-secondary">Trả tiền mặt khi giao tới nơi</p>
+              <p className="text-xs font-black text-slate-900 dark:text-white uppercase">
+                Thanh toán khi nhận hàng
+              </p>
+              <p className="text-[10px] font-bold text-slate-400 dark:text-dark-text-secondary">
+                Trả tiền mặt khi giao tới nơi
+              </p>
             </div>
           </button>
 
           <button
             type="button"
-            onClick={() => setFormData(prev => ({ ...prev, paymentMethod: "VNPAY" }))}
+            onClick={() =>
+              setFormData((prev) => ({ ...prev, paymentMethod: "VNPAY" }))
+            }
             className={`flex items-center gap-4 p-5 rounded-2xl border-2 transition-all ${
-              formData.paymentMethod === "VNPAY" 
-                ? "border-primary bg-primary/5 dark:bg-primary/10 shadow-lg shadow-primary/5" 
+              formData.paymentMethod === "VNPAY"
+                ? "border-primary bg-primary/5 dark:bg-primary/10 shadow-lg shadow-primary/5"
                 : "border-slate-50 dark:border-dark-bg bg-slate-50 dark:bg-dark-bg hover:border-slate-200 dark:hover:border-slate-700"
             }`}
           >
-            <div className={`size-10 rounded-xl flex items-center justify-center ${formData.paymentMethod === "VNPAY" ? "bg-primary text-white" : "bg-slate-100 dark:bg-dark-surface text-slate-400 dark:text-dark-text-secondary"}`}>
+            <div
+              className={`size-10 rounded-xl flex items-center justify-center ${formData.paymentMethod === "VNPAY" ? "bg-primary text-white" : "bg-slate-100 dark:bg-dark-surface text-slate-400 dark:text-dark-text-secondary"}`}
+            >
               <FiCreditCard size={20} />
             </div>
             <div className="text-left">
-              <p className="text-xs font-black text-slate-900 dark:text-white uppercase">Ví VNPAY / Ngân hàng</p>
-              <p className="text-[10px] font-bold text-slate-400 dark:text-dark-text-secondary">Thanh toán online an toàn</p>
+              <p className="text-xs font-black text-slate-900 dark:text-white uppercase">
+                Ví VNPAY / Ngân hàng
+              </p>
+              <p className="text-[10px] font-bold text-slate-400 dark:text-dark-text-secondary">
+                Thanh toán online an toàn
+              </p>
             </div>
           </button>
 
           <button
             type="button"
-            onClick={() => setFormData(prev => ({ ...prev, paymentMethod: "PAYPAL" }))}
+            onClick={() =>
+              setFormData((prev) => ({ ...prev, paymentMethod: "PAYPAL" }))
+            }
             className={`flex items-center gap-4 p-5 rounded-2xl border-2 transition-all ${
-              formData.paymentMethod === "PAYPAL" 
-                ? "border-primary bg-primary/5 dark:bg-primary/10 shadow-lg shadow-primary/5" 
+              formData.paymentMethod === "PAYPAL"
+                ? "border-primary bg-primary/5 dark:bg-primary/10 shadow-lg shadow-primary/5"
                 : "border-slate-50 dark:border-dark-bg bg-slate-50 dark:bg-dark-bg hover:border-slate-200 dark:hover:border-slate-700"
             }`}
           >
-            <div className={`size-10 rounded-xl flex items-center justify-center ${formData.paymentMethod === "PAYPAL" ? "bg-primary text-white" : "bg-slate-100 dark:bg-dark-surface text-slate-400 dark:text-dark-text-secondary"}`}>
+            <div
+              className={`size-10 rounded-xl flex items-center justify-center ${formData.paymentMethod === "PAYPAL" ? "bg-primary text-white" : "bg-slate-100 dark:bg-dark-surface text-slate-400 dark:text-dark-text-secondary"}`}
+            >
               <FaPaypal size={20} />
             </div>
             <div className="text-left">
-              <p className="text-xs font-black text-slate-900 dark:text-white uppercase">PayPal</p>
-              <p className="text-[10px] font-bold text-slate-400 dark:text-dark-text-secondary">Thanh toán quốc tế</p>
+              <p className="text-xs font-black text-slate-900 dark:text-white uppercase">
+                PayPal
+              </p>
+              <p className="text-[10px] font-bold text-slate-400 dark:text-dark-text-secondary">
+                Thanh toán quốc tế
+              </p>
             </div>
           </button>
         </div>

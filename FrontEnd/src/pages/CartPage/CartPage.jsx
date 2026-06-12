@@ -68,7 +68,7 @@ const CartPage = () => {
     try {
       await handleRemoveItem(id);
       setSelectedItems((prev) => prev.filter((itemId) => itemId !== id));
-    } catch (error) {
+    } catch {
       // Error handled in useCart
     }
   };
@@ -140,7 +140,10 @@ const CartPage = () => {
         {cartItems.length === 0 ? (
           <div className="bg-white dark:bg-dark-surface rounded-[40px] p-20 text-center shadow-sm border border-slate-100 dark:border-dark-border">
             <div className="size-24 bg-slate-50 dark:bg-dark-bg rounded-full flex items-center justify-center mx-auto mb-8">
-              <FiShoppingBag className="text-slate-200 dark:text-dark-border" size={40} />
+              <FiShoppingBag
+                className="text-slate-200 dark:text-dark-border"
+                size={40}
+              />
             </div>
             <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-4 uppercase">
               Giỏ hàng trống

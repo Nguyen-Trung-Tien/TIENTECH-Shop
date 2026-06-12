@@ -1,6 +1,4 @@
-import React from "react";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
 import { FiHome, FiArrowLeft, FiSearch } from "react-icons/fi";
 
 const NotFound = () => {

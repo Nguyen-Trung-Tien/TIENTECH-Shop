@@ -46,8 +46,8 @@ const App = () => {
         } else {
           dispatch(removeUser());
         }
-      } catch (error) {
-        console.error("Initial auth check failed:", error);
+      } catch {
+        console.error("Initial auth check failed:");
         dispatch(removeUser());
       } finally {
         dispatch(setInitializing(false));

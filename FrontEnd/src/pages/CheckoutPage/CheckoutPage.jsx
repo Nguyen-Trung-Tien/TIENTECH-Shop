@@ -104,7 +104,7 @@ const CheckoutPage = () => {
       } else {
         toast.error(res.errMessage);
       }
-    } catch (err) {
+    } catch {
       toast.error("Lỗi đặt hàng, vui lòng thử lại");
     } finally {
       setLoading(false);
@@ -141,7 +141,7 @@ const CheckoutPage = () => {
       } else {
         toast.error(res.errMessage);
       }
-    } catch (err) {
+    } catch {
       toast.error("Lỗi xử lý PayPal");
     }
   };
@@ -209,8 +209,9 @@ const CheckoutPage = () => {
                         <p className="text-[10px] font-bold text-slate-400 dark:text-dark-text-secondary uppercase mt-1">
                           Loại:{" "}
                           {Object.values(item.variant.attributes || {})
-                            .flatMap(v => {
-                              const val = typeof v === "object" ? v.value || "" : v;
+                            .flatMap((v) => {
+                              const val =
+                                typeof v === "object" ? v.value || "" : v;
                               return val ? [val] : [];
                             })
                             .join(" / ")}

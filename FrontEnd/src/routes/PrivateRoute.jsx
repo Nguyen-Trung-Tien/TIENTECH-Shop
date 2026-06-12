@@ -6,13 +6,15 @@ import { getMeApi } from "../api/userApi";
 import { setUser, removeUser, setInitializing } from "../redux/userSlice";
 
 const PrivateRoute = ({ requiredRole }) => {
-  const { user, isAuthenticated, isInitializing } = useSelector((state) => state.user);
+  const { user, isAuthenticated, isInitializing } = useSelector(
+    (state) => state.user,
+  );
   const location = useLocation();
   const dispatch = useDispatch();
 
   useEffect(() => {
     const checkAuth = async () => {
-      // Nếu đã có user trong Redux nhưng isInitializing vẫn là true, 
+      // Nếu đã có user trong Redux nhưng isInitializing vẫn là true,
       // ta gọi API /me để xác nhận session (ví dụ khi F5 trang)
       if (isInitializing) {
         try {
@@ -39,7 +41,9 @@ const PrivateRoute = ({ requiredRole }) => {
       <div className="flex flex-col items-center justify-center min-h-screen bg-surface-50">
         <div className="flex flex-col items-center gap-4 p-8 bg-white rounded-3xl shadow-soft border border-surface-100">
           <FiRefreshCw className="animate-spin text-4xl text-primary" />
-          <p className="text-sm font-bold text-surface-600 uppercase tracking-widest">Đang xác thực phiên đăng nhập...</p>
+          <p className="text-sm font-bold text-surface-600 uppercase tracking-widest">
+            Đang xác thực phiên đăng nhập...
+          </p>
         </div>
       </div>
     );

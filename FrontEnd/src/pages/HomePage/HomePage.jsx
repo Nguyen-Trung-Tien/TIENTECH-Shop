@@ -3,7 +3,6 @@ import HeroSection from "../../components/HomePageComponent/HeroSection";
 import CategorySection from "../../components/HomePageComponent/CategorySection";
 import ProductSection from "../../components/HomePageComponent/ProductSection";
 import AllProducts from "../../components/AllProducts/AllProduct";
-import { getAllCategoryApi } from "../../api/categoryApi";
 import ChatBot from "../../components/ChatBot/ChatBot";
 import SmallBanner from "../../components/SmallBanner/SmallBanner";
 import FlashSale from "../../components/FlashSale/FlashSale";
@@ -21,7 +20,7 @@ const HomePage = () => {
       try {
         const res = await getPersonalizedRecommendationsApi(6);
         if (res?.errCode === 0) setPersonalizedRecs(res.products);
-      } catch (e) {
+      } catch {
         console.error("Failed to load Personalized Recommendations");
       }
     };
@@ -38,8 +37,13 @@ const HomePage = () => {
         <BrandSection />
 
         <CategorySection />
-        
-        {personalizedRecs.length > 0 && <AISmartPicks products={personalizedRecs} title="Dành Riêng Cho Bạn" />}
+
+        {personalizedRecs.length > 0 && (
+          <AISmartPicks
+            products={personalizedRecs}
+            title="Dành Riêng Cho Bạn"
+          />
+        )}
 
         <div className="container-custom py-2">
           <div className="rounded-[2rem] overflow-hidden shadow-md">

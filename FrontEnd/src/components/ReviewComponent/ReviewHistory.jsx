@@ -182,7 +182,7 @@ const ReviewHistory = () => {
                   key={product.id}
                   className="group bg-white dark:bg-dark-surface p-8 rounded-[32px] border border-slate-100 dark:border-dark-border shadow-sm hover:shadow-md transition-all duration-300"
                 >
-                  {reviewingProductId === product.id ? (
+                  {reviewingProductId !== null && String(reviewingProductId) === String(product.id) ? (
                     <div className="space-y-8">
                       <div className="flex items-center gap-6 mb-8 pb-8 border-b border-slate-50 dark:border-dark-border">
                         <div className="size-16 rounded-2xl bg-slate-50 dark:bg-dark-bg p-2 border border-slate-100 dark:border-dark-border">

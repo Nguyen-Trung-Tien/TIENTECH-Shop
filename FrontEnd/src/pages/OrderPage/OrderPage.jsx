@@ -11,6 +11,7 @@ import {
   FiAlertTriangle,
   FiRefreshCw,
   FiList,
+  FiRotateCcw,
 } from "react-icons/fi";
 import { useNavigate, Link } from "react-router-dom";
 import { useSelector } from "react-redux";
@@ -20,11 +21,7 @@ import { motion as Motion, AnimatePresence } from "framer-motion";
 import { ConfirmModal } from "../../components/UI";
 import { getOrdersByUserId, updateOrderStatus } from "../../api/orderApi";
 import AppPagination from "../../components/Pagination/Pagination";
-import {
-  statusMap,
-  paymentStatusMap,
-  returnStatusMap,
-} from "../../utils/StatusMap";
+import { statusMap, paymentStatusMap } from "../../utils/StatusMap";
 import { StatusBadge } from "../../utils/StatusBadge";
 import ReviewModal from "../../components/ReviewComponent/ReviewModal";
 
@@ -35,6 +32,7 @@ const STATUS_TABS = [
   { key: "processing", label: "Đang xử lý", icon: FiSettings },
   { key: "shipped", label: "Đang giao", icon: FiTruck },
   { key: "delivered", label: "Đã giao", icon: FiPackage },
+  { key: "completed", label: "Đã nhận", icon: FiCheckCircle },
   { key: "cancelled", label: "Đã hủy", icon: FiXCircle },
 ];
 
@@ -56,7 +54,6 @@ const OrderPage = () => {
   const [showReturnModal, setShowReturnModal] = useState(false);
   const [orderToReturn, setOrderToReturn] = useState(null);
   const [returnReason, setReturnReason] = useState("");
-  const [selectedReturnReason, setSelectedReturnReason] = useState("");
   const [selectedReturnItems, setSelectedReturnItems] = useState([]);
   const [returning, setReturning] = useState(false);
 
@@ -117,7 +114,7 @@ const OrderPage = () => {
   const handleReceiveOrder = async (id) => {
     setReceivingId(id);
     try {
-      const res = await updateOrderStatus(id, "delivered");
+      const res = await updateOrderStatus(id, "completed");
       if (res?.errCode === 0) {
         toast.success("Xác nhận đã nhận hàng!");
         fetchOrders(page, activeTab);
@@ -386,7 +383,7 @@ const OrderPage = () => {
                         </button>
                       )}
 
-                      {o.status === "shipped" && (
+                      {o.status === "delivered" && (
                         <button
                           disabled={receivingId === o.id}
                           onClick={() => handleReceiveOrder(o.id)}
@@ -401,16 +398,16 @@ const OrderPage = () => {
                         </button>
                       )}
 
-                      {o.status === "delivered" && (
+                      {["delivered", "completed"].includes(o.status) && (
                         <>
                           <button
                             onClick={() => {
                               setOrderToReturn(o);
                               setShowReturnModal(true);
                             }}
-                            className="flex-1 sm:flex-none h-10 px-5 bg-slate-100 dark:bg-dark-bg text-slate-600 dark:text-dark-text-secondary rounded-xl text-xs font-bold hover:bg-slate-200 dark:hover:bg-dark-border transition-all flex items-center justify-center gap-2"
+                            className="flex-1 sm:flex-none h-10 px-5 bg-warning text-white rounded-xl text-xs font-bold hover:bg-amber-600 transition-all shadow-md shadow-warning/20 dark:shadow-none flex items-center justify-center gap-2"
                           >
-                            <FiRefreshCw size={16} /> Trả hàng
+                            <FiRotateCcw size={16} /> Trả hàng
                           </button>
                           <button
                             onClick={() => openReviewModal(o)}

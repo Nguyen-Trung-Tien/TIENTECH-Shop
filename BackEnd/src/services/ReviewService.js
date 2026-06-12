@@ -71,6 +71,7 @@ const getReviewsByProduct = async (productId, page = 1, limit = 10) => {
 
 const createReview = async (data) => {
   try {
+    const productId = Number(data.productId);
     // 1. Kiểm tra xem người dùng đã mua sản phẩm này và đơn hàng đã ở trạng thái 'delivered' hoặc 'completed' chưa
     const orderWithProduct = await db.Order.findOne({
       where: {
@@ -81,7 +82,7 @@ const createReview = async (data) => {
         {
           model: db.OrderItem,
           as: "orderItems",
-          where: { productId: data.productId },
+          where: { productId },
         },
       ],
     });
@@ -95,7 +96,7 @@ const createReview = async (data) => {
 
     // 2. Kiểm tra xem người dùng đã đánh giá sản phẩm này chưa
     const existingReview = await db.Review.findOne({
-      where: { userId: data.userId, productId: data.productId },
+      where: { userId: data.userId, productId },
     });
 
     if (existingReview) {
@@ -107,7 +108,7 @@ const createReview = async (data) => {
 
     const newReview = await db.Review.create({
       userId: data.userId,
-      productId: data.productId,
+      productId,
       rating: data.rating,
       comment: data.comment,
     });
@@ -332,7 +333,7 @@ const getPendingReviewProducts = async (userId) => {
       });
     });
 
-    const purchasedProductIds = Object.keys(purchasedProductsMap);
+    const purchasedProductIds = Object.keys(purchasedProductsMap).map(Number);
 
     // 2. Lấy tất cả các review mà user này đã viết
     const existingReviews = await db.Review.findAll({
@@ -340,11 +341,11 @@ const getPendingReviewProducts = async (userId) => {
       attributes: ["productId"],
     });
 
-    const reviewedProductIds = existingReviews.map((r) => String(r.productId));
+    const reviewedProductIds = existingReviews.map((r) => Number(r.productId));
 
     // 3. Lọc ra những sản phẩm đã mua nhưng chưa review
     const pendingProducts = purchasedProductIds
-      .filter((id) => !reviewedProductIds.includes(String(id)))
+      .filter((id) => !reviewedProductIds.includes(Number(id)))
       .map((id) => purchasedProductsMap[id]);
 
     return { errCode: 0, data: pendingProducts };

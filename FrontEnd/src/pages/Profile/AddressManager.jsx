@@ -109,7 +109,7 @@ const AddressManager = () => {
       } else {
         toast.error(res.errMessage);
       }
-    } catch (error) {
+    } catch {
       toast.error("Lỗi khi xử lý địa chỉ");
     } finally {
       setSubmitLoading(false);
@@ -125,7 +125,7 @@ const AddressManager = () => {
       } else {
         toast.error(res.errMessage);
       }
-    } catch (error) {
+    } catch {
       toast.error("Lỗi khi xóa địa chỉ");
     }
     setConfirmDeleteModal({ show: false, id: null });
@@ -140,7 +140,7 @@ const AddressManager = () => {
       } else {
         toast.error(res.errMessage);
       }
-    } catch (error) {
+    } catch {
       toast.error("Lỗi khi thiết lập mặc định");
     }
   };

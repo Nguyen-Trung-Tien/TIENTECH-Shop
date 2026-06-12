@@ -12,7 +12,6 @@ import { FcGoogle } from "react-icons/fc";
 import { useDispatch } from "react-redux";
 import { toast } from "react-toastify";
 import { motion as Motion } from "framer-motion";
-
 import { loginUser } from "../../api/userApi";
 import { setUser } from "../../redux/userSlice";
 import ForgotPasswordModal from "../../components/ForgotPasswordModal/ForgotPasswordModal";
