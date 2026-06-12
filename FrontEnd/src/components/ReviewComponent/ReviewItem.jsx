@@ -1,5 +1,5 @@
 import React, { memo, useState } from "react";
-import { FaStar, FaCheckCircle } from "react-icons/fa";
+import { FaStar, FaCheckCircle, FaThumbsUp } from "react-icons/fa";
 import { FiThumbsUp, FiMessageSquare } from "react-icons/fi";
 import ReplyItem from "./ReplyItem";
 import { toggleLikeReviewApi } from "../../api/reviewApi";
@@ -11,18 +11,26 @@ import { toast } from "react-toastify";
  */
 const ReviewItem = ({ review, user }) => {
   const [likes, setLikes] = useState(review.likes || 0);
+  const [isLiked, setIsLiked] = useState(review.isLiked || false);
   const [isLiking, setIsLiking] = useState(false);
 
   const handleLike = async () => {
+    if (!user) {
+      return toast.warn("Vui lòng đăng nhập để thích đánh giá!");
+    }
     if (isLiking) return;
     setIsLiking(true);
     try {
       const res = await toggleLikeReviewApi(review.id);
       if (res.errCode === 0) {
         setLikes(res.data.likes);
+        setIsLiked(res.data.isLiked);
+      } else {
+        toast.error(res.errMessage || "Không thể thực hiện thao tác");
       }
     } catch (error) {
       console.error(error);
+      toast.error("Lỗi khi kết nối đến server");
     } finally {
       setIsLiking(false);
     }
@@ -93,10 +101,22 @@ const ReviewItem = ({ review, user }) => {
               <button 
                 onClick={handleLike}
                 disabled={isLiking}
-                className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary hover:text-primary dark:hover:text-brand transition-colors group/btn disabled:opacity-50"
+                className={`flex items-center gap-2 text-[9px] font-black uppercase tracking-widest transition-colors group/btn disabled:opacity-50 ${
+                  isLiked 
+                    ? "text-blue-600 dark:text-blue-400" 
+                    : "text-slate-400 dark:text-dark-text-secondary hover:text-primary dark:hover:text-brand"
+                }`}
               >
-                <span className="size-8 flex items-center justify-center bg-slate-50 dark:bg-dark-bg rounded-lg group-hover/btn:bg-primary/5 dark:group-hover/btn:bg-brand/10 transition-all">
-                  <FiThumbsUp size={14} className={isLiking ? "animate-bounce" : ""} />
+                <span className={`size-8 flex items-center justify-center rounded-lg transition-all ${
+                  isLiked
+                    ? "bg-blue-50/80 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400"
+                    : "bg-slate-50 dark:bg-dark-bg group-hover/btn:bg-primary/5 dark:group-hover/btn:bg-brand/10"
+                }`}>
+                  {isLiked ? (
+                    <FaThumbsUp size={14} className={isLiking ? "animate-bounce" : ""} />
+                  ) : (
+                    <FiThumbsUp size={14} className={isLiking ? "animate-bounce" : ""} />
+                  )}
                 </span>
                 Hữu ích ({likes})
               </button>

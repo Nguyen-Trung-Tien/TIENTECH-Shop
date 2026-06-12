@@ -2,7 +2,7 @@ const db = require("../models");
 
 const { getPagination, getPagingData } = require("../utils/paginationHelper");
 
-const getReviewsByProduct = async (productId, page = 1, limit = 10) => {
+const getReviewsByProduct = async (productId, page = 1, limit = 10, userId = null) => {
   try {
     const { offset, limit: l } = getPagination(page, limit);
 
@@ -50,11 +50,24 @@ const getReviewsByProduct = async (productId, page = 1, limit = 10) => {
       }, {});
     }
 
+    let likedReviewIds = new Set();
+    if (userId && reviewIds.length > 0) {
+      const likes = await db.ReviewLike.findAll({
+        where: {
+          userId,
+          reviewId: reviewIds,
+        },
+        attributes: ["reviewId"],
+      });
+      likedReviewIds = new Set(likes.map((lk) => lk.reviewId));
+    }
+
     return {
       errCode: 0,
       data: pagingData.items.map((r) => ({
         ...r.toJSON(),
         replies: repliesByReviewId[r.id] || [],
+        isLiked: likedReviewIds.has(r.id),
       })),
       pagination: {
         totalItems: pagingData.totalItems,
@@ -355,10 +368,13 @@ const getPendingReviewProducts = async (userId) => {
   }
 };
 
-const toggleLikeReview = async (reviewId) => {
+const toggleLikeReview = async (reviewId, userId) => {
   try {
     if (!reviewId) {
       return { errCode: 2, errMessage: "ID đánh giá không hợp lệ" };
+    }
+    if (!userId) {
+      return { errCode: 3, errMessage: "Vui lòng đăng nhập" };
     }
 
     const review = await db.Review.findByPk(reviewId);
@@ -366,13 +382,29 @@ const toggleLikeReview = async (reviewId) => {
       return { errCode: 2, errMessage: "Review không tồn tại" };
     }
 
-    // Sử dụng increment để tránh lỗi tranh chấp đồng thời và đảm bảo hoạt động bất kể raw config
-    await db.Review.increment("likes", { by: 1, where: { id: reviewId } });
+    // Kiểm tra xem user đã like review này chưa
+    const existingLike = await db.ReviewLike.findOne({
+      where: { reviewId, userId },
+    });
 
-    // Lấy lại dữ liệu mới nhất
-    const updatedReview = await db.Review.findByPk(reviewId);
-
-    return { errCode: 0, data: updatedReview };
+    if (existingLike) {
+      // Unlike: Xoá record ReviewLike, giảm count likes của Review
+      await existingLike.destroy();
+      
+      const newLikesCount = Math.max(0, (review.likes || 0) - 1);
+      await db.Review.update({ likes: newLikesCount }, { where: { id: reviewId } });
+      
+      const updatedReview = await db.Review.findByPk(reviewId);
+      return { errCode: 0, data: { ...updatedReview.toJSON(), isLiked: false } };
+    } else {
+      // Like: Tạo record ReviewLike, tăng count likes của Review
+      await db.ReviewLike.create({ reviewId, userId });
+      
+      await db.Review.increment("likes", { by: 1, where: { id: reviewId } });
+      
+      const updatedReview = await db.Review.findByPk(reviewId);
+      return { errCode: 0, data: { ...updatedReview.toJSON(), isLiked: true } };
+    }
   } catch (error) {
     console.error("Error toggleLikeReview:", error);
     return { errCode: 1, errMessage: "Lỗi khi like đánh giá: " + error.message };

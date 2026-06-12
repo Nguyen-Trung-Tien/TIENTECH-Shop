@@ -3,13 +3,14 @@ const router = express.Router();
 const ReviewController = require("../controller/ReviewController");
 const {
   authenticateToken,
+  optionalAuthenticateToken,
   authorizeRole,
 } = require("../middleware/authMiddleware");
 
 const { validate } = require("../middleware/zodMiddleware");
 const { reviewSchema } = require("../utils/zodSchemas");
 
-router.get("/product/:productId", ReviewController.handleGetReviewsByProduct);
+router.get("/product/:productId", optionalAuthenticateToken, ReviewController.handleGetReviewsByProduct);
 router.post(
   "/create",
   authenticateToken,

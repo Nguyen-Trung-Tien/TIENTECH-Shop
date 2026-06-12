@@ -6,11 +6,13 @@ const handleGetReviewsByProduct = async (req, res) => {
     const { productId } = req.params;
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
+    const userId = req.user?.id || null;
 
     const data = await ReviewService.getReviewsByProduct(
       productId,
       page,
       limit,
+      userId
     );
     return res.status(200).json(data);
   } catch (e) {
@@ -134,7 +136,8 @@ const handleGetReviewsByUser = async (req, res) => {
 const handleToggleLikeReview = async (req, res) => {
   try {
     const { id } = req.params;
-    const data = await ReviewService.toggleLikeReview(id);
+    const userId = req.user.id;
+    const data = await ReviewService.toggleLikeReview(id, userId);
     if (data.errCode !== 0) {
       return res.status(400).json(data);
     }
