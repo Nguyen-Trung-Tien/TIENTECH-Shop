@@ -50,6 +50,8 @@ const clearProductCache = async (categoryId = null) => {
     await deleteCacheByPattern("products_*");
   }
   await deleteCacheByPattern("dashboard_*");
+  await deleteCacheByPattern("smart_recs_*");
+  await deleteCacheByPattern("user_recs_*");
 };
 
 const isFlashSaleActive = (product) => {

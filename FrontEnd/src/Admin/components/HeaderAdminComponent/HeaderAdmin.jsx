@@ -134,7 +134,7 @@ const HeaderAdmin = ({ toggleSidebar, isCollapsed, theme, toggleTheme }) => {
   };
 
   return (
-    <header className="sticky top-0 z-40 flex h-16 w-full items-center justify-between border-b border-slate-200 dark:border-dark-border bg-white dark:bg-dark-surface px-4 shadow-sm md:px-6 transition-colors duration-300">
+    <header className="sticky top-0 z-40 flex h-16 w-full items-center justify-between border-b border-slate-100/50 dark:border-dark-border/40 bg-white/95 dark:bg-dark-surface/90 backdrop-blur-md px-4 shadow-sm md:px-6 transition-colors duration-300">
       <div className="flex items-center gap-4">
         {/* Toggle Sidebar Button */}
         <button
@@ -341,7 +341,7 @@ const HeaderAdmin = ({ toggleSidebar, isCollapsed, theme, toggleTheme }) => {
                           );
                           setShowSuggestions(false);
                         }}
-                        className="flex items-center justify-center gap-2 w-full py-2 bg-slate-900 dark:bg-primary text-white rounded-xl text-[11px] font-black hover:bg-primary dark:hover:bg-primary-hover transition-all uppercase tracking-widest"
+                        className="flex items-center justify-center gap-2 w-full py-2.5 bg-primary text-white rounded-xl text-[11px] font-black hover:bg-primary-hover transition-all uppercase tracking-widest cursor-pointer shadow-md shadow-primary/10"
                       >
                         Xem toàn bộ kết quả <FiArrowRight />
                       </button>
@@ -358,7 +358,7 @@ const HeaderAdmin = ({ toggleSidebar, isCollapsed, theme, toggleTheme }) => {
         {/* Theme Toggle */}
         <button
           onClick={toggleTheme}
-          className="flex size-10 items-center justify-center rounded-xl bg-slate-50 dark:bg-dark-bg text-slate-500 dark:text-dark-text-secondary border border-slate-200 dark:border-dark-border hover:text-primary transition-all shadow-sm"
+          className="flex size-10 items-center justify-center rounded-xl bg-slate-50/50 dark:bg-dark-bg/50 text-slate-500 dark:text-dark-text-secondary border border-slate-100 dark:border-dark-border/40 hover:text-primary transition-all shadow-sm cursor-pointer"
           title={theme === "dark" ? "Chế độ sáng" : "Chế độ tối"}
         >
           {theme === "dark" ? <FiSun className="text-amber-500" /> : <FiMoon />}
@@ -367,7 +367,7 @@ const HeaderAdmin = ({ toggleSidebar, isCollapsed, theme, toggleTheme }) => {
         {/* Quick Actions */}
         <button
           onClick={() => navigate("/")}
-          className="hidden sm:flex h-10 items-center gap-2 rounded-xl border border-slate-200 dark:border-dark-border bg-white dark:bg-dark-surface px-4 text-sm font-medium text-slate-600 dark:text-dark-text-secondary hover:bg-slate-50 dark:hover:bg-dark-bg transition-colors shadow-sm"
+          className="hidden sm:flex h-10 items-center gap-2 rounded-xl border border-slate-100 dark:border-dark-border/40 bg-white dark:bg-dark-surface px-4 text-sm font-semibold text-slate-600 dark:text-dark-text-secondary hover:bg-slate-50 dark:hover:bg-dark-bg transition-colors shadow-sm cursor-pointer"
         >
           <FiHome />
           <span>Trang chủ</span>

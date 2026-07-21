@@ -4,28 +4,29 @@ import { cn } from "../../utils/cn";
 import Loader from "./Loader";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap rounded-lg text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 gap-2",
+  "inline-flex items-center justify-center whitespace-nowrap rounded-2xl text-sm font-semibold transition-all duration-300 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50 gap-2 select-none",
   {
     variants: {
       variant: {
-        default: "bg-primary text-white hover:bg-primary-hover shadow-sm",
-        primary: "bg-primary text-white hover:bg-primary-hover shadow-sm",
-        brand: "bg-brand text-white hover:bg-brand-hover shadow-sm",
-        destructive: "bg-danger text-white hover:bg-red-600 shadow-sm",
-        danger: "bg-danger text-white hover:bg-red-600 shadow-sm",
-        success: "bg-success text-white hover:bg-emerald-600 shadow-sm",
-        warning: "bg-warning text-white hover:bg-amber-600 shadow-sm",
-        outline: "border border-[var(--border-color)] bg-transparent hover:bg-[var(--bg-main)] text-[var(--text-main)]",
-        secondary: "bg-surface-100 text-[var(--text-main)] hover:bg-surface-200",
-        ghost: "hover:bg-surface-100 hover:text-[var(--text-main)]",
+        default: "bg-primary text-white hover:bg-primary-hover shadow-md shadow-primary/10",
+        primary: "bg-primary text-white hover:bg-primary-hover shadow-md shadow-primary/10",
+        brand: "bg-brand text-white hover:bg-brand-hover shadow-md shadow-brand/10",
+        destructive: "bg-danger text-white hover:bg-red-600 shadow-md shadow-danger/10",
+        danger: "bg-danger text-white hover:bg-red-600 shadow-md shadow-danger/10",
+        success: "bg-success text-white hover:bg-emerald-600 shadow-md shadow-success/10",
+        warning: "bg-warning text-white hover:bg-amber-600 shadow-md shadow-warning/10",
+        outline: "border border-[var(--border-color)] bg-transparent hover:bg-slate-100 dark:hover:bg-dark-surface/50 text-[var(--text-main)]",
+        secondary: "bg-slate-100 dark:bg-dark-surface text-[var(--text-main)] hover:bg-slate-200 dark:hover:bg-slate-700/60",
+        ghost: "hover:bg-slate-100 dark:hover:bg-dark-surface/50 hover:text-[var(--text-main)] text-[var(--text-muted)]",
         link: "text-primary underline-offset-4 hover:underline",
+        glass: "glass-card hover:bg-white/20 dark:hover:bg-slate-800/10 text-[var(--text-main)] border-white/25 dark:border-white/5",
       },
       size: {
-        default: "h-10 px-4 py-2",
-        sm: "h-9 rounded-md px-3",
-        md: "h-10 rounded-xl px-5",
-        lg: "h-11 rounded-lg px-8",
-        icon: "h-10 w-10",
+        default: "h-11 px-6 py-2.5",
+        sm: "h-9 rounded-xl px-4 text-xs",
+        md: "h-11 rounded-2xl px-6",
+        lg: "h-12 rounded-2xl px-8 text-base",
+        icon: "h-11 w-11 rounded-xl",
       },
     },
     defaultVariants: {

@@ -99,18 +99,18 @@ const VoucherSelector = ({ subtotal, onApply, appliedVoucher, onRemove }) => {
       ) : (
         <button
           onClick={() => setShowModal(true)}
-          className="w-full flex items-center justify-between p-4 bg-white dark:bg-dark-bg border-2 border-dashed border-slate-200 dark:border-dark-border rounded-2xl hover:border-primary dark:hover:border-brand hover:bg-slate-50 dark:hover:bg-dark-surface transition-all group"
+          className="w-full flex items-center justify-between p-4 bg-white dark:bg-dark-bg border-2 border-dashed border-slate-200 dark:border-dark-border rounded-2xl hover:border-primary dark:hover:border-primary-light hover:bg-slate-50 dark:hover:bg-dark-surface transition-all group cursor-pointer"
         >
           <div className="flex items-center gap-3">
             <FiTag
-              className="text-slate-400 dark:text-dark-text-secondary group-hover:text-primary dark:group-hover:text-brand transition-colors"
+              className="text-slate-400 dark:text-dark-text-secondary group-hover:text-primary dark:group-hover:text-primary-light transition-colors"
               size={20}
             />
             <span className="text-sm font-bold text-slate-500 dark:text-dark-text-secondary group-hover:text-slate-900 dark:group-hover:text-white transition-colors">
               Chọn hoặc nhập mã giảm giá
             </span>
           </div>
-          <FiChevronRight className="text-slate-300 dark:text-slate-700 group-hover:text-primary dark:group-hover:text-brand" />
+          <FiChevronRight className="text-slate-300 dark:text-slate-700 group-hover:text-primary dark:group-hover:text-primary-light" />
         </button>
       )}
 
@@ -133,11 +133,11 @@ const VoucherSelector = ({ subtotal, onApply, appliedVoucher, onRemove }) => {
             >
               <div className="p-6 border-b border-slate-50 dark:border-dark-border flex items-center justify-between bg-white dark:bg-dark-surface">
                 <h3 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tight flex items-center gap-2">
-                  <FiTag className="text-primary dark:text-brand" /> Mã giảm giá của bạn
+                  <FiTag className="text-primary dark:text-primary-light" /> Mã giảm giá của bạn
                 </h3>
                 <button
                   onClick={() => setShowModal(false)}
-                  className="p-2 text-slate-400 dark:text-dark-text-secondary hover:text-slate-600 dark:hover:text-white"
+                  className="p-2 text-slate-400 dark:text-dark-text-secondary hover:text-slate-600 dark:hover:text-white cursor-pointer"
                 >
                   <FiX size={20} />
                 </button>
@@ -146,7 +146,7 @@ const VoucherSelector = ({ subtotal, onApply, appliedVoucher, onRemove }) => {
               <div className="p-6 max-h-[60vh] overflow-y-auto space-y-4 custom-scrollbar bg-white dark:bg-dark-surface">
                 {loading ? (
                   <div className="py-10 text-center space-y-3">
-                    <Loader size="lg" className="mx-auto text-primary dark:text-brand" />
+                    <Loader size="lg" className="mx-auto text-primary dark:text-primary-light" />
                     <p className="text-xs font-bold text-slate-400 dark:text-dark-text-secondary animate-pulse uppercase">
                       Đang tải mã...
                     </p>
@@ -163,20 +163,20 @@ const VoucherSelector = ({ subtotal, onApply, appliedVoucher, onRemove }) => {
                         onClick={() => isEligible && handleSelect(v)}
                         className={`relative p-4 rounded-2xl border-2 transition-all cursor-pointer group ${
                           isSelected
-                            ? "border-primary dark:border-brand bg-primary/5 dark:bg-brand/10"
+                            ? "border-primary dark:border-primary-light bg-primary/5 dark:bg-primary-light/10"
                             : isEligible
-                              ? "border-slate-100 dark:border-dark-border bg-white dark:bg-dark-bg hover:border-primary/30 dark:hover:border-brand/30"
+                              ? "border-slate-100 dark:border-dark-border bg-white dark:bg-dark-bg hover:border-primary/30 dark:hover:border-primary-light/30"
                               : "border-slate-50 dark:border-dark-border bg-slate-50 dark:bg-dark-bg opacity-60 grayscale cursor-not-allowed"
                         }`}
                       >
                         <div className="flex justify-between items-start mb-2">
                           <span
-                            className={`text-sm font-black uppercase tracking-widest ${isSelected ? "text-primary dark:text-brand" : "text-slate-900 dark:text-white"}`}
+                            className={`text-sm font-black uppercase tracking-widest ${isSelected ? "text-primary dark:text-primary-light" : "text-slate-900 dark:text-white"}`}
                           >
                             {v.code}
                           </span>
                           {isSelected && (
-                            <FiCheck className="text-primary dark:text-brand" size={18} />
+                            <FiCheck className="text-primary dark:text-primary-light" size={18} />
                           )}
                         </div>
                         <p className="text-xs font-bold text-slate-500 dark:text-dark-text-secondary mb-3">

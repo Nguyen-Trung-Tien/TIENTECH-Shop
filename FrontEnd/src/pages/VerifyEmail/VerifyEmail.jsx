@@ -93,7 +93,7 @@ const VerifyEmail = () => {
           {status === "success" && (
             <Link
               to="/login"
-              className="block w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors"
+              className="block w-full py-3 px-4 bg-primary hover:bg-primary-hover text-white font-semibold rounded-lg transition-colors cursor-pointer text-center"
             >
               Đăng nhập ngay
             </Link>
@@ -104,7 +104,7 @@ const VerifyEmail = () => {
               <button
                 onClick={handleResend}
                 disabled={isResending}
-                className="flex items-center justify-center w-full py-3 px-4 bg-white border border-gray-300 dark:border-gray-600 dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 font-semibold rounded-lg transition-colors disabled:opacity-50"
+                className="flex items-center justify-center w-full py-3 px-4 bg-white border border-gray-300 dark:border-gray-600 dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 font-semibold rounded-lg transition-colors disabled:opacity-50 cursor-pointer"
               >
                 {isResending ? (
                   <Loader2 className="size-5 mr-2 animate-spin" />
@@ -115,7 +115,7 @@ const VerifyEmail = () => {
               </button>
               <Link
                 to="/register"
-                className="block w-full text-blue-600 dark:text-blue-400 hover:underline text-sm"
+                className="block w-full text-primary dark:text-primary-light hover:underline text-sm text-center"
               >
                 Quay lại trang đăng ký
               </Link>

@@ -124,7 +124,7 @@ const ProductInfo = ({
                   Chọn {attrName}
                 </label>
                 {selectedAttributes[attrName] && (
-                  <span className="text-[10px] font-bold text-blue-600 dark:text-brand bg-blue-50 dark:bg-brand/10 px-2 py-0.5 rounded-md">
+                  <span className="text-[10px] font-bold text-primary dark:text-primary-light bg-primary/5 dark:bg-primary/10 px-2 py-0.5 rounded-md">
                     Đã chọn: {selectedAttributes[attrName]}
                   </span>
                 )}
@@ -138,11 +138,11 @@ const ProductInfo = ({
                       key={val}
                       disabled={!isAvailable}
                       onClick={() => onSelectAttribute(attrName, val)}
-                      className={`min-w-[60px] px-4 py-2 rounded-lg text-xs font-bold transition-all border-2 flex items-center justify-center gap-1.5 ${
+                      className={`min-w-[60px] px-4 py-2 rounded-lg text-xs font-bold transition-all border-2 flex items-center justify-center gap-1.5 cursor-pointer ${
                         isSelected
-                          ? "bg-blue-600 border-blue-600 text-white shadow-md shadow-blue-100 dark:shadow-none"
+                          ? "bg-primary border-primary text-white shadow-md shadow-primary/10 dark:shadow-none"
                           : isAvailable
-                            ? "bg-white dark:bg-dark-surface border-gray-200 dark:border-dark-border hover:border-blue-300 dark:hover:border-brand hover:text-blue-600 dark:hover:text-brand text-gray-700 dark:text-dark-text-primary"
+                            ? "bg-white dark:bg-dark-surface border-gray-200 dark:border-dark-border hover:border-primary/50 dark:hover:border-primary-light hover:text-primary dark:hover:text-primary-light text-gray-700 dark:text-dark-text-primary"
                             : "bg-gray-50 dark:bg-dark-bg border-gray-100 dark:border-dark-border text-gray-300 dark:text-dark-text-secondary cursor-not-allowed opacity-60"
                       }`}
                     >
@@ -158,37 +158,39 @@ const ProductInfo = ({
       )}
 
       <div className="space-y-4 pt-2">
-        <div className="flex gap-3">
-          <button
-            onClick={onAddToCart}
-            disabled={addingCart || (!selectedVariant && product.variants?.length > 0)}
-            className={`flex-1 h-12 rounded-xl font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 border-2 ${
-              !selectedVariant && product.variants?.length > 0
-                ? "bg-gray-50 dark:bg-dark-bg text-gray-300 dark:text-dark-text-secondary border-gray-100 dark:border-dark-border cursor-not-allowed"
-                : "bg-white dark:bg-dark-surface border-slate-800 dark:border-white text-slate-800 dark:text-white hover:bg-slate-800 dark:hover:bg-white hover:text-white dark:hover:text-slate-900"
-            }`}
-          >
-            <FiShoppingCart className="text-lg" />
-            THÊM GIỎ HÀNG
-          </button>
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="flex flex-1 gap-3">
+            <button
+              onClick={onAddToCart}
+              disabled={addingCart || (!selectedVariant && product.variants?.length > 0)}
+              className={`flex-1 h-12 rounded-xl font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 border-2 cursor-pointer ${
+                !selectedVariant && product.variants?.length > 0
+                  ? "bg-gray-50 dark:bg-dark-bg text-gray-300 dark:text-dark-text-secondary border-gray-100 dark:border-dark-border cursor-not-allowed"
+                  : "bg-white dark:bg-dark-surface border-slate-800 dark:border-white text-slate-800 dark:text-white hover:bg-slate-800 dark:hover:bg-white hover:text-white dark:hover:text-slate-900"
+              }`}
+            >
+              <FiShoppingCart className="text-lg" />
+              THÊM GIỎ
+            </button>
 
-          <button
-            onClick={handleBuyNow}
-            disabled={addingCart || (!selectedVariant && product.variants?.length > 0)}
-            className={`flex-[1.5] h-12 rounded-xl font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-sm ${
-              !selectedVariant && product.variants?.length > 0
-                ? "bg-gray-100 dark:bg-dark-bg text-gray-300 dark:text-dark-text-secondary cursor-not-allowed"
-                : "bg-blue-600 dark:bg-brand text-white hover:bg-blue-700 dark:hover:bg-brand/80 active:scale-95 shadow-blue-100 dark:shadow-none"
-            }`}
-          >
-            <FiCreditCard className="text-lg" />
-            MUA NGAY
-          </button>
+            <button
+              onClick={handleBuyNow}
+              disabled={addingCart || (!selectedVariant && product.variants?.length > 0)}
+              className={`flex-[1.5] h-12 rounded-xl font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-sm cursor-pointer ${
+                !selectedVariant && product.variants?.length > 0
+                  ? "bg-gray-100 dark:bg-dark-bg text-gray-300 dark:text-dark-text-secondary cursor-not-allowed"
+                  : "bg-primary dark:bg-brand text-white hover:bg-primary-hover dark:hover:bg-brand/80 active:scale-[0.98] shadow-lg shadow-primary/10"
+              }`}
+            >
+              <FiCreditCard className="text-lg" />
+              MUA NGAY
+            </button>
+          </div>
 
           <button
             onClick={handleWishlist}
             disabled={loadingWishlist}
-            className={`size-12 rounded-xl border-2 flex items-center justify-center transition-all shadow-sm ${
+            className={`w-full sm:size-12 h-12 rounded-xl border-2 flex items-center justify-center transition-all shadow-sm cursor-pointer shrink-0 ${
               isWishlisted
                 ? "border-red-100 dark:border-red-900/30 bg-red-50 dark:bg-red-900/20 text-red-500"
                 : "border-gray-100 dark:border-dark-border text-gray-400 dark:text-dark-text-secondary hover:bg-gray-50 dark:hover:bg-dark-bg hover:text-red-500 hover:border-red-100 dark:hover:border-red-900/30"
@@ -200,9 +202,9 @@ const ProductInfo = ({
 
         <button
           onClick={() => setShowPrediction(true)}
-          className="w-full h-12 rounded-xl bg-slate-50 dark:bg-dark-surface text-slate-600 dark:text-dark-text-secondary border border-slate-200 dark:border-dark-border hover:bg-slate-100 dark:hover:bg-dark-bg font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2"
+          className="w-full h-12 rounded-xl bg-slate-50 dark:bg-dark-surface text-slate-600 dark:text-dark-text-secondary border border-slate-200 dark:border-dark-border hover:bg-slate-100 dark:hover:bg-dark-bg font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer"
         >
-          <FiTrendingUp className="text-lg text-indigo-600 dark:text-indigo-400" />
+          <FiTrendingUp className="text-lg text-primary dark:text-primary-light" />
           DỰ ĐOÁN GIÁ AI
         </button>
 

@@ -107,6 +107,10 @@ module.exports = (sequelize, DataTypes) => {
       modelName: "Order",
       tableName: "Orders",
       timestamps: true,
+      indexes: [
+        { fields: ["userId"] },
+        { fields: ["status"] },
+      ],
     },
   );
 

@@ -55,7 +55,7 @@ const BrandSection = () => {
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ delay: index * 0.02 }}
-              className="group cursor-pointer bg-white dark:bg-gray-900 border border-slate-100 dark:border-gray-800 shadow-sm rounded-xl transition-all duration-300 flex items-center justify-center h-[36px] px-2 hover:shadow-md hover:border-blue-500/30"
+              className="group cursor-pointer bg-white dark:bg-gray-900 border border-slate-100 dark:border-gray-800 shadow-sm rounded-2xl transition-all duration-300 flex items-center justify-center h-[36px] px-2 hover:shadow-md hover:border-primary/30"
               onClick={() => navigate(`/brand/${brand.slug}`)}
             >
               <img

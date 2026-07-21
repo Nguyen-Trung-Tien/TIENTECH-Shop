@@ -9,7 +9,7 @@ const SmartRecommendations = ({ smartRecs }) => {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-gray-100 dark:border-dark-border pb-6">
         <div className="space-y-2">
           <div className="flex items-center gap-2">
-            <div className="size-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-100 dark:shadow-none">
+            <div className="size-8 rounded-lg bg-primary flex items-center justify-center text-white shadow-lg shadow-primary/20 dark:shadow-none animate-pulse">
               <FiZap className="fill-current" />
             </div>
             <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight uppercase">
@@ -22,7 +22,7 @@ const SmartRecommendations = ({ smartRecs }) => {
         </div>
         <a
           href="/products"
-          className="text-[11px] font-black uppercase tracking-widest text-indigo-600 dark:text-brand hover:text-indigo-700 dark:hover:text-brand transition-colors flex items-center gap-2 group"
+          className="text-[11px] font-black uppercase tracking-widest text-primary dark:text-primary-light hover:text-primary-hover transition-colors flex items-center gap-2 group"
         >
           Xem tất cả sản phẩm{" "}
           <FiChevronRight className="group-hover:translate-x-1 transition-transform" />
@@ -34,14 +34,14 @@ const SmartRecommendations = ({ smartRecs }) => {
           <a
             key={rec.id}
             href={`/product-detail/${rec.slug || rec.id}`}
-            className="group bg-white dark:bg-dark-surface rounded-3xl border border-gray-100 dark:border-dark-border p-4 hover:shadow-2xl dark:hover:shadow-none hover:shadow-indigo-100 transition-all duration-500 relative overflow-hidden"
+            className="group bg-white dark:bg-dark-surface rounded-3xl border border-gray-100 dark:border-dark-border p-4 hover:shadow-2xl dark:hover:shadow-none hover:shadow-primary/5 transition-all duration-500 relative overflow-hidden"
           >
             <div className="absolute top-3 left-3 z-10">
               <span
                 className={`px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-tighter shadow-sm flex items-center gap-1 ${
                   rec.reason === "Thường mua cùng"
                     ? "bg-emerald-500 text-white"
-                    : "bg-indigo-600 text-white"
+                    : "bg-primary text-white"
                 }`}
               >
                 {rec.reason === "Thường mua cùng" ? "🤝" : "✨"}{" "}
@@ -57,7 +57,7 @@ const SmartRecommendations = ({ smartRecs }) => {
               />
             </div>
             <div className="space-y-2">
-              <h3 className="text-xs font-black text-slate-900 dark:text-white uppercase truncate group-hover:text-indigo-600 dark:group-hover:text-brand transition-colors">
+              <h3 className="text-xs font-black text-slate-900 dark:text-white uppercase truncate group-hover:text-primary dark:group-hover:text-primary-light transition-colors">
                 {rec.name}
               </h3>
               <div className="flex items-baseline gap-2">

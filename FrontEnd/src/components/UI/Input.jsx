@@ -6,7 +6,7 @@ const Input = ({ className, type, ref, ...props }) => {
     <input
       type={type}
       className={cn(
-        "flex h-10 w-full rounded-lg border border-[var(--border-color)] bg-white px-3 py-2 text-sm text-[var(--text-main)] ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-[var(--text-muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-[var(--color-dark-bg)] dark:border-[var(--color-dark-border)]",
+        "flex h-11 w-full rounded-2xl border border-[var(--border-color)] bg-transparent dark:bg-dark-surface/20 px-4 py-2.5 text-sm text-[var(--text-main)] placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:border-primary/50 focus:ring-4 focus:ring-primary/5 outline-none transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-50",
         className
       )}
       ref={ref}

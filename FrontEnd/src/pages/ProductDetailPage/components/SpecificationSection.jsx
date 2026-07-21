@@ -6,11 +6,11 @@ const SpecificationSection = ({ mergedSpecs, displayVariant }) => {
     <div className="pt-4">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-gray-400 dark:text-dark-text-secondary flex items-center gap-2">
-          <span className="w-6 h-[1.5px] bg-blue-500 dark:bg-brand"></span>
+          <span className="w-6 h-[1.5px] bg-primary"></span>
           Thông số kỹ thuật
         </h3>
         {displayVariant && (
-          <span className="text-[10px] font-bold text-blue-600 dark:text-brand bg-blue-50 dark:bg-brand/10 px-2 py-1 rounded-lg">
+          <span className="text-[10px] font-bold text-primary dark:text-primary-light bg-primary/5 dark:bg-primary/10 px-2 py-1 rounded-lg">
             Cấu hình riêng {displayVariant.sku?.split("-")[0]}
           </span>
         )}
@@ -25,7 +25,7 @@ const SpecificationSection = ({ mergedSpecs, displayVariant }) => {
                 className="flex justify-between items-center py-3.5 px-5 text-xs transition-colors hover:bg-white dark:hover:bg-dark-bg bg-white/40 dark:bg-transparent"
               >
                 <span className="text-gray-400 dark:text-dark-text-secondary font-bold uppercase tracking-wider flex items-center gap-2.5">
-                  <span className="p-1.5 rounded-lg bg-white dark:bg-dark-bg shadow-sm text-blue-500 dark:text-brand">
+                  <span className="p-1.5 rounded-lg bg-white dark:bg-dark-bg shadow-sm text-primary">
                     {spec.icon}
                   </span>
                   {spec.name}

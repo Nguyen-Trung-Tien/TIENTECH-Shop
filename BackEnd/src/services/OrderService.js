@@ -565,6 +565,11 @@ const createOrder = async (data) => {
     }
 
     await t.commit();
+
+    // Xóa cache sản phẩm để cập nhật số lượng tồn kho trên UI ngay lập tức
+    const { clearProductCache } = require("./product/productHelper");
+    clearProductCache().catch((err) => console.error("Lỗi xóa cache SP sau đặt hàng:", err));
+
     return {
       errCode: 0,
       errMessage: "Order created successfully",
@@ -776,6 +781,10 @@ const updateOrderStatus = async (id, status, user = null, reason = "") => {
 
     await order.save({ transaction: t });
     await t.commit();
+
+    // Xóa cache sản phẩm để cập nhật tồn kho/doanh số trên UI ngay lập tức
+    const { clearProductCache } = require("./product/productHelper");
+    clearProductCache().catch((err) => console.error("Lỗi xóa cache SP sau cập nhật trạng thái đơn hàng:", err));
 
     if (status === "delivered" || status === "confirmed") {
       const user = await db.User.findByPk(order.userId);

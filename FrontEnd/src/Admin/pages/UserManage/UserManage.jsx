@@ -33,18 +33,18 @@ const UserManage = () => {
       header: "Thành viên",
       render: (item) => (
         <div className="flex items-center gap-3">
-          <div className="size-10 rounded-full bg-slate-100 overflow-hidden">
+          <div className="size-10 rounded-full bg-slate-100 dark:bg-dark-bg overflow-hidden">
             {item.avatar ? (
               <img src={item.avatar} alt={item.username} className="w-full h-full object-cover" />
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-slate-300">
+              <div className="w-full h-full flex items-center justify-center text-slate-300 dark:text-slate-700">
                 <FiUser />
               </div>
             )}
           </div>
           <div>
-            <p className="text-sm font-black text-slate-900">{item.username}</p>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">
+            <p className="text-sm font-black text-slate-900 dark:text-white">{item.username}</p>
+            <p className="text-[10px] font-bold text-slate-400 dark:text-dark-text-secondary/50 uppercase tracking-tighter">
               ID: {item.id}
             </p>
           </div>
@@ -55,12 +55,12 @@ const UserManage = () => {
       header: "Liên hệ",
       render: (item) => (
         <div className="space-y-1">
-          <div className="flex items-center gap-2 text-xs font-bold text-slate-500">
-            <FiMail className="text-indigo-400" /> {item.email}
+          <div className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-dark-text-secondary">
+            <FiMail className="text-primary" /> {item.email}
           </div>
           {item.phone && (
-            <div className="flex items-center gap-2 text-xs font-bold text-slate-500">
-              <FiPhone className="text-indigo-400" /> {item.phone}
+            <div className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-dark-text-secondary">
+              <FiPhone className="text-primary" /> {item.phone}
             </div>
           )}
         </div>
@@ -70,7 +70,7 @@ const UserManage = () => {
       header: "Vai trò",
       render: (item) => (
         <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider ${
-          item.role === 'admin' ? 'bg-rose-50 text-rose-600' : 'bg-indigo-50 text-indigo-600'
+          item.role === 'admin' ? 'bg-rose-50 dark:bg-rose-950/20 text-rose-600 dark:text-rose-400' : 'bg-primary/5 dark:bg-primary/10 text-primary dark:text-primary-light'
         }`}>
           {item.role}
         </span>
@@ -80,7 +80,7 @@ const UserManage = () => {
       header: "Trạng thái",
       render: (item) => (
         <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase ${
-          item.isActive ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-400'
+          item.isActive ? 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400' : 'bg-slate-100 dark:bg-dark-bg text-slate-400 dark:text-dark-text-secondary/50'
         }`}>
           <span className={`w-1.5 h-1.5 rounded-full ${item.isActive ? 'bg-emerald-500' : 'bg-slate-400'}`} />
           {item.isActive ? 'Hoạt động' : 'Bị khóa'}

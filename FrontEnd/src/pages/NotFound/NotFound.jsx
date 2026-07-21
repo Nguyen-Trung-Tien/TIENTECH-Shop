@@ -5,8 +5,8 @@ const NotFound = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-dark-bg p-6 relative overflow-hidden">
       {/* Background elements */}
-      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-600/5 rounded-full blur-[120px]" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-indigo-600/5 rounded-full blur-[120px]" />
+      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/5 rounded-full blur-[120px]" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-primary/5 rounded-full blur-[120px]" />
 
       <div className="text-center relative z-10 max-w-2xl">
         <Motion.div
@@ -14,7 +14,7 @@ const NotFound = () => {
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
         >
-          <h1 className="text-[12rem] md:text-[16rem] font-black leading-none text-transparent bg-clip-text bg-gradient-to-b from-blue-600 to-indigo-600/20 tracking-tighter">
+          <h1 className="text-[12rem] md:text-[16rem] font-black leading-none text-transparent bg-clip-text bg-gradient-to-b from-primary to-primary/20 tracking-tighter">
             404
           </h1>
         </Motion.div>
@@ -42,14 +42,14 @@ const NotFound = () => {
         >
           <Link
             to="/"
-            className="flex items-center gap-2 px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-2xl shadow-xl shadow-blue-600/20 transition-all hover:scale-105 active:scale-95 uppercase tracking-widest text-sm"
+            className="flex items-center gap-2 px-8 py-4 bg-primary hover:bg-primary-hover text-white font-black rounded-2xl shadow-xl shadow-primary/20 transition-all hover:scale-105 active:scale-95 uppercase tracking-widest text-sm cursor-pointer"
           >
             <FiHome size={18} />
             Quay về trang chủ
           </Link>
           <button
             onClick={() => window.history.back()}
-            className="flex items-center gap-2 px-8 py-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white font-black rounded-2xl transition-all hover:bg-gray-50 dark:hover:bg-gray-700 active:scale-95 uppercase tracking-widest text-sm"
+            className="flex items-center gap-2 px-8 py-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white font-black rounded-2xl transition-all hover:bg-gray-50 dark:hover:bg-gray-700 active:scale-95 uppercase tracking-widest text-sm cursor-pointer"
           >
             <FiArrowLeft size={18} />
             Quay lại

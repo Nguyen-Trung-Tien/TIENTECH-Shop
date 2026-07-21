@@ -52,11 +52,15 @@ axiosClient.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        await axios.post(
+        const response = await axios.post(
           `${appConfig.apiUrl}/user/refresh-token`,
           {},
           { withCredentials: true },
         );
+
+        if (response.data?.errCode !== 0) {
+          throw new Error(response.data?.errMessage || "Refresh token failed");
+        }
 
         isRefreshing = false;
         processQueue(null);
@@ -66,9 +70,11 @@ axiosClient.interceptors.response.use(
         isRefreshing = false;
         processQueue(refreshError);
 
+        // Logout user on any refresh failure (status 400/403 or custom thrown error)
         if (
           refreshError.response?.status === 403 ||
-          refreshError.response?.status === 400
+          refreshError.response?.status === 400 ||
+          !refreshError.response
         ) {
           store.dispatch(removeUser());
           if (!window.location.pathname.includes("/login")) {

@@ -9,6 +9,7 @@ const {
   ensureUniqueSKU,
   clearProductCache,
   applyFlashSaleToProduct,
+  updateProductEmbedding,
 } = require("./productHelper");
 
 const createProduct = async (data, imageRecords = []) => {
@@ -52,6 +53,9 @@ const createProduct = async (data, imageRecords = []) => {
     }
 
     await t.commit();
+    updateProductEmbedding(product).catch((err) =>
+      console.error("Lỗi cập nhật embedding cho SP mới:", err)
+    );
     await clearProductCache(product.categoryId);
     return { errCode: 0, product };
   } catch (e) {
@@ -199,6 +203,9 @@ const updateProduct = async (id, data, imageRecords = []) => {
     }
 
     await t.commit();
+    updateProductEmbedding(updatedProduct).catch((err) =>
+      console.error("Lỗi cập nhật embedding cho SP cập nhật:", err)
+    );
     clearProductCache();
     return { errCode: 0, product: updatedProduct };
   } catch (e) {

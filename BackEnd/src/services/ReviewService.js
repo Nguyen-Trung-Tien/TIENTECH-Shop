@@ -85,8 +85,8 @@ const getReviewsByProduct = async (productId, page = 1, limit = 10, userId = nul
 const createReview = async (data) => {
   try {
     const productId = Number(data.productId);
-    // 1. Kiểm tra xem người dùng đã mua sản phẩm này và đơn hàng đã ở trạng thái 'delivered' hoặc 'completed' chưa
-    const orderWithProduct = await db.Order.findOne({
+    // 1. Kiểm tra xem người dùng đã mua sản phẩm này bao nhiêu lần và đơn hàng đã ở trạng thái 'delivered' hoặc 'completed' chưa
+    const deliveredOrders = await db.Order.findAll({
       where: {
         userId: data.userId,
         status: { [db.Sequelize.Op.in]: ["delivered", "completed"] },
@@ -100,22 +100,31 @@ const createReview = async (data) => {
       ],
     });
 
-    if (!orderWithProduct) {
+    let purchaseCount = 0;
+    deliveredOrders.forEach((order) => {
+      order.orderItems.forEach((item) => {
+        if (Number(item.productId) === productId) {
+          purchaseCount += 1;
+        }
+      });
+    });
+
+    if (purchaseCount === 0) {
       return {
         errCode: 2,
         errMessage: "Bạn chỉ có thể đánh giá sản phẩm sau khi đã nhận hàng",
       };
     }
 
-    // 2. Kiểm tra xem người dùng đã đánh giá sản phẩm này chưa
-    const existingReview = await db.Review.findOne({
+    // 2. Đếm số lượng đánh giá đã viết cho sản phẩm này
+    const reviewCount = await db.Review.count({
       where: { userId: data.userId, productId },
     });
 
-    if (existingReview) {
+    if (reviewCount >= purchaseCount) {
       return {
         errCode: 3,
-        errMessage: "Bạn đã đánh giá sản phẩm này rồi",
+        errMessage: "Bạn đã đánh giá sản phẩm này rồi (đã đánh giá đủ số lần mua hàng)",
       };
     }
 
@@ -334,32 +343,49 @@ const getPendingReviewProducts = async (userId) => {
       return { errCode: 0, data: [] };
     }
 
-    // Gom tất cả sản phẩm duy nhất đã mua
-    const purchasedProductsMap = {};
+    // Gom tất cả sản phẩm và đếm số lần đã mua
+    const purchasedProductsMap = {}; // productId -> { id, name, image, purchaseCount }
     deliveredOrders.forEach((order) => {
       order.orderItems.forEach((item) => {
-        purchasedProductsMap[item.productId] = {
-          id: item.productId,
-          name: item.productName,
-          image: item.image,
-        };
+        const pid = Number(item.productId);
+        if (!purchasedProductsMap[pid]) {
+          purchasedProductsMap[pid] = {
+            id: pid,
+            name: item.productName,
+            image: item.image,
+            purchaseCount: 0,
+          };
+        }
+        purchasedProductsMap[pid].purchaseCount += 1;
       });
     });
 
     const purchasedProductIds = Object.keys(purchasedProductsMap).map(Number);
 
-    // 2. Lấy tất cả các review mà user này đã viết
+    // 2. Lấy tất cả các review mà user này đã viết cho những sản phẩm này
     const existingReviews = await db.Review.findAll({
       where: { userId, productId: purchasedProductIds },
       attributes: ["productId"],
     });
 
-    const reviewedProductIds = existingReviews.map((r) => Number(r.productId));
+    const reviewCounts = {}; // productId -> reviewCount
+    existingReviews.forEach((r) => {
+      const pid = Number(r.productId);
+      reviewCounts[pid] = (reviewCounts[pid] || 0) + 1;
+    });
 
-    // 3. Lọc ra những sản phẩm đã mua nhưng chưa review
+    // 3. Lọc ra những sản phẩm có số lần mua hàng lớn hơn số lần đánh giá đã viết
     const pendingProducts = purchasedProductIds
-      .filter((id) => !reviewedProductIds.includes(Number(id)))
-      .map((id) => purchasedProductsMap[id]);
+      .filter((id) => {
+        const pCount = purchasedProductsMap[id].purchaseCount;
+        const rCount = reviewCounts[id] || 0;
+        return rCount < pCount;
+      })
+      .map((id) => ({
+        id: purchasedProductsMap[id].id,
+        name: purchasedProductsMap[id].name,
+        image: purchasedProductsMap[id].image,
+      }));
 
     return { errCode: 0, data: pendingProducts };
   } catch (error) {

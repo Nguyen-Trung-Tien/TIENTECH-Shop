@@ -48,9 +48,9 @@ const Categories = () => {
       header: "Tên Danh Mục",
       render: (item) => (
         <div>
-          <p className="text-sm font-black text-slate-900">{item.name}</p>
+          <p className="text-sm font-black text-slate-900 dark:text-white">{item.name}</p>
           {item.parent && (
-            <p className="text-[10px] font-bold text-indigo-500 uppercase mt-0.5">
+            <p className="text-[10px] font-bold text-primary dark:text-primary-light uppercase mt-0.5">
               Con của: {item.parent.name}
             </p>
           )}
@@ -60,12 +60,12 @@ const Categories = () => {
     {
       header: "Slug",
       accessor: "slug",
-      className: "hidden md:table-cell text-xs font-mono text-slate-400",
+      className: "hidden md:table-cell text-xs font-mono text-slate-400 dark:text-dark-text-secondary/50",
     },
     {
       header: "Số sản phẩm",
       render: (item) => (
-        <span className="px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-[11px] font-black">
+        <span className="px-3 py-1 rounded-full bg-slate-100 dark:bg-dark-bg text-slate-600 dark:text-dark-text-secondary text-[11px] font-black">
           {item.productCount || 0} SP
         </span>
       ),

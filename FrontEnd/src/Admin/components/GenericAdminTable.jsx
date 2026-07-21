@@ -43,7 +43,7 @@ const GenericAdminTable = ({
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
         <div>
           <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-3">
-            <div className="size-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-600/20">
+            <div className="size-12 rounded-2xl bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/20">
               {Icon && <Icon />}
             </div>
             {title}
@@ -57,18 +57,18 @@ const GenericAdminTable = ({
 
         <div className="flex items-center gap-4">
           <div className="relative group w-64">
-            <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-dark-text-secondary group-focus-within:text-indigo-600 transition-colors" />
+            <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-dark-text-secondary group-focus-within:text-primary transition-colors" />
             <input
               type="text"
               placeholder={searchPlaceholder}
-              className="w-full h-12 bg-white dark:bg-dark-surface border border-slate-200 dark:border-dark-border rounded-xl pl-11 text-sm font-bold text-slate-900 dark:text-white focus:ring-4 focus:ring-indigo-50 dark:focus:ring-indigo-900/20 transition-all outline-none"
+              className="w-full h-12 bg-white dark:bg-dark-surface border border-slate-100 dark:border-dark-border/40 rounded-2xl pl-11 text-sm font-bold text-slate-900 dark:text-white focus:ring-4 focus:ring-primary/5 transition-all outline-none"
               value={searchTerm}
               onChange={(e) => onSearchChange(e.target.value)}
             />
           </div>
           <button
             onClick={onAddClick}
-            className="btn-modern-primary group h-12 px-6 flex items-center gap-2 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-all"
+            className="btn-modern-primary group h-12 px-6 flex items-center gap-2"
           >
             <FiPlus className="text-xl group-hover:rotate-90 transition-transform duration-300" />
             <span>{addLabel}</span>
@@ -127,7 +127,7 @@ const GenericAdminTable = ({
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: rowIdx * 0.03 }}
                     key={item.id || rowIdx}
-                    className="hover:bg-indigo-50/20 dark:hover:bg-indigo-900/10 transition-colors group"
+                    className="hover:bg-primary/5 dark:hover:bg-primary/5 transition-colors group"
                   >
                     {columns.map((col, colIdx) => (
                       <td
@@ -150,14 +150,14 @@ const GenericAdminTable = ({
                         <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                           <button
                             onClick={() => onEditClick(item)}
-                            className="p-2.5 text-indigo-600 dark:text-indigo-400 bg-white dark:bg-dark-bg border border-slate-100 dark:border-dark-border rounded-xl hover:shadow-lg transition-all"
+                            className="p-2.5 text-primary dark:text-primary-light bg-white dark:bg-dark-bg border border-slate-100 dark:border-dark-border/40 rounded-2xl hover:shadow-lg transition-all cursor-pointer"
                             title="Chỉnh sửa"
                           >
                             <FiEdit2 />
                           </button>
                           <button
                             onClick={() => onDeleteClick(item)}
-                            className="p-2.5 text-rose-600 dark:text-rose-400 bg-white dark:bg-dark-bg border border-slate-100 dark:border-dark-border rounded-xl hover:shadow-lg transition-all"
+                            className="p-2.5 text-rose-600 dark:text-rose-400 bg-white dark:bg-dark-bg border border-slate-100 dark:border-dark-border/40 rounded-2xl hover:shadow-lg transition-all cursor-pointer"
                             title="Xóa"
                           >
                             <FiTrash2 />

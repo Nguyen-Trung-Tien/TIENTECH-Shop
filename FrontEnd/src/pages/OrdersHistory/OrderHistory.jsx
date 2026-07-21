@@ -246,7 +246,7 @@ const OrderHistoryPage = () => {
                         <Button
                           variant="primary"
                           size="md"
-                          className="flex-1 sm:flex-none !rounded-2xl text-xs font-bold uppercase tracking-wider px-6 shadow-lg shadow-primary/20 bg-gradient-to-r from-primary to-indigo-600 border-none hover:scale-105 transition-transform"
+                          className="flex-1 sm:flex-none !rounded-2xl text-xs font-bold uppercase tracking-wider px-6 shadow-lg shadow-primary/20 bg-gradient-to-r from-primary to-violet-600 border-none hover:scale-105 transition-transform"
                           icon={FiEdit3}
                           onClick={() => openReviewModal(o)}
                         >

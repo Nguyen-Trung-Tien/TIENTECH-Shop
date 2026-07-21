@@ -70,7 +70,7 @@ const AboutPage = () => {
             <div className="flex gap-4">
                 <Button
                 variant="primary"
-                className="px-10 h-14 !rounded-2xl text-sm font-black bg-blue-600 hover:bg-blue-700 shadow-xl shadow-blue-500/20"
+                className="px-10 h-14 !rounded-2xl text-sm font-black bg-primary hover:bg-primary-hover shadow-xl shadow-primary/20 cursor-pointer"
                 onClick={() => navigate("/products")}
                 >
                 KHÁM PHÁ SẢN PHẨM
@@ -91,7 +91,7 @@ const AboutPage = () => {
                     { label: "Tăng trưởng hàng năm", val: "200%", icon: FiTrendingUp }
                 ].map((s, i) => (
                     <div key={i} className="flex flex-col items-center text-center">
-                        <s.icon className="text-blue-600 mb-2" size={20} />
+                        <s.icon className="text-primary mb-2" size={20} />
                         <p className="text-3xl font-black text-slate-900 dark:text-white mb-1">{s.val}</p>
                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{s.label}</p>
                     </div>
@@ -117,7 +117,7 @@ const AboutPage = () => {
                   className="w-full h-auto grayscale hover:grayscale-0 transition-all duration-700"
                 />
               </div>
-              <div className="absolute -bottom-6 -right-6 size-40 bg-blue-600/10 rounded-full blur-3xl"></div>
+              <div className="absolute -bottom-6 -right-6 size-40 bg-primary/10 rounded-full blur-3xl"></div>
             </Motion.div>
 
             <Motion.div
@@ -125,11 +125,11 @@ const AboutPage = () => {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
             >
-              <span className="inline-block px-3 py-1 bg-blue-600 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-full mb-6">
+              <span className="inline-block px-3 py-1 bg-primary text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-full mb-6">
                 Câu chuyện của chúng tôi
               </span>
               <h2 className="text-3xl md:text-5xl font-black text-slate-900 dark:text-white mb-8 leading-tight tracking-tight uppercase">
-                Nâng tầm giá trị <br /> <span className="text-blue-600">Công nghệ Việt</span>
+                Nâng tầm giá trị <br /> <span className="text-primary dark:text-primary-light">Công nghệ Việt</span>
               </h2>
               <div className="space-y-6 text-slate-600 dark:text-slate-400 text-base md:text-lg leading-relaxed font-medium">
                 <p>
@@ -152,9 +152,9 @@ const AboutPage = () => {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="group p-8 md:p-12 bg-gray-50 dark:bg-gray-900 rounded-[3rem] border border-transparent hover:border-blue-500/20 transition-all duration-500"
+              className="group p-8 md:p-12 bg-gray-50 dark:bg-gray-900 rounded-[3rem] border border-transparent hover:border-primary/20 transition-all duration-500"
             >
-              <div className="size-14 bg-blue-600 rounded-2xl flex items-center justify-center text-white mb-8 shadow-lg shadow-blue-500/20 group-hover:scale-110 transition-transform">
+              <div className="size-14 bg-primary rounded-2xl flex items-center justify-center text-white mb-8 shadow-lg shadow-primary/20 group-hover:scale-110 transition-transform">
                 <FiTarget size={28} />
               </div>
               <h4 className="text-2xl font-black text-slate-900 dark:text-white mb-4 uppercase tracking-tight">Sứ mệnh</h4>
@@ -168,7 +168,7 @@ const AboutPage = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.1 }}
-              className="group p-8 md:p-12 bg-blue-600 rounded-[3rem] text-white shadow-2xl shadow-blue-500/20 hover:-translate-y-2 transition-all duration-500"
+              className="group p-8 md:p-12 bg-primary rounded-[3rem] text-white shadow-2xl shadow-primary/20 hover:-translate-y-2 transition-all duration-500"
             >
               <div className="size-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-white mb-8 border border-white/20 group-hover:scale-110 transition-transform">
                 <FiEye size={28} />
@@ -186,7 +186,7 @@ const AboutPage = () => {
       <section className="py-16 md:py-20 bg-slate-50 dark:bg-gray-950 transition-colors">
         <div className="container mx-auto px-4">
           <div className="text-center max-w-2xl mx-auto mb-16">
-            <FiUsers size={32} className="text-blue-600 mx-auto mb-4" />
+            <FiUsers size={32} className="text-primary mx-auto mb-4" />
             <h2 className="text-3xl md:text-4xl font-black text-slate-900 dark:text-white mb-4 uppercase tracking-tight">Đội ngũ sáng lập</h2>
             <p className="text-slate-500 dark:text-slate-400 text-sm md:text-base font-bold uppercase tracking-widest opacity-70">Những nhân tố cốt lõi xây dựng nên TienTech</p>
           </div>
@@ -201,20 +201,20 @@ const AboutPage = () => {
                 transition={{ delay: idx * 0.1 }}
                 className="group flex flex-col items-center text-center"
               >
-                <div className="relative w-full aspect-square rounded-[3rem] overflow-hidden mb-6 shadow-xl border-4 border-white dark:border-gray-800 transition-all duration-500 group-hover:shadow-2xl group-hover:border-blue-500/20">
+                <div className="relative w-full aspect-square rounded-[3rem] overflow-hidden mb-6 shadow-xl border-4 border-white dark:border-gray-800 transition-all duration-500 group-hover:shadow-2xl group-hover:border-primary/20">
                   <img
                     src={member.img}
                     alt={member.name}
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                   />
-                  <div className="absolute inset-0 bg-blue-600/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  <div className="absolute inset-0 bg-primary/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                     <p className="text-white font-black text-[10px] uppercase tracking-[0.3em]">TienTech Founder</p>
                   </div>
                 </div>
-                <h4 className="text-xl font-black text-slate-900 dark:text-white mb-1 group-hover:text-blue-600 transition-colors uppercase tracking-tight">
+                <h4 className="text-xl font-black text-slate-900 dark:text-white mb-1 group-hover:text-primary transition-colors uppercase tracking-tight">
                   {member.name}
                 </h4>
-                <p className="text-blue-600 font-black uppercase tracking-widest text-[10px] mb-4">
+                <p className="text-primary font-black uppercase tracking-widest text-[10px] mb-4">
                   {member.role}
                 </p>
                 <p className="text-slate-500 dark:text-slate-400 text-sm font-medium px-4 leading-relaxed line-clamp-2">{member.desc}</p>
@@ -227,7 +227,7 @@ const AboutPage = () => {
       {/* CTA SECTION - IMPACTFUL & CLEAN */}
       <section className="py-16 md:py-24 bg-white dark:bg-black transition-colors overflow-hidden">
         <div className="container mx-auto px-4">
-          <div className="bg-blue-600 rounded-[3rem] md:rounded-[4rem] p-10 md:p-20 text-center relative overflow-hidden shadow-2xl shadow-blue-500/30">
+          <div className="bg-primary rounded-[3rem] md:rounded-[4rem] p-10 md:p-20 text-center relative overflow-hidden shadow-2xl shadow-primary/30">
             <div className="absolute top-0 left-0 size-64 bg-white/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
             <div className="absolute bottom-0 right-0 size-64 bg-black/10 rounded-full blur-3xl translate-x-1/2 translate-y-1/2"></div>
             
@@ -238,13 +238,13 @@ const AboutPage = () => {
                 </p>
                 <div className="flex flex-wrap justify-center gap-4">
                     <button
-                        className="h-14 px-10 bg-white text-blue-600 font-black text-sm rounded-2xl hover:bg-blue-50 transition-all shadow-xl active:scale-95"
+                        className="h-14 px-10 bg-white text-primary font-black text-sm rounded-2xl hover:bg-slate-100 transition-all shadow-xl active:scale-95 cursor-pointer"
                         onClick={() => navigate("/contact")}
                     >
                         LIÊN HỆ TƯ VẤN
                     </button>
                     <button
-                        className="h-14 px-10 bg-blue-700 text-white font-black text-sm rounded-2xl hover:bg-blue-800 transition-all border border-blue-500/30 active:scale-95"
+                        className="h-14 px-10 bg-primary-hover text-white font-black text-sm rounded-2xl hover:bg-primary transition-all border border-primary/30 active:scale-95 cursor-pointer"
                         onClick={() => navigate("/products")}
                     >
                         MUA SẮM NGAY

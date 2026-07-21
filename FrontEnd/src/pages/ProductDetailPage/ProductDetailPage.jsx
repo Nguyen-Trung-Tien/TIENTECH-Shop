@@ -209,7 +209,7 @@ const ProductDetailPage = () => {
   if (loading)
     return (
       <div className="flex flex-col justify-center items-center h-[70vh] space-y-4">
-        <div className="size-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+        <div className="size-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
         <p className="text-gray-500 font-medium">Đang tải sản phẩm...</p>
       </div>
     );
@@ -221,7 +221,7 @@ const ProductDetailPage = () => {
         <p>Sản phẩm không tồn tại hoặc đã bị ẩn!</p>
         <button
           onClick={() => navigate("/")}
-          className="mt-6 text-blue-600 dark:text-brand hover:underline font-bold"
+          className="mt-6 text-primary dark:text-primary-light hover:underline font-bold cursor-pointer"
         >
           Quay lại trang chủ
         </button>
@@ -302,18 +302,18 @@ const ProductDetailPage = () => {
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-6 md:py-10 bg-white dark:bg-dark-bg min-h-screen transition-colors duration-300">
+    <div className="container-custom py-6 md:py-10 min-h-screen">
       <nav className="flex items-center space-x-2 text-xs text-gray-400 dark:text-dark-text-secondary mb-6 pb-2 border-b border-gray-50 dark:border-dark-border">
         <a
           href="/"
-          className="hover:text-blue-600 dark:hover:text-brand transition-colors"
+          className="hover:text-primary transition-colors"
         >
           Trang chủ
         </a>
         <FiChevronRight className="size-3" />
         <a
           href="/products"
-          className="hover:text-blue-600 dark:hover:text-brand transition-colors"
+          className="hover:text-primary transition-colors"
         >
           Sản phẩm
         </a>

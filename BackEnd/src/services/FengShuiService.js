@@ -94,12 +94,16 @@ NGUYÊN TẮC TƯ VẤN:
 3. Ưu tiên gợi ý màu sắc Đại Cát trước, sau đó mới đến màu Bình An. Tuyệt đối khuyên tránh màu Đại Kỵ.
 4. Nhắc đến các con số may mắn (${fs.luckyNumbers.join(", ")}) có thể xuất hiện trong giá tiền hoặc mã máy.
 5. Tư vấn thêm về hướng đặt thiết bị trên bàn làm việc để kích tài lộc (Ví dụ: Mệnh ${fs.element} đặt hướng nào).
-6. Trả về JSON THUẦN:
+6. Dưới đây là danh sách sản phẩm hợp mệnh trong kho. Hãy phân tích và đề xuất ID tương ứng trong recommendedProducts.
+7. Trả về JSON THUẦN:
 {
   "reply": "Lời tư vấn tâm huyết và chi tiết",
   "recommendedProducts": [id1, id2, id3],
   "fsData": ${JSON.stringify(fs)}
 }
+
+DANH SÁCH SẢN PHẨM PHÙ HỢP TRONG CỬA HÀNG:
+${dbContext || "Không có sản phẩm nào phù hợp trực tiếp trong kho."}
 `;
 
     const contents = [

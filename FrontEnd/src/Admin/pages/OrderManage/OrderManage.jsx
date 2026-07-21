@@ -169,30 +169,30 @@ const OrderManage = () => {
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
         <div>
           <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-3">
-            <div className="size-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-600/20">
+            <div className="size-12 rounded-2xl bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/20">
               <FiPackage />
             </div>
             Quản lý đơn hàng
           </h1>
-          <p className="text-slate-500 dark:text-dark-text-secondary font-bold text-xs uppercase tracking-widest mt-2 ml-15">
+          <p className="text-slate-500 dark:text-dark-text-secondary font-bold text-xs uppercase tracking-widest mt-2 ml-1">
             Hệ thống xử lý & điều phối vận chuyển
           </p>
         </div>
 
         <div className="flex items-center gap-4 bg-white dark:bg-dark-surface p-2 rounded-2xl border border-slate-100 dark:border-dark-border shadow-sm">
           <div className="relative group w-64">
-            <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-600 transition-colors" />
+            <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" />
             <input
               type="text"
               placeholder="Mã đơn, SĐT, Tên..."
-              className="w-full h-11 bg-slate-50 dark:bg-dark-bg border-none dark:text-white rounded-xl pl-11 text-sm font-bold focus:ring-2 focus:ring-indigo-600/10 transition-all outline-none"
+              className="w-full h-11 bg-slate-50 dark:bg-dark-bg border-none dark:text-white rounded-xl pl-11 text-sm font-bold focus:ring-2 focus:ring-primary/10 transition-all outline-none"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
           <button
             onClick={() => fetchOrders(1, searchTerm, activeTab)}
-            className="size-11 bg-indigo-600 text-white rounded-xl flex items-center justify-center hover:bg-slate-800 transition-all shadow-md shadow-indigo-600/10"
+            className="size-11 bg-primary text-white rounded-xl flex items-center justify-center hover:bg-primary-hover transition-all shadow-md shadow-primary/10 cursor-pointer"
           >
             <FiRefreshCw className={loading ? "animate-spin" : ""} />
           </button>
@@ -208,9 +208,9 @@ const OrderManage = () => {
               setActiveTab(tab.id);
               setPage(1);
             }}
-            className={`px-8 py-4 rounded-[2rem] text-[11px] font-black uppercase tracking-widest transition-all whitespace-nowrap border-2 flex items-center gap-3 ${
+            className={`px-8 py-4 rounded-[2rem] text-[11px] font-black uppercase tracking-widest transition-all whitespace-nowrap border-2 flex items-center gap-3 cursor-pointer ${
               activeTab === tab.id
-                ? "bg-indigo-600 text-white border-indigo-600 shadow-xl shadow-indigo-600/20 scale-105 z-10"
+                ? "bg-primary text-white border-primary shadow-xl shadow-primary/20 scale-105 z-10"
                 : "bg-white dark:bg-dark-surface text-slate-500 dark:text-dark-text-secondary border-slate-100 dark:border-dark-border hover:border-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
             }`}
           >
@@ -271,7 +271,7 @@ const OrderManage = () => {
                     <td className="px-8 py-6">
                       <div className="flex flex-col gap-3">
                         <div className="flex flex-col">
-                          <span className="text-sm font-black text-slate-900 dark:text-white group-hover:text-indigo-600 transition-colors uppercase tracking-wider">
+                          <span className="text-sm font-black text-slate-900 dark:text-white group-hover:text-primary transition-colors uppercase tracking-wider">
                             {order.orderCode}
                           </span>
                           <span className="text-[10px] font-bold text-slate-400 dark:text-dark-text-secondary mt-1 flex items-center gap-1.5 uppercase">
@@ -350,7 +350,7 @@ const OrderManage = () => {
                       <div className="flex items-center justify-end gap-2">
                         <button
                           onClick={() => navigate(`/admin/order/${order.id}`)}
-                          className="size-10 rounded-2xl bg-slate-100 dark:bg-dark-bg text-slate-500 dark:text-dark-text-secondary flex items-center justify-center hover:bg-indigo-600 hover:text-white transition-all shadow-sm"
+                          className="size-10 rounded-2xl bg-slate-100 dark:bg-dark-bg text-slate-500 dark:text-dark-text-secondary flex items-center justify-center hover:bg-primary hover:text-white transition-all shadow-sm cursor-pointer"
                         >
                           <FiInfo size={18} />
                         </button>
@@ -361,7 +361,7 @@ const OrderManage = () => {
                                 activeDropdown === order.id ? null : order.id,
                               )
                             }
-                            className="size-10 rounded-2xl bg-white dark:bg-dark-surface border border-slate-100 dark:border-dark-border text-slate-400 dark:text-dark-text-secondary flex items-center justify-center hover:border-indigo-600 hover:text-indigo-600 transition-all"
+                            className="size-10 rounded-2xl bg-white dark:bg-dark-surface border border-slate-100 dark:border-dark-border text-slate-400 dark:text-dark-text-secondary flex items-center justify-center hover:border-primary hover:text-primary transition-all cursor-pointer"
                           >
                             <FiRefreshCcw
                               size={16}
@@ -392,9 +392,9 @@ const OrderManage = () => {
                                           key,
                                         )
                                       }
-                                      className={`w-full text-left px-4 py-2.5 text-xs font-bold rounded-xl transition-all ${
+                                      className={`w-full text-left px-4 py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${
                                         order.status === key
-                                          ? "bg-indigo-600/5 text-indigo-600"
+                                          ? "bg-primary/5 text-primary"
                                           : "text-slate-600 dark:text-dark-text-secondary hover:bg-slate-50 dark:hover:bg-dark-bg hover:pl-6"
                                       }`}
                                     >
@@ -488,7 +488,7 @@ const OrderManage = () => {
         confirmText="Xác nhận chuyển"
         variant="primary"
         icon={FiRefreshCcw}
-        iconClassName="bg-indigo-50 text-indigo-600"
+        iconClassName="bg-primary/5 text-primary"
         loading={isUpdating}
       />
     </div>

@@ -30,7 +30,7 @@ const OrderDetailHeader = ({
             <h1 className="text-3xl font-display font-bold text-surface-900 dark:text-white uppercase tracking-tight">
               Chi tiết Đơn hàng
             </h1>
-            <span className="px-4 py-1.5 bg-indigo-600 text-white text-sm font-black rounded-xl shadow-lg shadow-indigo-500/20">
+            <span className="px-4 py-1.5 bg-primary text-white text-sm font-black rounded-xl shadow-lg shadow-primary/20">
               #{orderCode}
             </span>
           </div>

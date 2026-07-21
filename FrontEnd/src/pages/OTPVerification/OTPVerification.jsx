@@ -108,8 +108,8 @@ const OTPVerification = () => {
         className="max-w-md w-full bg-white dark:bg-dark-card rounded-3xl shadow-2xl p-8 border border-gray-100 dark:border-gray-800"
       >
         <div className="text-center mb-8">
-          <div className="size-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Mail className="size-8 text-blue-600" />
+          <div className="size-16 bg-primary/10 dark:bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Mail className="size-8 text-primary" />
           </div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
             Xác thực tài khoản
@@ -134,7 +134,7 @@ const OTPVerification = () => {
                 onChange={(e) => handleChange(index, e.target.value)}
                 onKeyDown={(e) => handleKeyDown(index, e)}
                 onPaste={index === 0 ? handlePaste : undefined}
-                className="w-12 h-14 text-center text-2xl font-bold bg-gray-50 dark:bg-dark-bg border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all text-gray-900 dark:text-white"
+                className="w-12 h-14 text-center text-2xl font-bold bg-gray-50 dark:bg-dark-bg border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all text-gray-900 dark:text-white"
               />
             ))}
           </div>
@@ -142,7 +142,7 @@ const OTPVerification = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-2xl shadow-lg shadow-blue-500/30 active:scale-[0.98] transition-all disabled:opacity-70 flex items-center justify-center gap-2"
+            className="w-full py-4 bg-primary hover:bg-primary-hover text-white font-bold rounded-2xl shadow-lg shadow-primary/20 active:scale-[0.98] transition-all disabled:opacity-70 flex items-center justify-center gap-2 cursor-pointer"
           >
             {loading ? <Loader2 className="size-5 animate-spin" /> : "XÁC NHẬN"}
           </button>
@@ -152,14 +152,14 @@ const OTPVerification = () => {
           <p className="text-gray-500 dark:text-gray-400 text-sm">
             Bạn không nhận được mã?{" "}
             {timer > 0 ? (
-              <span className="text-blue-600 font-bold">
+              <span className="text-primary font-bold">
                 Gửi lại sau {timer}s
               </span>
             ) : (
               <button
                 onClick={handleResend}
                 disabled={resending}
-                className="text-blue-600 font-bold hover:underline disabled:opacity-50"
+                className="text-primary font-bold hover:underline disabled:opacity-50 cursor-pointer bg-transparent border-none outline-none"
               >
                 {resending ? "Đang gửi..." : "Gửi lại ngay"}
               </button>

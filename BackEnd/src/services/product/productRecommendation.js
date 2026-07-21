@@ -1,7 +1,7 @@
 const db = require("../../models");
 const { Op } = require("sequelize");
 const { getPagination, getPagingData } = require("../../utils/paginationHelper");
-const { getLuckyColorsByYear } = require("../../utils/fortuneUtils");
+const { getFengShuiDetail } = require("../../utils/fortuneUtils");
 const { cosineSimilarity } = require("../../utils/embeddingHelper");
 
 const recommendProducts = async (productId, page = 1, limit = 6) => {
@@ -69,7 +69,8 @@ const recommendFortuneProducts = async ({
   limit = 6,
 }) => {
   try {
-    const luckyColors = getLuckyColorsByYear(Number(birthYear));
+    const fsDetail = getFengShuiDetail(Number(birthYear));
+    const luckyColors = [...(fsDetail.luckyColors || []), ...(fsDetail.supportColors || [])];
     const where = { isActive: true };
     if (luckyColors.length) {
       where[Op.or] = luckyColors.map((color) => ({
@@ -113,7 +114,11 @@ const recommendFortuneProducts = async ({
         const primary =
           pJSON.images?.find((i) => i.isPrimary) || pJSON.images?.[0];
         const product = { ...pJSON, image: primary?.imageUrl || null };
-        product.isLuckyColor = luckyColors.includes(product.color);
+        const specsStr = typeof product.specifications === "string"
+          ? product.specifications
+          : JSON.stringify(product.specifications || {});
+        const nameAndDesc = `${product.name} ${product.description || ""} ${specsStr}`.toLowerCase();
+        product.isLuckyColor = luckyColors.some((color) => nameAndDesc.includes(color.toLowerCase()));
         return product;
       }),
       luckyColors,
@@ -127,6 +132,11 @@ const recommendFortuneProducts = async ({
 
 const getSmartRecommendations = async (productId, limit = 6) => {
   try {
+    const { getCache, setCache } = require("../../config/redis");
+    const cacheKey = `smart_recs_${productId}_${limit}`;
+    const cached = await getCache(cacheKey);
+    if (cached) return cached;
+
     const product = await db.Product.findByPk(productId);
     if (!product) return { errCode: 1, errMessage: "Sản phẩm không tồn tại" };
 
@@ -280,7 +290,9 @@ const getSmartRecommendations = async (productId, limit = 6) => {
       });
     }
 
-    return { errCode: 0, products: uniqueResults };
+    const result = { errCode: 0, products: uniqueResults };
+    await setCache(cacheKey, result, 7200); // Cache for 2 hours
+    return result;
   } catch (e) {
     console.error("Lỗi getSmartRecommendations:", e);
     return { errCode: 1, errMessage: e.message };
@@ -289,6 +301,11 @@ const getSmartRecommendations = async (productId, limit = 6) => {
 
 const getPersonalizedRecommendations = async (userId, limit = 6) => {
   try {
+    const { getCache, setCache } = require("../../config/redis");
+    const cacheKey = `user_recs_${userId || "guest"}_${limit}`;
+    const cached = await getCache(cacheKey);
+    if (cached) return cached;
+
     if (!userId) {
       // Fallback for non-logged in users: trending products
       const trending = await db.Product.findAll({
@@ -297,13 +314,15 @@ const getPersonalizedRecommendations = async (userId, limit = 6) => {
         limit,
         include: [{ model: db.ProductImage, as: "images", where: { isPrimary: true }, required: false }],
       });
-      return {
+      const result = {
         errCode: 0,
         products: trending.map(p => {
           const plain = p.get({ plain: true });
           return { ...plain, image: plain.images?.[0]?.imageUrl || null, reason: "Xu hướng" };
         })
       };
+      await setCache(cacheKey, result, 3600); // 1 hour for guests
+      return result;
     }
 
     // 1. Get user's interaction history (Orders and Wishlist)
@@ -366,7 +385,9 @@ const getPersonalizedRecommendations = async (userId, limit = 6) => {
       .sort((a, b) => b.similarity - a.similarity)
       .slice(0, limit);
 
-    return { errCode: 0, products: recommendations };
+    const result = { errCode: 0, products: recommendations };
+    await setCache(cacheKey, result, 900); // 15 minutes for logged in users
+    return result;
   } catch (e) {
     console.error("Lỗi getPersonalizedRecommendations:", e);
     return { errCode: 1, errMessage: e.message };

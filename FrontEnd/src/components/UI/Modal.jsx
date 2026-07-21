@@ -36,7 +36,7 @@ const Modal = ({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={closeOnOverlayClick ? onClose : undefined}
-            className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+            className="absolute inset-0 bg-slate-950/45 backdrop-blur-md"
           />
 
           {/* Modal Container */}
@@ -44,7 +44,7 @@ const Modal = ({
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className={`relative w-full ${sizes[size]} bg-white dark:bg-dark-surface rounded-[32px] shadow-2xl overflow-hidden flex flex-col border border-transparent dark:border-dark-border transition-colors duration-300 ${className}`}
+            className={`relative w-full ${sizes[size]} bg-white/95 dark:bg-dark-surface/90 backdrop-blur-xl rounded-[32px] shadow-2xl overflow-hidden flex flex-col border border-white/20 dark:border-white/5 transition-colors duration-300 ${className}`}
           >
             {/* Header */}
             {(title || showClose) && (

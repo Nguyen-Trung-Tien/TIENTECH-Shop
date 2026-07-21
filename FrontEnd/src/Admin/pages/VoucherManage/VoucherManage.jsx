@@ -33,10 +33,10 @@ const VoucherManage = () => {
       header: "Mã & Tên",
       render: (item) => (
         <div>
-          <p className="text-sm font-black text-indigo-600 tracking-wider uppercase">
+          <p className="text-sm font-black text-primary dark:text-primary-light tracking-wider uppercase">
             {item.code}
           </p>
-          <p className="text-[11px] font-bold text-slate-500 mt-0.5">
+          <p className="text-[11px] font-bold text-slate-500 dark:text-dark-text-secondary mt-0.5">
             {item.name || "Không có tên"}
           </p>
         </div>
@@ -45,7 +45,7 @@ const VoucherManage = () => {
     {
       header: "Ưu đãi",
       render: (item) => (
-        <div className="flex items-center gap-1 text-sm font-black text-rose-600">
+        <div className="flex items-center gap-1 text-sm font-black text-rose-600 dark:text-rose-400">
           <FiPercent className="text-rose-400" />
           {item.type === "percentage"
             ? `${item.value || 0}%`
@@ -57,13 +57,13 @@ const VoucherManage = () => {
       header: "Sử dụng",
       render: (item) => (
         <div className="space-y-1">
-          <div className="flex items-center gap-2 text-[10px] font-bold text-slate-500">
-            <FiUsers className="text-slate-400" /> {item.usedCount || 0} /{" "}
+          <div className="flex items-center gap-2 text-[10px] font-bold text-slate-500 dark:text-dark-text-secondary">
+            <FiUsers className="text-slate-400 dark:text-slate-600" /> {item.usedCount || 0} /{" "}
             {item.maxUsage || "∞"}
           </div>
-          <div className="w-24 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+          <div className="w-24 h-1.5 bg-slate-100 dark:bg-dark-bg rounded-full overflow-hidden">
             <div
-              className="h-full bg-indigo-500 rounded-full"
+              className="h-full bg-primary rounded-full"
               style={{
                 width: `${Math.min(100, ((item.usedCount || 0) / (item.maxUsage || 100)) * 100)}%`,
               }}
@@ -75,9 +75,9 @@ const VoucherManage = () => {
     {
       header: "Thời hạn",
       render: (item) => (
-        <div className="text-[11px] font-bold text-slate-500 space-y-0.5">
+        <div className="text-[11px] font-bold text-slate-500 dark:text-dark-text-secondary space-y-0.5">
           <div className="flex items-center gap-1">
-            <FiCalendar className="text-indigo-400" />
+            <FiCalendar className="text-primary" />
             {item.startDate
               ? new Date(item.startDate).toLocaleDateString("vi-VN")
               : "N/A"}
@@ -99,17 +99,17 @@ const VoucherManage = () => {
         const isStarted = item.startDate && new Date(item.startDate) <= now;
 
         let statusLabel = "Đang chạy";
-        let statusColor = "bg-emerald-50 text-emerald-600";
+        let statusColor = "bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400";
 
         if (isExpired) {
           statusLabel = "Hết hạn";
-          statusColor = "bg-rose-50 text-rose-600";
+          statusColor = "bg-rose-50 dark:bg-rose-950/20 text-rose-600 dark:text-rose-400";
         } else if (!isStarted) {
           statusLabel = "Chờ lịch";
-          statusColor = "bg-amber-50 text-amber-600";
+          statusColor = "bg-amber-50 dark:bg-amber-950/20 text-amber-600 dark:text-amber-400";
         } else if (!item.isActive) {
           statusLabel = "Đã khóa";
-          statusColor = "bg-slate-100 text-slate-400";
+          statusColor = "bg-slate-100 dark:bg-dark-bg text-slate-400 dark:text-dark-text-secondary/50";
         }
 
         return (

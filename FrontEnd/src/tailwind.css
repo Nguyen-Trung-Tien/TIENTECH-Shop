@@ -71,6 +71,10 @@
 
   /* Animations */
   --animate-slide-left: slide-left 0.3s ease-out;
+
+  /* Glassmorphic Shadow variables */
+  --shadow-glass: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+  --shadow-glass-dark: 0 8px 32px 0 rgba(0, 0, 0, 0.25);
 }
 
 @layer base {
@@ -85,7 +89,10 @@
     --bg-card: #ffffff;
     --text-main: var(--color-surface-900);
     --text-muted: var(--color-surface-500);
-    --border-color: var(--color-surface-200);
+    --border-color: var(--color-surface-100);
+    --glass-bg: rgba(255, 255, 255, 0.45);
+    --glass-border: rgba(255, 255, 255, 0.25);
+    --glass-shadow: var(--shadow-glass);
   }
   
   :root.dark {
@@ -93,7 +100,10 @@
     --bg-card: var(--color-dark-surface);
     --text-main: var(--color-dark-text-primary);
     --text-muted: var(--color-dark-text-secondary);
-    --border-color: var(--color-dark-border);
+    --border-color: rgba(51, 65, 85, 0.35);
+    --glass-bg: rgba(15, 23, 42, 0.45);
+    --glass-border: rgba(255, 255, 255, 0.05);
+    --glass-shadow: var(--shadow-glass-dark);
   }
 
   body {
@@ -120,22 +130,39 @@
     @apply max-w-[var(--spacing-container)] mx-auto px-4 sm:px-6;
   }
 
+  .glass-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+    @apply transition-all duration-300;
+  }
+
+  .glass-panel {
+    background: var(--glass-bg);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+  }
+
   .card-ecommerce {
     background-color: var(--bg-card);
     border-color: var(--border-color);
-    @apply rounded-xl border shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden;
+    @apply rounded-2xl border shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden;
   }
 
   .heading-section {
-    @apply text-xl md:text-2xl font-bold mb-6;
+    @apply text-xl md:text-2xl font-bold mb-6 tracking-tight;
   }
 
   .btn-modern-primary {
-    @apply flex items-center justify-center gap-2 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-all shadow-sm active:scale-95;
+    @apply flex items-center justify-center gap-2 bg-primary text-white rounded-2xl font-bold hover:bg-primary-hover transition-all shadow-lg shadow-primary/10 active:scale-95 cursor-pointer;
   }
   
   .text-label {
-    @apply text-[10px] font-bold uppercase tracking-widest text-surface-400 dark:text-dark-text-secondary;
+    @apply text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary;
   }
 
   .input-base {
@@ -143,37 +170,56 @@
     color: var(--text-main);
     border-color: var(--border-color);
     font-family: var(--font-sans);
-    @apply w-full h-10 px-3 border rounded-lg text-sm font-medium outline-none transition-all duration-200;
+    @apply w-full h-11 px-4 border rounded-2xl text-sm font-medium outline-none transition-all duration-200;
   }
 
-  /* Loại bỏ border/ring xấu xí khi click vào input/select */
+  /* Clear default focus outline and rings */
   input:focus, 
   select:focus, 
   textarea:focus, 
   button:focus {
     outline: none !important;
     box-shadow: none !important;
-    border-color: inherit; /* Giữ nguyên màu border hiện tại hoặc đổi sang màu bạn muốn */
   }
 
-  /* Định nghĩa lại input-modern để tinh tế hơn */
+  /* Input modern refinement */
   .input-modern {
     @apply w-full px-4 border border-slate-200/60 dark:border-dark-border/40 rounded-2xl outline-none transition-all duration-300;
     background-color: transparent;
   }
   
   .input-modern:focus {
-    @apply border-indigo-400/50 bg-indigo-50/5 dark:bg-indigo-900/5;
-    box-shadow: 0 4px 20px -2px rgba(99, 102, 241, 0.05) !important;
+    @apply border-primary/50 bg-primary/5;
+    box-shadow: 0 4px 20px -2px rgba(37, 99, 235, 0.05) !important;
   }
 
-  /* Làm mềm tất cả các border mặc định */
+  /* Glass header styling */
+  .glass-header {
+    background: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(241, 245, 249, 0.6);
+  }
+
+  .dark .glass-header {
+    background: rgba(9, 13, 22, 0.75);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  }
+
+  /* Gradient brand glow text */
+  .text-gradient-primary {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-violet-500;
+  }
+
+  /* Soft borders softening */
   .border-slate-200 {
     @apply border-slate-100;
   }
   
   .dark .dark\:border-dark-border {
-    border-color: rgba(51, 65, 85, 0.3); /* Slate 700 với opacity thấp */
+    border-color: rgba(51, 65, 85, 0.25);
   }
 }
 

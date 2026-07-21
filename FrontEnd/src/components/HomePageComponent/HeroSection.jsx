@@ -10,8 +10,8 @@ const HeroSection = () => {
     <section className="relative overflow-hidden bg-white dark:bg-black pt-10 pb-12 lg:pt-20 lg:pb-24 transition-colors duration-300 border-b border-slate-100 dark:border-gray-900">
       {/* Background Elements */}
       <div className="absolute inset-0 z-0">
-        <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/4 w-[500px] h-[500px] bg-blue-600/10 dark:bg-blue-600/20 rounded-full blur-[120px]"></div>
-        <div className="absolute bottom-0 left-0 translate-y-1/2 -translate-x-1/4 w-[400px] h-[400px] bg-indigo-600/5 dark:bg-indigo-600/10 rounded-full blur-[100px]"></div>
+        <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/4 w-[500px] h-[500px] bg-primary/10 dark:bg-primary/20 rounded-full blur-[120px]"></div>
+        <div className="absolute bottom-0 left-0 translate-y-1/2 -translate-x-1/4 w-[400px] h-[400px] bg-primary/5 dark:bg-primary/10 rounded-full blur-[100px]"></div>
       </div>
 
       <div className="container-custom relative z-10">
@@ -23,10 +23,10 @@ const HeroSection = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
-              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-600 dark:text-blue-400 text-[10px] font-black uppercase tracking-widest mb-6">
+              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] font-black uppercase tracking-widest mb-6">
                 <span className="relative flex size-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-500 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full size-2 bg-blue-500"></span>
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                  <span className="relative inline-flex rounded-full size-2 bg-primary"></span>
                 </span>
                 Ưu đãi công nghệ mỗi ngày
               </span>
@@ -39,7 +39,7 @@ const HeroSection = () => {
               className="text-4xl md:text-5xl lg:text-6xl font-black text-slate-900 dark:text-white leading-[1.1] mb-6 tracking-tight"
             >
               TienTech{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-500">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-violet-500">
                 Shop
               </span>
               <br />
@@ -67,7 +67,7 @@ const HeroSection = () => {
             >
               <button
                 onClick={() => navigate("/products")}
-                className="group flex items-center gap-3 px-6 py-3.5 bg-blue-600 text-white rounded-2xl font-black text-sm hover:bg-blue-700 transition-all shadow-xl shadow-blue-600/25 active:scale-95 uppercase tracking-widest"
+                className="group flex items-center gap-3 px-6 py-3.5 bg-primary text-white rounded-2xl font-black text-sm hover:bg-primary-hover transition-all shadow-xl shadow-primary/20 active:scale-95 cursor-pointer uppercase tracking-widest"
               >
                 <FiShoppingBag className="text-lg" />
                 Mua ngay
@@ -76,7 +76,7 @@ const HeroSection = () => {
 
               <button
                 onClick={() => navigate("/about")}
-                className="flex items-center gap-3 px-6 py-3.5 bg-slate-100 dark:bg-white/5 text-slate-900 dark:text-white border border-slate-200 dark:border-white/10 rounded-2xl font-black text-sm hover:bg-slate-200 dark:hover:bg-white/10 transition-all backdrop-blur-sm active:scale-95 uppercase tracking-widest"
+                className="flex items-center gap-3 px-6 py-3.5 bg-slate-100 dark:bg-white/5 text-slate-900 dark:text-white border border-slate-200 dark:border-white/10 rounded-2xl font-black text-sm hover:bg-slate-200 dark:hover:bg-white/10 transition-all backdrop-blur-sm active:scale-95 cursor-pointer uppercase tracking-widest"
               >
                 Về chúng tôi
               </button>
@@ -96,7 +96,7 @@ const HeroSection = () => {
               ].map((item, idx) => (
                   <React.Fragment key={idx}>
                     <div className="flex flex-col items-center lg:items-start group cursor-default">
-                        <p className="text-slate-900 dark:text-white font-black text-lg leading-none group-hover:text-blue-600 transition-colors">
+                        <p className="text-slate-900 dark:text-white font-black text-lg leading-none group-hover:text-primary transition-colors">
                         {item.val}
                         </p>
                         <p className="text-[9px] uppercase font-bold tracking-widest text-slate-400 dark:text-slate-500 mt-1">
@@ -148,7 +148,7 @@ const HeroSection = () => {
             </div>
 
             {/* Glow effect under the image */}
-            <div className="absolute inset-0 bg-blue-600/10 dark:bg-blue-600/20 rounded-full blur-[80px] -z-10"></div>
+            <div className="absolute inset-0 bg-primary/10 dark:bg-primary/20 rounded-full blur-[80px] -z-10"></div>
           </Motion.div>
         </div>
       </div>

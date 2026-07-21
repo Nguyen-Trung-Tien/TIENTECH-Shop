@@ -33,11 +33,11 @@ const BrandManage = () => {
     {
       header: "Logo",
       render: (item) => (
-        <div className="size-14 rounded-2xl bg-slate-100 overflow-hidden border border-slate-100 shadow-inner">
+        <div className="size-14 rounded-2xl bg-slate-100 dark:bg-dark-bg overflow-hidden border border-slate-100 dark:border-dark-border/40 shadow-inner">
           {item.image ? (
             <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-slate-300">
+            <div className="w-full h-full flex items-center justify-center text-slate-300 dark:text-slate-700">
               <FiTag className="text-xl" />
             </div>
           )}
@@ -48,8 +48,8 @@ const BrandManage = () => {
       header: "Tên Thương Hiệu",
       render: (item) => (
         <div>
-          <p className="text-sm font-black text-slate-900 leading-tight">{item.name}</p>
-          <p className="text-[11px] font-bold text-slate-400 mt-0.5 tracking-tight uppercase">
+          <p className="text-sm font-black text-slate-900 dark:text-white leading-tight">{item.name}</p>
+          <p className="text-[11px] font-bold text-slate-400 dark:text-dark-text-secondary/50 mt-0.5 tracking-tight uppercase">
             ID: {item.id}
           </p>
         </div>
@@ -58,7 +58,7 @@ const BrandManage = () => {
     {
       header: "Mô tả",
       render: (item) => (
-        <p className="text-xs font-medium text-slate-500 max-w-xs line-clamp-2">
+        <p className="text-xs font-medium text-slate-500 dark:text-dark-text-secondary max-w-xs line-clamp-2">
           {item.description || "Chưa có mô tả"}
         </p>
       ),
@@ -66,7 +66,7 @@ const BrandManage = () => {
     {
       header: "Sản phẩm",
       render: (item) => (
-        <span className="inline-flex items-center px-3 py-1 rounded-full bg-indigo-50 text-indigo-600 text-[11px] font-black">
+        <span className="inline-flex items-center px-3 py-1 rounded-full bg-primary/5 dark:bg-primary/10 text-primary dark:text-primary-light text-[11px] font-black">
           {item.productCount || 0} ITEMS
         </span>
       ),

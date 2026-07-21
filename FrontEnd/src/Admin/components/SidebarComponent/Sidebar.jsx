@@ -161,15 +161,15 @@ const Sidebar = ({ collapsed }) => {
               <div key={item.label} className="space-y-1">
                 <button
                   onClick={() => toggleMenu(item.label)}
-                  className={`w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group ${
+                  className={`w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group cursor-pointer ${
                     isSubActive
-                      ? "text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10"
+                      ? "text-primary dark:text-primary-light bg-primary/5 dark:bg-primary/10"
                       : "hover:bg-slate-50 dark:hover:bg-dark-bg text-slate-600 dark:text-dark-text-secondary"
                   }`}
                 >
                   <div className="flex items-center gap-3">
                     <span
-                      className={`text-lg flex-shrink-0 ${isSubActive ? "text-indigo-600 dark:text-indigo-400" : "text-slate-400 dark:text-dark-text-secondary group-hover:text-primary transition-colors"}`}
+                      className={`text-lg flex-shrink-0 ${isSubActive ? "text-primary dark:text-primary-light" : "text-slate-400 dark:text-dark-text-secondary group-hover:text-primary transition-colors"}`}
                     >
                       {item.icon}
                     </span>
@@ -220,7 +220,7 @@ const Sidebar = ({ collapsed }) => {
                               to={sub.to}
                               className={`flex items-center justify-between px-3 py-2 rounded-lg text-xs font-bold transition-all ${
                                 location.pathname === sub.to
-                                  ? "text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10"
+                                  ? "text-primary dark:text-primary-light bg-primary/5 dark:bg-primary/10"
                                   : "text-slate-500 dark:text-dark-text-secondary hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-dark-bg"
                               }`}
                             >
@@ -248,7 +248,7 @@ const Sidebar = ({ collapsed }) => {
               to={item.to}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group relative ${
                 isActive
-                  ? "bg-indigo-600 text-white shadow-xl shadow-indigo-500/20"
+                  ? "bg-primary text-white shadow-xl shadow-primary/20"
                   : "hover:bg-slate-50 dark:hover:bg-dark-bg text-slate-600 dark:text-dark-text-secondary"
               }`}
               title={collapsed ? item.label : ""}

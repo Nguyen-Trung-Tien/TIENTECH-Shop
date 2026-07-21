@@ -46,11 +46,11 @@ const WishlistPage = () => {
                 className="flex flex-col md:flex-row md:items-center justify-between gap-6"
             >
                 <div className="flex items-center gap-5">
-                    <Link to="/" className="size-12 bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-slate-100 dark:border-gray-800 flex items-center justify-center text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-all active:scale-95">
+                    <Link to="/" className="size-12 bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-slate-100 dark:border-gray-800 flex items-center justify-center text-slate-400 hover:text-primary dark:hover:text-primary-light transition-all active:scale-95">
                         <FiArrowLeft size={20} />
                     </Link>
                     <div>
-                        <div className="flex items-center gap-2 text-blue-600 dark:text-blue-500 mb-1">
+                        <div className="flex items-center gap-2 text-primary dark:text-primary-light mb-1">
                             <FiHeart className="fill-current" size={14} />
                             <span className="text-[10px] font-black uppercase tracking-[0.3em]">Bộ sưu tập cá nhân</span>
                         </div>
@@ -59,8 +59,8 @@ const WishlistPage = () => {
                 </div>
 
                 {wishlist.length > 0 && (
-                    <div className="flex items-center gap-3 px-5 py-2.5 bg-blue-600/10 border border-blue-600/20 rounded-2xl">
-                        <span className="text-blue-600 dark:text-blue-400 font-black text-sm">{wishlist.length}</span>
+                    <div className="flex items-center gap-3 px-5 py-2.5 bg-primary/10 border border-primary/20 rounded-2xl">
+                        <span className="text-primary dark:text-primary-light font-black text-sm">{wishlist.length}</span>
                         <span className="text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-widest leading-none">Sản phẩm lưu trữ</span>
                     </div>
                 )}
@@ -100,7 +100,7 @@ const WishlistPage = () => {
                     <Motion.div 
                         animate={{ scale: [1, 1.2, 1] }}
                         transition={{ repeat: Infinity, duration: 2 }}
-                        className="absolute inset-0 bg-blue-600/10 rounded-full blur-xl"
+                        className="absolute inset-0 bg-primary/10 rounded-full blur-xl"
                     ></Motion.div>
                     <div className="relative w-full h-full bg-white dark:bg-gray-900 rounded-3xl shadow-lg border border-slate-100 dark:border-gray-800 flex items-center justify-center text-slate-200 dark:text-gray-700">
                         <FiHeart size={40} />
@@ -113,7 +113,7 @@ const WishlistPage = () => {
                 </p>
                 
                 <Link to="/products" className="inline-block">
-                    <button className="h-14 px-10 bg-blue-600 text-white font-black text-sm rounded-2xl hover:bg-blue-700 shadow-xl shadow-blue-500/20 transition-all flex items-center gap-3 uppercase tracking-widest active:scale-95">
+                    <button className="h-14 px-10 bg-primary text-white font-black text-sm rounded-2xl hover:bg-primary-hover shadow-xl shadow-primary/20 transition-all flex items-center gap-3 uppercase tracking-widest active:scale-95 cursor-pointer">
                         <FiShoppingBag size={18} />
                         Khám phá sản phẩm ngay
                     </button>

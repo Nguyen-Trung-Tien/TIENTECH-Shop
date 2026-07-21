@@ -43,15 +43,27 @@ const elementColors = {
   }
 };
 
-// 1. Tính Mệnh Niên (Dựa trên năm sinh)
+// 1. Tính Mệnh Niên (Dựa trên năm sinh theo quy luật Can Chi chuẩn)
 const getMienNien = (year) => {
-  const mod = year % 10;
-  if ([0, 1].includes(mod)) return "Kim";
-  if ([2, 3].includes(mod)) return "Thủy";
-  if ([4, 5].includes(mod)) return "Mộc";
-  if ([6, 7].includes(mod)) return "Hỏa";
-  if ([8, 9].includes(mod)) return "Thổ";
-  return "Kim";
+  const canMap = { 4: 1, 5: 1, 6: 2, 7: 2, 8: 3, 9: 3, 0: 4, 1: 4, 2: 5, 3: 5 };
+  const canVal = canMap[year % 10] || 1;
+
+  const chiIdx = (year - 4) % 12;
+  const chiMap = { 
+    0: 0, 1: 0, // Tý, Sửu
+    2: 1, 3: 1, // Dần, Mão
+    4: 2, 5: 2, // Thìn, Tỵ
+    6: 0, 7: 0, // Ngọ, Mùi
+    8: 1, 9: 1, // Thân, Dậu
+    10: 2, 11: 2 // Tuất, Hợi
+  };
+  const chiVal = chiMap[chiIdx] || 0;
+
+  let menhVal = canVal + chiVal;
+  if (menhVal > 5) menhVal -= 5;
+
+  const menhMap = { 1: "Kim", 2: "Thủy", 3: "Hỏa", 4: "Thổ", 5: "Mộc" };
+  return menhMap[menhVal] || "Kim";
 };
 
 // 2. Tính Cung Phi (Dựa trên giới tính và năm sinh - Chính xác hơn cho hướng và màu)

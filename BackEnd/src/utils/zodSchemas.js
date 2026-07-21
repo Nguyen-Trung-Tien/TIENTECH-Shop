@@ -5,13 +5,13 @@ const voucherSchema = z.object({
     code: z.string().min(3, "Mã voucher phải ít nhất 3 ký tự").max(20),
     name: z.string().min(1, "Tên voucher không được để trống"),
     type: z.enum(["percentage", "fixed"]),
-    value: z.number().positive("Giá trị phải lớn hơn 0"),
-    minOrderValue: z.number().nonnegative().optional().default(0),
-    maxDiscount: z.number().nonnegative().nullable().optional(),
+    value: z.preprocess((val) => (val === "" || val === undefined || val === null ? undefined : Number(val)), z.number().positive("Giá trị phải lớn hơn 0")),
+    minOrderValue: z.preprocess((val) => (val === "" || val === undefined || val === null ? 0 : Number(val)), z.number().nonnegative().optional().default(0)),
+    maxDiscount: z.preprocess((val) => (val === "" || val === undefined || val === null ? null : Number(val)), z.number().nonnegative().nullable().optional()),
     startDate: z.string().refine((val) => !isNaN(Date.parse(val)), "Ngày bắt đầu không hợp lệ"),
     endDate: z.string().refine((val) => !isNaN(Date.parse(val)), "Ngày kết thúc không hợp lệ"),
-    maxUsage: z.number().int().positive().optional().default(100),
-    perUserUsage: z.number().int().positive().optional().default(1),
+    maxUsage: z.preprocess((val) => (val === "" || val === undefined || val === null ? 100 : Number(val)), z.number().int().positive().optional().default(100)),
+    perUserUsage: z.preprocess((val) => (val === "" || val === undefined || val === null ? 1 : Number(val)), z.number().int().positive().optional().default(1)),
     isActive: z.boolean().optional().default(true),
   }),
 });
@@ -89,8 +89,8 @@ const updateCartItemSchema = z.object({
 
 const reviewSchema = z.object({
   body: z.object({
-    productId: z.union([z.string(), z.number()]),
-    rating: z.number().int().min(1, "Đánh giá tối thiểu 1 sao").max(5, "Đánh giá tối đa 5 sao"),
+    productId: z.preprocess((val) => (val === "" || val === undefined || val === null ? undefined : Number(val)), z.number().int()),
+    rating: z.preprocess((val) => (val === "" || val === undefined || val === null ? undefined : Number(val)), z.number().int().min(1, "Đánh giá tối thiểu 1 sao").max(5, "Đánh giá tối đa 5 sao")),
     comment: z.string().min(1, "Nội dung đánh giá không được để trống"),
     images: z.array(z.string()).optional(),
   }),

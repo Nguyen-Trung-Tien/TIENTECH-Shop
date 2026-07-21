@@ -68,7 +68,7 @@ const OrderActions = ({
         <>
           <Button
             variant="primary"
-            className="w-full !rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 bg-gradient-to-r from-primary to-indigo-600 border-none h-12"
+            className="w-full !rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 bg-gradient-to-r from-primary to-violet-600 border-none h-12 cursor-pointer"
             size="lg"
             icon={FiEdit3}
             onClick={onOpenReviewModal}

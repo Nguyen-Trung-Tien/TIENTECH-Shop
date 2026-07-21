@@ -178,10 +178,10 @@ function Header() {
   return (
     <>
       <header
-        className={`sticky top-0 z-[100] w-full duration-500 will-change-transform ${
+        className={`sticky top-0 z-[100] w-full transition-all duration-500 ${
           isScrolled
-            ? "bg-white/90 dark:bg-dark-bg/90 backdrop-blur-xl shadow-md py-2"
-            : "bg-white dark:bg-dark-bg py-4"
+            ? "glass-header shadow-soft py-2"
+            : "bg-white dark:bg-dark-bg border-b border-slate-100/30 dark:border-dark-border/10 py-4"
         }`}
       >
         <div className="container-custom flex items-center justify-between gap-10">
@@ -225,7 +225,7 @@ function Header() {
                 placeholder="Tìm kiếm sản phẩm công nghệ..."
                 value={searchInput}
                 onChange={onSearchChange}
-                className="w-full h-11 bg-slate-100 dark:bg-dark-surface border-2 border-transparent rounded-2xl pl-12 pr-10 text-[14px] font-medium focus:bg-white dark:focus:bg-dark-bg focus:border-primary/10 dark:focus:border-brand/20 focus:ring-4 focus:ring-primary/5 dark:focus:ring-brand/5 outline-none transition-all dark:text-white"
+                className="w-full h-11 bg-slate-100/70 dark:bg-dark-surface/30 border border-slate-200/50 dark:border-dark-border/30 rounded-2xl pl-12 pr-10 text-[14px] font-medium focus:bg-white dark:focus:bg-dark-bg focus:border-primary/30 dark:focus:border-brand/30 focus:ring-4 focus:ring-primary/5 dark:focus:ring-brand/5 outline-none transition-all duration-300 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600"
               />
               <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1">
                 {searchInput && (

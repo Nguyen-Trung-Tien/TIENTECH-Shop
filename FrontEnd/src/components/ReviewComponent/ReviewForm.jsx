@@ -28,7 +28,7 @@ const ReviewForm = ({ newReview, setNewReview, onSubmit, loading }) => {
         setPreviews((prev) => [...prev, reader.result]);
         setNewReview((prev) => ({
           ...prev,
-          images: [...(newReview.images || []), reader.result],
+          images: [...(prev.images || []), reader.result],
         }));
       };
       reader.readAsDataURL(file);

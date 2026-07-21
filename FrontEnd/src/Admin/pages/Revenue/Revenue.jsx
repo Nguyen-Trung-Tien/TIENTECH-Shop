@@ -14,6 +14,7 @@ import { getRevenueStats, exportRevenue } from "../../../api/adminApi";
 import { toast } from "react-toastify";
 import ChartCard from "../../components/ChartCardComponent/ChartCard";
 import { Link } from "react-router";
+import RevenueForecastWidget from "../../components/RevenueForecastWidget/RevenueForecastWidget";
 
 const Revenue = () => {
   const [stats, setStats] = useState(null);
@@ -58,7 +59,7 @@ const Revenue = () => {
       title: "Tổng doanh thu",
       value: stats?.totalRevenue || 0,
       icon: <FiDollarSign />,
-      color: "bg-indigo-600",
+      color: "bg-primary",
       trend: "+12.5%",
       isUp: true,
     },
@@ -93,7 +94,7 @@ const Revenue = () => {
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
         <div>
           <h1 className="text-3xl md:text-4xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-4">
-            <div className="size-14 rounded-2xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-600/20">
+            <div className="size-14 rounded-2xl bg-primary flex items-center justify-center text-white shadow-lg shadow-primary/20">
               <FiBarChart2 size={28} />
             </div>
             Phân tích Doanh thu
@@ -105,12 +106,12 @@ const Revenue = () => {
         </div>
 
         <div className="flex flex-wrap items-center gap-4">
-          <div className="bg-white dark:bg-dark-surface border border-slate-200 dark:border-dark-border p-1.5 rounded-2xl flex items-center shadow-sm">
+          <div className="bg-white dark:bg-dark-surface border border-slate-100 dark:border-dark-border p-1.5 rounded-2xl flex items-center shadow-sm">
             {["week", "month", "year"].map((p) => (
               <button
                 key={p}
                 onClick={() => setPagePeriod(p)}
-                className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${period === p ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/20" : "text-slate-400 dark:text-dark-text-secondary hover:text-slate-600 dark:hover:text-white"}`}
+                className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer ${period === p ? "bg-primary text-white shadow-lg shadow-primary/20" : "text-slate-400 dark:text-dark-text-secondary hover:text-slate-600 dark:hover:text-white"}`}
               >
                 {p === "week" ? "Tuần" : p === "month" ? "Tháng" : "Năm"}
               </button>
@@ -118,7 +119,7 @@ const Revenue = () => {
           </div>
           <button
             onClick={handleExport}
-            className="flex items-center gap-2 h-12 px-6 bg-white dark:bg-dark-surface text-slate-700 dark:text-dark-text-primary border border-slate-200 dark:border-dark-border rounded-xl font-bold hover:bg-slate-50 dark:hover:bg-dark-bg transition-all shadow-sm group"
+            className="flex items-center gap-2 h-12 px-6 bg-white dark:bg-dark-surface text-slate-700 dark:text-dark-text-primary border border-slate-100 dark:border-dark-border rounded-xl font-bold hover:bg-slate-50 dark:hover:bg-dark-bg transition-all shadow-sm group cursor-pointer"
           >
             <FiDownload className="text-lg group-hover:scale-110 transition-transform" />
             <span>Xuất Excel</span>
@@ -176,8 +177,8 @@ const Revenue = () => {
                 Dữ liệu doanh thu thực tế theo thời gian
               </p>
             </div>
-            <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10 px-3 py-1 rounded-full text-[10px] font-black tracking-widest">
-              <div className="w-1.5 h-1.5 bg-indigo-600 dark:bg-indigo-400 rounded-full animate-pulse"></div>{" "}
+            <div className="flex items-center gap-2 text-primary dark:text-primary-light bg-primary/5 dark:bg-primary/10 px-3 py-1 rounded-full text-[10px] font-black tracking-widest">
+              <div className="w-1.5 h-1.5 bg-primary dark:bg-primary-light rounded-full animate-pulse"></div>{" "}
               LIVE
             </div>
           </div>
@@ -187,7 +188,7 @@ const Revenue = () => {
         </div>
 
         <div className="bg-white dark:bg-dark-surface p-8 rounded-[2.5rem] text-slate-900 dark:text-white border border-slate-100 dark:border-dark-border shadow-sm relative overflow-hidden">
-          <div className="absolute top-0 right-0 size-64 bg-indigo-200/20 dark:bg-indigo-500/5 rounded-full blur-[80px] -mr-32 -mt-32"></div>
+          <div className="absolute top-0 right-0 size-64 bg-primary/5 dark:bg-primary/5 rounded-full blur-[80px] -mr-32 -mt-32"></div>
 
           <div className="relative z-10 space-y-10">
             <div>
@@ -204,12 +205,12 @@ const Revenue = () => {
                     key={i}
                     className="flex items-center gap-4 group cursor-pointer"
                   >
-                    <div className="size-12 rounded-xl bg-slate-50 dark:bg-dark-bg border border-slate-100 dark:border-dark-border flex items-center justify-center font-black text-indigo-500 group-hover:bg-indigo-600 group-hover:text-white transition-all shadow-sm">
+                    <div className="size-12 rounded-xl bg-slate-50 dark:bg-dark-bg border border-slate-100 dark:border-dark-border flex items-center justify-center font-black text-primary group-hover:bg-primary group-hover:text-white transition-all shadow-sm">
                       #{i + 1}
                     </div>
 
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-bold truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                      <p className="text-sm font-bold truncate group-hover:text-primary dark:group-hover:text-primary-light transition-colors">
                         {product.productName}
                       </p>
                       <p className="text-[10px] font-bold text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest">
@@ -218,7 +219,7 @@ const Revenue = () => {
                     </div>
 
                     <div className="text-right">
-                      <p className="text-xs font-black text-indigo-600 dark:text-indigo-400">
+                      <p className="text-xs font-black text-primary dark:text-primary-light">
                         {Number(product.totalRevenue).toLocaleString()}₫
                       </p>
                     </div>
@@ -236,7 +237,7 @@ const Revenue = () => {
             <div className="pt-6 border-t border-slate-100 dark:border-dark-border">
               <Link
                 to="/admin/products"
-                className="flex items-center justify-center gap-2 w-full py-3 bg-slate-50 dark:bg-dark-bg text-slate-600 dark:text-dark-text-secondary text-[10px] font-black uppercase tracking-[0.2em] hover:bg-indigo-600 hover:text-white dark:hover:bg-indigo-600 dark:hover:text-white rounded-xl transition-all"
+                className="flex items-center justify-center gap-2 w-full py-3 bg-slate-50 dark:bg-dark-bg text-slate-600 dark:text-dark-text-secondary text-[10px] font-black uppercase tracking-[0.2em] hover:bg-primary hover:text-white dark:hover:bg-primary dark:hover:text-white rounded-xl transition-all"
               >
                 Quản lý kho hàng <FiArrowUpRight />
               </Link>
@@ -244,6 +245,7 @@ const Revenue = () => {
           </div>
         </div>
       </div>
+      <RevenueForecastWidget />
     </div>
   );
 };

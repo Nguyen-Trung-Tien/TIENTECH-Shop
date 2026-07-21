@@ -28,7 +28,7 @@ const HomePage = () => {
   }, []);
 
   return (
-    <div className="bg-white dark:bg-black transition-colors duration-300">
+    <div className="bg-slate-50 dark:bg-dark-bg transition-colors duration-300">
       <ChatBot />
       <HeroSection />
 

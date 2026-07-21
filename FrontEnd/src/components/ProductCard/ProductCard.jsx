@@ -174,34 +174,34 @@ const ProductCard = ({ product }) => {
         initial={{ opacity: 0, y: 10 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        className={`group card-ecommerce relative flex flex-col h-full cursor-pointer ${!isActive ? "opacity-60 grayscale pointer-events-none" : ""}`}
+        className={`group relative flex flex-col h-full bg-white dark:bg-dark-surface rounded-[28px] border border-slate-100 dark:border-dark-border/40 overflow-hidden shadow-soft hover:shadow-lg transition-all duration-500 cursor-pointer ${!isActive ? "opacity-60 grayscale pointer-events-none" : ""}`}
         onClick={() => navigate(`/product-detail/${slug || id}`)}
       >
         {/* Image Area */}
-        <div className="relative aspect-square overflow-hidden bg-slate-50 dark:bg-dark-bg">
+        <div className="relative aspect-square overflow-hidden bg-slate-50/50 dark:bg-dark-bg/40">
           <img
             src={image}
             alt={name}
             loading="lazy"
-            className="w-full h-full object-contain p-4 mix-blend-multiply dark:mix-blend-normal transition-transform duration-500 group-hover:scale-105"
+            className="w-full h-full object-contain p-5 mix-blend-multiply dark:mix-blend-normal transition-transform duration-700 group-hover:scale-110"
           />
 
           {/* Badges */}
-          <div className="absolute top-2 left-2 flex flex-col gap-1 z-10">
+          <div className="absolute top-3 left-3 flex flex-col gap-1 z-10">
             {flashSaleActive && flashSaleDiscount > 0 && (
-              <Badge variant="danger">
+              <Badge variant="danger" className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1">
                 Flash -{Math.round(flashSaleDiscount)}%
               </Badge>
             )}
             {!flashSaleActive && discount > 0 && (
-              <Badge variant="default">-{discount}%</Badge>
+              <Badge variant="default" className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1">-{discount}%</Badge>
             )}
           </div>
 
           {/* Wishlist Button */}
           <button
             onClick={handleWishlist}
-            className="absolute top-2 right-2 z-20 p-2 bg-white/80 dark:bg-dark-surface/80 backdrop-blur-sm rounded-full shadow-sm hover:scale-110 transition-transform active:scale-95 group/heart"
+            className="absolute top-3 right-3 z-20 size-9 flex items-center justify-center bg-white/70 dark:bg-dark-surface/70 backdrop-blur-md border border-white/20 dark:border-white/5 rounded-full shadow-sm hover:scale-110 hover:bg-white dark:hover:bg-dark-surface transition-all duration-300 active:scale-95 group/heart"
           >
             {isWishlisted ? (
               <FaHeart className="text-red-500" size={16} />
@@ -214,45 +214,45 @@ const ProductCard = ({ product }) => {
           </button>
 
           {/* Mobile quick add button */}
-          <div className="absolute bottom-2 right-2 lg:hidden">
+          <div className="absolute bottom-3 right-3 lg:hidden">
             <Button
               variant="default"
               size="icon"
-              className="rounded-full shadow-lg"
+              className="rounded-full shadow-lg h-10 w-10 !rounded-2xl"
               onClick={handleAddToCartClick}
               disabled={loadingCart}
             >
-              <FiShoppingCart />
+              <FiShoppingCart size={16} />
             </Button>
           </div>
 
           {/* Desktop hover action */}
-          <div className="absolute inset-x-0 bottom-0 p-3 translate-y-full group-hover:translate-y-0 transition-transform duration-300 z-20 bg-gradient-to-t from-white/90 dark:from-dark-card/90 to-transparent hidden lg:block">
+          <div className="absolute inset-x-0 bottom-0 p-3 translate-y-full group-hover:translate-y-0 transition-all duration-300 z-20 bg-gradient-to-t from-white dark:from-dark-surface to-transparent hidden lg:block">
             <Button
-              variant="default"
+              variant="primary"
               size="sm"
-              className="w-full"
+              className="w-full !rounded-2xl font-black text-[10px] tracking-wider"
               onClick={handleAddToCartClick}
               disabled={loadingCart}
             >
-              <FiShoppingCart className="mr-2" />
+              <FiShoppingCart size={14} className="mr-1" />
               THÊM GIỎ HÀNG
             </Button>
           </div>
         </div>
 
         {/* Content Area */}
-        <div className="p-3 flex flex-col flex-1">
-          <p className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1 truncate">
+        <div className="p-5 flex flex-col flex-1">
+          <p className="text-[9px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-[0.2em] mb-1.5 truncate">
             Official Store
           </p>
-          <h3 className="text-xs md:text-sm font-semibold text-slate-800 dark:text-white line-clamp-2 leading-tight mb-2 h-8 group-hover:text-primary transition-colors">
+          <h3 className="text-xs md:text-sm font-bold text-slate-800 dark:text-white line-clamp-2 leading-snug mb-2.5 h-10 group-hover:text-primary dark:group-hover:text-brand transition-colors">
             {name}
           </h3>
 
           {/* Mini Specs - Hệ thống Attribute mới */}
           {product.attributes && product.attributes.length > 0 && (
-            <div className="flex flex-wrap gap-1 mb-3">
+            <div className="flex flex-wrap gap-1.5 mb-3.5">
               {product.attributes.slice(0, 3).map((attr, idx) => {
                 if (
                   ["ram", "rom", "refresh_rate"].includes(attr.attribute?.code)
@@ -260,7 +260,7 @@ const ProductCard = ({ product }) => {
                   return (
                     <span
                       key={idx}
-                      className="px-1.5 py-0.5 bg-slate-50 dark:bg-dark-surface text-[8px] font-bold text-slate-500 rounded border border-slate-100 dark:border-dark-border"
+                      className="px-2.5 py-0.5 bg-slate-50 dark:bg-slate-800/40 text-[9px] font-bold text-slate-500 dark:text-dark-text-secondary rounded-lg border border-slate-100 dark:border-dark-border/40"
                     >
                       {attr.value}
                     </span>
@@ -271,8 +271,8 @@ const ProductCard = ({ product }) => {
             </div>
           )}
 
-          <div className="flex items-center gap-1 mb-2">
-            <div className="flex text-amber-400 text-[9px]">
+          <div className="flex items-center gap-1.5 mb-3">
+            <div className="flex text-amber-400 text-[9px] gap-0.5">
               {Array.from({ length: 5 }).map((_, i) => (
                 <FaStar
                   key={i}
@@ -285,18 +285,18 @@ const ProductCard = ({ product }) => {
               ))}
             </div>
             {sold > 0 && (
-              <span className="text-[9px] text-slate-400 dark:text-slate-500">
+              <span className="text-[10px] font-medium text-slate-400 dark:text-dark-text-secondary">
                 | Đã bán {sold}
               </span>
             )}
           </div>
 
-          <div className="mt-auto pt-2 border-t border-slate-50 dark:border-dark-border">
+          <div className="mt-auto pt-3 border-t border-slate-50 dark:border-dark-border/40 flex items-baseline gap-2">
             <p className="text-base font-black text-slate-900 dark:text-white leading-none">
               {formatCurrency(finalPrice)}
             </p>
             {((flashSaleActive && flashOriginalPrice) || discount > 0) && (
-              <p className="text-[10px] text-slate-400 dark:text-slate-500 line-through mt-1">
+              <p className="text-[10px] text-slate-400 dark:text-slate-500 line-through font-medium leading-none">
                 {formatCurrency(productOriginalPrice)}
               </p>
             )}
