@@ -137,6 +137,8 @@ const ProductCard = ({ product }) => {
 
       const cartItem = {
         id: res.data.id,
+        productId: res.data.productId,
+        variantId: res.data.variantId,
         product: res.data.product,
         variant: res.data.variant,
         quantity: res.data.quantity,

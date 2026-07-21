@@ -73,8 +73,8 @@ const CheckoutPage = () => {
         note: formData.note,
         voucherCode: appliedVoucher?.code || null,
         orderItems: selectedItems.map((item) => ({
-          productId: item.productId,
-          variantId: item.variantId,
+          productId: item.productId || item.product?.id || item.product?.productId,
+          variantId: item.variantId || item.variant?.id || null,
           quantity: item.quantity,
           cartItemId: item.id,
         })),
@@ -124,8 +124,8 @@ const CheckoutPage = () => {
         note: formData.note,
         voucherCode: appliedVoucher?.code || null,
         orderItems: selectedItems.map((item) => ({
-          productId: item.productId,
-          variantId: item.variantId,
+          productId: item.productId || item.product?.id || item.product?.productId,
+          variantId: item.variantId || item.variant?.id || null,
           quantity: item.quantity,
           cartItemId: item.id,
         })),
