@@ -5,6 +5,7 @@ import { motion as Motion, AnimatePresence } from "framer-motion";
 import { getWishlistApi } from "../../api/wishlistApi";
 import ProductCard from "../../components/ProductCard/ProductCard";
 import Loading from "../../components/Loading/Loading";
+import { toast } from "react-toastify";
 
 const WishlistPage = () => {
   const [wishlist, setWishlist] = useState([]);
@@ -59,10 +60,28 @@ const WishlistPage = () => {
                 </div>
 
                 {wishlist.length > 0 && (
-                    <div className="flex items-center gap-3 px-5 py-2.5 bg-primary/10 border border-primary/20 rounded-2xl">
-                        <span className="text-primary dark:text-primary-light font-black text-sm">{wishlist.length}</span>
-                        <span className="text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-widest leading-none">Sản phẩm lưu trữ</span>
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={async () => {
+                        const { addCart } = await import("../../api/cartApi");
+                        try {
+                          for (const item of wishlist) {
+                            await addCart({ productId: item.id, quantity: 1 });
+                          }
+                          toast.success("Đã thêm tất cả sản phẩm yêu thích vào giỏ hàng!");
+                        } catch {
+                          toast.error("Một số sản phẩm không thể thêm vào giỏ hàng");
+                        }
+                      }}
+                      className="flex items-center gap-2 px-5 py-2.5 bg-primary text-white text-xs font-black uppercase tracking-widest rounded-2xl hover:bg-primary-hover shadow-lg shadow-primary/20 transition-all active:scale-95 cursor-pointer"
+                    >
+                      <FiShoppingBag size={14} /> Thêm tất cả vào giỏ hàng
+                    </button>
+                    <div className="flex items-center gap-2 px-4 py-2.5 bg-primary/10 border border-primary/20 rounded-2xl">
+                      <span className="text-primary dark:text-primary-light font-black text-sm">{wishlist.length}</span>
+                      <span className="text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-widest leading-none">Món đồ</span>
                     </div>
+                  </div>
                 )}
             </Motion.div>
         </div>

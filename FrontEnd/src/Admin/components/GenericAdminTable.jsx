@@ -55,20 +55,31 @@ const GenericAdminTable = ({
           )}
         </div>
 
-        <div className="flex items-center gap-4">
-          <div className="relative group w-64">
-            <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-dark-text-secondary group-focus-within:text-primary transition-colors" />
+        <div className="flex items-center gap-3">
+          <div className="relative group w-64 md:w-80 transition-all duration-300">
+            <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-dark-text-secondary group-focus-within:text-primary transition-colors text-base" />
             <input
               type="text"
               placeholder={searchPlaceholder}
-              className="w-full h-12 bg-white dark:bg-dark-surface border border-slate-100 dark:border-dark-border/40 rounded-2xl pl-11 text-sm font-bold text-slate-900 dark:text-white focus:ring-4 focus:ring-primary/5 transition-all outline-none"
-              value={searchTerm}
+              className="w-full h-12 bg-white dark:bg-dark-surface border border-slate-200/80 dark:border-dark-border/60 rounded-2xl pl-11 pr-10 text-sm font-bold text-slate-900 dark:text-white focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all outline-none"
+              value={searchTerm || ""}
               onChange={(e) => onSearchChange(e.target.value)}
             />
+            {searchTerm && (
+              <button
+                type="button"
+                onClick={() => onSearchChange("")}
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 size-6 rounded-full bg-slate-100 dark:bg-dark-bg text-slate-400 hover:text-slate-700 dark:hover:text-white flex items-center justify-center transition-all cursor-pointer"
+                title="Xóa ô tìm kiếm"
+              >
+                <FiX size={13} />
+              </button>
+            )}
           </div>
+
           <button
             onClick={onAddClick}
-            className="btn-modern-primary group h-12 px-6 flex items-center gap-2"
+            className="btn-modern-primary group h-12 px-6 flex items-center gap-2 cursor-pointer active:scale-98"
           >
             <FiPlus className="text-xl group-hover:rotate-90 transition-transform duration-300" />
             <span>{addLabel}</span>

@@ -1,7 +1,12 @@
 <div align="center">
 
+  <!-- Logo Header -->
+  <a href="https://github.com/Nguyen-Trung-Tien/Project-App">
+    <img src="FrontEnd/src/assets/logo.png" alt="TienTech Logo" width="160" style="margin-bottom: 15px;" />
+  </a>
+
   <!-- Hero Banner -->
-  <img src="https://capsule-render.vercel.app/api?type=waving&color=0:667eea,100:764ba2&height=250&section=header&text=🛒%20TIENTECH%20PREMIUM&fontSize=50&fontColor=fff&animation=fadeIn&fontAlignY=35&desc=The%20Next-Gen%20AI-Powered%20E-Commerce%20Ecosystem&descSize=20&descAlignY=55&descAlign=50" width="100%" />
+  <img src="https://capsule-render.vercel.app/api?type=waving&color=0:667eea,100:764ba2&height=220&section=header&text=🛒%20TIENTECH%20PREMIUM%20SHOP&fontSize=42&fontColor=fff&animation=fadeIn&fontAlignY=35&desc=Next-Gen%20AI-Driven%20E-Commerce%20Ecosystem&descSize=18&descAlignY=58&descAlign=50" width="100%" />
 
   <br />
 
@@ -22,7 +27,7 @@
   </p>
 
   <p>
-    <b>TIENTECH Shop</b> là một hệ sinh thái thương mại điện tử đột phá, tích hợp <b>Trí tuệ nhân tạo (AI)</b> chuyên sâu vào từng trải nghiệm mua sắm và quản trị. Hệ thống được xây dựng trên nền tảng công nghệ mới nhất (React 19, Express 5) mang lại hiệu năng tối ưu và khả năng mở rộng cao.
+    <b>TIENTECH Shop</b> là hệ sinh thái thương mại điện tử hàng đầu tích hợp <b>Trí tuệ nhân tạo (AI)</b> chuyên sâu vào mua sắm & quản trị. Dự án xây dựng trên nền tảng <b>React 19</b> & <b>Express 5</b> mang lại tốc độ phản hồi nhanh tức thì cùng giao diện <b>Glassmorphic High-Tech</b> đẳng cấp.
   </p>
 
   <p>
@@ -40,54 +45,65 @@
 ## 📋 Mục lục
 
 - [✨ Tại sao chọn TIENTECH?](#-tại-sao-chọn-tientech)
+- [🔥 Đột phá UI/UX & Nâng cấp mới nhất](#-đột-phá-uiux--nâng-cấp-mới-nhất)
 - [🤖 Hệ sinh thái AI đột phá](#-hệ-sinh-thái-ai-đột-phá)
 - [🏗 Kiến trúc hệ thống](#-kiến-trúc-hệ-thống)
-- [🛠 Tech Stack toàn diện](#-tech-stack-toàn diện)
+- [🛠 Tech Stack toàn diện](#-tech-stack-toàn-diện)
 - [✨ Tính năng chủ chốt](#-tính-năng-chủ-chốt)
 - [📂 Cấu trúc dự án (Anatomy)](#-cấu-trúc-dự-án-anatomy)
-- [🗄 Mô hình dữ liệu](#-mô-hình-dữ-liệu)
 - [⚡ Cài đặt & Triển khai](#-cài-đặt--triển-khai)
 - [🔐 Bảo mật & Hiệu năng](#-bảo-mật--hiệu-năng)
-- [🧪 Kiểm thử & Chất lượng](#-kiểm-thử--chất-lượng)
 - [🤝 Đóng góp & Phát triển](#-đóng-góp--phát-triển)
-- [📄 Giấy phép](#-giấy-phép)
 
 ---
 
 ## ✨ Tại sao chọn TIENTECH?
 
-Khác với các nền tảng TMĐT truyền thống, **TIENTECH** tập trung vào việc cá nhân hoá trải nghiệm người dùng thông qua dữ liệu và AI:
+Khác với các nền tảng TMĐT truyền thống, **TIENTECH** tập trung cá nhân hóa trải nghiệm người dùng thông qua dữ liệu và AI:
 
-*   **🛒 Modern Frontend:** Tận dụng sức mạnh của **React 19** với cơ chế render tối ưu, animations mượt mà từ **Framer Motion**.
-*   **⚡ High Performance Backend:** API viết trên **Express 5**, hỗ trợ caching **Redis** và tối ưu hoá truy vấn **Sequelize**.
-*   **🤖 AI-First Mindset:** Không chỉ là chatbot, AI được tích hợp vào tìm kiếm hình ảnh, tư vấn phong thuỷ và dự báo kinh doanh.
-*   **💳 Global & Local Payment:** Hỗ trợ đầy đủ **VNPay (Nội địa)** và **PayPal (Quốc tế)**.
-*   **📊 Data-Driven Admin:** Dashboard trực quan với các chỉ số kinh doanh được AI phân tích và đưa ra lời khuyên chiến lược.
+*   **🛒 Modern Frontend:** Tận dụng sức mạnh **React 19** với cơ chế render mượt mà từ **Framer Motion**, chuẩn **Glassmorphism Design System**.
+*   **⚡ High Performance Backend:** API viết trên **Express 5**, hỗ trợ **Redis Cache**, Rate Limiter chống nghẽn và tối ưu hóa **Sequelize**.
+*   **🤖 AI-First Ecosystem:** Tích hợp Chatbot thông minh, Visual Image Search, tư vấn Phong thủy, Dự báo xu hướng giá và AI Insights Admin.
+*   **💳 Global & Local Payment:** Hỗ trợ thanh toán toàn diện **VNPay (Nội địa)** và **PayPal (Quốc tế)**.
+*   **📊 Enterprise Admin:** Dashboard trực quan kết hợp tìm kiếm toàn cục phím tắt `Ctrl + K`.
+
+---
+
+## 🔥 Đột phá UI/UX & Nâng cấp mới nhất
+
+| Hạng mục | Chi tiết nâng cấp |
+| :--- | :--- |
+| **🔍 Search System (Ctrl + K)** | Tìm kiếm siêu tốc bằng phím tắt `Ctrl + K`, hỗ trợ AI Vision Search, Voice Search (gợi ý từ khóa & lịch sử tìm kiếm). |
+| **🎯 System-Wide Filter** | Bộ lọc thông minh toàn hệ thống: chọn nhanh 1-tap khoảng giá preset (`< 5 triệu`, `5-15 triệu`, `15-30 triệu`, `> 30 triệu`) & icon thông số kỹ thuật. |
+| **✨ Glassmorphic Modal & Popup** | Modal thông báo nảy nổ mượt (Spring Animation) kèm icon phát sáng trạng thái (`Danger`, `Success`, `Warning`, `Info`). |
+| **🍞 Premium Toast System** | Đổi mới toàn bộ thông báo Toast dạng kính mờ 3D (`backdrop-blur-xl`), góc phải màn hình với thanh đếm ngược Gradient mượt mà. |
+| **🔒 Remember Me & Auth UI** | Tính năng Ghi nhớ đăng nhập tự động lưu credentials an toàn; giao diện Đăng nhập/Đăng ký chuẩn Light/Dark mode. |
+| **🛍 Checkout Flow & 404** | Trang Checkout Success/Failed thiết kế code tham chiếu 1-click copy & đếm ngược tự động; trang 404 hoành tráng. |
 
 ---
 
 ## 🤖 Hệ sinh thái AI đột phá
 
-Đây là linh hồn của dự án, sử dụng các mô hình ngôn ngữ lớn (LLMs) như **Gemini 2.5 Flash** và **OpenAI GPT-4**:
+Linh hồn của dự án sử dụng các mô hình AI tiên tiến như **Gemini 2.5 Flash** và **OpenAI GPT-4**:
 
 | Tính năng | Công nghệ | Mô tả |
 | :--- | :--- | :--- |
 | **Omni-Chatbot** | Gemini / OpenAI | Trợ lý ảo hiểu ngữ cảnh, hỗ trợ tra cứu đơn hàng, tư vấn sản phẩm và giải đáp thắc mắc 24/7. |
-| **Tư vấn Phong thuỷ** | Gemini AI | Phân tích năm sinh người dùng để gợi ý các sản phẩm (màu sắc, chất liệu) phù hợp nhất với bản mệnh. |
-| **Visual Search** | Vision AI | Tìm kiếm sản phẩm bằng hình ảnh. Người dùng chỉ cần upload ảnh, hệ thống sẽ tìm sản phẩm tương ứng. |
-| **Price Predictor** | Machine Learning | Dự đoán xu hướng giá của sản phẩm trong tương lai giúp người dùng chọn thời điểm mua tốt nhất. |
+| **Tư vấn Phong thủy** | Gemini AI | Phân tích năm sinh người dùng để gợi ý sản phẩm (màu sắc, bản mệnh) phù hợp nhất. |
+| **Visual Search** | Vision AI | Tìm kiếm sản phẩm bằng hình ảnh thông minh qua camera hoặc tải ảnh trực tiếp. |
+| **Price Predictor** | Machine Learning | Dự đoán xu hướng giá sản phẩm trong tương lai giúp khách hàng chọn thời điểm mua tối ưu. |
 | **AI Insights Admin** | Gemini AI | Chuyên gia phân tích ảo cho Admin: Tự động phân tích tồn kho, doanh số và đề xuất chiến dịch marketing. |
 
 ---
 
 ## 🏗 Kiến trúc hệ thống
 
-Dự án tuân thủ nghiêm ngặt mô hình **Clean Architecture** với phân lớp rõ ràng:
+Dự án tuân thủ nghiêm ngặt mô hình **Clean Architecture**:
 
 ```mermaid
 graph TD
     subgraph Client_Layer [Frontend - React 19]
-        UI[User Interface] --> Redux[Redux Toolkit State]
+        UI[User Interface - Glassmorphism] --> Redux[Redux Toolkit State]
         Redux --> API_Client[Axios Client]
     end
 
@@ -142,17 +158,17 @@ graph TD
 ## ✨ Tính năng chủ chốt
 
 ### 🛍 Dành cho Khách hàng
-*   **Smart Authentication:** Đăng nhập Google, xác thực OTP qua Email, quản lý phiên bản với Refresh Token.
-*   **Advanced Shopping:** Giỏ hàng thông minh, áp mã Voucher đa lớp, tìm kiếm sản phẩm ngữ nghĩa.
+*   **Smart Authentication:** Đăng nhập Google, xác thực OTP qua Email, Ghi nhớ mật khẩu an toàn.
+*   **Advanced Shopping:** Giỏ hàng thông minh, áp mã Voucher đa lớp, tìm kiếm sản phẩm ngữ nghĩa & Visual Search.
 *   **Interactive Review:** Đánh giá sản phẩm kèm hình ảnh, phản hồi từ Admin.
 *   **Real-time Notification:** Nhận thông báo trạng thái đơn hàng ngay lập tức.
 *   **Wishlist & History:** Lưu sản phẩm yêu thích và xem lại lịch sử mua sắm chi tiết.
 
 ### 📊 Dành cho Quản trị viên
 *   **Enterprise Dashboard:** Thống kê doanh thu theo ngày/tháng/năm bằng biểu đồ sinh động.
+*   **Global Search (Ctrl + K):** Tìm nhanh Sản phẩm, Đơn hàng và Người dùng trên thanh Header Admin.
 *   **Inventory Control:** Quản lý kho hàng, biến thể sản phẩm (Màu sắc, kích cỡ, dung lượng...).
 *   **Promotion Engine:** Tạo các chiến dịch Flash Sale, quản lý mã giảm giá tự động.
-*   **Customer Insights:** Theo dõi hành vi khách hàng và các đánh giá tiêu cực để cải thiện dịch vụ.
 *   **Order Fulfillment:** Quy trình xử lý đơn hàng chuẩn TMĐT từ Chờ duyệt -> Giao hàng -> Hoàn tất/Hoàn tiền.
 
 ---
@@ -164,26 +180,23 @@ Project-App/
 ├── 📁 BackEnd/
 │   ├── 📁 src/
 │   │   ├── 📁 config/          # Cấu hình DB, Redis, Cloudinary, Passport
-│   │   ├── 📁 controller/      # Xử lý Request/Response (20+ controllers)
+│   │   ├── 📁 controller/      # Xử lý Request/Response
 │   │   ├── 📁 services/        # Logic nghiệp vụ chính (Service Layer)
-│   │   ├── 📁 models/          # Định nghĩa Database Schema (20+ tables)
-│   │   ├── 📁 routers/         # Định nghĩa các Endpoint API
-│   │   ├── 📁 middleware/      # Auth, Validation, Error Handling
-│   │   ├── 📁 cron/            # Các tác vụ tự động (Flash Sale, Orders)
-│   │   └── service.js          # File chạy chính của server
+│   │   ├── 📁 models/          # Định nghĩa Database Schema
+│   │   ├── 📁 middleware/      # Auth, Rate Limiter, Error Handling
+│   │   └── service.js          # Main server entrypoint
 │   └── 📁 tests/               # Unit & Integration tests
 │
 ├── 📁 FrontEnd/
 │   ├── 📁 src/
-│   │   ├── 📁 Admin/           # Module dành riêng cho quản trị viên
-│   │   ├── 📁 api/             # Các hàm gọi API tập trung
-│   │   ├── 📁 components/      # UI Components dùng chung (25+)
-│   │   ├── 📁 pages/           # Các trang giao diện chính (20+)
-│   │   ├── 📁 redux/           # Quản lý Global State
-│   │   └── 📁 hooks/           # Custom hooks xử lý logic UI
-│   └── vite.config.js          # Cấu hình build frontend
+│   │   ├── 📁 Admin/           # Module quản trị viên
+│   │   ├── 📁 api/             # API clients
+│   │   ├── 📁 components/      # Glassmorphism UI Components
+│   │   ├── 📁 pages/           # Client pages
+│   │   └── 📁 redux/           # Global State
+│   └── vite.config.js          # Build configuration
 │
-└── 📁 deploy/                  # Cấu hình Docker & Kubernetes (Local)
+└── 📁 deploy/                  # Docker & Deployment configs
 ```
 
 ---
@@ -199,9 +212,9 @@ Project-App/
 ```bash
 cd BackEnd
 npm install
-cp .env.example .env # Cấu hình các key AI và DB trong này
-npx sequelize-cli db:migrate # Tạo cấu trúc bảng
-npm run dev # Chạy ở port 8080
+cp .env.example .env
+npx sequelize-cli db:migrate
+npm run dev
 ```
 
 ### 3. Khởi tạo Frontend
@@ -209,7 +222,7 @@ npm run dev # Chạy ở port 8080
 cd FrontEnd
 npm install
 cp .env.example .env
-npm run dev # Chạy ở port 5173
+npm run dev
 ```
 
 ---
@@ -219,27 +232,11 @@ npm run dev # Chạy ở port 5173
 *   **Security:**
     *   Hệ thống xác thực 2 lớp với JWT Access & Refresh tokens.
     *   Chặn tấn công Brute-force bằng **Rate Limiting**.
-    *   Validation dữ liệu đầu vào cực kỳ chặt chẽ với **Zod & Express Validator**.
-    *   Bảo mật thông tin thanh toán theo chuẩn API của VNPay/PayPal.
+    *   Validation dữ liệu đầu vào chặt chẽ với **Zod & Express Validator**.
 *   **Performance:**
-    *   Sử dụng **Redis** để cache các truy vấn sản phẩm phổ biến, giảm tải cho MySQL.
-    *   Tối ưu hóa hình ảnh thông qua CDN của **Cloudinary**.
-    *   Frontend sử dụng **Code Splitting** và **Lazy Loading** để tăng tốc độ tải trang đầu tiên.
-
----
-
-## 🧪 Kiểm thử & Chất lượng
-
-Dự án được bảo vệ bởi hệ thống test tự động:
-*   **Backend:** Sử dụng **Jest** và **Supertest** để kiểm tra API.
-*   **Linting:** Sử dụng **ESLint** với cấu hình nghiêm ngặt để đảm bảo code sạch.
-*   **CI/CD:** Tích hợp **GitHub Actions** để tự động kiểm tra code mỗi khi có Pull Request.
-
-Để chạy test:
-```bash
-cd BackEnd
-npm test
-```
+    *   Sử dụng **Redis** để cache các truy vấn sản phẩm phổ biến.
+    *   Tối ưu hóa hình ảnh qua CDN **Cloudinary**.
+    *   Frontend sử dụng **Code Splitting** và **Lazy Loading** giúp tải trang nhanh dưới 1 giây.
 
 ---
 

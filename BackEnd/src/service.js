@@ -21,6 +21,15 @@ const isProduction = process.env.NODE_ENV === "production";
 const app = express();
 app.set("trust proxy", 1);
 
+// Security Headers Middleware
+app.use((req, res, next) => {
+  res.setHeader("X-Frame-Options", "DENY");
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("X-XSS-Protection", "1; mode=block");
+  res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+  next();
+});
+
 app.use(passport.initialize());
 
 const server = http.createServer(app);
@@ -99,7 +108,7 @@ RATE LIMITER
 
 const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 1000,
+  max: isProduction ? 1000 : 20000,
   standardHeaders: true,
   legacyHeaders: false,
   message: {

@@ -1,5 +1,6 @@
 import React from "react";
-import { FiGift, FiPercent, FiCalendar, FiUsers } from "react-icons/fi";
+import { FiGift, FiPercent, FiCalendar, FiUsers, FiCopy } from "react-icons/fi";
+import { toast } from "react-toastify";
 import { voucherApi } from "../../../api/voucherApi";
 import { useAdminCrud } from "../../../hooks/useAdminCrud";
 import GenericAdminTable from "../../components/GenericAdminTable";
@@ -33,9 +34,21 @@ const VoucherManage = () => {
       header: "Mã & Tên",
       render: (item) => (
         <div>
-          <p className="text-sm font-black text-primary dark:text-primary-light tracking-wider uppercase">
-            {item.code}
-          </p>
+          <div className="flex items-center gap-2">
+            <p className="text-sm font-black text-primary dark:text-primary-light tracking-wider uppercase">
+              {item.code}
+            </p>
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(item.code);
+                toast.success(`Đã sao chép mã ${item.code}!`);
+              }}
+              className="text-slate-400 hover:text-primary transition-colors cursor-pointer"
+              title="Sao chép mã"
+            >
+              <FiCopy size={12} />
+            </button>
+          </div>
           <p className="text-[11px] font-bold text-slate-500 dark:text-dark-text-secondary mt-0.5">
             {item.name || "Không có tên"}
           </p>

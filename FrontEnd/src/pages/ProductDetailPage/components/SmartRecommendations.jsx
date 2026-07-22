@@ -2,80 +2,81 @@ import React from "react";
 import { FiZap, FiChevronRight } from "react-icons/fi";
 
 const SmartRecommendations = ({ smartRecs }) => {
-  if (smartRecs.length === 0) return null;
+  if (!smartRecs || smartRecs.length === 0) return null;
 
   return (
-    <div className="mt-20 space-y-8">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-gray-100 dark:border-dark-border pb-6">
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <div className="size-8 rounded-lg bg-primary flex items-center justify-center text-white shadow-lg shadow-primary/20 dark:shadow-none animate-pulse">
-              <FiZap className="fill-current" />
+    <div className="mt-16 space-y-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200/80 dark:border-slate-800 pb-5">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2.5">
+            <div className="size-9 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-blue-500/20 animate-pulse shrink-0">
+              <FiZap className="fill-current text-base" />
             </div>
-            <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight uppercase">
-              Gợi ý thông minh
+            <h2 className="text-xl md:text-2xl font-black text-slate-900 dark:text-white tracking-tight uppercase">
+              Gợi Ý Mua Sắm Thông Minh
             </h2>
           </div>
-          <p className="text-xs font-bold text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest">
-            Dựa trên phân tích AI & Hành vi mua sắm của bạn
+          <p className="text-xs font-semibold text-slate-400 dark:text-slate-400">
+            Dựa trên thuật toán AI & Sản phẩm phù hợp nhất với nhu cầu của bạn
           </p>
         </div>
         <a
           href="/products"
-          className="text-[11px] font-black uppercase tracking-widest text-primary dark:text-primary-light hover:text-primary-hover transition-colors flex items-center gap-2 group"
+          className="text-xs font-black uppercase tracking-wider text-blue-600 dark:text-blue-400 hover:text-blue-700 transition-colors flex items-center gap-1.5 group"
         >
-          Xem tất cả sản phẩm{" "}
+          Tất cả sản phẩm{" "}
           <FiChevronRight className="group-hover:translate-x-1 transition-transform" />
         </a>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-        {smartRecs.map((rec) => (
-          <a
-            key={rec.id}
-            href={`/product-detail/${rec.slug || rec.id}`}
-            className="group bg-white dark:bg-dark-surface rounded-3xl border border-gray-100 dark:border-dark-border p-4 hover:shadow-2xl dark:hover:shadow-none hover:shadow-primary/5 transition-all duration-500 relative overflow-hidden"
-          >
-            <div className="absolute top-3 left-3 z-10">
-              <span
-                className={`px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-tighter shadow-sm flex items-center gap-1 ${
-                  rec.reason === "Thường mua cùng"
-                    ? "bg-emerald-500 text-white"
-                    : "bg-primary text-white"
-                }`}
-              >
-                {rec.reason === "Thường mua cùng" ? "🤝" : "✨"}{" "}
-                {rec.reason}
-              </span>
-            </div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-5">
+        {smartRecs.map((rec) => {
+          const finalPrice = rec.basePrice * (1 - (rec.discount || 0) / 100);
+          return (
+            <a
+              key={rec.id}
+              href={`/product-detail/${rec.slug || rec.id}`}
+              className="group bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 p-4 hover:shadow-xl hover:border-blue-500/30 transition-all duration-300 relative overflow-hidden flex flex-col justify-between"
+            >
+              <div>
+                <div className="absolute top-3 left-3 z-10">
+                  <span
+                    className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider shadow-sm flex items-center gap-1 ${
+                      rec.reason === "Thường mua cùng"
+                        ? "bg-emerald-500 text-white"
+                        : "bg-gradient-to-r from-blue-600 to-indigo-600 text-white"
+                    }`}
+                  >
+                    {rec.reason === "Thường mua cùng" ? "🤝" : "✨"} {rec.reason || "Đề xuất"}
+                  </span>
+                </div>
 
-            <div className="aspect-square rounded-2xl bg-gray-50 dark:bg-dark-bg mb-4 overflow-hidden flex items-center justify-center p-4">
-              <img
-                src={rec.image}
-                alt={rec.name}
-                className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500 dark:mix-blend-normal"
-              />
-            </div>
-            <div className="space-y-2">
-              <h3 className="text-xs font-black text-slate-900 dark:text-white uppercase truncate group-hover:text-primary dark:group-hover:text-primary-light transition-colors">
-                {rec.name}
-              </h3>
-              <div className="flex items-baseline gap-2">
+                <div className="aspect-square rounded-2xl bg-slate-50 dark:bg-slate-900/60 mb-3 overflow-hidden flex items-center justify-center p-4">
+                  <img
+                    src={rec.image || "/images/no-image.png"}
+                    alt={rec.name}
+                    className="w-full h-full object-contain group-hover:scale-108 transition-transform duration-500 mix-blend-multiply dark:mix-blend-normal"
+                  />
+                </div>
+
+                <h3 className="text-xs font-bold text-slate-800 dark:text-slate-100 line-clamp-2 mb-2 group-hover:text-blue-600 transition-colors">
+                  {rec.name}
+                </h3>
+              </div>
+
+              <div className="flex items-baseline gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
                 <span className="text-sm font-black text-red-600 dark:text-red-500">
-                  {Number(
-                    rec.basePrice * (1 - (rec.discount || 0) / 100),
-                  ).toLocaleString()}
-                  đ
+                  {Number(finalPrice).toLocaleString("vi-VN")}₫
                 </span>
                 {rec.discount > 0 && (
-                  <span className="text-[10px] font-bold text-slate-400 dark:text-dark-text-secondary line-through">
-                    {rec.basePrice.toLocaleString()}đ
+                  <span className="text-[10px] font-medium text-slate-400 line-through">
+                    {Number(rec.basePrice).toLocaleString("vi-VN")}₫
                   </span>
                 )}
               </div>
-            </div>
-          </a>
-        ))}
+            </a>
+          );
+        })}
       </div>
     </div>
   );

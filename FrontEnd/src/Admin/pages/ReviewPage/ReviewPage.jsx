@@ -280,29 +280,74 @@ const ReviewPage = () => {
                     </div>
                   ))}
 
-                  {/* Add Reply Input */}
-                  <div className="relative pt-2">
-                    <input
-                      type="text"
-                      placeholder="Nhập phản hồi hệ thống..."
-                      value={replyInputs[review.id] || ""}
-                      onChange={(e) =>
-                        setReplyInputs((prev) => ({
-                          ...prev,
-                          [review.id]: e.target.value,
-                        }))
-                      }
-                      onKeyDown={(e) =>
-                        e.key === "Enter" && handleCreateReply(review.id)
-                      }
-                      className="w-full h-12 bg-white dark:bg-dark-bg border border-slate-200 dark:border-dark-border rounded-2xl pl-4 pr-12 text-sm font-bold dark:text-white focus:border-primary focus:ring-4 focus:ring-primary/5 transition-all outline-none"
-                    />
-                    <button
-                      onClick={() => handleCreateReply(review.id)}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 size-8 bg-primary text-white rounded-xl flex items-center justify-center hover:bg-slate-800 transition-all shadow-md"
-                    >
-                      <FiSend size={14} />
-                    </button>
+                  {/* Add Reply Input & AI Suggestions */}
+                  <div className="relative pt-2 space-y-2">
+                    {/* AI Smart Reply Pills */}
+                    <div className="flex items-center gap-1.5 flex-wrap pb-1">
+                      <span className="text-[10px] font-extrabold text-indigo-500 uppercase tracking-wider mr-1">
+                        🤖 AI Quick Reply:
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setReplyInputs((prev) => ({
+                            ...prev,
+                            [review.id]: "Cảm ơn quý khách đã tin tưởng và ủng hộ TIENTECH! Chúc bạn có trải nghiệm sản phẩm tuyệt vời.",
+                          }))
+                        }
+                        className="px-2.5 py-1 text-[11px] font-semibold bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-300 rounded-lg hover:bg-indigo-500 hover:text-white transition border border-indigo-100 dark:border-indigo-900/30"
+                      >
+                        Lịch sự & Cảm ơn
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setReplyInputs((prev) => ({
+                            ...prev,
+                            [review.id]: "TIENTECH xin cảm ơn bạn rất nhiều! Rất hân hạnh được phục vụ bạn trong các đơn hàng tiếp theo.",
+                          }))
+                        }
+                        className="px-2.5 py-1 text-[11px] font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-300 rounded-lg hover:bg-emerald-500 hover:text-white transition border border-emerald-100 dark:border-emerald-900/30"
+                      >
+                        Thân thiện & Tích cực
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setReplyInputs((prev) => ({
+                            ...prev,
+                            [review.id]: "TIENTECH chân thành xin lỗi vì trải nghiệm chưa hoàn hảo. Bộ phận CSKH đã ghi nhận và sẽ liên hệ hỗ trợ bạn ngay!",
+                          }))
+                        }
+                        className="px-2.5 py-1 text-[11px] font-semibold bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-300 rounded-lg hover:bg-amber-500 hover:text-white transition border border-amber-100 dark:border-amber-900/30"
+                      >
+                        Hỗ trợ & Xin lỗi
+                      </button>
+                    </div>
+
+                    <div className="relative">
+                      <input
+                        type="text"
+                        placeholder="Nhập phản hồi hệ thống (hoặc chọn gợi ý AI)..."
+                        value={replyInputs[review.id] || ""}
+                        onChange={(e) =>
+                          setReplyInputs((prev) => ({
+                            ...prev,
+                            [review.id]: e.target.value,
+                          }))
+                        }
+                        onKeyDown={(e) =>
+                          e.key === "Enter" && handleCreateReply(review.id)
+                        }
+                        className="w-full h-12 bg-white dark:bg-dark-bg border border-slate-200 dark:border-dark-border rounded-2xl pl-4 pr-12 text-sm font-bold dark:text-white focus:border-primary focus:ring-4 focus:ring-primary/5 transition-all outline-none"
+                      />
+                      <button
+                        onClick={() => handleCreateReply(review.id)}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 size-8 bg-primary text-white rounded-xl flex items-center justify-center hover:bg-slate-800 transition-all shadow-md"
+                      >
+                        <FiSend size={14} />
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>

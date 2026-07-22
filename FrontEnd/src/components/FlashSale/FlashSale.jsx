@@ -114,55 +114,65 @@ const FlashSale = () => {
   };
 
   return (
-    <section className="py-4 md:py-6 bg-white dark:bg-black border-y border-slate-100 dark:border-gray-800 transition-colors duration-300">
+    <section className="py-8 md:py-12 bg-gradient-to-b from-red-50/40 via-white to-slate-50/40 dark:from-red-950/10 dark:via-black dark:to-slate-900/20 border-y border-slate-200/60 dark:border-slate-800/80 transition-colors duration-300">
       <div className="container-custom">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 bg-white/80 dark:bg-slate-900/80 p-5 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm backdrop-blur-md">
           <div className="flex items-center gap-4">
-            <div className="size-10 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-500/20 animate-pulse">
-              <FiZap className="text-xl fill-current" />
+            <div className="size-12 bg-gradient-to-tr from-red-600 to-orange-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-red-500/25 animate-pulse shrink-0">
+              <FiZap className="text-2xl fill-current" />
             </div>
             <div>
-              <h2 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight">
-                Flash Sale
-              </h2>
-              <p className="text-slate-400 dark:text-slate-500 text-[10px] font-bold uppercase tracking-widest">
+              <div className="flex items-center gap-2">
+                <h2 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white uppercase tracking-tight">
+                  Flash Sale
+                </h2>
+                <span className="px-2.5 py-0.5 rounded-full bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400 font-extrabold text-[10px] uppercase">
+                  Giá Sốc
+                </span>
+              </div>
+              <p className="text-slate-500 dark:text-slate-400 text-xs font-semibold mt-0.5">
                 {products.length > 0
-                  ? "Săn deal hời mỗi ngày"
+                  ? "Săn deal giảm sốc có giới hạn thời gian"
                   : isUpcoming
-                    ? "Flash Sale sắp diễn ra"
-                    : "Chưa có Flash Sale"}
+                    ? "Flash Sale sắp diễn ra trong ít phút nữa"
+                    : "Đang cập nhật Flash Sale mới"}
               </p>
             </div>
           </div>
 
           {(products.length > 0 || isUpcoming) && (
-            <div className="flex items-center gap-4 bg-slate-50 dark:bg-gray-900 p-2 pr-4 rounded-2xl border border-slate-100 dark:border-gray-800">
-              <div className="flex gap-1.5">
+            <div className="flex items-center gap-3.5 bg-slate-900 dark:bg-slate-800 p-2.5 px-4 rounded-2xl shadow-md border border-slate-800">
+              <span className="text-[11px] font-bold text-slate-300 uppercase tracking-wider hidden sm:block">
+                {products.length > 0
+                  ? "Kết thúc sau:"
+                  : isUpcoming
+                    ? "Bắt đầu sau:"
+                    : ""}
+              </span>
+              <div className="flex items-center gap-1.5 font-mono">
                 {[
-                  { val: h, label: "hours" },
-                  { val: m, label: "minutes" },
-                  { val: s, label: "seconds" },
+                  { val: h, label: "GIỜ" },
+                  { val: m, label: "PHÚT" },
+                  { val: s, label: "GIÂY" },
                 ].map((item, idx) => (
                   <React.Fragment key={item.label}>
-                    <div className="size-10 bg-slate-900 dark:bg-blue-600 rounded-lg flex items-center justify-center text-white font-black text-lg shadow-sm">
-                      {item.val}
+                    <div className="flex flex-col items-center">
+                      <div className="min-w-[36px] h-9 px-2 bg-gradient-to-b from-red-600 to-red-700 rounded-lg flex items-center justify-center text-white font-black text-base shadow-sm">
+                        {item.val}
+                      </div>
+                      <span className="text-[8px] font-bold text-slate-400 mt-1 uppercase">
+                        {item.label}
+                      </span>
                     </div>
                     {idx < 2 && (
-                      <span className="text-xl font-black text-slate-300 dark:text-gray-700 self-center">
+                      <span className="text-lg font-black text-slate-400 self-start mt-1">
                         :
                       </span>
                     )}
                   </React.Fragment>
                 ))}
               </div>
-              <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest hidden sm:block">
-                {products.length > 0
-                  ? "Kết thúc sau"
-                  : isUpcoming
-                    ? "Bắt đầu sau"
-                    : ""}
-              </span>
             </div>
           )}
         </div>

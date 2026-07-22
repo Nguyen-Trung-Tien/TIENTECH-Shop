@@ -38,6 +38,7 @@ const Profile = () => {
   const [loading, setLoading] = useState(false);
   const [showAvatarModal, setShowAvatarModal] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [activeTab, setActiveTab] = useState("info");
   const [selectedFile, setSelectedFile] = useState(null);
   const [preview, setPreview] = useState(null);
   const [avatarLoading, setAvatarLoading] = useState(false);
@@ -270,114 +271,139 @@ const Profile = () => {
             </div>
           </div>
 
-          {/* Right Column: Detailed Form */}
-          <div className="lg:col-span-8 space-y-8">
-            <div className="bg-white dark:bg-dark-surface rounded-[32px] p-8 md:p-10 border border-surface-200 dark:border-dark-border shadow-soft">
-              <div className="flex items-center justify-between mb-8 pb-6 border-b border-surface-100 dark:border-dark-border">
-                <h3 className="text-xl font-display font-semibold text-surface-900 dark:text-white">
-                  Chi tiết thông tin
-                </h3>
+          {/* Right Column: Detailed Form with Tab Navigation */}
+          <div className="lg:col-span-8 space-y-6">
+            {/* Tab Control Bar */}
+            <div className="flex items-center gap-3 bg-white dark:bg-dark-surface p-2 rounded-2xl border border-surface-200 dark:border-dark-border shadow-soft">
+              <button
+                onClick={() => setActiveTab("info")}
+                className={`flex-1 py-3 px-6 rounded-xl font-bold text-xs uppercase tracking-widest transition-all cursor-pointer ${
+                  activeTab === "info"
+                    ? "bg-primary text-white shadow-lg shadow-primary/20"
+                    : "text-surface-500 dark:text-dark-text-secondary hover:text-surface-900 dark:hover:text-white"
+                }`}
+              >
+                Thông tin cá nhân
+              </button>
+              <button
+                onClick={() => setActiveTab("address")}
+                className={`flex-1 py-3 px-6 rounded-xl font-bold text-xs uppercase tracking-widest transition-all cursor-pointer ${
+                  activeTab === "address"
+                    ? "bg-primary text-white shadow-lg shadow-primary/20"
+                    : "text-surface-500 dark:text-dark-text-secondary hover:text-surface-900 dark:hover:text-white"
+                }`}
+              >
+                Sổ địa chỉ nhận hàng
+              </button>
+            </div>
+
+            {activeTab === "info" ? (
+              <div className="bg-white dark:bg-dark-surface rounded-[32px] p-8 md:p-10 border border-surface-200 dark:border-dark-border shadow-soft">
+                <div className="flex items-center justify-between mb-8 pb-6 border-b border-surface-100 dark:border-dark-border">
+                  <h3 className="text-xl font-display font-semibold text-surface-900 dark:text-white">
+                    Chi tiết thông tin
+                  </h3>
+                  {isEditing && (
+                    <Badge variant="warning" className="animate-pulse">
+                      Chế độ chỉnh sửa
+                    </Badge>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  {/* Field Groups */}
+                  {[
+                    {
+                      name: "username",
+                      label: "Họ và tên",
+                      icon: FiUser,
+                      placeholder: "Nguyễn Văn A",
+                    },
+                    {
+                      name: "email",
+                      label: "Email liên lạc",
+                      icon: FiMail,
+                      type: "email",
+                      placeholder: "example@mail.com",
+                    },
+                    {
+                      name: "phone",
+                      label: "Số điện thoại",
+                      icon: FiPhone,
+                      placeholder: "09xx xxx xxx",
+                    },
+                    {
+                      name: "address",
+                      label: "Địa chỉ thường trú",
+                      icon: FiMapPin,
+                      placeholder: "Số nhà, đường, phường/xã, tỉnh/thành phố...",
+                      colSpan: true,
+                    },
+                  ].map((field) => (
+                    <div
+                      key={field.name}
+                      className={`${field.colSpan ? "md:col-span-2" : ""} space-y-1.5`}
+                    >
+                      <label className="text-[11px] font-black text-surface-400 dark:text-dark-text-secondary uppercase tracking-widest ml-1">
+                        {field.label}
+                      </label>
+                      <div
+                        className={`relative group transition-all duration-300 ${isEditing ? "opacity-100" : "opacity-80"}`}
+                      >
+                        <div
+                          className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors ${isEditing ? "text-primary" : "text-surface-300 dark:text-dark-text-secondary"}`}
+                        >
+                          <field.icon size={18} />
+                        </div>
+                        <input
+                          type={field.type || "text"}
+                          name={field.name}
+                          value={formData[field.name] || ""}
+                          onChange={handleChange}
+                          disabled={!isEditing}
+                          placeholder={field.placeholder}
+                          className={`w-full h-14 pl-12 pr-4 bg-surface-50 dark:bg-dark-bg border-2 rounded-2xl text-[15px] font-bold outline-none transition-all ${
+                            isEditing
+                              ? "bg-white dark:bg-dark-surface border-primary/20 focus:border-primary focus:ring-4 focus:ring-primary/5 text-surface-900 dark:text-white"
+                              : "border-transparent bg-surface-50 dark:bg-dark-bg text-surface-900 dark:text-white cursor-not-allowed"
+                          }`}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
                 {isEditing && (
-                  <Badge variant="warning" className="animate-pulse">
-                    Chế độ chỉnh sửa
-                  </Badge>
+                  <Motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mt-12 flex justify-end gap-4"
+                  >
+                    <Button
+                      variant="secondary"
+                      size="lg"
+                      onClick={() => setIsEditing(false)}
+                    >
+                      HỦY BỎ
+                    </Button>
+                    <Button
+                      variant="primary"
+                      size="lg"
+                      className="shadow-xl shadow-primary/20"
+                      icon={FiSave}
+                      loading={loading}
+                      onClick={handleSave}
+                    >
+                      LƯU THAY ĐỔI
+                    </Button>
+                  </Motion.div>
                 )}
               </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {/* Field Groups */}
-                {[
-                  {
-                    name: "username",
-                    label: "Họ và tên",
-                    icon: FiUser,
-                    placeholder: "Nguyễn Văn A",
-                  },
-                  {
-                    name: "email",
-                    label: "Email liên lạc",
-                    icon: FiMail,
-                    type: "email",
-                    placeholder: "example@mail.com",
-                  },
-                  {
-                    name: "phone",
-                    label: "Số điện thoại",
-                    icon: FiPhone,
-                    placeholder: "09xx xxx xxx",
-                  },
-                  {
-                    name: "address",
-                    label: "Địa chỉ thường trú",
-                    icon: FiMapPin,
-                    placeholder: "Số nhà, đường, phường/xã, tỉnh/thành phố...",
-                    colSpan: true,
-                  },
-                ].map((field) => (
-                  <div
-                    key={field.name}
-                    className={`${field.colSpan ? "md:col-span-2" : ""} space-y-1.5`}
-                  >
-                    <label className="text-[11px] font-black text-surface-400 dark:text-dark-text-secondary uppercase tracking-widest ml-1">
-                      {field.label}
-                    </label>
-                    <div
-                      className={`relative group transition-all duration-300 ${isEditing ? "opacity-100" : "opacity-80"}`}
-                    >
-                      <div
-                        className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors ${isEditing ? "text-primary" : "text-surface-300 dark:text-dark-text-secondary"}`}
-                      >
-                        <field.icon size={18} />
-                      </div>
-                      <input
-                        type={field.type || "text"}
-                        name={field.name}
-                        value={formData[field.name] || ""}
-                        onChange={handleChange}
-                        disabled={!isEditing}
-                        placeholder={field.placeholder}
-                        className={`w-full h-14 pl-12 pr-4 bg-surface-50 dark:bg-dark-bg border-2 rounded-2xl text-[15px] font-bold outline-none transition-all ${
-                          isEditing
-                            ? "bg-white dark:bg-dark-surface border-primary/20 focus:border-primary focus:ring-4 focus:ring-primary/5 text-surface-900 dark:text-white"
-                            : "border-transparent bg-surface-50 dark:bg-dark-bg text-surface-900 dark:text-white cursor-not-allowed"
-                        }`}
-                      />
-                    </div>
-                  </div>
-                ))}
+            ) : (
+              <div className="bg-white dark:bg-dark-surface rounded-[32px] p-8 md:p-10 border border-surface-200 dark:border-dark-border shadow-soft">
+                <AddressManager />
               </div>
-
-              {isEditing && (
-                <Motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="mt-12 flex justify-end gap-4"
-                >
-                  <Button
-                    variant="secondary"
-                    size="lg"
-                    onClick={() => setIsEditing(false)}
-                  >
-                    HỦY BỎ
-                  </Button>
-                  <Button
-                    variant="primary"
-                    size="lg"
-                    className="shadow-xl shadow-primary/20"
-                    icon={FiSave}
-                    loading={loading}
-                    onClick={handleSave}
-                  >
-                    LƯU THAY ĐỔI
-                  </Button>
-                </Motion.div>
-              )}
-            </div>
-
-            {/* Address Management Section */}
-            <div className="bg-white dark:bg-dark-surface rounded-[32px] p-8 md:p-10 border border-surface-200 dark:border-dark-border shadow-soft">
-              <AddressManager />
-            </div>
+            )}
           </div>
         </div>
       </div>

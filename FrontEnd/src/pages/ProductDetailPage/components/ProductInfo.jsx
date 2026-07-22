@@ -1,5 +1,5 @@
 import React from "react";
-import { FiZap, FiClock, FiShoppingCart, FiCreditCard, FiHeart, FiTrendingUp, FiCheck } from "react-icons/fi";
+import { FiZap, FiClock, FiShoppingCart, FiCreditCard, FiHeart, FiTrendingUp, FiCheck, FiShield, FiTruck, FiRefreshCw } from "react-icons/fi";
 import { FaHeart } from "react-icons/fa";
 
 const ProductInfo = ({
@@ -37,99 +37,145 @@ const ProductInfo = ({
     };
   }
 
+  const savingsAmount = Math.max(0, originalPrice - currentPrice);
+
   return (
     <div className="lg:col-span-7 flex flex-col space-y-6">
+      {/* Product Title & Brand */}
       <div className="space-y-3">
         <div className="flex items-center flex-wrap gap-2">
           {product.brand && (
-            <span className="bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider">
+            <span className="bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-[10px] font-black px-2.5 py-1 rounded-lg border border-blue-100 dark:border-blue-800 uppercase tracking-wider">
               {product.brand.name}
             </span>
           )}
           {isFlashSale && (
-            <span className="bg-orange-500 text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider flex items-center gap-1 shadow-sm">
+            <span className="bg-gradient-to-r from-red-600 to-orange-500 text-white text-[10px] font-black px-2.5 py-1 rounded-lg uppercase tracking-wider flex items-center gap-1 shadow-sm">
               <FiZap className="fill-current size-3" /> FLASH SALE
             </span>
           )}
         </div>
-        <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white leading-tight tracking-tight">
+
+        <h1 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white leading-snug tracking-tight">
           {product.name}
         </h1>
-        <div className="flex items-center space-x-4 text-sm">
-          <span className="text-gray-500 dark:text-dark-text-secondary">
-            Đã bán:{" "}
-            <span className="text-gray-900 dark:text-white font-semibold">
-              {product.sold}
-            </span>
+
+        <div className="flex items-center space-x-4 text-xs font-semibold">
+          <span className="text-slate-500 dark:text-slate-400">
+            Đã bán: <span className="text-slate-900 dark:text-white font-bold">{product.sold || 0}</span>
           </span>
-          <span className="text-gray-200 dark:text-dark-border">|</span>
+          <span className="text-slate-200 dark:text-slate-800">|</span>
           <div className="flex items-center gap-1.5">
-            <div className="flex text-amber-400 tracking-tighter">
+            <div className="flex text-amber-400 text-sm">
               {ratingStars}
             </div>
-            <span className="text-gray-900 dark:text-white font-bold">
+            <span className="text-slate-900 dark:text-white font-bold">
               {averageRating}
             </span>
           </div>
         </div>
       </div>
 
+      {/* Flash Sale Banner */}
       {isFlashSale && (
-        <div className="bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-950/20 dark:to-orange-950/20 border border-red-100 dark:border-red-900/30 p-4 rounded-xl flex items-center justify-between">
-          <div className="flex items-center gap-2 text-red-600 dark:text-red-400 font-bold text-sm uppercase">
-            <FiClock className="text-lg" /> Kết thúc sau:
+        <div className="bg-gradient-to-r from-red-500 to-orange-500 text-white p-4 rounded-2xl flex items-center justify-between shadow-md">
+          <div className="flex items-center gap-2 font-black text-xs md:text-sm uppercase tracking-wider">
+            <FiClock className="text-lg" /> FLASH SALE KẾT THÚC SAU:
           </div>
-          <div className="flex gap-1.5 font-bold text-sm">
-            <span className="bg-red-600 text-white size-8 rounded-lg flex items-center justify-center">{h}</span>
-            <span className="flex items-center dark:text-white">:</span>
-            <span className="bg-red-600 text-white size-8 rounded-lg flex items-center justify-center">{m}</span>
-            <span className="flex items-center dark:text-white">:</span>
-            <span className="bg-red-600 text-white size-8 rounded-lg flex items-center justify-center">{s}</span>
+          <div className="flex gap-1.5 font-mono font-black text-sm">
+            <span className="bg-black/30 backdrop-blur-sm text-white px-2.5 py-1 rounded-lg">{h}</span>
+            <span className="flex items-center">:</span>
+            <span className="bg-black/30 backdrop-blur-sm text-white px-2.5 py-1 rounded-lg">{m}</span>
+            <span className="flex items-center">:</span>
+            <span className="bg-black/30 backdrop-blur-sm text-white px-2.5 py-1 rounded-lg">{s}</span>
           </div>
         </div>
       )}
 
-      <div className="flex flex-col space-y-1">
-        <div className="flex items-baseline gap-3">
-          <span className="text-3xl font-extrabold text-red-600 dark:text-red-500">
+      {/* Price Box */}
+      <div className="bg-slate-50 dark:bg-slate-900/60 p-4 md:p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 flex flex-col space-y-2">
+        <div className="flex items-baseline flex-wrap gap-3">
+          <span className="text-3xl md:text-4xl font-black text-red-600 dark:text-red-500">
             {Number(currentPrice).toLocaleString("vi-VN")}₫
           </span>
           {(isFlashSale || discountPercent > 0) && (
-            <span className="text-sm font-medium text-gray-400 dark:text-dark-text-secondary line-through">
+            <span className="text-sm md:text-base font-medium text-slate-400 dark:text-slate-500 line-through">
               {Number(originalPrice).toLocaleString("vi-VN")}₫
             </span>
           )}
-          {discountPercent > 0 && (
-            <span className="text-[11px] font-bold text-red-500 bg-red-50 dark:bg-red-950/30 px-2 py-0.5 rounded">
-              TIẾT KIỆM {discountPercent}%
+          {savingsAmount > 0 && (
+            <span className="text-[11px] font-black text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 px-2.5 py-1 rounded-lg">
+              Tiết kiệm {Number(savingsAmount).toLocaleString("vi-VN")}₫ ({discountPercent}%)
             </span>
           )}
         </div>
-        <div className="flex items-center gap-2 pt-2">
-          <div className={`size-2 rounded-full ${(product.totalStock || product.stock) > 0 ? "bg-green-500" : "bg-red-500"}`}></div>
-          <p className="text-xs text-gray-500 dark:text-dark-text-secondary font-medium uppercase tracking-tight">
+
+        <div className="flex items-center gap-2 pt-1">
+          <div className={`size-2 rounded-full ${(product.totalStock || product.stock) > 0 ? "bg-emerald-500 animate-pulse" : "bg-red-500"}`}></div>
+          <p className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-tight">
             {(product.totalStock || product.stock) > 0
-              ? `Còn ${product.totalStock || product.stock} sản phẩm`
+              ? `Tình trạng: Còn ${product.totalStock || product.stock} sản phẩm`
               : "Hết hàng tạm thời"}
           </p>
         </div>
       </div>
 
+      {/* Guarantee & Perks Box */}
+      <div className="grid grid-cols-3 gap-3 p-3.5 bg-blue-50/50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/30 rounded-2xl">
+        <div className="flex items-center gap-2 text-xs font-bold text-slate-700 dark:text-slate-300">
+          <FiShield className="text-blue-600 text-lg shrink-0" />
+          <span>Chính hãng 100%</span>
+        </div>
+        <div className="flex items-center gap-2 text-xs font-bold text-slate-700 dark:text-slate-300">
+          <FiRefreshCw className="text-emerald-600 text-lg shrink-0" />
+          <span>1 Đổi 1 30 Ngày</span>
+        </div>
+        <div className="flex items-center gap-2 text-xs font-bold text-slate-700 dark:text-slate-300">
+          <FiTruck className="text-indigo-600 text-lg shrink-0" />
+          <span>Giao siêu tốc 2H</span>
+        </div>
+      </div>
+
+      {/* AI Price Insight Callout */}
+      <div className="p-3.5 bg-gradient-to-r from-indigo-50/80 to-purple-50/80 dark:from-indigo-950/30 dark:to-purple-950/30 border border-indigo-100 dark:border-indigo-900/40 rounded-2xl flex items-center justify-between gap-3 shadow-xs">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-indigo-600 text-white rounded-xl shadow-xs shrink-0">
+            <FiTrendingUp className="w-4 h-4" />
+          </div>
+          <div>
+            <div className="text-xs font-bold text-indigo-950 dark:text-indigo-200 flex items-center gap-1.5">
+              AI Price Insight: <span className="text-emerald-600 dark:text-emerald-400 font-extrabold">Mức giá cạnh tranh</span>
+            </div>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400">
+              Đề xuất: <span className="font-semibold text-indigo-600 dark:text-indigo-400">Thời điểm tốt để mua ngay</span>
+            </p>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={() => setShowPrediction(true)}
+          className="px-3 py-1.5 text-xs font-bold text-indigo-600 dark:text-indigo-300 bg-white dark:bg-slate-800 border border-indigo-200 dark:border-indigo-800 rounded-xl hover:bg-indigo-600 hover:text-white transition shrink-0 shadow-xs cursor-pointer"
+        >
+          Dự báo giá 30 ngày
+        </button>
+      </div>
+
+      {/* Variant Selector */}
       {Object.keys(allAttributes).length > 0 && (
-        <div className="space-y-5 py-4 border-y border-gray-50 dark:border-dark-border">
+        <div className="space-y-4 py-3 border-y border-slate-200/80 dark:border-slate-800">
           {Object.entries(allAttributes).map(([attrName, values]) => (
-            <div key={attrName} className="space-y-3">
+            <div key={attrName} className="space-y-2.5">
               <div className="flex justify-between items-center">
-                <label className="text-[11px] font-bold uppercase tracking-wider text-gray-400 dark:text-dark-text-secondary">
-                  Chọn {attrName}
+                <label className="text-xs font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                  Chọn {attrName}:
                 </label>
                 {selectedAttributes[attrName] && (
-                  <span className="text-[10px] font-bold text-primary dark:text-primary-light bg-primary/5 dark:bg-primary/10 px-2 py-0.5 rounded-md">
-                    Đã chọn: {selectedAttributes[attrName]}
+                  <span className="text-[11px] font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-2.5 py-0.5 rounded-lg border border-blue-100 dark:border-blue-800">
+                    {selectedAttributes[attrName]}
                   </span>
                 )}
               </div>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-2.5">
                 {values.map((val) => {
                   const isSelected = selectedAttributes[attrName] === val;
                   const isAvailable = checkAttributeAvailability(attrName, val);
@@ -138,16 +184,16 @@ const ProductInfo = ({
                       key={val}
                       disabled={!isAvailable}
                       onClick={() => onSelectAttribute(attrName, val)}
-                      className={`min-w-[60px] px-4 py-2 rounded-lg text-xs font-bold transition-all border-2 flex items-center justify-center gap-1.5 cursor-pointer ${
+                      className={`min-w-[65px] px-4 py-2 rounded-xl text-xs font-bold transition-all border-2 flex items-center justify-center gap-1.5 cursor-pointer ${
                         isSelected
-                          ? "bg-primary border-primary text-white shadow-md shadow-primary/10 dark:shadow-none"
+                          ? "bg-blue-600 border-blue-600 text-white shadow-md shadow-blue-500/20"
                           : isAvailable
-                            ? "bg-white dark:bg-dark-surface border-gray-200 dark:border-dark-border hover:border-primary/50 dark:hover:border-primary-light hover:text-primary dark:hover:text-primary-light text-gray-700 dark:text-dark-text-primary"
-                            : "bg-gray-50 dark:bg-dark-bg border-gray-100 dark:border-dark-border text-gray-300 dark:text-dark-text-secondary cursor-not-allowed opacity-60"
+                            ? "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-blue-500/60 text-slate-800 dark:text-slate-200"
+                            : "bg-slate-100 dark:bg-slate-800/50 border-slate-200/50 dark:border-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed opacity-50"
                       }`}
                     >
                       {val}
-                      {isSelected && <FiCheck className="size-3" />}
+                      {isSelected && <FiCheck className="size-3.5" />}
                     </button>
                   );
                 })}
@@ -157,29 +203,30 @@ const ProductInfo = ({
         </div>
       )}
 
-      <div className="space-y-4 pt-2">
+      {/* Action Buttons */}
+      <div className="space-y-3 pt-2">
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="flex flex-1 gap-3">
             <button
               onClick={onAddToCart}
               disabled={addingCart || (!selectedVariant && product.variants?.length > 0)}
-              className={`flex-1 h-12 rounded-xl font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 border-2 cursor-pointer ${
+              className={`flex-1 h-13 rounded-2xl font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 border-2 cursor-pointer ${
                 !selectedVariant && product.variants?.length > 0
-                  ? "bg-gray-50 dark:bg-dark-bg text-gray-300 dark:text-dark-text-secondary border-gray-100 dark:border-dark-border cursor-not-allowed"
-                  : "bg-white dark:bg-dark-surface border-slate-800 dark:border-white text-slate-800 dark:text-white hover:bg-slate-800 dark:hover:bg-white hover:text-white dark:hover:text-slate-900"
+                  ? "bg-slate-100 dark:bg-slate-800 text-slate-400 border-slate-200/50 cursor-not-allowed"
+                  : "bg-white dark:bg-slate-900 border-slate-900 dark:border-slate-200 text-slate-900 dark:text-white hover:bg-slate-900 dark:hover:bg-white hover:text-white dark:hover:text-slate-900"
               }`}
             >
               <FiShoppingCart className="text-lg" />
-              THÊM GIỎ
+              {addingCart ? "Đang thêm..." : "THÊM GIỎ HÀNG"}
             </button>
 
             <button
               onClick={handleBuyNow}
               disabled={addingCart || (!selectedVariant && product.variants?.length > 0)}
-              className={`flex-[1.5] h-12 rounded-xl font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-sm cursor-pointer ${
+              className={`flex-[1.4] h-13 rounded-2xl font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-lg cursor-pointer ${
                 !selectedVariant && product.variants?.length > 0
-                  ? "bg-gray-100 dark:bg-dark-bg text-gray-300 dark:text-dark-text-secondary cursor-not-allowed"
-                  : "bg-primary dark:bg-brand text-white hover:bg-primary-hover dark:hover:bg-brand/80 active:scale-[0.98] shadow-lg shadow-primary/10"
+                  ? "bg-slate-200 dark:bg-slate-800 text-slate-400 cursor-not-allowed"
+                  : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-blue-500/25 active:scale-98"
               }`}
             >
               <FiCreditCard className="text-lg" />
@@ -190,27 +237,19 @@ const ProductInfo = ({
           <button
             onClick={handleWishlist}
             disabled={loadingWishlist}
-            className={`w-full sm:size-12 h-12 rounded-xl border-2 flex items-center justify-center transition-all shadow-sm cursor-pointer shrink-0 ${
+            className={`w-full sm:size-13 h-13 rounded-2xl border-2 flex items-center justify-center transition-all shadow-sm cursor-pointer shrink-0 ${
               isWishlisted
-                ? "border-red-100 dark:border-red-900/30 bg-red-50 dark:bg-red-900/20 text-red-500"
-                : "border-gray-100 dark:border-dark-border text-gray-400 dark:text-dark-text-secondary hover:bg-gray-50 dark:hover:bg-dark-bg hover:text-red-500 hover:border-red-100 dark:hover:border-red-900/30"
+                ? "border-red-200 dark:border-red-900/40 bg-red-50 dark:bg-red-950/30 text-red-500"
+                : "border-slate-200 dark:border-slate-800 text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-red-500"
             }`}
           >
             {isWishlisted ? <FaHeart className="text-xl" /> : <FiHeart className="text-xl" />}
           </button>
         </div>
 
-        <button
-          onClick={() => setShowPrediction(true)}
-          className="w-full h-12 rounded-xl bg-slate-50 dark:bg-dark-surface text-slate-600 dark:text-dark-text-secondary border border-slate-200 dark:border-dark-border hover:bg-slate-100 dark:hover:bg-dark-bg font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer"
-        >
-          <FiTrendingUp className="text-lg text-primary dark:text-primary-light" />
-          DỰ ĐOÁN GIÁ AI
-        </button>
-
         {!selectedVariant && product.variants?.length > 0 && (
-          <p className="text-center text-red-500 text-[10px] font-bold uppercase tracking-wider bg-red-50 dark:bg-red-950/30 py-2 rounded-lg">
-            ⚠️ Vui lòng chọn phiên bản để tiếp tục mua hàng
+          <p className="text-center text-red-500 text-xs font-bold uppercase tracking-wider bg-red-50 dark:bg-red-950/30 py-2.5 rounded-xl border border-red-200 dark:border-red-900/40">
+            ⚠️ Vui lòng chọn phiên bản trước khi tiếp tục
           </p>
         )}
       </div>

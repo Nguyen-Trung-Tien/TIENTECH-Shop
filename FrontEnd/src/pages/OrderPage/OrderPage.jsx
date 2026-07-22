@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   FiEye,
   FiClock,
@@ -296,6 +296,55 @@ const OrderPage = () => {
                     />
                   </div>
                 </div>
+
+                {/* Order Status Stepper Progress */}
+                {o.status !== "cancelled" && o.status !== "cancel_requested" && (
+                  <div className="px-5 py-3 bg-slate-50/80 dark:bg-dark-bg/40 border-b border-slate-100 dark:border-dark-border">
+                    <div className="flex items-center justify-between max-w-xl mx-auto">
+                      {[
+                        { key: "pending", label: "Chờ xử lý" },
+                        { key: "confirmed", label: "Đã xác nhận" },
+                        { key: "shipped", label: "Đang giao" },
+                        { key: "completed", label: "Hoàn thành" },
+                      ].map((step, idx, arr) => {
+                        const stepOrder = ["pending", "confirmed", "processing", "shipped", "delivered", "completed"];
+                        const currentIdx = stepOrder.indexOf(o.status);
+                        const stepIdx = stepOrder.indexOf(step.key);
+                        const isDone = currentIdx >= stepIdx;
+
+                        return (
+                          <React.Fragment key={step.key}>
+                            <div className="flex flex-col items-center gap-1">
+                              <div
+                                className={`size-6 rounded-full flex items-center justify-center text-[10px] font-black transition-all ${
+                                  isDone
+                                    ? "bg-emerald-500 text-white shadow-md shadow-emerald-500/20"
+                                    : "bg-slate-200 dark:bg-dark-border text-slate-400 dark:text-dark-text-secondary"
+                                }`}
+                              >
+                                {isDone ? "✓" : idx + 1}
+                              </div>
+                              <span
+                                className={`text-[9px] font-bold uppercase tracking-wider ${
+                                  isDone ? "text-emerald-600 dark:text-emerald-400" : "text-slate-400 dark:text-dark-text-secondary"
+                                }`}
+                              >
+                                {step.label}
+                              </span>
+                            </div>
+                            {idx < arr.length - 1 && (
+                              <div
+                                className={`flex-1 h-0.5 mx-2 -mt-4 transition-all ${
+                                  currentIdx > stepIdx ? "bg-emerald-500" : "bg-slate-200 dark:bg-dark-border"
+                                }`}
+                              />
+                            )}
+                          </React.Fragment>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
 
                 {/* Order Items */}
                 <div className="p-5">

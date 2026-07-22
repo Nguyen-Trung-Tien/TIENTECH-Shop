@@ -1,17 +1,17 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { FiArrowRight, FiShoppingBag, FiInfo } from "react-icons/fi";
+import { FiArrowRight, FiShoppingBag, FiShield, FiTruck, FiRefreshCw, FiHeadphones } from "react-icons/fi";
 import { motion as Motion } from "framer-motion";
 
 const HeroSection = () => {
   const navigate = useNavigate();
 
   return (
-    <section className="relative overflow-hidden bg-white dark:bg-black pt-10 pb-12 lg:pt-20 lg:pb-24 transition-colors duration-300 border-b border-slate-100 dark:border-gray-900">
-      {/* Background Elements */}
-      <div className="absolute inset-0 z-0">
-        <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/4 w-[500px] h-[500px] bg-primary/10 dark:bg-primary/20 rounded-full blur-[120px]"></div>
-        <div className="absolute bottom-0 left-0 translate-y-1/2 -translate-x-1/4 w-[400px] h-[400px] bg-primary/5 dark:bg-primary/10 rounded-full blur-[100px]"></div>
+    <section className="relative overflow-hidden bg-gradient-to-b from-slate-50 via-white to-slate-50 dark:from-black dark:via-dark-bg dark:to-black pt-10 pb-16 lg:pt-16 lg:pb-24 transition-colors duration-300 border-b border-slate-100 dark:border-slate-800/80">
+      {/* Background Decorative Blur Orbs */}
+      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-0 right-10 w-[500px] h-[500px] bg-blue-500/10 dark:bg-blue-600/15 rounded-full blur-[140px]"></div>
+        <div className="absolute bottom-10 left-10 w-[450px] h-[450px] bg-indigo-500/10 dark:bg-indigo-600/15 rounded-full blur-[120px]"></div>
       </div>
 
       <div className="container-custom relative z-10">
@@ -23,12 +23,12 @@ const HeroSection = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
-              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] font-black uppercase tracking-widest mb-6">
+              <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 dark:bg-blue-900/30 border border-blue-200/60 dark:border-blue-700/50 text-blue-600 dark:text-blue-400 text-[10px] font-black uppercase tracking-widest mb-6 shadow-xs">
                 <span className="relative flex size-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                  <span className="relative inline-flex rounded-full size-2 bg-primary"></span>
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-500 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full size-2 bg-blue-600"></span>
                 </span>
-                Ưu đãi công nghệ mỗi ngày
+                Hệ thống Công nghệ & Linh kiện Chính hãng
               </span>
             </Motion.div>
 
@@ -36,15 +36,15 @@ const HeroSection = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
-              className="text-4xl md:text-5xl lg:text-6xl font-black text-slate-900 dark:text-white leading-[1.1] mb-6 tracking-tight"
+              className="text-4xl md:text-5xl lg:text-6xl font-black text-slate-900 dark:text-white leading-[1.15] mb-6 tracking-tight"
             >
-              TienTech{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-violet-500">
-                Shop
+              TIENTECH{" "}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600">
+                SHOP
               </span>
               <br />
-              <span className="text-xl md:text-3xl font-light text-slate-400 dark:text-slate-500">
-                Định nghĩa lại trải nghiệm công nghệ
+              <span className="text-2xl md:text-3xl font-bold text-slate-500 dark:text-slate-400 tracking-normal">
+                Công Nghệ Đỉnh Cao - Trải Nghiệm Hoàn Hảo
               </span>
             </Motion.h1>
 
@@ -52,11 +52,9 @@ const HeroSection = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
-              className="text-base md:text-lg text-slate-600 dark:text-slate-400 leading-relaxed max-w-2xl mx-auto lg:mx-0 mb-8 font-medium"
+              className="text-base md:text-lg text-slate-600 dark:text-slate-300 leading-relaxed max-w-2xl mx-auto lg:mx-0 mb-8 font-medium"
             >
-              Khám phá hệ sinh thái sản phẩm công nghệ chính hãng từ Laptop,
-              Smartphone đến linh kiện PC cao cấp. Cam kết giá tốt nhất thị
-              trường cùng chính sách bảo hành 1:1.
+              Chuyên phân phối Smartphone, Laptop, PC Gaming và Linh phụ kiện cao cấp chính hãng 100%. Cam kết giá cạnh tranh cùng chính sách hậu mãi vượt trội.
             </Motion.p>
 
             <Motion.div
@@ -67,96 +65,86 @@ const HeroSection = () => {
             >
               <button
                 onClick={() => navigate("/products")}
-                className="group flex items-center gap-3 px-6 py-3.5 bg-primary text-white rounded-2xl font-black text-sm hover:bg-primary-hover transition-all shadow-xl shadow-primary/20 active:scale-95 cursor-pointer uppercase tracking-widest"
+                className="group flex items-center gap-3 px-7 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-2xl font-black text-xs md:text-sm transition-all shadow-xl shadow-blue-500/25 active:scale-95 cursor-pointer uppercase tracking-wider"
               >
                 <FiShoppingBag className="text-lg" />
-                Mua ngay
+                Khám phá sản phẩm
                 <FiArrowRight className="group-hover:translate-x-1 transition-transform" />
               </button>
 
               <button
                 onClick={() => navigate("/about")}
-                className="flex items-center gap-3 px-6 py-3.5 bg-slate-100 dark:bg-white/5 text-slate-900 dark:text-white border border-slate-200 dark:border-white/10 rounded-2xl font-black text-sm hover:bg-slate-200 dark:hover:bg-white/10 transition-all backdrop-blur-sm active:scale-95 cursor-pointer uppercase tracking-widest"
+                className="flex items-center gap-3 px-7 py-4 bg-white dark:bg-slate-900 text-slate-800 dark:text-white border border-slate-200 dark:border-slate-800 rounded-2xl font-bold text-xs md:text-sm hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-all shadow-sm active:scale-95 cursor-pointer uppercase tracking-wider"
               >
-                Về chúng tôi
+                Về TienTech
               </button>
             </Motion.div>
 
-            {/* Trust Badges */}
+            {/* Feature Perks Bar */}
             <Motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ duration: 1, delay: 0.5 }}
-              className="mt-10 flex flex-wrap items-center justify-center lg:justify-start gap-6 md:gap-8"
+              transition={{ duration: 0.8, delay: 0.4 }}
+              className="mt-10 pt-8 border-t border-slate-200/70 dark:border-slate-800/80 grid grid-cols-2 sm:grid-cols-4 gap-4"
             >
               {[
-                  { val: "50k+", label: "Khách hàng" },
-                  { val: "100%", label: "Chính hãng" },
-                  { val: "24/7", label: "Hỗ trợ" }
-              ].map((item, idx) => (
-                  <React.Fragment key={idx}>
-                    <div className="flex flex-col items-center lg:items-start group cursor-default">
-                        <p className="text-slate-900 dark:text-white font-black text-lg leading-none group-hover:text-primary transition-colors">
-                        {item.val}
-                        </p>
-                        <p className="text-[9px] uppercase font-bold tracking-widest text-slate-400 dark:text-slate-500 mt-1">
-                        {item.label}
-                        </p>
-                    </div>
-                    {idx < 2 && <div className="w-[1px] h-6 bg-slate-200 dark:bg-gray-800 hidden sm:block"></div>}
-                  </React.Fragment>
+                { icon: <FiShield className="text-blue-600" />, title: "Chính hãng 100%", desc: "Bảo hành 12-24T" },
+                { icon: <FiTruck className="text-emerald-500" />, title: "Giao hàng 2H", desc: "Miễn phí toàn quốc" },
+                { icon: <FiRefreshCw className="text-amber-500" />, title: "1 Đổi 1 30 Ngày", desc: "Lỗi do nhà sản xuất" },
+                { icon: <FiHeadphones className="text-indigo-500" />, title: "Hỗ trợ 24/7", desc: "Tư vấn chuyên sâu" }
+              ].map((perk, idx) => (
+                <div key={idx} className="flex items-center gap-2.5">
+                  <div className="size-9 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-lg shrink-0">
+                    {perk.icon}
+                  </div>
+                  <div className="text-left">
+                    <p className="text-xs font-bold text-slate-800 dark:text-slate-200 leading-tight">{perk.title}</p>
+                    <p className="text-[10px] text-slate-400 dark:text-slate-400">{perk.desc}</p>
+                  </div>
+                </div>
               ))}
             </Motion.div>
           </div>
 
-          {/* Right Content - Visual */}
+          {/* Right Content - Visual Graphic Banner */}
           <Motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
+            initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8, delay: 0.2 }}
             className="flex-1 hidden lg:block relative"
           >
-            <div className="relative z-10 p-6 rounded-[3rem] bg-gray-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 backdrop-blur-sm shadow-2xl">
+            <div className="relative z-10 p-5 rounded-[2.5rem] bg-white/80 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800 backdrop-blur-md shadow-2xl">
               <img
                 src="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&q=80&w=1000"
                 alt="TienTech Products"
-                className="rounded-[2rem] shadow-2xl object-cover aspect-[4/3] w-full"
+                className="rounded-[1.8rem] shadow-lg object-cover aspect-[4/3] w-full"
               />
 
-              {/* Floating Card */}
+              {/* Floating Highlight Card */}
               <Motion.div
-                animate={{ y: [0, -10, 0] }}
+                animate={{ y: [0, -8, 0] }}
                 transition={{
                   repeat: Infinity,
                   duration: 4,
                   ease: "easeInOut",
                 }}
-                className="absolute -bottom-4 -left-4 p-4 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-slate-100 dark:border-gray-800 flex items-center gap-4 max-w-[180px]"
+                className="absolute -bottom-5 -left-5 p-4 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-2xl shadow-2xl border border-slate-200/80 dark:border-slate-800 flex items-center gap-3.5"
               >
-                <div className="size-9 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <FiShoppingBag />
+                <div className="size-10 bg-gradient-to-tr from-amber-500 to-orange-500 text-white rounded-xl flex items-center justify-center flex-shrink-0 shadow-md">
+                  <FiShoppingBag className="text-lg" />
                 </div>
                 <div>
-                  <p className="text-[9px] font-bold text-slate-400 uppercase">
-                    Flash Sale
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider">
+                    Săn Deal Tuần Này
                   </p>
                   <p className="text-sm font-black text-slate-900 dark:text-white leading-tight uppercase">
-                    -50% OFF
+                    Ưu Đãi Tới 50%
                   </p>
                 </div>
               </Motion.div>
             </div>
-
-            {/* Glow effect under the image */}
-            <div className="absolute inset-0 bg-primary/10 dark:bg-primary/20 rounded-full blur-[80px] -z-10"></div>
           </Motion.div>
         </div>
-      </div>
-      {/* Bottom Shape Divider */}
-      <div className="absolute bottom-0 left-0 w-full overflow-hidden line-height-0 transform rotate-180">
-        <svg className="relative block w-[calc(100%+1.3px)] h-[40px] md:h-[60px]" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
-            <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" className="fill-white dark:fill-black"></path>
-        </svg>
       </div>
     </section>
   );

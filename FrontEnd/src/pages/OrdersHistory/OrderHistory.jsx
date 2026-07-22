@@ -242,11 +242,35 @@ const OrderHistoryPage = () => {
                           XÁC NHẬN
                         </Button>
                       )}
+                      {["delivered", "completed", "cancelled"].includes(o.status) && (
+                        <Button
+                          variant="secondary"
+                          size="md"
+                          className="flex-1 sm:flex-none !rounded-2xl text-xs font-bold uppercase tracking-wider px-5 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900/30 hover:bg-emerald-500 hover:text-white transition-all cursor-pointer"
+                          icon={FiRotateCcw}
+                          onClick={async () => {
+                            const { addCart } = await import("../../api/cartApi");
+                            try {
+                              for (const item of o.orderItems || []) {
+                                if (item.productId) {
+                                  await addCart({ productId: item.productId, quantity: item.quantity || 1 });
+                                }
+                              }
+                              toast.success("Đã thêm các sản phẩm vào giỏ hàng!");
+                              navigate("/cart");
+                            } catch {
+                              toast.error("Không thể mua lại tự động");
+                            }
+                          }}
+                        >
+                          MUA LẠI
+                        </Button>
+                      )}
                       {["delivered", "completed"].includes(o.status) && (
                         <Button
                           variant="primary"
                           size="md"
-                          className="flex-1 sm:flex-none !rounded-2xl text-xs font-bold uppercase tracking-wider px-6 shadow-lg shadow-primary/20 bg-gradient-to-r from-primary to-violet-600 border-none hover:scale-105 transition-transform"
+                          className="flex-1 sm:flex-none !rounded-2xl text-xs font-bold uppercase tracking-wider px-6 shadow-lg shadow-primary/20 bg-gradient-to-r from-primary to-violet-600 border-none hover:scale-105 transition-transform cursor-pointer"
                           icon={FiEdit3}
                           onClick={() => openReviewModal(o)}
                         >

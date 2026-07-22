@@ -10,8 +10,9 @@ const passport = require("../config/passport");
 
 const { validate } = require("../middleware/zodMiddleware");
 const { loginSchema, registerSchema } = require("../utils/zodSchemas");
+const { loginAuthLimiter, sensitiveActionLimiter } = require("../middleware/rateLimiter");
 
-router.post("/login", validate(loginSchema), UserController.handleLogin);
+router.post("/login", loginAuthLimiter, validate(loginSchema), UserController.handleLogin);
 router.get(
   "/auth/google",
   passport.authenticate("google", { scope: ["profile", "email"], session: false })
@@ -24,7 +25,7 @@ router.get(
 );
 
 // Thêm upload.none() để xử lý multipart/form-data không có file, hoặc upload.single("avatar") nếu cần
-router.post("/create", upload.single("avatar"), validate(registerSchema), UserController.handleCreateNewUser);
+router.post("/create", sensitiveActionLimiter, upload.single("avatar"), validate(registerSchema), UserController.handleCreateNewUser);
 
 router.post("/refresh-token", UserController.handleRefreshToken);
 router.get("/get-me", authenticateToken, UserController.handleGetMe);
@@ -63,9 +64,9 @@ router.put(
   UserController.handleChangePassword
 );
 
-router.post("/forgot-password", UserController.handleForgotPassword);
+router.post("/forgot-password", sensitiveActionLimiter, UserController.handleForgotPassword);
 router.post("/verify-reset-token", UserController.handleVerifyResetToken);
-router.post("/reset-password", UserController.handleResetPassword);
+router.post("/reset-password", sensitiveActionLimiter, UserController.handleResetPassword);
 router.post("/verify-email", UserController.handleVerifyEmail);
 router.post("/resend-verification", UserController.handleResendVerification);
 

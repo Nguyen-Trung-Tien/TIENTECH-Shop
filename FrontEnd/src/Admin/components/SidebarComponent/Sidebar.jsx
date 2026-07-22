@@ -22,6 +22,7 @@ import { toast } from "react-toastify";
 import { motion as Motion, AnimatePresence } from "framer-motion";
 
 import logoImage from "../../../assets/logo.png";
+import Logo from "../../../components/UI/Logo";
 
 const MENU_ITEMS = [
   { to: "/admin/dashboard", icon: <FiHome />, label: "Dashboard" },
@@ -119,28 +120,9 @@ const Sidebar = ({ collapsed }) => {
     >
       {/* Brand Logo / Header */}
       <div className="h-16 flex items-center px-4 border-b border-slate-100 dark:border-dark-border">
-        {collapsed ? (
-          <div className="flex items-center justify-center w-full">
-            <img
-              src={logoImage}
-              alt="Logo"
-              className="h-8 w-auto transition-all"
-            />
-          </div>
-        ) : (
-          <div className="flex items-center gap-3 px-2">
-            <img src={logoImage} alt="Logo" className="h-9 w-auto" />
-            <div className="min-w-0">
-              <h1 className="text-[13px] font-black text-slate-900 dark:text-white tracking-tighter leading-none uppercase truncate">
-                TienTech{" "}
-                <span className="text-primary dark:text-brand">Shop</span>
-              </h1>
-              <p className="text-[8px] uppercase tracking-[0.2em] text-slate-400 dark:text-dark-text-secondary font-black mt-1">
-                ADMIN PANEL
-              </p>
-            </div>
-          </div>
-        )}
+        <Link to="/admin/dashboard" className="flex items-center w-full">
+          <Logo showText={!collapsed} size="sm" />
+        </Link>
       </div>
 
       {/* Navigation Menu */}

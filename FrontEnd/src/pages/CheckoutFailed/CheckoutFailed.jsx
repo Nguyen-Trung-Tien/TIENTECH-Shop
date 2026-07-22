@@ -1,89 +1,108 @@
 import React, { useEffect } from "react";
-import { FiXCircle, FiHome, FiRotateCw, FiAlertCircle } from "react-icons/fi";
+import { FiXCircle, FiHome, FiRotateCw, FiAlertCircle, FiCreditCard, FiHelpCircle } from "react-icons/fi";
 import { useNavigate, useParams } from "react-router-dom";
 import { motion as Motion } from "framer-motion";
-import Button from "../../components/UI/Button";
 
 const CheckoutFailed = () => {
   const navigate = useNavigate();
   const { orderId } = useParams();
 
   useEffect(() => {
-    document.title = "Thanh toán thất bại - TienTech";
+    document.title = "Thanh toán thất bại - TienTech Shop";
   }, []);
 
   return (
-    <div className="min-h-screen bg-surface-50 dark:bg-dark-bg flex items-center justify-center p-6 relative overflow-hidden transition-colors duration-300">
-      {/* Background Decorations */}
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-danger/5 rounded-full blur-[100px] -z-0"></div>
-      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-amber-500/5 rounded-full blur-[80px] -z-0"></div>
+    <div className="min-h-screen bg-slate-50 dark:bg-black flex items-center justify-center p-4 md:p-6 relative overflow-hidden transition-colors duration-300">
+      {/* Background Decorative Orbs */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-1/4 right-1/4 w-[450px] h-[450px] bg-red-500/10 dark:bg-red-600/15 rounded-full blur-[130px]"></div>
+        <div className="absolute bottom-1/4 left-1/4 w-[400px] h-[400px] bg-amber-500/10 dark:bg-amber-600/15 rounded-full blur-[110px]"></div>
+      </div>
 
       <Motion.div
-        initial={{ opacity: 0, scale: 0.9, y: 20 }}
+        initial={{ opacity: 0, scale: 0.92, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="relative z-10 w-full max-w-xl bg-white dark:bg-dark-surface rounded-[40px] shadow-2xl border border-surface-200 dark:border-dark-border p-10 md:p-16 text-center"
+        transition={{ duration: 0.4 }}
+        className="relative z-10 w-full max-w-lg bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl rounded-[32px] shadow-2xl border border-slate-200/80 dark:border-slate-800 p-6 md:p-10 text-center"
       >
-        {/* FAILED ICON */}
+        {/* FAILED ANIMATED ICON */}
         <Motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ type: "spring", stiffness: 200, delay: 0.2 }}
-          className="size-24 bg-danger rounded-3xl flex items-center justify-center text-white mx-auto mb-10 shadow-xl shadow-danger/30 dark:shadow-none"
+          initial={{ scale: 0, rotate: 45 }}
+          animate={{ scale: 1, rotate: 0 }}
+          transition={{ type: "spring", stiffness: 220, damping: 15, delay: 0.15 }}
+          className="size-20 bg-gradient-to-tr from-rose-600 to-red-500 rounded-3xl flex items-center justify-center text-white mx-auto mb-6 shadow-xl shadow-red-500/30"
         >
-          <FiXCircle size={48} />
+          <FiXCircle size={40} />
         </Motion.div>
 
         {/* TITLE */}
-        <h1 className="text-3xl md:text-4xl font-display font-bold text-surface-900 dark:text-white mb-4">
-          Thanh toán thất bại
-        </h1>
+        <div className="space-y-1 mb-4">
+          <span className="px-3 py-1 bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 text-[10px] font-black uppercase tracking-widest rounded-full border border-red-200 dark:border-red-800">
+            Giao Dịch Không Thành Công
+          </span>
+          <h1 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white tracking-tight pt-2">
+            Thanh Toán Thất Bại
+          </h1>
+        </div>
 
         {/* DESCRIPTION */}
-        <p className="text-surface-500 dark:text-dark-text-secondary text-lg mb-10 leading-relaxed max-w-md mx-auto">
-          Rất tiếc, giao dịch của bạn không thể hoàn tất lúc này. Vui lòng kiểm
-          tra lại thông tin thanh toán hoặc thử lại sau.
+        <p className="text-slate-600 dark:text-slate-400 text-xs md:text-sm leading-relaxed max-w-sm mx-auto mb-6">
+          Giao dịch của bạn chưa thể hoàn tất. Vui lòng kiểm tra lại số dư tài khoản, thông tin thẻ hoặc chọn phương thức thanh toán khác.
         </p>
 
-        {/* ORDER INFO */}
+        {/* ORDER CODE REFERECE (IF ANY) */}
         {orderId && (
-          <div className="bg-danger/5 dark:bg-danger/10 rounded-[2.5rem] p-8 mb-12 border border-danger/10 dark:border-danger/20 flex flex-col items-center">
-            <span className="text-[11px] font-black text-danger/60 dark:text-danger/80 uppercase tracking-[0.3em] mb-2">
-              Tham chiếu đơn hàng
+          <div className="bg-red-50/50 dark:bg-red-950/20 rounded-2xl p-4 mb-6 border border-red-100 dark:border-red-900/30 text-center">
+            <span className="text-[10px] font-bold text-red-500/80 uppercase tracking-widest block mb-1">
+              Mã tham chiếu đơn hàng
             </span>
-            <strong className="text-2xl font-black text-danger tracking-tight">
-              {orderId?.toString().slice(-6).toUpperCase()}
+            <strong className="text-lg font-black text-red-600 dark:text-red-400 font-mono tracking-wider">
+              #{orderId?.toString().slice(-8).toUpperCase()}
             </strong>
           </div>
         )}
 
-        {/* HELP BOX */}
-        <div className="flex items-center gap-3 justify-center mb-12 text-sm font-medium text-surface-400 dark:text-dark-text-secondary bg-surface-50 dark:bg-dark-bg p-4 rounded-2xl border border-surface-100 dark:border-dark-border">
-          <FiAlertCircle className="text-amber-500" />
-          <span>Bạn có thể thử thanh toán bằng phương thức khác.</span>
+        {/* COMMON REASONS HELP BOX */}
+        <div className="bg-slate-50 dark:bg-slate-950 rounded-2xl p-4 mb-6 border border-slate-200/80 dark:border-slate-800 text-left space-y-2">
+          <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5 mb-2">
+            <FiHelpCircle className="text-amber-500" /> Lý do có thể xảy ra:
+          </span>
+          <ul className="text-xs text-slate-600 dark:text-slate-400 space-y-1.5 pl-4 list-disc">
+            <li>Số dư tài khoản/thẻ ngân hàng không đủ để thanh toán.</li>
+            <li>Thông tin xác thực OTP quá hạn hoặc nhập sai.</li>
+            <li>Cổng thanh toán ngân hàng đang bảo trì tạm thời.</li>
+          </ul>
         </div>
 
-        {/* ACTIONS */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <Button
-            variant="primary"
-            size="lg"
-            className="w-full sm:w-auto min-w-[180px] shadow-xl shadow-primary/20 dark:shadow-none"
-            icon={FiRotateCw}
+        {/* ACTION BUTTONS */}
+        <div className="flex flex-col sm:flex-row items-center gap-3">
+          <button
+            type="button"
             onClick={() => navigate(-1)}
+            className="w-full sm:flex-1 py-3.5 px-5 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-lg shadow-red-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
           >
-            THỬ LẠI NGAY
-          </Button>
+            <FiRotateCw className="text-base" />
+            Thử lại thanh toán
+          </button>
 
-          <Button
-            variant="secondary"
-            size="lg"
-            className="w-full sm:w-auto min-w-[180px]"
-            icon={FiHome}
-            onClick={() => navigate("/")}
+          <button
+            type="button"
+            onClick={() => navigate("/cart")}
+            className="w-full sm:flex-1 py-3.5 px-5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-white font-bold text-xs uppercase tracking-wider rounded-xl border border-slate-200 dark:border-slate-700 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
           >
-            VỀ TRANG CHỦ
-          </Button>
+            <FiCreditCard className="text-base" />
+            Về giỏ hàng
+          </button>
+        </div>
+
+        <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800">
+          <button
+            type="button"
+            onClick={() => navigate("/")}
+            className="text-xs font-bold text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors uppercase tracking-wider flex items-center justify-center gap-1.5 mx-auto cursor-pointer"
+          >
+            <FiHome size={14} /> Quay về Trang chủ
+          </button>
         </div>
       </Motion.div>
     </div>

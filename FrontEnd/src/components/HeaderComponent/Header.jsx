@@ -30,9 +30,11 @@ import { getAllCarts } from "../../api/cartApi";
 import { useCurrentUser } from "../../hooks/useUser";
 import { debounce } from "lodash";
 import logoImage from "../../assets/logo.png";
+import Logo from "../UI/Logo";
 import { toast } from "react-toastify";
 import NotificationBell from "./NotificationBell";
 import VisualSearchModal from "./VisualSearchModal";
+import OmniSearchModal from "./OmniSearchModal";
 
 function Header() {
   const dispatch = useDispatch();
@@ -49,6 +51,7 @@ function Header() {
   });
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isVisualSearchOpen, setIsVisualSearchOpen] = useState(false);
+  const [isOmniSearchOpen, setIsOmniSearchOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -100,12 +103,24 @@ function Header() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Close menus on route change - moved access inside
+  // Global Ctrl+K / Cmd+K listener
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setIsOmniSearchOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  // Close menus on route change
   useEffect(() => {
     setIsMobileMenuOpen(false);
     setIsUserMenuOpen(false);
     setShowSuggestions(false);
-  }, [location]); // Keep location reference if needed, or use a custom hook to detect path changes reliably if location changes are not triggering
+  }, [location]);
 
   // ... (existing code)
 
@@ -190,7 +205,7 @@ function Header() {
             to="/"
             className="flex-shrink-0 transition-transform hover:scale-105"
           >
-            <img src={logoImage} alt="Logo" className="h-9 w-auto md:h-11" />
+            <Logo size="md" />
           </Link>
 
           {/* Desktop Nav Links */}
@@ -218,38 +233,35 @@ function Header() {
             className="hidden lg:block flex-1 max-w-lg relative"
             ref={searchRef}
           >
-            <form onSubmit={onSearchSubmit} className="relative group">
-              <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary dark:group-focus-within:text-brand transition-colors" />
+            <div
+              onClick={() => setIsOmniSearchOpen(true)}
+              className="relative group cursor-pointer"
+            >
+              <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-hover:text-primary dark:group-hover:text-brand transition-colors" />
               <input
                 type="text"
-                placeholder="Tìm kiếm sản phẩm công nghệ..."
-                value={searchInput}
-                onChange={onSearchChange}
-                className="w-full h-11 bg-slate-100/70 dark:bg-dark-surface/30 border border-slate-200/50 dark:border-dark-border/30 rounded-2xl pl-12 pr-10 text-[14px] font-medium focus:bg-white dark:focus:bg-dark-bg focus:border-primary/30 dark:focus:border-brand/30 focus:ring-4 focus:ring-primary/5 dark:focus:ring-brand/5 outline-none transition-all duration-300 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600"
+                readOnly
+                placeholder="Tìm kiếm sản phẩm, thương hiệu..."
+                onClick={() => setIsOmniSearchOpen(true)}
+                className="w-full h-11 bg-slate-100/70 dark:bg-dark-surface/30 border border-slate-200/50 dark:border-dark-border/30 rounded-2xl pl-12 pr-24 text-[14px] font-medium cursor-pointer focus:bg-white dark:focus:bg-dark-bg focus:border-primary/30 outline-none transition-all duration-300 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500"
               />
-              <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1">
-                {searchInput && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSearchInput("");
-                      setShowSuggestions(false);
-                    }}
-                    className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-200 dark:hover:bg-dark-surface rounded-lg transition-colors"
-                  >
-                    <FiX />
-                  </button>
-                )}
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5 pointer-events-auto">
+                <span className="kbd-badge hidden sm:inline-flex">
+                  Ctrl K
+                </span>
                 <button
                   type="button"
-                  onClick={() => setIsVisualSearchOpen(true)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsVisualSearchOpen(true);
+                  }}
                   className="p-1.5 text-slate-400 hover:text-primary dark:hover:text-brand hover:bg-primary/10 dark:hover:bg-brand/10 rounded-lg transition-colors"
-                  title="Tìm kiếm bằng hình ảnh AI"
+                  title="Tìm kiếm bằng hình ảnh AI Vision"
                 >
                   <FiCamera size={18} />
                 </button>
               </div>
-            </form>
+            </div>
 
             {/* Suggestions Dropdown */}
             <AnimatePresence>
@@ -581,6 +593,11 @@ function Header() {
       <VisualSearchModal
         isOpen={isVisualSearchOpen}
         onClose={() => setIsVisualSearchOpen(false)}
+      />
+      <OmniSearchModal
+        isOpen={isOmniSearchOpen}
+        onClose={() => setIsOmniSearchOpen(false)}
+        onOpenVisualSearch={() => setIsVisualSearchOpen(true)}
       />
     </>
   );

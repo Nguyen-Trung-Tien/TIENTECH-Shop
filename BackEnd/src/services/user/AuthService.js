@@ -11,7 +11,8 @@ const {
   hashToken, 
   generateRandomToken, 
   getTokenExpiryDate, 
-  hashUserPassword 
+  hashUserPassword,
+  validatePasswordStrength
 } = require("./AuthHelper");
 
 class AuthService {
@@ -111,6 +112,9 @@ class AuthService {
 
   async resetPassword(email, token, newPassword) {
     try {
+      const passCheck = validatePasswordStrength(newPassword);
+      if (!passCheck.valid) return { errCode: 4, errMessage: passCheck.message };
+
       const user = await db.User.findOne({ where: { email } });
       if (!user || user.resetToken !== hashToken(token)) return { errCode: 1, errMessage: "Token không hợp lệ" };
       
@@ -161,15 +165,18 @@ class AuthService {
 
   async updatePassword(userId, oldPassword, newPassword) {
     try {
+      const passCheck = validatePasswordStrength(newPassword);
+      if (!passCheck.valid) return { errCode: 4, errMessage: passCheck.message };
+
       const user = await db.User.findByPk(userId);
       if (!user) return { errCode: 1, errMessage: "User not found" };
 
       const valid = await bcrypt.compare(oldPassword, user.password);
-      if (!valid) return { errCode: 2, errMessage: "Mật khẩu cũ sai" };
+      if (!valid) return { errCode: 2, errMessage: "Mật khẩu cũ không chính xác!" };
 
       user.password = await hashUserPassword(newPassword);
       await user.save();
-      return { errCode: 0, errMessage: "Đổi mật khẩu thành công" };
+      return { errCode: 0, errMessage: "Đổi mật khẩu thành công!" };
     } catch (error) {
       return { errCode: -1, errMessage: error.message };
     }

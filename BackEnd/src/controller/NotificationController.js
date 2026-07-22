@@ -25,7 +25,8 @@ const handleMarkAsRead = async (req, res) => {
 const handleMarkAllAsRead = async (req, res) => {
   try {
     const userId = req.user.id;
-    const result = await NotificationService.markAllAsRead(userId);
+    const role = req.user.role;
+    const result = await NotificationService.markAllAsRead(userId, role);
     res.status(200).json(result);
   } catch (error) {
     res.status(500).json({ errCode: -1, errMessage: "Lỗi server." });

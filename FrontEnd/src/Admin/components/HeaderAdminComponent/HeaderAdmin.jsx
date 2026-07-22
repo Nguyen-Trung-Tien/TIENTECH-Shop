@@ -23,6 +23,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import { useCurrentUser } from "../../../hooks/useUser";
 import logoImage from "../../../assets/logo.png";
+import Logo from "../../../components/UI/Logo";
 import NotificationBell from "../../../components/HeaderComponent/NotificationBell";
 import debounce from "lodash/debounce";
 import { m as Motion, AnimatePresence } from "framer-motion";
@@ -51,11 +52,24 @@ const HeaderAdmin = ({ toggleSidebar, isCollapsed, theme, toggleTheme }) => {
   const [loggingOut, setLoggingOut] = useState(false);
 
   const searchRef = useRef(null);
+  const inputRef = useRef(null);
 
   const displayName =
     user?.username?.length > 15
       ? user.username.slice(0, 15) + "..."
       : user?.username || user?.email || "Admin";
+
+  // Keyboard shortcut listener (Ctrl+K / Cmd+K)
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        inputRef.current?.focus();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   // Global Search Debounced
   const debouncedSearch = useMemo(
@@ -147,23 +161,40 @@ const HeaderAdmin = ({ toggleSidebar, isCollapsed, theme, toggleTheme }) => {
 
         {/* Brand / Title (Mobile) */}
         <div className="flex items-center gap-2 md:hidden">
-          <img src={logoImage} alt="Logo" className="h-8 w-auto" />
+          <Logo size="sm" />
         </div>
 
         {/* Search Bar (Desktop) */}
         <div ref={searchRef} className="hidden md:block relative group">
           <form onSubmit={handleSearch} className="flex relative group">
             <FiSearch
-              className={`absolute left-3 top-1/2 -translate-y-1/2 transition-colors ${isLoading ? "text-primary animate-pulse" : "text-slate-400 dark:text-dark-text-secondary group-focus-within:text-primary"}`}
+              className={`absolute left-3.5 top-1/2 -translate-y-1/2 transition-colors ${isLoading ? "text-primary animate-pulse" : "text-slate-400 dark:text-dark-text-secondary group-focus-within:text-primary"}`}
             />
             <input
+              ref={inputRef}
               type="text"
-              placeholder="Tìm sản phẩm, đơn hàng, khách hàng..."
+              placeholder="Tìm sản phẩm, đơn hàng, khách hàng... (Ctrl K)"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onFocus={() => searchQuery && setShowSuggestions(true)}
-              className="h-10 w-80 rounded-xl border border-slate-200 dark:border-dark-border bg-slate-50 dark:bg-dark-bg pl-10 pr-4 text-sm text-slate-900 dark:text-white outline-none focus:border-primary focus:bg-white dark:focus:bg-dark-surface focus:ring-4 focus:ring-primary/10 transition-all"
+              className="h-10 w-80 lg:w-96 rounded-xl border border-slate-200 dark:border-dark-border bg-slate-50 dark:bg-dark-bg pl-10 pr-16 text-sm font-medium text-slate-900 dark:text-white outline-none focus:border-primary focus:bg-white dark:focus:bg-dark-surface focus:ring-4 focus:ring-primary/10 transition-all"
             />
+            {searchQuery ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setSearchQuery("");
+                  setShowSuggestions(false);
+                }}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 dark:hover:text-white p-1"
+              >
+                <FiX size={14} />
+              </button>
+            ) : (
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 px-1.5 py-0.5 text-[10px] font-black uppercase text-slate-400 dark:text-slate-500 bg-slate-200/60 dark:bg-slate-800 rounded border border-slate-300/40 dark:border-slate-700 pointer-events-none">
+                Ctrl K
+              </span>
+            )}
           </form>
 
           {/* Global Search Suggestions Dropdown */}

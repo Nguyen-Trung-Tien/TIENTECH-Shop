@@ -55,11 +55,18 @@ const markAsRead = async (id) => {
   }
 };
 
-const markAllAsRead = async (userId) => {
+const markAllAsRead = async (userId, role = "user") => {
   try {
-    await db.Notification.update({ isRead: true }, { where: { userId } });
+    const where = {};
+    if (role === "admin") {
+      where.userId = { [db.Sequelize.Op.or]: [userId, null] };
+    } else {
+      where.userId = userId;
+    }
+    await db.Notification.update({ isRead: true }, { where });
     return { errCode: 0, message: "Đã đánh dấu tất cả đã đọc." };
   } catch (error) {
+    console.error("Error markAllAsRead:", error);
     return { errCode: -1, errMessage: "Lỗi server." };
   }
 };

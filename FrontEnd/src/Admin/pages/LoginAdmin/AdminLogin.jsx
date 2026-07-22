@@ -13,6 +13,7 @@ import { toast } from "react-toastify";
 import { loginUser } from "../../../api/userApi";
 import { setUser } from "../../../redux/userSlice";
 import logoImage from "../../../assets/logo.png";
+import Logo from "../../../components/UI/Logo";
 import ForgotPasswordModal from "../../../components/ForgotPasswordModal/ForgotPasswordModal";
 
 const AdminLogin = () => {
@@ -68,12 +69,8 @@ const AdminLogin = () => {
         <div className="hidden lg:flex lg:col-span-5 relative bg-slate-950 items-center justify-center p-12 overflow-hidden">
           <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] bg-primary/20 rounded-full blur-[120px]"></div>
           <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] bg-brand/10 rounded-full blur-[120px]"></div>
-          <div className="relative z-10 text-center">
-            <img
-              src={logoImage}
-              alt="Logo"
-              className="w-48 mx-auto mb-10 brightness-0 invert opacity-90"
-            />
+          <div className="relative z-10 text-center flex flex-col items-center">
+            <Logo size="xl" variant="light" className="justify-center mb-8" />
             <h2 className="text-3xl font-black text-white mb-4 tracking-tight leading-tight">
               Quản Trị Hệ Thống
             </h2>

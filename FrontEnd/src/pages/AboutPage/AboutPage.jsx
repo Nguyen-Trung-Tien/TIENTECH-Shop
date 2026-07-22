@@ -6,6 +6,7 @@ import imgPro1 from "../../assets/1759303601055.png";
 import imgPro2 from "../../assets/1759303601055.png";
 import imgPro3 from "../../assets/1759555519030.png";
 import logoImage from "../../assets/logo.png";
+import Logo from "../../components/UI/Logo";
 import Button from "../../components/UI/Button";
 
 const teamMembers = [
@@ -53,12 +54,8 @@ const AboutPage = () => {
             transition={{ duration: 0.8 }}
             className="flex flex-col items-center"
           >
-            <div className="size-40 md:w-56 md:h-48 mb-8 p-6 bg-white/5 backdrop-blur-xl rounded-[3rem] border border-white/10 flex items-center justify-center shadow-2xl">
-              <img
-                src={logoImage}
-                alt="TienTech Logo"
-                className="w-full h-auto brightness-0 invert"
-              />
+            <div className="mb-8 p-6 bg-white/5 backdrop-blur-xl rounded-[3rem] border border-white/10 flex items-center justify-center shadow-2xl">
+              <Logo size="xl" variant="light" />
             </div>
             <h1 className="text-4xl md:text-6xl font-black text-white mb-6 leading-[1.1] max-w-4xl tracking-tight">
               Định nghĩa lại <span className="text-blue-500">Tương lai số</span> <br />
@@ -133,11 +130,25 @@ const AboutPage = () => {
               </h2>
               <div className="space-y-6 text-slate-600 dark:text-slate-400 text-base md:text-lg leading-relaxed font-medium">
                 <p>
-                  <strong className="text-slate-900 dark:text-white">TienTech</strong> ra đời with tâm thế của những người trẻ khao khát mang những tinh hoa công nghệ thế giới đến gần hơn với người dùng Việt Nam.
+                  <strong className="text-slate-900 dark:text-white">TienTech Shop</strong> ra đời với tâm thế của những người trẻ khao khát mang những tinh hoa công nghệ đỉnh cao thế giới đến gần hơn với cộng đồng người dùng Việt Nam.
                 </p>
                 <p>
-                  Chúng tôi không chỉ tập trung vào việc bán hàng, mà chú trọng vào việc tư vấn và hỗ trợ người dùng tìm ra những thiết bị thực sự phù hợp với nhu cầu và phong cách sống của họ.
+                  Chúng tôi không chỉ bán thiết bị, mà còn đồng hành tư vấn, hỗ trợ cá nhân hóa công nghệ chuẩn phong cách sống hiện đại cho từng khách hàng.
                 </p>
+              </div>
+
+              {/* Development Milestones */}
+              <div className="mt-8 grid grid-cols-3 gap-4 border-t border-slate-200 dark:border-gray-800 pt-6">
+                {[
+                  { year: "2022", text: "Thành lập cửa hàng đầu tiên" },
+                  { year: "2024", text: "Đạt mốc 50k+ khách hàng" },
+                  { year: "2026", text: "Tích hợp AI tư vấn Phong thủy" }
+                ].map((m, i) => (
+                  <div key={i} className="text-left">
+                    <p className="text-xl font-black text-primary">{m.year}</p>
+                    <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 mt-1 leading-snug">{m.text}</p>
+                  </div>
+                ))}
               </div>
             </Motion.div>
           </div>

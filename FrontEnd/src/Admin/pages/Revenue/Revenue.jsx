@@ -107,13 +107,13 @@ const Revenue = () => {
 
         <div className="flex flex-wrap items-center gap-4">
           <div className="bg-white dark:bg-dark-surface border border-slate-100 dark:border-dark-border p-1.5 rounded-2xl flex items-center shadow-sm">
-            {["week", "month", "year"].map((p) => (
+            {["today", "week", "month", "year"].map((p) => (
               <button
                 key={p}
                 onClick={() => setPagePeriod(p)}
-                className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer ${period === p ? "bg-primary text-white shadow-lg shadow-primary/20" : "text-slate-400 dark:text-dark-text-secondary hover:text-slate-600 dark:hover:text-white"}`}
+                className={`px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer ${period === p ? "bg-primary text-white shadow-lg shadow-primary/20" : "text-slate-400 dark:text-dark-text-secondary hover:text-slate-600 dark:hover:text-white"}`}
               >
-                {p === "week" ? "Tuần" : p === "month" ? "Tháng" : "Năm"}
+                {p === "today" ? "Hôm nay" : p === "week" ? "Tuần" : p === "month" ? "Tháng" : "Năm"}
               </button>
             ))}
           </div>

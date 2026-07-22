@@ -1,0 +1,43 @@
+<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="tientechGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="#2563eb" />
+      <stop offset="50%" stopColor="#6366f1" />
+      <stop offset="100%" stopColor="#06b6d4" />
+    </linearGradient>
+    <linearGradient id="tientechGlow" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stopColor="#ffffff" stopOpacity="0.9" />
+      <stop offset="100%" stopColor="#ffffff" stopOpacity="0.4" />
+    </linearGradient>
+  </defs>
+
+  <!-- Outer Shield Shape -->
+  <path
+    d="M50 8L88 24V50C88 73.19 71.8 91.56 50 96C28.2 91.56 12 73.19 12 50V24L50 8Z"
+    fill="url(#tientechGrad)"
+  />
+
+  <!-- Inner Dark Geometric Shield -->
+  <path
+    d="M50 16L80 29.5V50C80 68.5 67 83.2 50 87C33 83.2 20 68.5 20 50V29.5L50 16Z"
+    fill="#090d16"
+    fillOpacity="0.3"
+  />
+
+  <!-- Letter T Emblem -->
+  <path
+    d="M32 34H68V42H54V74H46V42H32V34Z"
+    fill="url(#tientechGlow)"
+  />
+
+  <!-- Shopping Handle -->
+  <path
+    d="M38 34C38 27.37 43.37 22 50 22C56.63 22 62 27.37 62 34"
+    stroke="white"
+    strokeWidth="5"
+    strokeLinecap="round"
+  />
+
+  <!-- AI Node Accent -->
+  <circle cx="50" cy="58" r="4.5" fill="#06b6d4" />
+</svg>

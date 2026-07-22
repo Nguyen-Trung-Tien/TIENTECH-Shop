@@ -173,88 +173,88 @@ const ProductCard = ({ product }) => {
   return (
     <>
       <Motion.article
-        initial={{ opacity: 0, y: 10 }}
+        initial={{ opacity: 0, y: 12 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        className={`group relative flex flex-col h-full bg-white dark:bg-dark-surface rounded-[28px] border border-slate-100 dark:border-dark-border/40 overflow-hidden shadow-soft hover:shadow-lg transition-all duration-500 cursor-pointer ${!isActive ? "opacity-60 grayscale pointer-events-none" : ""}`}
+        className={`group relative flex flex-col h-full bg-white dark:bg-dark-surface rounded-[24px] border border-slate-200/70 dark:border-slate-800/80 overflow-hidden shadow-sm hover:shadow-xl hover:border-blue-500/30 dark:hover:border-blue-500/40 transition-all duration-300 cursor-pointer ${!isActive ? "opacity-60 grayscale pointer-events-none" : ""}`}
         onClick={() => navigate(`/product-detail/${slug || id}`)}
       >
-        {/* Image Area */}
-        <div className="relative aspect-square overflow-hidden bg-slate-50/50 dark:bg-dark-bg/40">
+        {/* Image Container */}
+        <div className="relative aspect-square overflow-hidden bg-slate-50/70 dark:bg-dark-bg/60 p-4 flex items-center justify-center">
           <img
-            src={image}
+            src={image || "/images/no-image.png"}
             alt={name}
             loading="lazy"
-            className="w-full h-full object-contain p-5 mix-blend-multiply dark:mix-blend-normal transition-transform duration-700 group-hover:scale-110"
+            className="w-full h-full object-contain p-2 mix-blend-multiply dark:mix-blend-normal transition-transform duration-500 group-hover:scale-108"
           />
 
           {/* Badges */}
-          <div className="absolute top-3 left-3 flex flex-col gap-1 z-10">
+          <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-10">
             {flashSaleActive && flashSaleDiscount > 0 && (
-              <Badge variant="danger" className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1">
-                Flash -{Math.round(flashSaleDiscount)}%
-              </Badge>
+              <span className="px-2.5 py-1 bg-gradient-to-r from-red-600 to-orange-500 text-white font-black text-[9px] uppercase tracking-wider rounded-lg shadow-sm flex items-center gap-1">
+                ⚡ -{Math.round(flashSaleDiscount)}%
+              </span>
             )}
             {!flashSaleActive && discount > 0 && (
-              <Badge variant="default" className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1">-{discount}%</Badge>
+              <span className="px-2.5 py-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-black text-[9px] uppercase tracking-wider rounded-lg shadow-sm">
+                -{discount}%
+              </span>
             )}
           </div>
 
           {/* Wishlist Button */}
           <button
             onClick={handleWishlist}
-            className="absolute top-3 right-3 z-20 size-9 flex items-center justify-center bg-white/70 dark:bg-dark-surface/70 backdrop-blur-md border border-white/20 dark:border-white/5 rounded-full shadow-sm hover:scale-110 hover:bg-white dark:hover:bg-dark-surface transition-all duration-300 active:scale-95 group/heart"
+            className="absolute top-3 right-3 z-20 size-8 flex items-center justify-center bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200/50 dark:border-slate-700/50 rounded-full shadow-sm hover:scale-110 hover:bg-white dark:hover:bg-slate-800 transition-all duration-300 active:scale-95 group/heart"
           >
             {isWishlisted ? (
-              <FaHeart className="text-red-500" size={16} />
+              <FaHeart className="text-red-500" size={14} />
             ) : (
               <FiHeart
                 className="text-slate-400 group-hover/heart:text-red-500 transition-colors"
-                size={16}
+                size={14}
               />
             )}
           </button>
 
           {/* Mobile quick add button */}
           <div className="absolute bottom-3 right-3 lg:hidden">
-            <Button
-              variant="default"
-              size="icon"
-              className="rounded-full shadow-lg h-10 w-10 !rounded-2xl"
+            <button
               onClick={handleAddToCartClick}
               disabled={loadingCart}
+              className="size-9 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-lg shadow-blue-500/30 active:scale-95 transition-all"
             >
-              <FiShoppingCart size={16} />
-            </Button>
+              <FiShoppingCart size={15} />
+            </button>
           </div>
 
           {/* Desktop hover action */}
-          <div className="absolute inset-x-0 bottom-0 p-3 translate-y-full group-hover:translate-y-0 transition-all duration-300 z-20 bg-gradient-to-t from-white dark:from-dark-surface to-transparent hidden lg:block">
+          <div className="absolute inset-x-0 bottom-0 p-3 translate-y-full group-hover:translate-y-0 transition-all duration-300 z-20 bg-gradient-to-t from-white via-white/90 dark:from-dark-surface dark:via-dark-surface/90 to-transparent hidden lg:block">
             <Button
               variant="primary"
               size="sm"
-              className="w-full !rounded-2xl font-black text-[10px] tracking-wider"
+              className="w-full !rounded-xl font-bold text-[10px] tracking-wider uppercase py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-md"
               onClick={handleAddToCartClick}
               disabled={loadingCart}
             >
-              <FiShoppingCart size={14} className="mr-1" />
-              THÊM GIỎ HÀNG
+              <FiShoppingCart size={14} className="mr-1.5 inline" />
+              {loadingCart ? "Đang xử lý..." : "Thêm giỏ hàng"}
             </Button>
           </div>
         </div>
 
         {/* Content Area */}
-        <div className="p-5 flex flex-col flex-1">
-          <p className="text-[9px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-[0.2em] mb-1.5 truncate">
-            Official Store
+        <div className="p-4 flex flex-col flex-1">
+          <p className="text-[9px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-1 truncate">
+            {product.brand?.name || "Linh Kiện Chính Hãng"}
           </p>
-          <h3 className="text-xs md:text-sm font-bold text-slate-800 dark:text-white line-clamp-2 leading-snug mb-2.5 h-10 group-hover:text-primary dark:group-hover:text-brand transition-colors">
+          <h3 className="text-xs md:text-sm font-bold text-slate-800 dark:text-slate-100 line-clamp-2 leading-snug mb-2 min-h-[2.5rem] group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
             {name}
           </h3>
 
-          {/* Mini Specs - Hệ thống Attribute mới */}
+          {/* Mini Specs - Attributes */}
           {product.attributes && product.attributes.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 mb-3.5">
+            <div className="flex flex-wrap gap-1 mb-2.5">
               {product.attributes.slice(0, 3).map((attr, idx) => {
                 if (
                   ["ram", "rom", "refresh_rate"].includes(attr.attribute?.code)
@@ -262,7 +262,7 @@ const ProductCard = ({ product }) => {
                   return (
                     <span
                       key={idx}
-                      className="px-2.5 py-0.5 bg-slate-50 dark:bg-slate-800/40 text-[9px] font-bold text-slate-500 dark:text-dark-text-secondary rounded-lg border border-slate-100 dark:border-dark-border/40"
+                      className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800/60 text-[9px] font-bold text-slate-600 dark:text-slate-300 rounded-md border border-slate-200/50 dark:border-slate-700/50"
                     >
                       {attr.value}
                     </span>
@@ -274,7 +274,7 @@ const ProductCard = ({ product }) => {
           )}
 
           <div className="flex items-center gap-1.5 mb-3">
-            <div className="flex text-amber-400 text-[9px] gap-0.5">
+            <div className="flex text-amber-400 text-[10px] gap-0.5">
               {Array.from({ length: 5 }).map((_, i) => (
                 <FaStar
                   key={i}
@@ -286,22 +286,27 @@ const ProductCard = ({ product }) => {
                 />
               ))}
             </div>
+            <span className="text-[10px] font-semibold text-slate-400 dark:text-slate-400">
+              ({reviews.length || 0})
+            </span>
             {sold > 0 && (
-              <span className="text-[10px] font-medium text-slate-400 dark:text-dark-text-secondary">
-                | Đã bán {sold}
+              <span className="text-[10px] font-medium text-slate-400 dark:text-slate-500 ml-auto">
+                Đã bán {sold}
               </span>
             )}
           </div>
 
-          <div className="mt-auto pt-3 border-t border-slate-50 dark:border-dark-border/40 flex items-baseline gap-2">
-            <p className="text-base font-black text-slate-900 dark:text-white leading-none">
-              {formatCurrency(finalPrice)}
-            </p>
-            {((flashSaleActive && flashOriginalPrice) || discount > 0) && (
-              <p className="text-[10px] text-slate-400 dark:text-slate-500 line-through font-medium leading-none">
-                {formatCurrency(productOriginalPrice)}
+          <div className="mt-auto pt-2.5 border-t border-slate-100 dark:border-slate-800/80 flex items-baseline justify-between gap-1">
+            <div>
+              <p className="text-sm md:text-base font-black text-slate-900 dark:text-white leading-none">
+                {formatCurrency(finalPrice)}
               </p>
-            )}
+              {((flashSaleActive && flashOriginalPrice) || discount > 0) && (
+                <p className="text-[10px] text-slate-400 dark:text-slate-500 line-through font-medium leading-none mt-1">
+                  {formatCurrency(productOriginalPrice)}
+                </p>
+              )}
+            </div>
           </div>
         </div>
       </Motion.article>

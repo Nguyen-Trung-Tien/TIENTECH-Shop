@@ -72,13 +72,14 @@ const Notifications = () => {
 
   const handleMarkAllRead = async () => {
     try {
+      setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
       const res = await markAllReadApi();
-      if (res.errCode === 0) {
-        setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+      if (res?.errCode === 0) {
         toast.success("Đã đánh dấu tất cả là đã đọc");
       }
     } catch (err) {
       console.error(err);
+      toast.error("Lỗi khi đánh dấu đã đọc");
     }
   };
 
@@ -91,12 +92,22 @@ const Notifications = () => {
     }
   };
 
+  const [filterTab, setFilterTab] = useState("all");
+
+  const filteredNotifications = notifications.filter((n) => {
+    if (filterTab === "all") return true;
+    if (filterTab === "order") return n.type === "order";
+    if (filterTab === "promotion") return n.type === "promotion";
+    if (filterTab === "system") return n.type !== "order" && n.type !== "promotion";
+    return true;
+  });
+
   if (!user) return null;
 
   return (
     <div className="min-h-screen bg-surface-50 dark:bg-dark-bg py-12 transition-colors duration-300">
       <div className="container-custom max-w-4xl">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
           <div>
             <Link
               to="/"
@@ -113,11 +124,33 @@ const Notifications = () => {
           {notifications.length > 0 && (
             <button
               onClick={handleMarkAllRead}
-              className="px-6 py-2.5 bg-white dark:bg-dark-surface border border-surface-200 dark:border-dark-border rounded-2xl text-[11px] font-black uppercase tracking-widest text-surface-600 dark:text-dark-text-secondary hover:border-primary hover:text-primary transition-all shadow-sm flex items-center gap-2"
+              className="px-6 py-2.5 bg-white dark:bg-dark-surface border border-surface-200 dark:border-dark-border rounded-2xl text-[11px] font-black uppercase tracking-widest text-surface-600 dark:text-dark-text-secondary hover:border-primary hover:text-primary transition-all shadow-sm flex items-center gap-2 cursor-pointer"
             >
               <FiCheck /> Đánh dấu tất cả đã đọc
             </button>
           )}
+        </div>
+
+        {/* Tab Filters */}
+        <div className="flex items-center gap-2 mb-6 bg-white dark:bg-dark-surface p-1.5 rounded-2xl border border-surface-200 dark:border-dark-border shadow-sm overflow-x-auto">
+          {[
+            { id: "all", label: "Tất cả" },
+            { id: "order", label: "Đơn hàng" },
+            { id: "promotion", label: "Khuyến mãi" },
+            { id: "system", label: "Hệ thống" },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setFilterTab(tab.id)}
+              className={`px-5 py-2 rounded-xl text-xs font-bold transition-all uppercase tracking-wider cursor-pointer ${
+                filterTab === tab.id
+                  ? "bg-primary text-white shadow-md shadow-primary/20"
+                  : "text-slate-500 dark:text-dark-text-secondary hover:bg-slate-50 dark:hover:bg-dark-bg"
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
 
         <div className="bg-white dark:bg-dark-surface rounded-[32px] border border-surface-200 dark:border-dark-border shadow-soft overflow-hidden">
@@ -128,9 +161,9 @@ const Notifications = () => {
                 Đang tải thông báo...
               </p>
             </div>
-          ) : notifications.length > 0 ? (
+          ) : filteredNotifications.length > 0 ? (
             <div className="divide-y divide-surface-100 dark:divide-dark-border">
-              {notifications.map((n, index) => (
+              {filteredNotifications.map((n, index) => (
                 <Motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}

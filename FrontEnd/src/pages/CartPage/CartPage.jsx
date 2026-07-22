@@ -162,6 +162,31 @@ const CartPage = () => {
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
             <div className="lg:col-span-8 space-y-6">
+              {/* Free Shipping Progress Widget */}
+              <div className="bg-white dark:bg-dark-surface p-6 rounded-[28px] border border-slate-100 dark:border-dark-border shadow-sm">
+                {(() => {
+                  const freeShipThreshold = 5000000;
+                  const percent = Math.min(100, Math.round((subtotal / freeShipThreshold) * 100));
+                  const remaining = freeShipThreshold - subtotal;
+                  return (
+                    <div>
+                      <div className="flex items-center justify-between text-xs font-bold mb-2">
+                        <span className="text-slate-700 dark:text-white flex items-center gap-2">
+                          🚚 {remaining <= 0 ? "Bạn đã đủ điều kiện Miễn phí giao hàng!" : `Mua thêm ${(remaining).toLocaleString()}đ để nhận FreeShip!`}
+                        </span>
+                        <span className="text-primary font-black">{percent}%</span>
+                      </div>
+                      <div className="w-full h-2.5 bg-slate-100 dark:bg-dark-bg rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-gradient-to-r from-primary to-emerald-500 rounded-full transition-all duration-500"
+                          style={{ width: `${percent}%` }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+
               <div className="bg-white dark:bg-dark-surface rounded-[32px] shadow-sm border border-slate-100 dark:border-dark-border overflow-hidden">
                 <div className="p-6 border-b border-slate-50 dark:border-dark-border bg-slate-50/30 dark:bg-dark-bg/30 flex justify-between items-center">
                   <div className="flex items-center gap-3">

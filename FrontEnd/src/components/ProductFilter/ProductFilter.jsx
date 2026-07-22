@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { getAllBrandApi } from "../../api/brandApi";
 import { getAllCategoryApi } from "../../api/categoryApi";
 import { getAllAttributesApi } from "../../api/attributeApi";
@@ -11,21 +11,29 @@ import {
   FiSmartphone,
   FiMonitor,
   FiZap,
+  FiCpu,
+  FiBattery,
+  FiTag,
+  FiDollarSign,
 } from "react-icons/fi";
 import { motion as Motion, AnimatePresence } from "framer-motion";
 
+const PRICE_PRESETS = [
+  { label: "< 5 triệu", min: 0, max: 5000000 },
+  { label: "5 - 15 triệu", min: 5000000, max: 15000000 },
+  { label: "15 - 30 triệu", min: 15000000, max: 30000000 },
+  { label: "> 30 triệu", min: 30000000, max: 100000000 },
+];
+
 const getAttrIcon = (code) => {
   switch (code) {
-    case "ram":
-      return <FiLayers />;
-    case "rom":
-      return <FiSmartphone />;
-    case "os":
-      return <FiZap />;
-    case "screen":
-      return <FiMonitor />;
-    default:
-      return <FiFilter />;
+    case "ram": return <FiLayers className="text-blue-500" />;
+    case "rom": return <FiSmartphone className="text-indigo-500" />;
+    case "os": return <FiZap className="text-amber-500" />;
+    case "screen": return <FiMonitor className="text-emerald-500" />;
+    case "cpu": return <FiCpu className="text-purple-500" />;
+    case "battery": return <FiBattery className="text-rose-500" />;
+    default: return <FiTag className="text-slate-400" />;
   }
 };
 
@@ -38,179 +46,167 @@ const FilterContent = ({
   setFilters,
   applyFilters,
   resetFilters,
-}) => (
-  <div className="space-y-10">
-    {/* Brands Section */}
-    <div className="space-y-5">
-      <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 flex items-center justify-between">
-        Thương hiệu
-        {filters.brand.length > 0 && (
-          <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
-        )}
-      </h4>
-      <div className="grid grid-cols-2 gap-3">
-        {brands.slice(0, 6).map((b) => (
-          <button
-            key={b.id}
-            onClick={() => handleBrandClick(b.id)}
-            className={`group relative p-3 rounded-2xl border-2 transition-all flex items-center justify-center h-14 bg-white overflow-hidden ${
-              filters.brand.includes(b.id)
-                ? "border-primary shadow-lg shadow-primary/5 z-10"
-                : "border-slate-50 hover:border-slate-200"
-            }`}
-          >
-            {b.image ? (
-              <img
-                src={b.image}
-                alt={b.name || "Brand Logo"}
-                className="max-w-[80%] max-h-[80%] object-contain mix-blend-multiply transition-transform group-hover:scale-110"
-              />
-            ) : (
-              <span className="text-[10px] font-bold text-slate-400">
-                {b.name}
-              </span>
-            )}
-            {filters.brand.includes(b.id) && (
-              <div className="absolute top-0 right-0 p-1">
-                <FiCheck className="text-primary" size={12} />
-              </div>
-            )}
-          </button>
-        ))}
-      </div>
-    </div>
+}) => {
+  const activeCount = React.useMemo(() => {
+    let count = 0;
+    if (filters.brand?.length) count += filters.brand.length;
+    if (filters.category) count += 1;
+    if (filters.price?.[0] > 0 || filters.price?.[1] < 100000000) count += 1;
+    ["ram", "rom", "os", "refresh_rate", "screen", "cpu"].forEach((k) => {
+      if (Array.isArray(filters[k]) && filters[k].length > 0) count += filters[k].length;
+    });
+    return count;
+  }, [filters]);
 
-    {/* Dynamic Attributes Section */}
-    {attributes.map((attr) => (
-      <div key={attr.id} className="space-y-5">
-        <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 flex items-center gap-2">
-          {getAttrIcon(attr.code)}
-          {attr.name}
-        </h4>
-        <div className="flex flex-wrap gap-2">
-          {attr.values?.map((v) => {
-            const isSelected =
-              Array.isArray(filters[attr.code]) &&
-              filters[attr.code].includes(v.value);
+  return (
+    <div className="space-y-7">
+      {/* Brands Section */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h4 className="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-slate-200">
+            Thương hiệu
+          </h4>
+          {filters.brand?.length > 0 && (
+            <span className="px-2 py-0.5 bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 text-[10px] font-bold rounded-full">
+              {filters.brand.length} đã chọn
+            </span>
+          )}
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          {brands.map((b) => {
+            const isSelected = filters.brand?.includes(b.id);
             return (
               <button
-                key={v.id}
-                onClick={() => handleAttrClick(attr.code, v.value)}
-                className={`px-3 py-2 rounded-xl text-[10px] font-bold transition-all border-2 ${
+                key={b.id}
+                type="button"
+                onClick={() => handleBrandClick(b.id)}
+                className={`p-2.5 rounded-xl border text-xs font-bold transition-all flex items-center justify-between cursor-pointer ${
                   isSelected
-                    ? "bg-primary border-primary text-white shadow-md shadow-primary/10"
-                    : "bg-slate-50 border-slate-50 text-slate-600 hover:bg-white hover:border-slate-200"
+                    ? "bg-blue-600 border-blue-600 text-white shadow-sm"
+                    : "bg-slate-50 dark:bg-slate-800/60 border-slate-200/60 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-blue-500/50"
                 }`}
               >
-                {v.value}
+                <span className="truncate">{b.name}</span>
+                {isSelected && <FiCheck size={12} className="shrink-0" />}
               </button>
             );
           })}
         </div>
       </div>
-    ))}
 
-    {/* Price Range Section */}
-    <div className="space-y-5">
-      <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
-        Khoảng giá (VND)
-      </h4>
-      <div className="space-y-4">
-        <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-1.5">
-            <label
-              htmlFor="price-from"
-              className="text-[9px] font-bold text-slate-400 ml-1"
-            >
-              TỪ
-            </label>
-            <input
-              id="price-from"
-              type="number"
-              placeholder="0"
-              className="w-full h-11 bg-slate-50 border-none rounded-xl px-4 text-xs font-bold focus:ring-2 focus:ring-primary/10 transition-all outline-none"
-              value={filters.price[0]}
-              onChange={(e) =>
-                setFilters({
-                  ...filters,
-                  price: [Number(e.target.value), filters.price[1]],
-                })
-              }
-            />
-          </div>
-          <div className="space-y-1.5">
-            <label
-              htmlFor="price-to"
-              className="text-[9px] font-bold text-slate-400 ml-1"
-            >
-              ĐẾN
-            </label>
-            <input
-              id="price-to"
-              type="number"
-              placeholder="100Tr+"
-              className="w-full h-11 bg-slate-50 border-none rounded-xl px-4 text-xs font-bold focus:ring-2 focus:ring-primary/10 transition-all outline-none"
-              value={filters.price[1]}
-              onChange={(e) =>
-                setFilters({
-                  ...filters,
-                  price: [filters.price[0], Number(e.target.value)],
-                })
-              }
-            />
+      {/* Dynamic Attributes */}
+      {attributes.map((attr) => (
+        <div key={attr.id} className="space-y-3">
+          <h4 className="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-slate-200 flex items-center gap-2">
+            {getAttrIcon(attr.code)}
+            {attr.name}
+          </h4>
+          <div className="flex flex-wrap gap-2">
+            {attr.values?.map((v) => {
+              const isSelected =
+                Array.isArray(filters[attr.code]) &&
+                filters[attr.code].includes(v.value);
+              return (
+                <button
+                  key={v.id}
+                  type="button"
+                  onClick={() => handleAttrClick(attr.code, v.value)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border cursor-pointer flex items-center gap-1 ${
+                    isSelected
+                      ? "bg-blue-600 border-blue-600 text-white shadow-sm"
+                      : "bg-slate-50 dark:bg-slate-800/60 border-slate-200/60 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-blue-500/50"
+                  }`}
+                >
+                  {v.value}
+                  {isSelected && <FiCheck size={12} />}
+                </button>
+              );
+            })}
           </div>
         </div>
-      </div>
-    </div>
+      ))}
 
-    {/* Sorting Section */}
-    <div className="space-y-5">
-      <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
-        Sắp xếp theo
-      </h4>
-      <div className="space-y-2">
-        {[
-          { id: "newest", label: "Mới nhất" },
-          { id: "price_asc", label: "Giá thấp đến cao" },
-          { id: "price_desc", label: "Giá cao đến thấp" },
-        ].map((opt) => (
-          <button
-            key={opt.id}
-            onClick={() =>
+      {/* Price Range Section */}
+      <div className="space-y-3">
+        <h4 className="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-slate-200 flex items-center gap-2">
+          <FiDollarSign className="text-emerald-500" /> Mức giá (VND)
+        </h4>
+        <div className="grid grid-cols-2 gap-1.5">
+          {PRICE_PRESETS.map((preset, idx) => {
+            const isPresetActive =
+              filters.price?.[0] === preset.min && filters.price?.[1] === preset.max;
+            return (
+              <button
+                key={idx}
+                type="button"
+                onClick={() =>
+                  setFilters({
+                    ...filters,
+                    price: isPresetActive ? [0, 100000000] : [preset.min, preset.max],
+                  })
+                }
+                className={`px-2.5 py-1.5 rounded-xl border text-[10px] font-bold uppercase transition-all cursor-pointer truncate ${
+                  isPresetActive
+                    ? "bg-emerald-600 border-emerald-600 text-white shadow-xs"
+                    : "bg-slate-50 dark:bg-slate-800/40 border-slate-200/60 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:border-emerald-500/50"
+                }`}
+              >
+                {preset.label}
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="grid grid-cols-2 gap-2 pt-1">
+          <input
+            type="number"
+            placeholder="Từ 0"
+            className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold outline-none focus:border-blue-500 transition-all text-slate-900 dark:text-white"
+            value={filters.price?.[0] || ""}
+            onChange={(e) =>
               setFilters({
                 ...filters,
-                sort: opt.id === filters.sort ? "" : opt.id,
+                price: [Number(e.target.value), filters.price?.[1] || 100000000],
               })
             }
-            className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-xs font-bold transition-all ${
-              filters.sort === opt.id
-                ? "bg-slate-900 text-white shadow-md shadow-slate-900/10"
-                : "bg-slate-50 text-slate-600 hover:bg-slate-100"
-            }`}
+          />
+          <input
+            type="number"
+            placeholder="Đến Max"
+            className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold outline-none focus:border-blue-500 transition-all text-slate-900 dark:text-white"
+            value={filters.price?.[1] === 100000000 ? "" : filters.price?.[1]}
+            onChange={(e) =>
+              setFilters({
+                ...filters,
+                price: [filters.price?.[0] || 0, Number(e.target.value)],
+              })
+            }
+          />
+        </div>
+      </div>
+
+      {/* Action Buttons */}
+      <div className="pt-4 space-y-2 border-t border-slate-100 dark:border-slate-800">
+        <button
+          type="button"
+          onClick={applyFilters}
+          className="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl text-xs font-black uppercase tracking-wider shadow-lg hover:from-blue-700 hover:to-indigo-700 transition-all cursor-pointer"
+        >
+          Áp dụng bộ lọc
+        </button>
+        {activeCount > 0 && (
+          <button
+            type="button"
+            onClick={resetFilters}
+            className="w-full py-2.5 flex items-center justify-center gap-1.5 text-xs font-bold uppercase tracking-wider text-rose-500 hover:text-rose-600 transition-all cursor-pointer"
           >
-            {opt.label}
-            {filters.sort === opt.id && <FiCheck />}
+            <FiRotateCcw size={13} /> Xóa tất cả bộ lọc ({activeCount})
           </button>
-        ))}
+        )}
       </div>
     </div>
-
-    <div className="pt-6 flex flex-col gap-3">
-      <button
-        onClick={applyFilters}
-        className="w-full h-12 bg-indigo-600 text-white rounded-2xl text-[11px] font-black uppercase tracking-widest shadow-xl hover:bg-indigo-700 transition-all active:scale-95"
-      >
-        Áp dụng bộ lọc
-      </button>
-      <button
-        onClick={resetFilters}
-        className="w-full h-12 flex items-center justify-center gap-2 text-[11px] font-black uppercase tracking-widest text-slate-400 hover:text-rose-500 transition-all"
-      >
-        <FiRotateCcw /> Xóa tất cả
-      </button>
-    </div>
-  </div>
-);
+  );
+};
 
 function ProductFilter({
   onFilterChange,
@@ -219,7 +215,6 @@ function ProductFilter({
   initialFilters,
 }) {
   const [brands, setBrands] = useState([]);
-  const [categories, setCategories] = useState([]);
   const [attributes, setAttributes] = useState([]);
 
   const [filters, setFilters] = useState({
@@ -254,42 +249,6 @@ function ProductFilter({
   });
 
   useEffect(() => {
-    if (initialFilters) {
-      setFilters((prev) => ({
-        ...prev,
-        ...initialFilters,
-        brand: Array.isArray(initialFilters.brand)
-          ? initialFilters.brand
-          : initialFilters.brand
-            ? [initialFilters.brand]
-            : [],
-        ram: Array.isArray(initialFilters.ram)
-          ? initialFilters.ram
-          : initialFilters.ram
-            ? initialFilters.ram.split(",")
-            : [],
-        rom: Array.isArray(initialFilters.rom)
-          ? initialFilters.rom
-          : initialFilters.rom
-            ? initialFilters.rom.split(",")
-            : [],
-        os: Array.isArray(initialFilters.os)
-          ? initialFilters.os
-          : initialFilters.os
-            ? initialFilters.os.split(",")
-            : [],
-        refresh_rate: Array.isArray(initialFilters.refresh_rate)
-          ? initialFilters.refresh_rate
-          : initialFilters.refresh_rate
-            ? initialFilters.refresh_rate.split(",")
-            : [],
-        category: initialFilters.category || "",
-        price: initialFilters.price || [0, 100000000],
-      }));
-    }
-  }, [initialFilters]);
-
-  useEffect(() => {
     const fetchData = async () => {
       try {
         const [brandRes, catRes, attrRes] = await Promise.all([
@@ -297,15 +256,8 @@ function ProductFilter({
           getAllCategoryApi(),
           getAllAttributesApi(),
         ]);
-        if (brandRes.errCode === 0)
-          setBrands(brandRes.brands || brandRes.data || []);
-        if (catRes.errCode === 0) setCategories(catRes.data || []);
-        if (attrRes.errCode === 0) {
-          const importantCodes = ["ram", "rom", "os", "refresh_rate", "screen"];
-          setAttributes(
-            attrRes.data.filter((a) => importantCodes.includes(a.code)),
-          );
-        }
+        if (brandRes?.errCode === 0) setBrands(brandRes.brands || brandRes.data || []);
+        if (attrRes?.errCode === 0) setAttributes(attrRes.data || []);
       } catch (err) {
         console.error("Lỗi load filters:", err);
       }
@@ -369,13 +321,13 @@ function ProductFilter({
 
   if (isSidebar) {
     return (
-      <div className="w-full bg-white rounded-[2.5rem] border border-slate-100 shadow-soft p-8">
-        <div className="flex items-center gap-3 mb-10 pb-6 border-b border-slate-50">
-          <div className="size-10 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600 shadow-sm">
-            <FiFilter />
+      <div className="w-full bg-white dark:bg-slate-900 rounded-[28px] border border-slate-200/80 dark:border-slate-800 p-6 shadow-sm">
+        <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100 dark:border-slate-800">
+          <div className="size-10 bg-blue-50 dark:bg-blue-900/30 rounded-2xl flex items-center justify-center text-blue-600 dark:text-blue-400">
+            <FiFilter className="text-lg" />
           </div>
-          <h3 className="text-xl font-black text-slate-900 tracking-tight uppercase">
-            Bộ lọc
+          <h3 className="text-base font-black text-slate-900 dark:text-white tracking-tight uppercase">
+            Bộ lọc sản phẩm
           </h3>
         </div>
         <FilterContent {...commonProps} />
@@ -399,21 +351,22 @@ function ProductFilter({
           animate={{ x: 0 }}
           exit={{ x: "100%" }}
           transition={{ type: "spring", damping: 30, stiffness: 300 }}
-          className="relative w-full max-w-sm bg-white h-full shadow-2xl flex flex-col rounded-l-[3rem]"
+          className="relative w-full max-w-sm bg-white dark:bg-slate-900 h-full shadow-2xl flex flex-col rounded-l-[32px] border-l border-slate-200 dark:border-slate-800 p-6"
         >
-          <div className="px-8 py-8 flex items-center justify-between">
-            <h3 className="text-2xl font-black text-slate-900 tracking-tight uppercase">
-              Bộ lọc
+          <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800 mb-6">
+            <h3 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tight">
+              Bộ lọc nâng cao
             </h3>
             <button
+              type="button"
               onClick={onClose}
-              className="size-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400 hover:text-rose-500 transition-all"
+              className="size-9 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 hover:text-rose-500 transition-all cursor-pointer"
             >
-              <FiX size={24} />
+              <FiX size={20} />
             </button>
           </div>
 
-          <div className="flex-1 overflow-y-auto px-8 pb-10 custom-scrollbar">
+          <div className="flex-1 overflow-y-auto pr-1">
             <FilterContent {...commonProps} />
           </div>
         </Motion.div>

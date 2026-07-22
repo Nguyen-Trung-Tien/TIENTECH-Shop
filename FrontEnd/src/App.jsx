@@ -4,9 +4,11 @@ import { useDispatch } from "react-redux";
 import UserRoutes from "./routes/UserRoutes";
 import AdminRoutes from "./routes/AdminRoutes";
 import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import { getMeApi } from "./api/userApi";
 import { setUser, removeUser, setInitializing } from "./redux/userSlice";
 import { LazyMotion, domAnimation } from "framer-motion";
+import RouteProgressBar from "./components/Loading/RouteProgressBar";
 
 const App = () => {
   const dispatch = useDispatch();
@@ -59,6 +61,7 @@ const App = () => {
 
   return (
     <div className="min-h-screen bg-white dark:bg-dark-bg text-gray-900 dark:text-dark-text-primary transition-colors duration-300">
+      <RouteProgressBar />
       <LazyMotion features={domAnimation}>
         <Routes>
           <Route path="/admin/*" element={<AdminRoutes />} />
@@ -67,16 +70,17 @@ const App = () => {
       </LazyMotion>
 
       <ToastContainer
-        position="bottom-right"
-        autoClose={5000}
+        position="top-right"
+        autoClose={3500}
         hideProgressBar={false}
-        newestOnTop={false}
+        newestOnTop
         closeOnClick
         rtl={false}
         pauseOnFocusLoss
         draggable
         pauseOnHover
         theme={theme}
+        toastClassName="tientech-toast"
       />
     </div>
   );

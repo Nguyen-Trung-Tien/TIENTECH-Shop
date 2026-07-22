@@ -9,7 +9,7 @@ import {
   FiEye,
   FiEyeOff,
 } from "react-icons/fi";
-import { Modal, Button, Loader } from "../UI";
+import { Modal, Button } from "../UI";
 import {
   forgotPasswordApi,
   resetPasswordApi,
@@ -109,22 +109,22 @@ const ForgotPasswordModal = ({ show, onClose }) => {
       onClose={handleClose}
       title={
         <div className="flex items-center gap-3">
-          <div className="size-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary">
+          <div className="size-10 bg-blue-100 dark:bg-blue-900/40 rounded-2xl flex items-center justify-center text-blue-600 dark:text-blue-400">
             {step === 1 && <FiMail size={20} />}
             {step === 2 && <FiShield size={20} />}
             {step === 3 && <FiKey size={20} />}
           </div>
-          <span className="text-xl font-display text-surface-900 leading-none">
-            {step === 1 && "Quên mật khẩu"}
-            {step === 2 && "Xác thực"}
-            {step === 3 && "Mật khẩu mới"}
+          <span className="text-xl font-black text-slate-900 dark:text-white tracking-tight">
+            {step === 1 && "Quên Mật Khẩu"}
+            {step === 2 && "Xác Thực Mã Token"}
+            {step === 3 && "Tạo Mật Khẩu Mới"}
           </span>
         </div>
       }
       size="md"
       showClose={true}
     >
-      <div className="min-h-[200px]">
+      <div className="min-h-[180px]">
         <AnimatePresence mode="wait">
           <Motion.div
             key={step}
@@ -135,19 +135,19 @@ const ForgotPasswordModal = ({ show, onClose }) => {
           >
             {step === 1 && (
               <div className="space-y-4">
-                <p className="text-surface-500 text-sm font-medium">
-                  Nhập email đã đăng ký để nhận mã khôi phục mật khẩu.
+                <p className="text-slate-600 dark:text-slate-300 text-xs md:text-sm font-medium leading-relaxed">
+                  Nhập địa chỉ email đã đăng ký tài khoản để nhận mã khôi phục mật khẩu.
                 </p>
                 <div className="space-y-1.5">
-                  <label className="text-[12px] font-bold text-surface-900 uppercase tracking-wider ml-1">
-                    Email
+                  <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider ml-1">
+                    Địa chỉ Email
                   </label>
                   <div className="relative group">
-                    <FiMail className="absolute left-4 top-1/2 -translate-y-1/2 text-surface-400 group-focus-within:text-primary transition-colors" />
+                    <FiMail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 group-focus-within:text-blue-500 transition-colors" />
                     <input
                       type="email"
                       placeholder="name@example.com"
-                      className="w-full h-12 pl-11 pr-4 bg-surface-50 border-2 border-transparent rounded-xl text-sm font-medium focus:bg-white focus:border-primary/20 outline-none transition-all"
+                      className="w-full h-12 pl-11 pr-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-sm font-medium text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:bg-white dark:focus:bg-slate-800 focus:border-blue-500 outline-none transition-all"
                       value={email}
                       onChange={(e) => setEmail(e.target.value.trim())}
                     />
@@ -158,21 +158,21 @@ const ForgotPasswordModal = ({ show, onClose }) => {
 
             {step === 2 && (
               <div className="space-y-4">
-                <p className="text-surface-500 text-sm font-medium leading-relaxed">
-                  Mã xác nhận đã gửi đến{" "}
-                  <span className="text-surface-900 font-bold">{email}</span>.
-                  Vui lòng kiểm tra hộp thư.
+                <p className="text-slate-600 dark:text-slate-300 text-xs md:text-sm font-medium leading-relaxed">
+                  Mã xác nhận đã được gửi đến{" "}
+                  <strong className="text-blue-600 dark:text-blue-400 font-bold">{email}</strong>.
+                  Vui lòng kiểm tra hộp thư của bạn.
                 </p>
                 <div className="space-y-1.5">
-                  <label className="text-[12px] font-bold text-surface-900 uppercase tracking-wider ml-1">
-                    Mã xác nhận
+                  <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider ml-1">
+                    Mã xác nhận (OTP)
                   </label>
                   <div className="flex gap-2">
                     <div className="relative flex-1 group">
-                      <FiShield className="absolute left-4 top-1/2 -translate-y-1/2 text-surface-400 group-focus-within:text-primary transition-colors" />
+                      <FiShield className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 group-focus-within:text-blue-500 transition-colors" />
                       <input
                         placeholder="Nhập mã xác nhận"
-                        className="w-full h-12 pl-11 pr-4 bg-surface-50 border-2 border-transparent rounded-xl text-sm font-bold tracking-widest focus:bg-white focus:border-primary/20 outline-none transition-all"
+                        className="w-full h-12 pl-11 pr-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-sm font-bold tracking-widest text-slate-900 dark:text-white placeholder-slate-400 focus:bg-white dark:focus:bg-slate-800 focus:border-blue-500 outline-none transition-all"
                         value={token}
                         onChange={(e) => setToken(e.target.value.trim())}
                       />
@@ -180,7 +180,7 @@ const ForgotPasswordModal = ({ show, onClose }) => {
                     <Button
                       variant="secondary"
                       size="icon"
-                      className="shrink-0"
+                      className="shrink-0 size-12 rounded-2xl"
                       onClick={handleSendEmail}
                       loading={loading}
                     >
@@ -193,8 +193,8 @@ const ForgotPasswordModal = ({ show, onClose }) => {
 
             {step === 3 && (
               <div className="space-y-4">
-                <p className="text-surface-500 text-sm font-medium">
-                  Tạo mật khẩu mạnh để bảo vệ tài khoản của bạn.
+                <p className="text-slate-600 dark:text-slate-300 text-xs md:text-sm font-medium">
+                  Tạo mật khẩu mới cho tài khoản của bạn.
                 </p>
                 <div className="space-y-3">
                   <PasswordField
@@ -215,21 +215,20 @@ const ForgotPasswordModal = ({ show, onClose }) => {
       </div>
 
       {/* Custom Footer */}
-      <div className="flex gap-3 mt-8">
+      <div className="flex gap-3 mt-6 pt-4 border-t border-slate-100 dark:border-slate-800">
         {step > 1 && (
           <Button
             variant="secondary"
-            className="flex-1"
+            className="flex-1 py-3 text-xs uppercase font-bold"
             onClick={() => setStep(step - 1)}
             disabled={loading}
           >
             Quay lại
           </Button>
         )}
-        <Button
-          variant={step === 3 ? "primary" : "primary"}
-          className={`flex-[2] ${step === 3 ? "bg-emerald-500 hover:bg-emerald-600" : ""}`}
-          loading={loading}
+        <button
+          type="button"
+          disabled={loading}
           onClick={
             step === 1
               ? handleSendEmail
@@ -237,9 +236,20 @@ const ForgotPasswordModal = ({ show, onClose }) => {
                 ? handleVerifyToken
                 : handleResetPassword
           }
+          className={`flex-[2] py-3.5 px-6 text-white rounded-xl text-xs font-black uppercase tracking-wider shadow-lg transition-all cursor-pointer active:scale-98 ${
+            step === 3
+              ? "bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700"
+              : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+          }`}
         >
-          {step === 1 ? "Gửi mã" : step === 2 ? "Xác thực mã" : "Đổi mật khẩu"}
-        </Button>
+          {loading
+            ? "Đang xử lý..."
+            : step === 1
+              ? "Gửi mã xác nhận"
+              : step === 2
+                ? "Xác thực mã"
+                : "Đổi mật khẩu"}
+        </button>
       </div>
     </Modal>
   );
@@ -249,14 +259,14 @@ const PasswordField = ({ label, value, onChange }) => {
   const [show, setShow] = useState(false);
   return (
     <div className="space-y-1.5">
-      <label className="text-[12px] font-bold text-surface-900 uppercase tracking-wider ml-1">
+      <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider ml-1">
         {label}
       </label>
       <div className="relative group">
-        <FiKey className="absolute left-4 top-1/2 -translate-y-1/2 text-surface-400 group-focus-within:text-primary transition-colors" />
+        <FiKey className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 group-focus-within:text-blue-500 transition-colors" />
         <input
           type={show ? "text" : "password"}
-          className="w-full h-12 pl-11 pr-12 bg-surface-50 border-2 border-transparent rounded-xl text-sm font-medium focus:bg-white focus:border-primary/20 outline-none transition-all"
+          className="w-full h-12 pl-11 pr-12 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-sm font-medium text-slate-900 dark:text-white placeholder-slate-400 focus:bg-white dark:focus:bg-slate-800 focus:border-blue-500 outline-none transition-all"
           value={value}
           onChange={onChange}
           placeholder="••••••••"
@@ -264,7 +274,7 @@ const PasswordField = ({ label, value, onChange }) => {
         <button
           type="button"
           onClick={() => setShow(!show)}
-          className="absolute right-4 top-1/2 -translate-y-1/2 text-surface-400 hover:text-surface-900 transition-colors"
+          className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors cursor-pointer"
         >
           {show ? <FiEyeOff size={18} /> : <FiEye size={18} />}
         </button>

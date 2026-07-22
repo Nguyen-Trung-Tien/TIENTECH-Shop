@@ -1,0 +1,18 @@
+{
+  "short_name": "TIENTECH",
+  "name": "TIENTECH Shop – Next-Gen AI-Powered E-Commerce",
+  "description": "Hệ sinh thái thương mại điện tử đột phá tích hợp AI, tìm kiếm hình ảnh, tư vấn phong thủy và giao diện hiện đại.",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "192x192 512x512"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#0f172a",
+  "theme_color": "#2563eb",
+  "display": "standalone",
+  "orientation": "portrait",
+  "scope": "/"
+}

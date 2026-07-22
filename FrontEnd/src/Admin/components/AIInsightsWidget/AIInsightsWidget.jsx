@@ -8,6 +8,7 @@ import {
 } from "react-icons/fi";
 import { getAIInsights } from "../../../api/adminApi";
 import { motion as Motion, AnimatePresence } from "framer-motion";
+import { toast } from "react-toastify";
 
 const AIInsightsWidget = () => {
   const [insights, setInsights] = useState(null);
@@ -138,20 +139,30 @@ const AIInsightsWidget = () => {
                   </div>
                 </div>
 
-                {/* Strategic Advice */}
+                {/* Strategic Advice & 1-Click Action */}
                 <div className="md:col-span-2 border-t border-slate-100 dark:border-dark-border pt-6 mt-2">
-                  <div className="bg-indigo-50/50 dark:bg-indigo-500/5 border border-indigo-100 dark:border-indigo-500/10 rounded-2xl p-6 flex items-start gap-4">
-                    <div className="size-10 rounded-xl bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0">
-                      <FiAlertCircle size={20} />
+                  <div className="bg-indigo-50/50 dark:bg-indigo-500/5 border border-indigo-100 dark:border-indigo-500/10 rounded-2xl p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                    <div className="flex items-start gap-4">
+                      <div className="size-10 rounded-xl bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0">
+                        <FiAlertCircle size={20} />
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest mb-1">
+                          Lời khuyên chiến lược từ AI
+                        </p>
+                        <p className="text-sm text-slate-700 dark:text-slate-300 font-medium leading-relaxed">
+                          {insights.strategicAdvice}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest mb-1">
-                        Lời khuyên chiến lược
-                      </p>
-                      <p className="text-sm text-slate-700 dark:text-slate-300 font-medium leading-relaxed">
-                        {insights.strategicAdvice}
-                      </p>
-                    </div>
+
+                    <a
+                      href="/admin/vouchers"
+                      onClick={() => toast.success("AI đã đề xuất cấu hình Flash Sale 15% cho bạn tại trang Vouchers!")}
+                      className="px-5 py-2.5 text-xs font-black uppercase tracking-wider text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 rounded-xl shadow-md shrink-0 flex items-center gap-2 transition"
+                    >
+                      <FiCpu className="w-4 h-4 animate-spin" /> 1-Click Tạo Flash Sale AI
+                    </a>
                   </div>
                 </div>
               </div>

@@ -84,10 +84,16 @@ const NotificationBell = () => {
 
   const handleMarkAllRead = async () => {
     try {
-      await markAllReadApi();
+      setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+      setUnreadCount(0);
+      const res = await markAllReadApi();
+      if (res?.errCode === 0) {
+        toast.success("Đã đánh dấu tất cả là đã đọc!");
+      }
       fetchNotifications();
     } catch (err) {
-      console.error(err);
+      console.error("Error marking all read:", err);
+      toast.error("Lỗi khi đánh dấu đã đọc");
     }
   };
 

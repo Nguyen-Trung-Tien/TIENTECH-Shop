@@ -11,6 +11,7 @@ import {
 } from "react-icons/fi";
 import { Link } from "react-router-dom";
 import logoImage from "../../assets/logo.png";
+import Logo from "../UI/Logo";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -36,11 +37,7 @@ const Footer = () => {
               to="/"
               className="inline-block transition-transform hover:scale-105"
             >
-              <img
-                src={logoImage}
-                alt="TienTech Logo"
-                className="h-10 w-auto dark:brightness-0 dark:invert grayscale brightness-0 opacity-80"
-              />
+              <Logo size="lg" />
             </Link>
             <p className="text-sm leading-relaxed font-medium uppercase tracking-tight opacity-80">
               Cửa hàng điện tử hàng đầu Việt Nam — kiến tạo giải pháp công

@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useProductDetail } from "../../hooks/useProductDetail";
 import { useProductVariants } from "../../hooks/useProductVariants";
 import { toast } from "react-toastify";
+import { motion as Motion, AnimatePresence } from "framer-motion";
 import {
   FiZap,
   FiInfo,
@@ -14,6 +15,7 @@ import {
   FiMoreHorizontal,
   FiSettings,
   FiChevronRight,
+  FiShoppingCart,
 } from "react-icons/fi";
 import {
   addToWishlistApi,
@@ -93,6 +95,15 @@ const ProductDetailPage = () => {
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [loadingWishlist, setLoadingWishlist] = useState(false);
   const [showPrediction, setShowPrediction] = useState(false);
+  const [showStickyBar, setShowStickyBar] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowStickyBar(window.scrollY > 450);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   // Specifications logic - Normalized and Merged
   const mergedSpecs = useMemo(() => {
@@ -377,6 +388,66 @@ const ProductDetailPage = () => {
         isOpen={showPrediction}
         onClose={() => setShowPrediction(false)}
       />
+
+      {/* Sticky Bottom Add to Cart Bar */}
+      <AnimatePresence>
+        {showStickyBar && (
+          <Motion.div
+            initial={{ y: 100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 100, opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            className="fixed bottom-0 left-0 right-0 z-40 bg-white/90 dark:bg-slate-900/90 backdrop-blur-lg border-t border-slate-200/80 dark:border-slate-800 shadow-2xl py-3 px-4"
+          >
+            <div className="container-custom flex items-center justify-between gap-4">
+              {/* Product Short Info */}
+              <div className="flex items-center gap-3 min-w-0">
+                <img
+                  src={mainImage || product?.thumbnail || "/images/placeholder.png"}
+                  alt={product?.name}
+                  className="w-11 h-11 object-cover rounded-lg bg-slate-100 dark:bg-slate-800 shrink-0 border border-slate-200 dark:border-slate-700"
+                />
+                <div className="min-w-0 hidden sm:block">
+                  <h4 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100 truncate">
+                    {product?.name}
+                  </h4>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-sm font-extrabold text-rose-600 dark:text-rose-500">
+                      {Number(currentPrice).toLocaleString("vi-VN")}₫
+                    </span>
+                    {discountPercent > 0 && (
+                      <span className="text-[10px] text-slate-400 line-through">
+                        {Number(originalPrice).toLocaleString("vi-VN")}₫
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Quick Actions */}
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  type="button"
+                  onClick={onAddToCart}
+                  disabled={addingCart}
+                  className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-primary dark:text-primary-light bg-primary/10 dark:bg-primary/20 hover:bg-primary hover:text-white rounded-xl transition border border-primary/20"
+                >
+                  <FiShoppingCart className="w-4 h-4" />
+                  <span>{addingCart ? "Đang thêm..." : "Thêm vào giỏ"}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleBuyNow}
+                  className="px-5 py-2 text-xs font-bold text-white bg-gradient-to-r from-primary to-indigo-600 hover:from-primary-hover hover:to-indigo-700 rounded-xl shadow-md transition"
+                >
+                  Mua ngay
+                </button>
+              </div>
+            </div>
+          </Motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

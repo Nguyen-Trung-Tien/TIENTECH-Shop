@@ -92,6 +92,25 @@ const FortuneProducts = () => {
     return () => clearTimeout(timer);
   }, [fetchProducts]);
 
+  const calculateElementByYear = (yearNum) => {
+    if (!yearNum) return null;
+    const year = Number(yearNum);
+    const canMap = [4, 4, 5, 5, 1, 1, 2, 2, 3, 3];
+    const chiMap = [0, 0, 1, 1, 2, 2, 0, 0, 1, 1, 2, 2];
+    const can = canMap[year % 10];
+    const chi = chiMap[year % 12];
+    let sum = can + chi;
+    if (sum > 5) sum -= 5;
+    const elementMap = {
+      1: { name: "Mệnh Kim", icon: "✨", desc: "Hợp các thiết bị màu Trắng, Xám, Vàng, Nâu đất. Mang đến sự kiên định & may mắn tài lộc." },
+      2: { name: "Mệnh Thủy", icon: "🌊", desc: "Hợp các thiết bị màu Đen, Xanh Nước Biển, Trắng, Bạc. Hỗ trợ hanh thông & sự nghiệp thăng tiến." },
+      3: { name: "Mệnh Hỏa", icon: "🔥", desc: "Hợp các thiết bị màu Đỏ, Hồng, Tím, Xanh Lá. Nguồn năng lượng dồi dào & nhiệt huyết." },
+      4: { name: "Mệnh Thổ", icon: "⛰️", desc: "Hợp các thiết bị màu Vàng, Nâu Đất, Đỏ, Tím. Tăng sự vững chắc & uy tín trong công việc." },
+      5: { name: "Mệnh Mộc", icon: "🌿", desc: "Hợp các thiết bị màu Xanh Lá, Đen, Xanh Nước Biển. Thúc đẩy sự phát triển & sáng tạo vượt trội." },
+    };
+    return elementMap[sum] || null;
+  };
+
   const handleSearch = () => {
     setPage(1);
   };
@@ -307,11 +326,38 @@ const FortuneProducts = () => {
           <div className="lg:col-span-8 space-y-10">
             {/* ANALYSIS RESULTS BAR */}
             <AnimatePresence>
+              {birthYear && calculateElementByYear(birthYear) && (
+                <Motion.div
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-gradient-to-r from-blue-600 to-indigo-600 p-6 md:p-8 rounded-[2rem] text-white shadow-xl mb-6 relative overflow-hidden"
+                >
+                  <div className="absolute right-0 top-0 size-48 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
+                  <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-2xl">{calculateElementByYear(birthYear).icon}</span>
+                        <h3 className="text-2xl font-black uppercase tracking-tight">
+                          {calculateElementByYear(birthYear).name} • Sinh năm {birthYear}
+                        </h3>
+                      </div>
+                      <p className="text-blue-100 text-sm font-medium leading-relaxed max-w-xl">
+                        {calculateElementByYear(birthYear).desc}
+                      </p>
+                    </div>
+                    <div className="px-5 py-3 bg-white/15 backdrop-blur-md rounded-2xl border border-white/20 text-center shrink-0">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-blue-200">Độ Tương Tích AI</p>
+                      <p className="text-2xl font-black text-amber-300">98.5%</p>
+                    </div>
+                  </div>
+                </Motion.div>
+              )}
+
               {luckyColors.length > 0 && (
                 <Motion.div
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  className="bg-blue-50 dark:bg-blue-900/10 p-8 rounded-3xl border border-blue-100 dark:border-blue-900/30 flex flex-col md:flex-row items-center gap-8"
+                  className="bg-blue-50 dark:bg-blue-900/10 p-6 md:p-8 rounded-3xl border border-blue-100 dark:border-blue-900/30 flex flex-col md:flex-row items-center justify-between gap-6"
                 >
                   <div className="flex items-center gap-3 text-blue-600 dark:text-blue-400 font-black uppercase tracking-widest text-[11px]">
                     <FiActivity size={18} />
