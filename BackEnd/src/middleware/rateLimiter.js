@@ -37,8 +37,21 @@ const sensitiveActionLimiter = rateLimit({
   },
 });
 
+// AI Endpoint Limiter to protect external Gemini API Quota
+const aiApiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    errCode: 429,
+    errMessage: "Bạn đã gửi quá nhiều yêu cầu tư vấn AI. Vui lòng thử lại sau 15 phút.",
+  },
+});
+
 module.exports = {
   generalLimiter,
   loginAuthLimiter,
   sensitiveActionLimiter,
+  aiApiLimiter,
 };

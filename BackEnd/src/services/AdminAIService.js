@@ -58,15 +58,25 @@ Trả về kết quả bằng tiếng Việt, súc tích, định dạng JSON:
     const result = await geminiModel.generateContent(context);
     const response = result.response.text();
 
-    // Làm sạch JSON từ response của AI
-    const cleanJson = response
-      .replace(/```json/gi, "")
-      .replace(/```/g, "")
-      .trim();
+    // Safe JSON extraction and parsing
+    let parsedData = null;
+    try {
+      const match = response.match(/\{[\s\S]*\}/);
+      const jsonStr = match ? match[0] : response;
+      parsedData = JSON.parse(jsonStr);
+    } catch (parseErr) {
+      console.warn("Failed to parse Gemini AI response as JSON:", parseErr.message);
+      parsedData = {
+        promotionSuggestions: topSelling.map((p) => `Khuyến mãi cho ${p.name}`),
+        restockSuggestions: slowMoving.map((p) => `Cần xả kho ${p.name}`),
+        serviceReview: "Dữ liệu phản hồi cần được theo dõi sát sao.",
+        strategicAdvice: response.slice(0, 300),
+      };
+    }
 
     return {
       errCode: 0,
-      data: JSON.parse(cleanJson),
+      data: parsedData,
     };
   } catch (error) {
     console.error("AI Insights Error:", error);

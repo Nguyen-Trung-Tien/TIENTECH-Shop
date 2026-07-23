@@ -12,6 +12,7 @@ const passport = require("passport");
 
 const { initOrderCron } = require("./cron/orderCron");
 const { initInventoryCron } = require("./cron/inventoryCron");
+const { verifyAccessToken } = require("./services/jwtService");
 
 dotenv.config();
 
@@ -55,7 +56,7 @@ app.use(
       // Allow requests with no origin (like mobile apps or curl requests)
       if (!origin) return callback(null, true);
 
-      if (allowedOrigins.indexOf(origin) !== -1 || isProduction) {
+      if (allowedOrigins.indexOf(origin) !== -1) {
         callback(null, true);
       } else {
         console.log("Blocked by CORS:", origin);
@@ -213,14 +214,34 @@ if (process.env.NODE_ENV !== "test") {
   setInterval(flashSaleJob, 60 * 1000);
 }
 
-/*SOCKET CONNECTION*/
+/*SOCKET CONNECTION & AUTHENTICATION*/
+
+io.use((socket, next) => {
+  const token =
+    socket.handshake.auth?.token ||
+    (socket.handshake.headers?.authorization &&
+      socket.handshake.headers.authorization.split(" ")[1]);
+
+  if (token) {
+    const decoded = verifyAccessToken(token);
+    if (decoded) {
+      socket.user = decoded;
+    }
+  }
+  next();
+});
 
 io.on("connection", (socket) => {
   console.log(`User connected: ${socket.id}`);
 
   socket.on("join_admin", () => {
-    socket.join("admin_room");
-    console.log(`Socket ${socket.id} joined admin_room`);
+    if (socket.user && socket.user.role === "admin") {
+      socket.join("admin_room");
+      console.log(`Socket ${socket.id} (Admin ID: ${socket.user.id}) joined admin_room`);
+    } else {
+      console.warn(`Unauthorized join_admin attempt by socket ${socket.id}`);
+      socket.emit("error", { errCode: 403, errMessage: "Unauthorized: Admin access required" });
+    }
   });
 
   socket.on("disconnect", () => {

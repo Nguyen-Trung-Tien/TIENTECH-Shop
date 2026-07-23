@@ -30,16 +30,20 @@ const validatePredictRequest = (req, res, next) => {
   next();
 };
 
-router.post("/ask", validateChatRequest, ChatController.handleChat);
-router.post("/visual-search", VisualSearchController.handleVisualSearch);
+const { aiApiLimiter } = require("../middleware/rateLimiter");
+
+router.post("/ask", aiApiLimiter, validateChatRequest, ChatController.handleChat);
+router.post("/visual-search", aiApiLimiter, VisualSearchController.handleVisualSearch);
 router.post(
   "/predict",
+  aiApiLimiter,
   validatePredictRequest,
   PricePredictorController.handlePricePredict
 );
 
 router.post(
   "/fengshui",
+  aiApiLimiter,
   validateChatRequest,
   FengShuiChatController.handleFengShuiChat
 );
