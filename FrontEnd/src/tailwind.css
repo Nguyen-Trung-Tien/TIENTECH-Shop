@@ -158,9 +158,27 @@
   }
 
   .btn-modern-primary {
-    @apply flex items-center justify-center gap-2 bg-primary text-white rounded-2xl font-bold hover:bg-primary-hover transition-all shadow-lg shadow-primary/10 active:scale-95 cursor-pointer;
+    @apply inline-flex items-center justify-center gap-2 min-h-[44px] px-6 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-2xl font-bold text-xs md:text-sm tracking-wide transition-all duration-200 shadow-lg shadow-blue-500/20 hover:shadow-blue-500/35 active:scale-95 disabled:opacity-50 disabled:pointer-events-none cursor-pointer;
   }
-  
+
+  .btn-modern-secondary {
+    @apply inline-flex items-center justify-center gap-2 min-h-[44px] px-6 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-2xl font-bold text-xs md:text-sm tracking-wide transition-all duration-200 border border-slate-200/80 dark:border-slate-700 active:scale-95 disabled:opacity-50 disabled:pointer-events-none cursor-pointer;
+  }
+
+  .btn-modern-danger {
+    @apply inline-flex items-center justify-center gap-2 min-h-[44px] px-6 py-2.5 bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700 text-white rounded-2xl font-bold text-xs md:text-sm tracking-wide transition-all duration-200 shadow-lg shadow-rose-500/20 hover:shadow-rose-500/35 active:scale-95 disabled:opacity-50 disabled:pointer-events-none cursor-pointer;
+  }
+
+  .btn-modern-ghost {
+    @apply inline-flex items-center justify-center gap-2 min-h-[44px] px-4 py-2 bg-transparent hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-2xl font-bold text-xs md:text-sm transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:pointer-events-none cursor-pointer;
+  }
+
+  /* Mobile Touch Target helper */
+  .touch-target {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
   .text-label {
     @apply text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary;
   }
@@ -170,7 +188,7 @@
     color: var(--text-main);
     border-color: var(--border-color);
     font-family: var(--font-sans);
-    @apply w-full h-11 px-4 border rounded-2xl text-sm font-medium outline-none transition-all duration-200;
+    @apply w-full min-h-[44px] px-4 border rounded-2xl text-sm font-medium outline-none transition-all duration-200;
   }
 
   /* Clear default focus outline and rings */
@@ -184,7 +202,7 @@
 
   /* Input modern refinement */
   .input-modern {
-    @apply w-full px-4 border border-slate-200/60 dark:border-dark-border/40 rounded-2xl outline-none transition-all duration-300;
+    @apply w-full min-h-[44px] px-4 border border-slate-200/60 dark:border-dark-border/40 rounded-2xl outline-none transition-all duration-300;
     background-color: transparent;
   }
   
@@ -195,39 +213,50 @@
 
   /* Glass header styling */
   .glass-header {
-    background: rgba(255, 255, 255, 0.75);
+    background: rgba(255, 255, 255, 0.85);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border-bottom: 1px solid rgba(241, 245, 249, 0.6);
+    border-bottom: 1px solid rgba(241, 245, 249, 0.8);
   }
 
   .dark .glass-header {
-    background: rgba(9, 13, 22, 0.75);
+    background: rgba(15, 23, 42, 0.85);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   }
 
   /* Gradient brand glow text */
   .text-gradient-primary {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-violet-500;
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary via-indigo-600 to-violet-500;
   }
 
   /* Glassmorphism Modal */
   .glass-modal {
-    background: rgba(255, 255, 255, 0.85);
+    background: rgba(255, 255, 255, 0.92);
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
-    border: 1px solid rgba(255, 255, 255, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.5);
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
   }
 
   .dark .glass-modal {
-    background: rgba(15, 23, 42, 0.88);
+    background: rgba(15, 23, 42, 0.92);
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
     border: 1px solid rgba(255, 255, 255, 0.08);
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  }
+
+  /* Bottom-Sheet for Mobile 6.5 inch */
+  @media (max-width: 639px) {
+    .mobile-bottom-sheet {
+      border-bottom-left-radius: 0 !important;
+      border-bottom-right-radius: 0 !important;
+      border-top-left-radius: 32px !important;
+      border-top-right-radius: 32px !important;
+      max-height: 90vh !important;
+    }
   }
 
   /* Glow Effects */

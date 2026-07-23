@@ -7,6 +7,7 @@ import { getOrderById, updateOrderStatus } from "../../api/orderApi";
 import { requestReturn, cancelReturnRequest } from "../../api/orderItemApi";
 import { createVnpayPaymentApi } from "../../api/paymentApi";
 import ReviewModal from "../../components/ReviewComponent/ReviewModal";
+import UnifiedSpinner from "../../components/Loading/UnifiedSpinner";
 import { printInvoice } from "./printInvoice";
 import OrderDetailHeader from "./components/OrderDetailHeader";
 import OrderDetailStepper from "./components/OrderDetailStepper";
@@ -231,7 +232,7 @@ const OrderDetail = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-surface-50 dark:bg-dark-bg gap-4">
-        <div className="size-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+        <UnifiedSpinner size="lg" variant="primary" />
         <p className="text-surface-400 dark:text-dark-text-secondary font-bold uppercase tracking-widest text-[11px]">
           Đang tải chi tiết đơn hàng...
         </p>

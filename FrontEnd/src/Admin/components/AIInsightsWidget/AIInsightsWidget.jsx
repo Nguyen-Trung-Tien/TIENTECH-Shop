@@ -9,6 +9,7 @@ import {
 import { getAIInsights } from "../../../api/adminApi";
 import { motion as Motion, AnimatePresence } from "framer-motion";
 import { toast } from "react-toastify";
+import UnifiedSpinner from "../../../components/Loading/UnifiedSpinner";
 
 const AIInsightsWidget = () => {
   const [insights, setInsights] = useState(null);
@@ -91,8 +92,8 @@ const AIInsightsWidget = () => {
             className="overflow-hidden"
           >
             {loading ? (
-              <div className="p-12 flex flex-col items-center gap-4">
-                <div className="size-8 border-2 border-indigo-600/20 border-t-indigo-600 rounded-full animate-spin"></div>
+              <div className="p-12 flex flex-col items-center justify-center gap-4">
+                <UnifiedSpinner size="md" variant="primary" />
                 <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-dark-text-secondary">
                   Đang phân tích dữ liệu hệ thống...
                 </p>

@@ -573,24 +573,30 @@ const PaymentPage = () => {
         </div>
       </div>
 
-      {/* Modals: Simplified using Framer Motion */}
+      {/* Detail Modal */}
       <AnimatePresence>
         {selectedPayment && (
-          <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[1100] flex items-end sm:items-center justify-center p-0 sm:p-4 print:hidden">
             <Motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setSelectedPayment(null)}
-              className="absolute inset-0 bg-slate-950/40 backdrop-blur-sm print:hidden"
+              className="absolute inset-0 bg-slate-950/60 backdrop-blur-md transition-opacity print:hidden"
             />
             <Motion.div
-              initial={{ scale: 0.9, opacity: 0, y: 20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              className="relative w-full max-w-2xl bg-white dark:bg-dark-surface rounded-[40px] shadow-2xl overflow-hidden border border-slate-100 dark:border-dark-border print:shadow-none print:border-none print:w-full"
+              initial={{ opacity: 0, y: 60, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 60, scale: 0.96 }}
+              transition={{ type: "spring", stiffness: 320, damping: 28 }}
+              className="relative w-full max-w-2xl max-h-[92vh] sm:max-h-[85vh] bg-white dark:bg-dark-surface rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col border border-slate-200/80 dark:border-dark-border print:shadow-none print:border-none print:w-full"
             >
-              <div className="p-8 border-b border-slate-50 dark:border-dark-border flex items-center justify-between">
+              {/* Mobile Drag Indicator Pill */}
+              <div className="flex justify-center pt-3 pb-1 sm:hidden bg-slate-50/80 dark:bg-slate-950/60 print:hidden">
+                <div className="w-12 h-1.5 rounded-full bg-slate-300 dark:bg-slate-700" />
+              </div>
+
+              <div className="p-6 sm:p-8 border-b border-slate-100 dark:border-dark-border flex items-center justify-between">
                 <h3 className="text-xl font-black text-slate-900 dark:text-dark-text-primary tracking-tight">
                   Biên Lai Giao Dịch #
                   {selectedPayment.order?.orderCode || selectedPayment.id}

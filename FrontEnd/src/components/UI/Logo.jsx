@@ -101,9 +101,6 @@ export default function Logo({
             </span>
             <span className="inline-block w-1.5 h-1.5 rounded-full bg-cyan-400 ml-0.5 animate-pulse shadow-xs"></span>
           </div>
-          <span className={`text-[9px] font-extrabold uppercase tracking-[0.25em] ${subtitleColor} mt-0.5 transition-colors`}>
-            AI E-Commerce
-          </span>
         </div>
       )}
     </div>

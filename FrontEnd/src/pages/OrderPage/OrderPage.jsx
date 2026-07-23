@@ -24,6 +24,7 @@ import AppPagination from "../../components/Pagination/Pagination";
 import { statusMap, paymentStatusMap } from "../../utils/StatusMap";
 import { StatusBadge } from "../../utils/StatusBadge";
 import ReviewModal from "../../components/ReviewComponent/ReviewModal";
+import UnifiedSpinner from "../../components/Loading/UnifiedSpinner";
 
 const STATUS_TABS = [
   { key: "all", label: "Tất cả", icon: FiList },
@@ -207,12 +208,15 @@ const OrderPage = () => {
             </Link>
             <button
               onClick={() => fetchOrders(page, activeTab)}
-              className="flex items-center justify-center gap-2 px-4 py-2 bg-white dark:bg-dark-surface border border-slate-200 dark:border-dark-border rounded-xl text-xs font-semibold text-slate-600 dark:text-dark-text-secondary hover:text-primary dark:hover:text-brand hover:border-primary/30 dark:hover:border-brand/30 transition-all shadow-sm group"
+              disabled={loading}
+              className="flex items-center justify-center gap-2 min-h-[38px] px-4 py-2 bg-white dark:bg-dark-surface border border-slate-200 dark:border-dark-border rounded-xl text-xs font-semibold text-slate-600 dark:text-dark-text-secondary hover:text-primary dark:hover:text-brand hover:border-primary/30 dark:hover:border-brand/30 transition-all shadow-sm group active:scale-95 cursor-pointer"
             >
-              <FiRefreshCw
-                className={`${loading ? "animate-spin" : "group-hover:rotate-180"} transition-transform duration-500`}
-              />{" "}
-              Làm mới
+              {loading ? (
+                <UnifiedSpinner size="xs" variant="primary" />
+              ) : (
+                <FiRefreshCw className="group-hover:rotate-180 transition-transform duration-500" />
+              )}
+              <span>Làm mới</span>
             </button>
           </div>
         </div>
@@ -227,7 +231,7 @@ const OrderPage = () => {
                 <button
                   key={tab.key}
                   onClick={() => handleTabSelect(tab.key)}
-                  className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition-all duration-300 ${
+                  className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition-all duration-300 cursor-pointer ${
                     isActive
                       ? "bg-primary dark:bg-brand text-white shadow-md shadow-primary/20 dark:shadow-none"
                       : "text-slate-500 dark:text-dark-text-secondary hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-dark-bg"
@@ -242,13 +246,11 @@ const OrderPage = () => {
         </div>
 
         {loading ? (
-          <div className="space-y-4">
-            {[1, 2, 3].map((i) => (
-              <div
-                key={i}
-                className="h-48 bg-white dark:bg-dark-surface rounded-2xl border border-slate-100 dark:border-dark-border animate-pulse"
-              ></div>
-            ))}
+          <div className="flex flex-col items-center justify-center py-20 bg-white dark:bg-dark-surface rounded-3xl border border-slate-100 dark:border-dark-border gap-4 shadow-sm">
+            <UnifiedSpinner size="lg" variant="primary" />
+            <p className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-dark-text-secondary">
+              Đang tải danh sách đơn hàng...
+            </p>
           </div>
         ) : orders.length === 0 ? (
           <div className="bg-white dark:bg-dark-surface rounded-2xl border border-slate-200/60 dark:border-dark-border p-16 text-center shadow-sm">

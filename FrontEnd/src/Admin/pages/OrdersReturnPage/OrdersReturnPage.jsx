@@ -235,21 +235,27 @@ const OrdersReturnPage = () => {
       {/* Modal Xử lý Trả hàng */}
       <AnimatePresence>
         {modalShow && selectedOrder && (
-          <div className="fixed inset-0 z-[1100] flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[1100] flex items-end sm:items-center justify-center p-0 sm:p-4">
             <Motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setModalShow(false)}
-              className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm"
+              className="absolute inset-0 bg-slate-950/60 backdrop-blur-md transition-opacity"
             />
             <Motion.div
-              initial={{ scale: 0.95, opacity: 0, y: 20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.95, opacity: 0, y: 20 }}
-              className="relative bg-white dark:bg-dark-surface rounded-[2.5rem] shadow-2xl max-w-xl w-full overflow-hidden border border-transparent dark:border-dark-border transition-colors duration-300"
+              initial={{ opacity: 0, y: 60, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 60, scale: 0.96 }}
+              transition={{ type: "spring", stiffness: 320, damping: 28 }}
+              className="relative bg-white dark:bg-dark-surface rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-2xl max-w-xl w-full max-h-[92vh] sm:max-h-[85vh] overflow-hidden border border-slate-200/80 dark:border-dark-border flex flex-col transition-colors duration-300"
             >
-              <div className="p-8 md:p-10">
+              {/* Mobile Drag Indicator Pill */}
+              <div className="flex justify-center pt-3 pb-1 sm:hidden bg-slate-50/80 dark:bg-slate-950/60">
+                <div className="w-12 h-1.5 rounded-full bg-slate-300 dark:bg-slate-700" />
+              </div>
+
+              <div className="p-6 sm:p-8 md:p-10 overflow-y-auto custom-scrollbar">
                 <div className="size-20 bg-indigo-600/10 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 rounded-3xl flex items-center justify-center text-4xl mx-auto mb-8 shadow-inner">
                   <FiRotateCw />
                 </div>

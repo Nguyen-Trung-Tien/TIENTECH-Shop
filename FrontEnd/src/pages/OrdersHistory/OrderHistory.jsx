@@ -20,6 +20,7 @@ import ClickableText from "../../components/ClickableText/ClickableText";
 import Button from "../../components/UI/Button";
 import Badge from "../../components/UI/Badge";
 import ReviewModal from "../../components/ReviewComponent/ReviewModal";
+import UnifiedSpinner from "../../components/Loading/UnifiedSpinner";
 import { toast } from "react-toastify";
 
 const OrderHistoryPage = () => {
@@ -100,9 +101,9 @@ const OrderHistoryPage = () => {
 
         {loading ? (
           <div className="flex flex-col items-center justify-center py-24 gap-4">
-            <div className="size-12 border-4 border-primary dark:border-brand border-t-transparent rounded-full animate-spin"></div>
+            <UnifiedSpinner size="lg" variant="primary" />
             <p className="text-surface-400 dark:text-dark-text-secondary font-bold uppercase tracking-widest text-[11px]">
-              Đang tải dữ liệu...
+              Đang tải danh sách đơn hàng...
             </p>
           </div>
         ) : orders.length === 0 ? (

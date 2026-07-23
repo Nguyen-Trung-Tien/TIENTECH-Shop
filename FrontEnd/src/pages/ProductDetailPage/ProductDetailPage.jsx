@@ -4,6 +4,7 @@ import { useProductDetail } from "../../hooks/useProductDetail";
 import { useProductVariants } from "../../hooks/useProductVariants";
 import { toast } from "react-toastify";
 import { motion as Motion, AnimatePresence } from "framer-motion";
+import UnifiedSpinner from "../../components/Loading/UnifiedSpinner";
 import {
   FiZap,
   FiInfo,
@@ -220,8 +221,8 @@ const ProductDetailPage = () => {
   if (loading)
     return (
       <div className="flex flex-col justify-center items-center h-[70vh] space-y-4">
-        <div className="size-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-        <p className="text-gray-500 font-medium">Đang tải sản phẩm...</p>
+        <UnifiedSpinner size="lg" variant="primary" />
+        <p className="text-gray-500 font-bold uppercase tracking-widest text-xs">Đang tải sản phẩm...</p>
       </div>
     );
 

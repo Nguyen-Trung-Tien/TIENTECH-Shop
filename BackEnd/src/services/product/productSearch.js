@@ -63,7 +63,13 @@ const searchSuggestions = async (query, limit = 8) => {
     };
 
   const productSuggestionsRaw = await db.Product.findAll({
-    where: { isActive: true, name: { [Op.like]: `%${q}%` } },
+    where: {
+      isActive: true,
+      [Op.or]: [
+        { name: { [Op.like]: `%${q}%` } },
+        { sku: { [Op.like]: `%${q}%` } },
+      ],
+    },
     attributes: [
       "id",
       "name",
@@ -198,7 +204,16 @@ const filterProducts = async ({
       if (categoryData.length > 0) conditions.categoryId = { [Op.in]: categoryData.map(c => c.id) };
     }
 
-    if (search && search !== "") conditions.name = { [Op.like]: `%${search}%` };
+    if (search && search !== "") {
+      const searchTrim = search.trim();
+      conditions[Op.or] = [
+        { name: { [Op.like]: `%${searchTrim}%` } },
+        { sku: { [Op.like]: `%${searchTrim}%` } },
+        { description: { [Op.like]: `%${searchTrim}%` } },
+        { "$brand.name$": { [Op.like]: `%${searchTrim}%` } },
+        { "$category.name$": { [Op.like]: `%${searchTrim}%` } },
+      ];
+    }
 
     // Xử lý lọc thuộc tính (Attributes filtering) - Sử dụng Subquery để đảm bảo phép AND giữa các loại
     const filterParams = { ram, rom, screen, battery, os, refresh_rate };

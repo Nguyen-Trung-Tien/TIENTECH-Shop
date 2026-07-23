@@ -16,7 +16,7 @@ import { motion as Motion } from "framer-motion";
 import { loginUser } from "../../api/userApi";
 import { setUser } from "../../redux/userSlice";
 import ForgotPasswordModal from "../../components/ForgotPasswordModal/ForgotPasswordModal";
-import Loading from "../../components/Loading/Loading";
+import UnifiedSpinner from "../../components/Loading/UnifiedSpinner";
 import Logo from "../../components/UI/Logo";
 import { appConfig } from "../../config/runtimeConfig";
 
@@ -125,8 +125,6 @@ const LoginPage = () => {
 
   return (
     <div className="h-screen w-screen bg-slate-100 dark:bg-slate-950 flex items-center justify-center p-4 overflow-hidden fixed inset-0">
-      {loading && <Loading />}
-
       <div className="w-full max-w-4xl h-fit max-h-[92vh] grid grid-cols-1 lg:grid-cols-12 bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-2xl border border-slate-200/60 dark:border-slate-800 overflow-hidden">
         {/* Left Side - Visual Banner */}
         <div className="hidden lg:flex lg:col-span-5 relative bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 items-center justify-center p-8 overflow-hidden">
@@ -223,7 +221,10 @@ const LoginPage = () => {
                 className="w-full h-12 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-black text-xs uppercase tracking-wider rounded-2xl shadow-lg shadow-blue-500/25 transition-all active:scale-[0.98] disabled:opacity-70 cursor-pointer flex items-center justify-center gap-2"
               >
                 {loading ? (
-                  <div className="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  <>
+                    <UnifiedSpinner size="xs" variant="white" />
+                    <span>ĐANG XÁC THỰC...</span>
+                  </>
                 ) : (
                   <>
                     <FiUser className="text-base" />

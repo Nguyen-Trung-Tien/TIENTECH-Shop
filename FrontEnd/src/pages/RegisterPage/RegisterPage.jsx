@@ -16,6 +16,7 @@ import { FcGoogle } from "react-icons/fc";
 
 import { registerUser } from "../../api/userApi";
 import Loading from "../../components/Loading/Loading";
+import UnifiedSpinner from "../../components/Loading/UnifiedSpinner";
 import Logo from "../../components/UI/Logo";
 import { appConfig } from "../../config/runtimeConfig";
 
@@ -247,7 +248,10 @@ const RegisterPage = () => {
                 className="w-full h-12 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-black text-xs uppercase tracking-wider rounded-2xl shadow-lg shadow-blue-500/25 transition-all active:scale-[0.98] disabled:opacity-70 mt-2 cursor-pointer flex items-center justify-center gap-2"
               >
                 {loading ? (
-                  <div className="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  <>
+                    <UnifiedSpinner size="xs" variant="white" />
+                    <span>ĐANG KHỞI TẠO TÀI KHOẢN...</span>
+                  </>
                 ) : (
                   <>
                     <FiUserPlus className="text-base" />

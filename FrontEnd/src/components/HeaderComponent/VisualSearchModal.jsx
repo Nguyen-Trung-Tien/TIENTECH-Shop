@@ -4,6 +4,7 @@ import { motion as Motion, AnimatePresence } from "framer-motion";
 import { visualSearch } from "../../api/chatApi";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import UnifiedSpinner from "../Loading/UnifiedSpinner";
 
 export default function VisualSearchModal({ isOpen, onClose }) {
   const [isSearching, setIsSearching] = useState(false);
@@ -112,11 +113,7 @@ export default function VisualSearchModal({ isOpen, onClose }) {
                 
                 {isSearching ? (
                   <div className="text-center flex flex-col items-center justify-center gap-4">
-                    <div className="size-16 rounded-full bg-white dark:bg-dark-surface shadow-xl shadow-indigo-200 dark:shadow-none flex items-center justify-center relative">
-                      <div className="absolute inset-0 rounded-full border-4 border-indigo-100 dark:border-indigo-900/30"></div>
-                      <div className="absolute inset-0 rounded-full border-4 border-indigo-600 border-t-transparent animate-spin"></div>
-                      <FiCamera className="text-indigo-600 text-xl animate-pulse" />
-                    </div>
+                    <UnifiedSpinner size="lg" variant="primary" />
                     <div>
                       <p className="text-sm font-black text-slate-900 dark:text-white">AI đang phân tích ảnh...</p>
                       <p className="text-[11px] font-bold text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest mt-1">Vui lòng chờ trong giây lát</p>

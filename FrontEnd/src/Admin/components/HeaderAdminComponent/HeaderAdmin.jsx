@@ -25,6 +25,7 @@ import { useCurrentUser } from "../../../hooks/useUser";
 import logoImage from "../../../assets/logo.png";
 import Logo from "../../../components/UI/Logo";
 import NotificationBell from "../../../components/HeaderComponent/NotificationBell";
+import UnifiedSpinner from "../../../components/Loading/UnifiedSpinner";
 import debounce from "lodash/debounce";
 import { m as Motion, AnimatePresence } from "framer-motion";
 
@@ -207,8 +208,8 @@ const HeaderAdmin = ({ toggleSidebar, isCollapsed, theme, toggleTheme }) => {
                 className="absolute top-full left-0 mt-3 w-[450px] bg-white dark:bg-dark-surface rounded-2xl shadow-2xl border border-slate-100 dark:border-dark-border overflow-hidden z-50 p-2"
               >
                 {isLoading ? (
-                  <div className="py-8 text-center space-y-2">
-                    <div className="inline-block size-6 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                  <div className="py-8 text-center flex flex-col items-center justify-center gap-2">
+                    <UnifiedSpinner size="sm" variant="primary" />
                     <p className="text-xs text-slate-500 dark:text-dark-text-secondary font-medium italic">
                       Đang tìm kiếm hệ thống...
                     </p>
@@ -468,10 +469,19 @@ const HeaderAdmin = ({ toggleSidebar, isCollapsed, theme, toggleTheme }) => {
                 <button
                   onClick={handleLogout}
                   disabled={loggingOut}
-                  className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-all"
+                  className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-bold text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-all disabled:opacity-60 cursor-pointer"
                 >
-                  <FiLogOut className="text-lg" />
-                  {loggingOut ? "Đang xử lý..." : "Đăng xuất"}
+                  {loggingOut ? (
+                    <>
+                      <UnifiedSpinner size="xs" variant="danger" />
+                      <span>ĐANG ĐĂNG XUẤT...</span>
+                    </>
+                  ) : (
+                    <>
+                      <FiLogOut className="text-lg" />
+                      <span>Đăng xuất</span>
+                    </>
+                  )}
                 </button>
               </div>
             </>

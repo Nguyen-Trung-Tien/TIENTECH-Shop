@@ -6,6 +6,7 @@ import ChartCard from "../../components/ChartCardComponent/ChartCard";
 import AIInsightsWidget from "../../components/AIInsightsWidget/AIInsightsWidget";
 import { getDashboard, exportRevenue } from "../../../api/adminApi";
 import { toast } from "react-toastify";
+import UnifiedSpinner from "../../../components/Loading/UnifiedSpinner";
 
 const Dashboard = () => {
   const [loading, setLoading] = useState(true);
@@ -144,9 +145,16 @@ const Dashboard = () => {
           <button
             onClick={handleExport}
             disabled={exporting}
-            className="px-6 py-2.5 bg-white dark:bg-dark-surface border border-slate-200 dark:border-dark-border rounded-2xl text-xs font-black uppercase tracking-widest text-slate-600 dark:text-dark-text-secondary hover:border-primary hover:text-primary transition-all shadow-sm disabled:opacity-50 cursor-pointer"
+            className="px-6 py-2.5 bg-white dark:bg-dark-surface border border-slate-200 dark:border-dark-border rounded-2xl text-xs font-black uppercase tracking-widest text-slate-600 dark:text-dark-text-secondary hover:border-primary hover:text-primary transition-all shadow-sm disabled:opacity-50 cursor-pointer flex items-center gap-2"
           >
-            {exporting ? "Đang xử lý..." : "Xuất báo cáo"}
+            {exporting ? (
+              <>
+                <UnifiedSpinner size="xs" variant="primary" />
+                <span>Đang xuất...</span>
+              </>
+            ) : (
+              "Xuất báo cáo"
+            )}
           </button>
           <Link
             to="/admin/products"
@@ -158,8 +166,8 @@ const Dashboard = () => {
       </div>
 
       {loading ? (
-        <div className="flex flex-col items-center justify-center py-32 bg-white dark:bg-dark-surface rounded-[40px] border border-slate-100 dark:border-dark-border shadow-soft">
-          <div className="size-16 border-4 border-primary/10 dark:border-primary/20 border-t-primary rounded-full animate-spin mb-6"></div>
+        <div className="flex flex-col items-center justify-center py-32 bg-white dark:bg-dark-surface rounded-[40px] border border-slate-100 dark:border-dark-border shadow-soft gap-4">
+          <UnifiedSpinner size="xl" variant="primary" />
           <p className="text-slate-400 dark:text-dark-text-secondary font-black text-[10px] tracking-[0.2em] uppercase">
             Đang đồng bộ dữ liệu...
           </p>

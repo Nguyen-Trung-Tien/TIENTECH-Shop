@@ -813,34 +813,41 @@ const ProductManage = () => {
 
       <AnimatePresence>
         {showModal && (
-          <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[1000] flex items-end sm:items-center justify-center p-0 sm:p-4 md:p-6">
             <Motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={handleCloseModal}
-              className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+              className="absolute inset-0 bg-slate-950/60 backdrop-blur-md transition-opacity"
             />
             <Motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-6xl max-h-[95vh] bg-white dark:bg-dark-surface rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col border border-transparent dark:border-dark-border transition-colors duration-300"
+              initial={{ opacity: 0, y: 60, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 60, scale: 0.96 }}
+              transition={{ type: "spring", stiffness: 320, damping: 28 }}
+              className="relative w-full max-w-5xl max-h-[92vh] sm:max-h-[88vh] bg-white dark:bg-dark-surface rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col border border-slate-200/80 dark:border-dark-border transition-colors duration-300"
             >
-              <div className="px-10 py-7 border-b border-slate-100 dark:border-dark-border flex items-center justify-between bg-slate-50/50 dark:bg-dark-bg/50">
+              {/* Mobile Drag Indicator Pill */}
+              <div className="flex justify-center pt-3 pb-1 sm:hidden bg-slate-50/80 dark:bg-slate-950/60">
+                <div className="w-12 h-1.5 rounded-full bg-slate-300 dark:bg-slate-700" />
+              </div>
+
+              <div className="px-6 sm:px-10 py-5 sm:py-7 border-b border-slate-100 dark:border-dark-border flex items-center justify-between bg-slate-50/50 dark:bg-dark-bg/50">
                 <div>
-                  <h3 className="text-2xl font-black text-slate-900 dark:text-white">
+                  <h3 className="text-lg sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
                     {editProduct ? "Sửa sản phẩm" : "Đăng sản phẩm mới"}
                   </h3>
-                  <p className="text-[11px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest mt-1">
+                  <p className="text-[10px] sm:text-[11px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest mt-0.5">
                     Cấu hình chi tiết & Thông số kỹ thuật chuyên sâu
                   </p>
                 </div>
                 <button
+                  type="button"
                   onClick={handleCloseModal}
-                  className="size-12 rounded-2xl flex items-center justify-center text-slate-400 hover:bg-white dark:hover:bg-dark-bg hover:text-slate-900 dark:hover:text-white hover:shadow-xl transition-all"
+                  className="size-10 sm:size-12 rounded-2xl flex items-center justify-center text-slate-400 hover:bg-white dark:hover:bg-dark-bg hover:text-slate-900 dark:hover:text-white transition-all cursor-pointer border border-slate-200/50 dark:border-dark-border shrink-0 active:scale-95"
                 >
-                  <FiX className="text-2xl" />
+                  <FiX className="text-xl sm:text-2xl" />
                 </button>
               </div>
 

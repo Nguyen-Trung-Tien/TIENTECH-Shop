@@ -18,8 +18,8 @@ import ProductCard from "../ProductCard/ProductCard";
 import FengShuiChat from "../ChatBot/FengShui";
 import AppPagination from "../Pagination/Pagination";
 import { motion as Motion, AnimatePresence } from "framer-motion";
-
 import Button from "../UI/Button";
+import UnifiedSpinner from "../Loading/UnifiedSpinner";
 
 const FortuneProducts = () => {
   const [birthYear, setBirthYear] = useState("");
@@ -380,7 +380,7 @@ const FortuneProducts = () => {
             <div className="min-h-[500px]">
               {loading ? (
                 <div className="flex flex-col items-center justify-center py-40 gap-6">
-                  <div className="size-14 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                  <UnifiedSpinner size="lg" variant="primary" />
                   <p className="text-slate-400 font-black uppercase tracking-widest text-[11px]">
                     Đang truy vấn thiên cơ...
                   </p>

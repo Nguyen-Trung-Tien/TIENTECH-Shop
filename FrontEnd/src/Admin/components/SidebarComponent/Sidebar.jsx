@@ -23,6 +23,7 @@ import { motion as Motion, AnimatePresence } from "framer-motion";
 
 import logoImage from "../../../assets/logo.png";
 import Logo from "../../../components/UI/Logo";
+import UnifiedSpinner from "../../../components/Loading/UnifiedSpinner";
 
 const MENU_ITEMS = [
   { to: "/admin/dashboard", icon: <FiHome />, label: "Dashboard" },
@@ -259,15 +260,19 @@ const Sidebar = ({ collapsed }) => {
         <button
           onClick={handleLogout}
           disabled={loggingOut}
-          className={`flex items-center gap-3 px-3 py-3 w-full rounded-xl text-slate-500 dark:text-dark-text-secondary hover:bg-rose-50 dark:hover:bg-rose-500/10 hover:text-rose-600 dark:hover:text-rose-400 transition-all duration-200 group ${
+          className={`flex items-center gap-3 px-3 py-3 w-full rounded-xl text-slate-500 dark:text-dark-text-secondary hover:bg-rose-50 dark:hover:bg-rose-500/10 hover:text-rose-600 dark:hover:text-rose-400 transition-all duration-200 group disabled:opacity-60 cursor-pointer ${
             collapsed ? "justify-center" : ""
           }`}
           title={collapsed ? "Đăng xuất" : ""}
         >
-          <FiLogOut className="text-lg flex-shrink-0 group-hover:-translate-x-1 transition-transform" />
+          {loggingOut ? (
+            <UnifiedSpinner size="xs" variant="danger" />
+          ) : (
+            <FiLogOut className="text-lg flex-shrink-0 group-hover:-translate-x-1 transition-transform" />
+          )}
           {!collapsed && (
             <span className="text-sm font-bold whitespace-nowrap overflow-hidden">
-              {loggingOut ? "Đang xử lý..." : "Đăng xuất"}
+              {loggingOut ? "Đang đăng xuất..." : "Đăng xuất"}
             </span>
           )}
         </button>

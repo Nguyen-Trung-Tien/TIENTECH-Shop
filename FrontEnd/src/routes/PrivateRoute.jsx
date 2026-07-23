@@ -1,9 +1,9 @@
 import React, { useEffect } from "react";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { FiRefreshCw } from "react-icons/fi";
 import { getMeApi } from "../api/userApi";
 import { setUser, removeUser, setInitializing } from "../redux/userSlice";
+import UnifiedSpinner from "../components/Loading/UnifiedSpinner";
 
 const PrivateRoute = ({ requiredRole }) => {
   const { user, isAuthenticated, isInitializing } = useSelector(
@@ -38,10 +38,10 @@ const PrivateRoute = ({ requiredRole }) => {
 
   if (isInitializing) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-surface-50">
-        <div className="flex flex-col items-center gap-4 p-8 bg-white rounded-3xl shadow-soft border border-surface-100">
-          <FiRefreshCw className="animate-spin text-4xl text-primary" />
-          <p className="text-sm font-bold text-surface-600 uppercase tracking-widest">
+      <div className="flex flex-col items-center justify-center min-h-screen bg-slate-50 dark:bg-slate-950">
+        <div className="flex flex-col items-center gap-4 p-8 bg-white dark:bg-slate-900 rounded-3xl shadow-soft border border-slate-100 dark:border-slate-800">
+          <UnifiedSpinner size="xl" variant="primary" />
+          <p className="text-xs font-black text-slate-600 dark:text-slate-300 uppercase tracking-widest mt-2">
             Đang xác thực phiên đăng nhập...
           </p>
         </div>

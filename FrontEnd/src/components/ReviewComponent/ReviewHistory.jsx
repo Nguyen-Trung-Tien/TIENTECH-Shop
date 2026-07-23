@@ -22,6 +22,7 @@ import Pagination from "../Pagination/Pagination";
 import Button from "../UI/Button";
 import ReviewForm from "./ReviewForm";
 import { ConfirmModal } from "../UI/Modal";
+import UnifiedSpinner from "../Loading/UnifiedSpinner";
 
 const ReviewHistory = () => {
   const [activeTab, setActiveTab] = useState("pending"); // "pending" or "history"
@@ -152,8 +153,8 @@ const ReviewHistory = () => {
       </div>
 
       {loading ? (
-        <div className="py-24 text-center">
-          <div className="size-12 border-4 border-primary dark:border-brand border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
+        <div className="py-24 text-center flex flex-col items-center justify-center gap-4">
+          <UnifiedSpinner size="lg" variant="primary" />
           <p className="text-slate-400 dark:text-dark-text-secondary text-[10px] font-black uppercase tracking-[0.3em]">
             Đang tải dữ liệu...
           </p>

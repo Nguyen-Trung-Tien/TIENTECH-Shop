@@ -8,6 +8,7 @@ import {
 } from "react-icons/fi";
 import { getRevenueForecastApi } from "../../../api/adminApi";
 import { motion as Motion, AnimatePresence } from "framer-motion";
+import UnifiedSpinner from "../../../components/Loading/UnifiedSpinner";
 import {
   AreaChart,
   Area,
@@ -115,8 +116,8 @@ const RevenueForecastWidget = () => {
             className="overflow-hidden"
           >
             {loading ? (
-              <div className="p-12 flex flex-col items-center gap-4">
-                <div className="size-8 border-2 border-emerald-600/20 border-t-emerald-600 rounded-full animate-spin"></div>
+              <div className="p-12 flex flex-col items-center justify-center gap-4">
+                <UnifiedSpinner size="md" variant="primary" />
                 <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-dark-text-secondary">
                   Đang chạy mô hình dự báo...
                 </p>

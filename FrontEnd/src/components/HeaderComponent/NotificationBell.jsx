@@ -9,18 +9,22 @@ import { io } from "socket.io-client";
 import { useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { appConfig } from "../../config/runtimeConfig";
+import UnifiedSpinner from "../Loading/UnifiedSpinner";
+import { toast } from "react-toastify";
 
 const NotificationBell = () => {
   const navigate = useNavigate();
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [loading, setLoading] = useState(false);
   const dropdownRef = useRef(null);
   const user = useSelector((state) => state.user.user);
 
   const fetchNotifications = async () => {
     if (!user) return;
     try {
+      setLoading(true);
       const res = await getNotificationsApi(1, 10);
       if (res.errCode === 0) {
         setNotifications(res.data);
@@ -28,6 +32,8 @@ const NotificationBell = () => {
       }
     } catch (error) {
       console.error(error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -135,7 +141,14 @@ const NotificationBell = () => {
           </div>
 
           <div className="max-h-[350px] overflow-y-auto">
-            {notifications.length > 0 ? (
+            {loading && notifications.length === 0 ? (
+              <div className="p-8 text-center flex flex-col items-center justify-center gap-3">
+                <UnifiedSpinner size="sm" variant="primary" />
+                <p className="text-[10px] font-bold text-surface-400 uppercase tracking-widest">
+                  Đang tải thông báo...
+                </p>
+              </div>
+            ) : notifications.length > 0 ? (
               notifications.map((n) => (
                 <div
                   key={n.id}
@@ -185,7 +198,8 @@ const NotificationBell = () => {
           {notifications.length > 0 && (
             <Link
               to="/notifications"
-              className="block p-3 text-center text-[10px] font-black text-surface-400 uppercase tracking-[0.2em] hover:text-primary dark:hover:text-brand border-t border-surface-50 dark:border-dark-border transition-colors"
+              onClick={() => setShowDropdown(false)}
+              className="block p-3.5 text-center text-[10px] font-black text-slate-500 dark:text-dark-text-secondary uppercase tracking-[0.2em] hover:text-primary dark:hover:text-brand border-t border-surface-50 dark:border-dark-border transition-colors hover:bg-slate-50 dark:hover:bg-dark-bg"
             >
               Xem tất cả thông báo
             </Link>

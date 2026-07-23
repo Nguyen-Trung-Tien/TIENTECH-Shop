@@ -10,6 +10,7 @@ import {
   FiEyeOff,
 } from "react-icons/fi";
 import { Modal, Button } from "../UI";
+import UnifiedSpinner from "../Loading/UnifiedSpinner";
 import {
   forgotPasswordApi,
   resetPasswordApi,
@@ -236,19 +237,24 @@ const ForgotPasswordModal = ({ show, onClose }) => {
                 ? handleVerifyToken
                 : handleResetPassword
           }
-          className={`flex-[2] py-3.5 px-6 text-white rounded-xl text-xs font-black uppercase tracking-wider shadow-lg transition-all cursor-pointer active:scale-98 ${
+          className={`flex-[2] py-3.5 px-6 text-white rounded-xl text-xs font-black uppercase tracking-wider shadow-lg transition-all cursor-pointer flex items-center justify-center gap-2 active:scale-98 ${
             step === 3
               ? "bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700"
               : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
           }`}
         >
-          {loading
-            ? "Đang xử lý..."
-            : step === 1
-              ? "Gửi mã xác nhận"
-              : step === 2
-                ? "Xác thực mã"
-                : "Đổi mật khẩu"}
+          {loading ? (
+            <>
+              <UnifiedSpinner size="xs" variant="white" />
+              <span>Đang xử lý...</span>
+            </>
+          ) : step === 1 ? (
+            "Gửi mã xác nhận"
+          ) : step === 2 ? (
+            "Xác thực mã"
+          ) : (
+            "Đổi mật khẩu"
+          )}
         </button>
       </div>
     </Modal>

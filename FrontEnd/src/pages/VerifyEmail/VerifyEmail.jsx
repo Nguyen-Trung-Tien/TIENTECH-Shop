@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import { verifyEmailApi, resendVerificationApi } from "../../api/userApi";
 import { toast } from "react-toastify";
-import { CheckCircle, XCircle, Loader2, Mail } from "lucide-react";
+import { CheckCircle, XCircle, Mail } from "lucide-react";
+import UnifiedSpinner from "../../components/Loading/UnifiedSpinner";
 
 const VerifyEmail = () => {
   const [searchParams] = useSearchParams();
@@ -73,7 +74,7 @@ const VerifyEmail = () => {
       <div className="max-width-md w-full bg-white dark:bg-dark-card rounded-2xl shadow-xl p-8 text-center border border-gray-100 dark:border-gray-800">
         <div className="flex justify-center mb-6">
           {status === "verifying" && (
-            <Loader2 className="size-16 text-blue-500 animate-spin" />
+            <UnifiedSpinner size="xl" variant="primary" />
           )}
           {status === "success" && (
             <CheckCircle className="size-16 text-green-500" />
@@ -107,7 +108,7 @@ const VerifyEmail = () => {
                 className="flex items-center justify-center w-full py-3 px-4 bg-white border border-gray-300 dark:border-gray-600 dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 font-semibold rounded-lg transition-colors disabled:opacity-50 cursor-pointer"
               >
                 {isResending ? (
-                  <Loader2 className="size-5 mr-2 animate-spin" />
+                  <UnifiedSpinner size="xs" variant="primary" className="mr-2" />
                 ) : (
                   <Mail className="size-5 mr-2" />
                 )}

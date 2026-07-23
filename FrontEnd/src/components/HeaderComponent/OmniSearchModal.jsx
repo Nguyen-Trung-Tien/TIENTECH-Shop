@@ -17,6 +17,7 @@ import {
 import { searchSuggestionsApi } from "../../api/productApi";
 import { debounce } from "lodash";
 import { toast } from "react-toastify";
+import UnifiedSpinner from "../Loading/UnifiedSpinner";
 
 const TRENDING_KEYWORDS = [
   "iPhone 15 Pro",
@@ -98,11 +99,12 @@ export default function OmniSearchModal({
         setLoading(true);
         const res = await searchSuggestionsApi(searchQuery);
         if (res?.errCode === 0) {
+          const suggestData = res.suggestions || res.data || {};
           setSuggestions({
-            products: res.data?.products || [],
-            keywords: res.data?.keywords || [],
-            brands: res.data?.brands || [],
-            categories: res.data?.categories || [],
+            products: suggestData.products || [],
+            keywords: suggestData.keywords || [],
+            brands: suggestData.brands || [],
+            categories: suggestData.categories || [],
           });
         }
       } catch (err) {
@@ -132,7 +134,7 @@ export default function OmniSearchModal({
   const executeSearch = (searchTerm) => {
     saveToHistory(searchTerm);
     onClose();
-    navigate(`/products?search=${encodeURIComponent(searchTerm)}`);
+    navigate(`/product-list?search=${encodeURIComponent(searchTerm)}`);
   };
 
   const handleFormSubmit = (e) => {
@@ -188,304 +190,313 @@ export default function OmniSearchModal({
     localStorage.removeItem("recent_searches");
   };
 
-  if (!isOpen) return null;
-
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-start justify-center pt-16 px-4 sm:px-6">
-        {/* Backdrop */}
-        <Motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          onClick={onClose}
-          className="fixed inset-0 bg-slate-900/60 backdrop-blur-md transition-opacity"
-        />
+      {isOpen && (
+        <div className="fixed inset-0 z-[1000] flex items-start justify-center pt-12 md:pt-20 px-4 sm:px-6">
+          {/* Backdrop */}
+          <Motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            className="fixed inset-0 bg-slate-950/60 backdrop-blur-md transition-opacity"
+          />
 
-        {/* Modal Window */}
-        <Motion.div
-          initial={{ opacity: 0, scale: 0.95, y: -20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: -20 }}
-          transition={{ duration: 0.2, ease: "easeOut" }}
-          className="relative w-full max-w-3xl glass-modal rounded-2xl shadow-2xl overflow-hidden z-10 border border-white/20 dark:border-slate-800"
-        >
-          {/* Top Search Bar Input Area */}
-          <form
-            onSubmit={handleFormSubmit}
-            className="relative flex items-center px-4 py-3.5 border-b border-slate-200/80 dark:border-slate-800 bg-white/70 dark:bg-slate-900/70"
+          {/* Modal Window */}
+          <Motion.div
+            initial={{ opacity: 0, scale: 0.95, y: -20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: -20 }}
+            transition={{ duration: 0.25, ease: "easeOut" }}
+            className="relative w-full max-w-3xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl rounded-[2.5rem] shadow-2xl overflow-hidden z-10 border border-slate-200/80 dark:border-slate-800"
           >
-            <FiSearch className="w-5 h-5 text-primary dark:text-primary-light shrink-0 ml-1" />
+            {/* Top Search Bar Input Area */}
+            <form
+              onSubmit={handleFormSubmit}
+              className="relative flex items-center px-5 py-4 border-b border-slate-100 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80"
+            >
+              <FiSearch className="w-5 h-5 text-blue-600 dark:text-blue-400 shrink-0 ml-1" />
 
-            <input
-              ref={inputRef}
-              type="text"
-              value={query}
-              onChange={handleInputChange}
-              placeholder="Tìm sản phẩm, thương hiệu, danh mục... (Nhấn Enter để tìm)"
-              className="w-full pl-3 pr-24 py-1.5 text-base bg-transparent text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none"
-            />
+              <input
+                ref={inputRef}
+                type="text"
+                value={query}
+                onChange={handleInputChange}
+                placeholder="Tìm sản phẩm, thương hiệu, danh mục... (Nhấn Enter để tìm)"
+                className="w-full pl-3 pr-28 py-1.5 text-sm md:text-base font-bold bg-transparent text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none"
+              />
 
-            {/* Action Tools: Voice Search, Camera (Visual Search), Clear */}
-            <div className="flex items-center gap-1.5 shrink-0 pr-1">
-              {query && (
+              {/* Action Tools: Clear, Voice Search, Camera */}
+              <div className="flex items-center gap-2 shrink-0 pr-1">
+                {query && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setQuery("");
+                      setSuggestions({ products: [], keywords: [], brands: [], categories: [] });
+                    }}
+                    className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-white rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+                    title="Xóa từ khóa"
+                  >
+                    <FiX className="w-4 h-4" />
+                  </button>
+                )}
+
+                {/* Voice Search Button */}
+                <button
+                  type="button"
+                  onClick={toggleVoiceSearch}
+                  className={`p-2 rounded-xl transition cursor-pointer ${
+                    isListening
+                      ? "bg-rose-500 text-white animate-pulse"
+                      : "text-slate-500 hover:text-blue-600 hover:bg-slate-100 dark:hover:bg-slate-800 dark:text-slate-400"
+                  }`}
+                  title={isListening ? "Đang nghe..." : "Tìm kiếm bằng giọng nói"}
+                >
+                  {isListening ? (
+                    <FiMicOff className="w-4 h-4" />
+                  ) : (
+                    <FiMic className="w-4 h-4" />
+                  )}
+                </button>
+
+                {/* Visual Search Button */}
                 <button
                   type="button"
                   onClick={() => {
-                    setQuery("");
-                    setSuggestions({ products: [], keywords: [], brands: [], categories: [] });
+                    onClose();
+                    if (onOpenVisualSearch) onOpenVisualSearch();
                   }}
-                  className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition"
-                  title="Xóa tìm kiếm"
+                  className="p-2 text-slate-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-slate-800 dark:text-slate-400 rounded-xl transition cursor-pointer"
+                  title="Tìm kiếm bằng hình ảnh Camera AI"
                 >
-                  <FiX className="w-4 h-4" />
+                  <FiCamera className="w-4 h-4" />
                 </button>
+              </div>
+            </form>
+
+            {/* Body Content Area */}
+            <div className="max-h-[60vh] md:max-h-[65vh] overflow-y-auto p-5 space-y-6 custom-scrollbar">
+              {/* Loading Indicator */}
+              {loading && (
+                <div className="flex items-center justify-center py-10 text-xs font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 gap-3">
+                  <UnifiedSpinner size="sm" variant="primary" />
+                  <span>Đang truy vấn kho dữ liệu...</span>
+                </div>
               )}
 
-              {/* Voice Search Button */}
-              <button
-                type="button"
-                onClick={toggleVoiceSearch}
-                className={`p-2 rounded-lg transition ${
-                  isListening
-                    ? "bg-red-500 text-white animate-pulse"
-                    : "text-slate-500 hover:text-primary hover:bg-slate-100 dark:hover:bg-slate-800 dark:text-slate-400"
-                }`}
-                title={isListening ? "Đang nghe..." : "Tìm kiếm bằng giọng nói"}
-              >
-                {isListening ? (
-                  <FiMicOff className="w-4 h-4" />
-                ) : (
-                  <FiMic className="w-4 h-4" />
-                )}
-              </button>
-
-              {/* Visual Search Button */}
-              <button
-                type="button"
-                onClick={() => {
-                  onClose();
-                  if (onOpenVisualSearch) onOpenVisualSearch();
-                }}
-                className="p-2 text-slate-500 hover:text-primary hover:bg-slate-100 dark:hover:bg-slate-800 dark:text-slate-400 rounded-lg transition flex items-center gap-1"
-                title="Tìm kiếm bằng hình ảnh (AI Vision)"
-              >
-                <FiCamera className="w-4 h-4" />
-                <span className="hidden sm:inline text-xs font-medium text-primary">
-                  Vision AI
-                </span>
-              </button>
-            </div>
-          </form>
-
-          {/* Body Content Area */}
-          <div className="max-h-[65vh] overflow-y-auto p-4 space-y-5 custom-scrollbar">
-            {/* Loading Indicator */}
-            {loading && (
-              <div className="flex items-center justify-center py-6 text-sm text-slate-500 gap-2">
-                <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                Đang tìm kiếm dữ liệu sản phẩm...
-              </div>
-            )}
-
-            {/* Results when searching */}
-            {query.trim() && !loading && (
-              <>
-                {/* Direct Product Match */}
-                {suggestions.products.length > 0 && (
-                  <div>
-                    <div className="flex items-center justify-between text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
-                      <span>Sản Phẩm Gợi Ý ({suggestions.products.length})</span>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      {suggestions.products.map((item) => (
-                        <div
-                          key={item.id}
-                          onClick={() => {
-                            saveToHistory(item.name);
-                            onClose();
-                            navigate(`/product/${item.slug || item.id}`);
-                          }}
-                          className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-slate-100/80 dark:hover:bg-slate-800/80 cursor-pointer transition border border-transparent hover:border-slate-200 dark:hover:border-slate-700 group"
-                        >
-                          <img
-                            src={item.thumbnail || item.image || "/images/placeholder.png"}
-                            alt={item.name}
-                            className="w-12 h-12 object-cover rounded-lg bg-slate-100 dark:bg-slate-800 shrink-0"
-                          />
-                          <div className="flex-1 min-w-0">
-                            <h4 className="text-sm font-medium text-slate-900 dark:text-slate-100 truncate group-hover:text-primary transition">
-                              {item.name}
-                            </h4>
-                            <p className="text-xs font-semibold text-rose-500 dark:text-rose-400">
-                              {item.price ? `${Number(item.price).toLocaleString("vi-VN")} đ` : "Liên hệ"}
-                            </p>
+              {/* Results when searching */}
+              {query.trim() && !loading && (
+                <>
+                  {/* Direct Product Match */}
+                  {suggestions.products.length > 0 && (
+                    <div>
+                      <div className="flex items-center justify-between text-[11px] font-black text-slate-400 uppercase tracking-widest mb-3 px-1">
+                        <span>Sản Phẩm Gợi Ý ({suggestions.products.length})</span>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {suggestions.products.map((item) => (
+                          <div
+                            key={item.id}
+                            onClick={() => {
+                              saveToHistory(item.name);
+                              onClose();
+                              navigate(`/product-detail/${item.slug || item.id}`);
+                            }}
+                            className="flex items-center gap-3.5 p-3 rounded-2xl bg-slate-50/80 dark:bg-slate-800/40 hover:bg-blue-50/80 dark:hover:bg-slate-800/90 border border-slate-100 dark:border-slate-800 hover:border-blue-200 dark:hover:border-blue-900/50 cursor-pointer transition-all duration-300 group shadow-xs"
+                          >
+                            <div className="size-14 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-700/50 p-1.5 shrink-0 group-hover:scale-105 transition-transform">
+                              <img
+                                src={item.thumbnail || item.image || "/images/placeholder.png"}
+                                alt={item.name}
+                                className="w-full h-full object-contain"
+                              />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <h4 className="text-xs font-bold text-slate-900 dark:text-white truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                                {item.name}
+                              </h4>
+                              <div className="flex items-center gap-2 mt-1">
+                                <span className="text-xs font-black text-blue-600 dark:text-blue-400">
+                                  {item.price ? `${Number(item.price).toLocaleString("vi-VN")}đ` : "Liên hệ"}
+                                </span>
+                                {item.isFlashSale && (
+                                  <span className="px-1.5 py-0.5 bg-rose-500 text-white text-[9px] font-black rounded uppercase">
+                                    FLASH SALE
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            <FiArrowRight className="w-4 h-4 text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0" />
                           </div>
-                          <FiArrowRight className="w-4 h-4 text-slate-400 group-hover:text-primary opacity-0 group-hover:opacity-100 transition" />
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Categories & Brands matching */}
-                {(suggestions.categories.length > 0 || suggestions.brands.length > 0) && (
-                  <div className="grid grid-cols-2 gap-4">
-                    {suggestions.categories.length > 0 && (
-                      <div>
-                        <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
-                          Danh mục liên quan
-                        </div>
-                        <div className="flex flex-wrap gap-1.5">
-                          {suggestions.categories.map((cat) => (
-                            <button
-                              key={cat.id}
-                              onClick={() => executeSearch(cat.name)}
-                              className="px-2.5 py-1 text-xs rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-primary hover:text-white dark:hover:bg-primary transition"
-                            >
-                              {cat.name}
-                            </button>
-                          ))}
-                        </div>
+                        ))}
                       </div>
-                    )}
-
-                    {suggestions.brands.length > 0 && (
-                      <div>
-                        <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
-                          Thương hiệu
-                        </div>
-                        <div className="flex flex-wrap gap-1.5">
-                          {suggestions.brands.map((brand) => (
-                            <button
-                              key={brand.id}
-                              onClick={() => executeSearch(brand.name)}
-                              className="px-2.5 py-1 text-xs rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-primary hover:text-white dark:hover:bg-primary transition"
-                            >
-                              {brand.name}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* No results state */}
-                {suggestions.products.length === 0 &&
-                  suggestions.categories.length === 0 &&
-                  suggestions.brands.length === 0 && (
-                    <div className="text-center py-8 text-slate-500">
-                      <p className="text-sm">Không tìm thấy kết quả phù hợp cho "{query}"</p>
-                      <button
-                        type="button"
-                        onClick={() => executeSearch(query)}
-                        className="mt-3 inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-primary rounded-xl hover:bg-primary-hover transition"
-                      >
-                        Tìm tất cả kết quả với từ khóa này <FiCornerDownLeft />
-                      </button>
                     </div>
                   )}
-              </>
-            )}
 
-            {/* Default State (When query is empty) */}
-            {!query.trim() && (
-              <>
-                {/* Recent Searches */}
-                {history.length > 0 && (
+                  {/* Categories & Brands matching */}
+                  {(suggestions.categories.length > 0 || suggestions.brands.length > 0) && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {suggestions.categories.length > 0 && (
+                        <div>
+                          <div className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2.5 px-1">
+                            Danh mục liên quan
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            {suggestions.categories.map((cat) => (
+                              <button
+                                key={cat.id}
+                                onClick={() => executeSearch(cat.name)}
+                                className="px-3.5 py-2 text-xs font-bold rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-blue-600 hover:text-white dark:hover:bg-blue-600 dark:hover:text-white transition-all cursor-pointer border border-slate-200/50 dark:border-slate-700/50"
+                              >
+                                {cat.name}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {suggestions.brands.length > 0 && (
+                        <div>
+                          <div className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2.5 px-1">
+                            Thương hiệu
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            {suggestions.brands.map((brand) => (
+                              <button
+                                key={brand.id}
+                                onClick={() => executeSearch(brand.name)}
+                                className="px-3.5 py-2 text-xs font-bold rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-blue-600 hover:text-white dark:hover:bg-blue-600 dark:hover:text-white transition-all cursor-pointer border border-slate-200/50 dark:border-slate-700/50"
+                              >
+                                {brand.name}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* No results state */}
+                  {suggestions.products.length === 0 &&
+                    suggestions.categories.length === 0 &&
+                    suggestions.brands.length === 0 && (
+                      <div className="text-center py-10 text-slate-500">
+                        <p className="text-sm font-medium">Không tìm thấy kết quả phù hợp cho "{query}"</p>
+                        <button
+                          type="button"
+                          onClick={() => executeSearch(query)}
+                          className="mt-4 inline-flex items-center gap-2 px-5 py-2.5 text-xs font-black uppercase tracking-wider text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-all shadow-md cursor-pointer"
+                        >
+                          <span>Tìm tất cả sản phẩm với từ khóa này</span> <FiCornerDownLeft />
+                        </button>
+                      </div>
+                    )}
+                </>
+              )}
+
+              {/* Default State (When query is empty) */}
+              {!query.trim() && (
+                <>
+                  {/* Recent Searches */}
+                  {history.length > 0 && (
+                    <div>
+                      <div className="flex items-center justify-between text-[11px] font-black text-slate-400 uppercase tracking-widest mb-3 px-1">
+                        <span className="flex items-center gap-1.5">
+                          <FiClock className="w-3.5 h-3.5" /> Lịch sử tìm kiếm
+                        </span>
+                        <button
+                          type="button"
+                          onClick={clearHistory}
+                          className="text-slate-400 hover:text-rose-500 transition cursor-pointer"
+                        >
+                          Xóa tất cả
+                        </button>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {history.map((term, index) => (
+                          <button
+                            key={index}
+                            onClick={() => executeSearch(term)}
+                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-xl bg-slate-100 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition cursor-pointer"
+                          >
+                            {term}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Trending Search Keywords */}
                   <div>
-                    <div className="flex items-center justify-between text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
-                      <span className="flex items-center gap-1.5">
-                        <FiClock className="w-3.5 h-3.5" /> Lịch sử tìm kiếm
-                      </span>
-                      <button
-                        type="button"
-                        onClick={clearHistory}
-                        className="text-slate-400 hover:text-rose-500 transition text-[11px] normal-case"
-                      >
-                        Xóa tất cả
-                      </button>
+                    <div className="flex items-center gap-1.5 text-[11px] font-black text-slate-400 uppercase tracking-widest mb-3 px-1">
+                      <FiTrendingUp className="w-3.5 h-3.5 text-rose-500" />
+                      <span>Xu hướng tìm kiếm</span>
                     </div>
                     <div className="flex flex-wrap gap-2">
-                      {history.map((term, index) => (
+                      {TRENDING_KEYWORDS.map((item, index) => (
                         <button
                           key={index}
-                          onClick={() => executeSearch(term)}
-                          className="flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-xl bg-slate-100 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition"
+                          onClick={() => executeSearch(item)}
+                          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-xl bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 hover:bg-blue-600 hover:text-white transition cursor-pointer border border-blue-100 dark:border-blue-800/50"
                         >
-                          <span>{term}</span>
+                          <FiZap className="w-3 h-3" />
+                          {item}
                         </button>
                       ))}
                     </div>
                   </div>
-                )}
 
-                {/* Trending Search Keywords */}
-                <div>
-                  <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
-                    <FiTrendingUp className="w-3.5 h-3.5 text-rose-500" />
-                    <span>Xu hướng tìm kiếm hot</span>
+                  {/* Quick Category Nav */}
+                  <div>
+                    <div className="flex items-center gap-1.5 text-[11px] font-black text-slate-400 uppercase tracking-widest mb-3 px-1">
+                      <FiTag className="w-3.5 h-3.5 text-indigo-500" />
+                      <span>Danh mục phổ biến</span>
+                    </div>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                      {QUICK_CATEGORIES.map((cat, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => {
+                            onClose();
+                            navigate(cat.path);
+                          }}
+                          className="flex items-center gap-2 p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/50 hover:bg-blue-50 dark:hover:bg-slate-800 transition text-left border border-slate-100 dark:border-slate-800/80 cursor-pointer group"
+                        >
+                          <span className="text-xl group-hover:scale-110 transition-transform">{cat.icon}</span>
+                          <span className="text-xs font-bold text-slate-800 dark:text-slate-200 group-hover:text-blue-600 dark:group-hover:text-blue-400">
+                            {cat.name}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                    {TRENDING_KEYWORDS.map((item, index) => (
-                      <button
-                        key={index}
-                        onClick={() => executeSearch(item)}
-                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-xl bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-light hover:bg-primary hover:text-white dark:hover:bg-primary transition"
-                      >
-                        <FiZap className="w-3 h-3" />
-                        <span>{item}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Quick Category Nav */}
-                <div>
-                  <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
-                    <FiTag className="w-3.5 h-3.5 text-indigo-500" />
-                    <span>Danh mục phổ biến</span>
-                  </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                    {QUICK_CATEGORIES.map((cat, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => {
-                          onClose();
-                          navigate(cat.path);
-                        }}
-                        className="flex items-center gap-2 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 transition text-left border border-slate-100 dark:border-slate-800"
-                      >
-                        <span className="text-lg">{cat.icon}</span>
-                        <span className="text-xs font-medium text-slate-700 dark:text-slate-300">
-                          {cat.name}
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </>
-            )}
-          </div>
-
-          {/* Modal Footer Controls */}
-          <div className="flex items-center justify-between px-4 py-2.5 border-t border-slate-200/60 dark:border-slate-800/80 bg-slate-50/80 dark:bg-slate-900/80 text-[11px] text-slate-400">
-            <div className="flex items-center gap-3">
-              <span className="flex items-center gap-1">
-                <span className="kbd-badge">Ctrl</span>
-                <span className="kbd-badge">K</span> để bật/Tắt
-              </span>
-              <span className="flex items-center gap-1">
-                <span className="kbd-badge">Esc</span> đóng
-              </span>
+                </>
+              )}
             </div>
-            <div className="flex items-center gap-1 text-primary">
-              <FiZap className="w-3 h-3" /> TIEN TECH Omni-Search Engine
+
+            {/* Modal Footer Controls */}
+            <div className="flex items-center justify-between px-6 py-3 border-t border-slate-100 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/80 text-xs text-slate-400 font-medium">
+              <div className="flex items-center gap-4">
+                <span className="flex items-center gap-1.5">
+                  <kbd className="px-2 py-0.5 text-[10px] font-black rounded-md bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 shadow-2xs">Ctrl</kbd>
+                  <kbd className="px-2 py-0.5 text-[10px] font-black rounded-md bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 shadow-2xs">K</kbd>
+                  <span>bật/tắt</span>
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <kbd className="px-2 py-0.5 text-[10px] font-black rounded-md bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 shadow-2xs">ESC</kbd>
+                  <span>đóng</span>
+                </span>
+              </div>
+              <div className="flex items-center gap-1.5 font-bold text-blue-600 dark:text-blue-400">
+                <FiZap className="w-3.5 h-3.5 fill-current" />
+                <span>TIENTECH Search Engine</span>
+              </div>
             </div>
-          </div>
-        </Motion.div>
-      </div>
+          </Motion.div>
+        </div>
+      )}
     </AnimatePresence>
   );
 }

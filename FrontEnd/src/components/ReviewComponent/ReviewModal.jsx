@@ -4,6 +4,7 @@ import ReviewForm from "./ReviewForm";
 import { createReviewApi, getPendingReviewsApi } from "../../api/reviewApi";
 import { toast } from "react-toastify";
 import { FiCheckCircle, FiPackage } from "react-icons/fi";
+import UnifiedSpinner from "../Loading/UnifiedSpinner";
 
 const ReviewModal = ({ isOpen, onClose, order, onReviewSuccess }) => {
   const [reviewingProductId, setReviewingProductId] = useState(null);
@@ -88,10 +89,10 @@ const ReviewModal = ({ isOpen, onClose, order, onReviewSuccess }) => {
 
         <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
           {loading && (pendingProductIds === null) ? (
-            <div className="py-10 text-center">
-              <div className="size-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+            <div className="py-12 text-center flex flex-col items-center justify-center gap-3">
+              <UnifiedSpinner size="md" variant="primary" />
               <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">
-                Đang tải dữ liệu...
+                Đang tải sản phẩm chờ đánh giá...
               </p>
             </div>
           ) : (

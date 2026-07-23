@@ -18,12 +18,14 @@ import { useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { motion as Motion, AnimatePresence } from "framer-motion";
 import { toast } from "react-toastify";
+import UnifiedSpinner from "../../components/Loading/UnifiedSpinner";
 
 const Notifications = () => {
   const navigate = useNavigate();
   const user = useSelector((state) => state.user.user);
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
 
@@ -31,12 +33,17 @@ const Notifications = () => {
     async (isLoadMore = false) => {
       if (!user) return;
       try {
-        if (!isLoadMore) setLoading(true);
-        const res = await getNotificationsApi(isLoadMore ? page + 1 : 1, 20);
+        if (isLoadMore) {
+          setLoadingMore(true);
+        } else {
+          setLoading(true);
+        }
+        const nextPage = isLoadMore ? page + 1 : 1;
+        const res = await getNotificationsApi(nextPage, 20);
         if (res.errCode === 0) {
           if (isLoadMore) {
             setNotifications((prev) => [...prev, ...res.data]);
-            setPage((prev) => prev + 1);
+            setPage(nextPage);
           } else {
             setNotifications(res.data);
             setPage(1);
@@ -48,6 +55,7 @@ const Notifications = () => {
         toast.error("Lỗi khi tải thông báo");
       } finally {
         setLoading(false);
+        setLoadingMore(false);
       }
     },
     [user, page],
@@ -155,8 +163,8 @@ const Notifications = () => {
 
         <div className="bg-white dark:bg-dark-surface rounded-[32px] border border-surface-200 dark:border-dark-border shadow-soft overflow-hidden">
           {loading && notifications.length === 0 ? (
-            <div className="p-20 text-center">
-              <div className="size-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <div className="p-20 text-center flex flex-col items-center justify-center gap-4">
+              <UnifiedSpinner size="lg" variant="primary" />
               <p className="text-surface-400 dark:text-dark-text-secondary font-bold uppercase tracking-widest text-[10px]">
                 Đang tải thông báo...
               </p>
@@ -221,10 +229,17 @@ const Notifications = () => {
                 <div className="p-8 text-center bg-surface-50/30 dark:bg-dark-bg/30">
                   <button
                     onClick={() => fetchNotifications(true)}
-                    disabled={loading}
-                    className="px-10 py-3 bg-white dark:bg-dark-surface border border-surface-200 dark:border-dark-border rounded-2xl text-xs font-black uppercase tracking-widest text-surface-600 dark:text-dark-text-secondary hover:border-primary hover:text-primary transition-all shadow-sm disabled:opacity-50"
+                    disabled={loading || loadingMore}
+                    className="inline-flex items-center gap-3 min-h-[44px] px-10 py-3 bg-white dark:bg-dark-surface border border-surface-200 dark:border-dark-border rounded-2xl text-xs font-black uppercase tracking-widest text-surface-600 dark:text-dark-text-secondary hover:border-primary hover:text-primary transition-all shadow-sm disabled:opacity-50 active:scale-95 cursor-pointer"
                   >
-                    {loading ? "Đang tải..." : "Xem thêm thông báo"}
+                    {loadingMore ? (
+                      <>
+                        <UnifiedSpinner size="xs" variant="primary" />
+                        <span>Đang tải thêm...</span>
+                      </>
+                    ) : (
+                      "Xem thêm thông báo"
+                    )}
                   </button>
                 </div>
               )}

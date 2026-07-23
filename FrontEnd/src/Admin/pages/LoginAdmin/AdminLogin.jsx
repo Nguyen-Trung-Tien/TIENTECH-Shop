@@ -3,7 +3,6 @@ import {
   FiEye,
   FiEyeOff,
   FiArrowLeft,
-  FiRefreshCw,
   FiLock,
   FiMail,
   FiShield,
@@ -16,6 +15,7 @@ import { loginUser } from "../../../api/userApi";
 import { setUser } from "../../../redux/userSlice";
 import Logo from "../../../components/UI/Logo";
 import ForgotPasswordModal from "../../../components/ForgotPasswordModal/ForgotPasswordModal";
+import UnifiedSpinner from "../../../components/Loading/UnifiedSpinner";
 
 const AdminLogin = () => {
   const [rememberMe, setRememberMe] = useState(() => {
@@ -205,7 +205,10 @@ const AdminLogin = () => {
                   className="w-full h-13 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-2xl text-xs font-black uppercase tracking-wider shadow-lg shadow-blue-500/25 transition-all flex items-center justify-center gap-2 active:scale-[0.98] disabled:opacity-50 cursor-pointer"
                 >
                   {loading ? (
-                    <FiRefreshCw className="animate-spin text-base" />
+                    <>
+                      <UnifiedSpinner size="xs" variant="white" />
+                      <span>Đang xác thực...</span>
+                    </>
                   ) : (
                     "TRUY CẬP DASHBOARD"
                   )}

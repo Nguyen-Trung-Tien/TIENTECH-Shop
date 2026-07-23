@@ -40,28 +40,28 @@ const GenericAdminTable = ({
       {actionLoading && <AdminActionLoader message={actionMessage} />}
 
       {/* Header Area */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6">
         <div>
-          <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-3">
-            <div className="size-12 rounded-2xl bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/20">
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-3">
+            <div className="size-10 sm:size-12 rounded-2xl bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/20 shrink-0">
               {Icon && <Icon />}
             </div>
-            {title}
+            <span className="truncate">{title}</span>
           </h1>
           {subtitle && (
-            <p className="text-slate-500 dark:text-dark-text-secondary font-bold text-xs uppercase tracking-widest mt-2 ml-1">
+            <p className="text-slate-500 dark:text-dark-text-secondary font-bold text-[10px] sm:text-xs uppercase tracking-widest mt-1.5 ml-1">
               {subtitle}
             </p>
           )}
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="relative group w-64 md:w-80 transition-all duration-300">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
+          <div className="relative group w-full sm:w-64 md:w-80 transition-all duration-300">
             <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-dark-text-secondary group-focus-within:text-primary transition-colors text-base" />
             <input
               type="text"
               placeholder={searchPlaceholder}
-              className="w-full h-12 bg-white dark:bg-dark-surface border border-slate-200/80 dark:border-dark-border/60 rounded-2xl pl-11 pr-10 text-sm font-bold text-slate-900 dark:text-white focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all outline-none"
+              className="w-full min-h-[44px] bg-white dark:bg-dark-surface border border-slate-200/80 dark:border-dark-border/60 rounded-2xl pl-11 pr-10 text-sm font-bold text-slate-900 dark:text-white focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all outline-none"
               value={searchTerm || ""}
               onChange={(e) => onSearchChange(e.target.value)}
             />
@@ -69,7 +69,7 @@ const GenericAdminTable = ({
               <button
                 type="button"
                 onClick={() => onSearchChange("")}
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 size-6 rounded-full bg-slate-100 dark:bg-dark-bg text-slate-400 hover:text-slate-700 dark:hover:text-white flex items-center justify-center transition-all cursor-pointer"
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 size-7 rounded-full bg-slate-100 dark:bg-dark-bg text-slate-400 hover:text-slate-700 dark:hover:text-white flex items-center justify-center transition-all cursor-pointer"
                 title="Xóa ô tìm kiếm"
               >
                 <FiX size={13} />
@@ -79,7 +79,7 @@ const GenericAdminTable = ({
 
           <button
             onClick={onAddClick}
-            className="btn-modern-primary group h-12 px-6 flex items-center gap-2 cursor-pointer active:scale-98"
+            className="btn-modern-primary group min-h-[44px] px-5 flex items-center justify-center gap-2 cursor-pointer active:scale-98 shrink-0"
           >
             <FiPlus className="text-xl group-hover:rotate-90 transition-transform duration-300" />
             <span>{addLabel}</span>
@@ -88,20 +88,20 @@ const GenericAdminTable = ({
       </div>
 
       {/* Table Area */}
-      <div className="bg-white dark:bg-dark-surface rounded-[40px] border border-slate-100 dark:border-dark-border shadow-soft overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+      <div className="bg-white dark:bg-dark-surface rounded-[28px] sm:rounded-[40px] border border-slate-100 dark:border-dark-border shadow-soft overflow-hidden">
+        <div className="overflow-x-auto custom-scrollbar">
+          <table className="w-full text-left border-collapse min-w-[600px] md:min-w-full">
             <thead>
               <tr className="bg-slate-50/50 dark:bg-dark-bg/50 border-b border-slate-100 dark:border-dark-border">
                 {columns.map((col, idx) => (
                   <th
                     key={idx}
-                    className={`px-8 py-6 text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary ${col.className || ""}`}
+                    className={`px-4 py-4 md:px-8 md:py-6 text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary ${col.className || ""}`}
                   >
                     {col.header}
                   </th>
                 ))}
-                <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary text-right">
+                <th className="px-4 py-4 md:px-8 md:py-6 text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary text-right">
                   Thao tác
                 </th>
               </tr>
@@ -111,7 +111,7 @@ const GenericAdminTable = ({
                 <tr>
                   <td
                     colSpan={columns.length + 1}
-                    className="px-8 py-8"
+                    className="px-4 py-8 md:px-8"
                   >
                     <AdminTableSkeleton rows={8} cols={columns.length + 1} />
                   </td>
@@ -120,7 +120,7 @@ const GenericAdminTable = ({
                 <tr>
                   <td
                     colSpan={columns.length + 1}
-                    className="px-8 py-20 text-center"
+                    className="px-4 py-16 md:px-8 text-center"
                   >
                     <div className="max-w-xs mx-auto">
                       <div className="size-16 bg-slate-50 dark:bg-dark-bg rounded-full flex items-center justify-center text-slate-300 dark:text-slate-700 mx-auto mb-4">
@@ -143,35 +143,35 @@ const GenericAdminTable = ({
                     {columns.map((col, colIdx) => (
                       <td
                         key={colIdx}
-                        className={`px-8 py-5 ${col.className || ""}`}
+                        className={`px-4 py-3.5 md:px-8 md:py-5 ${col.className || ""}`}
                       >
                         {col.render ? (
                           col.render(item)
                         ) : (
-                          <span className="text-sm font-bold text-slate-700 dark:text-slate-300">
+                          <span className="text-xs md:text-sm font-bold text-slate-700 dark:text-slate-300">
                             {item[col.accessor]}
                           </span>
                         )}
                       </td>
                     ))}
-                    <td className="px-8 py-5 text-right">
+                    <td className="px-4 py-3.5 md:px-8 md:py-5 text-right">
                       {renderActions ? (
                         renderActions(item)
                       ) : (
-                        <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="flex items-center justify-end gap-1.5 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                           <button
                             onClick={() => onEditClick(item)}
-                            className="p-2.5 text-primary dark:text-primary-light bg-white dark:bg-dark-bg border border-slate-100 dark:border-dark-border/40 rounded-2xl hover:shadow-lg transition-all cursor-pointer"
+                            className="size-10 text-primary dark:text-primary-light bg-slate-50 dark:bg-dark-bg border border-slate-200/60 dark:border-dark-border/40 rounded-2xl hover:shadow-lg transition-all cursor-pointer flex items-center justify-center active:scale-95"
                             title="Chỉnh sửa"
                           >
-                            <FiEdit2 />
+                            <FiEdit2 size={16} />
                           </button>
                           <button
                             onClick={() => onDeleteClick(item)}
-                            className="p-2.5 text-rose-600 dark:text-rose-400 bg-white dark:bg-dark-bg border border-slate-100 dark:border-dark-border/40 rounded-2xl hover:shadow-lg transition-all cursor-pointer"
+                            className="size-10 text-rose-600 dark:text-rose-400 bg-slate-50 dark:bg-dark-bg border border-slate-200/60 dark:border-dark-border/40 rounded-2xl hover:shadow-lg transition-all cursor-pointer flex items-center justify-center active:scale-95"
                             title="Xóa"
                           >
-                            <FiTrash2 />
+                            <FiTrash2 size={16} />
                           </button>
                         </div>
                       )}

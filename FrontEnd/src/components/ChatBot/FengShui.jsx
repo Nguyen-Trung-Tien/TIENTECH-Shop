@@ -1,9 +1,8 @@
 import { useState, useRef, useEffect } from "react";
-import { FaSpinner } from "react-icons/fa";
 import { FiX, FiSend, FiZap } from "react-icons/fi";
 import { motion as Motion, AnimatePresence } from "framer-motion";
-
 import { fengShuiChatApi } from "../../api/chatApi";
+import UnifiedSpinner from "../Loading/UnifiedSpinner";
 
 const STEP = { WELCOME: 0, BIRTH: 1, GENDER: 2, GOAL: 3 };
 
@@ -235,8 +234,8 @@ const FengShuiChat = ({ setGlobalBirthYear }) => {
                       >
                         {msg.type === "loading" ? (
                           <div className="flex items-center gap-3 font-black uppercase text-[10px] tracking-widest text-blue-600">
-                            <FaSpinner className="animate-spin" />
-                            {msg.text}
+                            <UnifiedSpinner size="xs" variant="primary" />
+                            <span>{msg.text}</span>
                           </div>
                         ) : (
                           msg.text

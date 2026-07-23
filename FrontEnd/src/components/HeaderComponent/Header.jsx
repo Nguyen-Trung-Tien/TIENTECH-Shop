@@ -9,6 +9,7 @@ import {
   FiX,
   FiMenu,
   FiBox,
+  FiPackage,
   FiShoppingBag,
   FiCompass,
   FiSun,
@@ -21,20 +22,18 @@ import {
 import { motion as Motion, AnimatePresence } from "framer-motion";
 import { useSelector, useDispatch } from "react-redux";
 
-// Theme state moved into Header component body (to fix Invalid hook call)
 import { removeUser } from "../../redux/userSlice";
-import { clearCart, setCartItems } from "../../redux/cartSlice";
+import { clearCart } from "../../redux/cartSlice";
 import { logoutUserApi } from "../../api/userApi";
 import { searchSuggestionsApi } from "../../api/productApi";
-import { getAllCarts } from "../../api/cartApi";
 import { useCurrentUser } from "../../hooks/useUser";
 import { debounce } from "lodash";
-import logoImage from "../../assets/logo.png";
 import Logo from "../UI/Logo";
 import { toast } from "react-toastify";
 import NotificationBell from "./NotificationBell";
 import VisualSearchModal from "./VisualSearchModal";
 import OmniSearchModal from "./OmniSearchModal";
+import UnifiedSpinner from "../Loading/UnifiedSpinner";
 
 function Header() {
   const dispatch = useDispatch();
@@ -54,6 +53,7 @@ function Header() {
   const [isOmniSearchOpen, setIsOmniSearchOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [theme, setTheme] = useState(
     () => localStorage.getItem("theme") || "light",
@@ -70,6 +70,7 @@ function Header() {
 
   const avatarUrl = user?.avatar || "/images/avatar-default.png";
 
+  // Handle Theme Toggle
   useEffect(() => {
     if (theme === "dark") {
       document.documentElement.classList.add("dark");
@@ -82,26 +83,18 @@ function Header() {
   const toggleTheme = () =>
     setTheme((prev) => (prev === "light" ? "dark" : "light"));
 
-  // Scroll handler
-  useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 10);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  // Close menus on route change
-  useEffect(() => {
-    setIsMobileMenuOpen(false);
-    setIsUserMenuOpen(false);
-    setShowSuggestions(false);
-  }, []); // Removed location.pathname from dependency array
-
-  // Scroll handler
+  // Scroll & Location Listeners
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 10);
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+    setIsUserMenuOpen(false);
+    setShowSuggestions(false);
+  }, [location.pathname]);
 
   // Global Ctrl+K / Cmd+K listener
   useEffect(() => {
@@ -115,41 +108,9 @@ function Header() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  // Close menus on route change
-  useEffect(() => {
-    setIsMobileMenuOpen(false);
-    setIsUserMenuOpen(false);
-    setShowSuggestions(false);
-  }, [location]);
-
-  // ... (existing code)
-
-  // Search Suggestion Debounce
-  const fetchSuggestions = useMemo(
-    () =>
-      debounce(async (query) => {
-        if (!query.trim()) {
-          setSuggestions({
-            products: [],
-            keywords: [],
-            brands: [],
-            categories: [],
-          });
-          setShowSuggestions(false);
-          return;
-        }
-        try {
-          const res = await searchSuggestionsApi(query);
-          setSuggestions(res?.suggestions || {});
-          setShowSuggestions(true);
-        } catch (err) {
-          console.error("Search suggest error:", err);
-        }
-      }, 300),
-    [],
-  );
-
+  // Logout Handler
   const handleLogout = async () => {
+    setIsLoggingOut(true);
     try {
       await logoutUserApi();
       localStorage.removeItem("accessToken");
@@ -159,33 +120,15 @@ function Header() {
       toast.success("Đăng xuất thành công!");
     } catch (err) {
       console.error("Logout error:", err);
-    }
-  };
-
-  const onSearchChange = (e) => {
-    const value = e.target.value;
-    setSearchInput(value);
-    if (value.trim() === "") {
-      fetchSuggestions.cancel();
-      setShowSuggestions(false);
-      return;
-    }
-    fetchSuggestions(value);
-  };
-
-  const onSearchSubmit = (e) => {
-    e.preventDefault();
-    if (searchInput.trim()) {
-      navigate(
-        `/product-list?search=${encodeURIComponent(searchInput.trim())}`,
-      );
-      setShowSuggestions(false);
+      toast.error("Không thể đăng xuất");
+    } finally {
+      setIsLoggingOut(false);
     }
   };
 
   const navLinks = [
     { name: "Trang chủ", path: "/", icon: <FiCompass /> },
-    { name: "Yêu thích", path: "/wishlist", icon: <FiHeart /> },
+    { name: "Sản phẩm", path: "/product-list", icon: <FiPackage /> },
     { name: "Phong thủy", path: "/fortune-products", icon: <FiBox /> },
     { name: "Giới thiệu", path: "/about", icon: <FiShoppingBag /> },
   ];
@@ -193,60 +136,63 @@ function Header() {
   return (
     <>
       <header
-        className={`sticky top-0 z-[100] w-full transition-all duration-500 ${
+        className={`sticky top-0 z-[100] w-full transition-all duration-300 ${
           isScrolled
-            ? "glass-header shadow-soft py-2"
-            : "bg-white dark:bg-dark-bg border-b border-slate-100/30 dark:border-dark-border/10 py-4"
+            ? "bg-white/85 dark:bg-slate-950/85 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-800/50 shadow-lg shadow-slate-900/5 py-2.5"
+            : "bg-white dark:bg-slate-950 border-b border-slate-100 dark:border-slate-900 py-3.5"
         }`}
       >
-        <div className="container-custom flex items-center justify-between gap-10">
+        <div className="container-custom flex items-center justify-between gap-6 md:gap-10">
           {/* Logo */}
           <Link
             to="/"
-            className="flex-shrink-0 transition-transform hover:scale-105"
+            className="flex-shrink-0 transition-transform duration-300 hover:scale-105 active:scale-95"
           >
             <Logo size="md" />
           </Link>
 
           {/* Desktop Nav Links */}
-          <nav className="hidden xl:flex items-center gap-10">
-            {navLinks.map((link) => (
-              <Link
-                key={link.path}
-                to={link.path}
-                className={`text-[13px] font-bold uppercase tracking-[0.15em] transition-all relative group ${
-                  location.pathname === link.path
-                    ? "text-primary dark:text-brand"
-                    : "text-slate-500 dark:text-dark-text-secondary hover:text-slate-900 dark:hover:text-white"
-                }`}
-              >
-                {link.name}
-                <span
-                  className={`absolute -bottom-1 left-0 h-0.5 bg-primary dark:bg-brand transition-all duration-300 ${location.pathname === link.path ? "w-full" : "w-0 group-hover:w-full"}`}
-                ></span>
-              </Link>
-            ))}
+          <nav className="hidden xl:flex items-center gap-2 bg-slate-100/60 dark:bg-slate-900/60 p-1.5 rounded-2xl border border-slate-200/50 dark:border-slate-800/50 backdrop-blur-sm">
+            {navLinks.map((link) => {
+              const isActive = location.pathname === link.path;
+              return (
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  className={`px-4 py-2 rounded-xl text-[12px] font-black uppercase tracking-wider transition-all duration-300 flex items-center gap-2 relative ${
+                    isActive
+                      ? "text-blue-600 dark:text-blue-400 bg-white dark:bg-slate-800 shadow-sm"
+                      : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-slate-800/40"
+                  }`}
+                >
+                  <span className="text-sm">{link.icon}</span>
+                  {link.name}
+                </Link>
+              );
+            })}
           </nav>
 
-          {/* Search Bar */}
-          <div
-            className="hidden lg:block flex-1 max-w-lg relative"
-            ref={searchRef}
-          >
+          {/* Search Trigger Bar (Desktop) */}
+          <div className="hidden lg:block flex-1 max-w-lg relative">
             <div
               onClick={() => setIsOmniSearchOpen(true)}
               className="relative group cursor-pointer"
             >
-              <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-hover:text-primary dark:group-hover:text-brand transition-colors" />
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-500/15 via-indigo-500/15 to-cyan-500/15 rounded-2xl blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+              
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                <FiSearch className="text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors text-base" />
+              </div>
+
               <input
                 type="text"
                 readOnly
-                placeholder="Tìm kiếm sản phẩm, thương hiệu..."
-                onClick={() => setIsOmniSearchOpen(true)}
-                className="w-full h-11 bg-slate-100/70 dark:bg-dark-surface/30 border border-slate-200/50 dark:border-dark-border/30 rounded-2xl pl-12 pr-24 text-[14px] font-medium cursor-pointer focus:bg-white dark:focus:bg-dark-bg focus:border-primary/30 outline-none transition-all duration-300 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                placeholder="Tìm sản phẩm, thương hiệu, AI Smart Search..."
+                className="w-full h-11 bg-slate-100/90 dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800 rounded-2xl pl-11 pr-28 text-[13px] font-bold cursor-pointer group-hover:bg-white dark:group-hover:bg-slate-900 group-hover:border-blue-500/40 focus:border-blue-500 outline-none transition-all duration-300 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 shadow-xs"
               />
-              <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5 pointer-events-auto">
-                <span className="kbd-badge hidden sm:inline-flex">
+
+              <div className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                <span className="px-2.5 py-1 bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-[10px] font-black rounded-lg uppercase tracking-wider border border-slate-200/80 dark:border-slate-700/60 hidden sm:inline-flex shadow-xs">
                   Ctrl K
                 </span>
                 <button
@@ -255,272 +201,147 @@ function Header() {
                     e.stopPropagation();
                     setIsVisualSearchOpen(true);
                   }}
-                  className="p-1.5 text-slate-400 hover:text-primary dark:hover:text-brand hover:bg-primary/10 dark:hover:bg-brand/10 rounded-lg transition-colors"
-                  title="Tìm kiếm bằng hình ảnh AI Vision"
+                  className="p-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl shadow-md shadow-blue-500/20 transition-all hover:scale-105 active:scale-95 cursor-pointer flex items-center justify-center"
+                  title="Tìm kiếm bằng ảnh AI Vision"
                 >
-                  <FiCamera size={18} />
+                  <FiCamera size={15} />
                 </button>
               </div>
             </div>
-
-            {/* Suggestions Dropdown */}
-            <AnimatePresence>
-              {showSuggestions && (
-                <>
-                  <Motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="fixed inset-0 z-[40]"
-                    onClick={() => setShowSuggestions(false)}
-                  />
-                  <Motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 10 }}
-                    className="absolute top-full left-0 right-0 mt-3 z-[50]"
-                  >
-                    <div className="w-full bg-white dark:bg-dark-surface rounded-3xl shadow-2xl border border-slate-100 dark:border-dark-border overflow-hidden max-h-[70vh] overflow-y-auto">
-                      {/* ... Content ... */}
-                      {suggestions.keywords?.length > 0 && (
-                        <div className="mb-2 p-2 border-b border-slate-100 dark:border-dark-border">
-                          <div className="flex items-center gap-2 px-3 py-2 flex-wrap">
-                            {suggestions.keywords.map((kw, idx) => (
-                              <button
-                                key={idx}
-                                onClick={() => {
-                                  setSearchInput(kw);
-                                  navigate(
-                                    `/product-list?search=${encodeURIComponent(kw)}`,
-                                  );
-                                  setShowSuggestions(false);
-                                }}
-                                className="px-3 py-1 bg-slate-50 dark:bg-dark-bg hover:bg-primary/10 dark:hover:bg-brand/10 text-slate-500 dark:text-dark-text-secondary hover:text-primary dark:hover:text-brand rounded-full text-[12px] font-bold transition-all border border-slate-100 dark:border-dark-border"
-                              >
-                                {kw}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      <div className="grid grid-cols-1 gap-2 p-4">
-                        {/* Top: Brands & Categories */}
-                        {(suggestions.brands?.length > 0 ||
-                          suggestions.categories?.length > 0) && (
-                          <div className="flex gap-4 border-b border-slate-50 dark:border-dark-border/50 pb-4 mb-2">
-                            {suggestions.brands?.length > 0 && (
-                              <div className="flex-1">
-                                <p className="px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-dark-text-secondary bg-slate-50 dark:bg-dark-bg/50 rounded-lg mb-2">
-                                  Thương hiệu
-                                </p>
-                                {suggestions.brands.map((brand) => (
-                                  <button
-                                    key={brand.id}
-                                    onClick={() => {
-                                      navigate(
-                                        `/product-list?brandId=${brand.id}`,
-                                      );
-                                      setShowSuggestions(false);
-                                    }}
-                                    className="flex items-center gap-3 w-full px-3 py-2 text-[13px] font-bold text-slate-600 dark:text-dark-text-secondary hover:bg-primary/5 dark:hover:bg-brand/5 hover:text-primary dark:hover:text-brand rounded-xl transition-all text-left group"
-                                  >
-                                    <div className="w-1.5 h-1.5 rounded-full bg-slate-300 group-hover:bg-primary dark:group-hover:bg-brand transition-colors"></div>
-                                    {brand.name}
-                                  </button>
-                                ))}
-                              </div>
-                            )}
-                            {suggestions.categories?.length > 0 && (
-                              <div className="flex-1">
-                                <p className="px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-dark-text-secondary bg-slate-50 dark:bg-dark-bg/50 rounded-lg mb-2">
-                                  Danh mục
-                                </p>
-                                {suggestions.categories.map((cat) => (
-                                  <button
-                                    key={cat.id}
-                                    onClick={() => {
-                                      navigate(
-                                        `/product-list?categoryId=${cat.id}`,
-                                      );
-                                      setShowSuggestions(false);
-                                    }}
-                                    className="flex items-center gap-3 w-full px-3 py-2 text-[13px] font-bold text-slate-600 dark:text-dark-text-secondary hover:bg-primary/5 dark:hover:bg-brand/5 hover:text-primary dark:hover:text-brand rounded-xl transition-all text-left group"
-                                  >
-                                    <div className="w-1.5 h-1.5 rounded-full bg-slate-300 group-hover:bg-primary dark:group-hover:bg-brand transition-colors"></div>
-                                    {cat.name}
-                                  </button>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        )}
-
-                        {/* Bottom: Products */}
-                        <div>
-                          <p className="px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-dark-text-secondary bg-slate-50 dark:bg-dark-bg/50 rounded-lg mb-2">
-                            Sản phẩm phổ biến
-                          </p>
-                          {suggestions.products?.length > 0 ? (
-                            suggestions.products.map((product) => (
-                              <button
-                                key={product.id}
-                                onClick={() => {
-                                  navigate(`/product-detail/${product.id}`);
-                                  setShowSuggestions(false);
-                                }}
-                                className="flex items-center gap-4 w-full px-3 py-2.5 hover:bg-slate-50 dark:hover:bg-dark-bg rounded-2xl transition-all border border-transparent hover:border-slate-100 dark:hover:border-dark-border"
-                              >
-                                <div className="relative w-14 h-14 flex-shrink-0 bg-white dark:bg-dark-bg rounded-xl border border-slate-100 dark:border-dark-border p-2">
-                                  <img
-                                    src={product.image}
-                                    alt=""
-                                    className="w-full h-full object-contain"
-                                  />
-                                </div>
-                                <div className="flex-1 min-w-0 text-left">
-                                  <p className="text-[14px] font-bold text-slate-800 dark:text-white truncate">
-                                    {product.name}
-                                  </p>
-                                  <span className="text-[13px] font-black text-primary dark:text-brand">
-                                    {new Intl.NumberFormat("vi-VN", {
-                                      style: "currency",
-                                      currency: "VND",
-                                    }).format(product.price)}
-                                  </span>
-                                </div>
-                              </button>
-                            ))
-                          ) : (
-                            <div className="py-8 text-center text-slate-400 text-[13px]">
-                              Không tìm thấy sản phẩm
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </Motion.div>
-                </>
-              )}
-            </AnimatePresence>
           </div>
 
-          {/* Actions */}
-          <div className="flex items-center gap-3">
+          {/* Action Buttons Header */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* Quick Search Button for Mobile & Tablet */}
+            <button
+              onClick={() => setIsOmniSearchOpen(true)}
+              className="lg:hidden size-11 min-h-[44px] min-w-[44px] rounded-2xl bg-blue-50/80 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/40 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/60 transition-all flex items-center justify-center cursor-pointer active:scale-95 shadow-xs"
+              title="Tìm kiếm AI"
+            >
+              <FiSearch size={19} />
+            </button>
             {/* Theme Toggle */}
             <button
               onClick={toggleTheme}
-              className="flex items-center justify-center w-11 h-11 rounded-2xl bg-slate-100 dark:bg-dark-surface text-slate-700 dark:text-amber-400 hover:bg-slate-200 dark:hover:bg-dark-border transition-all"
+              className="size-11 min-h-[44px] min-w-[44px] rounded-2xl bg-slate-100/80 dark:bg-slate-900/80 border border-slate-200/60 dark:border-slate-800/60 text-slate-600 dark:text-amber-400 hover:bg-white dark:hover:bg-slate-800 hover:border-blue-500/30 transition-all flex items-center justify-center cursor-pointer active:scale-95 shadow-xs"
               title={theme === "light" ? "Bật chế độ tối" : "Bật chế độ sáng"}
             >
-              {theme === "light" ? <FiMoon size={20} /> : <FiSun size={20} />}
+              {theme === "light" ? <FiMoon size={19} /> : <FiSun size={19} />}
             </button>
 
-            {/* Notifications */}
+            {/* Notification Bell */}
             <NotificationBell />
 
-            {/* Wishlist */}
+            {/* Wishlist Icon Button */}
             <Link
               to="/wishlist"
-              className="group relative flex items-center justify-center w-11 h-11 rounded-2xl text-slate-700 dark:text-dark-text-secondary hover:bg-slate-100 dark:hover:bg-dark-surface hover:text-primary dark:hover:text-brand transition-all"
+              className="size-11 min-h-[44px] min-w-[44px] rounded-2xl bg-slate-100/80 dark:bg-slate-900/80 border border-slate-200/60 dark:border-slate-800/60 text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-800 hover:text-rose-500 dark:hover:text-rose-400 hover:border-rose-500/30 transition-all flex items-center justify-center active:scale-95 shadow-xs group"
               title="Danh sách yêu thích"
             >
-              <FiHeart className="text-[22px] group-hover:scale-110 transition-transform" />
+              <FiHeart className="text-[19px] group-hover:scale-110 transition-transform" />
             </Link>
 
-            {/* Cart */}
+            {/* Cart Icon Button */}
             <Link
               to="/cart"
-              className="group relative flex items-center justify-center w-11 h-11 rounded-2xl text-slate-700 dark:text-dark-text-secondary hover:bg-slate-100 dark:hover:bg-dark-surface hover:text-primary dark:hover:text-brand transition-all"
+              className="relative size-11 min-h-[44px] min-w-[44px] rounded-2xl bg-slate-100/80 dark:bg-slate-900/80 border border-slate-200/60 dark:border-slate-800/60 text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-500/30 transition-all flex items-center justify-center active:scale-95 shadow-xs group"
+              title="Giỏ hàng"
             >
-              <FiShoppingCart className="text-[22px] group-hover:scale-110 transition-transform" />
+              <FiShoppingCart className="text-[19px] group-hover:scale-110 transition-transform" />
               {cartItemCount > 0 && (
-                <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-rose-500 text-[10px] font-black text-white ring-2 ring-white dark:ring-dark-bg shadow-lg shadow-rose-500/20">
-                  {cartItemCount}
+                <span className="absolute -top-1 -right-1 flex size-5 items-center justify-center rounded-full bg-gradient-to-r from-rose-500 to-red-600 text-[10px] font-black text-white ring-2 ring-white dark:ring-slate-950 shadow-md shadow-rose-500/30">
+                  {cartItemCount > 99 ? "99+" : cartItemCount}
                 </span>
               )}
             </Link>
 
-            {/* User Menu */}
+            {/* User Profile Menu */}
             {user ? (
               <div className="relative">
                 <button
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                  className="flex items-center gap-3 p-1.5 pr-3 rounded-2xl hover:bg-slate-100 dark:hover:bg-dark-surface transition-all border border-transparent hover:border-slate-200 dark:hover:border-dark-border"
+                  className="flex items-center gap-2 p-1 pr-2.5 rounded-2xl bg-slate-100/80 dark:bg-slate-900/80 border border-slate-200/60 dark:border-slate-800/60 hover:bg-white dark:hover:bg-slate-800 hover:border-blue-500/30 transition-all cursor-pointer active:scale-95 shadow-xs"
                 >
-                  <div className="relative">
+                  <div className="relative size-8 rounded-xl overflow-hidden ring-2 ring-blue-500/20">
                     <img
                       src={avatarUrl}
                       alt="Avatar"
-                      className="w-8 h-8 rounded-xl object-cover ring-2 ring-primary/10"
+                      className="w-full h-full object-cover"
                     />
-                    <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 border-2 border-white dark:border-dark-bg rounded-full"></div>
                   </div>
                   <FiChevronDown
-                    className={`text-slate-400 transition-transform duration-300 ${isUserMenuOpen ? "rotate-180" : ""}`}
+                    className={`text-slate-400 transition-transform duration-300 text-sm ${
+                      isUserMenuOpen ? "rotate-180" : ""
+                    }`}
                   />
                 </button>
 
                 <AnimatePresence>
                   {isUserMenuOpen && (
                     <Motion.div
-                      initial={{ opacity: 0, scale: 0.95, y: 15 }}
+                      initial={{ opacity: 0, scale: 0.95, y: 12 }}
                       animate={{ opacity: 1, scale: 1, y: 0 }}
                       exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                      className="absolute right-0 mt-3 w-64 bg-white dark:bg-dark-surface rounded-3xl shadow-xl border border-slate-100 dark:border-dark-border p-3 z-50"
+                      className="absolute right-0 mt-3 w-64 bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200/80 dark:border-slate-800 p-3 z-50 overflow-hidden"
                     >
-                      <div className="px-4 py-3 bg-slate-50 dark:bg-dark-bg rounded-2xl mb-2">
+                      <div className="p-3 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-slate-800/60 dark:to-slate-800/30 rounded-2xl mb-2 border border-blue-100/50 dark:border-slate-700/40">
                         <p className="text-[13px] font-black text-slate-900 dark:text-white truncate">
                           {user.username || user.email}
                         </p>
-                        <p className="text-[9px] uppercase font-black text-primary dark:text-brand tracking-widest mt-0.5">
+                        <span className="inline-block mt-1 px-2.5 py-0.5 bg-blue-600 text-white text-[9px] font-black uppercase rounded-lg tracking-widest shadow-xs">
                           {user.role}
-                        </p>
+                        </span>
                       </div>
 
                       <div className="space-y-1">
                         {user.role === "admin" && (
                           <Link
                             to="/admin/dashboard"
-                            className="flex items-center gap-3 px-4 py-2.5 text-[14px] font-semibold text-slate-600 dark:text-dark-text-secondary hover:bg-slate-50 dark:hover:bg-dark-bg hover:text-primary dark:hover:text-brand rounded-xl transition-all"
+                            className="flex items-center gap-3 px-3.5 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 rounded-xl transition-all"
                           >
-                            <FiBox className="text-lg" /> Dashboard Quản trị
+                            <FiBox className="text-base text-blue-500" /> Dashboard Quản trị
                           </Link>
                         )}
 
                         <Link
                           to="/profile"
-                          className="flex items-center gap-3 px-4 py-2.5 text-[14px] font-semibold text-slate-600 dark:text-dark-text-secondary hover:bg-slate-50 dark:hover:bg-dark-bg hover:text-primary dark:hover:text-brand rounded-xl transition-all"
+                          className="flex items-center gap-3 px-3.5 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-400 rounded-xl transition-all"
                         >
-                          <FiUser className="text-lg" /> Thông tin cá nhân
+                          <FiUser className="text-base text-slate-400" /> Thông tin cá nhân
                         </Link>
-                        <Link
-                          to="/wishlist"
-                          className="flex items-center gap-3 px-4 py-2.5 text-[14px] font-semibold text-slate-600 dark:text-dark-text-secondary hover:bg-slate-50 dark:hover:bg-dark-bg hover:text-primary dark:hover:text-brand rounded-xl transition-all"
-                        >
-                          <FiHeart className="text-lg" /> Danh sách yêu thích
-                        </Link>
+
                         <Link
                           to="/orders"
-                          className="flex items-center gap-3 px-4 py-2.5 text-[14px] font-semibold text-slate-600 dark:text-dark-text-secondary hover:bg-slate-50 dark:hover:bg-dark-bg hover:text-primary dark:hover:text-brand rounded-xl transition-all"
+                          className="flex items-center gap-3 px-3.5 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-400 rounded-xl transition-all"
                         >
-                          <FiShoppingBag className="text-lg" /> Đơn mua của tôi
+                          <FiShoppingBag className="text-base text-slate-400" /> Đơn mua của tôi
                         </Link>
 
                         <Link
                           to="/order-history"
-                          className="flex items-center gap-3 px-4 py-2.5 text-[14px] font-semibold text-slate-600 dark:text-dark-text-secondary hover:bg-slate-50 dark:hover:bg-dark-bg hover:text-primary dark:hover:text-brand rounded-xl transition-all"
+                          className="flex items-center gap-3 px-3.5 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-400 rounded-xl transition-all"
                         >
-                          <FiCheckCircle className="text-lg" /> Lịch sử đơn hàng
+                          <FiCheckCircle className="text-base text-slate-400" /> Lịch sử đơn hàng
                         </Link>
 
-                        <div className="my-2 border-t border-slate-100 dark:border-dark-border mx-2"></div>
+                        <div className="my-2 border-t border-slate-100 dark:border-slate-800" />
 
                         <button
                           onClick={handleLogout}
-                          className="flex w-full items-center gap-3 px-4 py-2.5 text-[14px] font-bold text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-xl transition-all"
+                          disabled={isLoggingOut}
+                          className="flex w-full items-center gap-3 px-3.5 py-2.5 text-xs font-black text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-xl transition-all cursor-pointer disabled:opacity-60"
                         >
-                          <FiLogOut className="text-lg" /> Đăng xuất
+                          {isLoggingOut ? (
+                            <>
+                              <UnifiedSpinner size="xs" variant="danger" />
+                              <span>ĐANG ĐĂNG XUẤT...</span>
+                            </>
+                          ) : (
+                            <>
+                              <FiLogOut className="text-base" />
+                              <span>Đăng xuất</span>
+                            </>
+                          )}
                         </button>
                       </div>
                     </Motion.div>
@@ -530,9 +351,9 @@ function Header() {
             ) : (
               <Link
                 to="/login"
-                className="flex items-center gap-2 px-6 py-2.5 bg-slate-900 dark:bg-brand text-white rounded-2xl text-[13px] font-black hover:bg-primary dark:hover:bg-brand-dark hover:shadow-xl hover:shadow-primary/20 transition-all active:scale-95"
+                className="flex items-center gap-2 min-h-[44px] px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-2xl text-xs font-black uppercase tracking-wider shadow-lg shadow-blue-500/20 transition-all active:scale-95"
               >
-                <FiUser className="text-lg" />
+                <FiUser className="text-base" />
                 <span className="hidden sm:inline">ĐĂNG NHẬP</span>
               </Link>
             )}
@@ -540,7 +361,7 @@ function Header() {
             {/* Mobile Menu Toggle */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="lg:hidden flex items-center justify-center w-11 h-11 rounded-2xl bg-slate-100 dark:bg-dark-surface text-slate-700 dark:text-white hover:bg-slate-200 dark:hover:bg-dark-border transition-colors"
+              className="lg:hidden size-11 min-h-[44px] min-w-[44px] rounded-2xl bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors flex items-center justify-center cursor-pointer active:scale-95"
             >
               {isMobileMenuOpen ? (
                 <FiX className="text-xl" />
@@ -551,45 +372,60 @@ function Header() {
           </div>
         </div>
 
-        {/* Mobile Menu */}
+        {/* Mobile Navigation Drawer */}
         <AnimatePresence>
           {isMobileMenuOpen && (
             <Motion.div
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-              className="lg:hidden bg-white dark:bg-dark-bg border-t border-slate-100 dark:border-dark-border overflow-hidden"
+              className="lg:hidden bg-white/95 dark:bg-slate-950/95 backdrop-blur-xl border-t border-slate-100 dark:border-slate-900 overflow-hidden shadow-2xl"
             >
-              <div className="container-custom py-6 space-y-4">
-                {/* Mobile Search */}
-                <form onSubmit={onSearchSubmit} className="relative">
-                  <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-                  <input
-                    type="text"
-                    placeholder="Tìm kiếm..."
-                    value={searchInput}
-                    onChange={onSearchChange}
-                    className="w-full h-11 bg-slate-50 dark:bg-dark-surface border border-slate-100 dark:border-dark-border rounded-xl pl-11 text-sm focus:ring-2 focus:ring-primary/20 outline-none dark:text-white"
-                  />
-                </form>
+              <div className="container-custom py-5 space-y-4 px-4">
+                {/* Mobile Search Button */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    setIsOmniSearchOpen(true);
+                  }}
+                  className="w-full min-h-[46px] flex items-center justify-between bg-slate-100 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl px-4 text-xs font-bold text-slate-500 dark:text-slate-400 cursor-pointer active:scale-98 transition-all"
+                >
+                  <div className="flex items-center gap-3">
+                    <FiSearch className="text-blue-600 dark:text-blue-400 text-base" />
+                    <span>Tìm kiếm sản phẩm, thương hiệu...</span>
+                  </div>
+                  <span className="px-2 py-1 bg-blue-500/10 text-blue-600 dark:text-blue-400 text-[10px] font-black rounded-lg uppercase">
+                    AI Search
+                  </span>
+                </button>
 
-                <div className="grid grid-cols-1 gap-2">
-                  {navLinks.map((link) => (
-                    <Link
-                      key={link.path}
-                      to={link.path}
-                      className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-700 dark:text-dark-text-secondary hover:bg-slate-50 dark:hover:bg-dark-surface hover:text-primary dark:hover:text-brand transition-all font-bold"
-                    >
-                      <span className="text-lg">{link.icon}</span>
-                      {link.name}
-                    </Link>
-                  ))}
+                <div className="grid grid-cols-1 gap-2 pt-2">
+                  {navLinks.map((link) => {
+                    const isActive = location.pathname === link.path;
+                    return (
+                      <Link
+                        key={link.path}
+                        to={link.path}
+                        className={`flex items-center gap-3 min-h-[46px] px-4 py-3 rounded-2xl transition-all font-bold text-xs uppercase tracking-wider ${
+                          isActive
+                            ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-900/30"
+                            : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900"
+                        }`}
+                      >
+                        <span className="text-lg text-blue-600 dark:text-blue-400">{link.icon}</span>
+                        {link.name}
+                      </Link>
+                    );
+                  })}
                 </div>
               </div>
             </Motion.div>
           )}
         </AnimatePresence>
       </header>
+
+      {/* Modals */}
       <VisualSearchModal
         isOpen={isVisualSearchOpen}
         onClose={() => setIsVisualSearchOpen(false)}

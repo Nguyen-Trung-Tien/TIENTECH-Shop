@@ -1,5 +1,5 @@
 import React from "react";
-import { FiRefreshCw } from "react-icons/fi";
+import UnifiedSpinner from "../Loading/UnifiedSpinner";
 
 const LoadMoreButton = ({
   currentPage = 1,
@@ -15,12 +15,12 @@ const LoadMoreButton = ({
       <button
         onClick={onLoadMore}
         disabled={loading}
-        className="group relative inline-flex items-center gap-2 px-8 py-3 bg-white border border-slate-200 rounded-2xl text-sm font-black text-slate-700 hover:border-primary hover:text-primary transition-all shadow-sm active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
+        className="group relative inline-flex items-center gap-3 min-h-[44px] px-8 py-3 bg-white dark:bg-dark-surface border border-slate-200 dark:border-dark-border rounded-2xl text-xs sm:text-sm font-black text-slate-700 dark:text-slate-200 hover:border-primary hover:text-primary dark:hover:text-primary transition-all shadow-sm active:scale-95 disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
       >
         {loading ? (
           <>
-            <FiRefreshCw className="animate-spin text-lg" />
-            <span className="uppercase tracking-widest">Đang tải...</span>
+            <UnifiedSpinner size="sm" variant="primary" />
+            <span className="uppercase tracking-widest">Đang tải sản phẩm...</span>
           </>
         ) : (
           <>

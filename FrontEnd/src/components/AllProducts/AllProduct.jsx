@@ -72,6 +72,9 @@ const AllProducts = React.memo(() => {
   // Lấy danh sách các bộ lọc đang active để hiển thị Chip
   const activeFilters = React.useMemo(() => {
     const chips = [];
+    if (filters.search) {
+      chips.push({ key: "search", val: filters.search, label: `Từ khóa: "${filters.search}"` });
+    }
     const filterKeys = ["brandId", "categoryId", "ram", "rom", "os", "refresh_rate", "screen", "battery"];
     
     filterKeys.forEach(key => {

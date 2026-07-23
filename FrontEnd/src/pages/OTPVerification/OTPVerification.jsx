@@ -2,8 +2,9 @@ import { useState, useRef, useEffect } from "react";
 import { useSearchParams, useNavigate, Link } from "react-router-dom";
 import { verifyEmailApi, resendVerificationApi } from "../../api/userApi";
 import { toast } from "react-toastify";
-import { Mail, ArrowLeft, Loader2 } from "lucide-react";
+import { Mail, ArrowLeft } from "lucide-react";
 import { motion as Motion } from "framer-motion";
+import UnifiedSpinner from "../../components/Loading/UnifiedSpinner";
 
 const OTPVerification = () => {
   const [searchParams] = useSearchParams();
@@ -144,7 +145,7 @@ const OTPVerification = () => {
             disabled={loading}
             className="w-full py-4 bg-primary hover:bg-primary-hover text-white font-bold rounded-2xl shadow-lg shadow-primary/20 active:scale-[0.98] transition-all disabled:opacity-70 flex items-center justify-center gap-2 cursor-pointer"
           >
-            {loading ? <Loader2 className="size-5 animate-spin" /> : "XÁC NHẬN"}
+            {loading ? <UnifiedSpinner size="xs" variant="white" /> : "XÁC NHẬN"}
           </button>
         </form>
 
@@ -159,9 +160,9 @@ const OTPVerification = () => {
               <button
                 onClick={handleResend}
                 disabled={resending}
-                className="text-primary font-bold hover:underline disabled:opacity-50 cursor-pointer bg-transparent border-none outline-none"
+                className="inline-flex items-center gap-1 text-primary font-bold hover:underline disabled:opacity-50 cursor-pointer bg-transparent border-none outline-none"
               >
-                {resending ? "Đang gửi..." : "Gửi lại ngay"}
+                {resending ? <UnifiedSpinner size="xs" variant="primary" /> : "Gửi lại ngay"}
               </button>
             )}
           </p>
