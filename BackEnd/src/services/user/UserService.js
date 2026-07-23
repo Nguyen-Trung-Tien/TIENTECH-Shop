@@ -75,6 +75,19 @@ class UserService extends BaseService {
         delete data.role;
       }
 
+      // If avatar is base64 string, upload to Cloudinary before saving to DB
+      if (data.avatar && typeof data.avatar === "string" && data.avatar.startsWith("data:image")) {
+        try {
+          const { uploadToCloudinary } = require("../../config/cloudinaryConfig");
+          const buffer = Buffer.from(data.avatar.split(",")[1], "base64");
+          const uploadRes = await uploadToCloudinary(buffer, "avatars");
+          data.avatar = uploadRes.secure_url;
+        } catch (uploadErr) {
+          console.error("Cloudinary avatar upload error:", uploadErr);
+          return { errCode: 2, errMessage: "Lỗi upload ảnh đại diện lên Cloudinary: " + uploadErr.message };
+        }
+      }
+
       const updatedUser = await user.update(data);
       const { password, ...userData } = updatedUser.toJSON();
       return { errCode: 0, data: userData };

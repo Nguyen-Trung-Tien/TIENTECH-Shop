@@ -56,10 +56,17 @@ const handleCreateReview = async (req, res) => {
 
     let imageUrls = [];
     if (images && Array.isArray(images)) {
-      for (const base64 of images) {
-        const buffer = Buffer.from(base64.split(",")[1], "base64");
-        const uploadRes = await uploadToCloudinary(buffer, "reviews");
-        imageUrls.push(uploadRes.secure_url);
+      for (const img of images) {
+        if (typeof img === "string" && img.startsWith("data:image")) {
+          const parts = img.split(",");
+          if (parts[1]) {
+            const buffer = Buffer.from(parts[1], "base64");
+            const uploadRes = await uploadToCloudinary(buffer, "reviews");
+            imageUrls.push(uploadRes.secure_url);
+          }
+        } else if (typeof img === "string" && img.startsWith("http")) {
+          imageUrls.push(img);
+        }
       }
     }
 
