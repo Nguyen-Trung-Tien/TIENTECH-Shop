@@ -14,8 +14,16 @@ const getReviewsByProduct = async (
     const { offset, limit: l } = getPagination(page, limit);
 
     // 1. Calculate overall summary statistics for all approved reviews of this product
+    const approvedCondition = {
+      [db.Sequelize.Op.or]: [
+        { isApproved: true },
+        { isApproved: 1 },
+        { isApproved: null },
+      ],
+    };
+
     const allApprovedReviews = await db.Review.findAll({
-      where: { productId, isApproved: true },
+      where: { productId, ...approvedCondition },
       attributes: ["id", "rating"],
     });
 
@@ -36,7 +44,7 @@ const getReviewsByProduct = async (
       totalReviews > 0 ? (sumRating / totalReviews).toFixed(1) : "5.0";
 
     // 2. Build filter conditions for pagination query
-    const whereClause = { productId, isApproved: true };
+    const whereClause = { productId, ...approvedCondition };
 
     if (
       ratingFilter &&
@@ -184,6 +192,7 @@ const createReview = async (data) => {
       productId,
       rating: data.rating,
       comment: data.comment,
+      isApproved: true,
     });
 
     if (data.images && data.images.length > 0) {

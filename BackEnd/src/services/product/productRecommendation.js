@@ -31,6 +31,12 @@ const recommendProducts = async (productId, page = 1, limit = 6) => {
           as: "images",
           attributes: ["imageUrl", "isPrimary"],
         },
+        {
+          model: db.Review,
+          as: "reviews",
+          attributes: ["id", "rating"],
+          required: false,
+        },
       ],
       order: [
         ["sold", "DESC"],

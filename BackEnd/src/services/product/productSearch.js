@@ -30,6 +30,12 @@ const searchProducts = async (query, page = 1, limit = 10) => {
         as: "images",
         attributes: ["imageUrl", "isPrimary"],
       },
+      {
+        model: db.Review,
+        as: "reviews",
+        attributes: ["id", "rating"],
+        required: false,
+      },
     ],
     limit: l,
     offset,
