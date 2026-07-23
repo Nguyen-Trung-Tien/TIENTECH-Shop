@@ -19,7 +19,7 @@ const FAQPage = () => {
 
   const categories = [
     { id: "all", label: "Tất cả câu hỏi", icon: <FiHelpCircle /> },
-    { id: "product", label: "Sản phẩm & Phong thủy", icon: <FiShieldCheck /> },
+    { id: "product", label: "Sản phẩm & Phong thủy", icon: <FiShield /> },
     { id: "order", label: "Đơn hàng & Giao hàng", icon: <FiPackage /> },
     { id: "payment", label: "Thanh toán", icon: <FiCreditCard /> },
     { id: "warranty", label: "Bảo hành & Đổi trả", icon: <FiRefreshCw /> },
