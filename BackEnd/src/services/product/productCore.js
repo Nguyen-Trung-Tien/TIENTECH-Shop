@@ -15,20 +15,45 @@ const {
 const createProduct = async (data, imageRecords = []) => {
   const t = await db.sequelize.transaction();
   try {
-    const { variants, attributes, ...productData } = data;
+    const {
+      variants,
+      attributes,
+      options,
+      price,
+      stock,
+      image,
+      imageFile,
+      deletedImages,
+      specifications,
+      ...productData
+    } = data;
 
     if (!productData.slug && productData.name) {
       productData.slug = `${slugify(productData.name)}-${Date.now()}`;
     }
     productData.sku = await ensureUniqueSKU(productData.sku, t);
     productData.hasVariants = Array.isArray(variants) && variants.length > 0;
-    productData.basePrice = Number(productData.basePrice || productData.price || 0);
+    productData.basePrice = Number(productData.basePrice || price || 0);
+
+    if (specifications) {
+      productData.specifications =
+        typeof specifications === "string"
+          ? JSON.parse(specifications)
+          : specifications;
+    }
     
     if (productData.hasVariants) {
       productData.totalStock = variants.reduce((sum, v) => sum + Number(v.stock || 0), 0);
     } else {
-      productData.totalStock = Number(productData.stock || productData.totalStock || 0);
+      productData.totalStock = Number(stock || productData.totalStock || 0);
     }
+
+    // Xóa các trường rỗng không hợp lệ đối với kiểu dữ liệu trong DB
+    if (productData.brandId === "" || isNaN(productData.brandId)) delete productData.brandId;
+    if (productData.categoryId === "" || isNaN(productData.categoryId)) delete productData.categoryId;
+    if (productData.flashSaleStart === "") delete productData.flashSaleStart;
+    if (productData.flashSaleEnd === "") delete productData.flashSaleEnd;
+    if (productData.flashSalePrice === "" || isNaN(productData.flashSalePrice)) delete productData.flashSalePrice;
 
     const product = await db.Product.create(productData, { transaction: t });
 

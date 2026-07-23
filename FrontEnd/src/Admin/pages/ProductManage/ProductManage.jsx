@@ -411,10 +411,15 @@ const ProductManage = () => {
     const finalSpecs = { ...formData.specifications, ...formData.attributes };
 
     // 3. Đóng gói FormData
+    if (formData.imageFile) {
+      data.append("image", formData.imageFile);
+    } else if (imagePreview && typeof imagePreview === "string") {
+      data.append("image", imagePreview);
+    }
+
     Object.keys(formData).forEach((key) => {
-      if (key === "imageFile" && formData[key]) {
-        data.append("image", formData[key]);
-      } else if (
+      if (key === "imageFile") return;
+      if (
         ["attributes", "variants", "options", "specifications"].includes(key)
       ) {
         let value;

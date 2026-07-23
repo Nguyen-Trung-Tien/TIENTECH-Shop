@@ -17,7 +17,7 @@ const handleCreateProduct = async (req, res) => {
     }
 
     // Tự động parse các trường JSON từ Multipart-form
-    ["specifications", "variants", "attributes"].forEach((field) => {
+    ["specifications", "variants", "attributes", "options"].forEach((field) => {
       if (data[field] && typeof data[field] === "string") {
         try {
           data[field] = JSON.parse(data[field]);
@@ -27,11 +27,50 @@ const handleCreateProduct = async (req, res) => {
       }
     });
 
-    // Ép kiểu các trường ID
-    if (data.brandId) data.brandId = parseInt(data.brandId);
-    if (data.categoryId) data.categoryId = parseInt(data.categoryId);
+    // Ép kiểu các trường ID an toàn
+    if (data.brandId && !isNaN(parseInt(data.brandId))) {
+      data.brandId = parseInt(data.brandId);
+    } else {
+      delete data.brandId;
+    }
+
+    if (data.categoryId && !isNaN(parseInt(data.categoryId))) {
+      data.categoryId = parseInt(data.categoryId);
+    } else {
+      delete data.categoryId;
+    }
+
     if (data.isActive !== undefined) data.isActive = parseBoolean(data.isActive);
     if (data.hasVariants !== undefined) data.hasVariants = parseBoolean(data.hasVariants);
+
+    // Sanitize flash sale dates & price
+    if (data.flashSaleStart && String(data.flashSaleStart).trim() !== "") {
+      const startDate = new Date(data.flashSaleStart);
+      if (!isNaN(startDate.getTime())) {
+        data.flashSaleStart = startDate;
+      } else {
+        delete data.flashSaleStart;
+      }
+    } else {
+      delete data.flashSaleStart;
+    }
+
+    if (data.flashSaleEnd && String(data.flashSaleEnd).trim() !== "") {
+      const endDate = new Date(data.flashSaleEnd);
+      if (!isNaN(endDate.getTime())) {
+        data.flashSaleEnd = endDate;
+      } else {
+        delete data.flashSaleEnd;
+      }
+    } else {
+      delete data.flashSaleEnd;
+    }
+
+    if (data.flashSalePrice !== undefined && data.flashSalePrice !== "" && data.flashSalePrice !== null) {
+      data.flashSalePrice = Number(data.flashSalePrice);
+    } else {
+      delete data.flashSalePrice;
+    }
 
     const files = req.files || {};
     const primaryFile = files.image?.[0] || null;
@@ -39,10 +78,12 @@ const handleCreateProduct = async (req, res) => {
 
     const imageRecords = [];
 
-    // Xử lý upload ảnh (nếu có)
+    // Xử lý upload ảnh (nếu có file upload hoặc URL string)
     if (primaryFile) {
       const uploaded = await uploadToCloudinary(primaryFile.buffer, "products");
       imageRecords.push({ imageUrl: uploaded.secure_url, publicId: uploaded.public_id, isPrimary: true });
+    } else if (data.image && typeof data.image === "string" && data.image.trim()) {
+      imageRecords.push({ imageUrl: data.image.trim(), publicId: null, isPrimary: true });
     }
 
     if (galleryFiles.length > 0) {
@@ -57,7 +98,7 @@ const handleCreateProduct = async (req, res) => {
     return res.status(result.errCode === 0 ? 201 : 400).json(result);
   } catch (e) {
     console.error("[Controller] handleCreateProduct Error:", e);
-    return res.status(500).json({ errCode: -1, errMessage: "Internal server error" });
+    return res.status(500).json({ errCode: -1, errMessage: "Lỗi hệ thống khi tạo sản phẩm: " + e.message });
   }
 };
 
