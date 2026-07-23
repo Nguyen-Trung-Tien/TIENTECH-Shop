@@ -165,34 +165,33 @@ const OrderManage = () => {
 
   return (
     <div className="space-y-8 p-4 md:p-8 max-w-[1600px] mx-auto">
-      {/* Header Area */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6">
         <div>
-          <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-3">
-            <div className="size-12 rounded-2xl bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/20">
-              <FiPackage />
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-3">
+            <div className="size-10 sm:size-12 rounded-2xl bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/20 shrink-0">
+              <FiShoppingCart />
             </div>
-            Quản lý đơn hàng
+            Quản lý Đơn hàng
           </h1>
-          <p className="text-slate-500 dark:text-dark-text-secondary font-bold text-xs uppercase tracking-widest mt-2 ml-1">
-            Hệ thống xử lý & điều phối vận chuyển
+          <p className="text-slate-500 dark:text-dark-text-secondary font-bold text-[10px] sm:text-xs uppercase tracking-widest mt-1.5 ml-1">
+            Theo dõi, xử lý và phân loại trạng thái vận chuyển
           </p>
         </div>
 
-        <div className="flex items-center gap-4 bg-white dark:bg-dark-surface p-2 rounded-2xl border border-slate-100 dark:border-dark-border shadow-sm">
-          <div className="relative group w-64">
+        <div className="flex items-center gap-2.5 bg-white dark:bg-dark-surface p-2 rounded-2xl border border-slate-100 dark:border-dark-border shadow-sm w-full sm:w-auto">
+          <div className="relative group flex-1 sm:w-64">
             <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" />
             <input
               type="text"
               placeholder="Mã đơn, SĐT, Tên..."
-              className="w-full h-11 bg-slate-50 dark:bg-dark-bg border-none dark:text-white rounded-xl pl-11 text-sm font-bold focus:ring-2 focus:ring-primary/10 transition-all outline-none"
+              className="w-full h-11 bg-slate-50 dark:bg-dark-bg border-none dark:text-white rounded-xl pl-11 text-xs sm:text-sm font-bold focus:ring-2 focus:ring-primary/10 transition-all outline-none"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
           <button
             onClick={() => fetchOrders(1, searchTerm, activeTab)}
-            className="size-11 bg-primary text-white rounded-xl flex items-center justify-center hover:bg-primary-hover transition-all shadow-md shadow-primary/10 cursor-pointer"
+            className="size-11 bg-primary text-white rounded-xl flex items-center justify-center hover:bg-primary-hover transition-all shadow-md shadow-primary/10 cursor-pointer shrink-0"
           >
             <FiRefreshCw className={loading ? "animate-spin" : ""} />
           </button>
@@ -200,7 +199,7 @@ const OrderManage = () => {
       </div>
 
       {/* Tabs System */}
-      <div className="flex items-center gap-3 overflow-x-auto pb-4 scrollbar-hide px-1">
+      <div className="flex items-center gap-2 sm:gap-3 overflow-x-auto pb-2 sm:pb-4 scrollbar-hide px-1 touch-pan-x">
         {TABS.map((tab) => (
           <button
             key={tab.id}
@@ -208,7 +207,7 @@ const OrderManage = () => {
               setActiveTab(tab.id);
               setPage(1);
             }}
-            className={`px-8 py-4 rounded-[2rem] text-[11px] font-black uppercase tracking-widest transition-all whitespace-nowrap border-2 flex items-center gap-3 cursor-pointer ${
+            className={`px-4 py-2.5 sm:px-8 sm:py-4 rounded-xl sm:rounded-[2rem] text-[10px] sm:text-[11px] font-black uppercase tracking-widest transition-all whitespace-nowrap border-2 flex items-center gap-2 sm:gap-3 cursor-pointer shrink-0 ${
               activeTab === tab.id
                 ? "bg-primary text-white border-primary shadow-xl shadow-primary/20 scale-105 z-10"
                 : "bg-white dark:bg-dark-surface text-slate-500 dark:text-dark-text-secondary border-slate-100 dark:border-dark-border hover:border-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
@@ -216,7 +215,7 @@ const OrderManage = () => {
           >
             {tab.label}
             <span
-              className={`px-2 py-0.5 rounded-lg text-[9px] font-black ${
+              className={`px-1.5 py-0.5 rounded-lg text-[9px] font-black ${
                 activeTab === tab.id
                   ? "bg-white/20 text-white"
                   : "bg-slate-100 dark:bg-dark-bg text-slate-400 dark:text-dark-text-secondary"
@@ -229,24 +228,24 @@ const OrderManage = () => {
       </div>
 
       {/* Main Content Table */}
-      <div className="bg-white dark:bg-dark-surface rounded-[40px] border border-slate-100 dark:border-dark-border shadow-soft overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+      <div className="bg-white dark:bg-dark-surface rounded-2xl sm:rounded-[40px] border border-slate-100 dark:border-dark-border shadow-soft overflow-hidden">
+        <div className="overflow-x-auto custom-scrollbar touch-pan-x">
+          <table className="w-full text-left border-collapse min-w-[600px] md:min-w-full">
             <thead>
               <tr className="bg-slate-50/50 dark:bg-dark-bg/50 border-b border-slate-100 dark:border-dark-border">
-                <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary">
+                <th className="px-3 py-3 md:px-8 md:py-6 text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary">
                   Đơn hàng
                 </th>
-                <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary">
+                <th className="px-3 py-3 md:px-8 md:py-6 text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary">
                   Khách hàng
                 </th>
-                <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary text-right">
+                <th className="px-3 py-3 md:px-8 md:py-6 text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary text-right">
                   Tổng cộng
                 </th>
-                <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary text-center">
+                <th className="px-3 py-3 md:px-8 md:py-6 text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary text-center">
                   Trạng thái
                 </th>
-                <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary text-right">
+                <th className="px-3 py-3 md:px-8 md:py-6 text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary text-right">
                   Thao tác
                 </th>
               </tr>

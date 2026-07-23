@@ -1,18 +1,28 @@
 {
   "short_name": "TIENTECH",
   "name": "TIENTECH Shop – Cửa Hàng Công Nghệ Thông Minh Cao Cấp",
-  "description": "Hệ sinh thái thương mại điện tử đột phá tích hợp AI, tìm kiếm hình ảnh, tư vấn phong thủy và giao diện hiện đại.",
+  "description": "Hệ sinh thái thương mại điện tử đột phá tích hợp AI: Chatbot thông minh, Visual Image Search, tư vấn Phong Thủy, thanh toán VNPay & PayPal.",
   "icons": [
+    {
+      "src": "/favicon.png",
+      "type": "image/png",
+      "sizes": "180x180",
+      "purpose": "any"
+    },
     {
       "src": "/favicon.svg",
       "type": "image/svg+xml",
-      "sizes": "192x192 512x512"
+      "sizes": "any",
+      "purpose": "any maskable"
     }
   ],
   "start_url": "/",
+  "scope": "/",
   "background_color": "#0f172a",
   "theme_color": "#2563eb",
   "display": "standalone",
   "orientation": "portrait",
-  "scope": "/"
+  "lang": "vi-VN",
+  "categories": ["shopping", "lifestyle"],
+  "screenshots": []
 }

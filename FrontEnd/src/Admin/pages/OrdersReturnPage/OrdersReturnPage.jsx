@@ -88,27 +88,27 @@ const OrdersReturnPage = () => {
   };
 
   return (
-    <div className="p-6 bg-slate-50 dark:bg-dark-bg min-h-screen transition-colors duration-300">
+    <div className="p-2.5 sm:p-6 bg-slate-50 dark:bg-dark-bg min-h-screen transition-colors duration-300">
       <div className="max-w-7xl mx-auto">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-6 sm:mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-white uppercase tracking-tight">
+            <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white uppercase tracking-tight">
               Quản lý trả hàng
             </h1>
-            <p className="text-slate-500 dark:text-dark-text-secondary text-sm mt-1 font-medium">
+            <p className="text-slate-500 dark:text-dark-text-secondary text-xs sm:text-sm mt-0.5 sm:mt-1 font-medium">
               Duyệt và xử lý các yêu cầu trả hàng từ khách hàng.
             </p>
           </div>
           <button
             onClick={() => fetchOrders(page)}
-            className="flex items-center gap-2 px-5 py-2.5 bg-white dark:bg-dark-surface border border-slate-200 dark:border-dark-border rounded-xl text-sm font-bold text-slate-600 dark:text-dark-text-secondary hover:text-indigo-600 dark:hover:text-indigo-400 transition-all shadow-sm"
+            className="flex items-center justify-center gap-2 px-4 py-2.5 bg-white dark:bg-dark-surface border border-slate-200 dark:border-dark-border rounded-xl text-xs sm:text-sm font-bold text-slate-600 dark:text-dark-text-secondary hover:text-indigo-600 dark:hover:text-indigo-400 transition-all shadow-sm min-h-[44px] shrink-0"
           >
             <FiRefreshCw className={loading ? "animate-spin" : ""} /> Làm mới
           </button>
         </div>
 
         {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {[1, 2, 3].map((i) => (
               <div
                 key={i}
@@ -117,19 +117,19 @@ const OrdersReturnPage = () => {
             ))}
           </div>
         ) : orders.length === 0 ? (
-          <div className="bg-white dark:bg-dark-surface rounded-3xl border border-slate-200 dark:border-dark-border p-20 text-center shadow-sm">
-            <div className="size-20 bg-slate-50 dark:bg-dark-bg rounded-3xl flex items-center justify-center mx-auto mb-6 text-slate-300 dark:text-slate-700">
-              <FiPackage className="text-4xl" />
+          <div className="bg-white dark:bg-dark-surface rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-dark-border p-10 sm:p-20 text-center shadow-sm">
+            <div className="size-16 sm:size-20 bg-slate-50 dark:bg-dark-bg rounded-2xl sm:rounded-3xl flex items-center justify-center mx-auto mb-4 sm:mb-6 text-slate-300 dark:text-slate-700">
+              <FiPackage className="text-3xl sm:text-4xl" />
             </div>
-            <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2 uppercase">
+            <h3 className="text-lg sm:text-xl font-semibold text-slate-900 dark:text-white mb-2 uppercase">
               Không có yêu cầu trả hàng
             </h3>
-            <p className="text-slate-500 dark:text-dark-text-secondary font-medium">
+            <p className="text-slate-500 dark:text-dark-text-secondary font-medium text-xs sm:text-sm">
               Tất cả các yêu cầu đã được xử lý xong.
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {orders.map((order) => (
               <Motion.div
                 layout

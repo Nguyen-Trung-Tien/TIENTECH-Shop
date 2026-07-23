@@ -72,6 +72,7 @@ const applyFlashSaleToProduct = (productData) => {
   product.flashSaleActive = isFlashSaleActive(product);
 
   if (product.flashSaleActive && product.flashSalePrice) {
+    // Flash Sale đang active: dùng giá flash sale
     const salePrice = Number(product.flashSalePrice);
     product.displayPrice = salePrice;
     product.price = salePrice;
@@ -79,14 +80,34 @@ const applyFlashSaleToProduct = (productData) => {
       originalPrice > 0
         ? ((originalPrice - salePrice) / originalPrice) * 100
         : 0;
+    product.discountPercent = Math.round(product.flashSaleDiscount);
   } else {
-    product.displayPrice = originalPrice;
-    product.price = originalPrice;
+    // Không có flash sale: áp dụng discount % thông thường
     product.flashSaleDiscount = 0;
+    const discountPct = Number(product.discount || 0);
+    if (discountPct > 0 && originalPrice > 0) {
+      const discountedPrice = originalPrice * (1 - discountPct / 100);
+      product.displayPrice = discountedPrice;
+      product.price = discountedPrice;
+    } else {
+      product.displayPrice = originalPrice;
+      product.price = originalPrice;
+    }
+    product.discountPercent = discountPct;
   }
+
+  // Thêm object flashSale đồng bộ cho Frontend (ví dụ ProductDetailPage)
+  product.flashSale = {
+    isActive: product.flashSaleActive,
+    price: product.flashSaleActive ? Number(product.flashSalePrice || 0) : 0,
+    startDate: product.flashSaleStart || null,
+    endDate: product.flashSaleEnd || null,
+    discount: product.flashSaleDiscount,
+  };
 
   return product;
 };
+
 
 module.exports = {
   prepareProductEmbeddingText,

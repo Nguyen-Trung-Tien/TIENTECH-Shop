@@ -72,6 +72,8 @@ const ProductDetailPage = () => {
     handleAddToCart,
     addingCart,
     user,
+    handleReviewSubmit,
+    submittingReview,
   } = useProductDetail(slug);
 
   const averageRating = useMemo(() => {
@@ -195,9 +197,12 @@ const ProductDetailPage = () => {
   }, [user, product?.id]);
 
   useEffect(() => {
-    if (product?.flashSale?.isActive && product?.flashSale?.endDate) {
+    const flashSaleActive = product?.flashSale?.isActive ?? product?.flashSaleActive;
+    const flashSaleEndDate = product?.flashSale?.endDate ?? product?.flashSaleEnd;
+
+    if (flashSaleActive && flashSaleEndDate) {
       const calculateTimeLeft = () => {
-        const diff = new Date(product.flashSale.endDate) - new Date();
+        const diff = new Date(flashSaleEndDate) - new Date();
         return diff > 0 ? Math.floor(diff / 1000) : 0;
       };
       setTimeLeft(calculateTimeLeft());
@@ -293,32 +298,46 @@ const ProductDetailPage = () => {
     handleAddToCart(itemId);
   };
 
-  const isFlashSale = product.flashSale?.isActive && timeLeft > 0;
-  const originalPrice = displayVariant
-    ? displayVariant.price
-    : product.basePrice || product.price;
+  const isFlashSale = Boolean(
+    (product?.flashSale?.isActive ?? product?.flashSaleActive) && timeLeft > 0,
+  );
+  const flashSalePrice = Number(
+    product?.flashSale?.price ?? product?.flashSalePrice ?? 0,
+  );
+  const originalPrice = Number(
+    displayVariant
+      ? displayVariant.price
+      : product?.originalPrice || product?.basePrice || product?.price || 0,
+  );
 
   let currentPrice = originalPrice;
   let discountPercent = 0;
 
-  if (isFlashSale) {
-    currentPrice = product.flashSale.price;
+  if (isFlashSale && flashSalePrice > 0) {
+    currentPrice = flashSalePrice;
     discountPercent = Math.round(
       ((originalPrice - currentPrice) / originalPrice) * 100,
     );
   } else {
     // If there is a variant specific salePrice that is > 0, use it
-    if (displayVariant && Number(displayVariant.salePrice) > 0) {
-      currentPrice = displayVariant.salePrice;
+    if (
+      displayVariant &&
+      Number(displayVariant.salePrice) > 0 &&
+      Number(displayVariant.salePrice) < originalPrice
+    ) {
+      currentPrice = Number(displayVariant.salePrice);
       discountPercent = Math.round(
         ((originalPrice - currentPrice) / originalPrice) * 100,
       );
     } else {
       // Apply global product discount if any
       discountPercent = Number(
-        displayVariant?.discount || product.discount || 0,
+        displayVariant?.discount ||
+          product?.discountPercent ||
+          product?.discount ||
+          0,
       );
-      if (discountPercent > 0) {
+      if (discountPercent > 0 && originalPrice > 0) {
         currentPrice = originalPrice * (1 - discountPercent / 100);
       }
     }
@@ -402,6 +421,8 @@ const ProductDetailPage = () => {
           hasImageFilter={hasImageFilter}
           onPageChange={changeReviewPage}
           onFilterChange={changeReviewFilter}
+          onSubmitReview={handleReviewSubmit}
+          submittingReview={submittingReview}
         />
       </div>
 

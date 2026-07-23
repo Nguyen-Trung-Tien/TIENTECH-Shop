@@ -50,6 +50,7 @@ const HeaderAdmin = ({ toggleSidebar, isCollapsed, theme, toggleTheme }) => {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [showMobileSearch, setShowMobileSearch] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
 
   const searchRef = useRef(null);
@@ -387,6 +388,15 @@ const HeaderAdmin = ({ toggleSidebar, isCollapsed, theme, toggleTheme }) => {
       </div>
 
       <div className="flex items-center gap-2 md:gap-4">
+        {/* Search Icon Trigger (Mobile) */}
+        <button
+          onClick={() => setShowMobileSearch(true)}
+          className="flex md:hidden size-10 items-center justify-center rounded-xl bg-slate-50 dark:bg-dark-bg text-slate-500 dark:text-dark-text-secondary border border-slate-100 dark:border-dark-border hover:text-primary transition-all shadow-sm cursor-pointer"
+          title="Tìm kiếm"
+        >
+          <FiSearch className="text-lg" />
+        </button>
+
         {/* Theme Toggle */}
         <button
           onClick={toggleTheme}
@@ -488,6 +498,105 @@ const HeaderAdmin = ({ toggleSidebar, isCollapsed, theme, toggleTheme }) => {
           )}
         </div>
       </div>
+
+      {/* Mobile Search Drawer / Overlay */}
+      <AnimatePresence>
+        {showMobileSearch && (
+          <Motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="fixed inset-x-0 top-0 z-[100] bg-white dark:bg-dark-surface p-4 border-b border-slate-200 dark:border-dark-border shadow-2xl md:hidden"
+          >
+            <div className="flex items-center gap-2">
+              <form
+                onSubmit={(e) => {
+                  handleSearch(e);
+                  setShowMobileSearch(false);
+                }}
+                className="flex-1 relative"
+              >
+                <FiSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-base" />
+                <input
+                  autoFocus
+                  type="text"
+                  placeholder="Tìm sản phẩm, đơn hàng..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="h-11 w-full rounded-xl border border-slate-200 dark:border-dark-border bg-slate-50 dark:bg-dark-bg pl-10 pr-10 text-sm font-medium text-slate-900 dark:text-white outline-none focus:border-primary"
+                />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery("")}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 p-1"
+                  >
+                    <FiX size={16} />
+                  </button>
+                )}
+              </form>
+              <button
+                type="button"
+                onClick={() => setShowMobileSearch(false)}
+                className="h-11 px-4 rounded-xl bg-slate-100 dark:bg-dark-bg text-slate-600 dark:text-dark-text-secondary font-bold text-xs shrink-0 cursor-pointer"
+              >
+                Đóng
+              </button>
+            </div>
+
+            {/* Mobile Search Suggestions list */}
+            {showSuggestions && (
+              <div className="max-h-[65vh] overflow-y-auto pt-3 space-y-3 custom-scrollbar">
+                {isLoading ? (
+                  <div className="py-6 text-center">
+                    <UnifiedSpinner size="sm" variant="primary" />
+                    <p className="text-xs text-slate-400 mt-2">Đang tìm kiếm...</p>
+                  </div>
+                ) : (
+                  <>
+                    {suggestions.products?.length > 0 && (
+                      <div>
+                        <p className="text-[10px] font-black uppercase text-slate-400 mb-1">Sản phẩm</p>
+                        {suggestions.products.map((p) => (
+                          <div
+                            key={p.id}
+                            onClick={() => {
+                              navigate(`/admin/product/edit/${p.id}`);
+                              setShowMobileSearch(false);
+                            }}
+                            className="p-2 bg-slate-50 dark:bg-dark-bg rounded-lg mb-1 flex justify-between items-center text-xs font-bold text-slate-800 dark:text-white"
+                          >
+                            <span className="truncate">{p.name}</span>
+                            <span className="text-primary shrink-0 ml-2">{formatPrice(p.basePrice)}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {suggestions.orders?.length > 0 && (
+                      <div>
+                        <p className="text-[10px] font-black uppercase text-slate-400 mb-1">Đơn hàng</p>
+                        {suggestions.orders.map((o) => (
+                          <div
+                            key={o.id}
+                            onClick={() => {
+                              navigate(`/admin/order/${o.id}`);
+                              setShowMobileSearch(false);
+                            }}
+                            className="p-2 bg-slate-50 dark:bg-dark-bg rounded-lg mb-1 flex justify-between items-center text-xs font-bold text-slate-800 dark:text-white"
+                          >
+                            <span>#{o.orderCode}</span>
+                            <span className="text-indigo-500 shrink-0 ml-2">{formatPrice(o.totalPrice)}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
+          </Motion.div>
+        )}
+      </AnimatePresence>
     </header>
   );
 };

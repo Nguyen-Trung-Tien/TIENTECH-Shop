@@ -1,43 +1,55 @@
 <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="tientechGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stopColor="#2563eb" />
-      <stop offset="50%" stopColor="#6366f1" />
-      <stop offset="100%" stopColor="#06b6d4" />
+    <linearGradient id="tgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stop-color="#2563eb" />
+      <stop offset="50%"  stop-color="#6366f1" />
+      <stop offset="100%" stop-color="#06b6d4" />
     </linearGradient>
-    <linearGradient id="tientechGlow" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stopColor="#ffffff" stopOpacity="0.9" />
-      <stop offset="100%" stopColor="#ffffff" stopOpacity="0.4" />
+    <linearGradient id="tgGlow" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%"   stop-color="#ffffff" stop-opacity="1"   />
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0.5" />
     </linearGradient>
+    <filter id="shadow" x="-15%" y="-15%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3"
+        flood-color="#2563eb" flood-opacity="0.55" />
+    </filter>
   </defs>
 
-  <!-- Outer Shield Shape -->
+  <!-- Outer Shield with soft drop-shadow -->
   <path
-    d="M50 8L88 24V50C88 73.19 71.8 91.56 50 96C28.2 91.56 12 73.19 12 50V24L50 8Z"
-    fill="url(#tientechGrad)"
+    d="M50 6L90 24V52C90 76.5 72.5 93.5 50 98C27.5 93.5 10 76.5 10 52V24L50 6Z"
+    fill="url(#tgGrad)"
+    filter="url(#shadow)"
   />
 
-  <!-- Inner Dark Geometric Shield -->
+  <!-- Inner translucent depth layer -->
   <path
-    d="M50 16L80 29.5V50C80 68.5 67 83.2 50 87C33 83.2 20 68.5 20 50V29.5L50 16Z"
-    fill="#090d16"
-    fillOpacity="0.3"
+    d="M50 14L82 29.5V52C82 71.5 67.5 86.5 50 90C32.5 86.5 18 71.5 18 52V29.5L50 14Z"
+    fill="#0f172a"
+    fill-opacity="0.28"
   />
 
-  <!-- Letter T Emblem -->
+  <!-- Letter T -->
   <path
-    d="M32 34H68V42H54V74H46V42H32V34Z"
-    fill="url(#tientechGlow)"
+    d="M31 33H69V42H55V73H45V42H31V33Z"
+    fill="url(#tgGlow)"
   />
 
-  <!-- Shopping Handle -->
+  <!-- Shopping bag handle arc -->
   <path
-    d="M38 34C38 27.37 43.37 22 50 22C56.63 22 62 27.37 62 34"
-    stroke="white"
-    strokeWidth="5"
-    strokeLinecap="round"
+    d="M39 33C39 26.4 44.1 21 50 21C55.9 21 61 26.4 61 33"
+    stroke="#ffffff"
+    stroke-width="5.5"
+    stroke-linecap="round"
   />
 
-  <!-- AI Node Accent -->
-  <circle cx="50" cy="58" r="4.5" fill="#06b6d4" />
+  <!-- AI node accent dot -->
+  <circle cx="50" cy="57" r="4.5" fill="#06b6d4" />
+
+  <!-- Subtle highlight on top-left of shield -->
+  <path
+    d="M50 6L90 24V38C75 34 60 30 50 28C40 30 25 34 10 38V24L50 6Z"
+    fill="#ffffff"
+    fill-opacity="0.07"
+  />
 </svg>

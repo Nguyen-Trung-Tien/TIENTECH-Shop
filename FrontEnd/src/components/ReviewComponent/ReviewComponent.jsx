@@ -1,7 +1,8 @@
-import React from "react";
-import { FiStar, FiMessageSquare, FiImage, FiFilter } from "react-icons/fi";
+import React, { useState } from "react";
+import { FiStar, FiMessageSquare, FiImage, FiFilter, FiEdit3, FiLock } from "react-icons/fi";
 import { motion as Motion } from "framer-motion";
 import ReviewItem from "./ReviewItem";
+import ReviewForm from "./ReviewForm";
 import AppPagination from "../Pagination/Pagination";
 
 const ReviewComponent = ({
@@ -18,7 +19,25 @@ const ReviewComponent = ({
   hasImageFilter = false,
   onPageChange,
   onFilterChange,
+  onSubmitReview,
+  submittingReview = false,
 }) => {
+  const [newReview, setNewReview] = useState({
+    rating: 0,
+    comment: "",
+    images: [],
+  });
+  const [showForm, setShowForm] = useState(false);
+
+  const handleSubmitReview = async () => {
+    if (onSubmitReview) {
+      const success = await onSubmitReview(newReview);
+      if (success) {
+        setNewReview({ rating: 0, comment: "", images: [] });
+        setShowForm(false);
+      }
+    }
+  };
   const totalReviews = reviewsSummary?.totalReviews || 0;
   const averageRating =
     reviewsSummary?.averageRating !== undefined &&
@@ -203,6 +222,67 @@ const ReviewComponent = ({
             </div>
           )}
         </div>
+      </div>
+
+      {/* Write Review Section */}
+      <div className="mt-10 pt-10 border-t border-slate-100 dark:border-dark-border">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white">Viết đánh giá của bạn</h3>
+            <p className="text-xs text-slate-400 dark:text-dark-text-secondary mt-0.5">
+              {user ? "Chia sẻ trải nghiệm thực tế của bạn với sản phẩm này" : "Đăng nhập để gửi đánh giá"}
+            </p>
+          </div>
+          {user && (
+            <button
+              onClick={() => setShowForm(!showForm)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-2xl text-xs font-bold transition-all cursor-pointer ${
+                showForm
+                  ? "bg-slate-100 dark:bg-dark-bg text-slate-600 dark:text-slate-300"
+                  : "bg-primary text-white shadow-md shadow-primary/20 hover:bg-primary/90"
+              }`}
+            >
+              <FiEdit3 size={14} />
+              {showForm ? "Thu gọn" : "Viết đánh giá"}
+            </button>
+          )}
+        </div>
+
+        {!user ? (
+          <div className="flex flex-col items-center justify-center py-10 bg-slate-50 dark:bg-dark-bg/40 rounded-[28px] border border-dashed border-slate-200 dark:border-dark-border">
+            <div className="size-14 bg-white dark:bg-dark-surface rounded-2xl flex items-center justify-center mb-4 shadow-sm border border-slate-100 dark:border-dark-border">
+              <FiLock className="text-slate-300 dark:text-slate-600" size={22} />
+            </div>
+            <p className="text-slate-500 dark:text-dark-text-secondary font-bold text-sm">Vui lòng đăng nhập để gửi đánh giá</p>
+            <a
+              href="/login"
+              className="mt-4 px-6 py-2 bg-primary text-white rounded-xl text-xs font-bold hover:bg-primary/90 transition"
+            >
+              Đăng nhập ngay
+            </a>
+          </div>
+        ) : showForm ? (
+          <Motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <ReviewForm
+              newReview={newReview}
+              setNewReview={setNewReview}
+              onSubmit={handleSubmitReview}
+              loading={submittingReview}
+            />
+          </Motion.div>
+        ) : (
+          <button
+            onClick={() => setShowForm(true)}
+            className="w-full py-6 rounded-[28px] border-2 border-dashed border-slate-200 dark:border-dark-border text-slate-400 dark:text-dark-text-secondary text-sm font-semibold hover:border-primary/40 hover:text-primary dark:hover:text-brand hover:bg-primary/5 transition-all cursor-pointer flex items-center justify-center gap-2"
+          >
+            <FiEdit3 size={16} />
+            Nhấn để viết đánh giá của bạn...
+          </button>
+        )}
       </div>
     </section>
   );

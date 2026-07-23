@@ -2,7 +2,7 @@
 
   <!-- Logo Header -->
   <a href="https://github.com/Nguyen-Trung-Tien/Project-App">
-    <img src="FrontEnd/src/assets/logo.png" alt="TienTech Logo" width="160" style="margin-bottom: 15px;" />
+    <img src="FrontEnd/src/assets/logo.svg" alt="TIENTECH Logo" width="280" style="margin-bottom: 15px;" />
   </a>
 
   <!-- Hero Banner -->

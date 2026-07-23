@@ -1,5 +1,10 @@
 <div align="center">
 
+  <!-- Logo Header -->
+  <a href="https://github.com/Nguyen-Trung-Tien/Project-App">
+    <img src="src/assets/logo.svg" alt="TIENTECH Logo" width="240" style="margin-bottom: 15px;" />
+  </a>
+
   <img src="https://capsule-render.vercel.app/api?type=waving&color=0:61DAFB,100:06B6D4&height=150&section=header&text=✨%20TIENTECH%20FRONTEND&fontSize=40&fontColor=fff&animation=fadeIn" width="100%" />
 
   <p>

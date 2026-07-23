@@ -101,6 +101,12 @@ const recommendFortuneProducts = async ({
           as: "images",
           attributes: ["imageUrl", "isPrimary"],
         },
+        {
+          model: db.Review,
+          as: "reviews",
+          attributes: ["id", "rating"],
+          required: false,
+        },
       ],
       order: [
         ["sold", "DESC"],

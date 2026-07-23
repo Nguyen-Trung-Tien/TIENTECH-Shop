@@ -54,7 +54,7 @@ const MENU_ITEMS = [
   { to: "/admin/reviews", icon: <FiHelpCircle />, label: "Phản hồi" },
 ];
 
-const Sidebar = ({ collapsed }) => {
+const Sidebar = ({ collapsed, mobileOpen, onCloseMobile }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -66,6 +66,13 @@ const Sidebar = ({ collapsed }) => {
     cancelRequestedCount: 0,
     returnRequestedCount: 0,
   });
+
+  // Tự động đóng mobile drawer khi chuyển route trên điện thoại
+  useEffect(() => {
+    if (onCloseMobile) {
+      onCloseMobile();
+    }
+  }, [location.pathname]);
 
   useEffect(() => {
     const fetchCounters = async () => {
@@ -81,7 +88,6 @@ const Sidebar = ({ collapsed }) => {
 
     if (user && user.role === "admin") {
       fetchCounters();
-      // Tùy chọn: Refresh mỗi 30s
       const interval = setInterval(fetchCounters, 30000);
       return () => clearInterval(interval);
     }
@@ -114,25 +120,50 @@ const Sidebar = ({ collapsed }) => {
   if (!user) return null;
 
   return (
-    <aside
-      className={`sticky top-0 h-screen bg-white dark:bg-dark-surface text-slate-500 dark:text-dark-text-secondary transition-all duration-300 ease-in-out z-50 flex flex-col border-r border-slate-200 dark:border-dark-border ${
-        collapsed ? "w-20" : "w-64"
-      }`}
-    >
-      {/* Brand Logo / Header */}
-      <div className="h-16 flex items-center px-4 border-b border-slate-100 dark:border-dark-border">
-        <Link to="/admin/dashboard" className="flex items-center w-full">
-          <Logo showText={!collapsed} size="sm" />
-        </Link>
-      </div>
-
-      {/* Navigation Menu */}
-      <nav className="flex-1 px-3 py-6 space-y-1 overflow-y-auto custom-scrollbar">
-        {!collapsed && (
-          <p className="px-3 mb-2 text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary/50">
-            Hệ thống
-          </p>
+    <>
+      {/* Mobile Backdrop Overlay */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <Motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onCloseMobile}
+            className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-40 md:hidden"
+          />
         )}
+      </AnimatePresence>
+
+      <aside
+        className={`fixed md:sticky top-0 left-0 h-screen bg-white dark:bg-dark-surface text-slate-500 dark:text-dark-text-secondary transition-all duration-300 ease-in-out z-50 flex flex-col border-r border-slate-200 dark:border-dark-border ${
+          mobileOpen
+            ? "translate-x-0 w-72 shadow-2xl"
+            : "-translate-x-full md:translate-x-0"
+        } ${collapsed ? "md:w-20" : "md:w-64"}`}
+      >
+        {/* Brand Logo / Header */}
+        <div className="h-16 flex items-center justify-between px-4 border-b border-slate-100 dark:border-dark-border">
+          <Link to="/admin/dashboard" className="flex items-center w-full min-w-0">
+            <Logo showText={mobileOpen || !collapsed} size="sm" />
+          </Link>
+          {/* Close button for Mobile Drawer */}
+          {mobileOpen && (
+            <button
+              onClick={onCloseMobile}
+              className="md:hidden size-9 rounded-xl bg-slate-100 dark:bg-dark-bg text-slate-500 dark:text-dark-text-secondary flex items-center justify-center hover:text-slate-900 dark:hover:text-white transition-colors"
+            >
+              <FiX className="text-lg" />
+            </button>
+          )}
+        </div>
+
+        {/* Navigation Menu */}
+        <nav className="flex-1 px-3 py-6 space-y-1 overflow-y-auto custom-scrollbar">
+          {(mobileOpen || !collapsed) && (
+            <p className="px-3 mb-2 text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary/50">
+              Hệ thống
+            </p>
+          )}
         {MENU_ITEMS.map((item) => {
           if (item.subItems) {
             const isExpanded = expandedMenus.includes(item.label);
@@ -241,13 +272,13 @@ const Sidebar = ({ collapsed }) => {
               >
                 {item.icon}
               </span>
-              {!collapsed && (
+              {(mobileOpen || !collapsed) && (
                 <span className="text-sm font-semibold whitespace-nowrap overflow-hidden transition-all duration-300">
                   {item.label}
                 </span>
               )}
 
-              {collapsed && isActive && (
+              {collapsed && !mobileOpen && isActive && (
                 <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-primary rounded-r-full"></div>
               )}
             </Link>
@@ -261,7 +292,7 @@ const Sidebar = ({ collapsed }) => {
           onClick={handleLogout}
           disabled={loggingOut}
           className={`flex items-center gap-3 px-3 py-3 w-full rounded-xl text-slate-500 dark:text-dark-text-secondary hover:bg-rose-50 dark:hover:bg-rose-500/10 hover:text-rose-600 dark:hover:text-rose-400 transition-all duration-200 group disabled:opacity-60 cursor-pointer ${
-            collapsed ? "justify-center" : ""
+            collapsed && !mobileOpen ? "justify-center" : ""
           }`}
           title={collapsed ? "Đăng xuất" : ""}
         >
@@ -270,7 +301,7 @@ const Sidebar = ({ collapsed }) => {
           ) : (
             <FiLogOut className="text-lg flex-shrink-0 group-hover:-translate-x-1 transition-transform" />
           )}
-          {!collapsed && (
+          {(mobileOpen || !collapsed) && (
             <span className="text-sm font-bold whitespace-nowrap overflow-hidden">
               {loggingOut ? "Đang đăng xuất..." : "Đăng xuất"}
             </span>
@@ -278,6 +309,7 @@ const Sidebar = ({ collapsed }) => {
         </button>
       </div>
     </aside>
+    </>
   );
 };
 

@@ -72,17 +72,31 @@ const ProductCard = ({ product }) => {
     }
   };
 
+  const reviewsList = Array.isArray(reviews) ? reviews : [];
+
   const avgRating = useMemo(() => {
-    if (!reviews.length) return 0;
+    // Ưu tiên pre-computed từ backend nếu có
+    if (product.avgRating != null) return Number(product.avgRating);
+    if (product.averageRating != null) return Number(product.averageRating);
+    if (!reviewsList.length) return 0;
     return (
-      reviews.reduce((sum, r) => sum + (r.rating || 0), 0) / reviews.length
+      reviewsList.reduce((sum, r) => sum + (r.rating || 0), 0) / reviewsList.length
     );
-  }, [reviews]);
+  }, [reviewsList, product.avgRating, product.averageRating]);
 
-  const productOriginalPrice = flashSaleActive
-    ? Number(flashOriginalPrice || basePrice || price)
-    : Number(basePrice || price);
+  const reviewCount = product.reviewCount ?? product.reviewsCount ?? reviewsList.length;
 
+  // Tổng hợp % giảm giá: ưu tiên flash sale > discount % thông thường
+  // Backend đã tính sẵn discountPercent trong applyFlashSaleToProduct
+  const effectiveDiscountPct = flashSaleActive
+    ? flashSaleDiscount
+    : Number(product.discountPercent ?? discount ?? 0);
+
+  // Giá gốc (trước giảm giá)
+  const productOriginalPrice = Number(product.basePrice || price || 0);
+
+  // Giá hiển thị cuối (đã trừ giảm giá)
+  // displayPrice từ backend đã được tính đúng sau fix
   const finalPrice = Number(displayPrice || basePrice || price);
 
   const handleAddToCartClick = async (e) => {
@@ -188,16 +202,16 @@ const ProductCard = ({ product }) => {
             className="w-full h-full object-contain p-2 mix-blend-multiply dark:mix-blend-normal transition-transform duration-500 group-hover:scale-108"
           />
 
-          {/* Badges */}
+          {/* Badges - dùng effectiveDiscountPct nhất quán */}
           <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-10">
-            {flashSaleActive && flashSaleDiscount > 0 && (
+            {flashSaleActive && effectiveDiscountPct > 0 && (
               <span className="px-2.5 py-1 bg-gradient-to-r from-red-600 to-orange-500 text-white font-black text-[9px] uppercase tracking-wider rounded-lg shadow-sm flex items-center gap-1">
-                ⚡ -{Math.round(flashSaleDiscount)}%
+                ⚡ -{Math.round(effectiveDiscountPct)}%
               </span>
             )}
-            {!flashSaleActive && discount > 0 && (
+            {!flashSaleActive && effectiveDiscountPct > 0 && (
               <span className="px-2.5 py-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-black text-[9px] uppercase tracking-wider rounded-lg shadow-sm">
-                -{discount}%
+                -{Math.round(effectiveDiscountPct)}%
               </span>
             )}
           </div>
@@ -287,7 +301,7 @@ const ProductCard = ({ product }) => {
               ))}
             </div>
             <span className="text-[10px] font-semibold text-slate-400 dark:text-slate-400">
-              ({reviews.length || 0})
+              ({reviewCount})
             </span>
             {sold > 0 && (
               <span className="text-[10px] font-medium text-slate-400 dark:text-slate-500 ml-auto">
@@ -301,7 +315,7 @@ const ProductCard = ({ product }) => {
               <p className="text-sm md:text-base font-black text-slate-900 dark:text-white leading-none">
                 {formatCurrency(finalPrice)}
               </p>
-              {((flashSaleActive && flashOriginalPrice) || discount > 0) && (
+              {effectiveDiscountPct > 0 && productOriginalPrice > finalPrice && (
                 <p className="text-[10px] text-slate-400 dark:text-slate-500 line-through font-medium leading-none mt-1">
                   {formatCurrency(productOriginalPrice)}
                 </p>
