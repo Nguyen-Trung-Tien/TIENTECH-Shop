@@ -30,8 +30,8 @@ const CheckoutPage = () => {
     shippingAddress: "",
     paymentMethod: "COD",
     note: "",
-    fullName: "",
-    phone: "",
+    fullName: user?.username || user?.fullName || "",
+    phone: user?.phone || "",
   });
 
   // Redirect if no items
@@ -58,17 +58,26 @@ const CheckoutPage = () => {
   }, 0);
 
   const handlePlaceOrder = async () => {
-    if (!formData.shippingAddress) {
-      return toast.error("Vui lòng nhập địa chỉ giao hàng");
+    const receiverName = formData.fullName?.trim() || user?.username || user?.fullName || "";
+    const receiverPhone = formData.phone?.trim() || user?.phone || "";
+
+    if (!receiverName) {
+      return toast.error("Vui lòng nhập họ và tên người nhận hàng");
+    }
+    if (!receiverPhone) {
+      return toast.error("Vui lòng nhập số điện thoại người nhận hàng");
+    }
+    if (!formData.shippingAddress?.trim()) {
+      return toast.error("Vui lòng nhập hoặc chọn địa chỉ giao hàng");
     }
 
     setLoading(true);
     try {
       const orderData = {
         userId: user.id,
-        shippingAddress: formData.shippingAddress,
-        receiverName: formData.fullName || user.username,
-        receiverPhone: formData.phone || user.phone,
+        shippingAddress: formData.shippingAddress.trim(),
+        receiverName: receiverName,
+        receiverPhone: receiverPhone,
         paymentMethod: formData.paymentMethod,
         note: formData.note,
         voucherCode: appliedVoucher?.code || null,
