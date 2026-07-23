@@ -159,62 +159,64 @@ const ChartCard = ({ token }) => {
         </div>
       </div>
 
-      <div className="h-[280px] sm:h-[360px] md:h-[400px] w-full min-w-0 bg-slate-50/40 dark:bg-dark-bg/30 rounded-3xl p-2 sm:p-4 md:p-6 border border-slate-100 dark:border-dark-border">
+      <div className="h-[280px] sm:h-[360px] md:h-[400px] w-full bg-slate-50/40 dark:bg-dark-bg/30 rounded-3xl p-2 sm:p-4 md:p-6 border border-slate-100 dark:border-dark-border overflow-x-auto">
         {loading ? (
           <div className="h-full w-full flex flex-col items-center justify-center gap-3">
             <UnifiedSpinner size="lg" variant="primary" />
             <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Đang phân tích doanh thu...</span>
           </div>
         ) : (
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={selectedData} margin={{ top: 10, right: 15, left: -10, bottom: 0 }}>
-              <CartesianGrid
-                strokeDasharray="3 3"
-                stroke="currentColor"
-                className="text-slate-200 dark:text-slate-800"
-                vertical={false}
-              />
-              <XAxis
-                dataKey="name"
-                axisLine={false}
-                tickLine={false}
-                tick={{ fill: "currentColor", fontSize: 10, fontWeight: 700 }}
-                className="text-slate-400 dark:text-dark-text-secondary"
-                dy={10}
-              />
-              <YAxis 
-                hide={false}
-                axisLine={false}
-                tickLine={false}
-                tick={{ fill: "currentColor", fontSize: 10, fontWeight: 700 }}
-                className="text-slate-400 dark:text-dark-text-secondary"
-                tickFormatter={formatCurrency}
-              />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: "rgba(15, 23, 42, 0.92)",
-                  borderRadius: "16px",
-                  border: "1px solid rgba(255,255,255,0.1)",
-                  backdropFilter: "blur(12px)",
-                  boxShadow: "0 20px 25px -5px rgba(0,0,0,0.3)",
-                  padding: "10px 14px",
-                  color: "#fff"
-                }}
-                itemStyle={{ fontSize: "12px", fontWeight: "900", color: "#818cf8" }}
-                labelStyle={{ fontSize: "10px", fontWeight: "bold", color: "#94a3b8", marginBottom: "2px" }}
-                cursor={{ stroke: "#6366f1", strokeWidth: 2, strokeDasharray: "5 5" }}
-              />
-              <Line
-                type="monotone"
-                dataKey="value"
-                stroke="#6366f1"
-                strokeWidth={3}
-                dot={{ fill: "#6366f1", strokeWidth: 2, r: 4, stroke: "#fff" }}
-                activeDot={{ r: 7, strokeWidth: 3, stroke: "rgba(99, 102, 241, 0.3)" }}
-                animationDuration={1200}
-              />
-            </LineChart>
-          </ResponsiveContainer>
+          <div className="h-full min-w-[500px] sm:min-w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={selectedData} margin={{ top: 10, right: 15, left: -10, bottom: 0 }}>
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke="currentColor"
+                  className="text-slate-200 dark:text-slate-800"
+                  vertical={false}
+                />
+                <XAxis
+                  dataKey="name"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: "currentColor", fontSize: 10, fontWeight: 700 }}
+                  className="text-slate-400 dark:text-dark-text-secondary"
+                  dy={10}
+                />
+                <YAxis 
+                  hide={false}
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: "currentColor", fontSize: 10, fontWeight: 700 }}
+                  className="text-slate-400 dark:text-dark-text-secondary"
+                  tickFormatter={formatCurrency}
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "rgba(15, 23, 42, 0.92)",
+                    borderRadius: "16px",
+                    border: "1px solid rgba(255,255,255,0.1)",
+                    backdropFilter: "blur(12px)",
+                    boxShadow: "0 20px 25px -5px rgba(0,0,0,0.3)",
+                    padding: "10px 14px",
+                    color: "#fff"
+                  }}
+                  itemStyle={{ fontSize: "12px", fontWeight: "900", color: "#818cf8" }}
+                  labelStyle={{ fontSize: "10px", fontWeight: "bold", color: "#94a3b8", marginBottom: "2px" }}
+                  cursor={{ stroke: "#6366f1", strokeWidth: 2, strokeDasharray: "5 5" }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="value"
+                  stroke="#6366f1"
+                  strokeWidth={3}
+                  dot={{ fill: "#6366f1", strokeWidth: 2, r: 4, stroke: "#fff" }}
+                  activeDot={{ r: 7, strokeWidth: 3, stroke: "rgba(99, 102, 241, 0.3)" }}
+                  animationDuration={1200}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
         )}
       </div>
     </Motion.div>
