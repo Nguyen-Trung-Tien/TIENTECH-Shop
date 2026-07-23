@@ -342,10 +342,20 @@ const getProductById = async (id) => {
     const primary =
       plainProduct.images?.find((i) => i.isPrimary) || plainProduct.images?.[0];
 
+    let specs = plainProduct.specifications || {};
+    if (typeof specs === "string") {
+      try {
+        specs = JSON.parse(specs);
+      } catch (e) {
+        specs = {};
+      }
+    }
+
     return {
       errCode: 0,
       product: {
         ...applyFlashSaleToProduct(plainProduct),
+        specifications: specs,
         image: primary?.imageUrl || null,
         variants: plainProduct.variants?.map((v) => ({
           ...v,

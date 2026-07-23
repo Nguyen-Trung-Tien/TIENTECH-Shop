@@ -61,6 +61,17 @@ const createVariant = async (data, t_external = null) => {
         finalAttrValues = {};
       }
     }
+    if (Array.isArray(finalAttrValues)) {
+      const convertedObj = {};
+      finalAttrValues.forEach((item) => {
+        const key = item.attribute?.name || item.attribute?.code || item.attributeName || "Thuộc tính";
+        const val = typeof item === "object" ? item.value : item;
+        if (key && val) {
+          convertedObj[key] = String(val).trim();
+        }
+      });
+      finalAttrValues = convertedObj;
+    }
 
     const variant = await db.ProductVariant.create({
       productId,
@@ -113,6 +124,17 @@ const updateVariant = async (id, data, t_external = null) => {
         finalAttrValues = variant.attributeValues;
       }
     }
+    if (Array.isArray(finalAttrValues)) {
+      const convertedObj = {};
+      finalAttrValues.forEach((item) => {
+        const key = item.attribute?.name || item.attribute?.code || item.attributeName || "Thuộc tính";
+        const val = typeof item === "object" ? item.value : item;
+        if (key && val) {
+          convertedObj[key] = String(val).trim();
+        }
+      });
+      finalAttrValues = convertedObj;
+    }
 
     const updateData = {
       sku: data.sku !== undefined ? data.sku : variant.sku,
@@ -151,14 +173,25 @@ const updateVariant = async (id, data, t_external = null) => {
 
 
 const deleteVariant = async (id) => {
+  const numericId = parseInt(id, 10);
+  if (isNaN(numericId)) {
+    return { errCode: 0, errMessage: "Temp variant deleted" };
+  }
+
   const t = await db.sequelize.transaction();
   try {
-    const variant = await db.ProductVariant.findByPk(id, { transaction: t });
+    const variant = await db.ProductVariant.findByPk(numericId, { transaction: t });
     if (!variant) {
       await t.rollback();
-      return { errCode: 1, errMessage: "Variant not found" };
+      return { errCode: 0, errMessage: "Variant not found or already deleted" };
     }
     const productId = variant.productId;
+
+    // Delete associated junction rows and detach images/cart items to prevent FK error
+    await db.VariantAttributeValue.destroy({ where: { variantId: numericId }, transaction: t });
+    await db.ProductImage.update({ variantId: null }, { where: { variantId: numericId }, transaction: t });
+    await db.CartItem.destroy({ where: { variantId: numericId }, transaction: t });
+
     await variant.destroy({ transaction: t });
 
     // Cập nhật totalStock sản phẩm cha
@@ -167,7 +200,7 @@ const deleteVariant = async (id) => {
     await t.commit();
     return { errCode: 0, errMessage: "Variant deleted" };
   } catch (e) {
-    await t.rollback();
+    if (t && !t.finished) await t.rollback();
     console.error("Error deleteVariant:", e);
     return { errCode: 1, errMessage: e.message };
   }

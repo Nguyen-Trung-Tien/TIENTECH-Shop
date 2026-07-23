@@ -40,7 +40,7 @@ class ProductRepository {
       where: whereCondition,
       attributes: [
         "id", "name", "slug", "sku", "basePrice", "discount", "totalStock", 
-        "isFlashSale", "flashSaleStart", "flashSaleEnd", "flashSalePrice", 
+        "hasVariants", "isFlashSale", "flashSaleStart", "flashSaleEnd", "flashSalePrice", 
         "isActive", "categoryId", "brandId", "createdAt"
       ],
       include,

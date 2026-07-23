@@ -44,11 +44,7 @@ const ensureUniqueSKU = async (sku, transaction) => {
 };
 
 const clearProductCache = async (categoryId = null) => {
-  if (categoryId) {
-    await deleteCacheByPattern(`products_${categoryId}_*`);
-  } else {
-    await deleteCacheByPattern("products_*");
-  }
+  await deleteCacheByPattern("products_*");
   await deleteCacheByPattern("dashboard_*");
   await deleteCacheByPattern("smart_recs_*");
   await deleteCacheByPattern("user_recs_*");

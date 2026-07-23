@@ -4,23 +4,44 @@ const { Op } = require("sequelize");
 /**
  * Lấy hoặc tạo mới giá trị thuộc tính (Hỗ trợ logic Select or Input)
  */
-const getOrCreateAttributeValue = async (attributeCode, value, transaction) => {
+const getOrCreateAttributeValue = async (attributeCodeOrName, value, transaction) => {
   if (!value) return null;
 
-  const attribute = await db.Attribute.findOne({ 
-    where: { code: attributeCode },
+  const trimmedKey = String(attributeCodeOrName).trim();
+  const trimmedVal = String(value).trim();
+  if (!trimmedKey || !trimmedVal) return null;
+
+  // Tim thuoc tinh theo code HOAC name
+  let attribute = await db.Attribute.findOne({ 
+    where: { 
+      [Op.or]: [
+        { code: trimmedKey.toLowerCase() },
+        { name: trimmedKey }
+      ]
+    },
     transaction 
   });
   
+  // Neu chua co trong DB thi tu dong tao moi Attribute
   if (!attribute) {
-    console.warn(`Attribute with code ${attributeCode} not found`);
-    return null;
+    const newCode = trimmedKey
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]/g, "_");
+
+    const [createdAttr] = await db.Attribute.findOrCreate({
+      where: { code: newCode },
+      defaults: { name: trimmedKey, code: newCode },
+      transaction,
+    });
+    attribute = createdAttr;
   }
 
   const [attrValue] = await db.AttributeValue.findOrCreate({
     where: { 
       attributeId: attribute.id, 
-      value: String(value).trim() 
+      value: trimmedVal 
     },
     transaction
   });

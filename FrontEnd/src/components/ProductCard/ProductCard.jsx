@@ -75,10 +75,9 @@ const ProductCard = ({ product }) => {
   const reviewsList = Array.isArray(reviews) ? reviews : [];
 
   const avgRating = useMemo(() => {
-    // Ưu tiên pre-computed từ backend nếu có
     if (product.avgRating != null) return Number(product.avgRating);
     if (product.averageRating != null) return Number(product.averageRating);
-    if (!reviewsList.length) return 0;
+    if (!reviewsList.length) return 5;
     return (
       reviewsList.reduce((sum, r) => sum + (r.rating || 0), 0) / reviewsList.length
     );
@@ -102,29 +101,35 @@ const ProductCard = ({ product }) => {
   const handleAddToCartClick = async (e) => {
     e.stopPropagation();
     if (!userId) return toast.warn("Vui lòng đăng nhập!");
-    if (!isActive || (stock < 1 && !hasVariants))
-      return toast.error("Hết hàng!");
+    if (!isActive) return toast.error("Sản phẩm đã ngưng kinh doanh!");
 
-    // Nếu sản phẩm có variant, mở modal chọn option
-    if (hasVariants) {
-      setLoadingCart(true);
-      try {
-        const res = await getProductByIdApi(id);
-        if (res.errCode === 0) {
-          setFullProduct(res.product);
+    setLoadingCart(true);
+    try {
+      const res = await getProductByIdApi(id);
+      if (res.errCode === 0 && res.product) {
+        const fullP = res.product;
+        const checkHasVariants =
+          fullP.hasVariants === true ||
+          fullP.hasVariants === 1 ||
+          fullP.hasVariants === "true" ||
+          (Array.isArray(fullP.variants) && fullP.variants.length > 0);
+
+        if (checkHasVariants) {
+          setFullProduct(fullP);
           setShowQuickModal(true);
-        } else {
-          toast.error("Không thể tải thông tin sản phẩm");
+          setLoadingCart(false);
+          return;
         }
-      } catch (err) {
-        toast.error("Lỗi kết nối");
-      } finally {
-        setLoadingCart(false);
       }
-      return;
+    } catch (err) {
+      console.error("Fetch product for cart error:", err);
     }
 
-    // Nếu không có variant, thêm thẳng vào giỏ
+    if (stock < 1) {
+      setLoadingCart(false);
+      return toast.error("Sản phẩm tạm hết hàng!");
+    }
+
     await executeAddToCart(id);
   };
 
@@ -212,6 +217,16 @@ const ProductCard = ({ product }) => {
             {!flashSaleActive && effectiveDiscountPct > 0 && (
               <span className="px-2.5 py-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-black text-[9px] uppercase tracking-wider rounded-lg shadow-sm">
                 -{Math.round(effectiveDiscountPct)}%
+              </span>
+            )}
+            {Boolean(
+              hasVariants === true ||
+              hasVariants === 1 ||
+              hasVariants === "true" ||
+              (Array.isArray(product.variants) && product.variants.length > 0)
+            ) && (
+              <span className="px-2.5 py-0.5 bg-indigo-950/80 backdrop-blur-md text-indigo-300 font-bold text-[9px] uppercase tracking-wider rounded-lg border border-indigo-500/30 w-fit">
+                🎨 Có nhiều phiên bản
               </span>
             )}
           </div>

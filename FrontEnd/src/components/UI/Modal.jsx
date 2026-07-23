@@ -177,19 +177,29 @@ export const ConfirmModal = ({
 
         <div className="flex w-full gap-2.5 sm:gap-3 mt-4">
           <Button
+            type="button"
             variant="secondary"
             className="flex-1 h-11 rounded-xl text-[11px] font-black uppercase tracking-wider"
-            onClick={onClose}
+            onClick={(e) => {
+              if (e && e.preventDefault) e.preventDefault();
+              if (e && e.stopPropagation) e.stopPropagation();
+              if (onClose) onClose(e);
+            }}
             disabled={loading}
           >
             {cancelText}
           </Button>
           <Button
+            type="button"
             variant={variant === "danger" ? "destructive" : variant}
             className={`flex-1 h-11 rounded-xl text-[11px] font-black uppercase tracking-wider ${
               variant === "danger" || variant === "destructive" ? "bg-rose-500 hover:bg-rose-600 shadow-md shadow-rose-500/20" : ""
             }`}
-            onClick={onConfirm}
+            onClick={(e) => {
+              if (e && e.preventDefault) e.preventDefault();
+              if (e && e.stopPropagation) e.stopPropagation();
+              if (onConfirm) onConfirm(e);
+            }}
             loading={loading}
           >
             {confirmText}

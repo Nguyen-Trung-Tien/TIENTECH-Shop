@@ -124,53 +124,80 @@ const ProductDetailPage = () => {
     if (!product) return [];
     const specsMap = new Map();
 
+    const parseSpecsObj = (raw) => {
+      if (!raw) return {};
+      if (typeof raw === "string") {
+        try {
+          return JSON.parse(raw);
+        } catch {
+          return {};
+        }
+      }
+      return typeof raw === "object" ? raw : {};
+    };
+
+    // 1. Relational Product Attributes
     if (Array.isArray(product.attributes)) {
       product.attributes.forEach((a) => {
-        if (a.attribute) {
-          specsMap.set(a.attribute.code.toLowerCase(), {
-            name: a.attribute.name,
-            value: a.value,
-            icon: specIconMap[a.attribute.code.toLowerCase()] || <FiSettings />,
+        if (a.attribute && a.value) {
+          const code = (a.attribute.code || "").toLowerCase();
+          specsMap.set(code, {
+            name: a.attribute.name || specLabelMap[code] || code,
+            value: String(a.value).trim(),
+            icon: specIconMap[code] || <FiSettings />,
           });
         }
       });
     }
 
+    // 2. Product Specifications (JSON field)
+    const mainSpecsObj = parseSpecsObj(product.specifications);
+    Object.entries(mainSpecsObj).forEach(([key, value]) => {
+      if (!value || String(value).trim() === "") return;
+      const normalizedKey = key.toLowerCase();
+      const existing = specsMap.get(normalizedKey);
+      if (!existing) {
+        specsMap.set(normalizedKey, {
+          name: specLabelMap[normalizedKey] || key,
+          value: String(value).trim(),
+          icon: specIconMap[normalizedKey] || <FiInfo />,
+        });
+      } else {
+        specsMap.set(normalizedKey, {
+          ...existing,
+          value: String(value).trim(),
+        });
+      }
+    });
+
+    // 3. Relational Display Variant Attributes
     if (displayVariant && Array.isArray(displayVariant.attributes)) {
       displayVariant.attributes.forEach((a) => {
-        if (a.attribute) {
-          specsMap.set(a.attribute.code.toLowerCase(), {
-            name: a.attribute.name,
-            value: a.value,
-            icon: specIconMap[a.attribute.code.toLowerCase()] || <FiSettings />,
+        if (a.attribute && a.value) {
+          const code = (a.attribute.code || "").toLowerCase();
+          specsMap.set(code, {
+            name: a.attribute.name || specLabelMap[code] || code,
+            value: String(a.value).trim(),
+            icon: specIconMap[code] || <FiSettings />,
           });
         }
       });
     }
 
-    let legacySpecs =
-      displayVariant?.specifications || product.specifications || {};
-    if (typeof legacySpecs === "string") {
-      try {
-        legacySpecs = JSON.parse(legacySpecs);
-      } catch {
-        legacySpecs = {};
-      }
-    }
-
-    if (typeof legacySpecs === "object" && legacySpecs !== null) {
-      Object.entries(legacySpecs).forEach(([key, value]) => {
-        if (!value) return;
+    // 4. Display Variant Specifications
+    if (displayVariant) {
+      const variantSpecsObj = parseSpecsObj(displayVariant.specifications);
+      Object.entries(variantSpecsObj).forEach(([key, value]) => {
+        if (!value || String(value).trim() === "") return;
         const normalizedKey = key.toLowerCase();
-        if (!specsMap.has(normalizedKey)) {
-          specsMap.set(normalizedKey, {
-            name: specLabelMap[normalizedKey] || key,
-            value: value,
-            icon: specIconMap[normalizedKey] || <FiInfo />,
-          });
-        }
+        specsMap.set(normalizedKey, {
+          name: specLabelMap[normalizedKey] || key,
+          value: String(value).trim(),
+          icon: specIconMap[normalizedKey] || <FiInfo />,
+        });
       });
     }
+
     return Array.from(specsMap.values());
   }, [product, displayVariant]);
 

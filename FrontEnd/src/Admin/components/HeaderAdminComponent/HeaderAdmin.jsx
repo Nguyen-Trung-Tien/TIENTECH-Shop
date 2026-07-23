@@ -210,7 +210,7 @@ const HeaderAdmin = ({ toggleSidebar, isCollapsed, theme, toggleTheme }) => {
                 initial={{ opacity: 0, y: 10, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 5, scale: 0.95 }}
-                className="absolute top-full left-0 mt-3 w-[450px] bg-white dark:bg-dark-surface rounded-2xl shadow-2xl border border-slate-100 dark:border-dark-border overflow-hidden z-50 p-2"
+                className="absolute top-full left-0 mt-3 w-[450px] max-w-[calc(100vw-2rem)] bg-white dark:bg-dark-surface rounded-2xl shadow-2xl border border-slate-100 dark:border-dark-border overflow-hidden z-50 p-2"
               >
                 {isLoading ? (
                   <div className="py-8 text-center flex flex-col items-center justify-center gap-2">
