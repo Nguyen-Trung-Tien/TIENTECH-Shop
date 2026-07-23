@@ -91,24 +91,25 @@ const Footer = () => {
             </h4>
             <ul className="space-y-4">
               {[
-                "Câu hỏi thường gặp",
-                "Chính sách bảo hành",
-                "Vận chuyển & đổi trả",
-                "Trung tâm hỗ trợ",
-                "Thanh toán trực tuyến",
+                { name: "Câu hỏi thường gặp", path: "/support/faq" },
+                { name: "Chính sách bảo hành", path: "/support/warranty" },
+                { name: "Vận chuyển & đổi trả", path: "/support/shipping-returns" },
+                { name: "Trung tâm hỗ trợ", path: "/support" },
+                { name: "Thanh toán trực tuyến", path: "/support/payment" },
               ].map((link) => (
-                <li key={link}>
+                <li key={link.name}>
                   <Link
-                    to="#"
+                    to={link.path}
                     className="text-sm font-bold uppercase tracking-widest hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center group"
                   >
                     <span className="w-0 group-hover:w-2 h-[2px] bg-blue-600 transition-all mr-0 group-hover:mr-2 rounded-full"></span>
-                    {link}
+                    {link.name}
                   </Link>
                 </li>
               ))}
             </ul>
           </div>
+
 
           {/* Contact Info */}
           <div className="space-y-6">

@@ -26,6 +26,13 @@ import OrderPage from "../pages/OrderPage/OrderPage";
 import OrderDetail from "../pages/OrderDetail/OrderDetail";
 import AboutPage from "../pages/AboutPage/AboutPage";
 import WishlistPage from "../pages/WishlistPage/WishlistPage";
+import ContactPage from "../pages/ContactPage/ContactPage";
+import SupportHub from "../pages/SupportPage/SupportHub";
+import FAQPage from "../pages/SupportPage/FAQPage";
+import WarrantyPage from "../pages/SupportPage/WarrantyPage";
+import ShippingPage from "../pages/SupportPage/ShippingPage";
+import PaymentPage from "../pages/SupportPage/PaymentPage";
+
 
 const UserRoutes = () => {
   return (
@@ -206,6 +213,55 @@ const UserRoutes = () => {
           </LayoutComponent>
         }
       />
+      <Route
+        path="contact"
+        element={
+          <LayoutComponent isShowHeader={true} isShowFooter={true}>
+            <ContactPage />
+          </LayoutComponent>
+        }
+      />
+      <Route
+        path="support"
+        element={
+          <LayoutComponent isShowHeader={true} isShowFooter={true}>
+            <SupportHub />
+          </LayoutComponent>
+        }
+      />
+      <Route
+        path="support/faq"
+        element={
+          <LayoutComponent isShowHeader={true} isShowFooter={true}>
+            <FAQPage />
+          </LayoutComponent>
+        }
+      />
+      <Route
+        path="support/warranty"
+        element={
+          <LayoutComponent isShowHeader={true} isShowFooter={true}>
+            <WarrantyPage />
+          </LayoutComponent>
+        }
+      />
+      <Route
+        path="support/shipping-returns"
+        element={
+          <LayoutComponent isShowHeader={true} isShowFooter={true}>
+            <ShippingPage />
+          </LayoutComponent>
+        }
+      />
+      <Route
+        path="support/payment"
+        element={
+          <LayoutComponent isShowHeader={true} isShowFooter={true}>
+            <PaymentPage />
+          </LayoutComponent>
+        }
+      />
+
       <Route
         path="*"
         element={
