@@ -43,7 +43,7 @@ self.addEventListener("fetch", (event) => {
   event.respondWith(
     fetch(event.request)
       .then((response) => {
-        if (response.status === 200) {
+        if (response && response.status === 200) {
           const responseClone = response.clone();
           caches.open(CACHE_NAME).then((cache) => {
             cache.put(event.request, responseClone);
@@ -51,7 +51,30 @@ self.addEventListener("fetch", (event) => {
         }
         return response;
       })
-      .catch(() => caches.match(event.request))
+      .catch(async () => {
+        const cachedResponse = await caches.match(event.request);
+        if (cachedResponse) {
+          return cachedResponse;
+        }
+
+        // For navigation requests, fallback to index.html / root if offline or uncached
+        if (
+          event.request.mode === "navigate" ||
+          (event.request.headers.get("accept") || "").includes("text/html")
+        ) {
+          const rootCached = await caches.match("/");
+          if (rootCached) {
+            return rootCached;
+          }
+        }
+
+        // Fallback response to avoid "Failed to convert value to Response" error
+        return new Response("Network error occurred", {
+          status: 503,
+          statusText: "Service Unavailable",
+          headers: new Headers({ "Content-Type": "text/plain" }),
+        });
+      })
   );
 });
 

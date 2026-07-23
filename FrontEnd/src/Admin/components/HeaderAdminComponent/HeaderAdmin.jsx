@@ -85,7 +85,11 @@ const HeaderAdmin = ({ toggleSidebar, isCollapsed, theme, toggleTheme }) => {
         try {
           const res = await globalSearchApi(query);
           if (res.errCode === 0) {
-            setSuggestions(res.data);
+            setSuggestions({
+              products: res.data?.products || [],
+              orders: res.data?.orders || [],
+              users: res.data?.users || [],
+            });
           }
         } catch (err) {
           console.error("Global search error:", err);

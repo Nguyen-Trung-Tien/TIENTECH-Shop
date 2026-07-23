@@ -34,6 +34,9 @@ const GenericAdminTable = ({
   searchPlaceholder = "Tìm kiếm...",
   renderActions,
 }) => {
+  const safeData = Array.isArray(data) ? data : [];
+  const safeColumns = Array.isArray(columns) ? columns : [];
+
   return (
     <div className="space-y-4 sm:space-y-8 p-2.5 sm:p-6 md:p-8 max-w-[1600px] mx-auto">
       {/* Action Loader Overlay */}
@@ -93,7 +96,7 @@ const GenericAdminTable = ({
           <table className="w-full text-left border-collapse min-w-[550px] md:min-w-full">
             <thead>
               <tr className="bg-slate-50/50 dark:bg-dark-bg/50 border-b border-slate-100 dark:border-dark-border">
-                {columns.map((col, idx) => (
+                {safeColumns.map((col, idx) => (
                   <th
                     key={idx}
                     className={`px-3 py-3 md:px-8 md:py-6 text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary ${col.className || ""}`}
@@ -110,16 +113,16 @@ const GenericAdminTable = ({
               {loading ? (
                 <tr>
                   <td
-                    colSpan={columns.length + 1}
+                    colSpan={safeColumns.length + 1}
                     className="px-3 py-8 md:px-8"
                   >
-                    <AdminTableSkeleton rows={8} cols={columns.length + 1} />
+                    <AdminTableSkeleton rows={8} cols={safeColumns.length + 1} />
                   </td>
                 </tr>
-              ) : data.length === 0 ? (
+              ) : safeData.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={columns.length + 1}
+                    colSpan={safeColumns.length + 1}
                     className="px-3 py-16 md:px-8 text-center"
                   >
                     <div className="max-w-xs mx-auto">
@@ -132,7 +135,7 @@ const GenericAdminTable = ({
                   </td>
                 </tr>
               ) : (
-                data.map((item, rowIdx) => (
+                safeData.map((item, rowIdx) => (
                   <Motion.tr
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}

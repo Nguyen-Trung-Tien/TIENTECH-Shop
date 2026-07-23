@@ -215,14 +215,18 @@ const ProductManage = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const [catRes, brandRes, attrRes] = await Promise.all([
-        getAllCategoryApi(),
-        getAllBrandApi(),
-        getAllAttributesApi(),
-      ]);
-      if (catRes.errCode === 0) setCategories(catRes.data || []);
-      if (brandRes.errCode === 0) setBrands(brandRes.brands || []);
-      if (attrRes.errCode === 0) setAttributes(attrRes.data || []);
+      try {
+        const [catRes, brandRes, attrRes] = await Promise.all([
+          getAllCategoryApi(),
+          getAllBrandApi(),
+          getAllAttributesApi(),
+        ]);
+        if (catRes && catRes.errCode === 0) setCategories(catRes.data || catRes.categories || []);
+        if (brandRes && brandRes.errCode === 0) setBrands(brandRes.brands || brandRes.data || []);
+        if (attrRes && attrRes.errCode === 0) setAttributes(attrRes.data || attrRes.attributes || []);
+      } catch (err) {
+        console.error("Error fetching admin filter metadata:", err);
+      }
     };
     fetchData();
   }, []);
