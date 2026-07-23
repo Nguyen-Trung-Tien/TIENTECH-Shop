@@ -249,50 +249,48 @@ const OrdersCancelManage = () => {
               className="absolute inset-0 bg-slate-950/60 backdrop-blur-md transition-opacity"
             />
             <Motion.div
-              initial={{ opacity: 0, y: 60, scale: 0.96 }}
+              initial={{ opacity: 0, y: 30, scale: 0.96 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 60, scale: 0.96 }}
-              transition={{ type: "spring", stiffness: 320, damping: 28 }}
-              className="relative bg-white dark:bg-dark-surface rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-2xl max-w-lg w-full max-h-[92vh] sm:max-h-[85vh] overflow-hidden border border-slate-200/80 dark:border-dark-border flex flex-col transition-colors duration-300"
+              exit={{ opacity: 0, y: 30, scale: 0.96 }}
+              transition={{ type: "spring", stiffness: 350, damping: 30 }}
+              className="relative bg-white dark:bg-dark-surface rounded-t-3xl sm:rounded-3xl shadow-2xl max-w-sm sm:max-w-md w-full max-h-[92vh] sm:max-h-[85vh] overflow-hidden border border-slate-200/80 dark:border-dark-border flex flex-col transition-colors duration-300"
             >
               {/* Mobile Drag Indicator Pill */}
-              <div className="flex justify-center pt-3 pb-1 sm:hidden bg-slate-50/80 dark:bg-slate-950/60">
-                <div className="w-12 h-1.5 rounded-full bg-slate-300 dark:bg-slate-700" />
+              <div className="flex justify-center pt-2.5 pb-1 sm:hidden bg-slate-50/80 dark:bg-slate-950/60">
+                <div className="w-10 h-1 rounded-full bg-slate-300 dark:bg-slate-700" />
               </div>
 
-              <div className="p-6 sm:p-8 md:p-10 text-center overflow-y-auto custom-scrollbar">
-                <div className="size-20 bg-rose-50 dark:bg-rose-900/20 text-rose-500 dark:text-rose-400 rounded-3xl flex items-center justify-center text-4xl mx-auto mb-8 shadow-inner border border-rose-100 dark:border-rose-900/30">
+              <div className="p-5 sm:p-6 text-center overflow-y-auto custom-scrollbar">
+                <div className="size-14 sm:size-16 bg-rose-50 dark:bg-rose-950/40 text-rose-500 dark:text-rose-400 rounded-2xl flex items-center justify-center text-2xl sm:text-3xl mx-auto mb-3.5 shadow-inner border border-rose-100 dark:border-rose-900/30">
                   <FiAlertTriangle />
                 </div>
-                <h3 className="text-2xl font-black text-slate-900 dark:text-white mb-2 uppercase tracking-tight">
+                <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white mb-1 uppercase tracking-tight">
                   Xác nhận yêu cầu hủy
                 </h3>
-                <p className="text-slate-500 dark:text-dark-text-secondary text-sm mb-8 px-4 font-medium">
+                <p className="text-slate-500 dark:text-dark-text-secondary text-xs mb-4 px-2 font-medium leading-relaxed">
                   Bạn đang xử lý yêu cầu hủy cho đơn hàng{" "}
                   <span className="font-black text-rose-600 dark:text-rose-400">
                     #{selectedOrder.orderCode}
                   </span>
-                  .
                 </p>
 
-                <div className="bg-slate-50 dark:bg-dark-bg rounded-[2rem] p-6 text-left mb-10 border border-slate-100 dark:border-dark-border shadow-inner">
-                  <p className="text-[10px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest mb-3 flex items-center gap-2">
-                    <FiPackage className="text-indigo-500" /> Lý do của khách
-                    hàng
+                <div className="bg-slate-50/80 dark:bg-dark-bg/80 rounded-xl p-3.5 text-left mb-3.5 border border-slate-100 dark:border-dark-border shadow-2xs">
+                  <p className="text-[10px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
+                    <FiPackage className="text-indigo-500" /> Lý do của khách hàng
                   </p>
-                  <p className="text-sm text-slate-700 dark:text-slate-300 font-medium italic leading-relaxed">
+                  <p className="text-xs text-slate-700 dark:text-slate-300 font-medium italic leading-relaxed">
                     "{selectedOrder.cancelReason || "Không có lý do chi tiết"}"
                   </p>
                 </div>
 
                 {/* Item List in Modal */}
-                <div className="space-y-3 mb-10 max-h-[30vh] overflow-y-auto pr-2 custom-scrollbar">
+                <div className="space-y-2 mb-4 max-h-[25vh] overflow-y-auto pr-1 custom-scrollbar">
                   {selectedOrder.orderItems?.map((item) => (
                     <div
                       key={item.id}
-                      className="p-4 bg-slate-50 dark:bg-dark-bg rounded-2xl border border-slate-100 dark:border-dark-border flex items-center gap-4"
+                      className="p-2.5 bg-slate-50/80 dark:bg-dark-bg/80 rounded-xl border border-slate-100 dark:border-dark-border flex items-center gap-3"
                     >
-                      <div className="size-12 bg-white dark:bg-dark-surface rounded-xl p-1.5 border border-slate-100 dark:border-dark-border shrink-0">
+                      <div className="size-10 bg-white dark:bg-dark-surface rounded-lg p-1 border border-slate-100 dark:border-dark-border shrink-0 shadow-2xs">
                         <img
                           src={item.image}
                           className="w-full h-full object-contain dark:mix-blend-normal"
@@ -312,7 +310,7 @@ const OrdersCancelManage = () => {
                   ))}
                 </div>
 
-                <div className="flex gap-4">
+                <div className="flex gap-2.5 pt-1">
                   <button
                     onClick={() => {
                       setModalShow(false);
@@ -321,9 +319,9 @@ const OrdersCancelManage = () => {
                         200,
                       );
                     }}
-                    className="flex-1 h-14 bg-slate-100 dark:bg-dark-bg text-slate-600 dark:text-dark-text-secondary rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-slate-200 dark:hover:bg-slate-800 transition-all flex items-center justify-center gap-2 border border-transparent dark:border-dark-border"
+                    className="flex-1 h-11 bg-slate-100 dark:bg-dark-bg text-slate-600 dark:text-dark-text-secondary rounded-xl text-[11px] font-black uppercase tracking-wider hover:bg-slate-200 dark:hover:bg-slate-800 transition-all flex items-center justify-center gap-1.5 border border-transparent dark:border-dark-border cursor-pointer active:scale-95"
                   >
-                    <FiXCircle className="text-lg" /> TỪ CHỐI
+                    <FiXCircle className="text-base" /> TỪ CHỐI
                   </button>
                   <button
                     onClick={() => {
@@ -333,9 +331,9 @@ const OrdersCancelManage = () => {
                         200,
                       );
                     }}
-                    className="flex-1 h-14 bg-rose-500 text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-rose-600 transition-all shadow-xl shadow-rose-500/20 flex items-center justify-center gap-2 active:scale-95"
+                    className="flex-1 h-11 bg-rose-500 text-white rounded-xl text-[11px] font-black uppercase tracking-wider hover:bg-rose-600 transition-all shadow-md shadow-rose-500/20 flex items-center justify-center gap-1.5 active:scale-95 cursor-pointer"
                   >
-                    <FiCheckCircle className="text-lg" /> CHẤP NHẬN
+                    <FiCheckCircle className="text-base" /> CHẤP NHẬN
                   </button>
                 </div>
               </div>

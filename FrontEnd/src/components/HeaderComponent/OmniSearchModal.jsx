@@ -122,19 +122,31 @@ export default function OmniSearchModal({
   };
 
   const saveToHistory = (searchTerm) => {
-    if (!searchTerm.trim()) return;
+    if (!searchTerm) return;
+    const termStr = typeof searchTerm === "string" ? searchTerm : (searchTerm?.name || searchTerm?.title || String(searchTerm));
+    const cleanTerm = termStr.trim();
+    if (!cleanTerm) return;
+
     const updated = [
-      searchTerm,
-      ...history.filter((item) => item !== searchTerm),
+      cleanTerm,
+      ...history.filter((item) => {
+        const itemStr = typeof item === "string" ? item : (item?.name || item?.title || String(item));
+        return itemStr.toLowerCase() !== cleanTerm.toLowerCase();
+      }),
     ].slice(0, 5);
     setHistory(updated);
     localStorage.setItem("recent_searches", JSON.stringify(updated));
   };
 
   const executeSearch = (searchTerm) => {
-    saveToHistory(searchTerm);
+    if (!searchTerm) return;
+    const termStr = typeof searchTerm === "string" ? searchTerm : (searchTerm?.name || searchTerm?.title || "");
+    const cleanTerm = termStr.trim();
+    if (!cleanTerm) return;
+
+    saveToHistory(cleanTerm);
     onClose();
-    navigate(`/product-list?search=${encodeURIComponent(searchTerm)}`);
+    navigate(`/product-list?search=${encodeURIComponent(cleanTerm)}`);
   };
 
   const handleFormSubmit = (e) => {
@@ -415,15 +427,18 @@ export default function OmniSearchModal({
                         </button>
                       </div>
                       <div className="flex flex-wrap gap-2">
-                        {history.map((term, index) => (
-                          <button
-                            key={index}
-                            onClick={() => executeSearch(term)}
-                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-xl bg-slate-100 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition cursor-pointer"
-                          >
-                            {term}
-                          </button>
-                        ))}
+                        {history.map((term, index) => {
+                          const displayTerm = typeof term === "string" ? term : (term?.name || String(term));
+                          return (
+                            <button
+                              key={index}
+                              onClick={() => executeSearch(displayTerm)}
+                              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-xl bg-slate-100 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition cursor-pointer"
+                            >
+                              {displayTerm}
+                            </button>
+                          );
+                        })}
                       </div>
                     </div>
                   )}

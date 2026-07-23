@@ -1,18 +1,4 @@
-const { validationResult } = require("express-validator");
-
-const validateRequest = (req, res, next) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({
-      errCode: 400,
-      errMessage: "Validation failed",
-      errors: errors.array().map((err) => ({
-        field: err.path,
-        message: err.msg,
-      })),
-    });
-  }
-  next();
-};
+// Deprecated: Replaced express-validator with Zod middleware in zodMiddleware.js
+const validateRequest = (req, res, next) => next();
 
 module.exports = { validateRequest };

@@ -2,7 +2,7 @@ const db = require("../models");
 const ProductService = require("./product/ProductService");
 const { sendOrderConfirmedEmail } = require("./sendEmail");
 const crypto = require("crypto");
-const moment = require("moment");
+const { formatDateYYYYMMDDHHmmss, formatDateHHmmss } = require("../utils/dateFormatter");
 const axios = require("axios");
 
 // Real refund integration via VNPay API
@@ -18,7 +18,7 @@ const executeRefund = async (order, payment, method, amountToRefund = null) => {
       // Default to sandbox API if missing
       const vnp_Api = process.env.VNP_API || "https://sandbox.vnpayment.vn/merchant_webapi/api/transaction";
       
-      const vnp_RequestId = moment().format("HHmmss");
+      const vnp_RequestId = formatDateHHmmss();
       const vnp_Version = "2.1.0";
       const vnp_Command = "refund";
       const isPartial = amountToRefund && Number(amountToRefund) < Number(payment.amount);
@@ -30,9 +30,9 @@ const executeRefund = async (order, payment, method, amountToRefund = null) => {
       const vnp_TransactionNo = payment.transactionId || "";
       // VNPay requires the exact PayDate. In production, save vnp_PayDate to DB during IPN.
       // Here we approximate with payment.createdAt.
-      const vnp_TransactionDate = moment(payment.createdAt).format("YYYYMMDDHHmmss"); 
+      const vnp_TransactionDate = formatDateYYYYMMDDHHmmss(payment.createdAt); 
       const vnp_CreateBy = "Admin";
-      const vnp_CreateDate = moment().format("YYYYMMDDHHmmss");
+      const vnp_CreateDate = formatDateYYYYMMDDHHmmss();
       const vnp_IpAddr = "127.0.0.1";
       
       const signData = [

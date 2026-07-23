@@ -1,4 +1,4 @@
-const moment = require("moment");
+const { formatDateYYYYMMDDHHmmss } = require("../utils/dateFormatter");
 const crypto = require("crypto");
 const OrderService = require("../services/OrderService");
 
@@ -71,7 +71,7 @@ const handleCreateVnpayPayment = async (req, res) => {
     const vnpUrl = process.env.VNP_URL;
     const returnUrl = process.env.VNP_RETURN_URL;
 
-    const createDate = moment().format("YYYYMMDDHHmmss");
+    const createDate = formatDateYYYYMMDDHHmmss();
 
     // VNPay yêu cầu INTEGER (nhân 100)
     // SỬ DỤNG GIÁ TRỊ TỪ DATABASE (secureAmount) THAY VÌ CLIENT SUBMIT (amount) ĐỂ TRÁNH MUA HÀNG 0 ĐỒNG

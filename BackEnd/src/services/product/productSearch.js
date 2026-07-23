@@ -206,13 +206,35 @@ const filterProducts = async ({
 
     if (search && search !== "") {
       const searchTrim = search.trim();
-      conditions[Op.or] = [
+
+      const matchedBrands = await db.Brand.findAll({
+        where: { name: { [Op.like]: `%${searchTrim}%` } },
+        attributes: ["id"],
+        raw: true,
+      });
+      const matchedBrandIds = matchedBrands.map((b) => b.id);
+
+      const matchedCategories = await db.Category.findAll({
+        where: { name: { [Op.like]: `%${searchTrim}%` } },
+        attributes: ["id"],
+        raw: true,
+      });
+      const matchedCategoryIds = matchedCategories.map((c) => c.id);
+
+      const searchOrConditions = [
         { name: { [Op.like]: `%${searchTrim}%` } },
         { sku: { [Op.like]: `%${searchTrim}%` } },
         { description: { [Op.like]: `%${searchTrim}%` } },
-        { "$brand.name$": { [Op.like]: `%${searchTrim}%` } },
-        { "$category.name$": { [Op.like]: `%${searchTrim}%` } },
       ];
+
+      if (matchedBrandIds.length > 0) {
+        searchOrConditions.push({ brandId: { [Op.in]: matchedBrandIds } });
+      }
+      if (matchedCategoryIds.length > 0) {
+        searchOrConditions.push({ categoryId: { [Op.in]: matchedCategoryIds } });
+      }
+
+      conditions[Op.or] = searchOrConditions;
     }
 
     // Xử lý lọc thuộc tính (Attributes filtering) - Sử dụng Subquery để đảm bảo phép AND giữa các loại

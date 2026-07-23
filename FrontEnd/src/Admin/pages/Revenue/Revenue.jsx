@@ -13,7 +13,7 @@ import { motion as Motion } from "framer-motion";
 import { getRevenueStats, exportRevenue } from "../../../api/adminApi";
 import { toast } from "react-toastify";
 import ChartCard from "../../components/ChartCardComponent/ChartCard";
-import { Link } from "react-router";
+import { Link } from "react-router-dom";
 import RevenueForecastWidget from "../../components/RevenueForecastWidget/RevenueForecastWidget";
 
 const Revenue = () => {

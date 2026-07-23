@@ -244,39 +244,39 @@ const OrdersReturnPage = () => {
               className="absolute inset-0 bg-slate-950/60 backdrop-blur-md transition-opacity"
             />
             <Motion.div
-              initial={{ opacity: 0, y: 60, scale: 0.96 }}
+              initial={{ opacity: 0, y: 30, scale: 0.96 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 60, scale: 0.96 }}
-              transition={{ type: "spring", stiffness: 320, damping: 28 }}
-              className="relative bg-white dark:bg-dark-surface rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-2xl max-w-xl w-full max-h-[92vh] sm:max-h-[85vh] overflow-hidden border border-slate-200/80 dark:border-dark-border flex flex-col transition-colors duration-300"
+              exit={{ opacity: 0, y: 30, scale: 0.96 }}
+              transition={{ type: "spring", stiffness: 350, damping: 30 }}
+              className="relative bg-white dark:bg-dark-surface rounded-t-3xl sm:rounded-3xl shadow-2xl max-w-sm sm:max-w-md w-full max-h-[92vh] sm:max-h-[85vh] overflow-hidden border border-slate-200/80 dark:border-dark-border flex flex-col transition-colors duration-300"
             >
               {/* Mobile Drag Indicator Pill */}
-              <div className="flex justify-center pt-3 pb-1 sm:hidden bg-slate-50/80 dark:bg-slate-950/60">
-                <div className="w-12 h-1.5 rounded-full bg-slate-300 dark:bg-slate-700" />
+              <div className="flex justify-center pt-2.5 pb-1 sm:hidden bg-slate-50/80 dark:bg-slate-950/60">
+                <div className="w-10 h-1 rounded-full bg-slate-300 dark:bg-slate-700" />
               </div>
 
-              <div className="p-6 sm:p-8 md:p-10 overflow-y-auto custom-scrollbar">
-                <div className="size-20 bg-indigo-600/10 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 rounded-3xl flex items-center justify-center text-4xl mx-auto mb-8 shadow-inner">
+              <div className="p-5 sm:p-6 overflow-y-auto custom-scrollbar text-center">
+                <div className="size-14 sm:size-16 bg-indigo-600/10 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 rounded-2xl flex items-center justify-center text-2xl sm:text-3xl mx-auto mb-3.5 shadow-inner">
                   <FiRotateCw />
                 </div>
-                <h3 className="text-2xl font-black text-center text-slate-900 dark:text-white mb-2 uppercase tracking-tight">
+                <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white mb-1 uppercase tracking-tight">
                   Chi tiết yêu cầu
                 </h3>
-                <p className="text-slate-500 dark:text-dark-text-secondary text-center text-sm mb-8 font-medium">
+                <p className="text-slate-500 dark:text-dark-text-secondary text-xs mb-4 font-medium">
                   Đơn hàng{" "}
                   <span className="font-black text-indigo-600 dark:text-indigo-400">
                     #{selectedOrder.orderCode}
                   </span>
                 </p>
 
-                <div className="space-y-4 mb-10 max-h-[40vh] overflow-y-auto pr-2 custom-scrollbar">
+                <div className="space-y-3 mb-4 max-h-[30vh] overflow-y-auto pr-1 custom-scrollbar">
                   {selectedOrder.orderItems.map((item) => (
                     <div
                       key={item.id}
-                      className="p-5 bg-slate-50 dark:bg-dark-bg rounded-[2rem] border border-slate-100 dark:border-dark-border"
+                      className="p-3.5 bg-slate-50/80 dark:bg-dark-bg/80 rounded-2xl border border-slate-100 dark:border-dark-border text-left"
                     >
-                      <div className="flex gap-5 items-center mb-4">
-                        <div className="size-16 bg-white dark:bg-dark-surface rounded-2xl p-2 border border-slate-100 dark:border-dark-border overflow-hidden shrink-0">
+                      <div className="flex gap-3 items-center mb-2.5">
+                        <div className="size-11 bg-white dark:bg-dark-surface rounded-xl p-1 border border-slate-100 dark:border-dark-border overflow-hidden shrink-0 shadow-2xs">
                           <img
                             src={item.image}
                             className="w-full h-full object-contain dark:mix-blend-normal"
@@ -284,21 +284,21 @@ const OrdersReturnPage = () => {
                           />
                         </div>
                         <div className="min-w-0">
-                          <p className="text-base font-bold text-slate-900 dark:text-white truncate">
+                          <p className="text-xs font-bold text-slate-900 dark:text-white truncate">
                             {item.productName}
                           </p>
-                          <div className="flex items-center gap-2 mt-1">
-                            <span className="text-[10px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest bg-white dark:bg-dark-surface px-2 py-0.5 rounded-lg border border-slate-100 dark:border-dark-border">
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <span className="text-[10px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest bg-white dark:bg-dark-surface px-1.5 py-0.5 rounded border border-slate-100 dark:border-dark-border">
                               SL: {item.quantity}
                             </span>
                           </div>
                         </div>
                       </div>
-                      <div className="pt-4 border-t border-slate-200 dark:border-dark-border/50">
-                        <p className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest mb-2 flex items-center gap-2">
+                      <div className="pt-2.5 border-t border-slate-200/60 dark:border-dark-border/50">
+                        <p className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest mb-1 flex items-center gap-1.5">
                           <FiMessageSquare /> Lý do trả hàng
                         </p>
-                        <div className="p-4 bg-white dark:bg-dark-surface rounded-2xl border border-slate-100 dark:border-dark-border shadow-inner italic text-sm text-slate-600 dark:text-slate-300 font-medium leading-relaxed">
+                        <div className="p-2.5 bg-white dark:bg-dark-surface rounded-xl border border-slate-100 dark:border-dark-border shadow-2xs italic text-xs text-slate-600 dark:text-slate-300 font-medium leading-relaxed">
                           "
                           {item.returnReason ||
                             "Khách hàng không để lại lý do chi tiết"}
@@ -309,7 +309,7 @@ const OrdersReturnPage = () => {
                   ))}
                 </div>
 
-                <div className="flex gap-4">
+                <div className="flex gap-2.5 pt-1">
                   <button
                     onClick={() => {
                       setModalShow(false);
@@ -318,9 +318,9 @@ const OrdersReturnPage = () => {
                         200,
                       );
                     }}
-                    className="flex-1 h-14 bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-rose-500 hover:text-white transition-all flex items-center justify-center gap-2 border border-rose-100 dark:border-rose-900/30"
+                    className="flex-1 h-11 bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 rounded-xl text-[11px] font-black uppercase tracking-wider hover:bg-rose-500 hover:text-white transition-all flex items-center justify-center gap-1.5 border border-rose-100 dark:border-rose-900/30 cursor-pointer active:scale-95"
                   >
-                    <FiXCircle className="text-lg" /> TỪ CHỐI
+                    <FiXCircle className="text-base" /> TỪ CHỐI
                   </button>
                   <button
                     onClick={() => {
@@ -330,9 +330,9 @@ const OrdersReturnPage = () => {
                         200,
                       );
                     }}
-                    className="flex-1 h-14 bg-indigo-600 text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-slate-900 dark:hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-600/20 flex items-center justify-center gap-2 active:scale-95"
+                    className="flex-1 h-11 bg-indigo-600 text-white rounded-xl text-[11px] font-black uppercase tracking-wider hover:bg-slate-900 dark:hover:bg-indigo-700 transition-all shadow-md shadow-indigo-600/20 flex items-center justify-center gap-1.5 active:scale-95 cursor-pointer"
                   >
-                    <FiCheckCircle className="text-lg" /> DUYỆT TRẢ
+                    <FiCheckCircle className="text-base" /> DUYỆT TRẢ
                   </button>
                 </div>
               </div>

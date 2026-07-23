@@ -357,21 +357,21 @@ const VariantManager = ({
           ))}
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-4">
+        <div className="flex flex-col sm:flex-row gap-3">
           <button
             type="button"
             onClick={generateVariants}
-            className="flex-1 h-14 bg-indigo-600 text-white rounded-3xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-indigo-700 transition-all flex items-center justify-center gap-4 shadow-xl shadow-indigo-200 dark:shadow-none active:scale-[0.98]"
+            className="flex-1 h-11 bg-blue-600 text-white rounded-xl text-xs font-black uppercase tracking-wider hover:bg-blue-700 transition-all flex items-center justify-center gap-2 shadow-md shadow-blue-600/15 active:scale-95 cursor-pointer"
           >
-            <FiRefreshCcw className="text-xl" /> TẠO DANH SÁCH BIẾN THỂ TỰ ĐỘNG
+            <FiRefreshCcw className="text-base" /> TẠO DANH SÁCH BIẾN THỂ TỰ ĐỘNG
           </button>
 
           <button
             type="button"
             onClick={addManualVariant}
-            className="px-8 h-14 bg-emerald-500 text-white rounded-3xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-emerald-600 transition-all flex items-center justify-center gap-4 shadow-xl shadow-emerald-100 dark:shadow-none active:scale-[0.98]"
+            className="px-6 h-11 bg-emerald-600 text-white rounded-xl text-xs font-black uppercase tracking-wider hover:bg-emerald-700 transition-all flex items-center justify-center gap-2 shadow-md shadow-emerald-600/15 active:scale-95 cursor-pointer"
           >
-            <FiPlus className="text-xl" /> THÊM THỦ CÔNG
+            <FiPlus className="text-base" /> THÊM THỦ CÔNG
           </button>
         </div>
       </div>
