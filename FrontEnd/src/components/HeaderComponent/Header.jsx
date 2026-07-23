@@ -142,7 +142,7 @@ function Header() {
             : "bg-white dark:bg-slate-950 border-b border-slate-100 dark:border-slate-900 py-3.5"
         }`}
       >
-        <div className="container-custom flex items-center justify-between gap-6 md:gap-10">
+        <div className="container-custom flex items-center justify-between gap-3 lg:gap-4 xl:gap-6">
           {/* Logo */}
           <Link
             to="/"
@@ -152,21 +152,21 @@ function Header() {
           </Link>
 
           {/* Desktop Nav Links */}
-          <nav className="hidden xl:flex items-center gap-2 bg-slate-100/60 dark:bg-slate-900/60 p-1.5 rounded-2xl border border-slate-200/50 dark:border-slate-800/50 backdrop-blur-sm">
+          <nav className="hidden xl:flex items-center gap-1 bg-slate-100/60 dark:bg-slate-900/60 p-1.5 rounded-2xl border border-slate-200/50 dark:border-slate-800/50 backdrop-blur-sm shrink-0">
             {navLinks.map((link) => {
               const isActive = location.pathname === link.path;
               return (
                 <Link
                   key={link.path}
                   to={link.path}
-                  className={`px-4 py-2 rounded-xl text-[12px] font-black uppercase tracking-wider transition-all duration-300 flex items-center gap-2 relative ${
+                  className={`px-3 py-1.5 rounded-xl text-[11px] font-bold uppercase tracking-wide transition-all duration-300 flex items-center gap-1.5 relative whitespace-nowrap shrink-0 ${
                     isActive
-                      ? "text-blue-600 dark:text-blue-400 bg-white dark:bg-slate-800 shadow-sm"
-                      : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-slate-800/40"
+                      ? "text-blue-600 dark:text-blue-400 bg-white dark:bg-slate-800 shadow-xs"
+                      : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-slate-800/40"
                   }`}
                 >
-                  <span className="text-sm">{link.icon}</span>
-                  {link.name}
+                  <span className="text-xs shrink-0">{link.icon}</span>
+                  <span className="whitespace-nowrap">{link.name}</span>
                 </Link>
               );
             })}
@@ -351,10 +351,10 @@ function Header() {
             ) : (
               <Link
                 to="/login"
-                className="flex items-center gap-2 min-h-[44px] px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-2xl text-xs font-black uppercase tracking-wider shadow-lg shadow-blue-500/20 transition-all active:scale-95"
+                className="flex items-center gap-1.5 min-h-[40px] px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl text-[11px] font-bold uppercase tracking-wide shadow-md shadow-blue-500/20 transition-all active:scale-95 whitespace-nowrap shrink-0"
               >
-                <FiUser className="text-base" />
-                <span className="hidden sm:inline">ĐĂNG NHẬP</span>
+                <FiUser className="text-sm shrink-0" />
+                <span className="hidden sm:inline whitespace-nowrap">ĐĂNG NHẬP</span>
               </Link>
             )}
 
