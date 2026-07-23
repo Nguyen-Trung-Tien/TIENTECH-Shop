@@ -1,8 +1,42 @@
-import React, { useState } from "react";
-import { FiMaximize2, FiX } from "react-icons/fi";
+import React, { useState, useEffect } from "react";
+import { FiMaximize2, FiX, FiChevronLeft, FiChevronRight } from "react-icons/fi";
+import { motion as Motion, AnimatePresence } from "framer-motion";
 
 const ImageGallery = ({ mainImage, setMainImage, displayImages, discountPercent, productName }) => {
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+
+  // Handle ESC key press and lock background scroll
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape" && isLightboxOpen) {
+        setIsLightboxOpen(false);
+      }
+    };
+    if (isLightboxOpen) {
+      document.body.style.overflow = "hidden";
+      window.addEventListener("keydown", handleKeyDown);
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isLightboxOpen]);
+
+  const currentIndex = displayImages?.findIndex(img => img.imageUrl === mainImage) ?? 0;
+
+  const handlePrevImage = (e) => {
+    e.stopPropagation();
+    if (!displayImages || displayImages.length === 0) return;
+    const prevIdx = (currentIndex - 1 + displayImages.length) % displayImages.length;
+    setMainImage(displayImages[prevIdx].imageUrl);
+  };
+
+  const handleNextImage = (e) => {
+    e.stopPropagation();
+    if (!displayImages || displayImages.length === 0) return;
+    const nextIdx = (currentIndex + 1) % displayImages.length;
+    setMainImage(displayImages[nextIdx].imageUrl);
+  };
 
   return (
     <div className="lg:col-span-5 space-y-4">
@@ -11,12 +45,13 @@ const ImageGallery = ({ mainImage, setMainImage, displayImages, discountPercent,
         <img
           src={mainImage || "/images/no-image.png"}
           alt={productName}
-          className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-108 p-2 mix-blend-multiply dark:mix-blend-normal"
+          className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-108 p-2 mix-blend-multiply dark:mix-blend-normal cursor-pointer"
+          onClick={() => setIsLightboxOpen(true)}
         />
         
         {/* Discount Badge */}
         {discountPercent > 0 && (
-          <div className="absolute top-4 left-4 bg-gradient-to-r from-red-600 to-orange-500 text-white text-[11px] font-black px-3 py-1 rounded-xl shadow-md uppercase tracking-wider">
+          <div className="absolute top-4 left-4 bg-gradient-to-r from-red-600 to-orange-500 text-white text-[11px] font-black px-3 py-1 rounded-xl shadow-md uppercase tracking-wider pointer-events-none">
             ⚡ Tiết kiệm {discountPercent}%
           </div>
         )}
@@ -25,7 +60,7 @@ const ImageGallery = ({ mainImage, setMainImage, displayImages, discountPercent,
         <button
           type="button"
           onClick={() => setIsLightboxOpen(true)}
-          className="absolute bottom-4 right-4 size-10 bg-white/80 dark:bg-slate-800/80 backdrop-blur-md rounded-2xl flex items-center justify-center text-slate-700 dark:text-slate-200 opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110 shadow-md border border-slate-200/60 dark:border-slate-700/60"
+          className="absolute bottom-4 right-4 size-10 bg-white/80 dark:bg-slate-800/80 backdrop-blur-md rounded-2xl flex items-center justify-center text-slate-700 dark:text-slate-200 opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110 shadow-md border border-slate-200/60 dark:border-slate-700/60 cursor-pointer"
           title="Xem ảnh phóng to"
         >
           <FiMaximize2 size={16} />
@@ -60,21 +95,68 @@ const ImageGallery = ({ mainImage, setMainImage, displayImages, discountPercent,
       )}
 
       {/* Fullscreen Lightbox Modal */}
-      {isLightboxOpen && (
-        <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4">
-          <button
+      <AnimatePresence>
+        {isLightboxOpen && (
+          <Motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[99999] bg-black/92 backdrop-blur-xl flex items-center justify-center p-4 select-none"
             onClick={() => setIsLightboxOpen(false)}
-            className="absolute top-6 right-6 size-12 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition-all"
           >
-            <FiX size={24} />
-          </button>
-          <img
-            src={mainImage}
-            alt={productName}
-            className="max-w-full max-h-[85vh] object-contain rounded-2xl shadow-2xl"
-          />
-        </div>
-      )}
+            {/* Close Button */}
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsLightboxOpen(false);
+              }}
+              className="absolute top-5 right-5 z-[100000] size-12 rounded-full bg-white/15 hover:bg-white/25 active:scale-95 text-white flex items-center justify-center transition-all cursor-pointer border border-white/20 shadow-2xl"
+              title="Đóng (Esc)"
+            >
+              <FiX size={26} />
+            </button>
+
+            {/* Navigation Left/Right Buttons */}
+            {displayImages && displayImages.length > 1 && (
+              <>
+                <button
+                  type="button"
+                  onClick={handlePrevImage}
+                  className="absolute left-4 sm:left-8 z-[100000] size-12 rounded-full bg-white/15 hover:bg-white/25 active:scale-95 text-white flex items-center justify-center transition-all cursor-pointer border border-white/20"
+                  title="Ảnh trước"
+                >
+                  <FiChevronLeft size={28} />
+                </button>
+                <button
+                  type="button"
+                  onClick={handleNextImage}
+                  className="absolute right-4 sm:right-8 z-[100000] size-12 rounded-full bg-white/15 hover:bg-white/25 active:scale-95 text-white flex items-center justify-center transition-all cursor-pointer border border-white/20"
+                  title="Ảnh tiếp"
+                >
+                  <FiChevronRight size={28} />
+                </button>
+              </>
+            )}
+
+            {/* Main Image Container */}
+            <Motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="relative max-w-5xl max-h-[85vh] flex items-center justify-center p-2"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <img
+                src={mainImage}
+                alt={productName}
+                className="max-w-full max-h-[85vh] object-contain rounded-2xl shadow-2xl border border-white/10"
+              />
+            </Motion.div>
+          </Motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

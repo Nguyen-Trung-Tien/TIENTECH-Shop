@@ -238,7 +238,7 @@ const ReviewItem = ({ review, user }) => {
       {/* Lightbox Modal for Review Image */}
       {selectedImage && (
         <div
-          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200"
+          className="fixed inset-0 z-[99999] bg-black/85 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200"
           onClick={() => setSelectedImage(null)}
         >
           <div
@@ -246,8 +246,10 @@ const ReviewItem = ({ review, user }) => {
             onClick={(e) => e.stopPropagation()}
           >
             <button
+              type="button"
               onClick={() => setSelectedImage(null)}
-              className="absolute top-4 right-4 z-10 size-10 bg-black/60 hover:bg-black text-white rounded-full flex items-center justify-center backdrop-blur-sm transition-all shadow-lg cursor-pointer"
+              className="absolute top-4 right-4 z-[100000] size-10 bg-black/60 hover:bg-black text-white rounded-full flex items-center justify-center backdrop-blur-sm transition-all shadow-lg cursor-pointer border border-white/20"
+              title="Đóng"
             >
               <FiX size={20} />
             </button>

@@ -166,11 +166,20 @@ const getCartItemById = async (id, userId) => {
 };
 
 const createCartItem = async ({ cartId, productId, variantId, quantity }, userId) => {
-  if (!cartId || !productId) throw new Error("cartId and productId are required");
+  if (!productId) throw new Error("productId is required");
   if (!quantity || quantity < 1) throw new Error("quantity must be at least 1");
 
-  const cart = await db.Cart.findOne({ where: { id: cartId, userId } });
-  if (!cart) throw new Error("Cart not found or not yours");
+  let cart = null;
+  if (cartId) {
+    cart = await db.Cart.findOne({ where: { id: cartId, userId } });
+  }
+
+  if (!cart) {
+    [cart] = await db.Cart.findOrCreate({
+      where: { userId },
+      defaults: { userId },
+    });
+  }
 
   const product = await db.Product.findByPk(productId);
   if (!product) throw new Error("Product not found");
@@ -182,7 +191,7 @@ const createCartItem = async ({ cartId, productId, variantId, quantity }, userId
   }
 
   // Check if item with SAME productId and SAME variantId exists
-  const where = { cartId, productId };
+  const where = { cartId: cart.id, productId };
   if (variantId) {
     where.variantId = variantId;
   } else {
@@ -196,7 +205,7 @@ const createCartItem = async ({ cartId, productId, variantId, quantity }, userId
     cartItem.quantity += quantity;
     await cartItem.save();
   } else {
-    cartItem = await db.CartItem.create({ cartId, productId, variantId, quantity });
+    cartItem = await db.CartItem.create({ cartId: cart.id, productId, variantId, quantity });
   }
 
   return await getCartItemById(cartItem.id, userId);

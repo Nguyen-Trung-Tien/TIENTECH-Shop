@@ -47,7 +47,12 @@ const createCartItem = async (req, res) => {
     );
     res.status(201).json({ errCode: 0, data: newItem });
   } catch (err) {
-    res.status(500).json({ errCode: 1, errMessage: err.message });
+    const isClientError =
+      err.message.includes("required") ||
+      err.message.includes("not found") ||
+      err.message.includes("must be at least");
+    const statusCode = isClientError ? 400 : 500;
+    res.status(statusCode).json({ errCode: 1, errMessage: err.message });
   }
 };
 
