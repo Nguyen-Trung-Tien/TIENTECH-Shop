@@ -124,6 +124,8 @@ const ForgotPasswordModal = ({ show, onClose }) => {
       }
       size="md"
       showClose={true}
+      loading={loading}
+      loadingMessage="Đang xử lý yêu cầu..."
     >
       <div className="min-h-[180px]">
         <AnimatePresence mode="wait">

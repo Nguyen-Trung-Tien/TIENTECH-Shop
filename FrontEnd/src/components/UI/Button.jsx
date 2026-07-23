@@ -47,7 +47,16 @@ const Button = ({ className, variant, size, loading = false, asChild = false, re
       disabled={loading || props.disabled}
       {...props}
     >
-      {loading && <Loader size={size === "sm" ? "sm" : "md"} />}
+      {loading && (
+        <Loader
+          size={size === "sm" || size === "xs" ? "xs" : "sm"}
+          variant={
+            ["primary", "default", "brand", "destructive", "danger", "success", "warning"].includes(variant || "default")
+              ? "white"
+              : "primary"
+          }
+        />
+      )}
       {!loading && Icon && <Icon className="size-4 shrink-0" />}
       {children}
     </Comp>

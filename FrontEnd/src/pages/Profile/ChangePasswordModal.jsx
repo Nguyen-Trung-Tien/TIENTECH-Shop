@@ -69,6 +69,8 @@ const ChangePasswordModal = ({ show, onHide, userId }) => {
       size="md"
       title="Đổi Mật Khẩu"
       subtitle="Cập nhật mật khẩu để bảo mật tài khoản của bạn."
+      loading={loading}
+      loadingMessage="Đang cập nhật mật khẩu..."
     >
       <div className="space-y-4">
         {[

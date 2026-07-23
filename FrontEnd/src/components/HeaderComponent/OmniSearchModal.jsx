@@ -205,7 +205,7 @@ export default function OmniSearchModal({
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[1000] flex items-start justify-center pt-12 md:pt-20 px-4 sm:px-6">
+        <div className="fixed inset-0 z-[1000] flex items-start justify-center pt-2 sm:pt-16 px-2 sm:px-6">
           {/* Backdrop */}
           <Motion.div
             initial={{ opacity: 0 }}

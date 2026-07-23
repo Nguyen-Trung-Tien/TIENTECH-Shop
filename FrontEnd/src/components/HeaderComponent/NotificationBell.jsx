@@ -116,18 +116,19 @@ const NotificationBell = () => {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setShowDropdown(!showDropdown)}
-        className="relative p-2 text-surface-500 hover:text-primary dark:text-dark-text-secondary dark:hover:text-brand transition-colors rounded-full hover:bg-surface-100 dark:hover:bg-dark-surface"
+        className="relative size-11 min-h-[44px] min-w-[44px] rounded-2xl bg-slate-100/80 dark:bg-slate-900/80 border border-slate-200/60 dark:border-slate-800/60 text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-800 hover:border-blue-500/30 transition-all flex items-center justify-center cursor-pointer active:scale-95 shadow-xs"
+        title="Thông báo"
       >
-        <FiBell size={22} />
+        <FiBell size={19} />
         {unreadCount > 0 && (
-          <span className="absolute top-0 right-0 size-5 bg-brand text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-white dark:border-dark-bg">
+          <span className="absolute -top-1 -right-1 flex size-5 items-center justify-center rounded-full bg-gradient-to-r from-rose-500 to-red-600 text-[10px] font-black text-white ring-2 ring-white dark:ring-slate-950 shadow-md shadow-rose-500/30">
             {unreadCount > 9 ? "9+" : unreadCount}
           </span>
         )}
       </button>
 
       {showDropdown && (
-        <div className="absolute right-0 mt-3 w-80 bg-white dark:bg-dark-surface rounded-2xl shadow-xl-soft border border-surface-100 dark:border-dark-border z-[100] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+        <div className="absolute right-0 mt-3 w-80 max-w-[calc(100vw-1.5rem)] bg-white dark:bg-dark-surface rounded-2xl shadow-xl-soft border border-surface-100 dark:border-dark-border z-[100] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
           <div className="p-4 border-b border-surface-50 dark:border-dark-border flex justify-between items-center bg-surface-50/50 dark:bg-dark-bg/20">
             <h3 className="text-sm font-black text-surface-900 dark:text-white uppercase tracking-widest">
               Thông báo

@@ -50,7 +50,7 @@ const QuickVariantModal = ({ product, isOpen, onClose, onAdd, onBuyNow }) => {
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+      <div className="fixed inset-0 z-[110] flex items-end sm:items-center justify-center p-0 sm:p-4">
         {/* Overlay */}
         <Motion.div
           initial={{ opacity: 0 }}
@@ -62,20 +62,25 @@ const QuickVariantModal = ({ product, isOpen, onClose, onAdd, onBuyNow }) => {
 
         {/* Modal Content */}
         <Motion.div
-          initial={{ opacity: 0, scale: 0.95, y: 20 }}
+          initial={{ opacity: 0, scale: 0.95, y: 30 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          className="relative w-full max-w-lg bg-white dark:bg-dark-surface rounded-3xl shadow-2xl overflow-hidden border border-slate-100 dark:border-dark-border transition-colors duration-300"
+          exit={{ opacity: 0, scale: 0.95, y: 30 }}
+          className="relative w-full max-w-lg bg-white dark:bg-dark-surface rounded-t-[32px] sm:rounded-[32px] shadow-2xl overflow-hidden border border-slate-100 dark:border-dark-border transition-colors duration-300 max-h-[90vh] flex flex-col"
         >
+          {/* Mobile Drag Indicator Pill */}
+          <div className="flex justify-center pt-3 pb-1 sm:hidden bg-slate-50/80 dark:bg-slate-950/60">
+            <div className="w-10 h-1 rounded-full bg-slate-300 dark:bg-slate-700" />
+          </div>
+
           {/* Close Button */}
           <button
             onClick={onClose}
             className="absolute top-4 right-4 p-2 rounded-full bg-slate-100 dark:bg-dark-bg text-slate-500 dark:text-dark-text-secondary hover:bg-slate-200 dark:hover:bg-slate-700 transition-all z-10"
           >
-            <FiX size={20} />
+            <FiX size={18} />
           </button>
 
-          <div className="p-6 md:p-8">
+          <div className="p-4 sm:p-6 md:p-8 overflow-y-auto custom-scrollbar">
             <div className="flex gap-6 mb-8">
               <div className="size-24 rounded-2xl bg-slate-50 dark:bg-dark-bg border border-slate-100 dark:border-dark-border p-2 overflow-hidden flex-shrink-0">
                 <img

@@ -6,7 +6,7 @@ const {
   generateRefreshToken,
   verifyRefreshToken,
 } = require("../jwtService");
-const { sendForgotPasswordEmail, sendVerificationEmail } = require("../sendEmail");
+const { sendForgotPasswordEmail, sendVerificationEmail, sendEmailAsync } = require("../sendEmail");
 const { 
   hashToken, 
   generateRandomToken, 
@@ -91,8 +91,8 @@ class AuthService {
       user.resetTokenExpiresAt = new Date(Date.now() + 15 * 60 * 1000);
       await user.save();
 
-      await sendForgotPasswordEmail(user, resetToken);
-      return { errCode: 0, errMessage: "Gửi email thành công!" };
+      sendEmailAsync(sendForgotPasswordEmail, user, resetToken);
+      return { errCode: 0, errMessage: "Mã xác nhận đã được gửi đến email của bạn!" };
     } catch (error) {
       console.error("AuthService.forgotPassword error:", error);
       return { errCode: -1, errMessage: error.message };

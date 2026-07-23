@@ -142,13 +142,18 @@ function Header() {
             : "bg-white dark:bg-slate-950 border-b border-slate-100 dark:border-slate-900 py-3.5"
         }`}
       >
-        <div className="container-custom flex items-center justify-between gap-3 lg:gap-4 xl:gap-6">
+        <div className="container-custom flex items-center justify-between gap-2 sm:gap-4">
           {/* Logo */}
           <Link
             to="/"
             className="flex-shrink-0 transition-transform duration-300 hover:scale-105 active:scale-95"
           >
-            <Logo size="md" />
+            <div className="sm:hidden">
+              <Logo size="sm" />
+            </div>
+            <div className="hidden sm:block">
+              <Logo size="md" />
+            </div>
           </Link>
 
           {/* Desktop Nav Links */}
@@ -211,19 +216,20 @@ function Header() {
           </div>
 
           {/* Action Buttons Header */}
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
             {/* Quick Search Button for Mobile & Tablet */}
             <button
               onClick={() => setIsOmniSearchOpen(true)}
-              className="lg:hidden size-11 min-h-[44px] min-w-[44px] rounded-2xl bg-blue-50/80 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/40 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/60 transition-all flex items-center justify-center cursor-pointer active:scale-95 shadow-xs"
+              className="lg:hidden size-10 sm:size-11 min-h-[40px] min-w-[40px] rounded-2xl bg-blue-50/80 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/40 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/60 transition-all flex items-center justify-center cursor-pointer active:scale-95 shadow-xs shrink-0"
               title="Tìm kiếm AI"
             >
-              <FiSearch size={19} />
+              <FiSearch size={18} />
             </button>
-            {/* Theme Toggle */}
+
+            {/* Theme Toggle (Desktop/Tablet) */}
             <button
               onClick={toggleTheme}
-              className="size-11 min-h-[44px] min-w-[44px] rounded-2xl bg-slate-100/80 dark:bg-slate-900/80 border border-slate-200/60 dark:border-slate-800/60 text-slate-600 dark:text-amber-400 hover:bg-white dark:hover:bg-slate-800 hover:border-blue-500/30 transition-all flex items-center justify-center cursor-pointer active:scale-95 shadow-xs"
+              className="hidden sm:flex size-11 min-h-[44px] min-w-[44px] rounded-2xl bg-slate-100/80 dark:bg-slate-900/80 border border-slate-200/60 dark:border-slate-800/60 text-slate-600 dark:text-amber-400 hover:bg-white dark:hover:bg-slate-800 hover:border-blue-500/30 transition-all items-center justify-center cursor-pointer active:scale-95 shadow-xs shrink-0"
               title={theme === "light" ? "Bật chế độ tối" : "Bật chế độ sáng"}
             >
               {theme === "light" ? <FiMoon size={19} /> : <FiSun size={19} />}
@@ -232,10 +238,10 @@ function Header() {
             {/* Notification Bell */}
             <NotificationBell />
 
-            {/* Wishlist Icon Button */}
+            {/* Wishlist Icon Button (Desktop/Tablet) */}
             <Link
               to="/wishlist"
-              className="size-11 min-h-[44px] min-w-[44px] rounded-2xl bg-slate-100/80 dark:bg-slate-900/80 border border-slate-200/60 dark:border-slate-800/60 text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-800 hover:text-rose-500 dark:hover:text-rose-400 hover:border-rose-500/30 transition-all flex items-center justify-center active:scale-95 shadow-xs group"
+              className="hidden sm:flex size-11 min-h-[44px] min-w-[44px] rounded-2xl bg-slate-100/80 dark:bg-slate-900/80 border border-slate-200/60 dark:border-slate-800/60 text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-800 hover:text-rose-500 dark:hover:text-rose-400 hover:border-rose-500/30 transition-all items-center justify-center active:scale-95 shadow-xs group shrink-0"
               title="Danh sách yêu thích"
             >
               <FiHeart className="text-[19px] group-hover:scale-110 transition-transform" />
@@ -244,10 +250,10 @@ function Header() {
             {/* Cart Icon Button */}
             <Link
               to="/cart"
-              className="relative size-11 min-h-[44px] min-w-[44px] rounded-2xl bg-slate-100/80 dark:bg-slate-900/80 border border-slate-200/60 dark:border-slate-800/60 text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-500/30 transition-all flex items-center justify-center active:scale-95 shadow-xs group"
+              className="relative size-10 sm:size-11 min-h-[40px] min-w-[40px] rounded-2xl bg-slate-100/80 dark:bg-slate-900/80 border border-slate-200/60 dark:border-slate-800/60 text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-500/30 transition-all flex items-center justify-center active:scale-95 shadow-xs group shrink-0"
               title="Giỏ hàng"
             >
-              <FiShoppingCart className="text-[19px] group-hover:scale-110 transition-transform" />
+              <FiShoppingCart className="text-base sm:text-[19px] group-hover:scale-110 transition-transform" />
               {cartItemCount > 0 && (
                 <span className="absolute -top-1 -right-1 flex size-5 items-center justify-center rounded-full bg-gradient-to-r from-rose-500 to-red-600 text-[10px] font-black text-white ring-2 ring-white dark:ring-slate-950 shadow-md shadow-rose-500/30">
                   {cartItemCount > 99 ? "99+" : cartItemCount}
@@ -260,7 +266,7 @@ function Header() {
               <div className="relative">
                 <button
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                  className="flex items-center gap-2 p-1 pr-2.5 rounded-2xl bg-slate-100/80 dark:bg-slate-900/80 border border-slate-200/60 dark:border-slate-800/60 hover:bg-white dark:hover:bg-slate-800 hover:border-blue-500/30 transition-all cursor-pointer active:scale-95 shadow-xs"
+                  className="flex items-center gap-1.5 p-1 pr-2 rounded-2xl bg-slate-100/80 dark:bg-slate-900/80 border border-slate-200/60 dark:border-slate-800/60 hover:bg-white dark:hover:bg-slate-800 hover:border-blue-500/30 transition-all cursor-pointer active:scale-95 shadow-xs shrink-0"
                 >
                   <div className="relative size-8 rounded-xl overflow-hidden ring-2 ring-blue-500/20">
                     <img
@@ -270,7 +276,7 @@ function Header() {
                     />
                   </div>
                   <FiChevronDown
-                    className={`text-slate-400 transition-transform duration-300 text-sm ${
+                    className={`text-slate-400 transition-transform duration-300 text-xs ${
                       isUserMenuOpen ? "rotate-180" : ""
                     }`}
                   />
@@ -282,7 +288,7 @@ function Header() {
                       initial={{ opacity: 0, scale: 0.95, y: 12 }}
                       animate={{ opacity: 1, scale: 1, y: 0 }}
                       exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                      className="absolute right-0 mt-3 w-64 bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200/80 dark:border-slate-800 p-3 z-50 overflow-hidden"
+                      className="absolute right-0 mt-3 w-64 max-w-[calc(100vw-1.5rem)] bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200/80 dark:border-slate-800 p-3 z-[110] overflow-hidden"
                     >
                       <div className="p-3 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-slate-800/60 dark:to-slate-800/30 rounded-2xl mb-2 border border-blue-100/50 dark:border-slate-700/40">
                         <p className="text-[13px] font-black text-slate-900 dark:text-white truncate">
@@ -351,7 +357,7 @@ function Header() {
             ) : (
               <Link
                 to="/login"
-                className="flex items-center gap-1.5 min-h-[40px] px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl text-[11px] font-bold uppercase tracking-wide shadow-md shadow-blue-500/20 transition-all active:scale-95 whitespace-nowrap shrink-0"
+                className="flex items-center gap-1.5 min-h-[40px] px-3.5 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl text-[11px] font-bold uppercase tracking-wide shadow-md shadow-blue-500/20 transition-all active:scale-95 whitespace-nowrap shrink-0"
               >
                 <FiUser className="text-sm shrink-0" />
                 <span className="hidden sm:inline whitespace-nowrap">ĐĂNG NHẬP</span>
@@ -361,12 +367,13 @@ function Header() {
             {/* Mobile Menu Toggle */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="lg:hidden size-11 min-h-[44px] min-w-[44px] rounded-2xl bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors flex items-center justify-center cursor-pointer active:scale-95"
+              className="lg:hidden size-10 sm:size-11 min-h-[40px] min-w-[40px] rounded-2xl bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors flex items-center justify-center cursor-pointer active:scale-95 shrink-0"
+              title="Menu"
             >
               {isMobileMenuOpen ? (
-                <FiX className="text-xl" />
+                <FiX className="text-lg" />
               ) : (
-                <FiMenu className="text-xl" />
+                <FiMenu className="text-lg" />
               )}
             </button>
           </div>
@@ -379,41 +386,76 @@ function Header() {
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-              className="lg:hidden bg-white/95 dark:bg-slate-950/95 backdrop-blur-xl border-t border-slate-100 dark:border-slate-900 overflow-hidden shadow-2xl"
+              className="lg:hidden bg-white/98 dark:bg-slate-950/98 backdrop-blur-2xl border-t border-slate-100 dark:border-slate-900 overflow-hidden shadow-2xl"
             >
-              <div className="container-custom py-5 space-y-4 px-4">
-                {/* Mobile Search Button */}
+              <div className="container-custom py-4 space-y-4 px-4">
+                {/* Mobile OmniSearch Input Button */}
                 <button
                   type="button"
                   onClick={() => {
                     setIsMobileMenuOpen(false);
                     setIsOmniSearchOpen(true);
                   }}
-                  className="w-full min-h-[46px] flex items-center justify-between bg-slate-100 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl px-4 text-xs font-bold text-slate-500 dark:text-slate-400 cursor-pointer active:scale-98 transition-all"
+                  className="w-full min-h-[44px] flex items-center justify-between bg-slate-100 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl px-4 text-xs font-bold text-slate-500 dark:text-slate-400 cursor-pointer active:scale-98 transition-all"
                 >
                   <div className="flex items-center gap-3">
                     <FiSearch className="text-blue-600 dark:text-blue-400 text-base" />
-                    <span>Tìm kiếm sản phẩm, thương hiệu...</span>
+                    <span>Tìm sản phẩm, thương hiệu...</span>
                   </div>
-                  <span className="px-2 py-1 bg-blue-500/10 text-blue-600 dark:text-blue-400 text-[10px] font-black rounded-lg uppercase">
+                  <span className="px-2 py-0.5 bg-blue-500/10 text-blue-600 dark:text-blue-400 text-[10px] font-black rounded-lg uppercase">
                     AI Search
                   </span>
                 </button>
 
-                <div className="grid grid-cols-1 gap-2 pt-2">
+                {/* Quick Tools Row (Theme Toggle, Wishlist, Visual Vision Search) */}
+                <div className="grid grid-cols-3 gap-2 p-2 bg-slate-50 dark:bg-slate-900/60 rounded-2xl border border-slate-100 dark:border-slate-800">
+                  <button
+                    onClick={toggleTheme}
+                    className="flex flex-col items-center justify-center p-2.5 rounded-xl bg-white dark:bg-slate-800 text-slate-700 dark:text-amber-400 border border-slate-200/60 dark:border-slate-700/60 active:scale-95 transition-all cursor-pointer"
+                  >
+                    {theme === "light" ? <FiMoon size={18} /> : <FiSun size={18} />}
+                    <span className="text-[10px] font-bold mt-1 text-slate-600 dark:text-slate-300">
+                      {theme === "light" ? "Giao diện tối" : "Giao diện sáng"}
+                    </span>
+                  </button>
+
+                  <Link
+                    to="/wishlist"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="flex flex-col items-center justify-center p-2.5 rounded-xl bg-white dark:bg-slate-800 text-rose-500 border border-slate-200/60 dark:border-slate-700/60 active:scale-95 transition-all cursor-pointer"
+                  >
+                    <FiHeart size={18} />
+                    <span className="text-[10px] font-bold mt-1 text-slate-600 dark:text-slate-300">Yêu thích</span>
+                  </Link>
+
+                  <button
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      setIsVisualSearchOpen(true);
+                    }}
+                    className="flex flex-col items-center justify-center p-2.5 rounded-xl bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 border border-slate-200/60 dark:border-slate-700/60 active:scale-95 transition-all cursor-pointer"
+                  >
+                    <FiCamera size={18} />
+                    <span className="text-[10px] font-bold mt-1 text-slate-600 dark:text-slate-300">Tìm bằng ảnh</span>
+                  </button>
+                </div>
+
+                {/* Mobile Nav Links */}
+                <div className="grid grid-cols-1 gap-1.5 pt-1">
                   {navLinks.map((link) => {
                     const isActive = location.pathname === link.path;
                     return (
                       <Link
                         key={link.path}
                         to={link.path}
-                        className={`flex items-center gap-3 min-h-[46px] px-4 py-3 rounded-2xl transition-all font-bold text-xs uppercase tracking-wider ${
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className={`flex items-center gap-3 min-h-[44px] px-4 py-3 rounded-2xl transition-all font-bold text-xs uppercase tracking-wider ${
                           isActive
                             ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-900/30"
                             : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900"
                         }`}
                       >
-                        <span className="text-lg text-blue-600 dark:text-blue-400">{link.icon}</span>
+                        <span className="text-base text-blue-600 dark:text-blue-400">{link.icon}</span>
                         {link.name}
                       </Link>
                     );

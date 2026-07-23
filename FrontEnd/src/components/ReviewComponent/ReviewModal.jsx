@@ -80,14 +80,16 @@ const ReviewModal = ({ isOpen, onClose, order, onReviewSuccess }) => {
       onClose={onClose}
       title={`Đánh giá đơn hàng #${order.orderCode || order.id}`}
       size="lg"
+      loading={submitting}
+      loadingMessage="Đang gửi đánh giá..."
     >
-      <div className="space-y-6">
-        <p className="text-sm text-slate-500 dark:text-dark-text-secondary font-medium">
+      <div className="space-y-4 sm:space-y-6">
+        <p className="text-xs sm:text-sm text-slate-500 dark:text-dark-text-secondary font-medium">
           Cảm ơn bạn đã mua sắm! Hãy chia sẻ trải nghiệm của bạn về các sản phẩm
           trong đơn hàng này.
         </p>
 
-        <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
+        <div className="space-y-3 sm:space-y-4 max-h-[60vh] overflow-y-auto pr-1 sm:pr-2 custom-scrollbar">
           {loading && (pendingProductIds === null) ? (
             <div className="py-12 text-center flex flex-col items-center justify-center gap-3">
               <UnifiedSpinner size="md" variant="primary" />
@@ -100,9 +102,6 @@ const ReviewModal = ({ isOpen, onClose, order, onReviewSuccess }) => {
               const rawProductId = item.productId || item.product?.id;
               const productId = rawProductId ? String(rawProductId) : null;
               
-              // Đã đánh giá nếu:
-              // 1. Vừa đánh giá trong modal này (reviewedProductIds)
-              // 2. Không nằm trong danh sách "chưa đánh giá" (pendingProductIds)
               const isReviewed = productId
                 ? (reviewedProductIds.includes(productId) ||
                    (pendingProductIds !== null &&
@@ -114,32 +113,34 @@ const ReviewModal = ({ isOpen, onClose, order, onReviewSuccess }) => {
             return (
               <div
                 key={item.id}
-                className="group bg-white dark:bg-dark-surface rounded-[32px] p-6 border border-slate-100 dark:border-dark-border hover:border-primary/20 dark:hover:border-brand/20 transition-all duration-300 shadow-sm hover:shadow-md"
+                className="group bg-white dark:bg-dark-surface rounded-2xl sm:rounded-[32px] p-4 sm:p-6 border border-slate-100 dark:border-dark-border hover:border-primary/20 dark:hover:border-brand/20 transition-all duration-300 shadow-sm"
               >
-                <div className="flex items-center gap-6">
-                  <div className="size-20 bg-slate-50 dark:bg-dark-bg rounded-[24px] border border-slate-100 dark:border-dark-border p-2 flex-shrink-0 group-hover:scale-105 transition-transform duration-500">
-                    <img
-                      src={item.product?.image || item.image}
-                      alt=""
-                      className="w-full h-full object-contain dark:mix-blend-normal"
-                    />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h4 className="font-bold text-slate-900 dark:text-white text-base truncate mb-1">
-                      {item.productName}
-                    </h4>
-                    <div className="flex items-center gap-3">
-                      <p className="text-[11px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest">
-                        Số lượng: {item.quantity}
-                      </p>
-                      <div className="size-1 bg-slate-200 dark:bg-dark-border rounded-full"></div>
-                      <p className="text-[11px] font-black text-primary dark:text-brand uppercase tracking-widest">
-                        Đã giao thành công
-                      </p>
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <div className="flex items-center gap-3 sm:gap-6 min-w-0 w-full sm:w-auto flex-1">
+                    <div className="size-16 sm:size-20 bg-slate-50 dark:bg-dark-bg rounded-2xl sm:rounded-[24px] border border-slate-100 dark:border-dark-border p-2 flex-shrink-0">
+                      <img
+                        src={item.product?.image || item.image}
+                        alt=""
+                        className="w-full h-full object-contain dark:mix-blend-normal"
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-bold text-slate-900 dark:text-white text-sm sm:text-base truncate mb-1">
+                        {item.productName}
+                      </h4>
+                      <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+                        <p className="text-[10px] sm:text-[11px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest">
+                          Số lượng: {item.quantity}
+                        </p>
+                        <div className="size-1 bg-slate-200 dark:bg-dark-border rounded-full hidden sm:block"></div>
+                        <p className="text-[10px] sm:text-[11px] font-black text-primary dark:text-brand uppercase tracking-widest">
+                          Đã giao thành công
+                        </p>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="flex-shrink-0">
+                  <div className="w-full sm:w-auto flex justify-end shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100 dark:border-dark-border">
                     {isReviewed ? (
                       <div className="flex items-center gap-2 text-emerald-500 font-black text-[10px] uppercase tracking-[0.2em] bg-emerald-50 dark:bg-emerald-900/10 px-4 py-2 rounded-2xl border border-emerald-100 dark:border-emerald-900/20">
                         <FiCheckCircle size={14} /> Đã đánh giá

@@ -2,6 +2,7 @@ import React from "react";
 import { motion as Motion, AnimatePresence } from "framer-motion";
 import { FiX, FiAlertTriangle, FiCheckCircle, FiInfo, FiTrash2 } from "react-icons/fi";
 import { Button } from "./Button";
+import UnifiedSpinner from "../Loading/UnifiedSpinner";
 
 const Modal = ({
   isOpen,
@@ -15,6 +16,8 @@ const Modal = ({
   showClose = true,
   closeOnOverlayClick = true,
   className = "",
+  loading = false,
+  loadingMessage = "Đang xử lý...",
 }) => {
   const isModalOpen = isOpen || show;
   const sizes = {
@@ -53,6 +56,24 @@ const Modal = ({
             <div className="flex justify-center pt-2.5 pb-1 sm:hidden bg-slate-50/80 dark:bg-slate-950/60">
               <div className="w-10 h-1 rounded-full bg-slate-300 dark:bg-slate-700" />
             </div>
+
+            {/* Modal Popup Loading Overlay */}
+            <AnimatePresence>
+              {loading && (
+                <Motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="absolute inset-0 z-50 bg-white/75 dark:bg-slate-900/80 backdrop-blur-md flex flex-col items-center justify-center gap-3 p-6 text-center"
+                >
+                  <UnifiedSpinner size="lg" variant="primary" />
+                  <p className="text-xs font-black uppercase tracking-widest text-slate-800 dark:text-slate-100 animate-pulse">
+                    {loadingMessage}
+                  </p>
+                </Motion.div>
+              )}
+            </AnimatePresence>
+
             {/* Header */}
             {(title || showClose) && (
               <div className="flex items-center justify-between p-5 sm:p-6 pb-3.5 border-b border-slate-100 dark:border-slate-800/80">
@@ -135,6 +156,7 @@ export const ConfirmModal = ({
       title={null}
       showClose={false}
       className="text-center"
+      loading={loading}
     >
       <div className="flex flex-col items-center py-1">
         <div className={`size-14 sm:size-16 rounded-2xl flex items-center justify-center text-2xl sm:text-3xl mb-4 border shadow-inner ${style}`}>

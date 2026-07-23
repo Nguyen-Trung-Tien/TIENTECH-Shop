@@ -1,6 +1,6 @@
 const db = require("../../models");
 const BaseService = require("../BaseService");
-const { sendVerificationEmail } = require("../sendEmail");
+const { sendVerificationEmail, sendEmailAsync } = require("../sendEmail");
 const { 
   hashToken, 
   generateRandomToken, 
@@ -51,7 +51,7 @@ class UserService extends BaseService {
       const user = await this.model.create(userData);
       
       if (!data.isActive) {
-        await sendVerificationEmail(user, verificationToken);
+        sendEmailAsync(sendVerificationEmail, user, verificationToken);
       }
 
       return { errCode: 0, data: user };

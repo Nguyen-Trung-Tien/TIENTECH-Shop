@@ -66,14 +66,18 @@ export default function VisualSearchModal({ isOpen, onClose }) {
             onClick={!isSearching ? onClose : undefined}
           />
 
-          {/* Modal Container - Flexbox center */}
-          <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 pointer-events-none">
+          {/* Modal Container */}
+          <div className="fixed inset-0 z-[120] flex items-end sm:items-center justify-center p-0 sm:p-4 pointer-events-none">
             <Motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              initial={{ opacity: 0, scale: 0.95, y: 30 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="w-full max-w-md rounded-[2rem] bg-white p-6 sm:p-8 shadow-2xl dark:bg-dark-surface border border-slate-100 dark:border-dark-border overflow-hidden pointer-events-auto"
+              exit={{ opacity: 0, scale: 0.95, y: 30 }}
+              className="w-full max-w-md rounded-t-[32px] sm:rounded-[32px] bg-white p-5 sm:p-8 shadow-2xl dark:bg-dark-surface border border-slate-100 dark:border-dark-border overflow-hidden pointer-events-auto"
             >
+              {/* Mobile Drag Handle */}
+              <div className="flex justify-center -mt-2 pb-3 sm:hidden">
+                <div className="w-10 h-1 rounded-full bg-slate-300 dark:bg-slate-700" />
+              </div>
               <div className="flex items-center justify-between mb-8">
                 <div>
                   <h2 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-3 tracking-tight">
