@@ -65,14 +65,20 @@ const ProductInfo = ({
             Đã bán: <span className="text-slate-900 dark:text-white font-bold">{product.sold || 0}</span>
           </span>
           <span className="text-slate-200 dark:text-slate-800">|</span>
-          <div className="flex items-center gap-1.5">
+          <button
+            type="button"
+            onClick={() => {
+              document.getElementById("reviews-section")?.scrollIntoView({ behavior: "smooth" });
+            }}
+            className="flex items-center gap-1.5 hover:opacity-80 transition-opacity cursor-pointer text-left"
+          >
             <div className="flex text-amber-400 text-sm">
               {ratingStars}
             </div>
             <span className="text-slate-900 dark:text-white font-bold">
               {averageRating}
             </span>
-          </div>
+          </button>
         </div>
       </div>
 

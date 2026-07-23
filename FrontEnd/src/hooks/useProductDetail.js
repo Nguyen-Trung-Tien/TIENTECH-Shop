@@ -63,7 +63,7 @@ export const useProductDetail = (slug) => {
           hasImage,
         );
         if (res.errCode === 0) {
-          setReviews(res.data);
+          setReviews(res.data || []);
           if (res.summary) setReviewsSummary(res.summary);
           if (res.pagination) setPagination(res.pagination);
         }

@@ -61,7 +61,7 @@ const ReviewComponent = ({
   };
 
   return (
-    <section className="bg-white dark:bg-dark-surface rounded-[40px] border border-slate-100 dark:border-dark-border p-8 md:p-14 shadow-soft transition-all duration-300">
+    <section id="reviews-section" className="bg-white dark:bg-dark-surface rounded-[40px] border border-slate-100 dark:border-dark-border p-8 md:p-14 shadow-soft transition-all duration-300">
       {/* Header */}
       <div className="mb-10 pb-6 border-b border-slate-100 dark:border-dark-border flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
