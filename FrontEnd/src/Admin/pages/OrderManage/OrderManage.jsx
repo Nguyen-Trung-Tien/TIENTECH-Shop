@@ -9,6 +9,7 @@ import {
   FiTrash2,
   FiPackage,
   FiRefreshCw,
+  FiShoppingCart,
 } from "react-icons/fi";
 import { motion as Motion, AnimatePresence } from "framer-motion";
 
