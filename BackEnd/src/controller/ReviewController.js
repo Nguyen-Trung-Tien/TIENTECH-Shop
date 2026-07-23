@@ -7,12 +7,16 @@ const handleGetReviewsByProduct = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const userId = req.user?.id || null;
+    const rating = req.query.rating || null;
+    const hasImage = req.query.hasImage === "true" || req.query.hasImage === true;
 
     const data = await ReviewService.getReviewsByProduct(
       productId,
       page,
       limit,
-      userId
+      userId,
+      rating,
+      hasImage,
     );
     return res.status(200).json(data);
   } catch (e) {

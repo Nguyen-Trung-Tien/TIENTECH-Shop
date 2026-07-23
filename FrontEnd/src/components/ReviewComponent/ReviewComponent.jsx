@@ -1,109 +1,205 @@
 import React from "react";
-import { FiStar, FiMessageSquare } from "react-icons/fi";
+import { FiStar, FiMessageSquare, FiImage, FiFilter } from "react-icons/fi";
 import { motion as Motion } from "framer-motion";
 import ReviewItem from "./ReviewItem";
+import AppPagination from "../Pagination/Pagination";
 
-const ReviewComponent = ({ reviews = [], user }) => {
+const ReviewComponent = ({
+  reviews = [],
+  reviewsSummary = {
+    totalReviews: 0,
+    averageRating: 5.0,
+    ratingCounts: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
+  },
+  user,
+  pagination = { totalPages: 1, currentPage: 1, totalItems: 0 },
+  reviewPage = 1,
+  ratingFilter = "",
+  hasImageFilter = false,
+  onPageChange,
+  onFilterChange,
+}) => {
+  const totalReviews = reviewsSummary?.totalReviews || 0;
   const averageRating =
-    reviews.length > 0
-      ? (
-          reviews.reduce((acc, item) => acc + item.rating, 0) / reviews.length
-        ).toFixed(1)
+    reviewsSummary?.averageRating !== undefined &&
+    reviewsSummary?.averageRating !== null
+      ? Number(reviewsSummary.averageRating).toFixed(1)
       : "5.0";
 
-  const ratingCounts = [5, 4, 3, 2, 1].map((star) => ({
-    star,
-    count: reviews.filter((r) => r.rating === star).length,
-    percentage:
-      reviews.length > 0
-        ? (reviews.filter((r) => r.rating === star).length / reviews.length) *
-          100
-        : 0,
-  }));
+  const ratingCounts = [5, 4, 3, 2, 1].map((star) => {
+    const count = reviewsSummary?.ratingCounts?.[star] || 0;
+    return {
+      star,
+      count,
+      percentage: totalReviews > 0 ? (count / totalReviews) * 100 : 0,
+    };
+  });
+
+  const handleSelectFilter = (star, withImage = false) => {
+    if (onFilterChange) {
+      onFilterChange(star, withImage);
+    }
+  };
 
   return (
-    <section className="bg-white dark:bg-dark-surface rounded-[40px] border border-slate-100 dark:border-dark-border p-10 md:p-16 shadow-soft transition-all duration-300">
-      <div className="mb-16 pb-8 border-b border-slate-50 dark:border-dark-border flex flex-col md:flex-row md:items-end justify-between gap-6">
+    <section className="bg-white dark:bg-dark-surface rounded-[40px] border border-slate-100 dark:border-dark-border p-8 md:p-14 shadow-soft transition-all duration-300">
+      {/* Header */}
+      <div className="mb-10 pb-6 border-b border-slate-100 dark:border-dark-border flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-display font-bold text-slate-900 dark:text-white tracking-tight">
-            Đánh giá từ khách hàng
+          <h2 className="text-2xl md:text-3xl font-display font-bold text-slate-900 dark:text-white tracking-tight">
+            Đánh giá & Nhận xét sản phẩm
           </h2>
-          <p className="text-sm text-slate-400 dark:text-dark-text-secondary font-medium mt-2">
-            Xem những gì người mua khác nói về sản phẩm này
+          <p className="text-xs md:text-sm text-slate-400 dark:text-dark-text-secondary font-medium mt-1">
+            Nhận xét thực tế từ những khách hàng đã mua và sử dụng sản phẩm
           </p>
         </div>
-        <div className="flex items-center gap-2 bg-slate-50 dark:bg-dark-bg px-5 py-2.5 rounded-2xl border border-slate-100 dark:border-dark-border">
+        <div className="flex items-center gap-2 bg-slate-50 dark:bg-dark-bg px-4 py-2 rounded-2xl border border-slate-100 dark:border-dark-border self-start md:self-auto">
           <FiMessageSquare className="text-primary dark:text-brand" />
-          <span className="text-[11px] font-black text-slate-600 dark:text-white uppercase tracking-widest">
-            {reviews.length} nhận xét thực tế
+          <span className="text-xs font-extrabold text-slate-700 dark:text-white uppercase tracking-wider">
+            {totalReviews} đánh giá
           </span>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14">
         {/* Rating Summary */}
-        <div className="lg:col-span-4 space-y-10">
-          <div className="bg-gradient-to-br from-slate-50 to-white dark:from-dark-bg dark:to-dark-surface rounded-[32px] p-10 text-center border border-slate-100 dark:border-dark-border shadow-inner transition-all relative overflow-hidden group">
+        <div className="lg:col-span-4 space-y-8">
+          <div className="bg-gradient-to-br from-slate-50 to-white dark:from-dark-bg dark:to-dark-surface rounded-[32px] p-8 text-center border border-slate-100 dark:border-dark-border shadow-inner relative overflow-hidden group">
             <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 blur-2xl group-hover:bg-primary/10 transition-all duration-700"></div>
-            <p className="text-7xl font-display font-black text-slate-900 dark:text-white mb-3 tracking-tighter">
+            <p className="text-6xl md:text-7xl font-display font-black text-slate-900 dark:text-white mb-2 tracking-tighter">
               {averageRating}
             </p>
-            <div className="flex justify-center gap-1.5 mb-6">
+            <div className="flex justify-center gap-1.5 mb-4">
               {[...Array(5)].map((_, i) => (
                 <FiStar
                   key={i}
-                  size={24}
-                  className={`transition-all duration-500 ${i < Math.floor(averageRating) ? "text-amber-400 fill-current drop-shadow-sm" : "text-slate-200 dark:text-dark-border"}`}
+                  size={22}
+                  className={`transition-all duration-500 ${
+                    i < Math.floor(Number(averageRating))
+                      ? "text-amber-400 fill-current drop-shadow-sm"
+                      : "text-slate-200 dark:text-dark-border"
+                  }`}
                 />
               ))}
             </div>
-            <p className="text-[11px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-[0.3em]">
-              Xếp hạng trung bình
+            <p className="text-[10px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-[0.2em]">
+              Xếp hạng trung bình ({totalReviews} đánh giá)
             </p>
           </div>
 
-          <div className="space-y-5 px-4">
-            {ratingCounts.map((item) => (
-              <div key={item.star} className="flex items-center gap-6">
-                <span className="w-12 text-[10px] font-black text-slate-400 dark:text-dark-text-secondary flex items-center gap-1.5 shrink-0 uppercase tracking-widest">
-                  {item.star} <FiStar size={14} className="fill-current text-amber-400" />
-                </span>
-                <div className="flex-1 h-2.5 bg-slate-100 dark:bg-dark-bg rounded-full overflow-hidden shadow-inner">
-                  <Motion.div
-                    initial={{ width: 0 }}
-                    whileInView={{ width: `${item.percentage}%` }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 1.5, ease: [0.22, 1, 0.36, 1] }}
-                    className="h-full bg-gradient-to-r from-primary to-indigo-500 dark:from-brand dark:to-indigo-400 rounded-full shadow-sm"
-                  />
+          {/* Rating Bars */}
+          <div className="space-y-4 px-2">
+            {ratingCounts.map((item) => {
+              const isSelected = ratingFilter === String(item.star) && !hasImageFilter;
+              return (
+                <div
+                  key={item.star}
+                  onClick={() => handleSelectFilter(String(item.star), false)}
+                  className={`flex items-center gap-4 p-2 rounded-xl cursor-pointer transition-all ${
+                    isSelected
+                      ? "bg-slate-100 dark:bg-dark-bg border border-slate-200 dark:border-dark-border"
+                      : "hover:bg-slate-50 dark:hover:bg-dark-bg/50"
+                  }`}
+                >
+                  <span className="w-10 text-[11px] font-black text-slate-600 dark:text-dark-text-secondary flex items-center gap-1 shrink-0 uppercase">
+                    {item.star} <FiStar size={13} className="fill-current text-amber-400" />
+                  </span>
+                  <div className="flex-1 h-2.5 bg-slate-100 dark:bg-dark-bg rounded-full overflow-hidden shadow-inner">
+                    <Motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${item.percentage}%` }}
+                      transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
+                      className="h-full bg-gradient-to-r from-amber-400 to-amber-500 rounded-full shadow-sm"
+                    />
+                  </div>
+                  <span className="w-12 text-[10px] font-extrabold text-slate-400 dark:text-dark-text-secondary text-right shrink-0">
+                    {item.count} ({Math.round(item.percentage)}%)
+                  </span>
                 </div>
-                <span className="w-12 text-[10px] font-black text-slate-500 dark:text-dark-text-secondary text-right shrink-0 uppercase tracking-widest">
-                  {Math.round(item.percentage)}%
-                </span>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
-        {/* Reviews List */}
+        {/* Reviews List & Filters */}
         <div className="lg:col-span-8 space-y-6">
+          {/* Interactive Filter Pills */}
+          <div className="flex flex-wrap items-center gap-2 p-1.5 bg-slate-50 dark:bg-dark-bg/60 rounded-2xl border border-slate-100 dark:border-dark-border">
+            <span className="text-[10px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest px-3 flex items-center gap-1">
+              <FiFilter size={12} /> Lọc:
+            </span>
+            <button
+              onClick={() => handleSelectFilter("", false)}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                ratingFilter === "" && !hasImageFilter
+                  ? "bg-primary text-white shadow-md shadow-primary/20"
+                  : "bg-white dark:bg-dark-surface text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-dark-border"
+              }`}
+            >
+              Tất cả ({totalReviews})
+            </button>
+
+            {[5, 4, 3, 2, 1].map((star) => {
+              const count = reviewsSummary?.ratingCounts?.[star] || 0;
+              const isSelected = ratingFilter === String(star) && !hasImageFilter;
+              return (
+                <button
+                  key={star}
+                  onClick={() => handleSelectFilter(String(star), false)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1 transition-all cursor-pointer ${
+                    isSelected
+                      ? "bg-primary text-white shadow-md shadow-primary/20"
+                      : "bg-white dark:bg-dark-surface text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-dark-border"
+                  }`}
+                >
+                  <span>{star} Sao</span>
+                  <span className="text-[10px] opacity-75">({count})</span>
+                </button>
+              );
+            })}
+
+            <button
+              onClick={() => handleSelectFilter("", true)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                hasImageFilter
+                  ? "bg-primary text-white shadow-md shadow-primary/20"
+                  : "bg-white dark:bg-dark-surface text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-dark-border"
+              }`}
+            >
+              <FiImage size={13} />
+              <span>Có hình ảnh</span>
+            </button>
+          </div>
+
+          {/* List items */}
           {reviews.length > 0 ? (
-            <div className="divide-y divide-slate-50 dark:divide-dark-border">
+            <div className="divide-y divide-slate-100 dark:divide-dark-border">
               {reviews.map((review, idx) => (
-                <div key={review.id || idx} className="py-6 first:pt-0 last:pb-0">
-                  <ReviewItem review={review} user={user} />
-                </div>
+                <ReviewItem key={review.id || idx} review={review} user={user} />
               ))}
             </div>
           ) : (
-            <div className="py-24 text-center bg-slate-50/50 dark:bg-dark-bg/30 rounded-[32px] border border-dashed border-slate-200 dark:border-dark-border">
-              <div className="size-16 bg-white dark:bg-dark-surface rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-soft">
-                <FiMessageSquare className="text-slate-200" size={28} />
+            <div className="py-20 text-center bg-slate-50/50 dark:bg-dark-bg/30 rounded-[32px] border border-dashed border-slate-200 dark:border-dark-border">
+              <div className="size-14 bg-white dark:bg-dark-surface rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm border border-slate-100 dark:border-dark-border">
+                <FiMessageSquare className="text-slate-300 dark:text-slate-600" size={24} />
               </div>
-              <p className="text-slate-400 dark:text-dark-text-secondary font-bold text-lg">
-                Chưa có đánh giá nào cho sản phẩm này.
+              <p className="text-slate-500 dark:text-dark-text-secondary font-bold text-base">
+                Không tìm thấy đánh giá phù hợp.
               </p>
-              <p className="text-sm text-slate-400 mt-2">Hãy là người đầu tiên chia sẻ cảm nhận của bạn!</p>
+              <p className="text-xs text-slate-400 mt-1">
+                Thử chọn bộ lọc khác hoặc là người đầu tiên chia sẻ cảm nhận!
+              </p>
+            </div>
+          )}
+
+          {/* Pagination */}
+          {pagination && pagination.totalPages > 1 && (
+            <div className="pt-6">
+              <AppPagination
+                page={reviewPage}
+                totalPages={pagination.totalPages}
+                onPageChange={onPageChange}
+              />
             </div>
           )}
         </div>

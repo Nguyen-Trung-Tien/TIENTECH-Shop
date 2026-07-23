@@ -61,6 +61,13 @@ const ProductDetailPage = () => {
     product,
     loading,
     reviews,
+    reviewsSummary,
+    reviewPage,
+    ratingFilter,
+    hasImageFilter,
+    pagination,
+    changeReviewPage,
+    changeReviewFilter,
     smartRecs,
     handleAddToCart,
     addingCart,
@@ -68,14 +75,18 @@ const ProductDetailPage = () => {
   } = useProductDetail(slug);
 
   const averageRating = useMemo(() => {
-    if (!reviews || reviews.length === 0) return 5.0;
-    const total = reviews.reduce((acc, r) => acc + r.rating, 0);
-    return (total / reviews.length).toFixed(1);
-  }, [reviews]);
+    if (
+      reviewsSummary?.averageRating !== undefined &&
+      reviewsSummary?.averageRating !== null
+    ) {
+      return Number(reviewsSummary.averageRating).toFixed(1);
+    }
+    return "5.0";
+  }, [reviewsSummary]);
 
   const ratingStars = useMemo(() => {
     const stars = [];
-    const fullStars = Math.floor(averageRating);
+    const fullStars = Math.floor(Number(averageRating));
     for (let i = 0; i < 5; i++) {
       stars.push(i < fullStars ? "★" : "☆");
     }
@@ -381,7 +392,17 @@ const ProductDetailPage = () => {
       <SmartRecommendations smartRecs={smartRecs} />
 
       <div className="mt-16 space-y-12">
-        <ReviewComponent reviews={reviews} user={user} />
+        <ReviewComponent
+          reviews={reviews}
+          reviewsSummary={reviewsSummary}
+          user={user}
+          pagination={pagination}
+          reviewPage={reviewPage}
+          ratingFilter={ratingFilter}
+          hasImageFilter={hasImageFilter}
+          onPageChange={changeReviewPage}
+          onFilterChange={changeReviewFilter}
+        />
       </div>
 
       <PricePredictionModal

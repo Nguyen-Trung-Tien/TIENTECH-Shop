@@ -2,27 +2,72 @@ const db = require("../models");
 
 const { getPagination, getPagingData } = require("../utils/paginationHelper");
 
-const getReviewsByProduct = async (productId, page = 1, limit = 10, userId = null) => {
+const getReviewsByProduct = async (
+  productId,
+  page = 1,
+  limit = 10,
+  userId = null,
+  ratingFilter = null,
+  hasImageFilter = false,
+) => {
   try {
     const { offset, limit: l } = getPagination(page, limit);
 
-    const data = await db.Review.findAndCountAll({
+    // 1. Calculate overall summary statistics for all approved reviews of this product
+    const allApprovedReviews = await db.Review.findAll({
       where: { productId, isApproved: true },
-      include: [
-        {
-          model: db.User,
-          as: "user",
-          attributes: ["id", "username", "avatar"],
-        },
-        {
-          model: db.ReviewImage,
-          as: "images",
-          attributes: ["id", "imageUrl"],
-        },
-      ],
+      attributes: ["id", "rating"],
+    });
+
+    const totalReviews = allApprovedReviews.length;
+    let sumRating = 0;
+    const ratingCounts = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+
+    allApprovedReviews.forEach((r) => {
+      const val = Number(r.rating) || 0;
+      sumRating += val;
+      const rounded = Math.round(val);
+      if (ratingCounts[rounded] !== undefined) {
+        ratingCounts[rounded] += 1;
+      }
+    });
+
+    const averageRating =
+      totalReviews > 0 ? (sumRating / totalReviews).toFixed(1) : "5.0";
+
+    // 2. Build filter conditions for pagination query
+    const whereClause = { productId, isApproved: true };
+
+    if (
+      ratingFilter &&
+      !isNaN(Number(ratingFilter)) &&
+      Number(ratingFilter) >= 1 &&
+      Number(ratingFilter) <= 5
+    ) {
+      whereClause.rating = Number(ratingFilter);
+    }
+
+    const reviewInclude = [
+      {
+        model: db.User,
+        as: "user",
+        attributes: ["id", "username", "avatar"],
+      },
+      {
+        model: db.ReviewImage,
+        as: "images",
+        attributes: ["id", "imageUrl"],
+        required: hasImageFilter === true || String(hasImageFilter) === "true",
+      },
+    ];
+
+    const data = await db.Review.findAndCountAll({
+      where: whereClause,
+      include: reviewInclude,
       order: [["createdAt", "DESC"]],
       limit: l,
       offset: offset,
+      distinct: true,
     });
 
     const pagingData = getPagingData(data, page, l);
@@ -64,8 +109,14 @@ const getReviewsByProduct = async (productId, page = 1, limit = 10, userId = nul
 
     return {
       errCode: 0,
+      summary: {
+        totalReviews,
+        averageRating: Number(averageRating),
+        ratingCounts,
+      },
       data: pagingData.items.map((r) => ({
         ...r.toJSON(),
+        isVerified: true,
         replies: repliesByReviewId[r.id] || [],
         isLiked: likedReviewIds.has(r.id),
       })),

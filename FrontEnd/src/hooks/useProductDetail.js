@@ -18,7 +18,15 @@ export const useProductDetail = (slug) => {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [reviews, setReviews] = useState([]);
-  const [pagination, setPagination] = useState({ totalPages: 1 });
+  const [reviewsSummary, setReviewsSummary] = useState({
+    totalReviews: 0,
+    averageRating: 5.0,
+    ratingCounts: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
+  });
+  const [reviewPage, setReviewPage] = useState(1);
+  const [ratingFilter, setRatingFilter] = useState("");
+  const [hasImageFilter, setHasImageFilter] = useState(false);
+  const [pagination, setPagination] = useState({ totalPages: 1, currentPage: 1, totalItems: 0 });
 
   const [recommended, setRecommended] = useState([]);
   const [smartRecs, setSmartRecs] = useState([]);
@@ -44,20 +52,39 @@ export const useProductDetail = (slug) => {
   }, [slug]);
 
   const fetchReviews = useCallback(
-    async (page = 1) => {
+    async (page = 1, rating = ratingFilter, hasImage = hasImageFilter) => {
       if (!product?.id) return;
       try {
-        const res = await getReviewsByProductApi(product.id, page, 5);
+        const res = await getReviewsByProductApi(
+          product.id,
+          page,
+          5,
+          rating,
+          hasImage,
+        );
         if (res.errCode === 0) {
           setReviews(res.data);
-          setPagination(res.pagination);
+          if (res.summary) setReviewsSummary(res.summary);
+          if (res.pagination) setPagination(res.pagination);
         }
       } catch (err) {
         console.error("Fetch reviews error:", err);
       }
     },
-    [product?.id],
+    [product?.id, ratingFilter, hasImageFilter],
   );
+
+  const changeReviewPage = (page) => {
+    setReviewPage(page);
+    fetchReviews(page, ratingFilter, hasImageFilter);
+  };
+
+  const changeReviewFilter = (rating, hasImage = false) => {
+    setRatingFilter(rating);
+    setHasImageFilter(hasImage);
+    setReviewPage(1);
+    fetchReviews(1, rating, hasImage);
+  };
 
   useEffect(() => {
     fetchProduct();
@@ -66,7 +93,7 @@ export const useProductDetail = (slug) => {
   // Fetch reviews & recommended & smart recommendations
   useEffect(() => {
     if (product?.id) {
-      fetchReviews();
+      fetchReviews(1, "", false);
       const fetchExtra = async () => {
         try {
           const recommendedRes = await getRecommendedProductsApi(
@@ -142,7 +169,7 @@ export const useProductDetail = (slug) => {
       });
       if (res.errCode === 0) {
         toast.success("Cảm ơn bạn đã đánh giá!");
-        fetchReviews(); // Refresh reviews
+        fetchReviews(1, ratingFilter, hasImageFilter); // Refresh reviews
         return true;
       } else {
         toast.error(res.errMessage || "Lỗi khi gửi đánh giá");
@@ -160,7 +187,14 @@ export const useProductDetail = (slug) => {
     product,
     loading,
     reviews,
+    reviewsSummary,
+    reviewPage,
+    ratingFilter,
+    hasImageFilter,
     pagination,
+    changeReviewPage,
+    changeReviewFilter,
+    fetchReviews,
     recommended,
     smartRecs,
     addingCart,

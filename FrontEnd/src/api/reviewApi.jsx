@@ -3,11 +3,16 @@ import axiosClient from "../utils/axiosClient";
 export const getReviewsByProductApi = async (
   productId,
   page = 1,
-  limit = 10,
+  limit = 5,
+  rating = "",
+  hasImage = false,
 ) => {
   try {
+    const params = { page, limit };
+    if (rating) params.rating = rating;
+    if (hasImage) params.hasImage = true;
     const res = await axiosClient.get(`/review/product/${productId}`, {
-      params: { page, limit },
+      params,
     });
     return res;
   } catch (err) {
