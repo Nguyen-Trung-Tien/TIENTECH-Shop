@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useId } from "react";
 
 export default function Logo({
   className = "",
@@ -6,18 +6,23 @@ export default function Logo({
   size = "md",
   variant = "auto", // "auto" | "light" (for dark bg) | "dark" (for light bg)
 }) {
+  const rawId = useId();
+  const uniqueId = rawId.replace(/[^a-zA-Z0-9_-]/g, "");
+  const gradId = `tientechGrad-${uniqueId}`;
+  const glowId = `tientechGlow-${uniqueId}`;
+
   const iconSizes = {
     sm: "h-7 w-7",
-    md: "h-9 w-9",
-    lg: "h-11 w-11",
-    xl: "h-14 w-14",
+    md: "h-8 w-8 sm:h-9 sm:w-9",
+    lg: "h-10 w-10 sm:h-11 sm:w-11",
+    xl: "h-12 w-12 sm:h-14 sm:w-14",
   };
 
   const textSizes = {
-    sm: "text-base",
-    md: "text-xl",
-    lg: "text-2xl",
-    xl: "text-3xl",
+    sm: "text-sm sm:text-base",
+    md: "text-lg sm:text-xl",
+    lg: "text-xl sm:text-2xl",
+    xl: "text-2xl sm:text-3xl",
   };
 
   // Determine text color class based on variant
@@ -46,12 +51,12 @@ export default function Logo({
           className="relative w-full h-full drop-shadow-md transform group-hover:scale-105 transition-transform duration-300"
         >
           <defs>
-            <linearGradient id="tientechGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <linearGradient id={gradId} x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stopColor="#2563eb" />
               <stop offset="50%" stopColor="#6366f1" />
               <stop offset="100%" stopColor="#06b6d4" />
             </linearGradient>
-            <linearGradient id="tientechGlow" x1="0%" y1="0%" x2="0%" y2="100%">
+            <linearGradient id={glowId} x1="0%" y1="0%" x2="0%" y2="100%">
               <stop offset="0%" stopColor="#ffffff" stopOpacity="0.95" />
               <stop offset="100%" stopColor="#ffffff" stopOpacity="0.4" />
             </linearGradient>
@@ -60,7 +65,7 @@ export default function Logo({
           {/* Outer Shield Frame */}
           <path
             d="M50 8L88 24V50C88 73.19 71.8 91.56 50 96C28.2 91.56 12 73.19 12 50V24L50 8Z"
-            fill="url(#tientechGrad)"
+            fill={`url(#${gradId})`}
           />
 
           {/* Inner Shield Overlay */}
@@ -73,7 +78,7 @@ export default function Logo({
           {/* Emblem Letter T */}
           <path
             d="M32 34H68V42H54V74H46V42H32V34Z"
-            fill="url(#tientechGlow)"
+            fill={`url(#${glowId})`}
           />
 
           {/* Shopping Bag Handle */}

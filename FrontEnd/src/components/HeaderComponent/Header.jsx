@@ -148,12 +148,7 @@ function Header() {
             to="/"
             className="flex-shrink-0 transition-transform duration-300 hover:scale-105 active:scale-95"
           >
-            <div className="sm:hidden">
-              <Logo size="sm" />
-            </div>
-            <div className="hidden sm:block">
-              <Logo size="md" />
-            </div>
+            <Logo size="md" />
           </Link>
 
           {/* Desktop Nav Links */}
