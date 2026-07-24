@@ -4,6 +4,7 @@ import {
   FiPlus,
   FiEdit2,
   FiTrash2,
+  FiX,
 } from "react-icons/fi";
 import AppPagination from "../../components/Pagination/Pagination";
 import { motion as Motion } from "framer-motion";

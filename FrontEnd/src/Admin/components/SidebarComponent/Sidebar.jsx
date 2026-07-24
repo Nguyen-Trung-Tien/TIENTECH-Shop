@@ -12,6 +12,7 @@ import {
   FiHelpCircle,
   FiTag,
   FiChevronDown,
+  FiX,
 } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
 import { logoutUserApi } from "../../../api/userApi";
