@@ -52,10 +52,11 @@ const VariantManager = ({
       : initialVariants;
 
   // Apply Bulk values across all variants
-  const handleApplyBulk = ({ price, stock }) => {
+  const handleApplyBulk = ({ price, discount, stock }) => {
     const updated = currentVariants.map((v) => ({
       ...v,
       price: price !== undefined ? price : v.price,
+      discount: discount !== undefined ? discount : (v.discount || 0),
       stock: stock !== undefined ? stock : v.stock,
     }));
 
@@ -141,6 +142,7 @@ const VariantManager = ({
     const newV = {
       sku: `${formData.sku || "SKU"}-VAR-${currentVariants.length + 1}`,
       price: formData.price || 0,
+      discount: 0,
       stock: formData.stock || 0,
       attributes: { "Màu sắc": "Mặc định" },
       attributeValues: { "Màu sắc": "Mặc định" },
@@ -243,8 +245,8 @@ const VariantManager = ({
                   </div>
                 </div>
 
-                {/* Inline Controls: Price, Stock, SKU */}
-                <div className="grid grid-cols-3 gap-3 flex-1 max-w-lg">
+                {/* Inline Controls: Price, Discount, Stock, SKU */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 flex-1 max-w-xl">
                   <div className="space-y-1">
                     <span className="text-[9px] font-black uppercase text-slate-400">SKU *</span>
                     <input
@@ -257,7 +259,7 @@ const VariantManager = ({
                   </div>
 
                   <div className="space-y-1">
-                    <span className="text-[9px] font-black uppercase text-slate-400">Giá bán (đ) *</span>
+                    <span className="text-[9px] font-black uppercase text-slate-400">Giá gốc (đ) *</span>
                     <input
                       type="number"
                       min="0"
@@ -266,6 +268,19 @@ const VariantManager = ({
                       }`}
                       value={v.price || 0}
                       onChange={(e) => handleUpdateVariantField(idx, "price", Number(e.target.value))}
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <span className="text-[9px] font-black uppercase text-indigo-600 dark:text-indigo-400">Giảm (%)</span>
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      className="input-modern h-9 font-bold text-xs px-2.5 bg-slate-50 dark:bg-dark-bg border-indigo-200 focus:ring-indigo-500"
+                      placeholder="0"
+                      value={v.discount ?? 0}
+                      onChange={(e) => handleUpdateVariantField(idx, "discount", Number(e.target.value))}
                     />
                   </div>
 

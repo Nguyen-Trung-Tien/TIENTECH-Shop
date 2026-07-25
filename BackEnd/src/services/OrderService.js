@@ -523,7 +523,8 @@ const createOrder = async (data) => {
       }
     }
 
-    const finalTotal = Math.max(0, calculatedTotal - discountAmount);
+    const shippingFee = calculatedTotal > 5000000 ? 0 : 30000;
+    const finalTotal = Math.max(0, calculatedTotal + shippingFee - discountAmount);
 
     const order = await db.Order.create(
       {
@@ -575,7 +576,7 @@ const createOrder = async (data) => {
     return {
       errCode: 0,
       errMessage: "Order created successfully",
-      data: { id: order.id, orderCode: order.orderCode },
+      data: { id: order.id, orderCode: order.orderCode, totalPrice: order.totalPrice },
     };
   } catch (e) {
     await t.rollback();

@@ -346,7 +346,11 @@ const ProductDetailPage = () => {
       ((originalPrice - currentPrice) / originalPrice) * 100,
     );
   } else {
-    // If there is a variant specific salePrice that is > 0, use it
+    const variantDisc =
+      displayVariant?.discount != null && Number(displayVariant.discount) > 0
+        ? Number(displayVariant.discount)
+        : 0;
+
     if (
       displayVariant &&
       Number(displayVariant.salePrice) > 0 &&
@@ -356,16 +360,17 @@ const ProductDetailPage = () => {
       discountPercent = Math.round(
         ((originalPrice - currentPrice) / originalPrice) * 100,
       );
+    } else if (variantDisc > 0) {
+      discountPercent = variantDisc;
+      currentPrice = Math.round(originalPrice * (1 - discountPercent / 100));
     } else {
-      // Apply global product discount if any
       discountPercent = Number(
-        displayVariant?.discount ||
-          product?.discountPercent ||
+        product?.discountPercent ||
           product?.discount ||
           0,
       );
       if (discountPercent > 0 && originalPrice > 0) {
-        currentPrice = originalPrice * (1 - discountPercent / 100);
+        currentPrice = Math.round(originalPrice * (1 - discountPercent / 100));
       }
     }
   }

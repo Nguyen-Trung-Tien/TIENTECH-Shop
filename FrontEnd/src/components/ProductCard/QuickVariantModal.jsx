@@ -37,15 +37,23 @@ const QuickVariantModal = ({ product, isOpen, onClose, onAdd, onBuyNow }) => {
 
   if (!isOpen) return null;
 
-  const currentPrice = displayVariant
-    ? Number(displayVariant.salePrice) > 0
-      ? displayVariant.salePrice
-      : displayVariant.price
-    : product.displayPrice || product.basePrice || product.price;
-
   const originalPrice = displayVariant
-    ? displayVariant.price
-    : product.originalPrice || product.basePrice || product.price;
+    ? Number(displayVariant.price || 0)
+    : Number(product.originalPrice || product.basePrice || product.price || 0);
+
+  const variantDiscountPct = Number(
+    displayVariant?.discount != null && Number(displayVariant.discount) > 0
+      ? displayVariant.discount
+      : (product.discountPercent || product.discount || 0)
+  );
+
+  const currentPrice = displayVariant
+    ? Number(displayVariant.salePrice) > 0 && Number(displayVariant.salePrice) < originalPrice
+      ? Number(displayVariant.salePrice)
+      : variantDiscountPct > 0
+      ? Math.round(originalPrice * (1 - variantDiscountPct / 100))
+      : originalPrice
+    : product.displayPrice || product.basePrice || product.price;
 
   // Format label string for currently selected variant combination
   const selectedVariantLabel = selectedVariant
@@ -101,13 +109,18 @@ const QuickVariantModal = ({ product, isOpen, onClose, onAdd, onBuyNow }) => {
                 <h3 className="text-base font-bold text-slate-900 dark:text-white line-clamp-2 leading-snug">
                   {product.name}
                 </h3>
-                <div className="flex items-baseline gap-2 pt-1">
+                <div className="flex items-center flex-wrap gap-2 pt-1">
                   <span className="text-xl font-black text-indigo-600 dark:text-indigo-400">
                     {Number(currentPrice).toLocaleString("vi-VN")} ₫
                   </span>
                   {Number(originalPrice) > Number(currentPrice) && (
                     <span className="text-xs text-slate-400 dark:text-dark-text-secondary line-through">
                       {Number(originalPrice).toLocaleString("vi-VN")} ₫
+                    </span>
+                  )}
+                  {variantDiscountPct > 0 && (
+                    <span className="text-[10px] font-black text-white bg-rose-500 px-2 py-0.5 rounded-full shadow-sm">
+                      -{variantDiscountPct}%
                     </span>
                   )}
                 </div>
