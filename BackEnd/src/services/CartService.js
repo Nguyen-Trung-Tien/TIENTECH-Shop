@@ -115,7 +115,7 @@ const validateCart = async (userId, items) => {
         stockMessage = `Chỉ còn ${availableStock} sản phẩm trong kho`;
       }
 
-      // Price logic (copied logic from OrderService for consistency)
+      // Price logic
       const now = new Date();
       let unitPrice = 0;
       const isFlashSale =
@@ -126,16 +126,18 @@ const validateCart = async (userId, items) => {
         now <= new Date(product.flashSaleEnd);
 
       if (isFlashSale && product.flashSalePrice) {
-        unitPrice = Number(product.flashSalePrice);
+        unitPrice = Math.round(Number(product.flashSalePrice));
       } else if (variant) {
         const originalPrice = Number(variant.price || 0);
-        const discount = Number(variant.discount || 0);
-        unitPrice = Number((originalPrice * (1 - discount / 100)).toFixed(2));
+        const discount = Number(variant.discount || 0) || Number(product.discount || 0);
+        unitPrice = Math.round(discount > 0 ? originalPrice * (1 - discount / 100) : originalPrice);
       } else {
-        unitPrice = Number(product.basePrice || 0);
+        const basePrice = Number(product.basePrice || 0);
+        const discount = Number(product.discount || 0);
+        unitPrice = Math.round(discount > 0 ? basePrice * (1 - discount / 100) : basePrice);
       }
 
-      const currentItemPrice = Number(item.price);
+      const currentItemPrice = Number(item.price || item.finalPrice || 0);
       // Sử dụng Math.abs để cho phép sai lệch cực nhỏ (dưới 1đ) do làm tròn số thập phân
       const isPriceMismatched = Math.abs(currentItemPrice - unitPrice) > 1;
 

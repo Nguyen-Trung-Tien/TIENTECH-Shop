@@ -24,11 +24,18 @@ const CartItem = ({
     if (item.finalPrice != null) return Number(item.finalPrice);
 
     // Fallback logic
+    if (item.isFlashSaleActive && item.product?.flashSalePrice) {
+      return Math.round(Number(item.product.flashSalePrice));
+    }
     const base =
       item.variant?.price != null
         ? Number(item.variant.price)
         : Number(item.product?.basePrice || item.product?.price || 0);
-    const disc = Number(item.product?.discount || 0);
+    const disc = Number(
+      item.variant?.discount != null && item.variant?.discount !== 0
+        ? item.variant.discount
+        : (item.product?.discount || 0)
+    );
     return Math.round(disc > 0 ? base * (1 - disc / 100) : base);
   }, [item]);
 
@@ -38,13 +45,12 @@ const CartItem = ({
       : Number(item.product?.basePrice || item.product?.price || 0);
   }, [item]);
 
+  const isFlashSale = Boolean(item.isFlashSaleActive);
   const discount = Number(
-    item.product?.discount ||
-      item.variant?.discount ||
-      item.flashSaleDiscount ||
-      0,
+    isFlashSale
+      ? (item.flashSaleDiscount || 0)
+      : (item.discountPercent || item.variant?.discount || item.product?.discount || 0)
   );
-  const isFlashSale = item.isFlashSaleActive;
 
   // Chuỗi hiển thị các option (Ví dụ: "8GB - 256GB - Titan")
   const variantOptions = useMemo(() => {

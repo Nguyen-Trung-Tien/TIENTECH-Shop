@@ -15,18 +15,20 @@ const calculateFinalPrice = (product, variant) => {
 
   // ƯU TIÊN 1: Nếu sản phẩm đang Flash Sale, lấy giá Flash Sale
   if (isFlashSaleActive(product) && product.flashSalePrice) {
-    return Number(product.flashSalePrice);
+    return Math.round(Number(product.flashSalePrice));
   }
 
-  // ƯU TIÊN 2: Nếu có variant, lấy giá của variant (có thể có discount riêng)
+  // ƯU TIÊN 2: Nếu có variant, lấy giá của variant (có thể có discount riêng hoặc dùng product.discount)
   if (variant) {
     const price = Number(variant.price || 0);
-    const discount = Number(variant.discount || 0);
-    return Number((price * (1 - discount / 100)).toFixed(2));
+    const discount = Number(variant.discount || 0) || Number(product.discount || 0);
+    return Math.round(discount > 0 ? price * (1 - discount / 100) : price);
   }
 
-  // ƯU TIÊN 3: Giá gốc của sản phẩm
-  return Number(product.basePrice || 0);
+  // ƯU TIÊN 3: Giá gốc của sản phẩm (áp dụng product.discount nếu có)
+  const basePrice = Number(product.basePrice || 0);
+  const discount = Number(product.discount || 0);
+  return Math.round(discount > 0 ? basePrice * (1 - discount / 100) : basePrice);
 };
 
 const getAllCartItems = async (userId, { limit, offset }) => {
@@ -46,7 +48,7 @@ const getAllCartItems = async (userId, { limit, offset }) => {
         {
           model: db.Product,
           as: "product",
-          attributes: ["id", "name", "basePrice", "isFlashSale", "flashSalePrice", "flashSaleStart", "flashSaleEnd", "totalStock", "isActive"],
+          attributes: ["id", "name", "basePrice", "discount", "isFlashSale", "flashSalePrice", "flashSaleStart", "flashSaleEnd", "totalStock", "isActive"],
           include: [
             {
               model: db.ProductImage,
@@ -98,9 +100,13 @@ const getAllCartItems = async (userId, { limit, offset }) => {
       plainItem.flashSaleEnd = plainItem.product?.flashSaleEnd;
       
       if (isFS) {
-          const original = Number(plainItem.product.basePrice || 0);
-          const sale = Number(plainItem.product.flashSalePrice || 0);
-          plainItem.flashSaleDiscount = original > 0 ? Math.round(((original - sale) / original) * 100) : 0;
+        const original = Number(plainItem.product.basePrice || 0);
+        const sale = Number(plainItem.product.flashSalePrice || 0);
+        plainItem.flashSaleDiscount = original > 0 ? Math.round(((original - sale) / original) * 100) : 0;
+      } else if (plainItem.variant) {
+        plainItem.discountPercent = Number(plainItem.variant.discount || 0);
+      } else {
+        plainItem.discountPercent = Number(plainItem.product?.discount || 0);
       }
 
       return plainItem;
@@ -126,7 +132,7 @@ const getCartItemById = async (id, userId) => {
       {
         model: db.Product,
         as: "product",
-        attributes: ["id", "name", "basePrice", "isFlashSale", "flashSalePrice", "flashSaleStart", "flashSaleEnd", "totalStock", "isActive"],
+        attributes: ["id", "name", "basePrice", "discount", "isFlashSale", "flashSalePrice", "flashSaleStart", "flashSaleEnd", "totalStock", "isActive"],
         include: [{ model: db.ProductImage, as: "images", attributes: ["imageUrl", "isPrimary"] }],
       },
       {
@@ -153,13 +159,18 @@ const getCartItemById = async (id, userId) => {
   }
   
   const isFS = isFlashSaleActive(plainItem.product);
-  plainItem.isFlashSaleActive = isFS && !plainItem.variant;
+  plainItem.isFlashSaleActive = isFS;
   plainItem.finalPrice = calculateFinalPrice(plainItem.product, plainItem.variant);
+  plainItem.flashSaleEnd = plainItem.product?.flashSaleEnd;
   
-  if (plainItem.isFlashSaleActive) {
-      const original = Number(plainItem.product.basePrice || 0);
-      const sale = Number(plainItem.product.flashSalePrice || 0);
-      plainItem.flashSaleDiscount = original > 0 ? Math.round(((original - sale) / original) * 100) : 0;
+  if (isFS) {
+    const original = Number(plainItem.product.basePrice || 0);
+    const sale = Number(plainItem.product.flashSalePrice || 0);
+    plainItem.flashSaleDiscount = original > 0 ? Math.round(((original - sale) / original) * 100) : 0;
+  } else if (plainItem.variant) {
+    plainItem.discountPercent = Number(plainItem.variant.discount || 0);
+  } else {
+    plainItem.discountPercent = Number(plainItem.product?.discount || 0);
   }
   
   return plainItem;

@@ -105,15 +105,15 @@ const Sidebar = ({ collapsed, mobileOpen, onCloseMobile }) => {
     setLoggingOut(true);
     try {
       await logoutUserApi();
+    } catch (err) {
+      console.error("Logout error:", err);
+    } finally {
       localStorage.removeItem("accessToken");
       localStorage.removeItem("user");
       dispatch(removeUser());
       dispatch(clearCart());
       navigate("/admin/login", { replace: true });
       toast.success("Đăng xuất thành công!");
-    } catch (err) {
-      console.error("Logout error:", err);
-    } finally {
       setLoggingOut(false);
     }
   };

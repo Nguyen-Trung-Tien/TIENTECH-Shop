@@ -43,14 +43,21 @@ const CheckoutPage = () => {
   }, [selectedItems, navigate]);
 
   const subtotal = selectedItems.reduce((acc, item) => {
-    if (item.finalPrice !== undefined) {
+    if (item.finalPrice !== undefined && item.finalPrice !== null) {
       return acc + Number(item.finalPrice) * (item.quantity || 0);
+    }
+    if (item.isFlashSaleActive && item.product?.flashSalePrice) {
+      return acc + Math.round(Number(item.product.flashSalePrice)) * (item.quantity || 0);
     }
     const basePrice =
       item.variant?.price != null
         ? Number(item.variant.price)
         : Number(item.product?.basePrice || item.product?.price || 0);
-    const discount = Number(item.product?.discount || 0);
+    const discount = Number(
+      item.variant?.discount != null && item.variant?.discount !== 0
+        ? item.variant.discount
+        : (item.product?.discount || 0)
+    );
     const price = Math.round(
       discount > 0 ? basePrice * (1 - discount / 100) : basePrice,
     );
@@ -229,9 +236,11 @@ const CheckoutPage = () => {
                       <div className="flex items-center justify-between mt-2">
                         <p className="text-xs font-black text-primary">
                           {Number(
-                            item.finalPrice ||
-                              item.variant?.price ||
-                              item.product?.basePrice,
+                            item.finalPrice ??
+                              item.price ??
+                              (item.isFlashSaleActive && item.product?.flashSalePrice
+                                ? item.product.flashSalePrice
+                                : item.variant?.price ?? item.product?.basePrice ?? 0)
                           ).toLocaleString()}
                           ₫
                         </p>

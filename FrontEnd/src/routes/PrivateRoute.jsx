@@ -3,6 +3,7 @@ import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { getMeApi } from "../api/userApi";
 import { setUser, removeUser, setInitializing } from "../redux/userSlice";
+import { clearCart } from "../redux/cartSlice";
 import UnifiedSpinner from "../components/Loading/UnifiedSpinner";
 
 const PrivateRoute = ({ requiredRole }) => {
@@ -23,10 +24,12 @@ const PrivateRoute = ({ requiredRole }) => {
             dispatch(setUser(res.data));
           } else {
             dispatch(removeUser());
+            dispatch(clearCart());
           }
         } catch (error) {
           console.error("Auth check failed:", error);
           dispatch(removeUser());
+          dispatch(clearCart());
         } finally {
           dispatch(setInitializing(false));
         }

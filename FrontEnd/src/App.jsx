@@ -7,6 +7,7 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { getMeApi } from "./api/userApi";
 import { setUser, removeUser, setInitializing } from "./redux/userSlice";
+import { clearCart } from "./redux/cartSlice";
 import { LazyMotion, domAnimation } from "framer-motion";
 import RouteProgressBar from "./components/Loading/RouteProgressBar";
 
@@ -47,10 +48,12 @@ const App = () => {
           dispatch(setUser(res.data));
         } else {
           dispatch(removeUser());
+          dispatch(clearCart());
         }
       } catch {
         console.error("Initial auth check failed:");
         dispatch(removeUser());
+        dispatch(clearCart());
       } finally {
         dispatch(setInitializing(false));
       }

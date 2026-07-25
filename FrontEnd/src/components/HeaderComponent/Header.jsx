@@ -115,15 +115,14 @@ function Header() {
     setIsLoggingOut(true);
     try {
       await logoutUserApi();
+    } catch (err) {
+      console.error("Logout error:", err);
+    } finally {
       localStorage.removeItem("accessToken");
       dispatch(removeUser());
       dispatch(clearCart());
       navigate("/login");
       toast.success("Đăng xuất thành công!");
-    } catch (err) {
-      console.error("Logout error:", err);
-      toast.error("Không thể đăng xuất");
-    } finally {
       setIsLoggingOut(false);
     }
   };

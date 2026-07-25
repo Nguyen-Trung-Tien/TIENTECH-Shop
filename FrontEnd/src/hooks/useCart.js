@@ -23,9 +23,10 @@ export const useCart = () => {
         const res = await getAllCartItems(page, limit);
         const items = Array.isArray(res?.data) ? res.data : [];
 
-        if (items.length > 0) {
-          if (page === 1) dispatch(setCartItems(items));
-          else dispatch(appendCartItems(items));
+        if (page === 1) {
+          dispatch(setCartItems(items));
+        } else if (items.length > 0) {
+          dispatch(appendCartItems(items));
         }
         return items;
       } catch (err) {
@@ -62,16 +63,23 @@ export const useCart = () => {
     return cartItems
       .filter((item) => selectedIds.includes(item.id))
       .reduce((acc, item) => {
-        // Use finalPrice from backend if available, otherwise fallback to old logic
-        if (item.finalPrice !== undefined) {
+        if (item.finalPrice !== undefined && item.finalPrice !== null) {
           return acc + Number(item.finalPrice) * (item.quantity || 0);
+        }
+
+        if (item.isFlashSaleActive && item.product?.flashSalePrice) {
+          return acc + Math.round(Number(item.product.flashSalePrice)) * (item.quantity || 0);
         }
 
         const basePrice = item.variant?.price != null 
           ? Number(item.variant.price) 
           : Number(item.product?.basePrice || item.product?.price || 0);
         
-        const discount = Number(item.product?.discount || 0);
+        const discount = Number(
+          item.variant?.discount != null && item.variant?.discount !== 0
+            ? item.variant.discount
+            : (item.product?.discount || 0)
+        );
         const price = Math.round(discount > 0 ? basePrice * (1 - discount / 100) : basePrice);
         
         return acc + price * (item.quantity || 0);

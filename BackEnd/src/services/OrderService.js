@@ -465,15 +465,17 @@ const createOrder = async (data) => {
 
       if (isFlashSale && product.flashSalePrice) {
         // ƯU TIÊN 1: Flash Sale (Áp dụng cho toàn bộ sản phẩm)
-        unitPrice = Number(product.flashSalePrice);
+        unitPrice = Math.round(Number(product.flashSalePrice));
       } else if (variant) {
         // ƯU TIÊN 2: Giá Variant nếu có
         const originalPrice = Number(variant.price || 0);
-        const discount = Number(variant.discount || 0);
-        unitPrice = Number((originalPrice * (1 - discount / 100)).toFixed(2));
+        const discount = Number(variant.discount || 0) || Number(product.discount || 0);
+        unitPrice = Math.round(discount > 0 ? originalPrice * (1 - discount / 100) : originalPrice);
       } else {
-        // ƯU TIÊN 3: Giá gốc sản phẩm
-        unitPrice = Number(product.basePrice || 0);
+        // ƯU TIÊN 3: Giá sản phẩm (áp dụng discount nếu có)
+        const basePrice = Number(product.basePrice || 0);
+        const discount = Number(product.discount || 0);
+        unitPrice = Math.round(discount > 0 ? basePrice * (1 - discount / 100) : basePrice);
       }
 
       const subtotal = Number((unitPrice * quantity).toFixed(2));

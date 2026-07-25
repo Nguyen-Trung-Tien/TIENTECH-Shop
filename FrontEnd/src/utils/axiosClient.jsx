@@ -1,6 +1,7 @@
 import axios from "axios";
 import { appConfig } from "../config/runtimeConfig";
 import { removeUser } from "../redux/userSlice";
+import { clearCart } from "../redux/cartSlice";
 import { store } from "../redux/store";
 
 const axiosClient = axios.create({
@@ -77,6 +78,7 @@ axiosClient.interceptors.response.use(
           !refreshError.response
         ) {
           store.dispatch(removeUser());
+          store.dispatch(clearCart());
           if (!window.location.pathname.includes("/login")) {
             window.location.href = `/login?from=${window.location.pathname}`;
           }
