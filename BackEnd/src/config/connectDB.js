@@ -25,10 +25,14 @@ const sequelize = new Sequelize(
   },
 );
 
+const db = require("../models");
+
 let connectDB = async () => {
   try {
-    await sequelize.authenticate();
+    await db.sequelize.authenticate();
     console.log(`Database connected successfully (${isProduction ? 'Production' : 'Development'})`);
+    await db.sequelize.sync();
+    console.log("Database models synchronized successfully.");
   } catch (error) {
     console.error("Unable to connect to database:", error);
   }
