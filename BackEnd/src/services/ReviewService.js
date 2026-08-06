@@ -83,36 +83,46 @@ const getReviewsByProduct = async (
     const reviewIds = pagingData.items.map((r) => r.id);
     let repliesByReviewId = {};
     if (reviewIds.length > 0) {
-      const replies = await db.ReviewReply.findAll({
-        where: { reviewId: reviewIds },
-        include: [
-          {
-            model: db.User,
-            as: "user",
-            attributes: ["id", "username", "avatar"],
-          },
-        ],
-        order: [["createdAt", "ASC"]],
-      });
+      try {
+        const replies = await db.ReviewReply.findAll({
+          where: { reviewId: reviewIds },
+          include: [
+            {
+              model: db.User,
+              as: "user",
+              attributes: ["id", "username", "avatar"],
+            },
+          ],
+          order: [["createdAt", "ASC"]],
+        });
 
-      repliesByReviewId = replies.reduce((acc, rep) => {
-        const key = rep.reviewId;
-        if (!acc[key]) acc[key] = [];
-        acc[key].push(rep);
-        return acc;
-      }, {});
+        repliesByReviewId = replies.reduce((acc, rep) => {
+          const key = rep.reviewId;
+          if (!acc[key]) acc[key] = [];
+          acc[key].push(rep);
+          return acc;
+        }, {});
+      } catch (replyErr) {
+        console.error("Error fetching review replies:", replyErr);
+      }
     }
 
     let likedReviewIds = new Set();
     if (userId && reviewIds.length > 0) {
-      const likes = await db.ReviewLike.findAll({
-        where: {
-          userId,
-          reviewId: reviewIds,
-        },
-        attributes: ["reviewId"],
-      });
-      likedReviewIds = new Set(likes.map((lk) => lk.reviewId));
+      try {
+        const likes = await db.ReviewLike.findAll({
+          where: {
+            userId,
+            reviewId: reviewIds,
+          },
+          attributes: ["reviewId"],
+        });
+        if (likes && Array.isArray(likes)) {
+          likedReviewIds = new Set(likes.map((lk) => lk.reviewId));
+        }
+      } catch (likeErr) {
+        console.error("Error fetching review likes:", likeErr);
+      }
     }
 
     return {

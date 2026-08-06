@@ -93,7 +93,7 @@ export const useProductDetail = (slug) => {
   // Fetch reviews & recommended & smart recommendations
   useEffect(() => {
     if (product?.id) {
-      fetchReviews(1, "", false);
+      fetchReviews(1, ratingFilter, hasImageFilter);
       const fetchExtra = async () => {
         try {
           const recommendedRes = await getRecommendedProductsApi(
@@ -115,7 +115,7 @@ export const useProductDetail = (slug) => {
       };
       fetchExtra();
     }
-  }, [product?.id, fetchReviews]);
+  }, [product?.id, userId, fetchReviews]);
 
   const handleAddToCart = async (variantId, quantity = 1) => {
     if (!userId) {
