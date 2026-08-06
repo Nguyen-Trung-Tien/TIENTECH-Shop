@@ -168,7 +168,7 @@ const ChartCard = ({ token }) => {
         ) : (
           <div className="h-full min-w-[500px] sm:min-w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={selectedData} margin={{ top: 10, right: 15, left: -10, bottom: 0 }}>
+              <LineChart data={selectedData} margin={{ top: 10, right: 15, left: 0, bottom: 0 }}>
                 <CartesianGrid
                   strokeDasharray="3 3"
                   stroke="currentColor"

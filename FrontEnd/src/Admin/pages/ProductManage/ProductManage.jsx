@@ -310,12 +310,12 @@ const ProductManage = () => {
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 w-full sm:w-auto">
             <button
               type="button"
               onClick={handleSyncAI}
               disabled={isSyncingAI}
-              className="flex items-center gap-2 px-5 h-12 rounded-2xl bg-white dark:bg-dark-surface hover:bg-slate-50 dark:hover:bg-dark-bg border border-slate-200 dark:border-dark-border text-slate-600 dark:text-dark-text-secondary hover:text-indigo-600 font-black uppercase tracking-wider text-[11px] transition-all disabled:opacity-50 cursor-pointer shadow-sm"
+              className="flex items-center justify-center gap-2 px-5 h-12 rounded-2xl bg-white dark:bg-dark-surface hover:bg-slate-50 dark:hover:bg-dark-bg border border-slate-200 dark:border-dark-border text-slate-600 dark:text-dark-text-secondary hover:text-indigo-600 font-black uppercase tracking-wider text-[11px] transition-all disabled:opacity-50 cursor-pointer shadow-sm"
             >
               <FiCpu className={isSyncingAI ? "animate-spin text-indigo-600" : ""} />
               {isSyncingAI ? "Đang đồng bộ..." : "Đồng bộ AI Vector"}
@@ -324,7 +324,7 @@ const ProductManage = () => {
             <button
               type="button"
               onClick={() => handleShowModal()}
-              className="flex items-center gap-2 px-6 h-12 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-black uppercase tracking-wider text-xs shadow-lg shadow-indigo-200 dark:shadow-none active:scale-95 transition-all cursor-pointer group"
+              className="flex items-center justify-center gap-2 px-6 h-12 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-black uppercase tracking-wider text-xs shadow-lg shadow-indigo-200 dark:shadow-none active:scale-95 transition-all cursor-pointer group"
             >
               <FiPlus className="text-xl group-hover:rotate-90 transition-transform duration-300" />
               <span>Đăng sản phẩm mới</span>

@@ -153,8 +153,8 @@ const HeaderAdmin = ({ toggleSidebar, isCollapsed, theme, toggleTheme }) => {
   };
 
   return (
-    <header className="sticky top-0 z-40 flex h-16 w-full items-center justify-between border-b border-slate-100/50 dark:border-dark-border/40 bg-white/95 dark:bg-dark-surface/90 backdrop-blur-md px-4 shadow-sm md:px-6 transition-colors duration-300">
-      <div className="flex items-center gap-4">
+    <header className="sticky top-0 z-40 flex h-16 w-full max-w-full overflow-x-clip items-center justify-between border-b border-slate-100/50 dark:border-dark-border/40 bg-white/95 dark:bg-dark-surface/90 backdrop-blur-md px-2.5 sm:px-4 md:px-6 shadow-sm transition-colors duration-300">
+      <div className="flex items-center gap-2 sm:gap-4 shrink-0">
         {/* Toggle Sidebar Button */}
         <button
           onClick={toggleSidebar}
@@ -460,7 +460,7 @@ const HeaderAdmin = ({ toggleSidebar, isCollapsed, theme, toggleTheme }) => {
                 className="fixed inset-0 z-10"
                 onClick={() => setShowProfileMenu(false)}
               ></div>
-              <div className="absolute right-0 mt-2 w-56 origin-top-right rounded-2xl border border-slate-200 dark:border-dark-border bg-white dark:bg-dark-surface p-2 shadow-xl ring-1 ring-black/5 z-20 transition-all">
+              <div className="fixed inset-x-3 top-16 sm:absolute sm:inset-auto sm:right-0 sm:top-full sm:mt-2 w-auto sm:w-56 origin-top-right rounded-2xl border border-slate-200 dark:border-dark-border bg-white dark:bg-dark-surface p-2 shadow-2xl z-30 transition-all">
                 <div className="px-3 py-2 border-b border-slate-100 dark:border-dark-border mb-1">
                   <p className="text-sm font-bold text-slate-900 dark:text-white">
                     {user?.username || "Admin"}

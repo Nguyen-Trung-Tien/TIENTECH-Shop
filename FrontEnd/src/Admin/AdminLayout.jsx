@@ -61,7 +61,7 @@ const AdminLayout = () => {
 
         {/* Dynamic Content Area */}
         <main className="flex-1 overflow-y-auto custom-scrollbar bg-slate-50 dark:bg-dark-bg transition-colors duration-300">
-          <div className="px-3 py-4 sm:px-6 sm:py-6 md:px-8 md:py-8 lg:px-10 mx-auto max-w-[1600px] animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div className="px-2 py-3 sm:px-6 sm:py-6 md:px-8 md:py-8 lg:px-10 mx-auto max-w-[1600px] w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
             <Suspense fallback={<AdminPageLoader />}>
               <div className="text-slate-900 dark:text-dark-text-primary">
                 <Outlet />
