@@ -14,7 +14,7 @@ import {
   FiSun,
   FiMoon,
 } from "react-icons/fi";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { logoutUserApi } from "../../../api/userApi";
 import { globalSearchApi } from "../../../api/adminApi";
 import { removeUser } from "../../../redux/userSlice";

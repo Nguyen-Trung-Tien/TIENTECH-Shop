@@ -466,21 +466,23 @@ const getPendingReviewProducts = async (userId) => {
 
 const toggleLikeReview = async (reviewId, userId) => {
   try {
-    if (!reviewId) {
+    const rId = Number(reviewId);
+    const uId = Number(userId);
+    if (!rId || isNaN(rId)) {
       return { errCode: 2, errMessage: "ID đánh giá không hợp lệ" };
     }
-    if (!userId) {
+    if (!uId || isNaN(uId)) {
       return { errCode: 3, errMessage: "Vui lòng đăng nhập" };
     }
 
-    const review = await db.Review.findByPk(reviewId);
+    const review = await db.Review.findByPk(rId);
     if (!review) {
       return { errCode: 2, errMessage: "Review không tồn tại" };
     }
 
     // Kiểm tra xem user đã like review này chưa
     const existingLike = await db.ReviewLike.findOne({
-      where: { reviewId, userId },
+      where: { reviewId: rId, userId: uId },
     });
 
     if (existingLike) {
@@ -488,17 +490,17 @@ const toggleLikeReview = async (reviewId, userId) => {
       await existingLike.destroy();
       
       const newLikesCount = Math.max(0, (review.likes || 0) - 1);
-      await db.Review.update({ likes: newLikesCount }, { where: { id: reviewId } });
+      await db.Review.update({ likes: newLikesCount }, { where: { id: rId } });
       
-      const updatedReview = await db.Review.findByPk(reviewId);
+      const updatedReview = await db.Review.findByPk(rId);
       return { errCode: 0, data: { ...updatedReview.toJSON(), isLiked: false } };
     } else {
       // Like: Tạo record ReviewLike, tăng count likes của Review
-      await db.ReviewLike.create({ reviewId, userId });
+      await db.ReviewLike.create({ reviewId: rId, userId: uId });
       
-      await db.Review.increment("likes", { by: 1, where: { id: reviewId } });
+      await db.Review.increment("likes", { by: 1, where: { id: rId } });
       
-      const updatedReview = await db.Review.findByPk(reviewId);
+      const updatedReview = await db.Review.findByPk(rId);
       return { errCode: 0, data: { ...updatedReview.toJSON(), isLiked: true } };
     }
   } catch (error) {

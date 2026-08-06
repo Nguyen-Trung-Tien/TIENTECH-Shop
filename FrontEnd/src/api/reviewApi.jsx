@@ -99,6 +99,9 @@ export const toggleLikeReviewApi = async (reviewId) => {
     const res = await axiosClient.post(`/review/like/${reviewId}`);
     return res;
   } catch (err) {
+    if (err.response?.data) {
+      return err.response.data;
+    }
     console.error("Lỗi khi like đánh giá:", err);
     return { errCode: 1, errMessage: "Thao tác thất bại" };
   }
