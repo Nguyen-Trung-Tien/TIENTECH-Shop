@@ -139,13 +139,13 @@ function Header() {
   return (
     <>
       <header
-        className={`sticky top-0 z-[100] w-full transition-all duration-300 ${
+        className={`sticky top-0 z-[100] w-full max-w-full overflow-x-clip transition-all duration-300 ${
           isScrolled
             ? "bg-white/85 dark:bg-slate-950/85 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-800/50 shadow-lg shadow-slate-900/5 py-2.5"
             : "bg-white dark:bg-slate-950 border-b border-slate-100 dark:border-slate-900 py-3.5"
         }`}
       >
-        <div className="container-custom flex items-center justify-between gap-2 sm:gap-4">
+        <div className="container-custom flex items-center justify-between gap-1.5 sm:gap-4 max-w-full">
           {/* Logo */}
           <Link
             to="/"
@@ -286,7 +286,7 @@ function Header() {
                       initial={{ opacity: 0, scale: 0.95, y: 12 }}
                       animate={{ opacity: 1, scale: 1, y: 0 }}
                       exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                      className="absolute right-0 mt-3 w-64 max-w-[calc(100vw-1.5rem)] bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200/80 dark:border-slate-800 p-3 z-[110] overflow-hidden"
+                      className="fixed inset-x-3 top-16 sm:absolute sm:inset-auto sm:right-0 sm:top-full sm:mt-3 w-auto sm:w-64 max-w-[calc(100vw-1.5rem)] bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200/80 dark:border-slate-800 p-3 z-[120] overflow-hidden"
                     >
                       <div className="p-3 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-slate-800/60 dark:to-slate-800/30 rounded-2xl mb-2 border border-blue-100/50 dark:border-slate-700/40">
                         <p className="text-[13px] font-black text-slate-900 dark:text-white truncate">

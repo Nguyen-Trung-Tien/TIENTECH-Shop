@@ -194,8 +194,10 @@ const ProductCard = ({ product }) => {
       <Motion.article
         initial={{ opacity: 0, y: 12 }}
         whileInView={{ opacity: 1, y: 0 }}
+        whileHover={{ y: -6, scale: 1.01 }}
+        transition={{ duration: 0.25, ease: "easeOut" }}
         viewport={{ once: true }}
-        className={`group relative flex flex-col h-full bg-white dark:bg-dark-surface rounded-[24px] border border-slate-200/70 dark:border-slate-800/80 overflow-hidden shadow-sm hover:shadow-xl hover:border-blue-500/30 dark:hover:border-blue-500/40 transition-all duration-300 cursor-pointer ${!isActive ? "opacity-60 grayscale pointer-events-none" : ""}`}
+        className={`group relative flex flex-col h-full bg-white dark:bg-dark-surface rounded-[24px] border border-slate-200/70 dark:border-slate-800/80 overflow-hidden shadow-sm hover:shadow-2xl hover:shadow-blue-500/10 dark:hover:shadow-blue-500/20 hover:border-blue-500/40 dark:hover:border-blue-500/50 transition-all duration-300 cursor-pointer ${!isActive ? "opacity-60 grayscale pointer-events-none" : ""}`}
         onClick={() => navigate(`/product-detail/${slug || id}`)}
       >
         {/* Image Container */}

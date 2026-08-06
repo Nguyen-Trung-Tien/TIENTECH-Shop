@@ -164,10 +164,14 @@ const HeaderAdmin = ({ toggleSidebar, isCollapsed, theme, toggleTheme }) => {
           <FiMenu className="text-xl" />
         </button>
 
-        {/* Brand / Title (Mobile) */}
-        <div className="flex items-center gap-2 md:hidden">
+        {/* Brand / Title Logo (Click sang trang chủ) */}
+        <Link
+          to="/"
+          className="flex items-center gap-2 cursor-pointer hover:opacity-85 transition-opacity"
+          title="Về trang chủ TienTech Shop"
+        >
           <Logo size="sm" />
-        </div>
+        </Link>
 
         {/* Search Bar (Desktop) */}
         <div ref={searchRef} className="hidden md:block relative group">

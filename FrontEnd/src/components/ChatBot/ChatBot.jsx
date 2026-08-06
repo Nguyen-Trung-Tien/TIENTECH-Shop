@@ -369,7 +369,7 @@ const ChatBot = () => {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 30, scale: 0.95 }}
             transition={{ duration: 0.25, ease: "easeOut" }}
-            className={`fixed z-[998] bg-white dark:bg-gray-900 shadow-2xl border border-gray-100 dark:border-gray-800 flex flex-col overflow-hidden transition-all duration-300 ${
+            className={`fixed z-[998] bg-white dark:bg-gray-900 shadow-2xl border border-gray-100 dark:border-gray-800 flex flex-col max-w-full overflow-hidden transition-all duration-300 ${
               fullMode
                 ? "inset-2 md:inset-6 rounded-2xl md:rounded-[36px]"
                 : "inset-0 md:inset-auto md:bottom-24 md:right-6 md:w-[420px] md:h-[660px] md:max-h-[85vh] rounded-none md:rounded-[32px]"

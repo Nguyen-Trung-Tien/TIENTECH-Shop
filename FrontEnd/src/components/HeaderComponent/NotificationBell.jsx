@@ -128,7 +128,7 @@ const NotificationBell = () => {
       </button>
 
       {showDropdown && (
-        <div className="absolute right-0 mt-3 w-80 max-w-[calc(100vw-1.5rem)] bg-white dark:bg-dark-surface rounded-2xl shadow-xl-soft border border-surface-100 dark:border-dark-border z-[100] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+        <div className="fixed inset-x-3 top-16 sm:absolute sm:inset-auto sm:right-0 sm:top-full sm:mt-3 w-auto sm:w-80 max-w-[calc(100vw-1.5rem)] bg-white dark:bg-dark-surface rounded-2xl shadow-2xl border border-surface-200 dark:border-dark-border z-[120] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
           <div className="p-4 border-b border-surface-50 dark:border-dark-border flex justify-between items-center bg-surface-50/50 dark:bg-dark-bg/20">
             <h3 className="text-sm font-black text-surface-900 dark:text-white uppercase tracking-widest">
               Thông báo
