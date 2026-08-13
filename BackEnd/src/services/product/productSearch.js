@@ -307,7 +307,7 @@ const filterProducts = async ({
       {
         model: db.ProductVariant,
         as: "variants",
-        attributes: ["id", "productId", "sku", "basePrice", "stock"],
+        attributes: ["id", "productId", "sku", "price", ["price", "basePrice"], "discount", "salePrice", "stock"],
         include: [
           {
             model: db.AttributeValue,
