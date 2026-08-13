@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   FiHelpCircle,
   FiChevronDown,
@@ -173,10 +173,11 @@ const FAQPage = () => {
                   <AnimatePresence>
                     {isOpen && (
                       <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.3 }}
+                        initial={{ opacity: 0, scaleY: 0.95 }}
+                        animate={{ opacity: 1, scaleY: 1 }}
+                        exit={{ opacity: 0, scaleY: 0.95 }}
+                        transition={{ duration: 0.2 }}
+                        className="origin-top"
                       >
                         <div className="px-6 pb-6 pt-2 text-sm text-slate-600 dark:text-slate-300 leading-relaxed border-t border-slate-100 dark:border-slate-800/60">
                           {faq.answer}

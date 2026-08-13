@@ -12,14 +12,13 @@ const RouteProgressBar = () => {
     setProgress(30);
 
     const timer1 = setTimeout(() => setProgress(70), 100);
-    const timer2 = setTimeout(() => {
-      setProgress(100);
-      setTimeout(() => setLoading(false), 200);
-    }, 250);
+    const timer2 = setTimeout(() => setProgress(100), 250);
+    const timer3 = setTimeout(() => setLoading(false), 450);
 
     return () => {
       clearTimeout(timer1);
       clearTimeout(timer2);
+      clearTimeout(timer3);
     };
   }, [location.pathname]);
 

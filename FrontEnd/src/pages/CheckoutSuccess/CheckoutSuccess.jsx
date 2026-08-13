@@ -24,18 +24,15 @@ const CheckoutSuccess = () => {
   const totalAmount = order?.totalAmount || order?.finalAmount;
 
   useEffect(() => {
+    if (countdown <= 0) {
+      navigate("/orders");
+      return;
+    }
     const timer = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          navigate("/orders");
-          return 0;
-        }
-        return prev - 1;
-      });
+      setCountdown((prev) => prev - 1);
     }, 1000);
     return () => clearInterval(timer);
-  }, [navigate]);
+  }, [countdown, navigate]);
 
   const handleCopyCode = () => {
     navigator.clipboard.writeText(displayOrderCode);

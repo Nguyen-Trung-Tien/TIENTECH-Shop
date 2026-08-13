@@ -39,31 +39,33 @@ const AdminSearch = () => {
   });
   const [loading, setLoading] = useState(false);
 
-  const fetchResults = useCallback(async () => {
+  useEffect(() => {
+    let timerId;
     if (!query.trim()) return;
     
     setLoading(true);
-    try {
-      const res = await globalSearchApi(query);
-      if (res && res.errCode === 0) {
-        // Đảm bảo dữ liệu luôn là array để tránh lỗi .length
-        setResults({
-          products: res.data?.products || [],
-          orders: res.data?.orders || [],
-          users: res.data?.users || [],
-        });
+    const doSearch = async () => {
+      try {
+        const res = await globalSearchApi(query);
+        if (res && res.errCode === 0) {
+          setResults({
+            products: res.data?.products || [],
+            orders: res.data?.orders || [],
+            users: res.data?.users || [],
+          });
+        }
+      } catch (err) {
+        console.error("Search error:", err);
+      } finally {
+        timerId = setTimeout(() => setLoading(false), 500);
       }
-    } catch (err) {
-      console.error("Search error:", err);
-    } finally {
-      // Giả lập hiệu ứng mượt mà
-      setTimeout(() => setLoading(false), 500);
-    }
-  }, [query]);
+    };
+    doSearch();
 
-  useEffect(() => {
-    fetchResults();
-  }, [fetchResults]);
+    return () => {
+      if (timerId) clearTimeout(timerId);
+    };
+  }, [query]);
 
   const formatPrice = (price) => {
     return priceFormatter.format(price);

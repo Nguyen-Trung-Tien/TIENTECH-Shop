@@ -79,12 +79,16 @@ export default function OmniSearchModal({
 
   // Focus input on open
   useEffect(() => {
+    let timerId;
     if (isOpen) {
-      setTimeout(() => inputRef.current?.focus(), 50);
+      timerId = setTimeout(() => inputRef.current?.focus(), 50);
     } else {
       setQuery("");
       setSuggestions({ products: [], keywords: [], brands: [], categories: [] });
     }
+    return () => {
+      if (timerId) clearTimeout(timerId);
+    };
   }, [isOpen]);
 
   // Debounced Search API call

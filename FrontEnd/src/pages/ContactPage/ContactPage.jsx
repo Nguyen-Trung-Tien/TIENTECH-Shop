@@ -11,6 +11,7 @@ import {
   FiHeadphones,
 } from "react-icons/fi";
 import { toast } from "react-toastify";
+import { motion } from "framer-motion";
 
 const ContactPage = () => {
   const [formData, setFormData] = useState({

@@ -25,7 +25,7 @@ const FloatingInput = ({
   name,
   type,
   label,
-  icon: _Icon,
+  icon: Icon,
   required,
   toggleIcon: ToggleIcon,
   onToggle,

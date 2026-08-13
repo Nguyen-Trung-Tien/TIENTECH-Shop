@@ -26,7 +26,7 @@ const FloatingInput = ({
   onChange,
   type,
   label,
-  icon: _Icon,
+  icon: Icon,
   toggleIcon: ToggleIcon,
   onToggle,
 }) => (
