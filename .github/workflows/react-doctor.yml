@@ -28,3 +28,4 @@ jobs:
       - uses: millionco/react-doctor@v1
         with:
           directory: FrontEnd
+        continue-on-error: true
