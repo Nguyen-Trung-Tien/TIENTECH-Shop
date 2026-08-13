@@ -5,8 +5,10 @@ export const getNotificationsApi = async (page = 1, limit = 10) => {
     const res = await axiosClient.get(`/notification/all?page=${page}&limit=${limit}`);
     return res;
   } catch (error) {
-    console.error("Error getting notifications:", error);
-    throw error;
+    if (error?.response?.status !== 404) {
+      console.error("Error getting notifications:", error);
+    }
+    return { errCode: -1, data: [], unreadCount: 0 };
   }
 };
 
@@ -16,7 +18,7 @@ export const markAsReadApi = async (id) => {
     return res;
   } catch (error) {
     console.error("Error marking notification as read:", error);
-    throw error;
+    return { errCode: -1 };
   }
 };
 
@@ -26,6 +28,6 @@ export const markAllReadApi = async () => {
     return res;
   } catch (error) {
     console.error("Error marking all notifications as read:", error);
-    throw error;
+    return { errCode: -1 };
   }
 };

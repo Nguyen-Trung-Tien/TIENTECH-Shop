@@ -4,7 +4,7 @@ import { FiMapPin, FiUser, FiTruck, FiInfo } from "react-icons/fi";
 const InfoRow = ({ label, value, icon: Icon }) => (
   <div className="flex items-center justify-between py-3 border-b border-surface-100 dark:border-dark-border last:border-0">
     <div className="flex items-center gap-2 text-surface-400 dark:text-dark-text-secondary">
-      {Icon && <Icon size={14} />}
+      {Icon && (typeof Icon === "function" ? <Icon size={14} /> : Icon)}
       <span className="text-[13px] font-medium uppercase tracking-wider">
         {label}
       </span>

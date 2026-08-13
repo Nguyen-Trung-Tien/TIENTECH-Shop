@@ -58,7 +58,7 @@ const Button = ({ className, variant, size, loading = false, asChild = false, ty
           }
         />
       )}
-      {!loading && Icon && <Icon className="size-4 shrink-0" />}
+      {!loading && Icon && (typeof Icon === "function" ? <Icon className="size-4 shrink-0" /> : Icon)}
       {children}
     </Comp>
   );

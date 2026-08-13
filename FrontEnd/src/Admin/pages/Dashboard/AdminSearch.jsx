@@ -17,7 +17,7 @@ const SectionHeader = React.memo(({ icon: Icon, title, count, colorClass }) => (
   <div className="flex items-center justify-between mb-6 bg-white dark:bg-dark-surface p-4 rounded-2xl border border-slate-100 dark:border-dark-border shadow-sm transition-colors">
     <div className="flex items-center gap-3">
       <div className={`size-10 rounded-xl ${colorClass} flex items-center justify-center text-white shadow-lg`}>
-        <Icon />
+        {Icon && (typeof Icon === "function" ? <Icon /> : Icon)}
       </div>
       <div>
         <h3 className="text-sm font-black uppercase tracking-widest text-slate-800 dark:text-white">{title}</h3>

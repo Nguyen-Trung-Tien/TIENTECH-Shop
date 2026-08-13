@@ -47,7 +47,7 @@ const SmallBanner = () => {
               <div
                 className={`size-14 rounded-2xl flex items-center justify-center flex-shrink-0 transition-transform duration-500 group-hover:scale-110 ${item.color}`}
               >
-                <Icon size={24} />
+                {Icon && (typeof Icon === "function" ? <Icon size={24} /> : Icon)}
               </div>
               <div>
                 <h5 className="text-sm font-black text-surface-900 uppercase tracking-tight mb-1">

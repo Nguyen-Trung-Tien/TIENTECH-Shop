@@ -48,7 +48,7 @@ const GenericAdminTable = ({
         <div>
           <h1 className="text-xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2.5 sm:gap-3">
             <div className="size-10 sm:size-12 rounded-2xl bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/20 shrink-0">
-              {Icon && <Icon />}
+              {Icon && (typeof Icon === "function" ? <Icon /> : Icon)}
             </div>
             <span className="truncate">{title}</span>
           </h1>

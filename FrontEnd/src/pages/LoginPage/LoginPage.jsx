@@ -32,7 +32,7 @@ const FloatingInput = ({
 }) => (
   <div className="relative group mb-4">
     <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 group-focus-within:text-blue-600 dark:group-focus-within:text-blue-400 transition-colors duration-200 z-10 pointer-events-none">
-      <Icon size={18} />
+      {Icon && (typeof Icon === "function" ? <Icon size={18} /> : Icon)}
     </div>
     <input
       id={id}

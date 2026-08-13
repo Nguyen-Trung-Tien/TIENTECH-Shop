@@ -160,7 +160,7 @@ export const ConfirmModal = ({
     >
       <div className="flex flex-col items-center py-1">
         <div className={`size-14 sm:size-16 rounded-2xl flex items-center justify-center text-2xl sm:text-3xl mb-4 border shadow-inner ${style}`}>
-          <Icon />
+          {Icon && (typeof Icon === "function" ? <Icon /> : Icon)}
         </div>
 
         <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white tracking-tight uppercase mb-1.5">

@@ -237,7 +237,7 @@ const OrderPage = () => {
                       : "text-slate-500 dark:text-dark-text-secondary hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-dark-bg"
                   }`}
                 >
-                  <Icon size={14} />
+                  {Icon && (typeof Icon === "function" ? <Icon size={14} /> : Icon)}
                   {tab.label}
                 </button>
               );

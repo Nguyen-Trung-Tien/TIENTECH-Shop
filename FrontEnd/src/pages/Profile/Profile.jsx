@@ -330,7 +330,7 @@ const Profile = () => {
                     transition={{ type: "spring", stiffness: 400, damping: 30 }}
                   />
                 )}
-                <Icon className="text-sm" />
+                {Icon && (typeof Icon === "function" ? <Icon className="text-sm" /> : Icon)}
                 <span>{tab.label}</span>
               </button>
             );

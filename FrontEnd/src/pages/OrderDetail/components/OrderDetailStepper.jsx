@@ -42,7 +42,7 @@ const OrderDetailStepper = ({ orderStatus }) => {
                     : "bg-slate-100 dark:bg-dark-bg text-slate-400 dark:text-dark-text-secondary"
                 }`}
               >
-                <Icon size={20} />
+                {Icon && (typeof Icon === "function" ? <Icon size={20} /> : Icon)}
               </div>
               <span
                 className={`absolute top-16 text-[10px] font-black uppercase tracking-widest whitespace-nowrap ${
