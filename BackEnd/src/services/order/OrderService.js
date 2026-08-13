@@ -621,7 +621,9 @@ const updateOrderStatus = async (id, status, currentUser = null, cancelReason = 
 
     const validTransitions = {
       pending: ["confirmed", "cancelled"],
-      confirmed: ["shipping", "cancelled"],
+      confirmed: ["processing", "shipped", "shipping", "cancelled"],
+      processing: ["shipped", "shipping", "cancelled"],
+      shipped: ["delivered", "cancelled"],
       shipping: ["delivered", "cancelled"],
       delivered: ["completed"],
       completed: [],
@@ -643,7 +645,7 @@ const updateOrderStatus = async (id, status, currentUser = null, cancelReason = 
           await syncOrderCancellationSideEffects(order, cancelReason || "Khách hàng hủy đơn.", currentUser, t);
           await t.commit();
           return { errCode: 0, errMessage: "Đã hủy đơn hàng thành công.", data: order };
-        } else if (["confirmed", "shipping"].includes(currentStatus)) {
+        } else if (["confirmed", "processing", "shipped", "shipping"].includes(currentStatus)) {
           order.status = "cancel_requested";
           order.cancelReason = cancelReason || "Khách hàng gửi yêu cầu hủy đơn.";
           const history = Array.isArray(order.confirmationHistory) ? order.confirmationHistory : [];
