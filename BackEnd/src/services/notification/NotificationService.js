@@ -1,0 +1,77 @@
+const db = require("../../models");
+
+const createNotification = async (data, t = null) => {
+  try {
+    const notification = await db.Notification.create(data, { transaction: t });
+    return { errCode: 0, data: notification };
+  } catch (error) {
+    console.error("Error creating notification:", error);
+    return { errCode: -1, errMessage: "Lỗi server." };
+  }
+};
+
+const getNotifications = async (userId, role, page = 1, limit = 10) => {
+  try {
+    const offset = (page - 1) * limit;
+    const where = {};
+    
+    if (role === 'admin') {
+      where.userId = { [db.Sequelize.Op.or]: [userId, null] };
+    } else {
+      where.userId = userId;
+    }
+
+    const { count, rows } = await db.Notification.findAndCountAll({
+      where,
+      limit,
+      offset,
+      order: [["createdAt", "DESC"]],
+    });
+
+    return {
+      errCode: 0,
+      data: rows,
+      total: count,
+      unreadCount: await db.Notification.count({ where: { ...where, isRead: false } }),
+      totalPages: Math.ceil(count / limit),
+    };
+  } catch (error) {
+    console.error("Error getting notifications:", error);
+    return { errCode: -1, errMessage: "Lỗi server." };
+  }
+};
+
+const markAsRead = async (id) => {
+  try {
+    const notification = await db.Notification.findByPk(id);
+    if (notification) {
+      await notification.update({ isRead: true });
+    }
+    return { errCode: 0, message: "Đã đánh dấu đã đọc." };
+  } catch (error) {
+    return { errCode: -1, errMessage: "Lỗi server." };
+  }
+};
+
+const markAllAsRead = async (userId, role = "user") => {
+  try {
+    const where = {};
+    if (role === "admin") {
+      where.userId = { [db.Sequelize.Op.or]: [userId, null] };
+    } else {
+      where.userId = userId;
+    }
+    await db.Notification.update({ isRead: true }, { where });
+    return { errCode: 0, message: "Đã đánh dấu tất cả đã đọc." };
+  } catch (error) {
+    console.error("Error markAllAsRead:", error);
+    return { errCode: -1, errMessage: "Lỗi server." };
+  }
+};
+
+module.exports = {
+  createNotification,
+  getNotifications,
+  markAsRead,
+  markAllAsRead,
+};

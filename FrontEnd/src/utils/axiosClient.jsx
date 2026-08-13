@@ -71,8 +71,9 @@ axiosClient.interceptors.response.use(
         isRefreshing = false;
         processQueue(refreshError);
 
-        // Logout user on any refresh failure (status 400/403 or custom thrown error)
+        // Logout user on any refresh failure (status 401/403/400 or custom thrown error)
         if (
+          refreshError.response?.status === 401 ||
           refreshError.response?.status === 403 ||
           refreshError.response?.status === 400 ||
           !refreshError.response
@@ -80,7 +81,7 @@ axiosClient.interceptors.response.use(
           store.dispatch(removeUser());
           store.dispatch(clearCart());
           if (!window.location.pathname.includes("/login")) {
-            window.location.href = `/login?from=${window.location.pathname}`;
+            window.location.href = `/login?from=${encodeURIComponent(window.location.pathname)}`;
           }
         }
 

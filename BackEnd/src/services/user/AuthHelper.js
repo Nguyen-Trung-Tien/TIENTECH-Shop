@@ -36,10 +36,29 @@ const validatePasswordStrength = (password) => {
   return { valid: true };
 };
 
+const DUMMY_PASSWORD_HASH = "$2a$10$e8wYf/48Z/b4j0G9N.4SVO4cWd6E3jS2.yO15ZJ2hW1mK/Gg3V7gK";
+
+const performDummyBcryptCompare = async (password) => {
+  try {
+    await bcrypt.compare(password || "dummyPassword123!", DUMMY_PASSWORD_HASH);
+  } catch (e) {
+    // Ignore dummy compare errors
+  }
+};
+
+const getUserProfileKey = (userId) => `user:profile:${userId}`;
+const getRefreshTokenKey = (userId) => `user:refreshtoken:${userId}`;
+const getTokenBlacklistKey = (token) => `blacklist:token:${hashToken(token)}`;
+
 module.exports = {
   hashToken,
   generateRandomToken,
   getTokenExpiryDate,
   hashUserPassword,
   validatePasswordStrength,
+  performDummyBcryptCompare,
+  getUserProfileKey,
+  getRefreshTokenKey,
+  getTokenBlacklistKey,
 };
+

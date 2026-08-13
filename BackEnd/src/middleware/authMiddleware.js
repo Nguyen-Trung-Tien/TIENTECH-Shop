@@ -1,6 +1,8 @@
-const { verifyAccessToken } = require("../services/jwtService");
+const { verifyAccessTokenDetailed } = require("../utils/jwtHelper");
+const { getCache } = require("../config/redis");
+const { getTokenBlacklistKey } = require("../services/user/AuthHelper");
 
-const authenticateToken = (req, res, next) => {
+const authenticateToken = async (req, res, next) => {
   const authHeader = req.headers["authorization"];
   let token = authHeader && authHeader.split(" ")[1];
 
@@ -9,22 +11,37 @@ const authenticateToken = (req, res, next) => {
     token = req.cookies?.accessToken;
   }
 
-  if (!token)
+  if (!token) {
     return res
       .status(401)
-      .json({ errCode: 1, errMessage: "No token provided" });
+      .json({ errCode: 1, code: "NO_TOKEN", errMessage: "No token provided" });
+  }
 
-  const decoded = verifyAccessToken(token);
-  if (!decoded)
+  // Check Redis Token Blacklist (Revoked tokens on logout)
+  const isBlacklisted = await getCache(getTokenBlacklistKey(token));
+  if (isBlacklisted) {
     return res
       .status(401)
-      .json({ errCode: 2, errMessage: "Invalid or expired token" });
+      .json({ errCode: 2, code: "TOKEN_REVOKED", errMessage: "Token has been revoked" });
+  }
 
-  req.user = decoded;
+  const result = verifyAccessTokenDetailed(token);
+  if (!result.valid) {
+    if (result.expired) {
+      return res
+        .status(401)
+        .json({ errCode: 2, code: "TOKEN_EXPIRED", errMessage: "Access token has expired" });
+    }
+    return res
+      .status(401)
+      .json({ errCode: 2, code: "INVALID_TOKEN", errMessage: "Invalid token" });
+  }
+
+  req.user = result.decoded;
   next();
 };
 
-const optionalAuthenticateToken = (req, res, next) => {
+const optionalAuthenticateToken = async (req, res, next) => {
   const authHeader = req.headers["authorization"];
   let token = authHeader && authHeader.split(" ")[1];
 
@@ -33,9 +50,12 @@ const optionalAuthenticateToken = (req, res, next) => {
   }
 
   if (token) {
-    const decoded = verifyAccessToken(token);
-    if (decoded) {
-      req.user = decoded;
+    const isBlacklisted = await getCache(getTokenBlacklistKey(token));
+    if (!isBlacklisted) {
+      const result = verifyAccessTokenDetailed(token);
+      if (result.valid) {
+        req.user = result.decoded;
+      }
     }
   }
   next();
@@ -43,9 +63,10 @@ const optionalAuthenticateToken = (req, res, next) => {
 
 const authorizeRole = (roles) => {
   return (req, res, next) => {
-    if (!roles.includes(req.user.role)) {
+    if (!roles || !req.user || !roles.includes(req.user.role)) {
       return res.status(403).json({
         errCode: 3,
+        code: "FORBIDDEN",
         errMessage: "You are not allowed to access this resource",
       });
     }
@@ -54,3 +75,4 @@ const authorizeRole = (roles) => {
 };
 
 module.exports = { authenticateToken, optionalAuthenticateToken, authorizeRole };
+

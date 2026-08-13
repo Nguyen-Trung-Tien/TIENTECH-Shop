@@ -1,0 +1,16 @@
+#!/bin/sh
+echo "🔍 Running pre-push quality checks (Tests & Linting)..."
+
+npm run lint
+if [ $? -ne 0 ]; then
+  echo "❌ Pre-push check failed: Lint errors detected in FrontEnd. Please fix before pushing."
+  exit 1
+fi
+
+npm run test
+if [ $? -ne 0 ]; then
+  echo "❌ Pre-push check failed: Tests failed. Please fix before pushing."
+  exit 1
+fi
+
+echo "✅ All pre-push checks passed successfully!"

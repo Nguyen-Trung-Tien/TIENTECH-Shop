@@ -1,0 +1,509 @@
+const db = require("../../models");
+const { getPagination, getPagingData } = require("../../utils/paginationHelper");
+
+const getReviewsByProduct = async (
+  productId,
+  page = 1,
+  limit = 10,
+  userId = null,
+  ratingFilter = null,
+  hasImageFilter = false,
+) => {
+  try {
+    const { offset, limit: l } = getPagination(page, limit);
+
+    const approvedCondition = {
+      [db.Sequelize.Op.or]: [
+        { isApproved: true },
+        { isApproved: 1 },
+        { isApproved: null },
+      ],
+    };
+
+    const allApprovedReviews = await db.Review.findAll({
+      where: { productId, ...approvedCondition },
+      attributes: ["id", "rating"],
+    });
+
+    const totalReviews = allApprovedReviews.length;
+    let sumRating = 0;
+    const ratingCounts = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+
+    allApprovedReviews.forEach((r) => {
+      const val = Number(r.rating) || 0;
+      sumRating += val;
+      const rounded = Math.round(val);
+      if (ratingCounts[rounded] !== undefined) {
+        ratingCounts[rounded] += 1;
+      }
+    });
+
+    const averageRating =
+      totalReviews > 0 ? (sumRating / totalReviews).toFixed(1) : "5.0";
+
+    const whereClause = { productId, ...approvedCondition };
+
+    if (
+      ratingFilter &&
+      !isNaN(Number(ratingFilter)) &&
+      Number(ratingFilter) >= 1 &&
+      Number(ratingFilter) <= 5
+    ) {
+      whereClause.rating = Number(ratingFilter);
+    }
+
+    const reviewInclude = [
+      {
+        model: db.User,
+        as: "user",
+        attributes: ["id", "username", "avatar"],
+      },
+      {
+        model: db.ReviewImage,
+        as: "images",
+        attributes: ["id", "imageUrl"],
+        required: hasImageFilter === true || String(hasImageFilter) === "true",
+      },
+    ];
+
+    const data = await db.Review.findAndCountAll({
+      where: whereClause,
+      include: reviewInclude,
+      order: [["createdAt", "DESC"]],
+      limit: l,
+      offset: offset,
+      distinct: true,
+    });
+
+    const pagingData = getPagingData(data, page, l);
+
+    const reviewIds = pagingData.items.map((r) => r.id);
+    let repliesByReviewId = {};
+    if (reviewIds.length > 0) {
+      try {
+        const replies = await db.ReviewReply.findAll({
+          where: { reviewId: reviewIds },
+          include: [
+            {
+              model: db.User,
+              as: "user",
+              attributes: ["id", "username", "avatar"],
+            },
+          ],
+          order: [["createdAt", "ASC"]],
+        });
+
+        repliesByReviewId = replies.reduce((acc, rep) => {
+          const key = rep.reviewId;
+          if (!acc[key]) acc[key] = [];
+          acc[key].push(rep);
+          return acc;
+        }, {});
+      } catch (replyErr) {
+        console.error("Error fetching review replies:", replyErr);
+      }
+    }
+
+    let likedReviewIds = new Set();
+    if (userId && reviewIds.length > 0) {
+      try {
+        const likes = await db.ReviewLike.findAll({
+          where: {
+            userId,
+            reviewId: reviewIds,
+          },
+          attributes: ["reviewId"],
+        });
+        if (likes && Array.isArray(likes)) {
+          likedReviewIds = new Set(likes.map((lk) => lk.reviewId));
+        }
+      } catch (likeErr) {
+        console.error("Error fetching review likes:", likeErr);
+      }
+    }
+
+    return {
+      errCode: 0,
+      summary: {
+        totalReviews,
+        averageRating: Number(averageRating),
+        ratingCounts,
+      },
+      data: pagingData.items.map((r) => ({
+        ...r.toJSON(),
+        isVerified: true,
+        replies: repliesByReviewId[r.id] || [],
+        isLiked: likedReviewIds.has(r.id),
+      })),
+      pagination: {
+        totalItems: pagingData.totalItems,
+        currentPage: pagingData.currentPage,
+        totalPages: pagingData.totalPages,
+        limit: l,
+      },
+    };
+  } catch (error) {
+    console.error(error);
+    return { errCode: 1, errMessage: "Error from server!" };
+  }
+};
+
+const createReview = async (data) => {
+  try {
+    const productId = Number(data.productId);
+    const deliveredOrders = await db.Order.findAll({
+      where: {
+        userId: data.userId,
+        status: { [db.Sequelize.Op.in]: ["delivered", "completed"] },
+      },
+      include: [
+        {
+          model: db.OrderItem,
+          as: "orderItems",
+          where: { productId },
+        },
+      ],
+    });
+
+    let purchaseCount = 0;
+    deliveredOrders.forEach((order) => {
+      order.orderItems.forEach((item) => {
+        if (Number(item.productId) === productId) {
+          purchaseCount += 1;
+        }
+      });
+    });
+
+    if (purchaseCount === 0) {
+      return {
+        errCode: 2,
+        errMessage: "Bạn chỉ có thể đánh giá sản phẩm sau khi đã nhận hàng",
+      };
+    }
+
+    const reviewCount = await db.Review.count({
+      where: { userId: data.userId, productId },
+    });
+
+    if (reviewCount >= purchaseCount) {
+      return {
+        errCode: 3,
+        errMessage: "Bạn đã đánh giá sản phẩm này rồi (đã đánh giá đủ số lần mua hàng)",
+      };
+    }
+
+    const newReview = await db.Review.create({
+      userId: data.userId,
+      productId,
+      rating: data.rating,
+      comment: data.comment,
+      isApproved: true,
+    });
+
+    if (data.images && data.images.length > 0) {
+      const imageData = data.images.map((img) => ({
+        reviewId: newReview.id,
+        imageUrl: img,
+      }));
+      await db.ReviewImage.bulkCreate(imageData);
+    }
+
+    return { errCode: 0, data: newReview };
+  } catch (error) {
+    console.error(error);
+    return { errCode: 1, errMessage: "Lỗi khi tạo đánh giá" };
+  }
+};
+
+const updateReview = async (reviewId, data, user) => {
+  try {
+    const review = await db.Review.findByPk(reviewId);
+
+    if (!review) return { errCode: 2, errMessage: "Review không tồn tại" };
+
+    if (user.role !== "admin" && review.userId !== user.id) {
+      return {
+        errCode: 3,
+        errMessage: "Bạn không có quyền chỉnh sửa review này",
+      };
+    }
+
+    review.rating = data.rating ?? review.rating;
+    review.comment = data.comment ?? review.comment;
+
+    await review.save();
+
+    return { errCode: 0, data: review };
+  } catch (error) {
+    console.error(error);
+    return { errCode: 1, errMessage: "Lỗi khi cập nhật đánh giá" };
+  }
+};
+
+const deleteReview = async (reviewId, user) => {
+  try {
+    const review = await db.Review.findByPk(reviewId);
+
+    if (!review) return { errCode: 2, errMessage: "Review không tồn tại" };
+
+    if (user.role !== "admin" && review.userId !== user.id) {
+      return { errCode: 3, errMessage: "Bạn không có quyền xóa review này" };
+    }
+
+    await review.destroy();
+
+    return { errCode: 0, message: "Đã xóa đánh giá" };
+  } catch (error) {
+    console.error(error);
+    return { errCode: 1, errMessage: "Lỗi khi xóa đánh giá" };
+  }
+};
+
+const getAllReviewsAdmin = async (
+  page = 1,
+  limit = 10,
+  rating = "",
+  status = "",
+) => {
+  try {
+    const { offset, limit: l } = getPagination(page, limit);
+    const where = {};
+
+    if (rating) where.rating = rating;
+
+    if (status) {
+      where.isApproved = status === "approved";
+    }
+
+    const data = await db.Review.findAndCountAll({
+      where,
+      limit: l,
+      offset,
+      order: [["createdAt", "DESC"]],
+      include: [
+        {
+          model: db.User,
+          as: "user",
+          attributes: ["id", "username"],
+        },
+        {
+          model: db.Product,
+          as: "product",
+          attributes: ["id", "name"],
+        },
+      ],
+    });
+
+    const pagingData = getPagingData(data, page, l);
+
+    return {
+      errCode: 0,
+      data: pagingData.items,
+      pagination: {
+        totalItems: pagingData.totalItems,
+        currentPage: pagingData.currentPage,
+        totalPages: pagingData.totalPages,
+        limit: l,
+      },
+    };
+  } catch (error) {
+    console.error("Get All Reviews Admin Error:", error);
+    return { errCode: 1, errMessage: "Lỗi server" };
+  }
+};
+
+const getReviewsByUser = async (userId, page = 1, limit = 10) => {
+  try {
+    const { offset, limit: l } = getPagination(page, limit);
+
+    const data = await db.Review.findAndCountAll({
+      where: { userId },
+      include: [
+        {
+          model: db.Product,
+          as: "product",
+          attributes: ["id", "name"],
+          include: [
+            {
+              model: db.ProductVariant,
+              as: "variants",
+              attributes: ["id"],
+              limit: 1,
+            },
+          ],
+        },
+        {
+          model: db.ReviewImage,
+          as: "images",
+          attributes: ["id", "imageUrl"],
+        },
+      ],
+      order: [["createdAt", "DESC"]],
+      limit: l,
+      offset: offset,
+    });
+
+    const pagingData = getPagingData(data, page, l);
+
+    const reviewIds = pagingData.items.map((r) => r.id);
+    let repliesByReviewId = {};
+    if (reviewIds.length > 0) {
+      const replies = await db.ReviewReply.findAll({
+        where: { reviewId: reviewIds },
+        include: [
+          {
+            model: db.User,
+            as: "user",
+            attributes: ["id", "username", "avatar"],
+          },
+        ],
+        order: [["createdAt", "ASC"]],
+      });
+
+      repliesByReviewId = replies.reduce((acc, rep) => {
+        const key = rep.reviewId;
+        if (!acc[key]) acc[key] = [];
+        acc[key].push(rep);
+        return acc;
+      }, {});
+    }
+
+    return {
+      errCode: 0,
+      data: pagingData.items.map((r) => ({
+        ...r.toJSON(),
+        replies: repliesByReviewId[r.id] || [],
+      })),
+      pagination: {
+        totalItems: pagingData.totalItems,
+        currentPage: pagingData.currentPage,
+        totalPages: pagingData.totalPages,
+        limit: l,
+      },
+    };
+  } catch (error) {
+    console.error("Error getReviewsByUser:", error);
+    return { errCode: 1, errMessage: "Error from server!" };
+  }
+};
+
+const getPendingReviewProducts = async (userId) => {
+  try {
+    const deliveredOrders = await db.Order.findAll({
+      where: {
+        userId,
+        status: { [db.Sequelize.Op.in]: ["delivered", "completed"] },
+      },
+      include: [
+        {
+          model: db.OrderItem,
+          as: "orderItems",
+          attributes: ["productId", "productName", "image"],
+        },
+      ],
+    });
+
+    if (!deliveredOrders || deliveredOrders.length === 0) {
+      return { errCode: 0, data: [] };
+    }
+
+    const purchasedProductsMap = {};
+    deliveredOrders.forEach((order) => {
+      order.orderItems.forEach((item) => {
+        const pid = Number(item.productId);
+        if (!purchasedProductsMap[pid]) {
+          purchasedProductsMap[pid] = {
+            id: pid,
+            name: item.productName,
+            image: item.image,
+            purchaseCount: 0,
+          };
+        }
+        purchasedProductsMap[pid].purchaseCount += 1;
+      });
+    });
+
+    const purchasedProductIds = Object.keys(purchasedProductsMap).map(Number);
+
+    const existingReviews = await db.Review.findAll({
+      where: { userId, productId: purchasedProductIds },
+      attributes: ["productId"],
+    });
+
+    const reviewCounts = {};
+    existingReviews.forEach((r) => {
+      const pid = Number(r.productId);
+      reviewCounts[pid] = (reviewCounts[pid] || 0) + 1;
+    });
+
+    const pendingProducts = purchasedProductIds
+      .filter((id) => {
+        const pCount = purchasedProductsMap[id].purchaseCount;
+        const rCount = reviewCounts[id] || 0;
+        return rCount < pCount;
+      })
+      .map((id) => ({
+        id: purchasedProductsMap[id].id,
+        name: purchasedProductsMap[id].name,
+        image: purchasedProductsMap[id].image,
+      }));
+
+    return { errCode: 0, data: pendingProducts };
+  } catch (error) {
+    console.error("Error getPendingReviewProducts:", error);
+    return { errCode: 1, errMessage: "Lỗi server" };
+  }
+};
+
+const toggleLikeReview = async (reviewId, userId) => {
+  try {
+    const rId = Number(reviewId);
+    const uId = Number(userId);
+    if (!rId || isNaN(rId)) {
+      return { errCode: 2, errMessage: "ID đánh giá không hợp lệ" };
+    }
+    if (!uId || isNaN(uId)) {
+      return { errCode: 3, errMessage: "Vui lòng đăng nhập" };
+    }
+
+    const review = await db.Review.findByPk(rId);
+    if (!review) {
+      return { errCode: 2, errMessage: "Review không tồn tại" };
+    }
+
+    const existingLike = await db.ReviewLike.findOne({
+      where: { reviewId: rId, userId: uId },
+    });
+
+    if (existingLike) {
+      await existingLike.destroy();
+      
+      const newLikesCount = Math.max(0, (review.likes || 0) - 1);
+      await db.Review.update({ likes: newLikesCount }, { where: { id: rId } });
+      
+      const updatedReview = await db.Review.findByPk(rId);
+      return { errCode: 0, data: { ...updatedReview.toJSON(), isLiked: false } };
+    } else {
+      await db.ReviewLike.create({ reviewId: rId, userId: uId });
+      
+      await db.Review.increment("likes", { by: 1, where: { id: rId } });
+      
+      const updatedReview = await db.Review.findByPk(rId);
+      return { errCode: 0, data: { ...updatedReview.toJSON(), isLiked: true } };
+    }
+  } catch (error) {
+    console.error("Error toggleLikeReview:", error);
+    return { errCode: 1, errMessage: "Lỗi khi like đánh giá: " + error.message };
+  }
+};
+
+module.exports = {
+  createReview,
+  getReviewsByProduct,
+  deleteReview,
+  updateReview,
+  getAllReviewsAdmin,
+  getReviewsByUser,
+  getPendingReviewProducts,
+  toggleLikeReview,
+};

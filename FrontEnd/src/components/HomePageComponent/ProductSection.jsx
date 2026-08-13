@@ -6,12 +6,18 @@ import { getAllProductApi } from "../../api/productApi";
 import ProductCard from "../../components/ProductCard/ProductCard";
 import SkeletonCard from "../SkeletonCard/SkeletonCard";
 
-const ProductSection = () => {
+const ProductSection = ({ products: propProducts }) => {
   const navigate = useNavigate();
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [products, setProducts] = useState(propProducts ? propProducts.slice(0, 6) : []);
+  const [loading, setLoading] = useState(!propProducts);
 
   useEffect(() => {
+    if (propProducts && propProducts.length > 0) {
+      setProducts(propProducts.slice(0, 6));
+      setLoading(false);
+      return;
+    }
+
     const fetchProducts = async () => {
       try {
         const res = await getAllProductApi(1, 6);
@@ -30,7 +36,7 @@ const ProductSection = () => {
     };
 
     fetchProducts();
-  }, []);
+  }, [propProducts]);
 
   return (
     <section className="py-6 md:py-8 bg-slate-50 dark:bg-gray-900/20 transition-colors duration-300">

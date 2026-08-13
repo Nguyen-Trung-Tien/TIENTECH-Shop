@@ -5,7 +5,6 @@ import { useNavigate } from "react-router-dom";
 import imgPro1 from "../../assets/1759303601055.png";
 import imgPro2 from "../../assets/1759303601055.png";
 import imgPro3 from "../../assets/1759555519030.png";
-import logoImage from "../../assets/logo.png";
 import Logo from "../../components/UI/Logo";
 import Button from "../../components/UI/Button";
 

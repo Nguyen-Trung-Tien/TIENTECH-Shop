@@ -1,6 +1,6 @@
 const db = require("../../models");
 const BaseService = require("../BaseService");
-const { sendVerificationEmail, sendEmailAsync } = require("../sendEmail");
+const { sendVerificationEmail, sendEmailAsync } = require("../common/EmailService");
 const { 
   hashToken, 
   generateRandomToken, 

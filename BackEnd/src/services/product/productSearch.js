@@ -274,23 +274,40 @@ const filterProducts = async ({
       conditions[Op.and] = [...(conditions[Op.and] || []), ...andConditions];
     }
 
+    const attributes = [
+      "id", "name", "slug", "sku", "basePrice", "discount", "totalStock",
+      "hasVariants", "isFlashSale", "flashSaleStart", "flashSaleEnd", "flashSalePrice",
+      "isActive", "categoryId", "brandId", "createdAt",
+      [
+        db.sequelize.literal(`(
+          SELECT COALESCE(ROUND(AVG(rating), 1), 5.0)
+          FROM Reviews AS r
+          WHERE r.productId = Product.id
+        )`),
+        "avgRating",
+      ],
+      [
+        db.sequelize.literal(`(
+          SELECT COUNT(*)
+          FROM Reviews AS r
+          WHERE r.productId = Product.id
+        )`),
+        "reviewCount",
+      ],
+    ];
+
     const include = [
-      { model: db.Brand, as: "brand" },
-      { model: db.Category, as: "category" },
+      { model: db.Brand, as: "brand", attributes: ["id", "name", "slug"] },
+      { model: db.Category, as: "category", attributes: ["id", "name", "slug"] },
       {
         model: db.ProductImage,
         as: "images",
         attributes: ["imageUrl", "isPrimary"],
       },
       {
-        model: db.Review,
-        as: "reviews",
-        attributes: ["id", "rating"],
-        required: false,
-      },
-      {
         model: db.ProductVariant,
         as: "variants",
+        attributes: ["id", "productId", "sku", "basePrice", "stock"],
         include: [
           {
             model: db.AttributeValue,
@@ -311,6 +328,7 @@ const filterProducts = async ({
     const { offset, limit: l } = getPagination(page, limit);
     const data = await db.Product.findAndCountAll({
       where: conditions,
+      attributes,
       include,
       order,
       limit: l,
@@ -336,6 +354,42 @@ const filterProducts = async ({
     };
   } catch (error) {
     console.error(error);
+    return { errCode: 1, errMessage: error.message };
+  }
+};
+
+const getHomePageData = async () => {
+  try {
+    const { getCache, setCache } = require("../../config/redis");
+    const BrandService = require("../catalog/BrandService");
+    const CategoryService = require("../catalog/CategoryService");
+    const productCore = require("./productCore");
+
+    const cacheKey = "home_page_aggregated_data_v1";
+    const cached = await getCache(cacheKey);
+    if (cached) return cached;
+
+    const [brandsRes, categoriesRes, flashSaleRes, productsRes] = await Promise.all([
+      BrandService.getAllBrands(1, 20),
+      CategoryService.getAllCategories(1, 20),
+      productCore.getAllProducts(null, 1, 10, true),
+      productCore.getAllProducts(null, 1, 12, false),
+    ]);
+
+    const result = {
+      errCode: 0,
+      data: {
+        brands: brandsRes.brands || brandsRes.data || [],
+        categories: categoriesRes.data || [],
+        flashSale: flashSaleRes.products || [],
+        products: productsRes.products || [],
+      },
+    };
+
+    await setCache(cacheKey, result, 300);
+    return result;
+  } catch (error) {
+    console.error("Error in getHomePageData:", error);
     return { errCode: 1, errMessage: error.message };
   }
 };
@@ -432,6 +486,7 @@ module.exports = {
   searchProducts,
   searchSuggestions,
   filterProducts,
+  getHomePageData,
   searchSemanticProducts,
   syncAllProductEmbeddings,
 };

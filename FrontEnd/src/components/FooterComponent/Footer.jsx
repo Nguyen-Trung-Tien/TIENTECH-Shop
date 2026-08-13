@@ -10,7 +10,6 @@ import {
   FiArrowUp,
 } from "react-icons/fi";
 import { Link } from "react-router-dom";
-import logoImage from "../../assets/logo.png";
 import Logo from "../UI/Logo";
 
 const Footer = () => {

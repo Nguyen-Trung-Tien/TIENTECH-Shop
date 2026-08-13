@@ -4,6 +4,16 @@ const SUGGEST_TTL_MS = 10000;
 const suggestCache = new Map();
 const suggestInflight = new Map();
 
+export const getHomePageDataApi = async () => {
+  try {
+    const res = await axiosClient.get("/product/home-data");
+    return res;
+  } catch (err) {
+    console.error("Get Home Page Data API error:", err);
+    throw err;
+  }
+};
+
 export const getAllProductApi = async (
   page = 1,
   limit = 10,

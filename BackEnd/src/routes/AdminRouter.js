@@ -1,0 +1,65 @@
+const express = require("express");
+const router = express.Router();
+const AdminController = require("../controllers/AdminController");
+const {
+  authenticateToken,
+  authorizeRole,
+} = require("../middleware/authMiddleware");
+
+router.get(
+  "/dashboard",
+  authenticateToken,
+  authorizeRole(["admin"]),
+  AdminController.getDashboard
+);
+
+router.get(
+  "/counters",
+  authenticateToken,
+  authorizeRole(["admin"]),
+  AdminController.getAdminCounters
+);
+
+router.get(
+  "/export-revenue",
+  authenticateToken,
+  authorizeRole(["admin"]),
+  AdminController.handleExportRevenue
+);
+
+router.get(
+  "/ai-insights",
+  authenticateToken,
+  authorizeRole(["admin"]),
+  AdminController.handleAIInsights
+);
+
+router.post(
+  "/generate-description",
+  authenticateToken,
+  authorizeRole(["admin"]),
+  AdminController.handleGenerateDescription
+);
+
+router.get(
+  "/revenue-forecast",
+  authenticateToken,
+  authorizeRole(["admin"]),
+  AdminController.handleRevenueForecast
+);
+
+router.get(
+  "/global-search",
+  authenticateToken,
+  authorizeRole(["admin"]),
+  AdminController.handleGlobalSearch
+);
+
+router.post(
+  "/sync-embeddings",
+  authenticateToken,
+  authorizeRole(["admin"]),
+  AdminController.handleSyncEmbeddings
+);
+
+module.exports = router;

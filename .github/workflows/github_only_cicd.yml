@@ -3,6 +3,8 @@ name: GitHub Pure CI/CD
 on:
   push:
     branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
   workflow_dispatch:
 
 permissions:
@@ -55,14 +57,17 @@ jobs:
           DB_NAME: db_test
           JWT_SECRET: github_test_secret
 
-      - name: Frontend - Build
+      - name: Frontend - Lint, Test & Build
         working-directory: ./FrontEnd
         run: |
           npm ci
+          npm run lint
+          npm test
           npm run build
 
       # Lưu lại bản build của Frontend để dùng cho bước Deploy
       - name: Upload Frontend Artifact
+        if: github.event_name == 'push'
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./FrontEnd/dist
@@ -70,6 +75,7 @@ jobs:
   # --- 2. TRIỂN KHAI FRONTEND LÊN GITHUB PAGES ---
   deploy-frontend:
     needs: build-and-test
+    if: github.event_name == 'push'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -82,6 +88,7 @@ jobs:
   # --- 3. ĐÓNG GÓI & LƯU TRỮ BACKEND LÊN GITHUB PACKAGES (GHCR) ---
   package-backend:
     needs: build-and-test
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -105,3 +112,4 @@ jobs:
           tags: |
             ${{ env.IMAGE_NAME }}:latest
             ${{ env.IMAGE_NAME }}:${{ github.sha }}
+

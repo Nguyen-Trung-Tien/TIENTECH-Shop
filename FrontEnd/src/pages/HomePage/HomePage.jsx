@@ -10,12 +10,24 @@ import Testimonials from "../../components/Testimonials/Testimonials";
 import BlogSection from "../../components/BlogSection/BlogSection";
 import BrandSection from "../../components/BrandSection/BrandSection";
 import AISmartPicks from "../../components/HomePageComponent/AISmartPicks";
-import { getPersonalizedRecommendationsApi } from "../../api/productApi";
+import { getPersonalizedRecommendationsApi, getHomePageDataApi } from "../../api/productApi";
 
 const HomePage = () => {
   const [personalizedRecs, setPersonalizedRecs] = useState([]);
+  const [homeData, setHomeData] = useState(null);
 
   useEffect(() => {
+    const fetchHomeData = async () => {
+      try {
+        const res = await getHomePageDataApi();
+        if (res?.errCode === 0 && res.data) {
+          setHomeData(res.data);
+        }
+      } catch (err) {
+        console.error("Failed to load aggregated home page data", err);
+      }
+    };
+
     const fetchRecs = async () => {
       try {
         const res = await getPersonalizedRecommendationsApi(6);
@@ -24,6 +36,8 @@ const HomePage = () => {
         console.error("Failed to load Personalized Recommendations");
       }
     };
+
+    fetchHomeData();
     fetchRecs();
   }, []);
 
@@ -34,9 +48,9 @@ const HomePage = () => {
 
       <main>
         {/* Sections are now stacked tightly */}
-        <BrandSection />
+        <BrandSection brands={homeData?.brands} />
 
-        <CategorySection />
+        <CategorySection categories={homeData?.categories} />
 
         {personalizedRecs.length > 0 && (
           <AISmartPicks
@@ -51,9 +65,9 @@ const HomePage = () => {
           </div>
         </div>
 
-        <FlashSale />
+        <FlashSale products={homeData?.flashSale} />
 
-        <ProductSection />
+        <ProductSection products={homeData?.products} />
 
         <AllProducts />
 

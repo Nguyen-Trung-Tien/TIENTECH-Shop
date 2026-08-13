@@ -1,5 +1,5 @@
 const cron = require("node-cron");
-const InventoryService = require("../services/InventoryService");
+const InventoryService = require("../services/common/InventoryService");
 
 // Chạy hàng ngày vào lúc 8:00 sáng
 const initInventoryCron = () => {

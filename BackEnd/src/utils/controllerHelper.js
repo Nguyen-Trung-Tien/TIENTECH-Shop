@@ -10,27 +10,26 @@ const handleError = (res, e, method) => {
 };
 
 const handleResponse = (res, result, successStatus = 200) => {
-  // Map errCode to appropriate HTTP Status Codes
-  // 0: Success (200/201)
-  // 1: Not Found (404)
-  // 2: Unauthorized/Forbidden or Validation Error (Keep as 200 but check errCode in frontend OR use 400/401)
-  // To keep compatibility with existing frontend logic that expects 200 even for some errors:
-  
   if (result.errCode === 0) {
     return res.status(successStatus).json(result);
   }
-  
-  // For authentication/validation errors, we should return 200 or 400 depending on how the frontend handles it.
-  // Most of your existing frontend code checks 'if (res.errCode === 0)' after a successful 200 OK.
-  // Returning 400/404/500 triggers Axios catch block.
-  
-  let status = 400;
-  if (result.errCode === 1) status = 404;
-  
-  // If it's a known business logic error, some APIs prefer 200 with errCode != 0
-  // But standard REST uses 4xx. Let's use 200 for business errors to match your original flow
-  // where toast notifications were handled inside the 'try' block of components.
-  return res.status(200).json(result);
+
+  // Determine HTTP status code
+  let status = result.statusCode || 400;
+
+  if (!result.statusCode) {
+    if (result.errCode === 401 || result.errCode === 2 || result.errCode === 3) {
+      status = 401; // Unauthorized / Auth error
+    } else if (result.errCode === 403) {
+      status = 403; // Forbidden
+    } else if (result.errCode === 1) {
+      status = 404; // Not Found
+    } else if (result.errCode === 429) {
+      status = 429; // Rate Limited
+    }
+  }
+
+  return res.status(status).json(result);
 };
 
 const handleFileUpload = async (req, folder) => {

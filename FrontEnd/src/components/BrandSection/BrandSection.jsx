@@ -6,12 +6,18 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay } from "swiper/modules";
 import "swiper/css";
 
-const BrandSection = () => {
-  const [brands, setBrands] = useState([]);
-  const [loading, setLoading] = useState(true);
+const BrandSection = ({ brands: propBrands }) => {
+  const [brands, setBrands] = useState(propBrands || []);
+  const [loading, setLoading] = useState(!propBrands);
   const navigate = useNavigate();
 
   useEffect(() => {
+    if (propBrands && propBrands.length > 0) {
+      setBrands(propBrands);
+      setLoading(false);
+      return;
+    }
+
     const fetchBrands = async () => {
       try {
         const res = await getAllBrandApi(1, 15, ""); 
@@ -27,7 +33,7 @@ const BrandSection = () => {
       }
     };
     fetchBrands();
-  }, []);
+  }, [propBrands]);
 
   if (loading) return null;
 

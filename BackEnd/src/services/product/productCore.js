@@ -2,9 +2,9 @@ const db = require("../../models");
 const { Op } = require("sequelize");
 const { getCache, setCache } = require("../../config/redis");
 const { getPagination, getPagingData } = require("../../utils/paginationHelper");
-const AttributeService = require("../AttributeService");
+const AttributeService = require("../catalog/AttributeService");
 const { slugify } = require("../../utils/slugHelper");
-const ProductVariantService = require("../ProductVariantService");
+const ProductVariantService = require("../catalog/ProductVariantService");
 const {
   ensureUniqueSKU,
   clearProductCache,
@@ -240,7 +240,7 @@ const updateProduct = async (id, data, imageRecords = []) => {
   }
 };
 
-const ProductRepository = require("../../repository/ProductRepository");
+const ProductRepository = require("../../repositories/ProductRepository");
 
 const getAllProducts = async (
   categoryId,
@@ -277,12 +277,6 @@ const getAllProducts = async (
         model: db.ProductImage,
         as: "images",
         attributes: ["imageUrl", "isPrimary"],
-      },
-      {
-        model: db.Review,
-        as: "reviews",
-        attributes: ["id", "rating"],
-        required: false,
       },
     ],
   });

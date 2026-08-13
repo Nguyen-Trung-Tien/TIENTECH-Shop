@@ -32,6 +32,13 @@ module.exports = {
       },
     },
 
+    pool: {
+      max: parseInt(process.env.DB_POOL_MAX || "10", 10),
+      min: parseInt(process.env.DB_POOL_MIN || "0", 10),
+      acquire: 30000,
+      idle: 10000,
+    },
+
     logging: false,
   },
 };

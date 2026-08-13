@@ -1,7 +1,7 @@
 const cron = require("node-cron");
 const db = require("../models");
 const { Op } = require("sequelize");
-const OrderService = require("../services/OrderService");
+const OrderService = require("../services/order/OrderService");
 
 /**
  * Tự động hủy các đơn hàng chưa thanh toán (unpaid) sau một khoảng thời gian (VD: 30 phút)

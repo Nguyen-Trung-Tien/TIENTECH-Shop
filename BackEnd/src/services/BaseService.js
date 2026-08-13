@@ -1,4 +1,5 @@
 const { getPagination, getPagingData } = require("../utils/paginationHelper");
+const ServiceResult = require("../utils/serviceResult");
 const { Op } = require("sequelize");
 
 class BaseService {
@@ -30,77 +31,73 @@ class BaseService {
       });
 
       const pagingData = getPagingData(data, page, l);
-      return {
-        errCode: 0,
-        data: pagingData.items,
-        pagination: {
-          totalItems: pagingData.totalItems,
-          currentPage: pagingData.currentPage,
-          totalPages: pagingData.totalPages,
-          limit: l,
-        }
-      };
+      return ServiceResult.success(pagingData.items, "Success", {
+        totalItems: pagingData.totalItems,
+        currentPage: pagingData.currentPage,
+        totalPages: pagingData.totalPages,
+        limit: l,
+      });
     } catch (e) {
       console.error(`Error in ${this.modelName}Service.getAll:`, e);
-      return { errCode: 1, errMessage: e.message };
+      return ServiceResult.error(e.message, 1);
     }
   }
 
   async getById(id, options = {}) {
     try {
       const item = await this.model.findByPk(id, options);
-      if (!item) return { errCode: 1, errMessage: `${this.modelName} not found` };
-      return { errCode: 0, data: item };
+      if (!item) return ServiceResult.error(`${this.modelName} not found`, 1);
+      return ServiceResult.success(item);
     } catch (e) {
       console.error(`Error in ${this.modelName}Service.getById:`, e);
-      return { errCode: 1, errMessage: e.message };
+      return ServiceResult.error(e.message, 1);
     }
   }
 
   async getOne(where, options = {}) {
     try {
       const item = await this.model.findOne({ where, ...options });
-      if (!item) return { errCode: 1, errMessage: `${this.modelName} not found` };
-      return { errCode: 0, data: item };
+      if (!item) return ServiceResult.error(`${this.modelName} not found`, 1);
+      return ServiceResult.success(item);
     } catch (e) {
       console.error(`Error in ${this.modelName}Service.getOne:`, e);
-      return { errCode: 1, errMessage: e.message };
+      return ServiceResult.error(e.message, 1);
     }
   }
 
   async create(data) {
     try {
       const item = await this.model.create(data);
-      return { errCode: 0, data: item };
+      return ServiceResult.success(item);
     } catch (e) {
       console.error(`Error in ${this.modelName}Service.create:`, e);
-      return { errCode: 1, errMessage: e.message };
+      return ServiceResult.error(e.message, 1);
     }
   }
 
   async update(id, data) {
     try {
       const item = await this.model.findByPk(id);
-      if (!item) return { errCode: 1, errMessage: `${this.modelName} not found` };
+      if (!item) return ServiceResult.error(`${this.modelName} not found`, 1);
       
       const updatedItem = await item.update(data);
-      return { errCode: 0, data: updatedItem };
+      return ServiceResult.success(updatedItem);
     } catch (e) {
       console.error(`Error in ${this.modelName}Service.update:`, e);
-      return { errCode: 1, errMessage: e.message };
+      return ServiceResult.error(e.message, 1);
     }
   }
 
   async delete(id) {
     try {
       const item = await this.model.findByPk(id);
-      if (!item) return { errCode: 1, errMessage: `${this.modelName} not found` };
+      if (!item) return ServiceResult.error(`${this.modelName} not found`, 1);
 
       await item.destroy();
-      return { errCode: 0, errMessage: `${this.modelName} deleted successfully` };
+      return ServiceResult.success(null, `${this.modelName} deleted successfully`);
     } catch (e) {
       console.error(`Error in ${this.modelName}Service.delete:`, e);
-      return { errCode: 1, errMessage: e.message };
+      return ServiceResult.error(e.message, 1);
     }
   }
 }

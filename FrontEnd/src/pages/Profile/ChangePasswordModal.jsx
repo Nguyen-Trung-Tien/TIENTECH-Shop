@@ -1,11 +1,11 @@
 import React, { useState } from "react";
-import { motion as Motion, AnimatePresence } from "framer-motion";
-import { FiLock, FiEye, FiEyeOff, FiX, FiCheckCircle } from "react-icons/fi";
+import { FiEye, FiEyeOff, FiCheckCircle } from "react-icons/fi";
 import { toast } from "react-toastify";
 import Button from "../../components/UI/Button";
 import Modal from "../../components/UI/Modal";
+import { updatePasswordApi } from "../../api/userApi";
 
-const ChangePasswordModal = ({ show, onHide, userId }) => {
+const ChangePasswordModal = ({ show, onHide, userId: _userId }) => {
   const [loading, setLoading] = useState(false);
   const [passwordData, setPasswordData] = useState({
     oldPassword: "",
