@@ -22,10 +22,19 @@ const handleResponse = (res, result, successStatus = 200) => {
       status = 401; // Unauthorized / Auth error
     } else if (result.errCode === 403) {
       status = 403; // Forbidden
-    } else if (result.errCode === 1) {
-      status = 404; // Not Found
     } else if (result.errCode === 429) {
       status = 429; // Rate Limited
+    } else if (result.errCode === 1) {
+      const msg = (result.errMessage || "").toLowerCase();
+      if (
+        msg.includes("not found") ||
+        msg.includes("không tìm thấy") ||
+        msg.includes("does not exist")
+      ) {
+        status = 404; // Not Found
+      } else {
+        status = 400; // Bad Request for general validation / service errors
+      }
     }
   }
 

@@ -464,7 +464,8 @@ export const useProductForm = ({ editProduct, onSuccess, onClose }) => {
       }
     } catch (error) {
       console.error("Submit product form error:", error);
-      toast.error("Lỗi hệ thống khi lưu sản phẩm");
+      const serverErrMsg = error.response?.data?.errMessage || error.response?.data?.message;
+      toast.error(serverErrMsg || "Lỗi hệ thống khi lưu sản phẩm");
     } finally {
       setSaving(false);
     }
