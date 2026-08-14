@@ -22,7 +22,7 @@ const ProductFilterBar = ({
   getAttrIcon,
 }) => {
   return (
-    <div className="bg-white dark:bg-dark-surface rounded-3xl shadow-lg shadow-slate-200/50 dark:shadow-none border border-slate-200/80 dark:border-dark-border overflow-hidden">
+    <div className="bg-white dark:bg-dark-surface rounded-3xl shadow-lg shadow-slate-200/50 dark:shadow-none border border-slate-200/80 dark:border-dark-border relative z-20">
       <div className="p-6 bg-slate-50/50 dark:bg-dark-bg/50 border-b border-slate-100 dark:border-dark-border space-y-4">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           {/* Search Input */}

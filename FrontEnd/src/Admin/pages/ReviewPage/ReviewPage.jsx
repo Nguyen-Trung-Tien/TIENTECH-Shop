@@ -41,17 +41,24 @@ const ReviewPage = () => {
     setLoading(true);
     try {
       const res = await getAllReviewsApi(
-        pagination.page,
-        pagination.limit,
+        pagination.page || 1,
+        pagination.limit || 10,
         filters.rating,
         filters.status,
       );
 
       setReviews(res.data || []);
-      setPagination((prev) => res.pagination || prev);
+      if (res.pagination) {
+        setPagination({
+          page: res.pagination.currentPage || res.pagination.page || 1,
+          totalPages: res.pagination.totalPages || 1,
+          total: res.pagination.totalItems || 0,
+          limit: res.pagination.limit || 10,
+        });
+      }
 
       const newReplies = {};
-      for (let r of res.data) {
+      for (let r of (res.data || [])) {
         const rep = await getRepliesByReviewApi(r.id);
         if (rep.errCode === 0) newReplies[r.id] = rep.data;
       }
@@ -135,9 +142,10 @@ const ReviewPage = () => {
           <select
             className="bg-transparent border-none text-xs font-black uppercase tracking-widest outline-none appearance-none pr-6 dark:text-white"
             value={filters.rating}
-            onChange={(e) =>
-              setFilters((p) => ({ ...p, rating: e.target.value }))
-            }
+            onChange={(e) => {
+              setFilters((p) => ({ ...p, rating: e.target.value }));
+              setPagination((p) => ({ ...p, page: 1 }));
+            }}
           >
             <option value="" className="dark:bg-dark-surface">
               Lọc theo sao
@@ -154,9 +162,10 @@ const ReviewPage = () => {
           <select
             className="bg-transparent border-none text-xs font-black uppercase tracking-widest outline-none appearance-none pr-6 dark:text-white"
             value={filters.status}
-            onChange={(e) =>
-              setFilters((p) => ({ ...p, status: e.target.value }))
-            }
+            onChange={(e) => {
+              setFilters((p) => ({ ...p, status: e.target.value }));
+              setPagination((p) => ({ ...p, page: 1 }));
+            }}
           >
             <option value="" className="dark:bg-dark-surface">
               Trạng thái
@@ -171,7 +180,10 @@ const ReviewPage = () => {
         </div>
 
         <button
-          onClick={() => setFilters({ rating: "", status: "" })}
+          onClick={() => {
+            setFilters({ rating: "", status: "" });
+            setPagination((p) => ({ ...p, page: 1 }));
+          }}
           className="h-12 px-6 bg-slate-100 dark:bg-dark-bg text-slate-500 dark:text-dark-text-secondary rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-slate-200 dark:hover:bg-slate-800 transition-all border border-transparent dark:border-dark-border"
         >
           Reset

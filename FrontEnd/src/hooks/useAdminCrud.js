@@ -29,6 +29,7 @@ export const useAdminCrud = (api, options = {}) => {
   const [deletingItem, setDeletingItem] = useState(null);
 
   const searchTimeoutRef = useRef(null);
+  const isFirstRender = useRef(true);
 
   const fetchData = useCallback(
     async (currentPage = 1, currentSearch = "", extraParams = {}) => {
@@ -58,17 +59,33 @@ export const useAdminCrud = (api, options = {}) => {
     [api, limit, itemName]
   );
 
+  const handlePageChange = useCallback(
+    (newPage) => {
+      setPage(newPage);
+      fetchData(newPage, searchTerm);
+    },
+    [fetchData, searchTerm]
+  );
+
   useEffect(() => {
-    if (fetchOnMount) {
-      if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
-      searchTimeoutRef.current = setTimeout(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      if (fetchOnMount) {
         fetchData(1, searchTerm);
-      }, searchDebounceTime);
+      }
+      return;
     }
+
+    if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+    searchTimeoutRef.current = setTimeout(() => {
+      setPage(1);
+      fetchData(1, searchTerm);
+    }, searchDebounceTime);
+
     return () => {
       if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
     };
-  }, [fetchData, searchTerm, searchDebounceTime, fetchOnMount]);
+  }, [searchTerm, searchDebounceTime, fetchOnMount]);
 
   const handleShowModal = (item = null) => {
     setEditingItem(item);
@@ -143,7 +160,8 @@ export const useAdminCrud = (api, options = {}) => {
     searchTerm,
     setSearchTerm,
     page,
-    setPage,
+    setPage: handlePageChange,
+    handlePageChange,
     totalPages,
     totalItems,
     fetchData,

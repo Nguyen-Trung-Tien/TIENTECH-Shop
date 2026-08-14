@@ -163,10 +163,25 @@ const filterProducts = async ({
     }
 
     if (isFlashSale === true || isFlashSale === "true") {
-      const now = new Date();
       conditions.isFlashSale = true;
-      conditions.flashSaleStart = { [Op.lte]: now };
-      conditions.flashSaleEnd = { [Op.gte]: now };
+      if (isAdmin !== true && isAdmin !== "true") {
+        const now = new Date();
+        conditions[Op.and] = [
+          ...(conditions[Op.and] || []),
+          {
+            [Op.or]: [
+              { flashSaleStart: null },
+              { flashSaleStart: { [Op.lte]: now } },
+            ],
+          },
+          {
+            [Op.or]: [
+              { flashSaleEnd: null },
+              { flashSaleEnd: { [Op.gte]: now } },
+            ],
+          },
+        ];
+      }
     }
 
     if (

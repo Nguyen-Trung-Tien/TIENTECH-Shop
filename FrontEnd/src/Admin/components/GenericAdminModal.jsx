@@ -122,7 +122,7 @@ const GenericAdminModal = ({
 
           {/* Form Content */}
           <form onSubmit={handleSubmit} className="flex-1 flex flex-col overflow-hidden">
-            <div className="p-4 sm:p-6 md:p-8 max-h-[65vh] overflow-y-auto custom-scrollbar space-y-5">
+            <div className="p-4 sm:p-6 md:p-8 flex-1 overflow-y-auto custom-scrollbar space-y-5">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
                 {fields.map((field) => (
                   <div

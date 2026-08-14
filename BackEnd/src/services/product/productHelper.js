@@ -52,12 +52,16 @@ const clearProductCache = async (categoryId = null) => {
 
 const isFlashSaleActive = (product) => {
   if (!product || !product.isFlashSale) return false;
-  if (!product.flashSaleStart || !product.flashSaleEnd) return false;
+  if (!product.flashSaleStart && !product.flashSaleEnd) return true;
 
   const now = new Date();
-  const start = new Date(product.flashSaleStart);
-  const end = new Date(product.flashSaleEnd);
-  return now >= start && now <= end;
+  const start = product.flashSaleStart ? new Date(product.flashSaleStart) : null;
+  const end = product.flashSaleEnd ? new Date(product.flashSaleEnd) : null;
+
+  if (start && now < start) return false;
+  if (end && now > end) return false;
+
+  return true;
 };
 
 const applyFlashSaleToProduct = (productData) => {
