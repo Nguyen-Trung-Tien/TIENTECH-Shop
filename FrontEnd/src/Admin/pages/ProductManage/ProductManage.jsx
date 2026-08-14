@@ -110,7 +110,7 @@ const ProductManage = () => {
   const formHook = useProductForm({
     editProduct,
     editId,
-    onSuccess: () => fetchProducts(page),
+    onSuccess: () => fetchProducts(editProduct ? page : 1),
     onClose: () => handleCloseModal(),
   });
 
