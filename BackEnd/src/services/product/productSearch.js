@@ -158,13 +158,15 @@ const filterProducts = async ({
     const conditions = {};
     
     // Nếu không phải admin thì chỉ lấy sản phẩm đang active
-    if (!isAdmin) {
+    const isAdminBool = isAdmin === true || isAdmin === "true" || isAdmin === 1 || isAdmin === "1";
+    if (!isAdminBool) {
       conditions.isActive = true;
     }
 
-    if (isFlashSale === true || isFlashSale === "true") {
+    const isFlashSaleBool = isFlashSale === true || isFlashSale === "true" || isFlashSale === 1 || isFlashSale === "1";
+    if (isFlashSaleBool) {
       conditions.isFlashSale = true;
-      if (isAdmin !== true && isAdmin !== "true") {
+      if (!isAdminBool) {
         const now = new Date();
         conditions[Op.and] = [
           ...(conditions[Op.and] || []),
@@ -184,18 +186,16 @@ const filterProducts = async ({
       }
     }
 
-    if (
-      minPrice !== undefined &&
-      minPrice !== "" &&
-      maxPrice !== undefined &&
-      maxPrice !== ""
-    ) {
+    const hasMinPrice = minPrice !== undefined && minPrice !== "" && minPrice !== null;
+    const hasMaxPrice = maxPrice !== undefined && maxPrice !== "" && maxPrice !== null;
+
+    if (hasMinPrice && hasMaxPrice) {
       conditions.basePrice = {
         [Op.between]: [Number(minPrice), Number(maxPrice)],
       };
-    } else if (minPrice !== undefined && minPrice !== "") {
+    } else if (hasMinPrice) {
       conditions.basePrice = { [Op.gte]: Number(minPrice) };
-    } else if (maxPrice !== undefined && maxPrice !== "") {
+    } else if (hasMaxPrice) {
       conditions.basePrice = { [Op.lte]: Number(maxPrice) };
     }
 

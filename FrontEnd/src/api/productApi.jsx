@@ -180,8 +180,8 @@ export const filterProductsApi = async ({
   categoryId = "",
   brand = "",
   category = "",
-  minPrice = 0,
-  maxPrice = 999999999,
+  minPrice = "",
+  maxPrice = "",
   search = "",
   ram = "",
   rom = "",
@@ -196,28 +196,33 @@ export const filterProductsApi = async ({
   isFlashSale = false,
 } = {}) => {
   try {
-    const res = await axiosClient.get("/product/filter", {
-      params: {
-        brandId,
-        categoryId,
-        brand,
-        category,
-        minPrice,
-        maxPrice,
-        search,
-        ram,
-        rom,
-        screen,
-        battery,
-        os,
-        refresh_rate,
-        sort,
-        page,
-        limit,
-        isAdmin,
-        isFlashSale,
-      },
-    });
+    const params = {
+      brandId,
+      categoryId,
+      brand,
+      category,
+      search,
+      ram,
+      rom,
+      screen,
+      battery,
+      os,
+      refresh_rate,
+      sort,
+      page,
+      limit,
+      isAdmin,
+      isFlashSale,
+    };
+
+    if (minPrice !== "" && minPrice !== undefined && minPrice !== null) {
+      params.minPrice = minPrice;
+    }
+    if (maxPrice !== "" && maxPrice !== undefined && maxPrice !== null) {
+      params.maxPrice = maxPrice;
+    }
+
+    const res = await axiosClient.get("/product/filter", { params });
 
     return res;
   } catch (err) {

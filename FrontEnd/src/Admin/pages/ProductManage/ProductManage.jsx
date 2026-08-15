@@ -73,6 +73,19 @@ const ProductManage = () => {
     name: "",
   });
 
+  const clearFilters = useCallback(() => {
+    setSearchTerm("");
+    setFilterCategories([]);
+    setFilterBrands([]);
+    setFlashSaleOnly(false);
+    setAttrFilters({
+      ram: [],
+      rom: [],
+      os: [],
+      refresh_rate: [],
+    });
+  }, []);
+
   // Fetch product list with filters
   const fetchProducts = useCallback(
     async (currentPage = 1) => {
@@ -92,9 +105,11 @@ const ProductManage = () => {
         });
 
         if (res?.errCode === 0) {
-          setProducts(res.data || []);
+          setProducts(res.data || res.products || []);
           setTotalPages(res.pagination?.totalPages || 1);
           setPage(currentPage);
+        } else {
+          toast.error(res?.errMessage || "Lỗi khi tải dữ liệu sản phẩm");
         }
       } catch (err) {
         console.error(err);
@@ -110,7 +125,12 @@ const ProductManage = () => {
   const formHook = useProductForm({
     editProduct,
     editId,
-    onSuccess: () => fetchProducts(editProduct ? page : 1),
+    onSuccess: () => {
+      if (!editProduct) {
+        clearFilters();
+      }
+      fetchProducts(editProduct ? page : 1);
+    },
     onClose: () => handleCloseModal(),
   });
 
@@ -222,18 +242,6 @@ const ProductManage = () => {
     });
   }, []);
 
-  const clearFilters = () => {
-    setSearchTerm("");
-    setFilterCategories([]);
-    setFilterBrands([]);
-    setFlashSaleOnly(false);
-    setAttrFilters({
-      ram: [],
-      rom: [],
-      os: [],
-      refresh_rate: [],
-    });
-  };
 
   // Delete product action
   const handleConfirmDelete = async () => {
