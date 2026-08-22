@@ -118,8 +118,14 @@ export const useAdminCrud = (api, options = {}) => {
       }
     } catch (err) {
       console.error(`Error saving ${itemName}:`, err);
-      toast.error("Lỗi kết nối máy chủ");
-      return { success: false, error: err.message };
+      const errMsg =
+        err?.response?.data?.errMessage ||
+        err?.response?.data?.message ||
+        err?.errMessage ||
+        err?.message ||
+        "Lỗi kết nối máy chủ";
+      toast.error(errMsg);
+      return { success: false, error: errMsg };
     } finally {
       setSaving(false);
     }

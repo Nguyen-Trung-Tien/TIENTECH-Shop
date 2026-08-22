@@ -133,8 +133,13 @@ const RegisterPage = () => {
         toast.error(data.errMessage || "Đăng ký thất bại!");
       }
     } catch (err) {
-      console.error(err);
-      toast.error("Có lỗi xảy ra, vui lòng thử lại!");
+      console.error("Registration error:", err);
+      const msg =
+        err?.response?.data?.errMessage ||
+        err?.response?.data?.message ||
+        err?.errMessage ||
+        "Đăng ký không thành công. Vui lòng kiểm tra lại thông tin!";
+      toast.error(msg);
     } finally {
       setLoading(false);
     }

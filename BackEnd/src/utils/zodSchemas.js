@@ -31,13 +31,27 @@ const loginSchema = z.object({
 });
 
 const registerSchema = z.object({
-  body: z.object({
-    email: z.string().email("Email không hợp lệ"),
-    password: z.string().min(6, "Mật khẩu phải ít nhất 6 ký tự"),
-    username: z.string().min(1, "Tên người dùng không được để trống"),
-    phone: z.string().optional(),
-    role: z.enum(["customer", "admin"]).optional().default("customer"),
-  }),
+  body: z
+    .object({
+      email: z.string().email("Email không hợp lệ"),
+      password: z
+        .string()
+        .min(6, "Mật khẩu phải ít nhất 6 ký tự")
+        .optional()
+        .or(z.literal(""))
+        .default("123456"),
+      username: z.string().min(1, "Tên người dùng không được để trống"),
+      phone: z.union([z.string(), z.literal(""), z.null()]).optional(),
+      role: z
+        .union([z.enum(["customer", "admin", "root"]), z.literal(""), z.null()])
+        .optional()
+        .default("customer"),
+      address: z.union([z.string(), z.literal(""), z.null()]).optional(),
+      isActive: z.union([z.boolean(), z.string(), z.null()]).optional(),
+      avatar: z.any().optional(),
+      confirmPassword: z.string().optional(),
+    })
+    .passthrough(),
 });
 
 const orderSchema = z.object({

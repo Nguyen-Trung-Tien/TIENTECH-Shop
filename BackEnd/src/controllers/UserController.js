@@ -22,7 +22,11 @@ const setAuthCookies = (res, accessToken, refreshToken) => {
 
 const handleCreateNewUser = async (req, res) => {
   try {
-    const result = await UserService.createNewUser(req.body);
+    const userData = { ...req.body };
+    const avatarUrl = await handleFileUpload(req, "avatars");
+    if (avatarUrl) userData.avatar = avatarUrl;
+
+    const result = await UserService.createNewUser(userData);
     return handleResponse(res, result, 201);
   } catch (e) {
     return handleError(res, e, "handleCreateNewUser");

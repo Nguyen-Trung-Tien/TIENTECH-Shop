@@ -34,18 +34,24 @@ class UserService extends BaseService {
 
   async createNewUser(data) {
     try {
-      const exist = await this.model.findOne({ where: { email: data.email } });
-      if (exist) return { errCode: 1, errMessage: "Email đã tồn tại" };
+      if (!data.email) {
+        return { errCode: 1, errMessage: "Email không được để trống" };
+      }
+
+      const email = String(data.email).trim().toLowerCase();
+      const exist = await this.model.findOne({ where: { email } });
+      if (exist) return { errCode: 1, errMessage: "Email này đã được đăng ký trong hệ thống." };
 
       const hashedPassword = await hashUserPassword(data.password || "123456");
 
       // Kiểm tra cấu hình hệ thống: Có bắt buộc xác thực OTP không
       const requireOtp = await SystemSettingService.getSetting("REQUIRE_OTP_VERIFICATION", true);
       
+      const isExplicitActive = data.isActive === true || data.isActive === "true" || data.isActive === "1";
       let verificationToken = null;
-      let isActive = data.isActive ?? false;
+      let isActive = isExplicitActive;
 
-      if (requireOtp && !data.isActive) {
+      if (requireOtp && !isExplicitActive) {
         verificationToken = generateRandomToken();
         isActive = false;
       } else {
@@ -54,6 +60,9 @@ class UserService extends BaseService {
       
       const userData = {
         ...data,
+        email,
+        username: String(data.username || "").trim() || email.split("@")[0],
+        phone: data.phone ? String(data.phone).trim() : null,
         password: hashedPassword,
         role: data.role || "customer",
         isActive,
