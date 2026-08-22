@@ -91,6 +91,11 @@ const RegisterPage = () => {
   const handleRegister = async (e) => {
     e.preventDefault();
 
+    if (!formData.username || formData.username.trim().length < 3) {
+      toast.warning("Tên người dùng phải có ít nhất 3 ký tự!");
+      return;
+    }
+
     if (formData.password.length < 8) {
       toast.warning("Mật khẩu phải có ít nhất 8 ký tự!");
       return;

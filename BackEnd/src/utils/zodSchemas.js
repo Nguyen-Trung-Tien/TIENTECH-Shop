@@ -40,7 +40,10 @@ const registerSchema = z.object({
         .optional()
         .or(z.literal(""))
         .default("123456"),
-      username: z.string().min(1, "Tên người dùng không được để trống"),
+      username: z
+        .string()
+        .min(3, "Tên người dùng phải có ít nhất 3 ký tự")
+        .max(50, "Tên người dùng không được vượt quá 50 ký tự"),
       phone: z.union([z.string(), z.literal(""), z.null()]).optional(),
       role: z
         .union([z.enum(["customer", "admin", "root"]), z.literal(""), z.null()])

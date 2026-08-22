@@ -39,8 +39,21 @@ class UserService extends BaseService {
       }
 
       const email = String(data.email).trim().toLowerCase();
-      const exist = await this.model.findOne({ where: { email } });
-      if (exist) return { errCode: 1, errMessage: "Email này đã được đăng ký trong hệ thống." };
+      const existEmail = await this.model.findOne({ where: { email } });
+      if (existEmail) return { errCode: 1, errMessage: "Email này đã được đăng ký trong hệ thống." };
+
+      const rawUsername = String(data.username || "").trim() || email.split("@")[0];
+      if (rawUsername.length < 3) {
+        return { errCode: 1, errMessage: "Tên người dùng (username) phải có ít nhất 3 ký tự." };
+      }
+      if (rawUsername.length > 50) {
+        return { errCode: 1, errMessage: "Tên người dùng (username) không được vượt quá 50 ký tự." };
+      }
+
+      const existUsername = await this.model.findOne({ where: { username: rawUsername } });
+      if (existUsername) {
+        return { errCode: 1, errMessage: "Tên người dùng (username) này đã tồn tại. Vui lòng chọn tên khác." };
+      }
 
       const hashedPassword = await hashUserPassword(data.password || "123456");
 
@@ -61,7 +74,7 @@ class UserService extends BaseService {
       const userData = {
         ...data,
         email,
-        username: String(data.username || "").trim() || email.split("@")[0],
+        username: rawUsername,
         phone: data.phone ? String(data.phone).trim() : null,
         password: hashedPassword,
         role: data.role || "customer",
@@ -88,7 +101,22 @@ class UserService extends BaseService {
       };
     } catch (e) {
       console.error("UserService.createNewUser error:", e);
-      return { errCode: 2, errMessage: e.message };
+      if (e.name === "SequelizeValidationError" || e.name === "SequelizeUniqueConstraintError") {
+        const firstErr = e.errors && e.errors.length > 0 ? e.errors[0] : null;
+        if (firstErr) {
+          if (firstErr.path === "username" && (firstErr.type === "unique violation" || firstErr.validatorKey === "not_unique")) {
+            return { errCode: 1, errMessage: "Tên người dùng (username) này đã tồn tại trên hệ thống. Vui lòng chọn tên khác." };
+          }
+          if (firstErr.path === "email" && (firstErr.type === "unique violation" || firstErr.validatorKey === "not_unique")) {
+            return { errCode: 1, errMessage: "Email này đã được đăng ký tài khoản." };
+          }
+          if (firstErr.path === "username" && firstErr.validatorKey === "len") {
+            return { errCode: 1, errMessage: "Tên người dùng (username) phải có độ dài từ 3 đến 50 ký tự." };
+          }
+          return { errCode: 1, errMessage: firstErr.message || "Dữ liệu đăng ký không hợp lệ." };
+        }
+      }
+      return { errCode: 2, errMessage: e.message || "Đã xảy ra lỗi khi tạo người dùng." };
     }
   }
 
