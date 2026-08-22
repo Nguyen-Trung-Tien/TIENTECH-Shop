@@ -16,6 +16,7 @@ import { getAddressesApi, createAddressApi } from "../../api/addressApi";
 import { FaPaypal } from "react-icons/fa";
 import { toast } from "react-toastify";
 import { motion as Motion, AnimatePresence } from "framer-motion";
+import { useSystemSettings } from "../../context/ThemeContext";
 
 const InputField = React.memo(
   ({
@@ -209,6 +210,22 @@ const CheckoutForm = ({ formData, setFormData, user }) => {
     }
   };
 
+  const { isCodEnabled, isVnpayEnabled, isPaypalEnabled, isMomoEnabled } = useSystemSettings();
+
+  const paymentOptions = [
+    ...(isCodEnabled ? [{ id: "COD", label: "Thanh toán khi nhận hàng", desc: "Trả tiền mặt khi giao tới nơi", icon: FiDollarSign }] : []),
+    ...(isVnpayEnabled ? [{ id: "VNPAY", label: "Ví VNPAY / Ngân hàng", desc: "Thanh toán online an toàn", icon: FiCreditCard }] : []),
+    ...(isPaypalEnabled ? [{ id: "PAYPAL", label: "PayPal", desc: "Thanh toán quốc tế", icon: FaPaypal }] : []),
+    ...(isMomoEnabled ? [{ id: "MOMO", label: "Ví MoMo", desc: "Thanh toán ví điện tử", icon: FiCreditCard }] : []),
+  ];
+
+  // Auto-switch payment method if current is disabled
+  useEffect(() => {
+    if (paymentOptions.length > 0 && !paymentOptions.some(p => p.id === formData.paymentMethod)) {
+      setFormData(prev => ({ ...prev, paymentMethod: paymentOptions[0].id }));
+    }
+  }, [isCodEnabled, isVnpayEnabled, isPaypalEnabled, isMomoEnabled]);
+
   return (
     <div className="space-y-8">
       {/* Shipping Info */}
@@ -308,7 +325,7 @@ const CheckoutForm = ({ formData, setFormData, user }) => {
             </div>
           )}
 
-          {/* Form Thông tin Họ tên & Số điện thoại người nhận (Có thể chỉnh sửa thoải mái) */}
+          {/* Form Thông tin Họ tên & Số điện thoại người nhận */}
           <div className="flex flex-col md:flex-row gap-6">
             <InputField
               label="Họ và tên người nhận"
@@ -379,95 +396,42 @@ const CheckoutForm = ({ formData, setFormData, user }) => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <button
-            type="button"
-            onClick={() =>
-              setFormData((prev) => ({ ...prev, paymentMethod: "COD" }))
-            }
-            className={`flex items-center gap-4 p-5 rounded-2xl border-2 transition-all ${
-              formData.paymentMethod === "COD"
-                ? "border-primary bg-primary/5 dark:bg-primary/10 shadow-lg shadow-primary/5"
-                : "border-slate-50 dark:border-dark-bg bg-slate-50 dark:bg-dark-bg hover:border-slate-200 dark:hover:border-slate-700"
-            }`}
-          >
-            <div
-              className={`size-10 rounded-xl flex items-center justify-center ${
-                formData.paymentMethod === "COD"
-                  ? "bg-primary text-white"
-                  : "bg-slate-100 dark:bg-dark-surface text-slate-400 dark:text-dark-text-secondary"
-              }`}
-            >
-              <FiDollarSign size={20} />
-            </div>
-            <div className="text-left">
-              <p className="text-xs font-black text-slate-900 dark:text-white uppercase">
-                Thanh toán khi nhận hàng
-              </p>
-              <p className="text-[10px] font-bold text-slate-400 dark:text-dark-text-secondary">
-                Trả tiền mặt khi giao tới nơi
-              </p>
-            </div>
-          </button>
-
-          <button
-            type="button"
-            onClick={() =>
-              setFormData((prev) => ({ ...prev, paymentMethod: "VNPAY" }))
-            }
-            className={`flex items-center gap-4 p-5 rounded-2xl border-2 transition-all ${
-              formData.paymentMethod === "VNPAY"
-                ? "border-primary bg-primary/5 dark:bg-primary/10 shadow-lg shadow-primary/5"
-                : "border-slate-50 dark:border-dark-bg bg-slate-50 dark:bg-dark-bg hover:border-slate-200 dark:hover:border-slate-700"
-            }`}
-          >
-            <div
-              className={`size-10 rounded-xl flex items-center justify-center ${
-                formData.paymentMethod === "VNPAY"
-                  ? "bg-primary text-white"
-                  : "bg-slate-100 dark:bg-dark-surface text-slate-400 dark:text-dark-text-secondary"
-              }`}
-            >
-              <FiCreditCard size={20} />
-            </div>
-            <div className="text-left">
-              <p className="text-xs font-black text-slate-900 dark:text-white uppercase">
-                Ví VNPAY / Ngân hàng
-              </p>
-              <p className="text-[10px] font-bold text-slate-400 dark:text-dark-text-secondary">
-                Thanh toán online an toàn
-              </p>
-            </div>
-          </button>
-
-          <button
-            type="button"
-            onClick={() =>
-              setFormData((prev) => ({ ...prev, paymentMethod: "PAYPAL" }))
-            }
-            className={`flex items-center gap-4 p-5 rounded-2xl border-2 transition-all ${
-              formData.paymentMethod === "PAYPAL"
-                ? "border-primary bg-primary/5 dark:bg-primary/10 shadow-lg shadow-primary/5"
-                : "border-slate-50 dark:border-dark-bg bg-slate-50 dark:bg-dark-bg hover:border-slate-200 dark:hover:border-slate-700"
-            }`}
-          >
-            <div
-              className={`size-10 rounded-xl flex items-center justify-center ${
-                formData.paymentMethod === "PAYPAL"
-                  ? "bg-primary text-white"
-                  : "bg-slate-100 dark:bg-dark-surface text-slate-400 dark:text-dark-text-secondary"
-              }`}
-            >
-              <FaPaypal size={20} />
-            </div>
-            <div className="text-left">
-              <p className="text-xs font-black text-slate-900 dark:text-white uppercase">
-                PayPal
-              </p>
-              <p className="text-[10px] font-bold text-slate-400 dark:text-dark-text-secondary">
-                Thanh toán quốc tế
-              </p>
-            </div>
-          </button>
+          {paymentOptions.map((opt) => {
+            const Icon = opt.icon;
+            const isSelected = formData.paymentMethod === opt.id;
+            return (
+              <button
+                key={opt.id}
+                type="button"
+                onClick={() =>
+                  setFormData((prev) => ({ ...prev, paymentMethod: opt.id }))
+                }
+                className={`flex items-center gap-4 p-5 rounded-2xl border-2 transition-all ${
+                  isSelected
+                    ? "border-primary bg-primary/5 dark:bg-primary/10 shadow-lg shadow-primary/5"
+                    : "border-slate-50 dark:border-dark-bg bg-slate-50 dark:bg-dark-bg hover:border-slate-200 dark:hover:border-slate-700"
+                }`}
+              >
+                <div
+                  className={`size-10 rounded-xl flex items-center justify-center ${
+                    isSelected
+                      ? "bg-primary text-white"
+                      : "bg-slate-100 dark:bg-dark-surface text-slate-400 dark:text-dark-text-secondary"
+                  }`}
+                >
+                  <Icon size={20} />
+                </div>
+                <div className="text-left">
+                  <p className="text-xs font-black text-slate-900 dark:text-white uppercase">
+                    {opt.label}
+                  </p>
+                  <p className="text-[10px] font-bold text-slate-400 dark:text-dark-text-secondary">
+                    {opt.desc}
+                  </p>
+                </div>
+              </button>
+            );
+          })}
         </div>
       </section>
 

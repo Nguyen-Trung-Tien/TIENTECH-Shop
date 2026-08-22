@@ -74,5 +74,55 @@ const authorizeRole = (roles) => {
   };
 };
 
-module.exports = { authenticateToken, optionalAuthenticateToken, authorizeRole };
+const checkMaintenanceMode = async (req, res, next) => {
+  const path = req.originalUrl || req.path || "";
+  // Bypass maintenance for admin routes, system settings, healthcheck, login
+  if (
+    path.startsWith("/healthz") ||
+    path.includes("/system-settings") ||
+    path.includes("/user/login") ||
+    path.includes("/admin")
+  ) {
+    return next();
+  }
+
+  try {
+    const SystemSettingService = require("../services/system/SystemSettingService");
+    const isMaintenance = await SystemSettingService.getSetting("MAINTENANCE_MODE", false);
+    if (isMaintenance === true || isMaintenance === "true") {
+      // If user is admin, allow
+      const authHeader = req.headers["authorization"];
+      let token = authHeader && authHeader.split(" ")[1];
+      if (!token) token = req.cookies?.accessToken;
+      if (token) {
+        const result = verifyAccessTokenDetailed(token);
+        if (result.valid && (result.decoded.role === "admin" || result.decoded.role === "root")) {
+          return next();
+        }
+      }
+
+      const message = await SystemSettingService.getSetting(
+        "MAINTENANCE_MESSAGE",
+        "TIENTECH đang tiến hành bảo trì & nâng cấp hệ thống định kỳ. Quý khách vui lòng quay lại sau ít phút!"
+      );
+
+      return res.status(503).json({
+        errCode: 503,
+        isMaintenance: true,
+        errMessage: message,
+      });
+    }
+  } catch (err) {
+    console.error("Maintenance check error:", err);
+  }
+
+  next();
+};
+
+module.exports = {
+  authenticateToken,
+  optionalAuthenticateToken,
+  authorizeRole,
+  checkMaintenanceMode,
+};
 

@@ -2,6 +2,7 @@ require("dotenv").config();
 const { Product, Order, OrderItem } = require("../models");
 const ProductService = require("../services/product/ProductService");
 const { generateContentWithFallback } = require("../config/gemini");
+const SystemSettingService = require("../services/system/SystemSettingService");
 
 const handleChat = async (req, res) => {
   try {
@@ -9,6 +10,14 @@ const handleChat = async (req, res) => {
 
     if (!message) {
       return res.status(400).json({ error: "Thiếu nội dung câu hỏi." });
+    }
+
+    const isAiEnabled = await SystemSettingService.getSetting("AI_BOT_ENABLED", true);
+    if (isAiEnabled === false || isAiEnabled === "false") {
+      return res.status(200).json({
+        reply: "Trợ lý ảo AI hiện đang tạm ngưng phục vụ để nâng cấp hệ thống. Quý khách vui lòng liên hệ hotline 1900 6868 hoặc bộ phận CSKH để được hỗ trợ trực tiếp.",
+        products: [],
+      });
     }
 
     // 1. Dùng AI để phân tích ý định (Intent Extraction)

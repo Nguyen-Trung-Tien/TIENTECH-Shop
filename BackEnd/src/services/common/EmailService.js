@@ -152,8 +152,45 @@ class EmailService {
     return await this.sendEmail(user.email, subject, html);
   }
 
+  async isEmailOptedIn(user) {
+    if (!user || !user.email) return false;
+    
+    // Explicit false check (boolean, string, or number)
+    if (
+      user.receiveEmail === false ||
+      user.receiveEmail === "false" ||
+      user.receiveEmail === 0 ||
+      user.receiveEmail === "0"
+    ) {
+      console.log(`[EMAIL SKIPPED] User #${user.id || "?"} (${user.email}) has opted out of email notifications.`);
+      return false;
+    }
+
+    // Fail-safe: if receiveEmail was omitted by the caller query, check database directly
+    if (user.receiveEmail === undefined && user.id) {
+      try {
+        const db = require("../../models");
+        const dbUser = await db.User.findByPk(user.id, { attributes: ["id", "receiveEmail"] });
+        if (
+          dbUser &&
+          (dbUser.receiveEmail === false ||
+            dbUser.receiveEmail === "false" ||
+            dbUser.receiveEmail === 0 ||
+            dbUser.receiveEmail === "0")
+        ) {
+          console.log(`[EMAIL SKIPPED DB] User #${user.id} (${user.email}) has receiveEmail=false in DB.`);
+          return false;
+        }
+      } catch (err) {
+        console.warn("[EMAIL OPT-IN CHECK ERROR]", err.message);
+      }
+    }
+
+    return true;
+  }
+
   async sendOrderCreatedEmail(user, order) {
-    if (!user?.email) return false;
+    if (!(await this.isEmailOptedIn(user))) return false;
 
     const displayOrderCode = order.orderCode || order.id;
     const subject = `[TIENTECH] Dat hang thanh cong - Don hang #${displayOrderCode}`;
@@ -241,7 +278,7 @@ class EmailService {
   }
 
   async sendOrderShippingEmail(user, order) {
-    if (!user?.email) return false;
+    if (!(await this.isEmailOptedIn(user))) return false;
 
     const displayOrderCode = order.orderCode || order.id;
     const subject = `[TIENTECH] Don hang #${displayOrderCode} dang tren duong giao`;
@@ -293,7 +330,7 @@ class EmailService {
   }
 
   async sendOrderDeliveredEmail(user, order) {
-    if (!user?.email) return false;
+    if (!(await this.isEmailOptedIn(user))) return false;
 
     const displayOrderCode = order.orderCode || order.id;
     const subject = `[TIENTECH] Don hang #${displayOrderCode} da duoc giao thanh cong`;
@@ -346,7 +383,7 @@ class EmailService {
   }
 
   async sendOrderConfirmedEmail(user, order) {
-    if (!user?.email) return false;
+    if (!(await this.isEmailOptedIn(user))) return false;
 
     const displayOrderCode = order.orderCode || order.id;
     const subject = `[TIENTECH] Don hang #${displayOrderCode} da duoc xac nhan`;
@@ -400,7 +437,7 @@ class EmailService {
   }
 
   async sendOrderCancelledEmail(user, order, cancelReason) {
-    if (!user?.email) return false;
+    if (!(await this.isEmailOptedIn(user))) return false;
 
     const displayOrderCode = order.orderCode || order.id;
     const subject = `[TIENTECH] Thong bao huy don hang #${displayOrderCode}`;

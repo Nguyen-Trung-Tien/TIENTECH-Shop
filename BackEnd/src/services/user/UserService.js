@@ -107,6 +107,10 @@ class UserService extends BaseService {
         delete data.role;
       }
 
+      if (data.receiveEmail !== undefined) {
+        data.receiveEmail = data.receiveEmail === true || data.receiveEmail === "true" || data.receiveEmail === 1 || data.receiveEmail === "1";
+      }
+
       // If avatar is base64 string, upload to Cloudinary before saving to DB
       if (data.avatar && typeof data.avatar === "string" && data.avatar.startsWith("data:image")) {
         try {

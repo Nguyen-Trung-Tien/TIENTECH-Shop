@@ -11,9 +11,19 @@ import {
 } from "react-icons/fi";
 import { Link } from "react-router-dom";
 import Logo from "../UI/Logo";
+import { useSystemSettings } from "../../context/ThemeContext";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
+  const {
+    storeName,
+    storeAddress,
+    storeHotline,
+    storeEmail,
+    storeFacebook,
+    storeZalo,
+    storeTiktok,
+  } = useSystemSettings();
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -118,15 +128,15 @@ const Footer = () => {
             <ul className="space-y-4">
               <li className="flex items-start gap-3">
                 <FiMapPin className="text-blue-600 mt-1 flex-shrink-0" />
-                <span className="text-xs font-bold uppercase tracking-tight">123 Nguyễn Huệ, Quận 1, TP.HCM</span>
+                <span className="text-xs font-bold uppercase tracking-tight">{storeAddress}</span>
               </li>
               <li className="flex items-center gap-3">
                 <FiPhone className="text-blue-600 flex-shrink-0" />
-                <span className="text-xs font-bold uppercase tracking-tight">0123 456 789</span>
+                <a href={`tel:${storeHotline}`} className="text-xs font-bold uppercase tracking-tight hover:text-blue-600 transition-colors">{storeHotline}</a>
               </li>
               <li className="flex items-center gap-3">
                 <FiMail className="text-blue-600 flex-shrink-0" />
-                <span className="text-xs font-bold uppercase tracking-tight">support@tientech.vn</span>
+                <a href={`mailto:${storeEmail}`} className="text-xs font-bold lowercase tracking-tight hover:text-blue-600 transition-colors">{storeEmail}</a>
               </li>
             </ul>
             <div className="p-4 bg-white dark:bg-gray-900 rounded-2xl border border-slate-200 dark:border-gray-800 shadow-sm">
@@ -142,7 +152,7 @@ const Footer = () => {
 
         {/* Copyright & Back to top */}
         <div className="pt-8 border-t border-slate-200 dark:border-gray-900 flex flex-col md:flex-row justify-between items-center gap-6 text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">
-          <p>© {currentYear} TienTech SHOP. ALL RIGHTS RESERVED.</p>
+          <p>© {currentYear} {storeName.toUpperCase()}. ALL RIGHTS RESERVED.</p>
           
           <div className="flex items-center gap-8">
             <div className="flex items-center gap-6">

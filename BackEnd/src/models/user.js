@@ -119,6 +119,11 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: true,
       },
       isActive: { type: DataTypes.BOOLEAN, defaultValue: false },
+      receiveEmail: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true,
+        allowNull: false,
+      },
       verificationToken: {
         type: DataTypes.STRING,
         allowNull: true,

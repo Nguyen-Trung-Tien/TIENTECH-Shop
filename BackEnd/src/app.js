@@ -116,6 +116,12 @@ app.get("/healthz", (req, res) => {
 });
 
 /*
+MAINTENANCE MODE CHECK
+*/
+const { checkMaintenanceMode } = require("./middleware/authMiddleware");
+app.use(checkMaintenanceMode);
+
+/*
 ROUTES
 */
 routes(app);

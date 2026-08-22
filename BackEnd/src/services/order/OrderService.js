@@ -530,7 +530,22 @@ const createOrder = async (data) => {
       }
     }
 
-    const shippingFee = calculatedTotal > 5000000 ? 0 : 30000;
+    // Validate payment method against system settings
+    const isPaymentEnabled = await SystemSettingService.getSetting(
+      `PAYMENT_${paymentMethod.toUpperCase()}_ENABLED`,
+      true
+    );
+    if (isPaymentEnabled === false || isPaymentEnabled === "false") {
+      await t.rollback();
+      return {
+        errCode: 1,
+        errMessage: `Phương thức thanh toán ${paymentMethod.toUpperCase()} hiện đang tạm ngưng phục vụ trên hệ thống.`,
+      };
+    }
+
+    const defaultShippingFee = Number(await SystemSettingService.getSetting("DEFAULT_SHIPPING_FEE", 30000)) || 30000;
+    const freeshipThreshold = Number(await SystemSettingService.getSetting("FREESHIP_MIN_ORDER", 500000)) || 500000;
+    const shippingFee = calculatedTotal >= freeshipThreshold ? 0 : defaultShippingFee;
     const finalTotal = Math.max(0, calculatedTotal + shippingFee - discountAmount);
 
     const order = await db.Order.create(
@@ -570,7 +585,7 @@ const createOrder = async (data) => {
     setImmediate(async () => {
       try {
         const user = await db.User.findByPk(userId, {
-          attributes: ["id", "username", "email", "phone"],
+          attributes: ["id", "username", "email", "phone", "receiveEmail"],
         });
 
         // 1. Notify User
@@ -802,7 +817,7 @@ const updateOrderStatus = async (id, status, currentUser = null, cancelReason = 
     setImmediate(async () => {
       try {
         const user = await db.User.findByPk(order.userId, {
-          attributes: ["id", "username", "email", "phone"],
+          attributes: ["id", "username", "email", "phone", "receiveEmail"],
         });
 
         if (status === "shipping" || status === "shipped") {
@@ -958,6 +973,22 @@ const handleReturnAction = async (orderItemId, action, adminUser) => {
     if (action === "approve") {
       orderItem.returnStatus = "approved";
       orderItem.returnProcessedAt = new Date();
+
+      // Restock inventory for returned item
+      const product = await db.Product.findByPk(orderItem.productId, { transaction: t });
+      if (product) {
+        product.totalStock = (product.totalStock || 0) + orderItem.quantity;
+        product.sold = Math.max(0, (product.sold || 0) - orderItem.quantity);
+        await product.save({ transaction: t });
+      }
+
+      if (orderItem.variantId) {
+        const variant = await db.ProductVariant.findByPk(orderItem.variantId, { transaction: t });
+        if (variant) {
+          variant.stock = (variant.stock || 0) + orderItem.quantity;
+          await variant.save({ transaction: t });
+        }
+      }
 
       await NotificationService.createNotification({
         userId: orderItem.order.userId,

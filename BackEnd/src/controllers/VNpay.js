@@ -1,6 +1,7 @@
 const { formatDateYYYYMMDDHHmmss } = require("../utils/dateFormatter");
 const crypto = require("crypto");
 const OrderService = require("../services/order/OrderService");
+const { acquireLock, releaseLock } = require("../config/redis");
 
 function sortObject(obj) {
   const sorted = {};
@@ -174,15 +175,23 @@ const handleVnpayReturn = async (req, res) => {
 
     // THANH TOÁN THÀNH CÔNG
     if (rspCode === "00") {
-      const PaymentService = require("../services/order/PaymentService");
-      await PaymentService.createPayment({
-        orderId: order.id,
-        userId: order.userId,
-        amount: order.totalPrice,
-        method: "vnpay",
-        note: "VNPay Return Auto Confirm",
-        transactionId: vnp_Params.vnp_TransactionNo,
-      });
+      const lockKey = `vnpay_confirm_${orderCode}`;
+      const locked = await acquireLock(lockKey, 15);
+      if (locked) {
+        try {
+          const PaymentService = require("../services/order/PaymentService");
+          await PaymentService.createPayment({
+            orderId: order.id,
+            userId: order.userId,
+            amount: order.totalPrice,
+            method: "vnpay",
+            note: "VNPay Return Auto Confirm",
+            transactionId: vnp_Params.vnp_TransactionNo,
+          });
+        } finally {
+          await releaseLock(lockKey);
+        }
+      }
 
       return res.redirect(
         `${process.env.FRONTEND_URL}/checkout-success/${orderCode}`
@@ -247,17 +256,24 @@ const handleVnpayIPN = async (req, res) => {
     }
 
     if (rspCode === "00") {
-      // Thành công
-      // Tạo bản ghi Payment nếu chưa có (Hàm này cũng sẽ tự update trạng thái Order sang paid)
-      const PaymentService = require("../services/order/PaymentService");
-      await PaymentService.createPayment({
-        orderId: order.id,
-        userId: order.userId,
-        amount: order.totalPrice,
-        method: "vnpay",
-        note: "VNPay IPN Auto Confirm",
-        transactionId: vnp_Params.vnp_TransactionNo
-      });
+      // Thành công - Acquire Redis Lock
+      const lockKey = `vnpay_confirm_${orderCode}`;
+      const locked = await acquireLock(lockKey, 15);
+      if (locked) {
+        try {
+          const PaymentService = require("../services/order/PaymentService");
+          await PaymentService.createPayment({
+            orderId: order.id,
+            userId: order.userId,
+            amount: order.totalPrice,
+            method: "vnpay",
+            note: "VNPay IPN Auto Confirm",
+            transactionId: vnp_Params.vnp_TransactionNo
+          });
+        } finally {
+          await releaseLock(lockKey);
+        }
+      }
 
       return res.status(200).json({ RspCode: "00", Message: "Confirm Success" });
     } else {

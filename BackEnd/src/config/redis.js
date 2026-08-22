@@ -130,6 +130,29 @@ const getRedisStats = async () => {
   }
 };
 
+const acquireLock = async (key, ttl = 10) => {
+  if (!isRedisConnected) return true;
+  try {
+    const result = await redisClient.set(`lock:${key}`, "locked", {
+      NX: true,
+      EX: ttl,
+    });
+    return result === "OK";
+  } catch (err) {
+    console.error(`[Redis] acquireLock error for key ${key}:`, err);
+    return true;
+  }
+};
+
+const releaseLock = async (key) => {
+  if (!isRedisConnected) return;
+  try {
+    await redisClient.del(`lock:${key}`);
+  } catch (err) {
+    console.error(`[Redis] releaseLock error for key ${key}:`, err);
+  }
+};
+
 module.exports = {
   redisClient,
   getCache,
@@ -138,5 +161,7 @@ module.exports = {
   deleteCacheByPattern,
   flushAllCache,
   getRedisStats,
+  acquireLock,
+  releaseLock,
   isRedisConnected: () => isRedisConnected,
 };

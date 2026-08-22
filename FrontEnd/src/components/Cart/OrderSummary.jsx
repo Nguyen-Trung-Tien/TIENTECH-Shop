@@ -8,6 +8,7 @@ import {
 } from "react-icons/fi";
 import { Button } from "../UI/Button";
 import UnifiedSpinner from "../Loading/UnifiedSpinner";
+import { useSystemSettings } from "../../context/ThemeContext";
 
 /**
  * OrderSummary Component
@@ -21,7 +22,8 @@ const OrderSummary = ({
   isCheckoutPage = false,
   loading = false,
 }) => {
-  const shippingFee = subtotal > 5000000 ? 0 : 30000;
+  const { defaultShippingFee, freeshipMinOrder } = useSystemSettings();
+  const shippingFee = subtotal >= freeshipMinOrder ? 0 : defaultShippingFee;
   const discountAmount = appliedVoucher
     ? Number(appliedVoucher.discountAmount)
     : 0;
