@@ -16,6 +16,7 @@ import OrdersCancelManage from "../Admin/pages/OrderManage/OrdersCancelManage";
 import PaymentPage from "../Admin/pages/Payment/PaymentPage";
 import BrandManage from "../Admin/pages/BrandManage/BrandManage";
 import VoucherManage from "../Admin/pages/VoucherManage/VoucherManage";
+import SystemSettingsPage from "../Admin/pages/SystemSettings/SystemSettingsPage";
 import OrderDetail from "../pages/OrderDetail/OrderDetail";
 import NotFound from "../pages/NotFound/NotFound";
 
@@ -44,6 +45,7 @@ const AdminRoutes = () => {
           <Route path="reviews" element={<ReviewPage />} />
           <Route path="brands" element={<BrandManage />} />
           <Route path="vouchers" element={<VoucherManage />} />
+          <Route path="settings" element={<SystemSettingsPage />} />
           <Route path="*" element={<NotFound />} />
         </Route>
       </Route>
@@ -51,5 +53,6 @@ const AdminRoutes = () => {
     </Routes>
   );
 };
+
 
 export default AdminRoutes;

@@ -89,8 +89,16 @@ axiosClient.interceptors.response.use(
       }
     }
 
+    if (error.response?.data?.errMessage) {
+      error.errMessage = error.response.data.errMessage;
+    }
+    if (error.response?.data?.message) {
+      error.serverMessage = error.response.data.message;
+    }
+
     return Promise.reject(error);
   },
 );
 
 export default axiosClient;
+

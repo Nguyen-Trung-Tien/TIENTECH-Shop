@@ -5,7 +5,7 @@ import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 import { PayPalScriptProvider } from "@paypal/react-paypal-js";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { ThemeProvider } from "./context/ThemeContext";
 import App from "./App";
 import "./tailwind.css";
 import { store, persistor } from "./redux/store";
@@ -31,17 +31,20 @@ ReactDOM.createRoot(document.getElementById("root")).render(
     <PersistGate loading={null} persistor={persistor}>
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
-          <PayPalScriptProvider options={initialOptions}>
-            <App />
-          </PayPalScriptProvider>
-          {appConfig.showReactQueryDevtools && (
-            <ReactQueryDevtools initialIsOpen={false} />
-          )}
+          <ThemeProvider>
+            <PayPalScriptProvider options={initialOptions}>
+              <App />
+            </PayPalScriptProvider>
+            {appConfig.showReactQueryDevtools && (
+              <ReactQueryDevtools initialIsOpen={false} />
+            )}
+          </ThemeProvider>
         </BrowserRouter>
       </QueryClientProvider>
     </PersistGate>
   </Provider>,
 );
+
 
 // Service Worker Registration for PWA
 if ("serviceWorker" in navigator && import.meta.env.PROD) {

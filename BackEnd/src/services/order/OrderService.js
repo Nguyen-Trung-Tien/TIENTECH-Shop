@@ -104,10 +104,18 @@ const getAllOrders = async (page = 1, limit = 10, searchTerm = "", status = "", 
 
     const pagingData = getPagingData(data, page, l);
 
+    const mappedItems = pagingData.items.map(order => {
+      const plainOrder = typeof order.toJSON === "function" ? order.toJSON() : order;
+      if (["delivered", "completed"].includes(plainOrder.status)) {
+        plainOrder.paymentStatus = "paid";
+      }
+      return plainOrder;
+    });
+
     return {
       errCode: 0,
       errMessage: "OK",
-      data: pagingData.items,
+      data: mappedItems,
       pagination: {
         totalItems: pagingData.totalItems,
         currentPage: pagingData.currentPage,
@@ -115,6 +123,7 @@ const getAllOrders = async (page = 1, limit = 10, searchTerm = "", status = "", 
         limit: l,
       },
     };
+
   } catch (e) {
     console.error("Error in getAllOrders:", e);
     throw e;
@@ -167,6 +176,9 @@ const getOrderById = async (id, user) => {
     }
 
     const plainOrder = order.toJSON();
+    if (["delivered", "completed"].includes(plainOrder.status)) {
+      plainOrder.paymentStatus = "paid";
+    }
     if (plainOrder.orderItems) {
       plainOrder.orderItems.forEach(item => {
         if (item.product) {
@@ -189,6 +201,7 @@ const getOrderById = async (id, user) => {
     }
 
     return { errCode: 0, errMessage: "OK", data: plainOrder };
+
   } catch (e) {
     console.error("Error in getOrderById:", e);
     throw e;
@@ -261,6 +274,9 @@ const getOrdersByUserId = async (
 
     const mappedOrders = pagingData.items.map(order => {
       const plainOrder = order.toJSON();
+      if (["delivered", "completed"].includes(plainOrder.status)) {
+        plainOrder.paymentStatus = "paid";
+      }
       if (plainOrder.orderItems) {
         plainOrder.orderItems.forEach(item => {
           if (item.product) {
@@ -271,6 +287,7 @@ const getOrdersByUserId = async (
       }
       return plainOrder;
     });
+
 
     return {
       errCode: 0,
@@ -671,7 +688,7 @@ const updateOrderStatus = async (id, status, currentUser = null, cancelReason = 
           await t.rollback();
           return { errCode: 2, errMessage: `Không thể hủy đơn hàng ở trạng thái ${currentStatus}.` };
         }
-      } else if (status === "completed" && currentStatus === "delivered") {
+      } else if (status === "completed" && (currentStatus === "delivered" || currentStatus === "shipped" || currentStatus === "shipping")) {
         order.status = "completed";
       } else {
         await t.rollback();
@@ -684,12 +701,44 @@ const updateOrderStatus = async (id, status, currentUser = null, cancelReason = 
       }
 
       order.status = status;
-      if (status === "delivered") {
+      if (status === "cancelled") {
+        await syncOrderCancellationSideEffects(order, cancelReason || "Admin hủy đơn.", currentUser, t);
+      }
+    }
+
+    // Khi đơn hàng giao thành công (delivered) hoặc khách xác nhận đã nhận hàng (completed)
+    // Tự động chuyển trạng thái thanh toán sang 'paid' và đồng bộ bản ghi Payment
+    if (["delivered", "completed"].includes(status)) {
+      order.paymentStatus = "paid";
+      if (!order.deliveredAt) {
         order.deliveredAt = new Date();
       }
 
-      if (status === "cancelled") {
-        await syncOrderCancellationSideEffects(order, cancelReason || "Admin hủy đơn.", currentUser, t);
+      const existingPayment = await db.Payment.findOne({
+        where: { orderId: order.id },
+        transaction: t,
+      });
+
+      if (existingPayment) {
+        await existingPayment.update(
+          {
+            status: "completed",
+            paymentDate: existingPayment.paymentDate || new Date(),
+          },
+          { transaction: t }
+        );
+      } else {
+        await db.Payment.create(
+          {
+            orderId: order.id,
+            userId: order.userId,
+            amount: order.totalPrice,
+            method: order.paymentMethod || "cod",
+            status: "completed",
+            paymentDate: new Date(),
+          },
+          { transaction: t }
+        );
       }
     }
 
@@ -705,15 +754,20 @@ const updateOrderStatus = async (id, status, currentUser = null, cancelReason = 
     await order.save({ transaction: t });
     await t.commit();
 
-    if (status === "delivered") {
+    if (status === "delivered" || status === "completed") {
       const user = await db.User.findByPk(order.userId);
-      await sendOrderDeliveredEmail(user, order);
+      if (user && status === "delivered") {
+        await sendOrderDeliveredEmail(user, order);
+      }
     } else if (status === "confirmed") {
       const user = await db.User.findByPk(order.userId);
-      await sendOrderConfirmedEmail(user, order);
+      if (user) {
+        await sendOrderConfirmedEmail(user, order);
+      }
     }
 
-    return { errCode: 0, errMessage: "Update status successfully", data: order };
+    return { errCode: 0, errMessage: "Cập nhật trạng thái đơn hàng thành công!", data: order };
+
   } catch (e) {
     if (t && !t.finished) await t.rollback();
     console.error("Error in updateOrderStatus:", e);

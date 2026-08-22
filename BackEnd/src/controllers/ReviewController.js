@@ -1,5 +1,6 @@
 const ReviewService = require("../services/marketing/ReviewService");
 const { uploadToCloudinary } = require("../config/cloudinaryConfig");
+const { handleResponse, handleError } = require("../utils/controllerHelper");
 
 const handleGetReviewsByProduct = async (req, res) => {
   try {
@@ -16,24 +17,21 @@ const handleGetReviewsByProduct = async (req, res) => {
       limit,
       userId,
       rating,
-      hasImage,
+      hasImage
     );
-    return res.status(200).json(data);
+    return handleResponse(res, data, 200);
   } catch (e) {
-    console.error(e);
-    return res.status(500).json({
-      errCode: -1,
-      errMessage: "Error from server",
-    });
+    return handleError(res, e, "handleGetReviewsByProduct");
   }
 };
 
 const handleCreateReview = async (req, res) => {
   try {
     const { productId, rating, comment, images } = req.body;
-    // Validate required fields
     if (productId === undefined || productId === null || productId === "") {
       return res.status(400).json({
+        status: "BAD_REQUEST",
+        statusCode: 400,
         errCode: 1,
         errMessage: "productId là bắt buộc",
       });
@@ -42,15 +40,19 @@ const handleCreateReview = async (req, res) => {
     const numRating = Number(rating);
     if (isNaN(numRating) || numRating < 1 || numRating > 5) {
       return res.status(400).json({
+        status: "BAD_REQUEST",
+        statusCode: 400,
         errCode: 1,
-        errMessage: "rating phải từ 1 đến 5 sao",
+        errMessage: "Điểm đánh giá phải từ 1 đến 5 sao",
       });
     }
 
     if (!comment || !comment.trim()) {
       return res.status(400).json({
+        status: "BAD_REQUEST",
+        statusCode: 400,
         errCode: 1,
-        errMessage: "Nội dung đánh giá là bắt buộc",
+        errMessage: "Nội dung đánh giá không được để trống",
       });
     }
 
@@ -77,31 +79,35 @@ const handleCreateReview = async (req, res) => {
       comment,
       images: imageUrls,
     });
-    return res.status(200).json(data);
+    return handleResponse(res, data, 201);
   } catch (e) {
-    console.error(e);
-    return res.status(500).json({
-      errCode: -1,
-      errMessage: "Error from server",
-    });
+    return handleError(res, e, "handleCreateReview");
   }
 };
 
 const handleUpdateReview = async (req, res) => {
-  const reviewId = req.params.id;
-  const data = req.body;
-  const user = req.user;
+  try {
+    const reviewId = req.params.id;
+    const data = req.body;
+    const user = req.user;
 
-  const result = await ReviewService.updateReview(reviewId, data, user);
-  return res.status(200).json(result);
+    const result = await ReviewService.updateReview(reviewId, data, user);
+    return handleResponse(res, result, 200);
+  } catch (e) {
+    return handleError(res, e, "handleUpdateReview");
+  }
 };
 
 const handleDeleteReview = async (req, res) => {
-  const reviewId = req.params.id;
-  const user = req.user;
+  try {
+    const reviewId = req.params.id;
+    const user = req.user;
 
-  const result = await ReviewService.deleteReview(reviewId, user);
-  return res.status(200).json(result);
+    const result = await ReviewService.deleteReview(reviewId, user);
+    return handleResponse(res, result, 200);
+  } catch (e) {
+    return handleError(res, e, "handleDeleteReview");
+  }
 };
 
 const handleGetAllReviewsAdmin = async (req, res) => {
@@ -115,15 +121,11 @@ const handleGetAllReviewsAdmin = async (req, res) => {
       page,
       limit,
       rating,
-      status,
+      status
     );
-    return res.status(200).json(data);
+    return handleResponse(res, data, 200);
   } catch (e) {
-    console.error("Error getAllReviewsAdmin:", e);
-    return res.status(500).json({
-      errCode: -1,
-      errMessage: "Error from server",
-    });
+    return handleError(res, e, "handleGetAllReviewsAdmin");
   }
 };
 
@@ -134,13 +136,9 @@ const handleGetReviewsByUser = async (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
 
     const data = await ReviewService.getReviewsByUser(userId, page, limit);
-    return res.status(200).json(data);
+    return handleResponse(res, data, 200);
   } catch (e) {
-    console.error("Error handleGetReviewsByUser:", e);
-    return res.status(500).json({
-      errCode: -1,
-      errMessage: "Error from server",
-    });
+    return handleError(res, e, "handleGetReviewsByUser");
   }
 };
 
@@ -149,16 +147,9 @@ const handleToggleLikeReview = async (req, res) => {
     const { id } = req.params;
     const userId = req.user.id;
     const data = await ReviewService.toggleLikeReview(id, userId);
-    if (data.errCode !== 0) {
-      return res.status(400).json(data);
-    }
-    return res.status(200).json(data);
+    return handleResponse(res, data, 200);
   } catch (e) {
-    console.error(e);
-    return res.status(500).json({
-      errCode: -1,
-      errMessage: "Error from server",
-    });
+    return handleError(res, e, "handleToggleLikeReview");
   }
 };
 
@@ -166,13 +157,9 @@ const handleGetPendingReviewProducts = async (req, res) => {
   try {
     const userId = req.user.id;
     const data = await ReviewService.getPendingReviewProducts(userId);
-    return res.status(200).json(data);
+    return handleResponse(res, data, 200);
   } catch (e) {
-    console.error(e);
-    return res.status(500).json({
-      errCode: -1,
-      errMessage: "Error from server",
-    });
+    return handleError(res, e, "handleGetPendingReviewProducts");
   }
 };
 

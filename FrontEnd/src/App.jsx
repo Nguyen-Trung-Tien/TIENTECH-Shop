@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import UserRoutes from "./routes/UserRoutes";
@@ -10,35 +10,12 @@ import { setUser, removeUser, setInitializing } from "./redux/userSlice";
 import { clearCart } from "./redux/cartSlice";
 import { LazyMotion, domAnimation } from "framer-motion";
 import RouteProgressBar from "./components/Loading/RouteProgressBar";
+import { useTheme } from "./context/ThemeContext";
 
 const App = () => {
   const dispatch = useDispatch();
-  const [theme, setTheme] = useState(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("theme") || "light";
-    }
-    return "light";
-  });
+  const { theme } = useTheme();
 
-  useEffect(() => {
-    const root = window.document.documentElement;
-    if (theme === "dark") {
-      root.classList.add("dark");
-    } else {
-      root.classList.remove("dark");
-    }
-    localStorage.setItem("theme", theme);
-  }, [theme]);
-
-  useEffect(() => {
-    const handleStorage = (event) => {
-      if (event.key === "theme") {
-        setTheme(event.newValue || "light");
-      }
-    };
-    window.addEventListener("storage", handleStorage);
-    return () => window.removeEventListener("storage", handleStorage);
-  }, []);
 
   useEffect(() => {
     const checkAuth = async () => {

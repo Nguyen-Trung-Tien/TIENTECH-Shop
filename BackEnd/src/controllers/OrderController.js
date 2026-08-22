@@ -1,5 +1,6 @@
 const OrderService = require("../services/order/OrderService");
 const NotificationService = require("../services/notification/NotificationService");
+const { handleResponse, handleError } = require("../utils/controllerHelper");
 
 const handleGetAllOrders = async (req, res) => {
   try {
@@ -11,29 +12,19 @@ const handleGetAllOrders = async (req, res) => {
     const isCancelRequested = req.query.isCancelRequested === "true";
 
     const result = await OrderService.getAllOrders(page, limit, searchTerm, status, isReturn, isCancelRequested);
-    return res.status(200).json(result);
+    return handleResponse(res, result, 200);
   } catch (e) {
-    console.error(e);
-    return res.status(500).json({
-      errCode: -1,
-      errMessage: "Internal server error",
-    });
+    return handleError(res, e, "handleGetAllOrders");
   }
 };
 
 const handleGetOrderById = async (req, res) => {
   try {
     const { id } = req.params;
-
     const result = await OrderService.getOrderById(id, req.user);
-
-    return res.status(result.status || 200).json(result);
+    return handleResponse(res, result, 200);
   } catch (e) {
-    console.error(e);
-    return res.status(500).json({
-      errCode: -1,
-      errMessage: "Internal server error",
-    });
+    return handleError(res, e, "handleGetOrderById");
   }
 };
 
@@ -48,7 +39,7 @@ const handleCreateOrder = async (req, res) => {
         title: "Đơn hàng mới!",
         message: `Đơn hàng #${result.data.orderCode} vừa được tạo.`,
         type: "order",
-        link: `/admin/orders`
+        link: `/admin/orders`,
       });
 
       // 2. Gửi real-time tới Admin nếu io tồn tại
@@ -58,15 +49,11 @@ const handleCreateOrder = async (req, res) => {
           order: result.data,
         });
       }
-      return res.status(201).json(result);
+      return handleResponse(res, result, 201);
     }
-    return res.status(400).json(result);
+    return handleResponse(res, result, 400);
   } catch (e) {
-    console.error("Error in handleCreateOrder:", e);
-    return res.status(500).json({
-      errCode: -1,
-      errMessage: e.message || "Internal server error",
-    });
+    return handleError(res, e, "handleCreateOrder");
   }
 };
 
@@ -86,26 +73,22 @@ const handleUpdateOrderStatus = async (req, res) => {
         title: "Cập nhật đơn hàng",
         message: `Đơn hàng #${order.orderCode} của bạn đã chuyển sang trạng thái: ${status}`,
         type: "order",
-        link: `/orders-detail/${id}`
+        link: `/orders-detail/${id}`,
       });
 
-      // 2. Gửi real-time tới User (room được đặt theo userId) nếu io tồn tại
+      // 2. Gửi real-time tới User nếu io tồn tại
       if (io) {
         io.to(`user_${order.userId}`).emit("order_status_updated", {
           orderId: id,
           status: status,
-          message: `Đơn hàng #${id} của bạn đã chuyển sang trạng thái: ${status}`
+          message: `Đơn hàng #${id} của bạn đã chuyển sang trạng thái: ${status}`,
         });
       }
     }
     
-    return res.status(result.status || 200).json(result);
+    return handleResponse(res, result, 200);
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({
-      errCode: -1,
-      errMessage: "Internal server error",
-    });
+    return handleError(res, error, "handleUpdateOrderStatus");
   }
 };
 
@@ -113,13 +96,9 @@ const handleDeleteOrder = async (req, res) => {
   try {
     const { id } = req.params;
     const result = await OrderService.deleteOrder(id);
-    return res.status(200).json(result);
+    return handleResponse(res, result, 200);
   } catch (e) {
-    console.error(e);
-    return res.status(500).json({
-      errCode: -1,
-      errMessage: "Internal server error",
-    });
+    return handleError(res, e, "handleDeleteOrder");
   }
 };
 
@@ -128,13 +107,9 @@ const handleUpdatePaymentStatus = async (req, res) => {
     const { id } = req.params;
     const { paymentStatus } = req.body;
     const result = await OrderService.updatePaymentStatus(id, paymentStatus);
-    return res.status(200).json(result);
+    return handleResponse(res, result, 200);
   } catch (e) {
-    console.error(e);
-    return res.status(500).json({
-      errCode: -1,
-      errMessage: "Internal server error",
-    });
+    return handleError(res, e, "handleUpdatePaymentStatus");
   }
 };
 
@@ -147,19 +122,18 @@ const handleGetOrdersByUserId = async (req, res) => {
 
     if (req.user.role !== "admin" && String(req.user.id) !== String(userId)) {
       return res.status(403).json({
+        status: "FORBIDDEN",
+        statusCode: 403,
         errCode: 403,
-        errMessage: "Forbidden",
+        errMessage: "Bạn không có quyền truy cập đơn hàng của người dùng khác.",
+        message: "Forbidden",
       });
     }
 
     const result = await OrderService.getOrdersByUserId(userId, page, limit, status);
-    return res.status(200).json(result);
+    return handleResponse(res, result, 200);
   } catch (e) {
-    console.error(e);
-    return res.status(500).json({
-      errCode: -1,
-      errMessage: "Internal server error",
-    });
+    return handleError(res, e, "handleGetOrdersByUserId");
   }
 };
 
@@ -170,8 +144,11 @@ const getActiveOrdersByUserId = async (req, res) => {
 
     if (req.user.role !== "admin" && String(req.user.id) !== String(userId)) {
       return res.status(403).json({
+        status: "FORBIDDEN",
+        statusCode: 403,
         errCode: 403,
-        errMessage: "Forbidden",
+        errMessage: "Bạn không có quyền truy cập đơn hàng của người dùng khác.",
+        message: "Forbidden",
       });
     }
 
@@ -181,13 +158,9 @@ const getActiveOrdersByUserId = async (req, res) => {
       +limit
     );
 
-    return res.status(200).json(result);
+    return handleResponse(res, result, 200);
   } catch (e) {
-    console.error("Error in getActiveOrdersByUserId:", e);
-    return res.status(500).json({
-      errCode: -1,
-      errMessage: "Error fetching active orders",
-    });
+    return handleError(res, e, "getActiveOrdersByUserId");
   }
 };
 
@@ -196,10 +169,9 @@ const handleRequestReturn = async (req, res) => {
     const { orderItemId, reason } = req.body;
     const userId = req.user.id;
     const result = await OrderService.requestReturn(orderItemId, userId, reason);
-    return res.status(result.errCode === 0 ? 200 : 400).json(result);
+    return handleResponse(res, result, 200);
   } catch (e) {
-    console.error(e);
-    return res.status(500).json({ errCode: -1, errMessage: "Internal server error" });
+    return handleError(res, e, "handleRequestReturn");
   }
 };
 
@@ -208,10 +180,9 @@ const handleReturnAction = async (req, res) => {
     const { orderItemId, action } = req.body;
     const adminId = req.user.id;
     const result = await OrderService.handleReturnAction(orderItemId, action, adminId);
-    return res.status(result.errCode === 0 ? 200 : 400).json(result);
+    return handleResponse(res, result, 200);
   } catch (e) {
-    console.error(e);
-    return res.status(500).json({ errCode: -1, errMessage: "Internal server error" });
+    return handleError(res, e, "handleReturnAction");
   }
 };
 

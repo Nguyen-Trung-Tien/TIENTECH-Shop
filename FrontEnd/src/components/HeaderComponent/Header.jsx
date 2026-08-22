@@ -36,6 +36,7 @@ import NotificationBell from "./NotificationBell";
 import VisualSearchModal from "./VisualSearchModal";
 import OmniSearchModal from "./OmniSearchModal";
 import UnifiedSpinner from "../Loading/UnifiedSpinner";
+import { useTheme } from "../../context/ThemeContext";
 
 function Header() {
   const dispatch = useDispatch();
@@ -57,9 +58,8 @@ function Header() {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const [theme, setTheme] = useState(
-    () => localStorage.getItem("theme") || "light",
-  );
+  
+  const { theme, toggleTheme } = useTheme();
 
   const reduxUser = useSelector((state) => state.user.user);
   const { data: resUser } = useCurrentUser();
@@ -71,19 +71,6 @@ function Header() {
   );
 
   const avatarUrl = user?.avatar || "/images/avatar-default.png";
-
-  // Handle Theme Toggle
-  useEffect(() => {
-    if (theme === "dark") {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-    localStorage.setItem("theme", theme);
-  }, [theme]);
-
-  const toggleTheme = () =>
-    setTheme((prev) => (prev === "light" ? "dark" : "light"));
 
   // Scroll & Location Listeners
   useEffect(() => {

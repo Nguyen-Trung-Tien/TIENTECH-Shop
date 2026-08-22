@@ -1,15 +1,14 @@
-import React, { useState, Suspense, useEffect } from "react";
+import React, { useState, Suspense } from "react";
 import { Outlet } from "react-router-dom";
 import HeaderAdmin from "./components/HeaderAdminComponent/HeaderAdmin";
 import Sidebar from "./components/SidebarComponent/Sidebar";
 import { AdminPageLoader } from "./components/AdminLoading";
+import { useTheme } from "../context/ThemeContext";
 
 const AdminLayout = () => {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [adminTheme, setAdminTheme] = useState(
-    () => localStorage.getItem("admin_theme") || "light",
-  );
+  const { theme, toggleTheme } = useTheme();
 
   const toggleSidebar = () => {
     if (window.innerWidth < 768) {
@@ -22,23 +21,6 @@ const AdminLayout = () => {
   const closeMobileSidebar = () => {
     setMobileOpen(false);
   };
-
-  const toggleTheme = () => {
-    const newTheme = adminTheme === "light" ? "dark" : "light";
-    setAdminTheme(newTheme);
-    localStorage.setItem("admin_theme", newTheme);
-  };
-
-  // Đồng bộ theme Admin lên thẻ html để Tailwind v4 hoạt động chính xác
-  useEffect(() => {
-    if (adminTheme === "dark") {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-    
-    return () => {};
-  }, [adminTheme]);
 
   return (
     <div className="h-screen w-screen overflow-hidden bg-slate-50 dark:bg-dark-bg text-slate-900 dark:text-dark-text-primary transition-colors duration-300 flex">
@@ -55,9 +37,10 @@ const AdminLayout = () => {
         <HeaderAdmin 
           toggleSidebar={toggleSidebar} 
           isCollapsed={collapsed} 
-          theme={adminTheme}
+          theme={theme}
           toggleTheme={toggleTheme}
         />
+
 
         {/* Dynamic Content Area */}
         <main className="flex-1 overflow-y-auto custom-scrollbar bg-slate-50 dark:bg-dark-bg transition-colors duration-300">

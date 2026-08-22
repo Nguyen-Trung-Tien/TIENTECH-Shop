@@ -118,10 +118,17 @@ const RegisterPage = () => {
       const { username, email, phone, password } = formData;
       const data = await registerUser({ username, email, phone, password });
       if (data.errCode === 0) {
-        toast.success(
-          data.errMessage || "Đăng ký thành công! Vui lòng nhập mã OTP.",
-        );
-        navigate(`/verify-account?email=${encodeURIComponent(email)}`);
+        if (data.requireOtp === false) {
+          toast.success(
+            data.errMessage || "Đăng ký tài khoản thành công! Bạn có thể đăng nhập ngay.",
+          );
+          navigate("/login");
+        } else {
+          toast.success(
+            data.errMessage || "Đăng ký thành công! Vui lòng nhập mã OTP.",
+          );
+          navigate(`/verify-account?email=${encodeURIComponent(email)}`);
+        }
       } else {
         toast.error(data.errMessage || "Đăng ký thất bại!");
       }

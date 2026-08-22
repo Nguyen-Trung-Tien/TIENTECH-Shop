@@ -10,7 +10,7 @@ const passport = require("../config/passport");
 
 const { validate } = require("../middleware/zodMiddleware");
 const { loginSchema, registerSchema } = require("../utils/zodSchemas");
-const { loginAuthLimiter, sensitiveActionLimiter } = require("../middleware/rateLimiter");
+const { loginAuthLimiter, sensitiveActionLimiter, otpVerificationLimiter } = require("../middleware/rateLimiter");
 
 router.post("/login", loginAuthLimiter, validate(loginSchema), UserController.handleLogin);
 router.get(
@@ -67,7 +67,8 @@ router.put(
 router.post("/forgot-password", sensitiveActionLimiter, UserController.handleForgotPassword);
 router.post("/verify-reset-token", UserController.handleVerifyResetToken);
 router.post("/reset-password", sensitiveActionLimiter, UserController.handleResetPassword);
-router.post("/verify-email", UserController.handleVerifyEmail);
-router.post("/resend-verification", UserController.handleResendVerification);
+router.post("/verify-email", otpVerificationLimiter, UserController.handleVerifyEmail);
+router.post("/resend-verification", sensitiveActionLimiter, UserController.handleResendVerification);
+
 
 module.exports = router;

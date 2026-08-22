@@ -1,29 +1,38 @@
 const CartService = require("../services/order/CartService");
+const { handleResponse, handleError } = require("../utils/controllerHelper");
 
 const getAllCarts = async (req, res) => {
   try {
     const carts = await CartService.getAllCarts(req.user.id);
-    res.status(200).json({ errCode: 0, data: carts });
+    return handleResponse(res, { errCode: 0, data: carts }, 200);
   } catch (err) {
-    res.status(500).json({ errCode: 1, errMessage: err.message });
+    return handleError(res, err, "getAllCarts");
   }
 };
 
 const getCartById = async (req, res) => {
   try {
     const cart = await CartService.getCartById(req.params.id, req.user.id);
-    res.status(200).json({ errCode: 0, data: cart });
+    if (!cart) {
+      return res.status(404).json({
+        status: "NOT_FOUND",
+        statusCode: 404,
+        errCode: 1,
+        errMessage: "Không tìm thấy giỏ hàng",
+      });
+    }
+    return handleResponse(res, { errCode: 0, data: cart }, 200);
   } catch (err) {
-    res.status(404).json({ errCode: 1, errMessage: err.message });
+    return handleError(res, err, "getCartById");
   }
 };
 
 const createCart = async (req, res) => {
   try {
     const newCart = await CartService.createCart(req.user.id);
-    res.status(201).json({ errCode: 0, data: newCart });
+    return handleResponse(res, { errCode: 0, data: newCart }, 201);
   } catch (err) {
-    res.status(500).json({ errCode: 1, errMessage: err.message });
+    return handleError(res, err, "createCart");
   }
 };
 
@@ -34,18 +43,18 @@ const updateCart = async (req, res) => {
       req.body,
       req.user.id
     );
-    res.status(200).json({ errCode: 0, data: updatedCart });
+    return handleResponse(res, { errCode: 0, data: updatedCart }, 200);
   } catch (err) {
-    res.status(404).json({ errCode: 1, errMessage: err.message });
+    return handleError(res, err, "updateCart");
   }
 };
 
 const deleteCart = async (req, res) => {
   try {
     await CartService.deleteCart(req.params.id, req.user.id);
-    res.status(200).json({ errCode: 0, message: "Cart deleted" });
+    return handleResponse(res, { errCode: 0, errMessage: "Xóa giỏ hàng thành công!" }, 200);
   } catch (err) {
-    res.status(404).json({ errCode: 1, errMessage: err.message });
+    return handleError(res, err, "deleteCart");
   }
 };
 
@@ -54,9 +63,9 @@ const handleValidateCart = async (req, res) => {
     const { items } = req.body;
     const userId = req.user.id;
     const result = await CartService.validateCart(userId, items);
-    return res.status(200).json(result);
+    return handleResponse(res, result, 200);
   } catch (e) {
-    return res.status(500).json({ errCode: -1, errMessage: e.message });
+    return handleError(res, e, "handleValidateCart");
   }
 };
 

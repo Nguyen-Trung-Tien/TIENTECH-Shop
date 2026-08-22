@@ -49,9 +49,23 @@ const aiApiLimiter = rateLimit({
   },
 });
 
+// OTP Verification Limiter (Chống Brute-force mã 6 số)
+const otpVerificationLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 phút
+  max: 5, // Tối đa 5 lần thử trong 15 phút
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    errCode: 429,
+    errMessage: "Bạn đã thử nhập mã xác thực quá 5 lần. Vui lòng thử lại sau 15 phút.",
+  },
+});
+
 module.exports = {
   generalLimiter,
   loginAuthLimiter,
   sensitiveActionLimiter,
   aiApiLimiter,
+  otpVerificationLimiter,
 };
+

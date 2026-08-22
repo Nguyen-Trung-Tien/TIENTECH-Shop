@@ -17,6 +17,7 @@ import {
   FiCompass,
   FiGrid,
   FiStar,
+  FiSettings,
 } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
 import { logoutUserApi } from "../../../api/userApi";
@@ -76,7 +77,14 @@ const MENU_SECTIONS = [
       { to: "/admin/reviews", icon: <FiMessageSquare />, label: "Đánh giá" },
     ],
   },
+  {
+    title: "CẤU HÌNH",
+    items: [
+      { to: "/admin/settings", icon: <FiSettings />, label: "Cài đặt hệ thống" },
+    ],
+  },
 ];
+
 
 const Sidebar = ({ collapsed, mobileOpen, onCloseMobile }) => {
   const location = useLocation();

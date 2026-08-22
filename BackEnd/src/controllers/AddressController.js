@@ -1,17 +1,13 @@
 const AddressService = require("../services/common/AddressService");
+const { handleResponse, handleError } = require("../utils/controllerHelper");
 
 const handleCreateAddress = async (req, res) => {
   try {
     const userId = req.user.id;
     const result = await AddressService.createAddress(userId, req.body);
-    return res.status(200).json(result);
+    return handleResponse(res, result, 201);
   } catch (error) {
-    console.error("handleCreateAddress error:", error);
-    return res.status(500).json({ 
-      errCode: -1, 
-      errMessage: "Lỗi từ server: " + error.message,
-      stack: process.env.NODE_ENV === "development" ? error.stack : undefined
-    });
+    return handleError(res, error, "handleCreateAddress");
   }
 };
 
@@ -19,14 +15,9 @@ const handleGetAddresses = async (req, res) => {
   try {
     const userId = req.user.id;
     const result = await AddressService.getAddressesByUserId(userId);
-    return res.status(200).json(result);
+    return handleResponse(res, result, 200);
   } catch (error) {
-    console.error("handleGetAddresses error:", error);
-    return res.status(500).json({ 
-      errCode: -1, 
-      errMessage: "Lỗi từ server: " + error.message,
-      stack: process.env.NODE_ENV === "development" ? error.stack : undefined
-    });
+    return handleError(res, error, "handleGetAddresses");
   }
 };
 
@@ -35,14 +26,9 @@ const handleUpdateAddress = async (req, res) => {
     const userId = req.user.id;
     const { addressId } = req.params;
     const result = await AddressService.updateAddress(userId, addressId, req.body);
-    return res.status(200).json(result);
+    return handleResponse(res, result, 200);
   } catch (error) {
-    console.error("handleUpdateAddress error:", error);
-    return res.status(500).json({ 
-      errCode: -1, 
-      errMessage: "Lỗi từ server: " + error.message,
-      stack: process.env.NODE_ENV === "development" ? error.stack : undefined
-    });
+    return handleError(res, error, "handleUpdateAddress");
   }
 };
 
@@ -51,14 +37,9 @@ const handleDeleteAddress = async (req, res) => {
     const userId = req.user.id;
     const { addressId } = req.params;
     const result = await AddressService.deleteAddress(userId, addressId);
-    return res.status(200).json(result);
+    return handleResponse(res, result, 200);
   } catch (error) {
-    console.error("handleDeleteAddress error:", error);
-    return res.status(500).json({ 
-      errCode: -1, 
-      errMessage: "Lỗi từ server: " + error.message,
-      stack: process.env.NODE_ENV === "development" ? error.stack : undefined
-    });
+    return handleError(res, error, "handleDeleteAddress");
   }
 };
 
@@ -67,14 +48,9 @@ const handleSetDefaultAddress = async (req, res) => {
     const userId = req.user.id;
     const { addressId } = req.params;
     const result = await AddressService.setDefaultAddress(userId, addressId);
-    return res.status(200).json(result);
+    return handleResponse(res, result, 200);
   } catch (error) {
-    console.error("handleSetDefaultAddress error:", error);
-    return res.status(500).json({ 
-      errCode: -1, 
-      errMessage: "Lỗi từ server: " + error.message,
-      stack: process.env.NODE_ENV === "development" ? error.stack : undefined
-    });
+    return handleError(res, error, "handleSetDefaultAddress");
   }
 };
 

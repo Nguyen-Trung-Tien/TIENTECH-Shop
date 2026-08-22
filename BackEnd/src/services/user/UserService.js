@@ -1,6 +1,7 @@
 const db = require("../../models");
 const BaseService = require("../BaseService");
 const { sendVerificationEmail, sendEmailAsync } = require("../common/EmailService");
+const SystemSettingService = require("../system/SystemSettingService");
 const { 
   hashToken, 
   generateRandomToken, 
@@ -37,29 +38,51 @@ class UserService extends BaseService {
       if (exist) return { errCode: 1, errMessage: "Email đã tồn tại" };
 
       const hashedPassword = await hashUserPassword(data.password || "123456");
-      const verificationToken = generateRandomToken();
+
+      // Kiểm tra cấu hình hệ thống: Có bắt buộc xác thực OTP không
+      const requireOtp = await SystemSettingService.getSetting("REQUIRE_OTP_VERIFICATION", true);
+      
+      let verificationToken = null;
+      let isActive = data.isActive ?? false;
+
+      if (requireOtp && !data.isActive) {
+        verificationToken = generateRandomToken();
+        isActive = false;
+      } else {
+        isActive = true;
+      }
       
       const userData = {
         ...data,
         password: hashedPassword,
         role: data.role || "customer",
-        isActive: data.isActive ?? false,
-        verificationToken: hashToken(verificationToken),
-        verificationTokenExpiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+        isActive,
+        verificationToken: verificationToken ? hashToken(verificationToken) : null,
+        verificationTokenExpiresAt: verificationToken ? new Date(Date.now() + 24 * 60 * 60 * 1000) : null,
       };
 
       const user = await this.model.create(userData);
       
-      if (!data.isActive) {
+      if (requireOtp && !data.isActive && verificationToken) {
         sendEmailAsync(sendVerificationEmail, user, verificationToken);
       }
 
-      return { errCode: 0, data: user };
+      const { password, refreshTokenHash, resetToken, verificationToken: _, ...safeUser } = user.toJSON();
+
+      return { 
+        errCode: 0, 
+        data: safeUser,
+        requireOtp: Boolean(requireOtp && !data.isActive),
+        errMessage: requireOtp && !data.isActive 
+          ? "Đăng ký thành công! Vui lòng kiểm tra mã OTP trong email."
+          : "Đăng ký thành công! Bạn có thể đăng nhập ngay."
+      };
     } catch (e) {
       console.error("UserService.createNewUser error:", e);
       return { errCode: 2, errMessage: e.message };
     }
   }
+
 
   async updateUser(userId, data, currentUserRole = "customer") {
     try {

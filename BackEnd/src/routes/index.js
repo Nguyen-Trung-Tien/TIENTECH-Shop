@@ -18,6 +18,7 @@ const NotificationRouter = require("./NotificationRouter");
 const AddressRouter = require("./AddressRouter");
 const WishlistRouter = require("./WishlistRouter");
 const AttributeRouter = require("./AttributeRouter");
+const SystemSettingRouter = require("./SystemSettingRouter");
 
 const routes = (app) => {
   app.use("/api/v1/user", UserRouter);
@@ -40,5 +41,7 @@ const routes = (app) => {
   app.use("/api/v1/variant", ProductVariantRouter);
   app.use("/api/v1/voucher", VoucherRouter);
   app.use("/api/v1/notification", NotificationRouter);
+  app.use("/api/v1/system-settings", SystemSettingRouter);
 };
 module.exports = routes;
+
