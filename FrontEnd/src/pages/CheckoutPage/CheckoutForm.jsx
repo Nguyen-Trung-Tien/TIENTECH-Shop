@@ -15,6 +15,7 @@ import {
 import { getAddressesApi, createAddressApi } from "../../api/addressApi";
 import { FaPaypal } from "react-icons/fa";
 import { toast } from "react-toastify";
+import { showErrorToast } from "../../utils/toastHelper";
 import { motion as Motion, AnimatePresence } from "framer-motion";
 import { useSystemSettings } from "../../context/ThemeContext";
 
@@ -200,11 +201,11 @@ const CheckoutForm = ({ formData, setFormData, user }) => {
         }));
         setShowManual(false);
       } else {
-        toast.error(res.errMessage || "Không thể lưu địa chỉ mới");
+        showErrorToast(res?.errMessage || "Không thể lưu địa chỉ mới");
       }
     } catch (err) {
       console.error(err);
-      toast.error("Lỗi khi thêm địa chỉ mới");
+      showErrorToast(err, "Lỗi khi thêm địa chỉ mới");
     } finally {
       setSavingAddress(false);
     }

@@ -8,6 +8,7 @@ import {
 } from "react-icons/fi";
 import { useSelector, useDispatch } from "react-redux";
 import { toast } from "react-toastify";
+import { showErrorToast, showSuccessToast } from "../../utils/toastHelper";
 import { createOrder } from "../../api/orderApi";
 import { createVnpayPaymentApi } from "../../api/paymentApi";
 import { clearCart, applyVoucher, removeVoucher } from "../../redux/cartSlice";
@@ -97,7 +98,7 @@ const CheckoutPage = () => {
       };
 
       const res = await createOrder(orderData, user.accessToken);
-      if (res.errCode === 0) {
+      if (res && res.errCode === 0) {
         dispatch(clearCart());
 
         // Nếu là VNPAY, gọi API lấy link thanh toán và redirect
@@ -107,21 +108,22 @@ const CheckoutPage = () => {
             orderCode: res.data.orderCode,
           });
 
-          if (vnpayRes.errCode === 0 && vnpayRes.data.paymentUrl) {
+          if (vnpayRes && vnpayRes.errCode === 0 && vnpayRes.data?.paymentUrl) {
             window.location.href = vnpayRes.data.paymentUrl;
             return;
           } else {
-            toast.error("Không thể khởi tạo thanh toán VNPAY");
+            showErrorToast(vnpayRes?.errMessage || "Không thể khởi tạo thanh toán VNPAY");
+            return;
           }
         }
 
-        toast.success("Đặt hàng thành công!");
+        showSuccessToast("Đặt hàng thành công!");
         navigate("/checkout-success", { state: { order: res.data } });
       } else {
-        toast.error(res.errMessage);
+        showErrorToast(res?.errMessage || "Đặt hàng thất bại!");
       }
-    } catch {
-      toast.error("Lỗi đặt hàng, vui lòng thử lại");
+    } catch (error) {
+      showErrorToast(error, "Lỗi đặt hàng, vui lòng thử lại");
     } finally {
       setLoading(false);
     }
@@ -150,15 +152,15 @@ const CheckoutPage = () => {
       };
 
       const res = await createOrder(orderData, user.accessToken);
-      if (res.errCode === 0) {
+      if (res && res.errCode === 0) {
         dispatch(clearCart());
-        toast.success("Thanh toán PayPal thành công!");
+        showSuccessToast("Thanh toán PayPal thành công!");
         navigate("/checkout-success", { state: { order: res.data } });
       } else {
-        toast.error(res.errMessage);
+        showErrorToast(res?.errMessage || "Đặt hàng thất bại!");
       }
-    } catch {
-      toast.error("Lỗi xử lý PayPal");
+    } catch (error) {
+      showErrorToast(error, "Lỗi xử lý PayPal");
     }
   };
 

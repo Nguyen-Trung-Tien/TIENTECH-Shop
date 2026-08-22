@@ -10,6 +10,7 @@ import VoucherSelector from "../../components/Cart/VoucherSelector";
 import { applyVoucher, removeVoucher } from "../../redux/cartSlice";
 import { validateCart } from "../../api/cartApi";
 import { toast } from "react-toastify";
+import { showErrorToast } from "../../utils/toastHelper";
 
 const CartPage = () => {
   const navigate = useNavigate();
@@ -103,13 +104,13 @@ const CartPage = () => {
           },
         });
       } else {
-        toast.error(
-          response.errMessage || "Có lỗi xảy ra khi xác thực giỏ hàng",
+        showErrorToast(
+          response?.errMessage || "Có lỗi xảy ra khi xác thực giỏ hàng",
         );
       }
     } catch (error) {
       console.error("Checkout validation error:", error);
-      toast.error("Không thể kết nối với máy chủ để xác thực giỏ hàng");
+      showErrorToast(error, "Không thể kết nối với máy chủ để xác thực giỏ hàng");
     } finally {
       setIsValidating(false);
     }
