@@ -1,19 +1,23 @@
 const nodemailer = require("nodemailer");
 require("dotenv").config();
 
+const emailUser = (process.env.EMAIL_USER || "").trim();
+const emailPass = (process.env.EMAIL_PASS || "").replace(/\s+/g, "");
+
 /**
- * Transporter SMTP Pool Configuration
- * Uses connection pooling & socket timeouts for fast non-blocking email delivery.
+ * Transporter SMTP Configuration
+ * Direct TLS connection to smtp.gmail.com on port 465 for rock-solid delivery on cloud containers (Render).
  */
 const transporter = nodemailer.createTransport({
-  service: "gmail",
-  pool: true,
-  maxConnections: 5,
-  maxMessages: 100,
-  rateLimit: 10,
+  host: "smtp.gmail.com",
+  port: 465,
+  secure: true,
   auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
+    user: emailUser,
+    pass: emailPass,
+  },
+  tls: {
+    rejectUnauthorized: false,
   },
   connectionTimeout: 10000,
   greetingTimeout: 5000,
@@ -26,10 +30,18 @@ if (process.env.NODE_ENV !== "test") {
     if (error) {
       console.warn("[SMTP VERIFY] Cannot connect to Gmail SMTP:", error.message);
     } else {
-      console.log("[SMTP VERIFY] Connected to Gmail SMTP server successfully!");
+      console.log(`[SMTP VERIFY] Connected to Gmail SMTP (${emailUser || "NO_USER"}) successfully!`);
     }
   });
 }
+
+/**
+ * Helper to get the canonical Frontend URL across FRONTEND_URL and URL_REACT
+ */
+const getFrontendUrl = () => {
+  const url = (process.env.FRONTEND_URL || process.env.URL_REACT || "http://localhost:3000").trim();
+  return url.endsWith("/") ? url : `${url}/`;
+};
 
 /**
  * Send email with automatic exponential backoff retry (up to 3 attempts)
@@ -38,7 +50,7 @@ const sendMailWithRetry = async (mailOptions, retries = 3, delayMs = 500) => {
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
       const info = await transporter.sendMail(mailOptions);
-      console.log(`[EMAIL SENT] MessageId: ${info.messageId} to ${mailOptions.to}`);
+      console.log(`[EMAIL SENT SUCCESS] MessageId: ${info.messageId} to ${mailOptions.to}`);
       return true;
     } catch (error) {
       console.error(`[EMAIL ATTEMPT ${attempt}/${retries}] Failed for ${mailOptions.to}:`, error.message);
@@ -51,12 +63,12 @@ const sendMailWithRetry = async (mailOptions, retries = 3, delayMs = 500) => {
 
 class EmailService {
   async sendEmail(to, subject, html) {
-    if (!to || !process.env.EMAIL_USER) {
+    if (!to || !emailUser) {
       console.warn("[EMAIL SKIPPED] Missing recipient or EMAIL_USER configuration.");
       return false;
     }
     const mailOptions = {
-      from: `"TIENTECH Shop" <${process.env.EMAIL_USER}>`,
+      from: `"TIENTECH Shop" <${emailUser}>`,
       to,
       subject,
       html,
@@ -111,10 +123,7 @@ class EmailService {
     if (!user?.email) return false;
     const subject = "[TIENTECH] Xac nhan tai khoan dang ky";
 
-    const baseUrl = (process.env.URL_REACT || "http://localhost:3000").endsWith("/")
-      ? process.env.URL_REACT
-      : `${process.env.URL_REACT}/`;
-
+    const baseUrl = getFrontendUrl();
     const verificationUrl = `${baseUrl}verify-email?email=${encodeURIComponent(user.email)}&token=${token}`;
 
     const html = `
@@ -194,7 +203,7 @@ class EmailService {
 
     const displayOrderCode = order.orderCode || order.id;
     const subject = `[TIENTECH] Dat hang thanh cong - Don hang #${displayOrderCode}`;
-    const clientUrl = process.env.URL_REACT || "http://localhost:3000";
+    const clientUrl = getFrontendUrl();
 
     const itemsHtml = Array.isArray(order.orderItems)
       ? order.orderItems
@@ -282,7 +291,7 @@ class EmailService {
 
     const displayOrderCode = order.orderCode || order.id;
     const subject = `[TIENTECH] Don hang #${displayOrderCode} dang tren duong giao`;
-    const clientUrl = process.env.URL_REACT || "http://localhost:3000";
+    const clientUrl = getFrontendUrl();
 
     const html = `
     <div style="font-family: Arial, sans-serif; background-color: #f8fafc; padding: 24px;">
@@ -334,7 +343,7 @@ class EmailService {
 
     const displayOrderCode = order.orderCode || order.id;
     const subject = `[TIENTECH] Don hang #${displayOrderCode} da duoc giao thanh cong`;
-    const clientUrl = process.env.URL_REACT || "http://localhost:3000";
+    const clientUrl = getFrontendUrl();
 
     const html = `
     <div style="font-family: Arial, sans-serif; background-color: #f9fafb; padding: 24px;">
@@ -387,7 +396,7 @@ class EmailService {
 
     const displayOrderCode = order.orderCode || order.id;
     const subject = `[TIENTECH] Don hang #${displayOrderCode} da duoc xac nhan`;
-    const clientUrl = process.env.URL_REACT || "http://localhost:3000";
+    const clientUrl = getFrontendUrl();
 
     const html = `
     <div style="font-family: Arial, sans-serif; background-color: #f9fafb; padding: 24px;">

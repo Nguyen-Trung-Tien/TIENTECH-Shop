@@ -20,7 +20,10 @@ const allowedOrigins = [
 ];
 
 if (process.env.FRONTEND_URL) {
-  allowedOrigins.push(process.env.FRONTEND_URL);
+  const cleanFrontendUrl = process.env.FRONTEND_URL.trim().replace(/\/+$/, "");
+  if (!allowedOrigins.includes(cleanFrontendUrl)) {
+    allowedOrigins.push(cleanFrontendUrl);
+  }
 }
 
 const io = new Server(server, {
