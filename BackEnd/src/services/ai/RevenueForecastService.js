@@ -1,12 +1,6 @@
 const db = require("../../models");
 const { Op } = require("sequelize");
-const { GoogleGenerativeAI } = require("@google/generative-ai");
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || process.env.API_KEY);
-const geminiModel = genAI.getGenerativeModel({
-  model: "gemini-2.0-flash",
-  generationConfig: { responseMimeType: "application/json" },
-});
+const { generateContentWithFallback } = require("../../config/gemini");
 
 const getRevenueForecast = async () => {
   try {
@@ -64,7 +58,9 @@ Trả về JSON THUẦN:
 }
     `;
 
-    const result = await geminiModel.generateContent(context);
+    const result = await generateContentWithFallback(context, {
+      generationConfig: { responseMimeType: "application/json" },
+    });
     const responseText = result.response.text();
     
     const cleanJson = responseText

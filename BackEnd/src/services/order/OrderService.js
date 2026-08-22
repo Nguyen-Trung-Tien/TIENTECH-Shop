@@ -1,6 +1,15 @@
 const db = require("../../models");
 const { Op } = require("sequelize");
-const { sendOrderDeliveredEmail, sendOrderConfirmedEmail } = require("../common/EmailService");
+const {
+  sendOrderCreatedEmail,
+  sendOrderShippingEmail,
+  sendOrderDeliveredEmail,
+  sendOrderConfirmedEmail,
+  sendOrderCancelledEmail,
+  sendAdminNewOrderEmail,
+  sendAdminOrderCancelledEmail,
+} = require("../common/EmailService");
+const SystemSettingService = require("../system/SystemSettingService");
 const NotificationService = require("../notification/NotificationService");
 const PaymentService = require("./PaymentService");
 const { getPagination, getPagingData } = require("../../utils/paginationHelper");
@@ -557,6 +566,41 @@ const createOrder = async (data) => {
 
     await t.commit();
 
+    // Trigger Async Email Notifications based on System Settings
+    setImmediate(async () => {
+      try {
+        const user = await db.User.findByPk(userId, {
+          attributes: ["id", "username", "email", "phone"],
+        });
+
+        // 1. Notify User
+        const notifyUser = await SystemSettingService.getSetting(
+          "EMAIL_NOTIFY_USER_ORDER_CREATED",
+          true
+        );
+        if (notifyUser && user?.email) {
+          await sendOrderCreatedEmail(user, order);
+        }
+
+        // 2. Notify Admin
+        const notifyAdmin = await SystemSettingService.getSetting(
+          "EMAIL_NOTIFY_ADMIN_NEW_ORDER",
+          true
+        );
+        if (notifyAdmin) {
+          const adminEmail =
+            (await SystemSettingService.getSetting("ADMIN_NOTIFICATION_EMAIL")) ||
+            (await SystemSettingService.getSetting("STORE_EMAIL")) ||
+            process.env.EMAIL_USER;
+          if (adminEmail) {
+            await sendAdminNewOrderEmail(adminEmail, order, user);
+          }
+        }
+      } catch (mailErr) {
+        console.error("Order creation email error:", mailErr.message);
+      }
+    });
+
     return { errCode: 0, errMessage: "Create order successfully", data: order };
   } catch (e) {
     await t.rollback();
@@ -754,17 +798,62 @@ const updateOrderStatus = async (id, status, currentUser = null, cancelReason = 
     await order.save({ transaction: t });
     await t.commit();
 
-    if (status === "delivered" || status === "completed") {
-      const user = await db.User.findByPk(order.userId);
-      if (user && status === "delivered") {
-        await sendOrderDeliveredEmail(user, order);
+    // Trigger Async Email Notifications for Status Updates based on System Settings
+    setImmediate(async () => {
+      try {
+        const user = await db.User.findByPk(order.userId, {
+          attributes: ["id", "username", "email", "phone"],
+        });
+
+        if (status === "shipping" || status === "shipped") {
+          const notifyShipping = await SystemSettingService.getSetting(
+            "EMAIL_NOTIFY_USER_ORDER_SHIPPING",
+            true
+          );
+          if (notifyShipping && user?.email) {
+            await sendOrderShippingEmail(user, order);
+          }
+        } else if (status === "delivered" || status === "completed") {
+          const notifyDelivered = await SystemSettingService.getSetting(
+            "EMAIL_NOTIFY_USER_ORDER_DELIVERED",
+            true
+          );
+          if (notifyDelivered && user?.email) {
+            await sendOrderDeliveredEmail(user, order);
+          }
+        } else if (status === "confirmed") {
+          if (user?.email) {
+            await sendOrderConfirmedEmail(user, order);
+          }
+        } else if (status === "cancelled") {
+          // 1. Notify User
+          const notifyCancelled = await SystemSettingService.getSetting(
+            "EMAIL_NOTIFY_USER_ORDER_CANCELLED",
+            true
+          );
+          if (notifyCancelled && user?.email) {
+            await sendOrderCancelledEmail(user, order, cancelReason);
+          }
+
+          // 2. Notify Admin
+          const notifyAdminCancelled = await SystemSettingService.getSetting(
+            "EMAIL_NOTIFY_ADMIN_ORDER_CANCELLED",
+            true
+          );
+          if (notifyAdminCancelled) {
+            const adminEmail =
+              (await SystemSettingService.getSetting("ADMIN_NOTIFICATION_EMAIL")) ||
+              (await SystemSettingService.getSetting("STORE_EMAIL")) ||
+              process.env.EMAIL_USER;
+            if (adminEmail) {
+              await sendAdminOrderCancelledEmail(adminEmail, order, user, cancelReason);
+            }
+          }
+        }
+      } catch (mailErr) {
+        console.error("Order status update email error:", mailErr.message);
       }
-    } else if (status === "confirmed") {
-      const user = await db.User.findByPk(order.userId);
-      if (user) {
-        await sendOrderConfirmedEmail(user, order);
-      }
-    }
+    });
 
     return { errCode: 0, errMessage: "Cập nhật trạng thái đơn hàng thành công!", data: order };
 

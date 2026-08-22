@@ -12,9 +12,21 @@ export const updateSettingAdminApi = (data) =>
 export const toggleOtpSettingAdminApi = (enabled) =>
   axiosClient.post(`/system-settings/admin/toggle-otp`, { enabled });
 
+export const bulkUpdateSettingsAdminApi = (settings) =>
+  axiosClient.post(`/system-settings/admin/bulk-update`, { settings });
+
+export const flushRedisCacheAdminApi = () =>
+  axiosClient.post(`/system-settings/admin/flush-cache`);
+
+export const getSystemHealthAdminApi = () =>
+  axiosClient.get(`/system-settings/admin/health`);
+
 export const systemSettingApi = {
   getPublic: getPublicSettingsApi,
   getAllAdmin: getAllSettingsAdminApi,
   updateAdmin: updateSettingAdminApi,
   toggleOtpAdmin: toggleOtpSettingAdminApi,
+  bulkUpdateAdmin: bulkUpdateSettingsAdminApi,
+  flushCacheAdmin: flushRedisCacheAdminApi,
+  getHealthAdmin: getSystemHealthAdminApi,
 };

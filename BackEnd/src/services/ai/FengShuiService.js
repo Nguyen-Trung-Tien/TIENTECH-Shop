@@ -1,13 +1,7 @@
 const db = require("../../models");
 const { Op } = require("sequelize");
-const { GoogleGenerativeAI } = require("@google/generative-ai");
 const { getFengShuiDetail } = require("../../utils/fortuneUtils");
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || process.env.API_KEY);
-const model = genAI.getGenerativeModel({
-  model: "gemini-2.0-flash",
-  generationConfig: { responseMimeType: "application/json" },
-});
+const { generateContentWithFallback } = require("../../config/gemini");
 
 const extractJson = (text) => {
   try {
@@ -115,7 +109,10 @@ ${dbContext || "Không có sản phẩm nào phù hợp trực tiếp trong kho.
       { role: "user", parts: [{ text: message }] },
     ];
 
-    const resultGen = await model.generateContent({ contents });
+    const resultGen = await generateContentWithFallback(
+      { contents },
+      { generationConfig: { responseMimeType: "application/json" } }
+    );
     const responseText = resultGen.response.text();
     const result = extractJson(responseText);
 

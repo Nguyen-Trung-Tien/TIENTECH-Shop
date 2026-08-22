@@ -79,11 +79,64 @@ const deleteCacheByPattern = async (pattern) => {
   }
 };
 
+const flushAllCache = async () => {
+  if (!isRedisConnected || !redisClient) {
+    return {
+      success: true,
+      redisConnected: false,
+      message: "Redis hiện không kết nối hoặc đang ở chế độ Direct DB. Không có cache tồn đọng.",
+    };
+  }
+  try {
+    if (typeof redisClient.flushDb === "function") {
+      await redisClient.flushDb();
+    } else if (typeof redisClient.flushdb === "function") {
+      await redisClient.flushdb();
+    } else if (typeof redisClient.flushAll === "function") {
+      await redisClient.flushAll();
+    }
+    return {
+      success: true,
+      redisConnected: true,
+      message: "Toàn bộ Redis Cache đã được dọn sạch thành công!",
+    };
+  } catch (err) {
+    console.error(`[Redis] flushAllCache error:`, err);
+    return {
+      success: false,
+      redisConnected: isRedisConnected,
+      message: err.message || "Lỗi xóa cache Redis.",
+    };
+  }
+};
+
+const getRedisStats = async () => {
+  if (!isRedisConnected) {
+    return { connected: false, uptime: 0, usedMemory: "0 MB", totalKeys: 0 };
+  }
+  try {
+    const info = await redisClient.info();
+    const dbSize = await redisClient.dbSize();
+    // Parse memory from info string
+    const match = info.match(/used_memory_human:([^\r\n]+)/);
+    const usedMemory = match ? match[1] : "N/A";
+    return {
+      connected: true,
+      totalKeys: dbSize || 0,
+      usedMemory,
+    };
+  } catch (err) {
+    return { connected: false, error: err.message };
+  }
+};
+
 module.exports = {
   redisClient,
   getCache,
   setCache,
   deleteCache,
   deleteCacheByPattern,
+  flushAllCache,
+  getRedisStats,
   isRedisConnected: () => isRedisConnected,
 };

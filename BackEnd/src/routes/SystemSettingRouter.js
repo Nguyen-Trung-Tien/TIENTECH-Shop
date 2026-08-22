@@ -31,4 +31,25 @@ router.post(
   SystemSettingController.handleToggleOtpSetting
 );
 
+router.post(
+  "/admin/bulk-update",
+  authenticateToken,
+  authorizeRole(["admin", "root"]),
+  SystemSettingController.handleBulkUpdateSettings
+);
+
+router.post(
+  "/admin/flush-cache",
+  authenticateToken,
+  authorizeRole(["admin", "root"]),
+  SystemSettingController.handleFlushRedisCache
+);
+
+router.get(
+  "/admin/health",
+  authenticateToken,
+  authorizeRole(["admin", "root"]),
+  SystemSettingController.handleGetSystemHealth
+);
+
 module.exports = router;

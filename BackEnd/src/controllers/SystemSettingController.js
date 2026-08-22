@@ -73,6 +73,41 @@ class SystemSettingController {
       return handleError(res, e, "handleToggleOtpSetting");
     }
   }
+
+  async handleBulkUpdateSettings(req, res) {
+    try {
+      const { settings } = req.body;
+      if (!Array.isArray(settings)) {
+        return handleResponse(res, {
+          errCode: 1,
+          errMessage: "Payload 'settings' phải là một mảng!",
+        });
+      }
+
+      const result = await SystemSettingService.bulkSetSettings(settings);
+      return handleResponse(res, result);
+    } catch (e) {
+      return handleError(res, e, "handleBulkUpdateSettings");
+    }
+  }
+
+  async handleFlushRedisCache(req, res) {
+    try {
+      const result = await SystemSettingService.flushCache();
+      return handleResponse(res, result);
+    } catch (e) {
+      return handleError(res, e, "handleFlushRedisCache");
+    }
+  }
+
+  async handleGetSystemHealth(req, res) {
+    try {
+      const result = await SystemSettingService.getSystemHealth();
+      return handleResponse(res, result);
+    } catch (e) {
+      return handleError(res, e, "handleGetSystemHealth");
+    }
+  }
 }
 
 module.exports = new SystemSettingController();

@@ -1,8 +1,5 @@
-const { GoogleGenerativeAI } = require("@google/generative-ai");
 const ProductService = require("../product/ProductService");
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+const { generateContentWithFallback } = require("../../config/gemini");
 
 const visualSearch = async (image) => {
   try {
@@ -12,7 +9,7 @@ const visualSearch = async (image) => {
 
     const prompt = "Mô tả ngắn gọn sản phẩm trong ảnh này để tôi tìm kiếm trong cơ sở dữ liệu. Chỉ trả về các từ khóa chính về loại sản phẩm, màu sắc, kiểu dáng.";
     
-    const result = await model.generateContent([
+    const result = await generateContentWithFallback([
       prompt,
       {
         inlineData: {

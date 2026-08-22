@@ -1,11 +1,5 @@
 const db = require("../../models");
-const { GoogleGenerativeAI } = require("@google/generative-ai");
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || process.env.API_KEY);
-const geminiModel = genAI.getGenerativeModel({
-  model: "gemini-2.0-flash",
-  generationConfig: { responseMimeType: "application/json" },
-});
+const { generateContentWithFallback } = require("../../config/gemini");
 
 const analyzeProductWithGemini = async (product) => {
   const currentMonth = new Date().getMonth() + 1;
@@ -42,7 +36,9 @@ Trả về JSON THUẦN với cấu trúc:
   `;
 
   try {
-    const result = await geminiModel.generateContent(prompt);
+    const result = await generateContentWithFallback(prompt, {
+      generationConfig: { responseMimeType: "application/json" },
+    });
     return JSON.parse(result.response.text());
   } catch (err) {
     console.error("Gemini AI Analysis Error:", err);

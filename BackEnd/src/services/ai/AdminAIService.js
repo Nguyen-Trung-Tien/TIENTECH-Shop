@@ -1,11 +1,6 @@
 const db = require("../../models");
 const { Op } = require("sequelize");
-const { GoogleGenerativeAI } = require("@google/generative-ai");
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || process.env.API_KEY);
-const geminiModel = genAI.getGenerativeModel({
-  model: "gemini-2.0-flash",
-});
+const { generateContentWithFallback } = require("../../config/gemini");
 
 const getAIInsights = async () => {
   try {
@@ -51,7 +46,9 @@ Trả về kết quả bằng tiếng Việt, súc tích, định dạng JSON:
 }
     `;
 
-    const result = await geminiModel.generateContent(context);
+    const result = await generateContentWithFallback(context, {
+      generationConfig: { responseMimeType: "application/json" },
+    });
     const response = result.response.text();
 
     let parsedData = null;
@@ -61,21 +58,55 @@ Trả về kết quả bằng tiếng Việt, súc tích, định dạng JSON:
       parsedData = JSON.parse(jsonStr);
     } catch (parseErr) {
       console.warn("Failed to parse Gemini AI response as JSON:", parseErr.message);
-      parsedData = {
-        promotionSuggestions: topSelling.map((p) => `Khuyến mãi cho ${p.name}`),
-        restockSuggestions: slowMoving.map((p) => `Cần xả kho ${p.name}`),
-        serviceReview: "Dữ liệu phản hồi cần được theo dõi sát sao.",
-        strategicAdvice: response.slice(0, 300),
-      };
     }
 
     return {
       errCode: 0,
-      data: parsedData,
+      data: {
+        raw: response,
+        parsed: parsedData,
+      },
     };
   } catch (error) {
     console.error("AI Insights Error:", error);
-    return { errCode: -1, errMessage: "Lỗi khi AI phân tích dữ liệu." };
+    return {
+      errCode: 1,
+      message: "Không thể tạo báo cáo AI lúc này. Vui lòng thử lại sau.",
+      error: error.message,
+    };
+  }
+};
+
+const answerAdminQuery = async (query) => {
+  try {
+    const totalRevenue = await db.Order.sum("totalPrice", {
+      where: { status: "delivered" },
+    });
+    const totalOrders = await db.Order.count();
+    const totalUsers = await db.User.count();
+
+    const context = `
+Dữ liệu tổng quan hệ thống:
+- Doanh thu tích luỹ: ${totalRevenue || 0} VND
+- Tổng số đơn: ${totalOrders}
+- Tổng số tài khoản: ${totalUsers}
+
+Câu hỏi của Admin: "${query}"
+Hãy trả lời chuyên nghiệp, súc tích và hỗ trợ ra quyết định.
+    `;
+
+    const result = await generateContentWithFallback(context);
+    return {
+      errCode: 0,
+      answer: result.response.text(),
+    };
+  } catch (error) {
+    console.error("Admin Query AI Error:", error);
+    return {
+      errCode: 1,
+      message: "Lỗi xử lý câu hỏi AI.",
+      error: error.message,
+    };
   }
 };
 
