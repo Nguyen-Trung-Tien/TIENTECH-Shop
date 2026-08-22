@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useSearchParams, useNavigate, Link } from "react-router-dom";
 import { verifyEmailApi, resendVerificationApi } from "../../api/userApi";
+import { showErrorToast, showSuccessToast, showWarningToast } from "../../utils/toastHelper";
 import { toast } from "react-toastify";
 import { Mail, ArrowLeft } from "lucide-react";
 import { motion as Motion } from "framer-motion";
@@ -62,7 +63,7 @@ const OTPVerification = () => {
     e.preventDefault();
     const otpCode = otp.join("");
     if (otpCode.length !== 6) {
-      toast.warning("Vui lòng nhập đủ 6 chữ số");
+      showWarningToast("Vui lòng nhập đủ 6 chữ số");
       return;
     }
 
@@ -70,13 +71,13 @@ const OTPVerification = () => {
     try {
       const res = await verifyEmailApi(email, otpCode);
       if (res.errCode === 0) {
-        toast.success("Xác thực tài khoản thành công!");
+        showSuccessToast("Xác thực tài khoản thành công!");
         navigate("/login");
       } else {
-        toast.error(res.errMessage || "Mã OTP không chính xác");
+        showErrorToast(res.errMessage || "Mã OTP không chính xác");
       }
     } catch (error) {
-      toast.error(error.response?.data?.errMessage || "Lỗi hệ thống");
+      showErrorToast(error, "Xác thực mã OTP thất bại");
     } finally {
       setLoading(false);
     }
@@ -88,14 +89,14 @@ const OTPVerification = () => {
     try {
       const res = await resendVerificationApi(email);
       if (res.errCode === 0) {
-        toast.success("Đã gửi mã OTP mới vào email của bạn!");
+        showSuccessToast("Đã gửi mã OTP mới vào email của bạn!");
         setTimer(60);
         setOtp(["", "", "", "", "", ""]);
       } else {
-        toast.error(res.errMessage);
+        showErrorToast(res.errMessage || "Không thể gửi lại mã OTP");
       }
-    } catch {
-      toast.error("Lỗi khi gửi lại mã");
+    } catch (error) {
+      showErrorToast(error, "Lỗi khi gửi lại mã OTP");
     } finally {
       setResending(false);
     }

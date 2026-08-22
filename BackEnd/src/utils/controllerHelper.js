@@ -76,8 +76,11 @@ const handleResponse = (res, result, successStatus = HTTP_STATUS.OK) => {
       rawMsg.includes("unauthorized") ||
       rawMsg.includes("chưa kích hoạt") ||
       rawMsg.includes("mật khẩu không chính xác") ||
+      rawMsg.includes("sai mật khẩu") ||
       rawMsg.includes("token không hợp lệ") ||
       rawMsg.includes("token đã hết hạn") ||
+      rawMsg.includes("phiên đăng nhập") ||
+      rawMsg.includes("chưa đăng nhập") ||
       rawMsg.includes("no token")
     ) {
       status = HTTP_STATUS.UNAUTHORIZED; // 401
@@ -86,11 +89,13 @@ const handleResponse = (res, result, successStatus = HTTP_STATUS.OK) => {
       result.errCode === "FORBIDDEN" ||
       rawMsg.includes("forbidden") ||
       rawMsg.includes("không có quyền") ||
-      rawMsg.includes("không được phép")
+      rawMsg.includes("không được phép") ||
+      rawMsg.includes("bị từ chối")
     ) {
       status = HTTP_STATUS.FORBIDDEN; // 403
     } else if (
       result.errCode === 404 ||
+      result.errCode === "NOT_FOUND" ||
       rawMsg.includes("not found") ||
       rawMsg.includes("không tìm thấy") ||
       rawMsg.includes("không tồn tại")
@@ -98,24 +103,42 @@ const handleResponse = (res, result, successStatus = HTTP_STATUS.OK) => {
       status = HTTP_STATUS.NOT_FOUND; // 404
     } else if (
       result.errCode === 409 ||
+      result.errCode === "CONFLICT" ||
       rawMsg.includes("already exists") ||
       rawMsg.includes("đã tồn tại") ||
-      rawMsg.includes("trùng lặp")
+      rawMsg.includes("đã được đăng ký") ||
+      rawMsg.includes("đã có người") ||
+      rawMsg.includes("đã được sử dụng") ||
+      rawMsg.includes("trùng lặp") ||
+      rawMsg.includes("unique violation")
     ) {
       status = HTTP_STATUS.CONFLICT; // 409
     } else if (
       result.errCode === 429 ||
+      result.errCode === "TOO_MANY_REQUESTS" ||
       rawMsg.includes("too many requests") ||
-      rawMsg.includes("quá nhiều yêu cầu")
+      rawMsg.includes("quá nhiều yêu cầu") ||
+      rawMsg.includes("quá nhanh") ||
+      rawMsg.includes("vui lòng thử lại sau 15 phút")
     ) {
       status = HTTP_STATUS.TOO_MANY_REQUESTS; // 429
     } else if (
       result.errCode === 422 ||
+      result.errCode === "UNPROCESSABLE_ENTITY" ||
       rawMsg.includes("không đủ số lượng") ||
       rawMsg.includes("hết hàng") ||
-      rawMsg.includes("tồn kho")
+      rawMsg.includes("tồn kho") ||
+      rawMsg.includes("vượt quá")
     ) {
       status = HTTP_STATUS.UNPROCESSABLE_ENTITY; // 422
+    } else if (
+      result.errCode === 500 ||
+      result.errCode === -1 ||
+      rawMsg.includes("internal server error") ||
+      rawMsg.includes("lỗi máy chủ") ||
+      rawMsg.includes("lỗi hệ thống")
+    ) {
+      status = HTTP_STATUS.INTERNAL_SERVER_ERROR; // 500
     } else {
       status = HTTP_STATUS.BAD_REQUEST; // 400
     }
@@ -123,7 +146,7 @@ const handleResponse = (res, result, successStatus = HTTP_STATUS.OK) => {
 
   // Ensure Vietnamese errMessage is polite and informative
   let finalErrMessage = result.errMessage || result.message;
-  if (!finalErrMessage || finalErrMessage === "Error" || finalErrMessage === "Internal server error") {
+  if (!finalErrMessage || finalErrMessage === "Error" || finalErrMessage === "Validation error" || finalErrMessage === "Internal server error") {
     finalErrMessage = VIETNAMESE_FALLBACK_MESSAGES[status] || "Đã xảy ra lỗi trong quá trình xử lý.";
   }
 

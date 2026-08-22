@@ -19,6 +19,7 @@ import Loading from "../../components/Loading/Loading";
 import UnifiedSpinner from "../../components/Loading/UnifiedSpinner";
 import Logo from "../../components/UI/Logo";
 import { appConfig } from "../../config/runtimeConfig";
+import { showErrorToast, showSuccessToast } from "../../utils/toastHelper";
 
 const FloatingInput = ({
   id,
@@ -124,27 +125,22 @@ const RegisterPage = () => {
       const data = await registerUser({ username, email, phone, password });
       if (data.errCode === 0) {
         if (data.requireOtp === false) {
-          toast.success(
+          showSuccessToast(
             data.errMessage || "Đăng ký tài khoản thành công! Bạn có thể đăng nhập ngay.",
           );
           navigate("/login");
         } else {
-          toast.success(
+          showSuccessToast(
             data.errMessage || "Đăng ký thành công! Vui lòng nhập mã OTP.",
           );
           navigate(`/verify-account?email=${encodeURIComponent(email)}`);
         }
       } else {
-        toast.error(data.errMessage || "Đăng ký thất bại!");
+        showErrorToast(data.errMessage || "Đăng ký thất bại!");
       }
     } catch (err) {
       console.error("Registration error:", err);
-      const msg =
-        err?.response?.data?.errMessage ||
-        err?.response?.data?.message ||
-        err?.errMessage ||
-        "Đăng ký không thành công. Vui lòng kiểm tra lại thông tin!";
-      toast.error(msg);
+      showErrorToast(err, "Đăng ký không thành công. Vui lòng kiểm tra lại thông tin!");
     } finally {
       setLoading(false);
     }

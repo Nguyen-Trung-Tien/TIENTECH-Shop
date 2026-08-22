@@ -19,6 +19,7 @@ import ForgotPasswordModal from "../../components/ForgotPasswordModal/ForgotPass
 import UnifiedSpinner from "../../components/Loading/UnifiedSpinner";
 import Logo from "../../components/UI/Logo";
 import { appConfig } from "../../config/runtimeConfig";
+import { showErrorToast, showSuccessToast } from "../../utils/toastHelper";
 
 const FloatingInput = ({
   id,
@@ -110,14 +111,14 @@ const LoginPage = () => {
           avatar: user.avatar,
         };
         dispatch(setUser({ user: minimalUser }));
-        toast.success(res.errMessage || "Đăng nhập thành công!");
+        showSuccessToast(res.errMessage || "Đăng nhập thành công!");
         navigate("/");
       } else {
-        toast.error(res.errMessage || "Đăng nhập thất bại!");
+        showErrorToast(res.errMessage || "Đăng nhập thất bại!");
       }
     } catch (err) {
       console.error("Login error:", err);
-      toast.error("Kiểm tra lại mật khẩu và tài khoản!");
+      showErrorToast(err, "Đăng nhập không thành công. Vui lòng kiểm tra lại thông tin!");
     } finally {
       setLoading(false);
     }

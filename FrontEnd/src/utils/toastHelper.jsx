@@ -23,6 +23,12 @@ const ERROR_TRANSLATIONS = {
   "Email already exists": "Địa chỉ email này đã được sử dụng trên hệ thống.",
   "Email and password are required!": "Vui lòng nhập đầy đủ Email và Mật khẩu!",
   "User not found": "Không tìm thấy thông tin tài khoản người dùng.",
+  "Validation error": "Dữ liệu không hợp lệ hoặc thông tin tài khoản đã tồn tại.",
+  "SequelizeValidationError": "Dữ liệu nhập vào không hợp lệ. Vui lòng kiểm tra lại.",
+  "SequelizeUniqueConstraintError": "Thông tin tài khoản đã tồn tại trên hệ thống.",
+  "Validation len on username failed": "Tên người dùng phải có độ dài từ 3 đến 50 ký tự.",
+  "username must be unique": "Tên người dùng (username) này đã có người sử dụng.",
+  "email must be unique": "Địa chỉ email này đã được đăng ký tài khoản.",
 
   // Đơn hàng & Giỏ hàng
   "Order not found": "Không tìm thấy thông tin đơn hàng yêu cầu.",
@@ -34,10 +40,20 @@ const ERROR_TRANSLATIONS = {
   "Voucher usage limit reached": "Mã giảm giá đã hết lượt sử dụng.",
   "Order total does not meet minimum requirement": "Giá trị đơn hàng chưa đạt mức tối thiểu để áp dụng mã giảm giá.",
 
-  // Hệ thống & Server
+  // Hệ thống, Axios & Server
   "Internal server error": "Đã xảy ra lỗi máy chủ nội bộ. Đội ngũ kỹ thuật đang xử lý.",
   "Error from server": "Đã xảy ra lỗi từ hệ thống. Vui lòng thử lại sau.",
   "Too many requests": "Bạn đã gửi quá nhiều yêu cầu. Vui lòng thử lại sau 15 phút.",
+  "BAD_REQUEST": "Dữ liệu gửi lên không hợp lệ.",
+  "CONFLICT": "Dữ liệu đã tồn tại trên hệ thống hoặc xảy ra xung đột.",
+  "Request failed with status code 400": "Dữ liệu yêu cầu không hợp lệ hoặc thiếu thông tin.",
+  "Request failed with status code 401": "Phiên đăng nhập đã hết hạn hoặc thông tin xác thực không đúng.",
+  "Request failed with status code 403": "Bạn không có quyền thực hiện thao tác này.",
+  "Request failed with status code 404": "Không tìm thấy dữ liệu hoặc tài nguyên yêu cầu.",
+  "Request failed with status code 409": "Dữ liệu đã tồn tại trên hệ thống hoặc xảy ra xung đột.",
+  "Request failed with status code 422": "Dữ liệu không thể xử lý. Vui lòng kiểm tra lại số lượng.",
+  "Request failed with status code 429": "Bạn đã gửi quá nhiều yêu cầu. Vui lòng thử lại sau 15 phút.",
+  "Request failed with status code 500": "Lỗi máy chủ nội bộ. Đội ngũ kỹ thuật đang xử lý.",
 };
 
 /**

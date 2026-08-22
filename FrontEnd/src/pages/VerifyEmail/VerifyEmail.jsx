@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import { verifyEmailApi, resendVerificationApi } from "../../api/userApi";
+import { showErrorToast, showSuccessToast } from "../../utils/toastHelper";
 import { toast } from "react-toastify";
 import { CheckCircle, XCircle, Mail } from "lucide-react";
 import UnifiedSpinner from "../../components/Loading/UnifiedSpinner";
@@ -29,7 +30,7 @@ const VerifyEmail = () => {
         if (res.errCode === 0) {
           setStatus("success");
           setMessage(res.errMessage || "Xác nhận tài khoản thành công!");
-          toast.success("Xác nhận tài khoản thành công!");
+          showSuccessToast("Xác nhận tài khoản thành công!");
         } else {
           setStatus("error");
           setMessage(res.errMessage || "Xác nhận tài khoản thất bại.");
@@ -38,7 +39,8 @@ const VerifyEmail = () => {
         setStatus("error");
         setMessage(
           error.response?.data?.errMessage ||
-            "Có lỗi xảy ra trong quá trình xác thực.",
+          error.response?.data?.message ||
+          "Có lỗi xảy ra trong quá trình xác thực.",
         );
       }
     };
@@ -48,7 +50,7 @@ const VerifyEmail = () => {
 
   const handleResend = async () => {
     if (!email) {
-      toast.error("Không tìm thấy email để gửi lại.");
+      showErrorToast("Không tìm thấy email để gửi lại.");
       return;
     }
 
@@ -56,14 +58,14 @@ const VerifyEmail = () => {
     try {
       const res = await resendVerificationApi(email);
       if (res.errCode === 0) {
-        toast.success(
+        showSuccessToast(
           "Đã gửi lại email xác nhận. Vui lòng kiểm tra hộp thư của bạn.",
         );
       } else {
-        toast.error(res.errMessage || "Gửi lại email thất bại.");
+        showErrorToast(res.errMessage || "Gửi lại email thất bại.");
       }
     } catch (error) {
-      toast.error(error.response?.data?.errMessage || "Lỗi khi gửi lại email.");
+      showErrorToast(error, "Lỗi khi gửi lại email.");
     } finally {
       setIsResending(false);
     }
