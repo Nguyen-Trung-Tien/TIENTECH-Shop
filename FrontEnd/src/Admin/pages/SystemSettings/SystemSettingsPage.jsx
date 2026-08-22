@@ -201,7 +201,8 @@ const SystemSettingsPage = () => {
   }, [rawSettings, activeTab, searchQuery]);
 
   return (
-    <div className="space-y-6 p-4 sm:p-6 md:p-8 max-w-7xl mx-auto text-slate-800 dark:text-dark-text-primary">
+    <div className="space-y-6 w-full">
+      {/* Top Header Section (Standard Admin Layout) */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2.5">
