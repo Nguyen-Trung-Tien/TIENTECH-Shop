@@ -133,7 +133,9 @@ const ChatBot = () => {
 
   const toggleListening = () => {
     if (!recognitionRef.current) {
-      alert("Trình duyệt của bạn chưa hỗ trợ nhận diện giọng nói (Web Speech API).");
+      alert(
+        "Trình duyệt của bạn chưa hỗ trợ nhận diện giọng nói (Web Speech API).",
+      );
       return;
     }
 
@@ -195,7 +197,7 @@ const ChatBot = () => {
         setUnreadCount((count) => count + 1);
       }
     },
-    [isOpen]
+    [isOpen],
   );
 
   // Lời chào tự động ban đầu
@@ -206,7 +208,7 @@ const ChatBot = () => {
       timer = setTimeout(() => {
         addMessage(
           "assistant",
-          "👋 Xin chào! Tôi là **TienTech AI Assistant**.\nTôi có thể hỗ trợ bạn tìm kiếm sản phẩm, tư vấn cấu hình, tra cứu khuyến mãi và tìm kiếm bằng hình ảnh!"
+          "👋 Xin chào! Tôi là **TienTech AI Assistant**.\nTôi có thể hỗ trợ bạn tìm kiếm sản phẩm, tư vấn cấu hình, tra cứu khuyến mãi và tìm kiếm bằng hình ảnh!",
         );
       }, 400);
     }
@@ -223,7 +225,7 @@ const ChatBot = () => {
       addMessage("assistant", text, recommendedProducts);
       setTyping("");
     },
-    [addMessage]
+    [addMessage],
   );
 
   const handleImageUpload = (e) => {
@@ -249,7 +251,10 @@ const ChatBot = () => {
 
     // Nếu có ảnh -> Thực hiện Tìm kiếm qua hình ảnh
     if (imageToSend) {
-      addMessage("user", messageContent || "📷 Đã tải lên 1 hình ảnh để tìm kiếm...");
+      addMessage(
+        "user",
+        messageContent || "📷 Đã tải lên 1 hình ảnh để tìm kiếm...",
+      );
       setImagePreview(imageToSend);
       try {
         const res = await visualSearch(imageToSend);
@@ -259,18 +264,19 @@ const ChatBot = () => {
             `🔍 **TienTech Visual AI** tìm thấy các sản phẩm tương tự (${
               res.data.description || "Phân tích hoàn tất"
             }):`,
-            res.data.products || []
+            res.data.products || [],
           );
         } else {
           await streamText(
-            res.errMessage || "Không thể phân tích hình ảnh này. Bạn vui lòng thử ảnh khác nhé!"
+            res.errMessage ||
+              "Không thể phân tích hình ảnh này. Bạn vui lòng thử ảnh khác nhé!",
           );
         }
       } catch (err) {
         console.error(err);
         setImagePreview(null);
         await streamText(
-          "Rất tiếc, hệ thống tìm kiếm bằng hình ảnh đang gặp sự cố. Bạn vui lòng thử lại sau!"
+          "Rất tiếc, hệ thống tìm kiếm bằng hình ảnh đang gặp sự cố. Bạn vui lòng thử lại sau!",
         );
       } finally {
         setLoading(false);
@@ -296,17 +302,20 @@ const ChatBot = () => {
         } else if (data && data.reply) {
           await streamText(data.reply, data.recommendedProducts || []);
         } else {
-          await streamText("Tôi đã nhận được thông tin nhưng không có phản hồi cụ thể.");
+          await streamText(
+            "Tôi đã nhận được thông tin nhưng không có phản hồi cụ thể.",
+          );
         }
       } else {
         await streamText(
-          res.errMessage || "Xin lỗi, tôi không thể xử lý yêu cầu của bạn lúc này."
+          res.errMessage ||
+            "Xin lỗi, tôi không thể xử lý yêu cầu của bạn lúc này.",
         );
       }
     } catch (err) {
       console.error(err);
       await streamText(
-        "Xin lỗi, kết nối tới hệ thống AI tạm thời gián đoạn. Vui lòng thử lại sau! 😥"
+        "Xin lỗi, kết nối tới hệ thống AI tạm thời gián đoạn. Vui lòng thử lại sau! 😥",
       );
     } finally {
       setLoading(false);
@@ -386,9 +395,6 @@ const ChatBot = () => {
                     <h3 className="text-sm font-black tracking-wide uppercase">
                       TienTech AI
                     </h3>
-                    <span className="px-1.5 py-0.5 rounded bg-white/20 text-[9px] font-bold uppercase tracking-wider">
-                      v6.0
-                    </span>
                   </div>
                   <div className="flex items-center gap-1.5 mt-0.5">
                     <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
@@ -415,7 +421,11 @@ const ChatBot = () => {
                   title={fullMode ? "Thu nhỏ" : "Phóng to"}
                   className="hidden md:flex p-2 hover:bg-white/10 rounded-xl transition-colors text-white/80 hover:text-white"
                 >
-                  {fullMode ? <FiMinimize2 size={17} /> : <FiMaximize2 size={17} />}
+                  {fullMode ? (
+                    <FiMinimize2 size={17} />
+                  ) : (
+                    <FiMaximize2 size={17} />
+                  )}
                 </button>
                 <button
                   onClick={() => setIsOpen(false)}
@@ -452,7 +462,11 @@ const ChatBot = () => {
                           : "bg-gradient-to-tr from-blue-600 to-indigo-600 text-white"
                       }`}
                     >
-                      {msg.role === "user" ? <FiUser size={14} /> : <FiCpu size={14} />}
+                      {msg.role === "user" ? (
+                        <FiUser size={14} />
+                      ) : (
+                        <FiCpu size={14} />
+                      )}
                     </div>
 
                     <div className="space-y-1 min-w-0">
@@ -475,8 +489,13 @@ const ChatBot = () => {
                           >
                             {copiedIdx === i ? (
                               <>
-                                <FiCheck size={12} className="text-emerald-500" />
-                                <span className="text-[10px] text-emerald-500">Đã chép</span>
+                                <FiCheck
+                                  size={12}
+                                  className="text-emerald-500"
+                                />
+                                <span className="text-[10px] text-emerald-500">
+                                  Đã chép
+                                </span>
                               </>
                             ) : (
                               <FiCopy size={12} />
@@ -638,7 +657,7 @@ const ChatBot = () => {
                   accept="image/*"
                   className="hidden"
                 />
-                
+
                 {/* Visual Search Image Upload Button */}
                 <button
                   type="button"
@@ -653,7 +672,9 @@ const ChatBot = () => {
                 <button
                   type="button"
                   onClick={toggleListening}
-                  title={isListening ? "Đang lắng nghe..." : "Nhập bằng giọng nói"}
+                  title={
+                    isListening ? "Đang lắng nghe..." : "Nhập bằng giọng nói"
+                  }
                   className={`size-11 flex items-center justify-center rounded-xl transition-all ${
                     isListening
                       ? "bg-rose-500 text-white animate-pulse shadow-md shadow-rose-500/30"
@@ -669,7 +690,9 @@ const ChatBot = () => {
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   placeholder={
-                    isListening ? "Đang lắng nghe giọng nói..." : "Nhập câu hỏi hoặc đính kèm ảnh..."
+                    isListening
+                      ? "Đang lắng nghe giọng nói..."
+                      : "Nhập câu hỏi hoặc đính kèm ảnh..."
                   }
                   disabled={loading}
                   className="flex-1 h-11 px-3 bg-slate-100 dark:bg-gray-800 border border-transparent rounded-xl text-sm font-medium text-gray-900 dark:text-white focus:bg-white dark:focus:bg-gray-800 focus:border-blue-500/40 outline-none transition-all placeholder:text-gray-400"
@@ -688,10 +711,6 @@ const ChatBot = () => {
                   <FiSend size={18} />
                 </button>
               </div>
-
-              <p className="mt-2 text-[9px] text-center text-gray-400 dark:text-gray-500 font-semibold tracking-wider uppercase">
-                Powered by TienTech AI Engine v6.0 • Visual & Voice Enabled
-              </p>
             </form>
           </Motion.div>
         )}

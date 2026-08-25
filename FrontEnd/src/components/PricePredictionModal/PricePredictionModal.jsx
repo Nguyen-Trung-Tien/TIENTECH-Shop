@@ -164,7 +164,13 @@ const TrendChart = ({ data }) => {
 const AnalysisDetail = ({ icon: Icon, title, content, colorClass }) => (
   <div className="space-y-4">
     <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-      {Icon && (typeof Icon === "function" ? <Icon className={colorClass} /> : Icon)} {title}
+      {Icon &&
+        (typeof Icon === "function" ? (
+          <Icon className={colorClass} />
+        ) : (
+          Icon
+        ))}{" "}
+      {title}
     </h4>
     <div className="p-6 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-3xl shadow-sm text-sm text-slate-600 dark:text-slate-400 font-medium leading-relaxed">
       {content}
@@ -268,7 +274,7 @@ const PricePredictionModal = ({ productId, isOpen, onClose }) => {
                   AI Price Analytics
                 </h3>
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mt-1">
-                  Dự đoán xu hướng giá TienTech Engine v5.0
+                  Dự đoán xu hướng giá TienTech Engine
                 </p>
               </div>
             </div>

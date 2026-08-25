@@ -34,13 +34,12 @@ const AdminLayout = () => {
       {/* Main Content Area */}
       <div className="flex flex-col flex-1 h-screen w-full min-w-0 overflow-hidden transition-all duration-300 ease-in-out">
         {/* Top Header */}
-        <HeaderAdmin 
-          toggleSidebar={toggleSidebar} 
-          isCollapsed={collapsed} 
+        <HeaderAdmin
+          toggleSidebar={toggleSidebar}
+          isCollapsed={collapsed}
           theme={theme}
           toggleTheme={toggleTheme}
         />
-
 
         {/* Dynamic Content Area */}
         <main className="flex-1 overflow-y-auto custom-scrollbar bg-slate-50 dark:bg-dark-bg transition-colors duration-300">
@@ -54,7 +53,8 @@ const AdminLayout = () => {
 
           {/* Admin Footer */}
           <footer className="py-3 px-4 sm:px-10 border-t border-slate-200/60 dark:border-dark-border bg-white/50 dark:bg-dark-surface/50 text-center text-[10px] sm:text-[11px] font-bold uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary">
-            &copy; {new Date().getFullYear()} TienTech Shop &bull; Mobile Ready Dashboard v2.0
+            &copy; {new Date().getFullYear()} TienTech Shop &bull; Mobile Ready
+            Dashboard
           </footer>
         </main>
       </div>

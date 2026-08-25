@@ -102,11 +102,31 @@ const FortuneProducts = () => {
     let sum = can + chi;
     if (sum > 5) sum -= 5;
     const elementMap = {
-      1: { name: "Mệnh Kim", icon: "✨", desc: "Hợp các thiết bị màu Trắng, Xám, Vàng, Nâu đất. Mang đến sự kiên định & may mắn tài lộc." },
-      2: { name: "Mệnh Thủy", icon: "🌊", desc: "Hợp các thiết bị màu Đen, Xanh Nước Biển, Trắng, Bạc. Hỗ trợ hanh thông & sự nghiệp thăng tiến." },
-      3: { name: "Mệnh Hỏa", icon: "🔥", desc: "Hợp các thiết bị màu Đỏ, Hồng, Tím, Xanh Lá. Nguồn năng lượng dồi dào & nhiệt huyết." },
-      4: { name: "Mệnh Thổ", icon: "⛰️", desc: "Hợp các thiết bị màu Vàng, Nâu Đất, Đỏ, Tím. Tăng sự vững chắc & uy tín trong công việc." },
-      5: { name: "Mệnh Mộc", icon: "🌿", desc: "Hợp các thiết bị màu Xanh Lá, Đen, Xanh Nước Biển. Thúc đẩy sự phát triển & sáng tạo vượt trội." },
+      1: {
+        name: "Mệnh Kim",
+        icon: "✨",
+        desc: "Hợp các thiết bị màu Trắng, Xám, Vàng, Nâu đất. Mang đến sự kiên định & may mắn tài lộc.",
+      },
+      2: {
+        name: "Mệnh Thủy",
+        icon: "🌊",
+        desc: "Hợp các thiết bị màu Đen, Xanh Nước Biển, Trắng, Bạc. Hỗ trợ hanh thông & sự nghiệp thăng tiến.",
+      },
+      3: {
+        name: "Mệnh Hỏa",
+        icon: "🔥",
+        desc: "Hợp các thiết bị màu Đỏ, Hồng, Tím, Xanh Lá. Nguồn năng lượng dồi dào & nhiệt huyết.",
+      },
+      4: {
+        name: "Mệnh Thổ",
+        icon: "⛰️",
+        desc: "Hợp các thiết bị màu Vàng, Nâu Đất, Đỏ, Tím. Tăng sự vững chắc & uy tín trong công việc.",
+      },
+      5: {
+        name: "Mệnh Mộc",
+        icon: "🌿",
+        desc: "Hợp các thiết bị màu Xanh Lá, Đen, Xanh Nước Biển. Thúc đẩy sự phát triển & sáng tạo vượt trội.",
+      },
     };
     return elementMap[sum] || null;
   };
@@ -192,7 +212,7 @@ const FortuneProducts = () => {
           <div className="max-w-3xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500 text-white text-[10px] font-black uppercase tracking-widest mb-6 shadow-lg shadow-blue-500/20">
               <FiActivity size={12} />
-              AI Phong Thủy v5.0
+              AI Phong Thủy
             </div>
 
             <h1 className="text-4xl md:text-6xl font-black text-slate-900 dark:text-white mb-6 leading-[1.1] tracking-tight">
@@ -336,9 +356,12 @@ const FortuneProducts = () => {
                   <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
                     <div>
                       <div className="flex items-center gap-2 mb-2">
-                        <span className="text-2xl">{calculateElementByYear(birthYear).icon}</span>
+                        <span className="text-2xl">
+                          {calculateElementByYear(birthYear).icon}
+                        </span>
                         <h3 className="text-2xl font-black uppercase tracking-tight">
-                          {calculateElementByYear(birthYear).name} • Sinh năm {birthYear}
+                          {calculateElementByYear(birthYear).name} • Sinh năm{" "}
+                          {birthYear}
                         </h3>
                       </div>
                       <p className="text-blue-100 text-sm font-medium leading-relaxed max-w-xl">
@@ -346,8 +369,12 @@ const FortuneProducts = () => {
                       </p>
                     </div>
                     <div className="px-5 py-3 bg-white/15 backdrop-blur-md rounded-2xl border border-white/20 text-center shrink-0">
-                      <p className="text-[10px] font-black uppercase tracking-widest text-blue-200">Độ Tương Tích AI</p>
-                      <p className="text-2xl font-black text-amber-300">98.5%</p>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-blue-200">
+                        Độ Tương Tích AI
+                      </p>
+                      <p className="text-2xl font-black text-amber-300">
+                        98.5%
+                      </p>
                     </div>
                   </div>
                 </Motion.div>
