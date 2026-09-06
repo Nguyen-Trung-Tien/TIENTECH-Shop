@@ -104,7 +104,7 @@ const Sidebar = ({ collapsed, mobileOpen, onCloseMobile }) => {
     if (onCloseMobile) {
       onCloseMobile();
     }
-  }, [location.pathname]);
+  }, [location.pathname, onCloseMobile]);
 
   useEffect(() => {
     const fetchCounters = async () => {

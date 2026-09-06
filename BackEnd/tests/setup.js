@@ -8,3 +8,19 @@ process.env.NODE_ENV = "test";
 jest.mock("uuid", () => ({
   v4: jest.fn(() => "test-uuid-v4-1234-5678"),
 }));
+
+afterAll(async () => {
+  try {
+    const db = require("../src/models");
+    if (db && db.sequelize && typeof db.sequelize.close === "function") {
+      await db.sequelize.close();
+    }
+  } catch {}
+
+  try {
+    const { redisClient } = require("../src/config/redis");
+    if (redisClient && typeof redisClient.quit === "function") {
+      await redisClient.quit();
+    }
+  } catch {}
+});

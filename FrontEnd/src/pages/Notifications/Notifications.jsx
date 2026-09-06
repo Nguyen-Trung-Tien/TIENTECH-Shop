@@ -22,6 +22,7 @@ import { useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { motion as Motion, AnimatePresence } from "framer-motion";
 import { toast } from "react-toastify";
+import { showErrorToast } from "../../utils/toastHelper";
 import UnifiedSpinner from "../../components/Loading/UnifiedSpinner";
 import { ConfirmModal } from "../../components/UI/Modal";
 
@@ -59,7 +60,7 @@ const Notifications = () => {
         }
       } catch (error) {
         console.error(error);
-        toast.error("Lỗi khi tải thông báo");
+        showErrorToast(error, "Lỗi khi tải thông báo");
       } finally {
         setLoading(false);
         setLoadingMore(false);
@@ -70,7 +71,7 @@ const Notifications = () => {
 
   useEffect(() => {
     fetchNotifications();
-  }, [user, filterTab]);
+  }, [user, filterTab, fetchNotifications]);
 
   const handleMarkAsRead = async (id) => {
     try {
@@ -95,7 +96,7 @@ const Notifications = () => {
       }
     } catch (err) {
       console.error(err);
-      toast.error("Không thể xóa thông báo");
+      showErrorToast(err, "Không thể xóa thông báo");
     }
   };
 
@@ -109,7 +110,7 @@ const Notifications = () => {
       }
     } catch (err) {
       console.error(err);
-      toast.error("Lỗi khi xóa thông báo");
+      showErrorToast(err, "Không thể xóa toàn bộ thông báo");
     }
   };
 
@@ -122,7 +123,7 @@ const Notifications = () => {
       }
     } catch (err) {
       console.error(err);
-      toast.error("Lỗi khi đánh dấu đã đọc");
+      showErrorToast(err, "Không thể đánh dấu đã đọc thông báo");
     }
   };
 

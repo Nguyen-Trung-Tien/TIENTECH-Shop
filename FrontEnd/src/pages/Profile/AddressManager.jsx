@@ -7,6 +7,7 @@ import {
   setDefaultAddressApi,
 } from "../../api/addressApi";
 import { toast } from "react-toastify";
+import { showErrorToast } from "../../utils/toastHelper";
 import {
   FiPlus,
   FiMapPin,
@@ -103,14 +104,14 @@ const AddressManager = () => {
       }
 
       if (res.errCode === 0) {
-        toast.success(res.errMessage);
+        toast.success(res.errMessage || "Lưu địa chỉ thành công!");
         setShowModal(false);
         fetchAddresses();
       } else {
-        toast.error(res.errMessage);
+        showErrorToast(res.errMessage, "Không thể lưu địa chỉ");
       }
-    } catch {
-      toast.error("Lỗi khi xử lý địa chỉ");
+    } catch (err) {
+      showErrorToast(err, "Lỗi khi xử lý địa chỉ");
     } finally {
       setSubmitLoading(false);
     }
@@ -120,13 +121,13 @@ const AddressManager = () => {
     try {
       const res = await deleteAddressApi(confirmDeleteModal.id);
       if (res.errCode === 0) {
-        toast.success(res.errMessage);
+        toast.success(res.errMessage || "Xóa địa chỉ thành công!");
         fetchAddresses();
       } else {
-        toast.error(res.errMessage);
+        showErrorToast(res.errMessage, "Không thể xóa địa chỉ");
       }
-    } catch {
-      toast.error("Lỗi khi xóa địa chỉ");
+    } catch (err) {
+      showErrorToast(err, "Lỗi khi xóa địa chỉ");
     }
     setConfirmDeleteModal({ show: false, id: null });
   };
@@ -135,13 +136,13 @@ const AddressManager = () => {
     try {
       const res = await setDefaultAddressApi(id);
       if (res.errCode === 0) {
-        toast.success(res.errMessage);
+        toast.success(res.errMessage || "Thiết lập địa chỉ mặc định thành công!");
         fetchAddresses();
       } else {
-        toast.error(res.errMessage);
+        showErrorToast(res.errMessage, "Không thể thiết lập địa chỉ mặc định");
       }
-    } catch {
-      toast.error("Lỗi khi thiết lập mặc định");
+    } catch (err) {
+      showErrorToast(err, "Lỗi khi thiết lập địa chỉ mặc định");
     }
   };
 

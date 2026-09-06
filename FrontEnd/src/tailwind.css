@@ -92,6 +92,15 @@
 }
 
 @layer base {
+  *, ::before, ::after {
+    box-sizing: border-box;
+    overflow-wrap: break-word;
+  }
+
+  p, span, h1, h2, h3, h4, h5, h6, td, th {
+    overflow-wrap: anywhere;
+  }
+
   html, body {
     @apply scroll-smooth antialiased overflow-x-hidden max-w-full;
     font-size: 14px;

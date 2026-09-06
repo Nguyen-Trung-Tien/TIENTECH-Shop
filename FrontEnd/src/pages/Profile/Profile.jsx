@@ -4,6 +4,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { updateUser } from "../../redux/userSlice";
 import { updateUserApi } from "../../api/userApi";
 import { toast } from "react-toastify";
+import { showErrorToast } from "../../utils/toastHelper";
 import ChangePasswordModal from "./ChangePasswordModal";
 import {
   FiArrowLeft,
@@ -86,10 +87,10 @@ const Profile = () => {
             : "Đã tắt nhận thông báo qua Email thành công!"
         );
       } else {
-        toast.error(res.errMessage || "Không thể cập nhật thiết lập email");
+        showErrorToast(res.errMessage, "Không thể cập nhật thiết lập email");
       }
     } catch (error) {
-      toast.error("Lỗi khi thay đổi cài đặt nhận email!");
+      showErrorToast(error, "Lỗi khi thay đổi cài đặt nhận email");
       console.error(error);
     } finally {
       setEmailToggleLoading(false);
@@ -122,10 +123,10 @@ const Profile = () => {
         dispatch(updateUser(res.data));
         setIsEditing(false);
       } else {
-        toast.error(res.errMessage || "Lỗi server");
+        showErrorToast(res.errMessage, "Không thể cập nhật thông tin cá nhân");
       }
     } catch (error) {
-      toast.error("Không thể cập nhật. Vui lòng thử lại!");
+      showErrorToast(error, "Không thể cập nhật thông tin cá nhân");
       console.error(error);
     } finally {
       setLoading(false);
@@ -156,10 +157,10 @@ const Profile = () => {
           dispatch(updateUser({ ...user, avatar: res.data.avatar }));
           setShowAvatarModal(false);
         } else {
-          toast.error(res.errMessage || "Lỗi cập nhật ảnh đại diện");
+          showErrorToast(res.errMessage, "Lỗi cập nhật ảnh đại diện");
         }
-      } catch {
-        toast.error("Không thể cập nhật ảnh đại diện");
+      } catch (err) {
+        showErrorToast(err, "Không thể cập nhật ảnh đại diện");
       } finally {
         setAvatarLoading(false);
       }

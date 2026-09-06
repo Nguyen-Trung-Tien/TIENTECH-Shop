@@ -402,6 +402,7 @@ const createOrder = async (data) => {
     } = data;
 
     if (!userId || !shippingAddress || !orderItems.length) {
+      await t.rollback();
       return {
         errCode: 1,
         errMessage: "Missing required fields (userId, shippingAddress, orderItems)",
@@ -517,11 +518,12 @@ const createOrder = async (data) => {
     }
 
     let discountAmount = 0;
+    let appliedVoucher = null;
 
     if (voucherCode) {
       const voucherRes = await VoucherService.checkVoucher(voucherCode, calculatedTotal, userId);
       if (voucherRes.errCode === 0) {
-        const appliedVoucher = await db.Voucher.findOne({ where: { code: voucherCode }, transaction: t });
+        appliedVoucher = await db.Voucher.findOne({ where: { code: voucherCode }, transaction: t });
         discountAmount = voucherRes.data.discountAmount;
         await appliedVoucher.increment("usedCount", { by: 1, transaction: t });
       } else {
@@ -530,16 +532,18 @@ const createOrder = async (data) => {
       }
     }
 
+    const selectedPaymentMethod = (paymentMethod || "cod").toLowerCase();
+
     // Validate payment method against system settings
     const isPaymentEnabled = await SystemSettingService.getSetting(
-      `PAYMENT_${paymentMethod.toUpperCase()}_ENABLED`,
+      `PAYMENT_${selectedPaymentMethod.toUpperCase()}_ENABLED`,
       true
     );
     if (isPaymentEnabled === false || isPaymentEnabled === "false") {
       await t.rollback();
       return {
         errCode: 1,
-        errMessage: `Phương thức thanh toán ${paymentMethod.toUpperCase()} hiện đang tạm ngưng phục vụ trên hệ thống.`,
+        errMessage: `Phương thức thanh toán ${selectedPaymentMethod.toUpperCase()} hiện đang tạm ngưng phục vụ trên hệ thống.`,
       };
     }
 
@@ -558,7 +562,7 @@ const createOrder = async (data) => {
         shippingAddress,
         receiverName: receiverName || null,
         receiverPhone: receiverPhone || null,
-        paymentMethod,
+        paymentMethod: selectedPaymentMethod,
         note: note || "",
         paymentStatus: "unpaid",
         status: "pending",
@@ -570,14 +574,26 @@ const createOrder = async (data) => {
       }
     );
 
-    await db.CartItem.destroy({
-      where: {
-        cartId: {
-          [Op.in]: db.Sequelize.literal(`(SELECT id FROM Carts WHERE userId = ${userId})`),
+    if (voucherCode && appliedVoucher) {
+      await db.VoucherUsage.create(
+        {
+          voucherId: appliedVoucher.id,
+          userId,
+          orderId: order.id,
+          discountAmount,
+          status: "used",
         },
-      },
-      transaction: t,
-    });
+        { transaction: t }
+      );
+    }
+
+    const cart = await db.Cart.findOne({ where: { userId }, transaction: t });
+    if (cart) {
+      await db.CartItem.destroy({
+        where: { cartId: cart.id },
+        transaction: t,
+      });
+    }
 
     await t.commit();
 
@@ -655,13 +671,17 @@ const syncOrderCancellationSideEffects = async (order, cancelReason, adminUser =
         voucher.usedCount = Math.max(0, (voucher.usedCount || 0) - 1);
         await voucher.save({ transaction: t });
       }
+      await db.VoucherUsage.update(
+        { status: "cancelled" },
+        { where: { orderId: order.id }, transaction: t }
+      );
     }
 
     const history = Array.isArray(order.confirmationHistory) ? order.confirmationHistory : [];
     history.push({
       status: "cancelled",
       date: new Date().toISOString(),
-      actor: adminUser ? adminUser.username : "customer",
+      actor: adminUser ? (adminUser.name || adminUser.username || adminUser.email || "Admin") : "customer",
       reason: cancelReason,
     });
     order.confirmationHistory = history;
@@ -715,7 +735,7 @@ const updateOrderStatus = async (id, status, currentUser = null, cancelReason = 
         return { errCode: 403, errMessage: "Forbidden", status: 403 };
       }
 
-      if (status === "cancelled") {
+      if (status === "cancelled" || status === "cancel_requested") {
         if (currentStatus === "pending") {
           order.status = "cancelled";
           await syncOrderCancellationSideEffects(order, cancelReason || "Khách hàng hủy đơn.", currentUser, t);
@@ -728,7 +748,7 @@ const updateOrderStatus = async (id, status, currentUser = null, cancelReason = 
           history.push({
             status: "cancel_requested",
             date: new Date().toISOString(),
-            actor: currentUser.username,
+            actor: currentUser?.name || currentUser?.username || currentUser?.email || "Khách hàng",
             reason: cancelReason,
           });
           order.confirmationHistory = history;
@@ -738,11 +758,17 @@ const updateOrderStatus = async (id, status, currentUser = null, cancelReason = 
           await NotificationService.createNotification({
             userId: order.userId,
             title: "Yêu cầu hủy đơn hàng đã gửi",
-            content: `Yêu cầu hủy đơn hàng ${order.orderCode} đã được gửi đến Admin để chờ xử lý.`,
+            message: `Yêu cầu hủy đơn hàng ${order.orderCode} đã được gửi đến Admin để chờ xử lý.`,
             type: "order",
           });
 
           return { errCode: 0, errMessage: "Đã gửi yêu cầu hủy đơn hàng đến Admin.", data: order };
+        } else if (currentStatus === "cancel_requested") {
+          await t.rollback();
+          return { errCode: 2, errMessage: "Đơn hàng đã được gửi yêu cầu hủy trước đó, vui lòng chờ Admin xử lý." };
+        } else if (currentStatus === "cancelled") {
+          await t.rollback();
+          return { errCode: 2, errMessage: "Đơn hàng này đã bị hủy trước đó." };
         } else {
           await t.rollback();
           return { errCode: 2, errMessage: `Không thể hủy đơn hàng ở trạng thái ${currentStatus}.` };

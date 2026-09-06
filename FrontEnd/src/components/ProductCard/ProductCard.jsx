@@ -10,6 +10,7 @@ import { FiShoppingCart, FiHeart } from "react-icons/fi";
 import { FaStar, FaHeart } from "react-icons/fa";
 import { addToWishlistApi, removeFromWishlistApi } from "../../api/wishlistApi";
 import { formatCurrency } from "../../utils/format";
+import { showErrorToast } from "../../utils/toastHelper";
 import { Button } from "../UI/Button";
 import { Badge } from "../UI/Badge";
 import QuickVariantModal from "./QuickVariantModal";
@@ -68,22 +69,21 @@ const ProductCard = ({ product }) => {
         toast.success("Đã thêm vào danh sách yêu thích");
       }
     } catch (error) {
-      toast.error("Không thể cập nhật danh sách yêu thích");
+      showErrorToast(error, "Không thể cập nhật danh sách yêu thích");
     }
   };
-
-  const reviewsList = Array.isArray(reviews) ? reviews : [];
 
   const avgRating = useMemo(() => {
     if (product.avgRating != null) return Number(product.avgRating);
     if (product.averageRating != null) return Number(product.averageRating);
-    if (!reviewsList.length) return 5;
+    const list = Array.isArray(reviews) ? reviews : [];
+    if (!list.length) return 5;
     return (
-      reviewsList.reduce((sum, r) => sum + (r.rating || 0), 0) / reviewsList.length
+      list.reduce((sum, r) => sum + (r.rating || 0), 0) / list.length
     );
-  }, [reviewsList, product.avgRating, product.averageRating]);
+  }, [reviews, product.avgRating, product.averageRating]);
 
-  const reviewCount = product.reviewCount ?? product.reviewsCount ?? reviewsList.length;
+  const reviewCount = product.reviewCount ?? product.reviewsCount ?? (Array.isArray(reviews) ? reviews.length : 0);
 
   // Tổng hợp % giảm giá: ưu tiên flash sale > discount % thông thường
   // Backend đã tính sẵn discountPercent trong applyFlashSaleToProduct
@@ -171,7 +171,7 @@ const ProductCard = ({ product }) => {
       return cartItem; // Trả về để dùng cho Mua ngay
     } catch (err) {
       console.error(err);
-      toast.error(err.response?.data?.message || "Lỗi thêm giỏ hàng");
+      showErrorToast(err, "Không thể thêm sản phẩm vào giỏ hàng");
       return null;
     } finally {
       setLoadingCart(false);

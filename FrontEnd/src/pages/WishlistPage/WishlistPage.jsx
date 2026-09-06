@@ -6,6 +6,7 @@ import { getWishlistApi } from "../../api/wishlistApi";
 import ProductCard from "../../components/ProductCard/ProductCard";
 import Loading from "../../components/Loading/Loading";
 import { toast } from "react-toastify";
+import { showErrorToast } from "../../utils/toastHelper";
 
 const WishlistPage = () => {
   const [wishlist, setWishlist] = useState([]);
@@ -69,8 +70,8 @@ const WishlistPage = () => {
                             await addCart({ productId: item.id, quantity: 1 });
                           }
                           toast.success("Đã thêm tất cả sản phẩm yêu thích vào giỏ hàng!");
-                        } catch {
-                          toast.error("Một số sản phẩm không thể thêm vào giỏ hàng");
+                        } catch (err) {
+                          showErrorToast(err, "Một số sản phẩm không thể thêm vào giỏ hàng");
                         }
                       }}
                       className="flex items-center gap-2 px-5 py-2.5 bg-primary text-white text-xs font-black uppercase tracking-widest rounded-2xl hover:bg-primary-hover shadow-lg shadow-primary/20 transition-all active:scale-95 cursor-pointer"

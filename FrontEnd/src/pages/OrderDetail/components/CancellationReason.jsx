@@ -9,11 +9,11 @@ const CancellationReason = ({ isCancelled, cancelReason }) => {
       <div className="size-12 bg-rose-100 dark:bg-rose-900/40 rounded-2xl flex items-center justify-center text-rose-600 dark:text-rose-400 shrink-0">
         <FiAlertTriangle size={24} />
       </div>
-      <div>
-        <h4 className="text-sm font-black text-rose-600 dark:text-rose-400 uppercase tracking-widest mb-1">
+      <div className="min-w-0 flex-1 overflow-hidden">
+        <h4 className="text-sm font-black text-rose-600 dark:text-rose-400 uppercase tracking-widest mb-1 truncate">
           Lý do hủy đơn
         </h4>
-        <p className="text-rose-700 dark:text-rose-300 font-medium italic">
+        <p className="text-rose-700 dark:text-rose-300 font-medium italic break-words [overflow-wrap:anywhere]">
           "{cancelReason}"
         </p>
       </div>

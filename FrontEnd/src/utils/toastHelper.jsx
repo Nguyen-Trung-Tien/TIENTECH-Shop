@@ -39,6 +39,17 @@ const ERROR_TRANSLATIONS = {
   "Voucher has expired": "Mã giảm giá đã hết hạn sử dụng.",
   "Voucher usage limit reached": "Mã giảm giá đã hết lượt sử dụng.",
   "Order total does not meet minimum requirement": "Giá trị đơn hàng chưa đạt mức tối thiểu để áp dụng mã giảm giá.",
+  "Insufficient stock": "Số lượng sản phẩm trong kho không đủ.",
+  "Product is inactive": "Sản phẩm hiện đang tạm ngừng kinh doanh.",
+  "Variant is inactive": "Phiên bản sản phẩm hiện đang tạm ngừng kinh doanh.",
+  "Cannot cancel order": "Không thể hủy đơn hàng ở trạng thái hiện tại.",
+  "Cancel reason is required": "Vui lòng cung cấp lý do hủy đơn hàng.",
+  "Order cannot be returned": "Đơn hàng không đủ điều kiện để yêu cầu trả hàng.",
+  "Return request already submitted": "Yêu cầu trả hàng cho sản phẩm này đã được gửi trước đó.",
+  "Quantity exceeds available stock": "Số lượng yêu cầu vượt quá tồn kho hiện có.",
+  "Invalid quantity": "Số lượng không hợp lệ.",
+  "Cart is empty": "Giỏ hàng của bạn đang trống.",
+  "Payment failed": "Thanh toán thất bại. Vui lòng thử lại!",
 
   // Hệ thống, Axios & Server
   "Internal server error": "Đã xảy ra lỗi máy chủ nội bộ. Đội ngũ kỹ thuật đang xử lý.",
@@ -81,9 +92,17 @@ export const extractErrorMessage = (error, defaultFallback = "Đã có lỗi x�
     }
   }
 
-  // 2. Kiểm tra thuộc tính đính kèm trong axios interceptor
+  // 2. Kiểm tra thuộc tính đính kèm trong axios interceptor hoặc direct ServiceResult / data
   if (error.errMessage && typeof error.errMessage === "string") {
     return ERROR_TRANSLATIONS[error.errMessage] || error.errMessage;
+  }
+
+  if (error.data?.errMessage && typeof error.data.errMessage === "string") {
+    return ERROR_TRANSLATIONS[error.data.errMessage] || error.data.errMessage;
+  }
+
+  if (error.data?.message && typeof error.data.message === "string") {
+    return ERROR_TRANSLATIONS[error.data.message] || error.data.message;
   }
 
   if (error.serverMessage && typeof error.serverMessage === "string") {

@@ -2,14 +2,14 @@ import React from "react";
 import { FiMapPin, FiUser, FiTruck, FiInfo } from "react-icons/fi";
 
 const InfoRow = ({ label, value, icon: Icon }) => (
-  <div className="flex items-center justify-between py-3 border-b border-surface-100 dark:border-dark-border last:border-0">
-    <div className="flex items-center gap-2 text-surface-400 dark:text-dark-text-secondary">
+  <div className="flex items-start justify-between py-3 border-b border-surface-100 dark:border-dark-border last:border-0 gap-4 min-w-0">
+    <div className="flex items-center gap-2 text-surface-400 dark:text-dark-text-secondary shrink-0 pt-0.5">
       {Icon && (typeof Icon === "function" ? <Icon size={14} /> : Icon)}
       <span className="text-[13px] font-medium uppercase tracking-wider">
         {label}
       </span>
     </div>
-    <span className="text-[14px] font-bold text-surface-900 dark:text-white">
+    <span className="text-[14px] font-bold text-surface-900 dark:text-white text-right break-words [overflow-wrap:anywhere] min-w-0 flex-1">
       {value || "-"}
     </span>
   </div>

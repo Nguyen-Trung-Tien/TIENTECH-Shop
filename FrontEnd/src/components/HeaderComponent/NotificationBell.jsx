@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
 import {
   FiBell,
@@ -47,7 +47,7 @@ const NotificationBell = () => {
   const dropdownRef = useRef(null);
   const user = useSelector((state) => state.user.user);
 
-  const fetchNotifications = async () => {
+  const fetchNotifications = useCallback(async () => {
     if (!user) return;
     try {
       setLoading(true);
@@ -61,7 +61,7 @@ const NotificationBell = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, activeFilter]);
 
   useEffect(() => {
     fetchNotifications();
@@ -98,7 +98,7 @@ const NotificationBell = () => {
       }
       socket.disconnect();
     };
-  }, [user, activeFilter]);
+  }, [user, activeFilter, fetchNotifications]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {

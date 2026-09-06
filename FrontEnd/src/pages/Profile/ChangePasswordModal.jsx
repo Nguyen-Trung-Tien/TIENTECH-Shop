@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { FiEye, FiEyeOff, FiCheckCircle } from "react-icons/fi";
 import { toast } from "react-toastify";
+import { showErrorToast } from "../../utils/toastHelper";
 import Button from "../../components/UI/Button";
 import Modal from "../../components/UI/Modal";
 import { updatePasswordApi } from "../../api/userApi";
@@ -54,9 +55,9 @@ const ChangePasswordModal = ({ show, onHide, userId: _userId }) => {
           confirmPassword: "",
         });
         onHide();
-      } else toast.error(res.errMessage || "Không thể đổi mật khẩu");
-    } catch {
-      toast.error("Lỗi máy chủ khi đổi mật khẩu");
+      } else showErrorToast(res.errMessage, "Không thể đổi mật khẩu");
+    } catch (err) {
+      showErrorToast(err, "Không thể đổi mật khẩu");
     } finally {
       setLoading(false);
     }

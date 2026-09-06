@@ -194,25 +194,32 @@ const createCartItem = async ({ cartId, productId, variantId, quantity }, userId
 
   const product = await db.Product.findByPk(productId);
   if (!product) throw new Error("Product not found");
+  if (!product.isActive) throw new Error("Sản phẩm đã ngừng kinh doanh");
 
   let variant = null;
   if (variantId) {
     variant = await db.ProductVariant.findOne({ where: { id: variantId, productId } });
     if (!variant) throw new Error("Variant not found for this product");
+    if (!variant.isActive) throw new Error("Phiên bản sản phẩm đã ngừng kinh doanh");
+  }
+
+  const availableStock = variant ? variant.stock : product.totalStock;
+  if (availableStock <= 0) {
+    throw new Error("Sản phẩm hiện đã hết hàng");
   }
 
   // Check if item with SAME productId and SAME variantId exists
-  const where = { cartId: cart.id, productId };
-  if (variantId) {
-    where.variantId = variantId;
-  } else {
-    where.variantId = null;
-  }
+  const where = { cartId: cart.id, productId, variantId: variantId || null };
 
   let cartItem = await db.CartItem.findOne({ where });
 
+  const totalQuantity = (cartItem ? cartItem.quantity : 0) + quantity;
+  if (totalQuantity > availableStock) {
+    throw new Error(`Số lượng yêu cầu (${totalQuantity}) vượt quá tồn kho hiện có (${availableStock})`);
+  }
+
   if (cartItem) {
-    cartItem.quantity += quantity;
+    cartItem.quantity = totalQuantity;
     await cartItem.save();
   } else {
     cartItem = await db.CartItem.create({ cartId: cart.id, productId, variantId, quantity });
@@ -224,9 +231,24 @@ const createCartItem = async ({ cartId, productId, variantId, quantity }, userId
 const updateCartItem = async (id, data, userId) => {
   const cartItem = await db.CartItem.findOne({
     where: { id },
-    include: [{ model: db.Cart, as: "cart", where: { userId } }],
+    include: [
+      { model: db.Cart, as: "cart", where: { userId } },
+      { model: db.Product, as: "product" },
+      { model: db.ProductVariant, as: "variant" },
+    ],
   });
   if (!cartItem) throw new Error("CartItem not found");
+
+  if (data.quantity !== undefined) {
+    const qty = Number(data.quantity);
+    if (qty < 1) throw new Error("Số lượng tối thiểu là 1");
+
+    const availableStock = cartItem.variant ? cartItem.variant.stock : cartItem.product?.totalStock;
+    if (availableStock !== undefined && qty > availableStock) {
+      throw new Error(`Số lượng yêu cầu (${qty}) vượt quá tồn kho hiện có (${availableStock})`);
+    }
+  }
+
   await cartItem.update(data);
   return await getCartItemById(id, userId);
 };

@@ -13,6 +13,7 @@ const createNotification = async (data, t = null, io = null) => {
   try {
     const payload = {
       ...data,
+      message: data.message || data.content || "",
       type: normalizeType(data.type),
     };
     const notification = await db.Notification.create(payload, { transaction: t });

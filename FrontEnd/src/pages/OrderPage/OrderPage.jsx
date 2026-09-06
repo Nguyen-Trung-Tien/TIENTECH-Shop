@@ -20,6 +20,7 @@ import { motion as Motion, AnimatePresence } from "framer-motion";
 
 import { ConfirmModal } from "../../components/UI";
 import { getOrdersByUserId, updateOrderStatus } from "../../api/orderApi";
+import { showErrorToast } from "../../utils/toastHelper";
 import AppPagination from "../../components/Pagination/Pagination";
 import { statusMap, paymentStatusMap } from "../../utils/StatusMap";
 import { StatusBadge } from "../../utils/StatusBadge";
@@ -95,7 +96,7 @@ const OrderPage = () => {
         }
       } catch (error) {
         console.error(error);
-        toast.error("Lỗi kết nối máy chủ");
+        showErrorToast(error, "Không thể tải danh sách đơn hàng");
       } finally {
         setLoading(false);
       }
@@ -117,11 +118,13 @@ const OrderPage = () => {
     try {
       const res = await updateOrderStatus(id, "completed");
       if (res?.errCode === 0) {
-        toast.success("Xác nhận đã nhận hàng!");
+        toast.success(res?.errMessage || "Xác nhận đã nhận hàng thành công!");
         fetchOrders(page, activeTab);
+      } else {
+        showErrorToast(res?.errMessage, "Không thể xác nhận nhận hàng");
       }
-    } catch {
-      toast.error("Lỗi xác nhận");
+    } catch (err) {
+      showErrorToast(err, "Lỗi khi xác nhận nhận hàng");
     } finally {
       setReceivingId(null);
     }
@@ -140,11 +143,18 @@ const OrderPage = () => {
         cancelReason,
       );
       if (res?.errCode === 0) {
-        toast.success("Đã gửi yêu cầu hủy đơn hàng!");
+        const successMsg =
+          res.errMessage ||
+          (res.data?.status === "cancelled" || orderToCancel.status === "pending"
+            ? "Đã hủy đơn hàng thành công!"
+            : "Đã gửi yêu cầu hủy đơn hàng. Vui lòng chờ Admin duyệt.");
+        toast.success(successMsg);
         fetchOrders(page, activeTab);
+      } else {
+        showErrorToast(res?.errMessage, "Không thể hủy đơn hàng");
       }
-    } catch {
-      toast.error("Không thể gửi yêu cầu hủy");
+    } catch (err) {
+      showErrorToast(err, "Không thể gửi yêu cầu hủy đơn hàng");
     } finally {
       setShowCancelModal(false);
       setCancelling(false);
@@ -167,10 +177,10 @@ const OrderPage = () => {
           requestReturn(itemId, returnReason),
         ),
       );
-      toast.success("Đã gửi yêu cầu trả hàng!");
+      toast.success("Đã gửi yêu cầu trả hàng thành công!");
       fetchOrders(page, activeTab);
-    } catch {
-      toast.error("Không thể gửi yêu cầu trả hàng");
+    } catch (err) {
+      showErrorToast(err, "Không thể gửi yêu cầu trả hàng");
     } finally {
       setShowReturnModal(false);
       setReturning(false);

@@ -3,33 +3,6 @@ require("dotenv").config();
 
 const isProduction = process.env.NODE_ENV === "production";
 
-const sequelize = new Sequelize(
-  process.env.DB_DATABASE_NAME,
-  process.env.DB_USERNAME,
-  process.env.DB_PASSWORD,
-  {
-    host: process.env.DB_HOST,
-    port: process.env.DB_PORT,
-    dialect: process.env.DB_DIALECT || "mysql",
-    logging: false,
-    pool: {
-      max: parseInt(process.env.DB_POOL_MAX || (isProduction ? "10" : "5"), 10),
-      min: parseInt(process.env.DB_POOL_MIN || "0", 10),
-      acquire: 30000,
-      idle: 10000,
-    },
-
-    dialectOptions: isProduction
-      ? {
-          ssl: {
-            require: true,
-            rejectUnauthorized: false,
-          },
-        }
-      : {},
-  },
-);
-
 const db = require("../models");
 
 let connectDB = async () => {

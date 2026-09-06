@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
+import { showErrorToast } from "../utils/toastHelper";
 import {
   getProductBySlugApi,
   getRecommendedProductsApi,
@@ -115,7 +116,7 @@ export const useProductDetail = (slug) => {
       };
       fetchExtra();
     }
-  }, [product?.id, userId, fetchReviews]);
+  }, [product?.id, userId, fetchReviews, ratingFilter, hasImageFilter]);
 
   const handleAddToCart = async (variantId, quantity = 1) => {
     if (!userId) {
@@ -148,11 +149,11 @@ export const useProductDetail = (slug) => {
         toast.success("Đã thêm vào giỏ hàng!");
         return res.data; // Trả về item vừa thêm
       } else {
-        toast.error(res.errMessage);
+        showErrorToast(res.errMessage, "Không thể thêm vào giỏ hàng");
         return null;
       }
-    } catch {
-      toast.error("Lỗi khi thêm vào giỏ hàng!");
+    } catch (err) {
+      showErrorToast(err, "Không thể thêm vào giỏ hàng!");
       return null;
     } finally {
       setAddingCart(false);
@@ -172,11 +173,11 @@ export const useProductDetail = (slug) => {
         fetchReviews(1, ratingFilter, hasImageFilter); // Refresh reviews
         return true;
       } else {
-        toast.error(res.errMessage || "Lỗi khi gửi đánh giá");
+        showErrorToast(res.errMessage, "Không thể gửi đánh giá");
         return false;
       }
-    } catch {
-      toast.error("Không thể gửi đánh giá lúc này");
+    } catch (err) {
+      showErrorToast(err, "Không thể gửi đánh giá lúc này");
       return false;
     } finally {
       setSubmittingReview(false);

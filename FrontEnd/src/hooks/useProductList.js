@@ -2,6 +2,9 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { useSearchParams, useParams, useLocation } from "react-router-dom";
 import { filterProductsApi } from "../api/productApi";
 
+// Định nghĩa danh sách các thuộc tính lọc hỗ trợ
+const ATTRIBUTE_KEYS = ["ram", "rom", "os", "screen", "battery", "refresh_rate"];
+
 /**
  * Hook quản lý danh sách sản phẩm với bộ lọc nâng cao
  */
@@ -19,9 +22,6 @@ export const useProductList = (limit = 12) => {
   // Xác định type từ URL path
   const isCategory = location.pathname.includes("/category/");
   const isBrand = location.pathname.includes("/brand/");
-
-  // Định nghĩa danh sách các thuộc tính lọc hỗ trợ
-  const ATTRIBUTE_KEYS = ["ram", "rom", "os", "screen", "battery", "refresh_rate"];
 
   // Lấy các filter từ URL
   const filtersFromUrl = useMemo(() => {
@@ -94,7 +94,7 @@ export const useProductList = (limit = 12) => {
         setLoadingMore(false);
       }
     },
-    [filtersFromUrl, limit, isBrand, isCategory]
+    [filtersFromUrl, limit]
   );
 
   // Tự động fetch khi bộ lọc thay đổi

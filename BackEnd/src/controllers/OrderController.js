@@ -71,7 +71,7 @@ const handleUpdateOrderStatus = async (req, res) => {
       await NotificationService.createNotification({
         userId: order.userId,
         title: "Cập nhật đơn hàng",
-        message: `Đơn hàng #${order.orderCode} của bạn đã chuyển sang trạng thái: ${status}`,
+        message: `Đơn hàng #${order.orderCode} của bạn đã chuyển sang trạng thái: ${order.status}`,
         type: "order",
         link: `/orders-detail/${id}`,
       });
@@ -80,9 +80,16 @@ const handleUpdateOrderStatus = async (req, res) => {
       if (io) {
         io.to(`user_${order.userId}`).emit("order_status_updated", {
           orderId: id,
-          status: status,
-          message: `Đơn hàng #${id} của bạn đã chuyển sang trạng thái: ${status}`,
+          status: order.status,
+          message: `Đơn hàng #${id} của bạn đã chuyển sang trạng thái: ${order.status}`,
         });
+
+        if (order.status === "cancel_requested") {
+          io.to("admin_room").emit("new_order", {
+            message: `Có yêu cầu hủy đơn hàng #${order.orderCode}`,
+            orderId: id,
+          });
+        }
       }
     }
     

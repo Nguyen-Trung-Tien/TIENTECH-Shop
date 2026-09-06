@@ -30,8 +30,8 @@ const OrderItemsList = ({ order, onOpenReturnModal, onCancelReturn }) => {
             key={item.id}
             className="p-8 flex flex-col gap-6 group hover:bg-slate-50/50 dark:hover:bg-dark-bg/20 transition-all"
           >
-            <div className="flex gap-6">
-              <div className="size-24 rounded-2xl bg-white dark:bg-dark-bg border border-slate-100 dark:border-dark-border p-2 flex-shrink-0 group-hover:scale-105 transition-transform">
+            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 min-w-0">
+              <div className="size-20 sm:size-24 rounded-2xl bg-white dark:bg-dark-bg border border-slate-100 dark:border-dark-border p-2 flex-shrink-0 group-hover:scale-105 transition-transform">
                 <img
                   src={item.image}
                   alt=""
@@ -41,7 +41,7 @@ const OrderItemsList = ({ order, onOpenReturnModal, onCancelReturn }) => {
               <div className="flex-grow min-w-0">
                 <Link
                   to={`/product-detail/${item.product?.slug}`}
-                  className="text-lg font-bold text-slate-900 dark:text-white hover:text-primary transition-colors line-clamp-1 mb-1"
+                  className="text-base sm:text-lg font-bold text-slate-900 dark:text-white hover:text-primary transition-colors line-clamp-2 break-words mb-1"
                 >
                   {item.productName}
                 </Link>
@@ -84,11 +84,11 @@ const OrderItemsList = ({ order, onOpenReturnModal, onCancelReturn }) => {
 
             {/* Return Reason for item */}
             {item.returnStatus !== "none" && item.returnReason && (
-              <div className="mt-2 p-4 bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/20 rounded-2xl">
+              <div className="mt-2 p-4 bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/20 rounded-2xl min-w-0 overflow-hidden">
                 <p className="text-[10px] font-black text-amber-600 dark:text-amber-500 uppercase tracking-widest mb-1 flex items-center gap-2">
                   <FiRotateCcw size={12} /> Lý do trả hàng
                 </p>
-                <p className="text-sm text-amber-700 dark:text-amber-300 font-medium italic">
+                <p className="text-sm text-amber-700 dark:text-amber-300 font-medium italic break-words [overflow-wrap:anywhere]">
                   "{item.returnReason}"
                 </p>
               </div>

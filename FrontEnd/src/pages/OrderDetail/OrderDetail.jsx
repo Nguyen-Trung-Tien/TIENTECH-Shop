@@ -6,6 +6,7 @@ import { Button } from "../../components/UI";
 import { getOrderById, updateOrderStatus } from "../../api/orderApi";
 import { requestReturn, cancelReturnRequest } from "../../api/orderItemApi";
 import { createVnpayPaymentApi } from "../../api/paymentApi";
+import { showErrorToast } from "../../utils/toastHelper";
 import ReviewModal from "../../components/ReviewComponent/ReviewModal";
 import UnifiedSpinner from "../../components/Loading/UnifiedSpinner";
 import { printInvoice } from "./printInvoice";
@@ -113,14 +114,19 @@ const OrderDetail = () => {
       dispatch({ type: "SET_SUBMITTING", payload: true });
       const res = await updateOrderStatus(id, "cancel_requested", cancelReason);
       if (res.errCode === 0) {
-        toast.success("Đã gửi yêu cầu hủy đơn hàng. Vui lòng chờ Admin duyệt.");
+        const successMsg =
+          res.errMessage ||
+          (res.data?.status === "cancelled" || order?.status === "pending"
+            ? "Đã hủy đơn hàng thành công!"
+            : "Đã gửi yêu cầu hủy đơn hàng. Vui lòng chờ Admin duyệt.");
+        toast.success(successMsg);
         dispatch({ type: "CLOSE_CANCEL_MODAL" });
         fetchOrderDetail();
       } else {
-        toast.error(res.errMessage);
+        showErrorToast(res.errMessage, "Không thể hủy đơn hàng");
       }
-    } catch {
-      toast.error("Lỗi khi gửi yêu cầu hủy đơn");
+    } catch (err) {
+      showErrorToast(err, "Lỗi khi gửi yêu cầu hủy đơn hàng");
     } finally {
       dispatch({ type: "SET_SUBMITTING", payload: false });
     }
@@ -131,13 +137,13 @@ const OrderDetail = () => {
       dispatch({ type: "SET_SUBMITTING", payload: true });
       const res = await updateOrderStatus(id, "completed");
       if (res.errCode === 0) {
-        toast.success("Xác nhận đã nhận hàng thành công!");
+        toast.success(res.errMessage || "Xác nhận đã nhận hàng thành công!");
         fetchOrderDetail();
       } else {
-        toast.error(res.errMessage);
+        showErrorToast(res.errMessage, "Không thể xác nhận nhận hàng");
       }
-    } catch {
-      toast.error("Lỗi khi xác nhận nhận hàng");
+    } catch (err) {
+      showErrorToast(err, "Lỗi khi xác nhận nhận hàng");
     } finally {
       dispatch({ type: "SET_SUBMITTING", payload: false });
     }
@@ -157,11 +163,11 @@ const OrderDetail = () => {
       if (res?.errCode === 0 && res.data?.paymentUrl) {
         window.location.href = res.data.paymentUrl;
       } else {
-        toast.error(res?.message || "Không thể tạo liên kết thanh toán.");
+        showErrorToast(res?.errMessage || res?.message, "Không thể tạo liên kết thanh toán.");
       }
     } catch (err) {
       console.error("Repay error:", err);
-      toast.error("Lỗi kết nối máy chủ");
+      showErrorToast(err, "Lỗi kết nối khi tạo liên kết thanh toán");
     }
   };
 
@@ -170,9 +176,9 @@ const OrderDetail = () => {
       dispatch({ type: "SET_LOADING", payload: true });
       const res = await getOrderById(id);
       if (res.errCode === 0) dispatch({ type: "SET_ORDER", payload: res.data });
-      else toast.error(res.errMessage || "Lỗi tải đơn hàng");
-    } catch {
-      toast.error("Lỗi kết nối máy chủ");
+      else showErrorToast(res.errMessage, "Không thể tải chi tiết đơn hàng");
+    } catch (err) {
+      showErrorToast(err, "Lỗi kết nối khi tải chi tiết đơn hàng");
     } finally {
       dispatch({ type: "SET_LOADING", payload: false });
     }
@@ -197,8 +203,8 @@ const OrderDetail = () => {
       toast.success("Gửi yêu cầu trả hàng thành công");
       dispatch({ type: "CLOSE_RETURN_MODAL" });
       fetchOrderDetail();
-    } catch {
-      toast.error("Một số sản phẩm không thể trả.");
+    } catch (err) {
+      showErrorToast(err, "Một số sản phẩm không thể gửi yêu cầu trả hàng");
     } finally {
       dispatch({ type: "SET_SUBMITTING", payload: false });
     }
@@ -217,13 +223,13 @@ const OrderDetail = () => {
       dispatch({ type: "SET_SUBMITTING", payload: true });
       const res = await cancelReturnRequest(itemId);
       if (res.errCode === 0) {
-        toast.success("Đã thu hồi yêu cầu trả hàng thành công");
+        toast.success(res.errMessage || "Đã thu hồi yêu cầu trả hàng thành công");
         fetchOrderDetail();
       } else {
-        toast.error(res.errMessage);
+        showErrorToast(res.errMessage, "Không thể thu hồi yêu cầu trả hàng");
       }
-    } catch {
-      toast.error("Lỗi khi thu hồi yêu cầu trả hàng");
+    } catch (err) {
+      showErrorToast(err, "Lỗi khi thu hồi yêu cầu trả hàng");
     } finally {
       dispatch({ type: "SET_SUBMITTING", payload: false });
     }
@@ -314,7 +320,7 @@ const OrderDetail = () => {
                     toast.success("Đã thu hồi các yêu cầu trả hàng");
                     fetchOrderDetail();
                   })
-                  .catch(() => toast.error("Lỗi khi thu hồi yêu cầu"))
+                  .catch((err) => showErrorToast(err, "Lỗi khi thu hồi yêu cầu trả hàng"))
                   .finally(() =>
                     dispatch({ type: "SET_SUBMITTING", payload: false }),
                   );

@@ -22,6 +22,7 @@ import Badge from "../../components/UI/Badge";
 import ReviewModal from "../../components/ReviewComponent/ReviewModal";
 import UnifiedSpinner from "../../components/Loading/UnifiedSpinner";
 import { toast } from "react-toastify";
+import { showErrorToast } from "../../utils/toastHelper";
 
 const OrderHistoryPage = () => {
   const navigate = useNavigate();
@@ -66,13 +67,13 @@ const OrderHistoryPage = () => {
       setIsSubmitting(true);
       const res = await updateOrderStatus(orderId, "completed");
       if (res.errCode === 0) {
-        toast.success("Xác nhận đã nhận hàng thành công!");
+        toast.success(res.errMessage || "Xác nhận đã nhận hàng thành công!");
         fetchOrders();
       } else {
-        toast.error(res.errMessage);
+        showErrorToast(res.errMessage, "Không thể xác nhận nhận hàng");
       }
-    } catch {
-      toast.error("Lỗi khi xác nhận nhận hàng");
+    } catch (err) {
+      showErrorToast(err, "Lỗi khi xác nhận nhận hàng");
     } finally {
       setIsSubmitting(false);
     }
@@ -152,7 +153,7 @@ const OrderHistoryPage = () => {
                     {o.orderItems?.map((i) => {
                       const p = i.product;
                       return (
-                        <div key={i.id} className="flex gap-4 md:gap-6">
+                        <div key={i.id} className="flex flex-col sm:flex-row gap-4 md:gap-6 min-w-0">
                           <div className="size-20 md:w-24 md:h-24 bg-surface-50 dark:bg-dark-bg rounded-2xl border border-surface-100 dark:border-dark-border p-2 flex-shrink-0 group-hover:border-primary/10 dark:group-hover:border-brand/10 transition-colors">
                             <img
                               src={p?.image || "/images/no-image.png"}
@@ -162,7 +163,7 @@ const OrderHistoryPage = () => {
                           </div>
                           <div className="flex-grow min-w-0 py-1">
                             <ClickableText
-                              className="text-base md:text-lg font-bold text-surface-900 dark:text-white line-clamp-1 hover:text-primary dark:hover:text-brand transition-colors cursor-pointer"
+                              className="text-base md:text-lg font-bold text-surface-900 dark:text-white line-clamp-2 break-words hover:text-primary dark:hover:text-brand transition-colors cursor-pointer"
                               onClick={() => navigate(`/orders-detail/${o.id}`)}
                             >
                               {p?.name || i.productName}
@@ -195,11 +196,11 @@ const OrderHistoryPage = () => {
                                 )}
                             </div>
                             {i.returnStatus !== "none" && i.returnReason && (
-                              <div className="mt-2 p-3 bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/20 rounded-xl">
+                              <div className="mt-2 p-3 bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/20 rounded-xl min-w-0 overflow-hidden">
                                 <p className="text-[9px] font-black text-amber-600 dark:text-amber-500 uppercase tracking-widest mb-1 flex items-center gap-2">
                                   <FiRotateCcw size={10} /> Lý do trả hàng
                                 </p>
-                                <p className="text-xs text-amber-700 dark:text-amber-300 font-medium italic">
+                                <p className="text-xs text-amber-700 dark:text-amber-300 font-medium italic break-words [overflow-wrap:anywhere]">
                                   "{i.returnReason}"
                                 </p>
                               </div>
@@ -259,8 +260,8 @@ const OrderHistoryPage = () => {
                               }
                               toast.success("Đã thêm các sản phẩm vào giỏ hàng!");
                               navigate("/cart");
-                            } catch {
-                              toast.error("Không thể mua lại tự động");
+                            } catch (err) {
+                              showErrorToast(err, "Một số sản phẩm không thể thêm vào giỏ hàng để mua lại");
                             }
                           }}
                         >

@@ -210,6 +210,7 @@ class SystemSettingService {
   }
 
   async initializeDefaultSettings() {
+    if (process.env.NODE_ENV === "test") return;
     try {
       if (!db.SystemSetting) return;
       
@@ -425,6 +426,8 @@ class SystemSettingService {
 }
 
 const instance = new SystemSettingService();
-instance.initializeDefaultSettings();
+if (process.env.NODE_ENV !== "test") {
+  instance.initializeDefaultSettings();
+}
 
 module.exports = instance;

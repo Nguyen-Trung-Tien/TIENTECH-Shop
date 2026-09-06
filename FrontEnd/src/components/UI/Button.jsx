@@ -66,5 +66,5 @@ const Button = ({ className, variant, size, loading = false, asChild = false, ty
 
 Button.displayName = "Button";
 
-export { Button, buttonVariants };
+export { Button };
 export default Button;

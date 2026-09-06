@@ -1,6 +1,7 @@
 import { useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
+import { showErrorToast } from "../utils/toastHelper";
 import {
   setCartItems,
   appendCartItems,
@@ -40,21 +41,29 @@ export const useCart = () => {
   const handleUpdateQty = async (id, quantity) => {
     if (quantity < 1) return;
     try {
-      await updateCartItemApi(id, quantity);
+      const res = await updateCartItemApi(id, quantity);
+      if (res && res.errCode !== undefined && res.errCode !== 0) {
+        showErrorToast(res.errMessage, "Cập nhật số lượng thất bại!");
+        return;
+      }
       dispatch(updateCartItemQuantity({ id, quantity }));
     } catch (err) {
-      toast.error("Cập nhật số lượng thất bại!");
+      showErrorToast(err, "Cập nhật số lượng thất bại!");
       throw err;
     }
   };
 
   const handleRemoveItem = async (id) => {
     try {
-      await removeCartItemApi(id);
+      const res = await removeCartItemApi(id);
+      if (res && res.errCode !== undefined && res.errCode !== 0) {
+        showErrorToast(res.errMessage, "Xóa sản phẩm thất bại!");
+        return;
+      }
       dispatch(removeCartItemAction(id));
       toast.success("Đã xóa sản phẩm khỏi giỏ hàng!");
     } catch (err) {
-      toast.error("Xóa thất bại!");
+      showErrorToast(err, "Xóa sản phẩm thất bại!");
       throw err;
     }
   };
