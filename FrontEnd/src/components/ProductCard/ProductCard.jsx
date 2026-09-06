@@ -10,7 +10,7 @@ import { FiShoppingCart, FiHeart } from "react-icons/fi";
 import { FaStar, FaHeart } from "react-icons/fa";
 import { addToWishlistApi, removeFromWishlistApi } from "../../api/wishlistApi";
 import { formatCurrency } from "../../utils/format";
-import { showErrorToast } from "../../utils/toastHelper";
+import { showErrorToast, showSuccessToast } from "../../utils/toastHelper";
 import { Button } from "../UI/Button";
 import { Badge } from "../UI/Badge";
 import QuickVariantModal from "./QuickVariantModal";
@@ -133,7 +133,7 @@ const ProductCard = ({ product }) => {
     await executeAddToCart(id);
   };
 
-  const executeAddToCart = async (targetId, isVariant = false) => {
+  const executeAddToCart = async (targetId, isVariant = false, showToast = true) => {
     setLoadingCart(true);
     try {
       const cartsRes = await getAllCarts(token);
@@ -166,7 +166,9 @@ const ProductCard = ({ product }) => {
 
       dispatch(addCartItem(cartItem));
 
-      toast.success(`Đã thêm vào giỏ`);
+      if (showToast) {
+        showSuccessToast("Đã thêm vào giỏ hàng!");
+      }
       setShowQuickModal(false);
       return cartItem; // Trả về để dùng cho Mua ngay
     } catch (err) {
@@ -179,7 +181,7 @@ const ProductCard = ({ product }) => {
   };
 
   const handleBuyNow = async (targetId) => {
-    const item = await executeAddToCart(targetId, true);
+    const item = await executeAddToCart(targetId, true, false);
     if (item) {
       navigate("/checkout", {
         state: {

@@ -26,7 +26,11 @@ import {
   completePayment,
   refundPayment,
 } from "../../../api/paymentApi";
-import { toast } from "react-toastify";
+import {
+  showErrorToast,
+  showSuccessToast,
+  showInfoToast,
+} from "../../../utils/toastHelper";
 import AppPagination from "../../../components/Pagination/Pagination";
 import { motion as Motion, AnimatePresence } from "framer-motion";
 
@@ -118,11 +122,11 @@ const PaymentPage = () => {
           setTotalItems(res.pagination.totalItems);
         } else {
           console.error("Error loading payments:", res.errMessage);
-          toast.error(res.errMessage || "Lỗi tải danh sách thanh toán");
+          showErrorToast(res.errMessage, "Lỗi tải danh sách thanh toán");
         }
       } catch (error) {
         console.error("loadPayments error:", error);
-        toast.error("Không thể kết nối đến máy chủ");
+        showErrorToast(error, "Không thể kết nối đến máy chủ");
       } finally {
         setLoading(false);
       }
@@ -178,17 +182,17 @@ const PaymentPage = () => {
       }
 
       if (res && res.errCode === 0) {
-        toast.success(`${actionName} thành công.`);
+        showSuccessToast(`${actionName} thành công.`);
         await Promise.all([
           loadPayments(currentPage, filterStatus, filterMethod, searchTerm),
           loadSummary(),
         ]);
       } else {
-        toast.error(res?.errMessage || `${actionName} thất bại.`);
+        showErrorToast(res?.errMessage, `${actionName} thất bại.`);
       }
     } catch (error) {
       console.error("confirmAction error:", error);
-      toast.error(`${actionName} thất bại do lỗi hệ thống.`);
+      showErrorToast(error, `${actionName} thất bại do lỗi hệ thống.`);
     } finally {
       setActionModal({
         show: false,
@@ -201,7 +205,7 @@ const PaymentPage = () => {
 
   const handleExportCSV = () => {
     if (!payments || payments.length === 0)
-      return toast.info("Không có dữ liệu để xuất");
+      return showInfoToast("Không có dữ liệu để xuất");
     const headers = [
       "Mã Đơn",
       "Mã Giao Dịch",

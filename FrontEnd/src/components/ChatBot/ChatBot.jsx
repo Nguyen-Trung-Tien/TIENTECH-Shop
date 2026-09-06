@@ -21,6 +21,7 @@ import {
 } from "react-icons/fi";
 import { useSelector } from "react-redux";
 import { motion as Motion, AnimatePresence } from "framer-motion";
+import { useSystemSettings } from "../../context/ThemeContext";
 
 import { sendMessage, visualSearch } from "../../api/chatApi";
 
@@ -70,6 +71,7 @@ const FormattedText = ({ text }) => {
 };
 
 const ChatBot = () => {
+  const { isAiEnabled } = useSystemSettings();
   const [isOpen, setIsOpen] = useState(false);
   const [fullMode, setFullMode] = useState(false);
   const [messages, setMessages] = useState([]);
@@ -339,6 +341,10 @@ const ChatBot = () => {
       setHasGreeted(false);
     }
   };
+
+  if (!isAiEnabled) {
+    return null;
+  }
 
   return (
     <>

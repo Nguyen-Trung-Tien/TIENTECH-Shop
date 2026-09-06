@@ -24,7 +24,12 @@ import { useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { appConfig } from "../../config/runtimeConfig";
 import UnifiedSpinner from "../Loading/UnifiedSpinner";
-import { toast } from "react-toastify";
+import {
+  showErrorToast,
+  showSuccessToast,
+  showWarningToast,
+  showInfoToast,
+} from "../../utils/toastHelper";
 import { motion as Motion, AnimatePresence } from "framer-motion";
 
 const NotificationBell = () => {
@@ -74,7 +79,7 @@ const NotificationBell = () => {
         socket.emit("join_admin");
         socket.on("new_order", () => {
           fetchNotifications();
-          toast.info("🔔 Bạn có đơn hàng mới từ khách hàng!");
+          showInfoToast("🔔 Bạn có đơn hàng mới từ khách hàng!");
         });
       }
 
@@ -85,7 +90,7 @@ const NotificationBell = () => {
       socket.on("notification", (data) => {
         fetchNotifications();
         if (data?.title) {
-          toast.info(`🔔 ${data.title}`);
+          showInfoToast(`🔔 ${data.title}`);
         }
       });
     }
@@ -144,25 +149,25 @@ const NotificationBell = () => {
       setUnreadCount(0);
       const res = await markAllReadApi();
       if (res?.errCode === 0) {
-        toast.success("Đã đánh dấu tất cả là đã đọc!");
+        showSuccessToast("Đã đánh dấu tất cả là đã đọc!");
       }
       fetchNotifications();
     } catch (err) {
       console.error("Error marking all read:", err);
-      toast.error("Lỗi khi đánh dấu đã đọc");
+      showErrorToast(err, "Lỗi khi đánh dấu đã đọc");
     }
   };
 
   const handleSendBroadcast = async (e) => {
     e.preventDefault();
     if (!broadcastForm.title.trim() || !broadcastForm.message.trim()) {
-      return toast.warning("Vui lòng nhập tiêu đề và nội dung!");
+      return showWarningToast("Vui lòng nhập tiêu đề và nội dung!");
     }
     setSendingBroadcast(true);
     try {
       const res = await sendBroadcastNotificationApi(broadcastForm);
       if (res.errCode === 0) {
-        toast.success(res.message || "Đã phát thông báo thành công!");
+        showSuccessToast(res.message, "Đã phát thông báo thành công!");
         setShowAdminModal(false);
         setBroadcastForm({
           title: "",
@@ -173,11 +178,11 @@ const NotificationBell = () => {
         });
         fetchNotifications();
       } else {
-        toast.error(res.errMessage || "Không thể gửi thông báo");
+        showErrorToast(res.errMessage, "Không thể gửi thông báo");
       }
     } catch (err) {
       console.error(err);
-      toast.error("Lỗi gửi thông báo");
+      showErrorToast(err, "Lỗi gửi thông báo");
     } finally {
       setSendingBroadcast(false);
     }

@@ -19,17 +19,21 @@ import {
   FiGlobe,
   FiActivity,
   FiCheckCircle,
+  FiCheck,
+  FiRotateCcw,
 } from "react-icons/fi";
 import { toast } from "react-toastify";
 import {
   getAllSettingsAdminApi,
+  updateSettingAdminApi,
   bulkUpdateSettingsAdminApi,
   toggleOtpSettingAdminApi,
   flushRedisCacheAdminApi,
   getSystemHealthAdminApi,
 } from "../../../api/systemSettingApi";
 import UnifiedSpinner from "../../../components/Loading/UnifiedSpinner";
-import { useTheme } from "../../../context/ThemeContext";
+import { useTheme, useSystemSettings } from "../../../context/ThemeContext";
+import { showErrorToast, showSuccessToast } from "../../../utils/toastHelper";
 
 const CATEGORY_TABS = [
   { id: "all", label: "Tất Cả Cấu Hình", icon: FiSliders },
@@ -45,6 +49,7 @@ const SystemSettingsPage = () => {
   const [loading, setLoading] = useState(true);
   const [healthLoading, setHealthLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [savingKey, setSavingKey] = useState(null);
   const [flushingCache, setFlushingCache] = useState(false);
   const [activeTab, setActiveTab] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -56,6 +61,7 @@ const SystemSettingsPage = () => {
   const [healthData, setHealthData] = useState(null);
 
   const { theme, setTheme, isDark } = useTheme();
+  const { refetchSettings } = useSystemSettings();
 
   const fetchData = async () => {
     try {
@@ -118,6 +124,99 @@ const SystemSettingsPage = () => {
     setFormValues((prev) => ({ ...prev, [key]: value }));
   };
 
+  const isBooleanSetting = (item, val) => {
+    if (typeof val === "boolean") return true;
+    if (val === "true" || val === "false") return true;
+    if (item.value === "true" || item.value === "false") return true;
+    const k = item.key || "";
+    return (
+      k.includes("_ENABLED") ||
+      k.startsWith("REQUIRE_") ||
+      k === "MAINTENANCE_MODE" ||
+      k.startsWith("EMAIL_NOTIFY_")
+    );
+  };
+
+  const handleToggleSetting = async (item) => {
+    const currentState = Boolean(formValues[item.key]);
+    const nextState = !currentState;
+    setSavingKey(item.key);
+    handleFieldChange(item.key, nextState);
+    try {
+      let res;
+      if (item.key === "REQUIRE_OTP_VERIFICATION") {
+        res = await toggleOtpSettingAdminApi(nextState);
+      } else {
+        res = await updateSettingAdminApi({
+          key: item.key,
+          value: String(nextState),
+          description: item.description,
+          category: item.category,
+          isPublic: item.isPublic,
+        });
+      }
+
+      if (res.errCode === 0) {
+        setInitialValues((prev) => ({ ...prev, [item.key]: nextState }));
+        let friendlyMsg = `Đã ${nextState ? "BẬT" : "TẮT"} ${item.description || item.key}!`;
+        if (item.key === "MAINTENANCE_MODE") {
+          friendlyMsg = nextState
+            ? "Đã KÍCH HOẠT chế độ bảo trì toàn sàn!"
+            : "Đã TẮT chế độ bảo trì. Sàn hoạt động bình thường!";
+        } else if (item.key.includes("PAYMENT_")) {
+          friendlyMsg = nextState
+            ? `Đã kích hoạt phương thức: ${item.description || item.key}`
+            : `Đã tạm ngừng phương thức: ${item.description || item.key}`;
+        }
+        showSuccessToast(res.errMessage, friendlyMsg);
+        if (typeof refetchSettings === "function") {
+          refetchSettings();
+        }
+      } else {
+        handleFieldChange(item.key, currentState);
+        showErrorToast(res.errMessage, "Không thể cập nhật cấu hình");
+      }
+    } catch (err) {
+      console.error("Toggle setting error:", err);
+      handleFieldChange(item.key, currentState);
+      showErrorToast(err, "Không thể cập nhật cấu hình");
+    } finally {
+      setSavingKey(null);
+    }
+  };
+
+  const handleSaveSingle = async (item) => {
+    const val = formValues[item.key];
+    setSavingKey(item.key);
+    try {
+      const res = await updateSettingAdminApi({
+        key: item.key,
+        value: String(val),
+        description: item.description,
+        category: item.category,
+        isPublic: item.isPublic,
+      });
+      if (res.errCode === 0) {
+        setInitialValues((prev) => ({ ...prev, [item.key]: val }));
+        showSuccessToast(`Đã lưu "${item.description || item.key}" thành công!`);
+        if (typeof refetchSettings === "function") {
+          refetchSettings();
+        }
+      } else {
+        showErrorToast(res.errMessage, "Không thể lưu cấu hình");
+      }
+    } catch (err) {
+      console.error("Save single setting error:", err);
+      showErrorToast(err, "Không thể lưu cấu hình");
+    } finally {
+      setSavingKey(null);
+    }
+  };
+
+  const handleRevertSingle = (key) => {
+    setFormValues((prev) => ({ ...prev, [key]: initialValues[key] }));
+  };
+
   const handleSaveAll = async () => {
     if (!hasChanges) {
       toast.info("Không có thay đổi nào cần lưu.");
@@ -125,45 +224,33 @@ const SystemSettingsPage = () => {
     }
     try {
       setSaving(true);
-      const payload = Object.entries(formValues).map(([key, val]) => {
-        const original = rawSettings.find((s) => s.key === key);
-        return {
-          key,
-          value: String(val),
-          category: original?.category || "general",
-          description: original?.description || "",
-          isPublic: original?.isPublic ?? false,
-        };
-      });
+      const payload = Object.entries(formValues)
+        .filter(([key, val]) => val !== initialValues[key])
+        .map(([key, val]) => {
+          const original = rawSettings.find((s) => s.key === key);
+          return {
+            key,
+            value: String(val),
+            category: original?.category || "general",
+            description: original?.description || "",
+            isPublic: original?.isPublic !== undefined ? Boolean(original.isPublic) : true,
+          };
+        });
       const res = await bulkUpdateSettingsAdminApi(payload);
       if (res.errCode === 0) {
         setInitialValues({ ...formValues });
-        toast.success(res.errMessage || "Đã lưu toàn bộ cấu hình hệ thống!");
+        showSuccessToast(res.errMessage, "Đã lưu toàn bộ cấu hình hệ thống!");
+        if (typeof refetchSettings === "function") {
+          refetchSettings();
+        }
       } else {
-        toast.error(res.errMessage || "Lỗi khi lưu cấu hình!");
+        showErrorToast(res.errMessage, "Lỗi khi lưu cấu hình!");
       }
     } catch (error) {
       console.error("Save settings error:", error);
-      toast.error("Lỗi máy chủ khi lưu cấu hình!");
+      showErrorToast(error, "Lỗi máy chủ khi lưu cấu hình!");
     } finally {
       setSaving(false);
-    }
-  };
-
-  const handleQuickOtpToggle = async () => {
-    const currentState = Boolean(formValues.REQUIRE_OTP_VERIFICATION);
-    const nextState = !currentState;
-    handleFieldChange("REQUIRE_OTP_VERIFICATION", nextState);
-    try {
-      const res = await toggleOtpSettingAdminApi(nextState);
-      if (res.errCode === 0) {
-        setInitialValues((prev) => ({ ...prev, REQUIRE_OTP_VERIFICATION: nextState }));
-        toast.success(nextState ? "Đã BẬT yêu cầu mã OTP!" : "Đã TẮT yêu cầu mã OTP!");
-      }
-    } catch (err) {
-      console.error("OTP toggle error:", err);
-      handleFieldChange("REQUIRE_OTP_VERIFICATION", currentState);
-      toast.error("Không thể cập nhật cấu hình OTP");
     }
   };
 
@@ -172,15 +259,15 @@ const SystemSettingsPage = () => {
       setFlushingCache(true);
       const res = await flushRedisCacheAdminApi();
       if (res.errCode === 0) {
-        toast.success(res.errMessage || "Đã dọn sạch bộ nhớ cache hệ thống!");
+        showSuccessToast(res.errMessage, "Đã dọn sạch bộ nhớ cache hệ thống!");
         setShowFlushModal(false);
         fetchHealthOnly();
       } else {
-        toast.error(res.errMessage || "Không thể dọn Redis Cache");
+        showErrorToast(res.errMessage, "Không thể dọn Redis Cache");
       }
     } catch (error) {
       console.error("Flush cache error:", error);
-      toast.error("Lỗi khi kết nối tới máy chủ Redis");
+      showErrorToast(error, "Lỗi khi kết nối tới máy chủ Redis");
     } finally {
       setFlushingCache(false);
     }
@@ -376,43 +463,132 @@ const SystemSettingsPage = () => {
               ) : (
                 filteredSettings.map((item) => {
                   const currentValue = formValues[item.key] ?? "";
-                  const isBoolean = item.value === "true" || item.value === "false" || typeof currentValue === "boolean";
+                  const isBoolean = isBooleanSetting(item, currentValue);
                   const isTextarea = item.key.includes("PROMPT") || item.key.includes("DESCRIPTION") || item.key.includes("MESSAGE");
                   const isMaintenanceKey = item.key === "MAINTENANCE_MODE";
-                  const isOtpKey = item.key === "REQUIRE_OTP_VERIFICATION";
+                  const isDirty = formValues[item.key] !== initialValues[item.key];
+                  const isRowSaving = savingKey === item.key;
+
                   return (
                     <Motion.div
                       key={item.key}
                       initial={{ opacity: 0, y: 6 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className={`bg-white dark:bg-dark-surface border rounded-2xl p-5 shadow-2xs transition-all space-y-3 ${isMaintenanceKey && currentValue ? "border-rose-300 dark:border-rose-800/60 bg-rose-50/20 dark:bg-rose-950/10" : isOtpKey && currentValue ? "border-blue-300 dark:border-blue-800/60 bg-blue-50/20 dark:bg-blue-950/10" : "border-slate-200/80 dark:border-dark-border hover:border-primary/40"}`}
+                      className={`bg-white dark:bg-dark-surface border rounded-2xl p-5 shadow-2xs transition-all space-y-3 ${
+                        isMaintenanceKey && currentValue
+                          ? "border-rose-300 dark:border-rose-800/60 bg-rose-50/20 dark:bg-rose-950/10"
+                          : isDirty
+                          ? "border-amber-300 dark:border-amber-800/60 bg-amber-50/10 dark:bg-amber-950/10"
+                          : "border-slate-200/80 dark:border-dark-border hover:border-primary/40"
+                      }`}
                     >
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                         <div className="space-y-1">
                           <div className="flex flex-wrap items-center gap-2">
                             <span className="font-mono text-xs font-black text-primary">{item.key}</span>
                             <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-slate-100 dark:bg-dark-bg text-slate-500 dark:text-dark-text-secondary">{item.category}</span>
-                            {item.isPublic && <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400">Public API</span>}
+                            {item.isPublic && (
+                              <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400">
+                                Public API
+                              </span>
+                            )}
+                            {isDirty && !isBoolean && (
+                              <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">
+                                Đã sửa - Chưa lưu
+                              </span>
+                            )}
                           </div>
                           <p className="text-xs font-semibold text-slate-700 dark:text-slate-200">{item.description}</p>
                         </div>
                         {isBoolean && (
                           <div className="flex items-center gap-3 shrink-0">
-                            <span className={`text-xs font-extrabold px-2.5 py-1 rounded-full ${currentValue ? (isMaintenanceKey ? "bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300" : "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300") : "bg-slate-100 text-slate-500 dark:bg-dark-bg dark:text-dark-text-secondary"}`}>
+                            <span
+                              className={`text-xs font-extrabold px-2.5 py-1 rounded-full ${
+                                currentValue
+                                  ? isMaintenanceKey
+                                    ? "bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300"
+                                    : "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300"
+                                  : "bg-slate-100 text-slate-500 dark:bg-dark-bg dark:text-dark-text-secondary"
+                              }`}
+                            >
                               {currentValue ? "Đang Bật" : "Đang Tắt"}
                             </span>
-                            <button type="button" onClick={() => (isOtpKey ? handleQuickOtpToggle() : handleFieldChange(item.key, !currentValue))} className={`relative inline-flex h-7 w-14 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-300 ${currentValue ? (isMaintenanceKey ? "bg-rose-600" : "bg-primary") : "bg-slate-300 dark:bg-slate-700"}`}>
-                              <span className={`pointer-events-none inline-block size-6 rounded-full bg-white shadow-md transform transition duration-300 ${currentValue ? "translate-x-7" : "translate-x-0"}`} />
+                            <button
+                              type="button"
+                              onClick={() => handleToggleSetting(item)}
+                              disabled={isRowSaving}
+                              title="Nhấn để Bật/Tắt ngay lập tức"
+                              className={`relative inline-flex h-7 w-14 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-300 ${
+                                currentValue ? (isMaintenanceKey ? "bg-rose-600" : "bg-primary") : "bg-slate-300 dark:bg-slate-700"
+                              }`}
+                            >
+                              <span
+                                className={`pointer-events-none inline-flex items-center justify-center size-6 rounded-full bg-white shadow-md transform transition duration-300 ${
+                                  currentValue ? "translate-x-7" : "translate-x-0"
+                                }`}
+                              >
+                                {isRowSaving && <UnifiedSpinner size="xs" variant="primary" />}
+                              </span>
                             </button>
                           </div>
                         )}
                       </div>
                       {!isBoolean && (
-                        <div className="pt-1">
-                          {isTextarea ? (
-                            <textarea rows={3} value={currentValue} onChange={(e) => handleFieldChange(item.key, e.target.value)} className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-dark-bg border border-slate-200/80 dark:border-dark-border text-xs font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary leading-relaxed" />
-                          ) : (
-                            <input type="text" value={currentValue} onChange={(e) => handleFieldChange(item.key, e.target.value)} className="w-full h-10 px-3.5 rounded-xl bg-slate-50 dark:bg-dark-bg border border-slate-200/80 dark:border-dark-border text-xs font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" />
+                        <div className="pt-1 space-y-2">
+                          <div className="flex items-center gap-2">
+                            {isTextarea ? (
+                              <textarea
+                                rows={3}
+                                value={currentValue}
+                                onChange={(e) => handleFieldChange(item.key, e.target.value)}
+                                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-dark-bg border border-slate-200/80 dark:border-dark-border text-xs font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary leading-relaxed"
+                              />
+                            ) : (
+                              <input
+                                type={
+                                  item.key.includes("FEE") || item.key.includes("ORDER") || item.key.includes("ATTEMPTS") || item.key.includes("MINUTES")
+                                    ? "number"
+                                    : "text"
+                                }
+                                value={currentValue}
+                                onChange={(e) => handleFieldChange(item.key, e.target.value)}
+                                className="w-full h-10 px-3.5 rounded-xl bg-slate-50 dark:bg-dark-bg border border-slate-200/80 dark:border-dark-border text-xs font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                              />
+                            )}
+
+                            {isDirty && (
+                              <div className="flex items-center gap-1.5 shrink-0">
+                                <button
+                                  type="button"
+                                  onClick={() => handleSaveSingle(item)}
+                                  disabled={isRowSaving}
+                                  title="Lưu thay đổi này ngay"
+                                  className="h-10 px-3.5 rounded-xl bg-primary hover:bg-primary/90 text-white text-xs font-black uppercase tracking-wider transition-all flex items-center gap-1.5 shadow-sm cursor-pointer"
+                                >
+                                  {isRowSaving ? (
+                                    <UnifiedSpinner size="xs" variant="white" />
+                                  ) : (
+                                    <FiCheck className="size-3.5" />
+                                  )}
+                                  <span>Lưu</span>
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleRevertSingle(item.key)}
+                                  disabled={isRowSaving}
+                                  title="Hoàn tác"
+                                  className="size-10 rounded-xl bg-slate-100 dark:bg-dark-bg hover:bg-slate-200 dark:hover:bg-dark-border text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-all flex items-center justify-center cursor-pointer"
+                                >
+                                  <FiRotateCcw className="size-3.5" />
+                                </button>
+                              </div>
+                            )}
+                          </div>
+
+                          {(item.key.includes("FEE") || item.key.includes("MIN_ORDER")) && !isNaN(currentValue) && currentValue !== "" && (
+                            <p className="text-[11px] font-bold text-primary dark:text-primary-light">
+                              👉 Quy đổi: {(Number(currentValue) || 0).toLocaleString("vi-VN")} ₫
+                            </p>
                           )}
                         </div>
                       )}

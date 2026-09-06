@@ -13,7 +13,7 @@ import {
 } from "react-icons/fi";
 import { LazyMotion, domAnimation } from "framer-motion";
 import { useParams, useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
+import { showErrorToast, showSuccessToast } from "../../../utils/toastHelper";
 
 import {
   deleteProductApi,
@@ -100,7 +100,7 @@ const ProductManage = () => {
           isFlashSale: flashSaleOnly,
           isAdmin: true,
           ...Object.fromEntries(
-            Object.entries(attrFilters).map(([k, v]) => [k, v.join(",")])
+            Object.entries(attrFilters).map(([k, v]) => [k, v.join(",")]),
           ),
         });
 
@@ -109,16 +109,16 @@ const ProductManage = () => {
           setTotalPages(res.pagination?.totalPages || 1);
           setPage(currentPage);
         } else {
-          toast.error(res?.errMessage || "Lỗi khi tải dữ liệu sản phẩm");
+          showErrorToast(res?.errMessage, "Lỗi khi tải dữ liệu sản phẩm");
         }
       } catch (err) {
         console.error(err);
-        toast.error("Lỗi khi tải dữ liệu sản phẩm");
+        showErrorToast(err, "Lỗi khi tải dữ liệu sản phẩm");
       } finally {
         setLoadingTable(false);
       }
     },
-    [searchTerm, filterCategories, filterBrands, flashSaleOnly, attrFilters]
+    [searchTerm, filterCategories, filterBrands, flashSaleOnly, attrFilters],
   );
 
   // Custom hook for managing the product form state & API submit
@@ -160,7 +160,7 @@ const ProductManage = () => {
       }
       setShowModal(true);
     },
-    [initFormWithProduct]
+    [initFormWithProduct],
   );
 
   // Close modal handler
@@ -207,9 +207,12 @@ const ProductManage = () => {
           getAllBrandApi(),
           getAllAttributesApi(),
         ]);
-        if (catRes?.errCode === 0) setCategories(catRes.data || catRes.categories || []);
-        if (brandRes?.errCode === 0) setBrands(brandRes.brands || brandRes.data || []);
-        if (attrRes?.errCode === 0) setAttributes(attrRes.data || attrRes.attributes || []);
+        if (catRes?.errCode === 0)
+          setCategories(catRes.data || catRes.categories || []);
+        if (brandRes?.errCode === 0)
+          setBrands(brandRes.brands || brandRes.data || []);
+        if (attrRes?.errCode === 0)
+          setAttributes(attrRes.data || attrRes.attributes || []);
       } catch (err) {
         console.error("Error fetching admin metadata:", err);
       }
@@ -220,13 +223,13 @@ const ProductManage = () => {
   // Filter toggles
   const onToggleCategory = useCallback((val) => {
     setFilterCategories((prev) =>
-      prev.includes(val) ? prev.filter((i) => i !== val) : [...prev, val]
+      prev.includes(val) ? prev.filter((i) => i !== val) : [...prev, val],
     );
   }, []);
 
   const onToggleBrand = useCallback((val) => {
     setFilterBrands((prev) =>
-      prev.includes(val) ? prev.filter((i) => i !== val) : [...prev, val]
+      prev.includes(val) ? prev.filter((i) => i !== val) : [...prev, val],
     );
   }, []);
 
@@ -242,20 +245,19 @@ const ProductManage = () => {
     });
   }, []);
 
-
   // Delete product action
   const handleConfirmDelete = async () => {
     try {
       const res = await deleteProductApi(confirmModal.productId);
       if (res?.errCode === 0) {
-        toast.success("Đã xóa sản phẩm khỏi hệ thống!");
+        showSuccessToast("Đã xóa sản phẩm khỏi hệ thống!");
         fetchProducts(page);
       } else {
-        toast.error(res?.errMessage || "Xóa sản phẩm thất bại");
+        showErrorToast(res?.errMessage, "Xóa sản phẩm thất bại");
       }
     } catch (err) {
       console.error(err);
-      toast.error("Lỗi kết nối server khi xóa");
+      showErrorToast(err, "Lỗi kết nối máy chủ khi xóa");
     } finally {
       setConfirmModal({ show: false, productId: null, name: "" });
     }
@@ -267,14 +269,17 @@ const ProductManage = () => {
     try {
       const res = await syncEmbeddings();
       if (res?.errCode === 0) {
-        toast.success(res.message || "Đồng bộ dữ liệu AI Vector thành công! ✨");
+        showSuccessToast(
+          res.message,
+          "Đồng bộ dữ liệu AI Vector thành công! ✨",
+        );
         fetchProducts(page);
       } else {
-        toast.error(res?.errMessage || "Đồng bộ thất bại");
+        showErrorToast(res?.errMessage, "Đồng bộ thất bại");
       }
     } catch (error) {
       console.error("Sync AI error:", error);
-      toast.error("Lỗi khi đồng bộ dữ liệu Vector AI");
+      showErrorToast(error, "Lỗi khi đồng bộ dữ liệu Vector AI");
     } finally {
       setIsSyncingAI(false);
     }
@@ -325,7 +330,9 @@ const ProductManage = () => {
               disabled={isSyncingAI}
               className="flex items-center justify-center gap-2 px-5 h-12 rounded-2xl bg-white dark:bg-dark-surface hover:bg-slate-50 dark:hover:bg-dark-bg border border-slate-200 dark:border-dark-border text-slate-600 dark:text-dark-text-secondary hover:text-indigo-600 font-black uppercase tracking-wider text-[11px] transition-all disabled:opacity-50 cursor-pointer shadow-sm"
             >
-              <FiCpu className={isSyncingAI ? "animate-spin text-indigo-600" : ""} />
+              <FiCpu
+                className={isSyncingAI ? "animate-spin text-indigo-600" : ""}
+              />
               {isSyncingAI ? "Đang đồng bộ..." : "Đồng bộ AI Vector"}
             </button>
 

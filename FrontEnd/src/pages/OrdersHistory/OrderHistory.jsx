@@ -21,8 +21,8 @@ import Button from "../../components/UI/Button";
 import Badge from "../../components/UI/Badge";
 import ReviewModal from "../../components/ReviewComponent/ReviewModal";
 import UnifiedSpinner from "../../components/Loading/UnifiedSpinner";
-import { toast } from "react-toastify";
-import { showErrorToast } from "../../utils/toastHelper";
+import OrderHistorySkeleton from "./components/OrderHistorySkeleton";
+import { showErrorToast, showSuccessToast } from "../../utils/toastHelper";
 
 const OrderHistoryPage = () => {
   const navigate = useNavigate();
@@ -67,7 +67,7 @@ const OrderHistoryPage = () => {
       setIsSubmitting(true);
       const res = await updateOrderStatus(orderId, "completed");
       if (res.errCode === 0) {
-        toast.success(res.errMessage || "Xác nhận đã nhận hàng thành công!");
+        showSuccessToast(res.errMessage, "Xác nhận đã nhận hàng thành công!");
         fetchOrders();
       } else {
         showErrorToast(res.errMessage, "Không thể xác nhận nhận hàng");
@@ -101,12 +101,7 @@ const OrderHistoryPage = () => {
         </div>
 
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-24 gap-4">
-            <UnifiedSpinner size="lg" variant="primary" />
-            <p className="text-surface-400 dark:text-dark-text-secondary font-bold uppercase tracking-widest text-[11px]">
-              Đang tải danh sách đơn hàng...
-            </p>
-          </div>
+          <OrderHistorySkeleton count={3} />
         ) : orders.length === 0 ? (
           <div className="bg-white dark:bg-dark-surface rounded-[32px] border border-surface-200 dark:border-dark-border p-16 text-center shadow-sm">
             <div className="size-20 bg-surface-50 dark:bg-dark-bg rounded-full flex items-center justify-center mx-auto mb-6">
@@ -258,7 +253,7 @@ const OrderHistoryPage = () => {
                                   await addCart({ productId: item.productId, quantity: item.quantity || 1 });
                                 }
                               }
-                              toast.success("Đã thêm các sản phẩm vào giỏ hàng!");
+                              showSuccessToast("Đã thêm các sản phẩm vào giỏ hàng!");
                               navigate("/cart");
                             } catch (err) {
                               showErrorToast(err, "Một số sản phẩm không thể thêm vào giỏ hàng để mua lại");

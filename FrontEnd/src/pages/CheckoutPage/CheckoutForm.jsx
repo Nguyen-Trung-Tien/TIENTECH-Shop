@@ -104,7 +104,7 @@ const CheckoutForm = ({ formData, setFormData, user }) => {
     }
   }, [user, setFormData]);
 
-  const fetchAddresses = async () => {
+  const fetchAddresses = React.useCallback(async () => {
     try {
       const res = await getAddressesApi();
       if (res.errCode === 0) {
@@ -132,11 +132,11 @@ const CheckoutForm = ({ formData, setFormData, user }) => {
     } catch (error) {
       console.error("Error fetching addresses:", error);
     }
-  };
+  }, [formData.shippingAddress, user, setFormData]);
 
   useEffect(() => {
     if (user) fetchAddresses();
-  }, [user]);
+  }, [user, fetchAddresses]);
 
   const handleSelectAddress = (addr) => {
     const fullAddress = [addr.detailAddress, addr.ward, addr.province]
@@ -213,19 +213,24 @@ const CheckoutForm = ({ formData, setFormData, user }) => {
 
   const { isCodEnabled, isVnpayEnabled, isPaypalEnabled, isMomoEnabled } = useSystemSettings();
 
-  const paymentOptions = [
+  const paymentOptions = React.useMemo(() => [
     ...(isCodEnabled ? [{ id: "COD", label: "Thanh toán khi nhận hàng", desc: "Trả tiền mặt khi giao tới nơi", icon: FiDollarSign }] : []),
     ...(isVnpayEnabled ? [{ id: "VNPAY", label: "Ví VNPAY / Ngân hàng", desc: "Thanh toán online an toàn", icon: FiCreditCard }] : []),
     ...(isPaypalEnabled ? [{ id: "PAYPAL", label: "PayPal", desc: "Thanh toán quốc tế", icon: FaPaypal }] : []),
     ...(isMomoEnabled ? [{ id: "MOMO", label: "Ví MoMo", desc: "Thanh toán ví điện tử", icon: FiCreditCard }] : []),
-  ];
+  ], [isCodEnabled, isVnpayEnabled, isPaypalEnabled, isMomoEnabled]);
 
   // Auto-switch payment method if current is disabled
   useEffect(() => {
-    if (paymentOptions.length > 0 && !paymentOptions.some(p => p.id === formData.paymentMethod)) {
-      setFormData(prev => ({ ...prev, paymentMethod: paymentOptions[0].id }));
+    if (paymentOptions.length > 0) {
+      setFormData((prev) => {
+        if (!paymentOptions.some((p) => p.id === prev.paymentMethod)) {
+          return { ...prev, paymentMethod: paymentOptions[0].id };
+        }
+        return prev;
+      });
     }
-  }, [isCodEnabled, isVnpayEnabled, isPaypalEnabled, isMomoEnabled]);
+  }, [paymentOptions, setFormData]);
 
   return (
     <div className="space-y-8">

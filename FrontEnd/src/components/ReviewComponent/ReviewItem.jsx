@@ -4,7 +4,11 @@ import { FiThumbsUp, FiMessageSquare, FiX, FiSend } from "react-icons/fi";
 import ReplyItem from "./ReplyItem";
 import { toggleLikeReviewApi } from "../../api/reviewApi";
 import { createReplyApi } from "../../api/reviewReplyApi";
-import { toast } from "react-toastify";
+import {
+  showErrorToast,
+  showSuccessToast,
+  showWarningToast,
+} from "../../utils/toastHelper";
 
 /**
  * ReviewItem Component - Enhanced Version
@@ -22,7 +26,7 @@ const ReviewItem = ({ review, user }) => {
 
   const handleLike = async () => {
     if (!user) {
-      return toast.warn("Vui lòng đăng nhập để thích đánh giá!");
+      return showWarningToast("Vui lòng đăng nhập để thích đánh giá!");
     }
     if (isLiking) return;
     setIsLiking(true);
@@ -32,11 +36,11 @@ const ReviewItem = ({ review, user }) => {
         setLikes(res.data.likes);
         setIsLiked(res.data.isLiked);
       } else {
-        toast.error(res.errMessage || "Không thể thực hiện thao tác");
+        showErrorToast(res.errMessage, "Không thể thực hiện thao tác");
       }
     } catch (error) {
       console.error(error);
-      toast.error("Lỗi khi kết nối đến server");
+      showErrorToast(error, "Lỗi khi kết nối đến máy chủ");
     } finally {
       setIsLiking(false);
     }
@@ -44,7 +48,7 @@ const ReviewItem = ({ review, user }) => {
 
   const handleAddReply = async (e) => {
     e.preventDefault();
-    if (!user) return toast.warn("Vui lòng đăng nhập để phản hồi!");
+    if (!user) return showWarningToast("Vui lòng đăng nhập để phản hồi!");
     if (!replyText.trim()) return;
 
     setSubmittingReply(true);
@@ -56,13 +60,13 @@ const ReviewItem = ({ review, user }) => {
       if (res.errCode === 0) {
         setReplies((prev) => [...prev, res.data]);
         setReplyText("");
-        toast.success("Đã gửi phản hồi!");
+        showSuccessToast("Đã gửi phản hồi thành công!");
       } else {
-        toast.error(res.errMessage || "Lỗi khi gửi phản hồi");
+        showErrorToast(res.errMessage, "Lỗi khi gửi phản hồi");
       }
     } catch (error) {
       console.error("Error creating reply:", error);
-      toast.error("Không thể gửi phản hồi lúc này");
+      showErrorToast(error, "Không thể gửi phản hồi lúc này");
     } finally {
       setSubmittingReply(false);
     }

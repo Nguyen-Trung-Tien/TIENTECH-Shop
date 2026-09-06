@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Modal, Button } from "../UI";
 import ReviewForm from "./ReviewForm";
 import { createReviewApi, getPendingReviewsApi } from "../../api/reviewApi";
-import { toast } from "react-toastify";
+import { showErrorToast, showSuccessToast } from "../../utils/toastHelper";
 import { FiCheckCircle, FiPackage } from "react-icons/fi";
 import UnifiedSpinner from "../Loading/UnifiedSpinner";
 
@@ -53,20 +53,18 @@ const ReviewModal = ({ isOpen, onClose, order, onReviewSuccess }) => {
         ...newReview,
       });
       if (res.errCode === 0) {
-        toast.success("Đánh giá sản phẩm thành công!");
+        showSuccessToast("Đánh giá sản phẩm thành công!");
         setReviewedProductIds((prev) => [...prev, String(reviewingProductId)]);
         setReviewingProductId(null);
         // Refresh pending list
         fetchPendingProducts();
         if (onReviewSuccess) onReviewSuccess();
       } else {
-        toast.error(res.errMessage || "Lỗi khi gửi đánh giá");
+        showErrorToast(res.errMessage, "Lỗi khi gửi đánh giá");
       }
     } catch (error) {
       console.error("Review submission error:", error);
-      toast.error(
-        error?.response?.data?.errMessage || "Không thể gửi đánh giá",
-      );
+      showErrorToast(error, "Không thể gửi đánh giá");
     } finally {
       setSubmitting(false);
     }

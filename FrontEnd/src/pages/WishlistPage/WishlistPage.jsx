@@ -4,7 +4,7 @@ import { FiHeart, FiArrowLeft, FiShoppingBag, FiTrash2 } from "react-icons/fi";
 import { motion as Motion, AnimatePresence } from "framer-motion";
 import { getWishlistApi } from "../../api/wishlistApi";
 import ProductCard from "../../components/ProductCard/ProductCard";
-import Loading from "../../components/Loading/Loading";
+import SkeletonCard from "../../components/SkeletonCard/SkeletonCard";
 import { toast } from "react-toastify";
 import { showErrorToast } from "../../utils/toastHelper";
 
@@ -33,8 +33,6 @@ const WishlistPage = () => {
       setLoading(false);
     }
   };
-
-  if (loading) return <Loading />;
 
   return (
     <div className="min-h-screen bg-white dark:bg-black transition-colors duration-300 pb-20">
@@ -90,7 +88,13 @@ const WishlistPage = () => {
 
       <div className="container-custom">
         <AnimatePresence mode="wait">
-            {wishlist.length > 0 ? (
+          {loading ? (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5 md:gap-6 lg:gap-8">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <SkeletonCard key={i} />
+              ))}
+            </div>
+          ) : wishlist.length > 0 ? (
             <Motion.div 
                 key="list"
                 initial={{ opacity: 0 }}

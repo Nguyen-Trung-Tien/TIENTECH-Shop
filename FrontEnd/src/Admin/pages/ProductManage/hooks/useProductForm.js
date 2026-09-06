@@ -1,5 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
-import { toast } from "react-toastify";
+import {
+  showErrorToast,
+  showSuccessToast,
+  showWarningToast,
+} from "../../../../utils/toastHelper";
 import {
   createProductApi,
   updateProductApi,
@@ -316,8 +320,8 @@ export const useProductForm = ({ editProduct, onSuccess, onClose }) => {
 
   // AI Description Generator
   const handleGenerateDesc = async () => {
-    if (!formData.name.trim()) {
-      toast.warning("Vui lòng nhập Tên sản phẩm trước khi tạo mô tả bằng AI!");
+    if (!formData.name?.trim()) {
+      showWarningToast("Vui lòng nhập Tên sản phẩm trước khi tạo mô tả bằng AI!");
       return;
     }
     setIsGeneratingDesc(true);
@@ -329,13 +333,13 @@ export const useProductForm = ({ editProduct, onSuccess, onClose }) => {
       const res = await generateProductDescriptionApi(formData.name, keywords);
       if (res.errCode === 0) {
         setFormData((prev) => ({ ...prev, description: res.data }));
-        toast.success("✨ Đã tự động tạo mô tả sản phẩm bằng AI!");
+        showSuccessToast("✨ Đã tự động tạo mô tả sản phẩm bằng AI!");
       } else {
-        toast.error(res.errMessage || "Không thể tạo mô tả bằng AI");
+        showErrorToast(res.errMessage, "Không thể tạo mô tả bằng AI");
       }
     } catch (e) {
       console.error(e);
-      toast.error("Lỗi kết nối khi gọi dịch vụ AI");
+      showErrorToast(e, "Lỗi kết nối khi gọi dịch vụ AI");
     } finally {
       setIsGeneratingDesc(false);
     }
@@ -390,7 +394,7 @@ export const useProductForm = ({ editProduct, onSuccess, onClose }) => {
     if (e) e.preventDefault();
 
     if (!validateForm()) {
-      toast.error("Vui lòng kiểm tra lại thông tin bị lỗi!");
+      showErrorToast("Vui lòng kiểm tra lại thông tin bị lỗi!");
       if (errors.name || errors.price) setModalTab("basic");
       else if (errors.variants) setModalTab("variants");
       else if (errors.flashSalePrice || errors.flashSaleEnd) setModalTab("flashsale");
@@ -453,19 +457,18 @@ export const useProductForm = ({ editProduct, onSuccess, onClose }) => {
       }
 
       if (res.errCode === 0) {
-        toast.success(
+        showSuccessToast(
           editProduct ? "Đã cập nhật sản phẩm thành công!" : "Tạo sản phẩm thành công!"
         );
         resetForm();
         if (onSuccess) onSuccess();
         if (onClose) onClose();
       } else {
-        toast.error(res.errMessage || "Thao tác thất bại");
+        showErrorToast(res.errMessage, "Thao tác thất bại");
       }
     } catch (error) {
       console.error("Submit product form error:", error);
-      const serverErrMsg = error.response?.data?.errMessage || error.response?.data?.message;
-      toast.error(serverErrMsg || "Lỗi hệ thống khi lưu sản phẩm");
+      showErrorToast(error, "Lỗi hệ thống khi lưu sản phẩm");
     } finally {
       setSaving(false);
     }

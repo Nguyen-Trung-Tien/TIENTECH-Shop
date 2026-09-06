@@ -20,7 +20,7 @@ import { motion as Motion, AnimatePresence } from "framer-motion";
 
 import { ConfirmModal } from "../../components/UI";
 import { getOrdersByUserId, updateOrderStatus } from "../../api/orderApi";
-import { showErrorToast } from "../../utils/toastHelper";
+import { showErrorToast, showSuccessToast } from "../../utils/toastHelper";
 import AppPagination from "../../components/Pagination/Pagination";
 import { statusMap, paymentStatusMap } from "../../utils/StatusMap";
 import { StatusBadge } from "../../utils/StatusBadge";
@@ -118,7 +118,7 @@ const OrderPage = () => {
     try {
       const res = await updateOrderStatus(id, "completed");
       if (res?.errCode === 0) {
-        toast.success(res?.errMessage || "Xác nhận đã nhận hàng thành công!");
+        showSuccessToast(res?.errMessage, "Xác nhận đã nhận hàng thành công!");
         fetchOrders(page, activeTab);
       } else {
         showErrorToast(res?.errMessage, "Không thể xác nhận nhận hàng");
@@ -143,12 +143,11 @@ const OrderPage = () => {
         cancelReason,
       );
       if (res?.errCode === 0) {
-        const successMsg =
-          res.errMessage ||
-          (res.data?.status === "cancelled" || orderToCancel.status === "pending"
+        const fallbackMsg =
+          res.data?.status === "cancelled" || orderToCancel.status === "pending"
             ? "Đã hủy đơn hàng thành công!"
-            : "Đã gửi yêu cầu hủy đơn hàng. Vui lòng chờ Admin duyệt.");
-        toast.success(successMsg);
+            : "Đã gửi yêu cầu hủy đơn hàng. Vui lòng chờ Admin duyệt.";
+        showSuccessToast(res?.errMessage, fallbackMsg);
         fetchOrders(page, activeTab);
       } else {
         showErrorToast(res?.errMessage, "Không thể hủy đơn hàng");
@@ -177,7 +176,7 @@ const OrderPage = () => {
           requestReturn(itemId, returnReason),
         ),
       );
-      toast.success("Đã gửi yêu cầu trả hàng thành công!");
+      showSuccessToast("Đã gửi yêu cầu trả hàng thành công!");
       fetchOrders(page, activeTab);
     } catch (err) {
       showErrorToast(err, "Không thể gửi yêu cầu trả hàng");

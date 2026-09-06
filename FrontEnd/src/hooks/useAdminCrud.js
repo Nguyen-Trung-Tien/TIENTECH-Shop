@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { toast } from "react-toastify";
+import { showErrorToast, showSuccessToast } from "../utils/toastHelper";
 
 /**
  * Custom hook for Admin CRUD pages logic
@@ -47,11 +47,11 @@ export const useAdminCrud = (api, options = {}) => {
             setTotalItems(res.pagination.totalItems || 0);
           }
         } else {
-          toast.error(res.errMessage || `Lỗi tải danh sách ${itemName}`);
+          showErrorToast(res.errMessage, `Lỗi tải danh sách ${itemName}`);
         }
       } catch (err) {
         console.error(`Error fetching ${itemName}:`, err);
-        toast.error("Không thể kết nối server");
+        showErrorToast(err, "Không thể kết nối máy chủ");
       } finally {
         setLoading(false);
       }
@@ -85,7 +85,7 @@ export const useAdminCrud = (api, options = {}) => {
     return () => {
       if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
     };
-  }, [searchTerm, searchDebounceTime, fetchOnMount]);
+  }, [searchTerm, searchDebounceTime, fetchOnMount, fetchData]);
 
   const handleShowModal = (item = null) => {
     setEditingItem(item);
@@ -108,24 +108,18 @@ export const useAdminCrud = (api, options = {}) => {
       }
 
       if (res.errCode === 0) {
-        toast.success(editingItem ? "Cập nhật thành công!" : "Thêm mới thành công!");
+        showSuccessToast(editingItem ? "Cập nhật thành công!" : "Thêm mới thành công!");
         fetchData(page, searchTerm);
         handleCloseModal();
         return { success: true, data: res.data };
       } else {
-        toast.error(res.errMessage || "Thao tác thất bại");
+        showErrorToast(res.errMessage, "Thao tác thất bại");
         return { success: false, error: res.errMessage };
       }
     } catch (err) {
       console.error(`Error saving ${itemName}:`, err);
-      const errMsg =
-        err?.response?.data?.errMessage ||
-        err?.response?.data?.message ||
-        err?.errMessage ||
-        err?.message ||
-        "Lỗi kết nối máy chủ";
-      toast.error(errMsg);
-      return { success: false, error: errMsg };
+      showErrorToast(err, "Lỗi kết nối máy chủ");
+      return { success: false, error: err?.message };
     } finally {
       setSaving(false);
     }
@@ -141,16 +135,16 @@ export const useAdminCrud = (api, options = {}) => {
     try {
       const res = await api.delete(deletingItem.id);
       if (res.errCode === 0) {
-        toast.success(res.errMessage || `Đã xóa ${itemName}!`);
+        showSuccessToast(res.errMessage, `Đã xóa ${itemName} thành công!`);
         // If last item on page and not first page, go back one page
         const newPage = data.length === 1 && page > 1 ? page - 1 : page;
         fetchData(newPage, searchTerm);
       } else {
-        toast.error(res.errMessage || "Không thể xóa");
+        showErrorToast(res.errMessage, "Không thể xóa");
       }
     } catch (err) {
       console.error(`Error deleting ${itemName}:`, err);
-      toast.error("Lỗi khi xóa");
+      showErrorToast(err, "Lỗi khi xóa");
     } finally {
       setShowDeleteModal(false);
       setDeletingItem(null);

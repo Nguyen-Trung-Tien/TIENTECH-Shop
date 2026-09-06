@@ -31,6 +31,7 @@ import ImageGallery from "./components/ImageGallery";
 import ProductInfo from "./components/ProductInfo";
 import SpecificationSection from "./components/SpecificationSection";
 import SmartRecommendations from "./components/SmartRecommendations";
+import ProductDetailSkeleton from "./components/ProductDetailSkeleton";
 
 const specIconMap = {
   screen: <FiMonitor />,
@@ -261,13 +262,9 @@ const ProductDetailPage = () => {
     return variantImages.length > 0 ? variantImages : product.images;
   }, [product, selectedVariant]);
 
-  if (loading)
-    return (
-      <div className="flex flex-col justify-center items-center h-[70vh] space-y-4">
-        <UnifiedSpinner size="lg" variant="primary" />
-        <p className="text-gray-500 font-bold uppercase tracking-widest text-xs">Đang tải sản phẩm...</p>
-      </div>
-    );
+  if (loading) {
+    return <ProductDetailSkeleton />;
+  }
 
   if (!product)
     return (
@@ -310,7 +307,7 @@ const ProductDetailPage = () => {
       return;
     }
     const itemId = product?.variants?.length > 0 ? selectedVariant?.id : null;
-    const addedItem = await handleAddToCart(itemId, 1);
+    const addedItem = await handleAddToCart(itemId, 1, false);
     if (addedItem)
       navigate("/checkout", { state: { selectedItems: [addedItem] } });
   };

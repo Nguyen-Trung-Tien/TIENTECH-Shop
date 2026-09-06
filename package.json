@@ -15,6 +15,10 @@
     "test": "npm run test:backend && npm run test:frontend",
     "lint:frontend": "npm run lint --prefix FrontEnd",
     "lint": "npm run lint:frontend",
+    "build:frontend": "npm run build --prefix FrontEnd",
+    "build": "npm run build:frontend",
+    "start:backend": "npm run start --prefix BackEnd",
+    "start": "npm run start:backend",
     "prepare": "node -e \"if (!process.env.CI && process.env.NODE_ENV !== 'production') { try { require('child_process').execSync('husky', { stdio: 'inherit' }); } catch (e) {} }\""
   },
   "devDependencies": {

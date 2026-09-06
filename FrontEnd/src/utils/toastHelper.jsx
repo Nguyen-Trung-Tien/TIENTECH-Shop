@@ -23,12 +23,19 @@ const ERROR_TRANSLATIONS = {
   "Email already exists": "Địa chỉ email này đã được sử dụng trên hệ thống.",
   "Email and password are required!": "Vui lòng nhập đầy đủ Email và Mật khẩu!",
   "User not found": "Không tìm thấy thông tin tài khoản người dùng.",
+  "Cannot delete root user": "Không thể xóa tài khoản Quản trị viên tối cao (Root)!",
   "Validation error": "Dữ liệu không hợp lệ hoặc thông tin tài khoản đã tồn tại.",
   "SequelizeValidationError": "Dữ liệu nhập vào không hợp lệ. Vui lòng kiểm tra lại.",
   "SequelizeUniqueConstraintError": "Thông tin tài khoản đã tồn tại trên hệ thống.",
   "Validation len on username failed": "Tên người dùng phải có độ dài từ 3 đến 50 ký tự.",
   "username must be unique": "Tên người dùng (username) này đã có người sử dụng.",
   "email must be unique": "Địa chỉ email này đã được đăng ký tài khoản.",
+  "Token không hợp lệ": "Mã xác thực (Token) không hợp lệ hoặc đã hết hạn.",
+  "Token đã hết hạn": "Mã xác thực (Token) đã hết hạn. Vui lòng yêu cầu mã mới!",
+  "Mã xác nhận sai": "Mã xác nhận không chính xác. Vui lòng kiểm tra lại!",
+  "Mã đã hết hạn": "Mã xác nhận đã hết hạn. Vui lòng gửi lại mã mới!",
+  "Tài khoản đã kích hoạt": "Tài khoản của bạn đã được kích hoạt từ trước.",
+  "Email không tồn tại": "Địa chỉ email không tồn tại trên hệ thống.",
 
   // Đơn hàng & Giỏ hàng
   "Order not found": "Không tìm thấy thông tin đơn hàng yêu cầu.",
@@ -68,6 +75,52 @@ const ERROR_TRANSLATIONS = {
 };
 
 /**
+ * Bảng dịch thông điệp thành công từ server sang tiếng Việt tự nhiên
+ */
+const SUCCESS_TRANSLATIONS = {
+  "Product deleted successfully": "Đã xóa sản phẩm thành công!",
+  "Order deleted successfully": "Đã xóa đơn hàng thành công!",
+  "Payment deleted successfully": "Đã xóa thông tin thanh toán thành công!",
+  "Payment completed": "Thanh toán hoàn tất thành công!",
+  "Payment refunded": "Đã hoàn tiền thành công!",
+  "Create order successfully": "Đặt hàng thành công!",
+  "Payment status updated": "Cập nhật trạng thái thanh toán thành công!",
+  "OrderItem deleted successfully": "Đã xóa sản phẩm khỏi đơn hàng!",
+};
+
+/**
+ * Lọc bỏ các thông điệp kỹ thuật ngắn/vô nghĩa (như 'OK', 'success') từ server
+ * và thay thế bằng thông điệp tiếng Việt chỉn chu
+ */
+export const sanitizeSuccessMessage = (message, fallback = "Thao tác thành công!") => {
+  if (!message || typeof message !== "string") return fallback;
+  const trimmed = message.trim();
+  const lower = trimmed.toLowerCase();
+
+  // Kiểm tra nếu là các chuỗi generic/kỹ thuật
+  if (
+    lower === "ok" ||
+    lower === "ok." ||
+    lower === "success" ||
+    lower === "successful" ||
+    lower === "done" ||
+    lower === "completed" ||
+    lower === "true" ||
+    lower === "undefined" ||
+    lower === "null"
+  ) {
+    return fallback;
+  }
+
+  // Tra bảng dịch chuẩn nếu có
+  if (SUCCESS_TRANSLATIONS[trimmed]) {
+    return SUCCESS_TRANSLATIONS[trimmed];
+  }
+
+  return trimmed;
+};
+
+/**
  * Trích xuất thông báo lỗi chính xác và thân thiện bằng Tiếng Việt từ Error Object
  */
 export const extractErrorMessage = (error, defaultFallback = "Đã có lỗi xảy ra. Vui lòng thử lại!") => {
@@ -75,17 +128,30 @@ export const extractErrorMessage = (error, defaultFallback = "Đã có lỗi x�
 
   // Nếu là chuỗi trực tiếp
   if (typeof error === "string") {
-    return ERROR_TRANSLATIONS[error] || error;
+    const trimmed = error.trim();
+    const lower = trimmed.toLowerCase();
+    if (lower === "ok" || lower === "ok." || lower === "success") {
+      return defaultFallback;
+    }
+    return ERROR_TRANSLATIONS[trimmed] || trimmed;
   }
 
   // 1. Ưu tiên errMessage từ server response
   if (error.response?.data) {
     const data = error.response.data;
     if (data.errMessage && typeof data.errMessage === "string") {
-      return ERROR_TRANSLATIONS[data.errMessage] || data.errMessage;
+      const msg = data.errMessage.trim();
+      const lower = msg.toLowerCase();
+      if (lower !== "ok" && lower !== "ok." && lower !== "success") {
+        return ERROR_TRANSLATIONS[msg] || msg;
+      }
     }
     if (data.message && typeof data.message === "string") {
-      return ERROR_TRANSLATIONS[data.message] || data.message;
+      const msg = data.message.trim();
+      const lower = msg.toLowerCase();
+      if (lower !== "ok" && lower !== "ok." && lower !== "success") {
+        return ERROR_TRANSLATIONS[msg] || msg;
+      }
     }
     if (Array.isArray(data.errors) && data.errors.length > 0) {
       return data.errors.map((e) => e.message || e).join(", ");
@@ -94,19 +160,35 @@ export const extractErrorMessage = (error, defaultFallback = "Đã có lỗi x�
 
   // 2. Kiểm tra thuộc tính đính kèm trong axios interceptor hoặc direct ServiceResult / data
   if (error.errMessage && typeof error.errMessage === "string") {
-    return ERROR_TRANSLATIONS[error.errMessage] || error.errMessage;
+    const msg = error.errMessage.trim();
+    const lower = msg.toLowerCase();
+    if (lower !== "ok" && lower !== "ok." && lower !== "success") {
+      return ERROR_TRANSLATIONS[msg] || msg;
+    }
   }
 
   if (error.data?.errMessage && typeof error.data.errMessage === "string") {
-    return ERROR_TRANSLATIONS[error.data.errMessage] || error.data.errMessage;
+    const msg = error.data.errMessage.trim();
+    const lower = msg.toLowerCase();
+    if (lower !== "ok" && lower !== "ok." && lower !== "success") {
+      return ERROR_TRANSLATIONS[msg] || msg;
+    }
   }
 
   if (error.data?.message && typeof error.data.message === "string") {
-    return ERROR_TRANSLATIONS[error.data.message] || error.data.message;
+    const msg = error.data.message.trim();
+    const lower = msg.toLowerCase();
+    if (lower !== "ok" && lower !== "ok." && lower !== "success") {
+      return ERROR_TRANSLATIONS[msg] || msg;
+    }
   }
 
   if (error.serverMessage && typeof error.serverMessage === "string") {
-    return ERROR_TRANSLATIONS[error.serverMessage] || error.serverMessage;
+    const msg = error.serverMessage.trim();
+    const lower = msg.toLowerCase();
+    if (lower !== "ok" && lower !== "ok." && lower !== "success") {
+      return ERROR_TRANSLATIONS[msg] || msg;
+    }
   }
 
   // 3. Phân tích error.message thông thường
@@ -147,10 +229,12 @@ export const showErrorToast = (error, defaultFallback = "Đã có lỗi xảy ra
 };
 
 /**
- * Hiển thị Toast thông báo thành công bằng Tiếng Việt
+ * Hiển thị Toast thông báo thành công bằng Tiếng Việt chuẩn xác và tự động lọc 'OK'
  */
-export const showSuccessToast = (message = "Thao tác thành công!") => {
-  toast.success(message);
+export const showSuccessToast = (message, fallback = "Thao tác thành công!") => {
+  const finalMsg = sanitizeSuccessMessage(message, fallback);
+  toast.success(finalMsg);
+  return finalMsg;
 };
 
 /**
@@ -169,6 +253,7 @@ export const showInfoToast = (message = "Thông báo hệ thống") => {
 
 export default {
   extractErrorMessage,
+  sanitizeSuccessMessage,
   showErrorToast,
   showSuccessToast,
   showWarningToast,

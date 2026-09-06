@@ -37,7 +37,7 @@ const CategorySection = React.memo(({ categories: propCategories = [], loading: 
     return () => {
       isMounted = false;
     };
-  }, [propCategories?.length]);
+  }, [propCategories]);
 
   if (loading) {
     return (

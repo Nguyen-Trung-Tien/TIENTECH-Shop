@@ -5,7 +5,7 @@ import {
   getPendingReviewsApi,
   createReviewApi,
 } from "../../api/reviewApi";
-import { toast } from "react-toastify";
+import { showErrorToast, showSuccessToast } from "../../utils/toastHelper";
 import {
   FiStar,
   FiTrash2,
@@ -82,10 +82,10 @@ const ReviewHistory = () => {
   const handleDelete = async () => {
     const res = await deleteReviewApi(confirmDeleteModal.id);
     if (res.errCode === 0) {
-      toast.success("Đã xóa đánh giá");
+      showSuccessToast("Đã xóa đánh giá thành công!");
       fetchReviews(pagination.page);
     } else {
-      toast.error(res.errMessage);
+      showErrorToast(res.errMessage, "Không thể xóa đánh giá");
     }
     setConfirmDeleteModal({ show: false, id: null });
   };
@@ -103,14 +103,14 @@ const ReviewHistory = () => {
         ...newReview,
       });
       if (res.errCode === 0) {
-        toast.success("Cảm ơn bạn đã đánh giá!");
+        showSuccessToast("Cảm ơn bạn đã gửi đánh giá!");
         setReviewingProductId(null);
         fetchPendingProducts();
       } else {
-        toast.error(res.errMessage || "Lỗi khi gửi đánh giá");
+        showErrorToast(res.errMessage, "Lỗi khi gửi đánh giá");
       }
     } catch (error) {
-      toast.error("Không thể gửi đánh giá");
+      showErrorToast(error, "Không thể gửi đánh giá");
     } finally {
       setSubmitting(false);
     }

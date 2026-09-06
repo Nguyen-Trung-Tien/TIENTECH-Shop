@@ -10,7 +10,7 @@ import {
   FiEye,
   FiPackage,
 } from "react-icons/fi";
-import { toast } from "react-toastify";
+import { showErrorToast, showSuccessToast } from "../../../utils/toastHelper";
 import { motion as Motion, AnimatePresence } from "framer-motion";
 
 import { getAllOrders, updateOrderStatus } from "../../../api/orderApi";
@@ -45,7 +45,7 @@ const OrdersCancelManage = () => {
         }
       } catch (err) {
         console.error(err);
-        toast.error("Lỗi tải danh sách yêu cầu hủy");
+        showErrorToast(err, "Lỗi tải danh sách yêu cầu hủy");
       } finally {
         setLoading(false);
       }
@@ -66,17 +66,17 @@ const OrdersCancelManage = () => {
       const res = await updateOrderStatus(selectedOrder.id, finalStatus);
 
       if (res.errCode === 0) {
-        toast.success(
+        showSuccessToast(
           approve ? "Đã chấp nhận hủy đơn!" : "Đã từ chối yêu cầu hủy!",
         );
         fetchOrders(page);
         setModalShow(false);
         setConfirmModal({ show: false, approve: true });
       } else {
-        toast.error(res.errMessage || "Lỗi xử lý");
+        showErrorToast(res.errMessage, "Lỗi xử lý yêu cầu hủy đơn");
       }
     } catch (err) {
-      toast.error("Lỗi kết nối máy chủ");
+      showErrorToast(err, "Lỗi kết nối máy chủ");
     } finally {
       setLoadingAction(false);
     }

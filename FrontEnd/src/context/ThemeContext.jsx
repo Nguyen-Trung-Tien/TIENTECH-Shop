@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { getPublicSettingsApi } from "../api/systemSettingApi";
 
 const ThemeContext = createContext();
 
@@ -79,7 +80,6 @@ export const useTheme = () => {
 /* =========================================================================
    SYSTEM SETTINGS CONTEXT & HOOK
    ========================================================================= */
-import { getPublicSettingsApi } from "../api/systemSettingApi";
 
 const DEFAULT_SYSTEM_SETTINGS = {
   STORE_NAME: "TIENTECH Store",

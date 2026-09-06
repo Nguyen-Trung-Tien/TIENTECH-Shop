@@ -24,7 +24,11 @@ import {
 import { motion as Motion, AnimatePresence } from "framer-motion";
 
 import { useNavigate, useLocation } from "react-router-dom";
-import { toast } from "react-toastify";
+import {
+  showErrorToast,
+  showSuccessToast,
+  showInfoToast,
+} from "../../../utils/toastHelper";
 import {
   getAllOrders,
   updateOrderStatus,
@@ -257,7 +261,7 @@ const OrderManage = () => {
         }
       } catch (err) {
         console.error(err);
-        toast.error("Lỗi kết nối server");
+        showErrorToast(err, "Lỗi kết nối máy chủ");
       } finally {
         setLoading(false);
       }
@@ -287,7 +291,7 @@ const OrderManage = () => {
     const { selectedStatus, reason } = statusModal;
 
     if (selectedStatus === statusModal.order.status) {
-      toast.info("Trạng thái không thay đổi");
+      showInfoToast("Trạng thái đơn hàng không thay đổi.");
       return;
     }
 
@@ -296,7 +300,7 @@ const OrderManage = () => {
     try {
       const res = await updateOrderStatus(orderId, selectedStatus, reason);
       if (res?.errCode === 0) {
-        toast.success(
+        showSuccessToast(
           `Đã cập nhật đơn #${orderCode} sang "${statusMap[selectedStatus]?.label || selectedStatus}"`,
         );
         setStatusModal({
@@ -307,11 +311,11 @@ const OrderManage = () => {
         });
         fetchOrders(page, searchTerm, activeTab);
       } else {
-        toast.error(res?.errMessage || "Lỗi cập nhật trạng thái");
+        showErrorToast(res?.errMessage, "Lỗi cập nhật trạng thái");
       }
     } catch (err) {
       console.error(err);
-      toast.error("Lỗi kết nối máy chủ");
+      showErrorToast(err, "Lỗi kết nối máy chủ");
     } finally {
       setIsUpdating(false);
       setLoadingId(null);
@@ -325,11 +329,12 @@ const OrderManage = () => {
       setLoadingId(orderId);
       const res = await deleteOrder(orderId);
       if (res?.errCode === 0) {
-        toast.success(`Đã xóa đơn ${orderCode || `DH${orderId}`}`);
+        showSuccessToast(res?.errMessage, `Đã xóa đơn ${orderCode || `DH${orderId}`}`);
         fetchOrders(page, searchTerm, activeTab);
       }
     } catch (err) {
       console.error(err);
+      showErrorToast(err, "Lỗi khi xóa đơn hàng");
     } finally {
       setIsDeleting(false);
       setLoadingId(null);

@@ -1,5 +1,9 @@
 import React, { useState } from "react";
-import { toast } from "react-toastify";
+import {
+  showErrorToast,
+  showSuccessToast,
+  showWarningToast,
+} from "../../utils/toastHelper";
 import { motion as Motion, AnimatePresence } from "framer-motion";
 import {
   FiMail,
@@ -41,18 +45,20 @@ const ForgotPasswordModal = ({ show, onClose }) => {
 
   const handleSendEmail = async () => {
     if (!email) {
-      toast.warning("Vui lòng nhập email");
+      showWarningToast("Vui lòng nhập email");
       return;
     }
     setLoading(true);
     try {
       const res = await forgotPasswordApi(email);
       if (res.errCode === 0) {
-        toast.success(res.errMessage);
+        showSuccessToast(res.errMessage, "Mã xác nhận đã được gửi đến email của bạn!");
         setStep(2);
-      } else toast.error(res.errMessage);
-    } catch {
-      toast.error("Lỗi khi gửi mã xác nhận");
+      } else {
+        showErrorToast(res.errMessage, "Không thể gửi mã xác nhận");
+      }
+    } catch (err) {
+      showErrorToast(err, "Lỗi kết nối khi gửi mã xác nhận");
     } finally {
       setLoading(false);
     }
@@ -60,18 +66,20 @@ const ForgotPasswordModal = ({ show, onClose }) => {
 
   const handleVerifyToken = async () => {
     if (!token) {
-      toast.warning("Vui lòng nhập mã xác nhận");
+      showWarningToast("Vui lòng nhập mã xác nhận (OTP)");
       return;
     }
     setLoading(true);
     try {
       const res = await verifyResetTokenApi(email, token);
       if (res.errCode === 0) {
-        toast.success(res.errMessage);
+        showSuccessToast(res.errMessage, "Xác thực mã thành công!");
         setStep(3);
-      } else toast.error(res.errMessage);
-    } catch {
-      toast.error("Lỗi khi xác thực mã");
+      } else {
+        showErrorToast(res.errMessage, "Mã xác thực không hợp lệ hoặc đã hết hạn");
+      }
+    } catch (err) {
+      showErrorToast(err, "Lỗi kết nối khi xác thực mã");
     } finally {
       setLoading(false);
     }
@@ -79,12 +87,12 @@ const ForgotPasswordModal = ({ show, onClose }) => {
 
   const handleResetPassword = async () => {
     if (!newPassword || !confirmPassword) {
-      toast.warning("Vui lòng nhập đầy đủ thông tin");
+      showWarningToast("Vui lòng nhập đầy đủ mật khẩu mới và xác nhận mật khẩu");
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      toast.error("Mật khẩu xác nhận không khớp");
+      showErrorToast("Mật khẩu xác nhận không khớp!");
       return;
     }
 
@@ -92,11 +100,13 @@ const ForgotPasswordModal = ({ show, onClose }) => {
     try {
       const res = await resetPasswordApi(email, token, newPassword);
       if (res.errCode === 0) {
-        toast.success(res.errMessage || "Đổi mật khẩu thành công");
+        showSuccessToast(res.errMessage, "Đổi mật khẩu thành công!");
         handleClose();
-      } else toast.error(res.errMessage || "Không thể đổi mật khẩu");
-    } catch {
-      toast.error("Lỗi khi đổi mật khẩu");
+      } else {
+        showErrorToast(res.errMessage, "Không thể đổi mật khẩu");
+      }
+    } catch (err) {
+      showErrorToast(err, "Lỗi kết nối khi đổi mật khẩu");
     } finally {
       setLoading(false);
     }

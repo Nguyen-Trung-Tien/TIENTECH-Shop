@@ -11,10 +11,12 @@ import { applyVoucher, removeVoucher } from "../../redux/cartSlice";
 import { validateCart } from "../../api/cartApi";
 import { toast } from "react-toastify";
 import { showErrorToast } from "../../utils/toastHelper";
+import { useSystemSettings } from "../../context/ThemeContext";
 
 const CartPage = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const { freeshipMinOrder } = useSystemSettings();
   const {
     cartItems,
     fetchCart,
@@ -166,7 +168,7 @@ const CartPage = () => {
               {/* Free Shipping Progress Widget */}
               <div className="bg-white dark:bg-dark-surface p-6 rounded-[28px] border border-slate-100 dark:border-dark-border shadow-sm">
                 {(() => {
-                  const freeShipThreshold = 5000000;
+                  const freeShipThreshold = Number(freeshipMinOrder) || 5000000;
                   const percent = Math.min(100, Math.round((subtotal / freeShipThreshold) * 100));
                   const remaining = freeShipThreshold - subtotal;
                   return (

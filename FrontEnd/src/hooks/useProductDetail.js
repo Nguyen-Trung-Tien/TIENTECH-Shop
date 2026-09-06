@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { toast } from "react-toastify";
-import { showErrorToast } from "../utils/toastHelper";
+import { showErrorToast, showSuccessToast, showWarningToast } from "../utils/toastHelper";
 import {
   getProductBySlugApi,
   getRecommendedProductsApi,
@@ -43,10 +42,10 @@ export const useProductDetail = (slug) => {
       if (res?.errCode === 0 && res.product) {
         setProduct(res.product);
       } else {
-        toast.error(res.errMessage || "Không tìm thấy sản phẩm!");
+        showErrorToast(res.errMessage || "Không tìm thấy sản phẩm!");
       }
     } catch {
-      toast.error("Lỗi khi tải thông tin sản phẩm!");
+      showErrorToast("Lỗi khi tải thông tin sản phẩm!");
     } finally {
       setLoading(false);
     }
@@ -118,13 +117,13 @@ export const useProductDetail = (slug) => {
     }
   }, [product?.id, userId, fetchReviews, ratingFilter, hasImageFilter]);
 
-  const handleAddToCart = async (variantId, quantity = 1) => {
+  const handleAddToCart = async (variantId, quantity = 1, showToast = true) => {
     if (!userId) {
-      toast.warn("Bạn cần đăng nhập để mua hàng!");
+      showWarningToast("Bạn cần đăng nhập để mua hàng!");
       return null;
     }
     if (!variantId && product?.variants?.length > 0) {
-      toast.warn("Vui lòng chọn phiên bản sản phẩm!");
+      showWarningToast("Vui lòng chọn phiên bản sản phẩm!");
       return null;
     }
 
@@ -146,7 +145,9 @@ export const useProductDetail = (slug) => {
 
       if (res.errCode === 0) {
         dispatch(addCartItem(res.data));
-        toast.success("Đã thêm vào giỏ hàng!");
+        if (showToast) {
+          showSuccessToast("Đã thêm vào giỏ hàng!");
+        }
         return res.data; // Trả về item vừa thêm
       } else {
         showErrorToast(res.errMessage, "Không thể thêm vào giỏ hàng");
@@ -161,7 +162,7 @@ export const useProductDetail = (slug) => {
   };
 
   const handleReviewSubmit = async (reviewData) => {
-    if (!user) return toast.warn("Vui lòng đăng nhập để đánh giá!");
+    if (!user) return showWarningToast("Vui lòng đăng nhập để đánh giá!");
     setSubmittingReview(true);
     try {
       const res = await createReviewApi({
@@ -169,7 +170,7 @@ export const useProductDetail = (slug) => {
         ...reviewData,
       });
       if (res.errCode === 0) {
-        toast.success("Cảm ơn bạn đã đánh giá!");
+        showSuccessToast("Cảm ơn bạn đã đánh giá!");
         fetchReviews(1, ratingFilter, hasImageFilter); // Refresh reviews
         return true;
       } else {

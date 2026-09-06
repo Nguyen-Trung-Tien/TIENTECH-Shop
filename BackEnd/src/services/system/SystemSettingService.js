@@ -227,6 +227,25 @@ class SystemSettingService {
             category: config.category,
             isPublic: config.isPublic,
           });
+        } else {
+          // Repair existing setting if category or isPublic was corrupted
+          let needsUpdate = false;
+          const updates = {};
+          if ((!existing.category || existing.category === "general") && config.category && config.category !== "general") {
+            updates.category = config.category;
+            needsUpdate = true;
+          }
+          if (!existing.description && config.description) {
+            updates.description = config.description;
+            needsUpdate = true;
+          }
+          if (config.isPublic === true && !existing.isPublic) {
+            updates.isPublic = true;
+            needsUpdate = true;
+          }
+          if (needsUpdate) {
+            await existing.update(updates);
+          }
         }
       }
     } catch (error) {
@@ -275,20 +294,39 @@ class SystemSettingService {
     }
   }
 
-  async setSetting(key, value, description = null, category = "general", isPublic = false) {
+  async setSetting(key, value, description = null, category = null, isPublic = null) {
     try {
       const stringValue = typeof value === "object" ? JSON.stringify(value) : String(value);
+      const defaultConf = DEFAULT_SETTINGS[key] || {};
 
-      const [setting] = await db.SystemSetting.upsert({
-        key,
-        value: stringValue,
-        description: description || DEFAULT_SETTINGS[key]?.description,
-        category: category || DEFAULT_SETTINGS[key]?.category || "general",
-        isPublic: isPublic !== undefined ? isPublic : DEFAULT_SETTINGS[key]?.isPublic || false,
-      });
+      let setting = await db.SystemSetting.findOne({ where: { key } });
+
+      const finalCategory = category || (setting && setting.category && setting.category !== "general" ? setting.category : defaultConf.category) || "general";
+      const finalDescription = description || (setting && setting.description) || defaultConf.description || "";
+      const finalIsPublic = isPublic !== null && isPublic !== undefined
+        ? Boolean(isPublic)
+        : (setting && setting.isPublic !== undefined && setting.isPublic !== null ? Boolean(setting.isPublic) : (defaultConf.isPublic ?? false));
+
+      if (setting) {
+        await setting.update({
+          value: stringValue,
+          description: finalDescription,
+          category: finalCategory,
+          isPublic: finalIsPublic,
+        });
+      } else {
+        setting = await db.SystemSetting.create({
+          key,
+          value: stringValue,
+          description: finalDescription,
+          category: finalCategory,
+          isPublic: finalIsPublic,
+        });
+      }
 
       const parsedValue = value === "true" || value === true ? true : value === "false" || value === false ? false : value;
       await setCache(this.getCacheKey(key), parsedValue, 3600);
+      await deleteCache("system:settings:public");
 
       return { errCode: 0, data: setting, errMessage: "Cập nhật cấu hình thành công!" };
     } catch (error) {

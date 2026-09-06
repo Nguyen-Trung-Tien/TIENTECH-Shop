@@ -6,7 +6,7 @@ import { Button } from "../../components/UI";
 import { getOrderById, updateOrderStatus } from "../../api/orderApi";
 import { requestReturn, cancelReturnRequest } from "../../api/orderItemApi";
 import { createVnpayPaymentApi } from "../../api/paymentApi";
-import { showErrorToast } from "../../utils/toastHelper";
+import { showErrorToast, showSuccessToast } from "../../utils/toastHelper";
 import ReviewModal from "../../components/ReviewComponent/ReviewModal";
 import UnifiedSpinner from "../../components/Loading/UnifiedSpinner";
 import { printInvoice } from "./printInvoice";
@@ -19,6 +19,7 @@ import PaymentSummary from "./components/PaymentSummary";
 import OrderActions from "./components/OrderActions";
 import ReturnModal from "./components/ReturnModal";
 import CancelModal from "./components/CancelModal";
+import OrderDetailSkeleton from "./components/OrderDetailSkeleton";
 
 const initialState = {
   order: null,
@@ -114,12 +115,11 @@ const OrderDetail = () => {
       dispatch({ type: "SET_SUBMITTING", payload: true });
       const res = await updateOrderStatus(id, "cancel_requested", cancelReason);
       if (res.errCode === 0) {
-        const successMsg =
-          res.errMessage ||
-          (res.data?.status === "cancelled" || order?.status === "pending"
+        const fallbackMsg =
+          res.data?.status === "cancelled" || order?.status === "pending"
             ? "Đã hủy đơn hàng thành công!"
-            : "Đã gửi yêu cầu hủy đơn hàng. Vui lòng chờ Admin duyệt.");
-        toast.success(successMsg);
+            : "Đã gửi yêu cầu hủy đơn hàng. Vui lòng chờ Admin duyệt.";
+        showSuccessToast(res.errMessage, fallbackMsg);
         dispatch({ type: "CLOSE_CANCEL_MODAL" });
         fetchOrderDetail();
       } else {
@@ -137,7 +137,7 @@ const OrderDetail = () => {
       dispatch({ type: "SET_SUBMITTING", payload: true });
       const res = await updateOrderStatus(id, "completed");
       if (res.errCode === 0) {
-        toast.success(res.errMessage || "Xác nhận đã nhận hàng thành công!");
+        showSuccessToast(res.errMessage, "Xác nhận đã nhận hàng thành công!");
         fetchOrderDetail();
       } else {
         showErrorToast(res.errMessage, "Không thể xác nhận nhận hàng");
@@ -200,7 +200,7 @@ const OrderDetail = () => {
       await Promise.all(
         selectedItems.map((itemId) => requestReturn(itemId, returnReason)),
       );
-      toast.success("Gửi yêu cầu trả hàng thành công");
+      showSuccessToast("Gửi yêu cầu trả hàng thành công!");
       dispatch({ type: "CLOSE_RETURN_MODAL" });
       fetchOrderDetail();
     } catch (err) {
@@ -223,7 +223,7 @@ const OrderDetail = () => {
       dispatch({ type: "SET_SUBMITTING", payload: true });
       const res = await cancelReturnRequest(itemId);
       if (res.errCode === 0) {
-        toast.success(res.errMessage || "Đã thu hồi yêu cầu trả hàng thành công");
+        showSuccessToast(res.errMessage, "Đã thu hồi yêu cầu trả hàng thành công!");
         fetchOrderDetail();
       } else {
         showErrorToast(res.errMessage, "Không thể thu hồi yêu cầu trả hàng");
@@ -236,14 +236,7 @@ const OrderDetail = () => {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-surface-50 dark:bg-dark-bg gap-4">
-        <UnifiedSpinner size="lg" variant="primary" />
-        <p className="text-surface-400 dark:text-dark-text-secondary font-bold uppercase tracking-widest text-[11px]">
-          Đang tải chi tiết đơn hàng...
-        </p>
-      </div>
-    );
+    return <OrderDetailSkeleton />;
   }
 
   if (!order) {
@@ -317,7 +310,7 @@ const OrderDetail = () => {
                   recallableItems.map((item) => cancelReturnRequest(item.id)),
                 )
                   .then(() => {
-                    toast.success("Đã thu hồi các yêu cầu trả hàng");
+                    showSuccessToast("Đã thu hồi các yêu cầu trả hàng thành công!");
                     fetchOrderDetail();
                   })
                   .catch((err) => showErrorToast(err, "Lỗi khi thu hồi yêu cầu trả hàng"))

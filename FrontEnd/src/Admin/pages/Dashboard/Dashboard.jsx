@@ -7,6 +7,7 @@ import AIInsightsWidget from "../../components/AIInsightsWidget/AIInsightsWidget
 import { getDashboard, exportRevenue } from "../../../api/adminApi";
 import { toast } from "react-toastify";
 import UnifiedSpinner from "../../../components/Loading/UnifiedSpinner";
+import DashboardSkeleton from "./components/DashboardSkeleton";
 
 const Dashboard = () => {
   const [loading, setLoading] = useState(true);
@@ -166,12 +167,7 @@ const Dashboard = () => {
       </div>
 
       {loading ? (
-        <div className="flex flex-col items-center justify-center py-20 sm:py-32 bg-white dark:bg-dark-surface rounded-2xl sm:rounded-[40px] border border-slate-100 dark:border-dark-border shadow-soft gap-4">
-          <UnifiedSpinner size="xl" variant="primary" />
-          <p className="text-slate-400 dark:text-dark-text-secondary font-black text-[10px] tracking-[0.2em] uppercase">
-            Đang đồng bộ dữ liệu...
-          </p>
-        </div>
+        <DashboardSkeleton />
       ) : error ? (
         <div className="p-4 sm:p-8 bg-rose-50 dark:bg-rose-900/10 border border-rose-100 dark:border-rose-900/20 rounded-2xl sm:rounded-3xl text-rose-600 dark:text-rose-400 text-sm font-bold flex items-center gap-4 shadow-sm">
           <div className="size-10 sm:size-12 bg-rose-500 text-white rounded-2xl flex items-center justify-center text-xl shadow-lg shadow-rose-500/20 shrink-0">

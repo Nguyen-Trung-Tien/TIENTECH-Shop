@@ -8,7 +8,11 @@ import {
   FiLayers,
   FiTag,
 } from "react-icons/fi";
-import { toast } from "react-toastify";
+import {
+  showErrorToast,
+  showSuccessToast,
+  showInfoToast,
+} from "../../../utils/toastHelper";
 import { m as Motion, AnimatePresence } from "framer-motion";
 import { deleteVariant, updateVariant } from "../../../api/variantApi";
 import { ConfirmModal } from "../../../components/UI/Modal";
@@ -86,19 +90,19 @@ const VariantManager = ({
       try {
         const res = await updateVariant(v.id, v);
         if (res.errCode === 0) {
-          toast.success("Đã lưu thay đổi cho phiên bản!");
+          showSuccessToast("Đã lưu thay đổi cho phiên bản!");
           if (onRefresh) onRefresh();
         } else {
-          toast.error(res.errMessage || "Không thể cập nhật biến thể");
+          showErrorToast(res.errMessage || "Không thể cập nhật biến thể");
         }
       } catch (err) {
         console.error(err);
-        toast.error("Lỗi khi cập nhật biến thể");
+        showErrorToast("Lỗi khi cập nhật biến thể");
       } finally {
         setLoading(false);
       }
     } else {
-      toast.success("Đã cập nhật thông số phiên bản!");
+      showSuccessToast("Đã cập nhật thông số phiên bản!");
     }
   };
 
@@ -116,13 +120,13 @@ const VariantManager = ({
       try {
         const res = await deleteVariant(v.id);
         if (res?.errCode === 0) {
-          toast.success("Đã xóa phiên bản biến thể");
+          showSuccessToast("Đã xóa phiên bản biến thể!");
         }
       } catch (err) {
         console.error("Delete variant error:", err);
       }
     } else {
-      toast.info("Đã xóa phiên bản");
+      showInfoToast("Đã xóa phiên bản");
     }
 
     // Always remove from local state to reflect change immediately

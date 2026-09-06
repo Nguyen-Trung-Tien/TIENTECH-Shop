@@ -10,7 +10,7 @@ import {
 } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { toast } from "react-toastify";
+import { showErrorToast, showSuccessToast } from "../../../utils/toastHelper";
 import { loginUser } from "../../../api/userApi";
 import { setUser } from "../../../redux/userSlice";
 import Logo from "../../../components/UI/Logo";
@@ -43,7 +43,7 @@ const AdminLogin = () => {
       if (res.errCode === 0 && res.data) {
         const { user } = res.data;
         if (user.role !== "admin") {
-          toast.error("Bạn không có quyền quản trị viên!");
+          showErrorToast("Bạn không có quyền quản trị viên!");
           setLoading(false);
           return;
         }
@@ -68,14 +68,14 @@ const AdminLogin = () => {
           address: user.address,
         };
         dispatch(setUser({ user: minimalUser }));
-        toast.success("Đăng nhập Admin thành công!");
+        showSuccessToast("Đăng nhập Admin thành công!");
         navigate("/admin/dashboard");
       } else {
-        toast.error(res.errMessage || "Đăng nhập thất bại!");
+        showErrorToast(res.errMessage, "Đăng nhập thất bại!");
       }
     } catch (err) {
       console.error("Login error:", err);
-      toast.error("Có lỗi xảy ra. Vui lòng thử lại!");
+      showErrorToast(err, "Có lỗi xảy ra. Vui lòng thử lại!");
     } finally {
       setLoading(false);
     }
