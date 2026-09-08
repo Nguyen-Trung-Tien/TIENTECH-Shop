@@ -133,12 +133,25 @@ stateDiagram-v2
 ## 4. Hệ thống Phòng thủ & Bảo mật (Security Blueprint)
 
 1. **Bảo vệ Token & Đăng xuất An toàn (JWT + Redis Blacklist):**
-   - Access Token có thời hạn ngắn (15-60 phút) được ký bằng `JWT_ACCESS_SECRET`.
-   - Khi người dùng đăng xuất, Access Token được đưa vào danh sách đen (Blacklist) trong Redis với thời gian sống (TTL) tương ứng với thời gian hết hạn còn lại của token, ngăn chặn hoàn toàn token cũ bị tái sử dụng.
-2. **Kiểm soát Tần suất Truy cập (Rate Limiter):**
+   - Access Token và Refresh Token được thiết lập qua **HttpOnly, Secure, SameSite=Strict cookies**.
+   - Tuyệt đối không trả token nhạy cảm trong JSON response của login/refresh-token.
+   - Khi người dùng đăng xuất, Access Token được đưa vào danh sách đen (Blacklist) trong Redis với thời gian sống (TTL) tương ứng với thời gian hết hạn còn lại của token.
+2. **Bảo vệ Chống Bypass Thanh toán (Payment Idempotency & Provider Verification):**
+   - Số tiền thanh toán (`amount`) luôn được truy xuất và xác định trực tiếp từ `Order.totalPrice` trong database, bỏ qua mọi giá trị do client gửi lên.
+   - Khách hàng không thể tự đánh dấu giao dịch thanh toán trực tuyến là `completed` / `paid`.
+   - Chỉ Webhook/IPN hợp lệ từ Payment Provider (như VNPay) mới có quyền cập nhật trạng thái `paid`.
+   - Khóa phân tán Redis lock (`payment_confirm_{orderId}`) có token ngẫu nhiên và atomic compare-and-delete ngăn chặn race-conditions và xử lý trùng lặp IPN.
+3. **Kiểm soát Tần suất Truy cập (Rate Limiter) & Phòng chống CSRF:**
    - Rate limiter tổng quát bảo vệ toàn bộ `/api/` (1000 req/15 phút trên Production).
    - Rate limiter đặc thù cho các endpoint nhạy cảm như `/api/v1/user/forgot-password` (tối đa 5 lần/15 phút).
-3. **Phòng chống Lỗ hổng Tràn hiển thị (Text Overflow Defense):**
+   - Middleware CSRF Protection bảo vệ toàn bộ các mutation endpoints (`POST`, `PUT`, `PATCH`, `DELETE`) xác thực qua cookie, đối chiếu `Origin` và `Referer` với danh sách `allowedOrigins`.
+4. **Quy tắc Sở hữu Đơn hàng & Trả hàng Cấp Mục (Item-Level Return Flow):**
+   - API tạo đơn hàng (`create-new-order`) ép buộc `userId = req.user.id` cho khách hàng, ngăn chặn việc tạo đơn hoặc sử dụng voucher/giỏ hàng thay cho tài khoản khác.
+   - Quy trình đổi/trả hàng được quản lý chi tiết tới từng `OrderItem` với các trạng thái: `none` -> `requested` -> `approved` / `rejected` -> `completed`.
+   - Khách chỉ có thể yêu cầu trả hàng cho item trong đơn hàng của chính mình. Admin chỉ có thể duyệt/từ chối các item đang ở trạng thái `requested`, đảm bảo tính lũy thừa (idempotency) và hoàn tồn kho đúng một lần duy nhất.
+5. **Tiêu chuẩn Header Bảo mật (Security Headers):**
+   - Tích hợp Content Security Policy (CSP), HTTP Strict Transport Security (HSTS trên production), Permissions-Policy (`camera=(), microphone=(), geolocation=()`), `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`.
+6. **Phòng chống Lỗ hổng Tràn hiển thị (Text Overflow Defense):**
    - Toàn bộ văn bản hệ thống (địa chỉ, email, tên sản phẩm dài, mã đơn, lý do hủy đơn) áp dụng luật CSS:
      - `overflow-wrap: anywhere;` và `break-words;`
      - Các container con dạng flex áp dụng `min-w-0 flex-1 overflow-hidden` để ngăn chặn việc nội dung dài đẩy tràn màn hình ngang của thiết bị di động.

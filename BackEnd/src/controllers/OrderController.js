@@ -30,7 +30,16 @@ const handleGetOrderById = async (req, res) => {
 
 const handleCreateOrder = async (req, res) => {
   try {
-    const result = await OrderService.createOrder(req.body);
+    const orderData = { ...req.body };
+
+    // SECURITY: Customers can never specify another user's userId
+    if (req.user && req.user.role !== "admin") {
+      orderData.userId = req.user.id;
+    } else if (!orderData.userId && req.user) {
+      orderData.userId = req.user.id;
+    }
+
+    const result = await OrderService.createOrder(orderData, req.user);
     if (result.errCode === 0) {
       const io = req.app.get("io");
       
@@ -174,8 +183,8 @@ const getActiveOrdersByUserId = async (req, res) => {
 const handleRequestReturn = async (req, res) => {
   try {
     const { orderItemId, reason } = req.body;
-    const userId = req.user.id;
-    const result = await OrderService.requestReturn(orderItemId, userId, reason);
+    const OrderItemService = require("../services/order/OrderItemService");
+    const result = await OrderItemService.requestReturn(orderItemId, reason, req.user);
     return handleResponse(res, result, 200);
   } catch (e) {
     return handleError(res, e, "handleRequestReturn");
@@ -184,9 +193,9 @@ const handleRequestReturn = async (req, res) => {
 
 const handleReturnAction = async (req, res) => {
   try {
-    const { orderItemId, action } = req.body;
-    const adminId = req.user.id;
-    const result = await OrderService.handleReturnAction(orderItemId, action, adminId);
+    const { orderItemId, action, status } = req.body;
+    const OrderItemService = require("../services/order/OrderItemService");
+    const result = await OrderItemService.processReturn(orderItemId, action || status, req.user);
     return handleResponse(res, result, 200);
   } catch (e) {
     return handleError(res, e, "handleReturnAction");

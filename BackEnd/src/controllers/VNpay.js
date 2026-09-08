@@ -175,23 +175,13 @@ const handleVnpayReturn = async (req, res) => {
 
     // THANH TOÁN THÀNH CÔNG
     if (rspCode === "00") {
-      const lockKey = `vnpay_confirm_${orderCode}`;
-      const locked = await acquireLock(lockKey, 15);
-      if (locked) {
-        try {
-          const PaymentService = require("../services/order/PaymentService");
-          await PaymentService.createPayment({
-            orderId: order.id,
-            userId: order.userId,
-            amount: order.totalPrice,
-            method: "vnpay",
-            note: "VNPay Return Auto Confirm",
-            transactionId: vnp_Params.vnp_TransactionNo,
-          });
-        } finally {
-          await releaseLock(lockKey);
-        }
-      }
+      const PaymentService = require("../services/order/PaymentService");
+      await PaymentService.confirmPaymentFromWebhook({
+        orderId: order.id,
+        transactionId: vnp_Params.vnp_TransactionNo,
+        method: "vnpay",
+        note: "VNPay Return Auto Confirm",
+      });
 
       return res.redirect(
         `${process.env.FRONTEND_URL}/checkout-success/${orderCode}`
@@ -256,26 +246,22 @@ const handleVnpayIPN = async (req, res) => {
     }
 
     if (rspCode === "00") {
-      // Thành công - Acquire Redis Lock
-      const lockKey = `vnpay_confirm_${orderCode}`;
-      const locked = await acquireLock(lockKey, 15);
-      if (locked) {
-        try {
-          const PaymentService = require("../services/order/PaymentService");
-          await PaymentService.createPayment({
-            orderId: order.id,
-            userId: order.userId,
-            amount: order.totalPrice,
-            method: "vnpay",
-            note: "VNPay IPN Auto Confirm",
-            transactionId: vnp_Params.vnp_TransactionNo
-          });
-        } finally {
-          await releaseLock(lockKey);
-        }
-      }
+      const PaymentService = require("../services/order/PaymentService");
+      const confirmRes = await PaymentService.confirmPaymentFromWebhook({
+        orderId: order.id,
+        transactionId: vnp_Params.vnp_TransactionNo,
+        method: "vnpay",
+        note: "VNPay IPN Auto Confirm",
+        amount: vnp_Amount,
+      });
 
-      return res.status(200).json({ RspCode: "00", Message: "Confirm Success" });
+      if (confirmRes.errCode === 0) {
+        return res.status(200).json({ RspCode: "00", Message: "Confirm Success" });
+      } else if (confirmRes.errCode === 4) {
+        return res.status(200).json({ RspCode: "04", Message: "Invalid amount" });
+      } else {
+        return res.status(200).json({ RspCode: "02", Message: "Order already confirmed" });
+      }
     } else {
       // Thất bại
       return res.status(200).json({ RspCode: "00", Message: "Confirm Success (Payment Failed)" });

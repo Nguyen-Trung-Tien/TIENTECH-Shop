@@ -65,6 +65,12 @@ module.exports = (sequelize, DataTypes) => {
       modelName: "Payment",
       tableName: "Payments",
       timestamps: true,
+      indexes: [
+        {
+          unique: true,
+          fields: ["orderId"],
+        },
+      ],
     }
   );
 

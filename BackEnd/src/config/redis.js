@@ -130,24 +130,41 @@ const getRedisStats = async () => {
   }
 };
 
+const crypto = require("crypto");
+
 const acquireLock = async (key, ttl = 10) => {
-  if (!isRedisConnected) return true;
+  const lockToken = crypto.randomUUID ? crypto.randomUUID() : crypto.randomBytes(16).toString("hex");
+  if (!isRedisConnected) return lockToken;
   try {
-    const result = await redisClient.set(`lock:${key}`, "locked", {
+    const result = await redisClient.set(`lock:${key}`, lockToken, {
       NX: true,
       EX: ttl,
     });
-    return result === "OK";
+    return result === "OK" ? lockToken : null;
   } catch (err) {
     console.error(`[Redis] acquireLock error for key ${key}:`, err);
-    return true;
+    return lockToken;
   }
 };
 
-const releaseLock = async (key) => {
+const releaseLock = async (key, lockToken = null) => {
   if (!isRedisConnected) return;
   try {
-    await redisClient.del(`lock:${key}`);
+    if (lockToken && typeof redisClient.eval === "function") {
+      const luaScript = `
+        if redis.call("get", KEYS[1]) == ARGV[1] then
+          return redis.call("del", KEYS[1])
+        else
+          return 0
+        end
+      `;
+      await redisClient.eval(luaScript, {
+        keys: [`lock:${key}`],
+        arguments: [String(lockToken)],
+      });
+    } else {
+      await redisClient.del(`lock:${key}`);
+    }
   } catch (err) {
     console.error(`[Redis] releaseLock error for key ${key}:`, err);
   }

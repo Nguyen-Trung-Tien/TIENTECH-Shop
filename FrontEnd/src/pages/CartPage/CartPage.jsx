@@ -11,7 +11,7 @@ import { applyVoucher, removeVoucher } from "../../redux/cartSlice";
 import { validateCart } from "../../api/cartApi";
 import { toast } from "react-toastify";
 import { showErrorToast } from "../../utils/toastHelper";
-import { useSystemSettings } from "../../context/ThemeContext";
+import { useSystemSettings } from "../../context/useSystemSettings";
 
 const CartPage = () => {
   const navigate = useNavigate();

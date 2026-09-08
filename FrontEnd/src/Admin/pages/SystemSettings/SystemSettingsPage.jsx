@@ -32,7 +32,8 @@ import {
   getSystemHealthAdminApi,
 } from "../../../api/systemSettingApi";
 import UnifiedSpinner from "../../../components/Loading/UnifiedSpinner";
-import { useTheme, useSystemSettings } from "../../../context/ThemeContext";
+import { useTheme } from "../../../context/useTheme";
+import { useSystemSettings } from "../../../context/useSystemSettings";
 import { showErrorToast, showSuccessToast } from "../../../utils/toastHelper";
 
 const CATEGORY_TABS = [

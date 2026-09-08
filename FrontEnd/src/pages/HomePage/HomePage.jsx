@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, lazy, Suspense } from "react";
 import HeroSection from "../../components/HomePageComponent/HeroSection";
 import CategorySection from "../../components/HomePageComponent/CategorySection";
 import ProductSection from "../../components/HomePageComponent/ProductSection";
 import AllProducts from "../../components/AllProducts/AllProduct";
-import ChatBot from "../../components/ChatBot/ChatBot";
 import SmallBanner from "../../components/SmallBanner/SmallBanner";
+
+const ChatBot = lazy(() => import("../../components/ChatBot/ChatBot"));
 import FlashSale from "../../components/FlashSale/FlashSale";
 import Testimonials from "../../components/Testimonials/Testimonials";
 import BlogSection from "../../components/BlogSection/BlogSection";
@@ -43,7 +44,9 @@ const HomePage = () => {
 
   return (
     <div className="bg-slate-50 dark:bg-dark-bg transition-colors duration-300">
-      <ChatBot />
+      <Suspense fallback={null}>
+        <ChatBot />
+      </Suspense>
       <HeroSection />
 
       <main>

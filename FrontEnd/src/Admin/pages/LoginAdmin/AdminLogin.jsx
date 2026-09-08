@@ -24,12 +24,15 @@ const AdminLogin = () => {
   const [email, setEmail] = useState(() => {
     return localStorage.getItem("tientech_admin_remember_email") || "";
   });
-  const [password, setPassword] = useState(() => {
-    return localStorage.getItem("tientech_admin_remember_password") || "";
-  });
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showForgotModal, setShowForgotModal] = useState(false);
+
+  // Security: Proactively purge legacy stored plaintext passwords
+  React.useEffect(() => {
+    localStorage.removeItem("tientech_admin_remember_password");
+  }, []);
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -48,16 +51,15 @@ const AdminLogin = () => {
           return;
         }
 
-        // Save or Clear Admin Saved Login Info
+        // Save or Clear Admin Saved Login Info (Only email, NEVER password)
         if (rememberMe) {
           localStorage.setItem("tientech_admin_remember_me", "true");
           localStorage.setItem("tientech_admin_remember_email", email);
-          localStorage.setItem("tientech_admin_remember_password", password);
         } else {
           localStorage.removeItem("tientech_admin_remember_me");
           localStorage.removeItem("tientech_admin_remember_email");
-          localStorage.removeItem("tientech_admin_remember_password");
         }
+        localStorage.removeItem("tientech_admin_remember_password");
 
         const minimalUser = {
           id: user.id,

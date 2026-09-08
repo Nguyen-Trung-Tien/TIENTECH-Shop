@@ -213,9 +213,6 @@ class SystemSettingService {
     if (process.env.NODE_ENV === "test") return;
     try {
       if (!db.SystemSetting) return;
-      
-      // Auto sync table if not exists
-      await db.SystemSetting.sync();
 
       for (const [key, config] of Object.entries(DEFAULT_SETTINGS)) {
         const existing = await db.SystemSetting.findOne({ where: { key } });

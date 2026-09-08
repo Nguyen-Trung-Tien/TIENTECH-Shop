@@ -56,8 +56,10 @@ Base URL: `/api/v1`
 | `GET` | `/order/user/:userId` | Customer / Admin | Danh sách lịch sử đơn hàng của người dùng |
 | `GET` | `/order/get-order/:id` | Customer / Admin | Chi tiết đơn hàng, lịch sử xác nhận, mã bưu vận |
 | `PUT` | `/order/update-status-order/:id/status` | Customer / Admin | Cập nhật trạng thái đơn (khách hủy/yêu cầu hủy/nhận hàng, admin duyệt) |
-| `POST` | `/order/return-request` | Customer | Gửi yêu cầu trả hàng cho từng sản phẩm trong đơn |
-| `POST` | `/order/return-action` | Admin | Admin phê duyệt hoặc từ chối yêu cầu trả hàng |
+| `POST` | `/order/return-request` | Customer | Gửi yêu cầu trả hàng cho sản phẩm trong đơn (ủy thác `OrderItemService`) |
+| `POST` | `/order/return-action` | Admin | Phê duyệt hoặc từ chối yêu cầu trả hàng (ủy thác `OrderItemService`) |
+| `POST` | `/order-item/request/:id/request-return` | Customer | Yêu cầu trả hàng trực tiếp theo OrderItem ID (chỉ áp dụng cho đơn của chính mình) |
+| `POST` | `/order-item/process/:id/process-return` | Admin | Admin duyệt (`approved`) hoặc từ chối (`rejected`) item đang ở trạng thái `requested` |
 | `GET` | `/order/get-all-orders` | Admin | Xem toàn bộ danh sách đơn trên toàn hệ thống |
 
 > **Quy ước tham số khi gọi Hủy đơn hàng (`PUT /order/update-status-order/:id/status`):**
@@ -68,7 +70,8 @@ Base URL: `/api/v1`
 > }
 > ```
 > - Nếu đơn hàng ở trạng thái `pending`: Đơn sẽ chuyển ngay sang `cancelled` và hoàn tồn kho.
-> - Nếu đơn hàng ở trạng thái `confirmed`, `processing`, `shipping`: Đơn sẽ chuyển sang `cancel_requested` và thông báo tới Admin.
+> - Nếu đơn hàng ở trạng thái `confirmed`, `processing`, `shipping`, `shipped`: Đơn sẽ chuyển sang `cancel_requested` và thông báo tới Admin.
+> - Nếu đơn hàng ở trạng thái `delivered`: Khách hàng có thể chuyển sang `completed` (xác nhận nhận hàng).
 
 ---
 
@@ -76,8 +79,10 @@ Base URL: `/api/v1`
 
 | Method | Endpoint | Quyền (Auth) | Mô tả |
 | :--- | :--- | :--- | :--- |
+| `POST` | `/payment/create-payment` | Authenticated | Tạo payment pending cho đơn hàng (amount ép buộc từ Order.totalPrice) |
 | `POST` | `/vnpay/create-payment-url` | Authenticated | Tạo URL chuyển hướng thanh toán qua cổng VNPay Sandbox/Live |
-| `GET` | `/vnpay/vnpay-return` | Public | Webhook / Return URL nhận kết quả phản hồi từ VNPay |
+| `GET` | `/vnpay/vnpay_ipn` | Public | Webhook / IPN đã kiểm tra chữ ký xác nhận thanh toán tự động và lũy thừa |
+| `GET` | `/vnpay/vnpay-return` | Public | Return URL nhận kết quả phản hồi từ VNPay cho khách |
 | `POST` | `/payment/paypal-capture` | Authenticated | Bắt giao dịch thanh toán thành công qua PayPal SDK |
 
 ---

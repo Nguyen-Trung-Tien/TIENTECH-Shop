@@ -19,6 +19,17 @@ app.use((req, res, next) => {
   res.setHeader("X-Content-Type-Options", "nosniff");
   res.setHeader("X-XSS-Protection", "1; mode=block");
   res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+  res.setHeader(
+    "Content-Security-Policy",
+    "default-src 'self'; img-src 'self' data: https:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' https:; object-src 'none'; base-uri 'self'; form-action 'self'"
+  );
+  res.setHeader("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+  if (isProduction) {
+    res.setHeader(
+      "Strict-Transport-Security",
+      "max-age=31536000; includeSubDomains; preload"
+    );
+  }
   next();
 });
 
@@ -48,8 +59,8 @@ app.use(
       if (allowedOrigins.indexOf(origin) !== -1) {
         callback(null, true);
       } else {
-        console.log("Blocked by CORS:", origin);
-        callback(new Error("Not allowed by CORS"));
+        // Return false to let CORS middleware block the origin without throwing an uncaught 500 error
+        callback(null, false);
       }
     },
     credentials: true,
@@ -71,6 +82,70 @@ BODY PARSER & COOKIE PARSER
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
 app.use(cookieParser());
+
+/*
+CSRF PROTECTION FOR COOKIE-AUTHENTICATED MUTATIONS
+*/
+app.use((req, res, next) => {
+  const mutationMethods = ["POST", "PUT", "PATCH", "DELETE"];
+  if (!mutationMethods.includes(req.method)) {
+    return next();
+  }
+
+  // Bypass CSRF for public payment webhooks / unauthenticated endpoints
+  const path = req.originalUrl || req.path || "";
+  if (
+    path.includes("/vnpay/vnpay_ipn") ||
+    path.includes("/vnpay_ipn") ||
+    path.includes("/webhook") ||
+    path.includes("/user/forgot-password") ||
+    path.includes("/user/login") ||
+    path.includes("/user/create-new-user") ||
+    path.includes("/user/verify-otp") ||
+    path.includes("/user/refresh-token")
+  ) {
+    return next();
+  }
+
+  const hasAuthCookie = req.cookies && (req.cookies.accessToken || req.cookies.refreshToken);
+  if (hasAuthCookie) {
+    const origin = req.headers["origin"];
+    const referer = req.headers["referer"];
+
+    let requestOrigin = null;
+    if (origin) {
+      requestOrigin = origin;
+    } else if (referer) {
+      try {
+        const parsed = new URL(referer);
+        requestOrigin = parsed.origin;
+      } catch (err) {}
+    }
+
+    if (requestOrigin) {
+      const isAllowed = allowedOrigins.some((allowed) => {
+        return requestOrigin.toLowerCase() === allowed.toLowerCase();
+      });
+      if (!isAllowed) {
+        return res.status(403).json({
+          status: "FORBIDDEN",
+          statusCode: 403,
+          errCode: 403,
+          errMessage: "Forbidden: CSRF Origin/Referer check failed",
+        });
+      }
+    } else if (process.env.NODE_ENV !== "test") {
+      return res.status(403).json({
+        status: "FORBIDDEN",
+        statusCode: 403,
+        errCode: 403,
+        errMessage: "Forbidden: CSRF verification missing required Origin header",
+      });
+    }
+  }
+
+  next();
+});
 
 /*
 RATE LIMITER

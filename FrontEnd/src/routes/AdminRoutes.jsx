@@ -1,27 +1,37 @@
+import React, { Suspense, lazy } from "react";
 import { Routes, Route } from "react-router-dom";
 import PrivateRoute from "./PrivateRoute";
 import PublicRouteAdmin from "./PublicRouteAdmin";
 import AdminLayout from "../Admin/AdminLayout";
-import AdminLogin from "../Admin/pages/LoginAdmin/AdminLogin";
-import Dashboard from "../Admin/pages/Dashboard/Dashboard";
-import AdminSearch from "../Admin/pages/Dashboard/AdminSearch";
-import Categories from "../Admin/pages/Categories/Categories";
-import OrderManage from "../Admin/pages/OrderManage/OrderManage";
-import ProductManage from "../Admin/pages/ProductManage/ProductManage";
-import UserManage from "../Admin/pages/UserManage/UserManage";
-import Revenue from "../Admin/pages/Revenue/Revenue";
-import ReviewPage from "../Admin/pages/ReviewPage/ReviewPage";
-import OrdersReturnPage from "../Admin/pages/OrdersReturnPage/OrdersReturnPage";
-import OrdersCancelManage from "../Admin/pages/OrderManage/OrdersCancelManage";
-import PaymentPage from "../Admin/pages/Payment/PaymentPage";
-import BrandManage from "../Admin/pages/BrandManage/BrandManage";
-import VoucherManage from "../Admin/pages/VoucherManage/VoucherManage";
-import SystemSettingsPage from "../Admin/pages/SystemSettings/SystemSettingsPage";
-import OrderDetail from "../pages/OrderDetail/OrderDetail";
-import NotFound from "../pages/NotFound/NotFound";
+import UnifiedSpinner from "../components/Loading/UnifiedSpinner";
+
+const AdminLogin = lazy(() => import("../Admin/pages/LoginAdmin/AdminLogin"));
+const Dashboard = lazy(() => import("../Admin/pages/Dashboard/Dashboard"));
+const AdminSearch = lazy(() => import("../Admin/pages/Dashboard/AdminSearch"));
+const Categories = lazy(() => import("../Admin/pages/Categories/Categories"));
+const OrderManage = lazy(() => import("../Admin/pages/OrderManage/OrderManage"));
+const ProductManage = lazy(() => import("../Admin/pages/ProductManage/ProductManage"));
+const UserManage = lazy(() => import("../Admin/pages/UserManage/UserManage"));
+const Revenue = lazy(() => import("../Admin/pages/Revenue/Revenue"));
+const ReviewPage = lazy(() => import("../Admin/pages/ReviewPage/ReviewPage"));
+const OrdersReturnPage = lazy(() => import("../Admin/pages/OrdersReturnPage/OrdersReturnPage"));
+const OrdersCancelManage = lazy(() => import("../Admin/pages/OrderManage/OrdersCancelManage"));
+const PaymentPage = lazy(() => import("../Admin/pages/Payment/PaymentPage"));
+const BrandManage = lazy(() => import("../Admin/pages/BrandManage/BrandManage"));
+const VoucherManage = lazy(() => import("../Admin/pages/VoucherManage/VoucherManage"));
+const SystemSettingsPage = lazy(() => import("../Admin/pages/SystemSettings/SystemSettingsPage"));
+const OrderDetail = lazy(() => import("../pages/OrderDetail/OrderDetail"));
+const NotFound = lazy(() => import("../pages/NotFound/NotFound"));
+
+const AdminLoadingFallback = () => (
+  <div className="flex h-screen w-full items-center justify-center bg-gray-50 dark:bg-slate-900">
+    <UnifiedSpinner size="lg" message="Đang tải trang quản trị..." />
+  </div>
+);
 
 const AdminRoutes = () => {
   return (
+    <Suspense fallback={<AdminLoadingFallback />}>
     <Routes>
       <Route element={<PublicRouteAdmin />}>
         <Route path="login" element={<AdminLogin />} />
@@ -51,6 +61,7 @@ const AdminRoutes = () => {
       </Route>
       <Route path="*" element={<NotFound />} />
     </Routes>
+    </Suspense>
   );
 };
 

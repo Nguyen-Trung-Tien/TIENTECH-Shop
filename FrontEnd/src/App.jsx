@@ -10,7 +10,7 @@ import { setUser, removeUser, setInitializing } from "./redux/userSlice";
 import { clearCart } from "./redux/cartSlice";
 import { LazyMotion, domAnimation } from "framer-motion";
 import RouteProgressBar from "./components/Loading/RouteProgressBar";
-import { useTheme } from "./context/ThemeContext";
+import { useTheme } from "./context/useTheme";
 
 const App = () => {
   const dispatch = useDispatch();

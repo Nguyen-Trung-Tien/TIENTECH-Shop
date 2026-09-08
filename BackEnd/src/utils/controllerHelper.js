@@ -163,8 +163,13 @@ const handleResponse = (res, result, successStatus = HTTP_STATUS.OK) => {
   return res.status(status).json(errorPayload);
 };
 
+const { validateImageBuffer } = require("./imageValidator");
+
 const handleFileUpload = async (req, folder) => {
   if (req.file) {
+    if (!validateImageBuffer(req.file.buffer)) {
+      throw new Error("Tệp tải lên không phải là định dạng hình ảnh hợp lệ (Magic bytes mismatch).");
+    }
     const upload = await uploadToCloudinary(req.file.buffer, folder);
     return upload.secure_url;
   }

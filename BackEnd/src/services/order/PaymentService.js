@@ -5,6 +5,7 @@ const crypto = require("crypto");
 const { formatDateYYYYMMDDHHmmss, formatDateHHmmss } = require("../../utils/dateFormatter");
 const { getPagination, getPagingData } = require("../../utils/paginationHelper");
 const axios = require("axios");
+const { acquireLock, releaseLock } = require("../../config/redis");
 
 // Real refund integration via VNPay API
 const executeRefund = async (order, payment, method, amountToRefund = null) => {
@@ -202,10 +203,11 @@ const getPaymentById = async (id) => {
 const createPayment = async (data, actor = null) => {
   const t = await db.sequelize.transaction();
   try {
-    const { orderId, userId, amount, method, note } = data;
+    const { orderId, method, note } = data;
 
-    if (!orderId || !amount) {
-      return { errCode: 2, errMessage: "Missing required fields" };
+    if (!orderId) {
+      await t.rollback();
+      return { errCode: 2, errMessage: "Missing required orderId" };
     }
 
     const order = await db.Order.findByPk(orderId, { transaction: t });
@@ -229,66 +231,171 @@ const createPayment = async (data, actor = null) => {
       };
     }
 
+    // CRITICAL: Amount MUST ALWAYS be taken from Order in DB, client amount is strictly ignored!
+    const secureAmount = Number(order.totalPrice);
+
     let payment = await db.Payment.findOne({
       where: { orderId },
       transaction: t,
     });
+
     if (payment) {
-      await t.rollback();
+      if (payment.status === "completed") {
+        await t.rollback();
+        return {
+          errCode: 5,
+          errMessage: "Payment already exists and completed for this order",
+          data: payment,
+        };
+      }
+      // If already exists but pending, return existing pending payment intent
+      if (method && payment.method !== method) {
+        payment.method = method;
+        await payment.save({ transaction: t });
+      }
+      await t.commit();
       return {
-        errCode: 5,
-        errMessage: "Payment already exists for this order",
+        errCode: 0,
+        errMessage: "Payment intent retrieved",
         data: payment,
       };
     }
 
     const transactionId = data.transactionId || `DH${Date.now()}${orderId}`;
 
-    const autoPaidMethods = ["momo", "paypal", "vnpay", "bank"];
-    const isAutoPaid = autoPaidMethods.includes(method);
-
+    // SECURITY: Customers can NEVER mark payment as completed directly.
+    // Any payment created via API endpoint starts as "pending" (intent).
+    // Only verified Webhook/IPN or admin via secure backend can mark completed.
     payment = await db.Payment.create(
       {
         orderId,
-        userId: actor && actor.role !== "admin" ? actor.id : userId || order.userId,
-        amount,
-        method,
-        note,
+        userId: order.userId,
+        amount: secureAmount,
+        method: method || order.paymentMethod || "cod",
+        note: note || "",
         transactionId,
-        status: isAutoPaid ? "completed" : "pending",
+        status: "pending",
       },
       { transaction: t }
     );
 
-    let shouldSendConfirmedEmail = false;
-
-    if (isAutoPaid) {
-      const prevStatus = order.status;
-      order.paymentStatus = "paid";
-      if (order.status === "pending") order.status = "confirmed";
-      await order.save({ transaction: t });
-
-      if (order.status === "confirmed" && prevStatus !== "confirmed") {
-        shouldSendConfirmedEmail = true;
-      }
-    }
-
     await t.commit();
-
-    if (shouldSendConfirmedEmail) {
-      const user = await db.User.findByPk(order.userId);
-      await sendOrderConfirmedEmail(user, order);
-    }
 
     return {
       errCode: 0,
-      errMessage: "Payment created successfully",
+      errMessage: "Payment intent created successfully",
       data: payment,
     };
   } catch (e) {
     await t.rollback();
     console.error("Error createPayment:", e);
     return { errCode: 1, errMessage: e.message || "Internal server error" };
+  }
+};
+
+const confirmPaymentFromWebhook = async ({ orderId, transactionId, method, note, amount = null }) => {
+  const lockKey = `payment_confirm_${orderId}`;
+  const lockToken = await acquireLock(lockKey, 15);
+  if (!lockToken) {
+    return { errCode: 429, errMessage: "Payment is currently being processed" };
+  }
+
+  const t = await db.sequelize.transaction();
+  try {
+    const order = await db.Order.findByPk(orderId, { transaction: t });
+    if (!order) {
+      await t.rollback();
+      return { errCode: 3, errMessage: "Order not found" };
+    }
+
+    // Idempotency check: if order is already paid, return success without duplicate processing
+    if (order.paymentStatus === "paid") {
+      const existingPayment = await db.Payment.findOne({ where: { orderId }, transaction: t });
+      await t.rollback();
+      return {
+        errCode: 0,
+        errMessage: "Order already confirmed and paid",
+        alreadyPaid: true,
+        data: existingPayment || order,
+      };
+    }
+
+    // Validate amount if sent from provider (support raw VND or VNPay 100x scaled VND)
+    if (amount !== null) {
+      const expectedRaw = Math.round(Number(order.totalPrice));
+      const expectedScaled = Math.round(Number(order.totalPrice) * 100);
+      const incoming = Math.round(Number(amount));
+      if (incoming !== expectedRaw && incoming !== expectedScaled) {
+        await t.rollback();
+        return { errCode: 4, errMessage: "Invalid amount from provider" };
+      }
+    }
+
+    let payment = await db.Payment.findOne({ where: { orderId }, transaction: t });
+    if (payment) {
+      payment.status = "completed";
+      payment.transactionId = transactionId || payment.transactionId;
+      payment.paymentDate = new Date();
+      payment.note = note ? `${payment.note ? payment.note + " | " : ""}${note}` : payment.note;
+      await payment.save({ transaction: t });
+    } else {
+      payment = await db.Payment.create(
+        {
+          orderId,
+          userId: order.userId,
+          amount: order.totalPrice,
+          method: method || order.paymentMethod || "vnpay",
+          note: note || "Verified Webhook Confirmation",
+          transactionId: transactionId || `TXN${Date.now()}${orderId}`,
+          status: "completed",
+          paymentDate: new Date(),
+        },
+        { transaction: t }
+      );
+    }
+
+    const prevStatus = order.status;
+    order.paymentStatus = "paid";
+    if (order.status === "pending") {
+      order.status = "confirmed";
+    }
+
+    const history = Array.isArray(order.confirmationHistory) ? order.confirmationHistory : [];
+    history.push({
+      status: order.status,
+      date: new Date().toISOString(),
+      actor: "Payment Provider Webhook",
+      action: `Confirmed payment via ${method || "online"}`,
+    });
+    order.confirmationHistory = history;
+    await order.save({ transaction: t });
+
+    await t.commit();
+
+    // Async notification & email
+    setImmediate(async () => {
+      try {
+        const user = await db.User.findByPk(order.userId);
+        if (prevStatus !== "confirmed") {
+          await sendOrderConfirmedEmail(user, order);
+        }
+      } catch (mailErr) {
+        console.error("Webhook notification email error:", mailErr.message);
+      }
+    });
+
+    return {
+      errCode: 0,
+      errMessage: "Payment confirmed successfully",
+      alreadyPaid: false,
+      data: payment,
+    };
+  } catch (e) {
+    await t.rollback();
+    console.error("Error confirmPaymentFromWebhook:", e);
+    return { errCode: 1, errMessage: e.message || "Internal server error" };
+  } finally {
+    await releaseLock(lockKey, lockToken);
   }
 };
 
@@ -534,6 +641,7 @@ module.exports = {
   getAllPayments,
   getPaymentById,
   createPayment,
+  confirmPaymentFromWebhook,
   updatePayment,
   deletePayment,
   completePayment,

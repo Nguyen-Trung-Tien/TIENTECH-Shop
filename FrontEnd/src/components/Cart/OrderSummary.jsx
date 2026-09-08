@@ -8,7 +8,7 @@ import {
 } from "react-icons/fi";
 import { Button } from "../UI/Button";
 import UnifiedSpinner from "../Loading/UnifiedSpinner";
-import { useSystemSettings } from "../../context/ThemeContext";
+import { useSystemSettings } from "../../context/useSystemSettings";
 
 /**
  * OrderSummary Component

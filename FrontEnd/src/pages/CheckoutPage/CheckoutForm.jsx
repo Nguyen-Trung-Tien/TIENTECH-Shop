@@ -17,7 +17,7 @@ import { FaPaypal } from "react-icons/fa";
 import { toast } from "react-toastify";
 import { showErrorToast } from "../../utils/toastHelper";
 import { motion as Motion, AnimatePresence } from "framer-motion";
-import { useSystemSettings } from "../../context/ThemeContext";
+import { useSystemSettings } from "../../context/useSystemSettings";
 
 const InputField = React.memo(
   ({

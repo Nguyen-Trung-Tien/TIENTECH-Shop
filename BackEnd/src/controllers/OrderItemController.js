@@ -1,41 +1,30 @@
 const OrderItemService = require("../services/order/OrderItemService");
+const { handleResponse, handleError } = require("../utils/controllerHelper");
 
 const handleGetAllOrderItems = async (req, res) => {
   try {
     const result = await OrderItemService.getAllOrderItems();
-    return res.status(200).json(result);
+    return handleResponse(res, result, 200);
   } catch (e) {
-    console.error(e);
-    return res.status(500).json({
-      errCode: -1,
-      errMessage: "Internal server error",
-    });
+    return handleError(res, e, "handleGetAllOrderItems");
   }
 };
 
 const handleGetOrderItemById = async (req, res) => {
   try {
     const result = await OrderItemService.getOrderItemById(req.params.id);
-    return res.status(200).json(result);
+    return handleResponse(res, result, 200);
   } catch (e) {
-    console.error(e);
-    return res.status(500).json({
-      errCode: -1,
-      errMessage: "Internal server error",
-    });
+    return handleError(res, e, "handleGetOrderItemById");
   }
 };
 
 const handleCreateOrderItem = async (req, res) => {
   try {
     const result = await OrderItemService.createOrderItem(req.body);
-    return res.status(201).json(result);
+    return handleResponse(res, result, 201);
   } catch (e) {
-    console.error(e);
-    return res.status(500).json({
-      errCode: -1,
-      errMessage: "Internal server error",
-    });
+    return handleError(res, e, "handleCreateOrderItem");
   }
 };
 
@@ -45,26 +34,18 @@ const handleUpdateOrderItem = async (req, res) => {
       req.params.id,
       req.body
     );
-    return res.status(200).json(result);
+    return handleResponse(res, result, 200);
   } catch (e) {
-    console.error(e);
-    return res.status(500).json({
-      errCode: -1,
-      errMessage: "Internal server error",
-    });
+    return handleError(res, e, "handleUpdateOrderItem");
   }
 };
 
 const handleDeleteOrderItem = async (req, res) => {
   try {
     const result = await OrderItemService.deleteOrderItem(req.params.id);
-    return res.status(200).json(result);
+    return handleResponse(res, result, 200);
   } catch (e) {
-    console.error(e);
-    return res.status(500).json({
-      errCode: -1,
-      errMessage: "Internal server error",
-    });
+    return handleError(res, e, "handleDeleteOrderItem");
   }
 };
 
@@ -72,45 +53,35 @@ const handleRequestReturn = async (req, res) => {
   try {
     const result = await OrderItemService.requestReturn(
       req.params.id,
-      req.body.reason
+      req.body.reason,
+      req.user
     );
-    return res.status(200).json(result);
+    return handleResponse(res, result, 200);
   } catch (e) {
-    console.error(e);
-    return res.status(500).json({
-      errCode: -1,
-      errMessage: "Internal server error",
-    });
+    return handleError(res, e, "handleRequestReturn");
   }
 };
 
 const handleCancelReturnRequest = async (req, res) => {
   try {
-    const result = await OrderItemService.cancelReturnRequest(req.params.id);
-    return res.status(200).json(result);
+    const result = await OrderItemService.cancelReturnRequest(req.params.id, req.user);
+    return handleResponse(res, result, 200);
   } catch (e) {
-    console.error(e);
-    return res.status(500).json({
-      errCode: -1,
-      errMessage: "Internal server error",
-    });
+    return handleError(res, e, "handleCancelReturnRequest");
   }
 };
 
 const handleProcessReturn = async (req, res) => {
   try {
+    const statusOrAction = req.body.status || req.body.action;
     const result = await OrderItemService.processReturn(
       req.params.id,
-      req.body.status,
+      statusOrAction,
       req.user
     );
-    return res.status(200).json(result);
+    return handleResponse(res, result, 200);
   } catch (e) {
-    console.error(e);
-    return res.status(500).json({
-      errCode: -1,
-      errMessage: "Internal server error",
-    });
+    return handleError(res, e, "handleProcessReturn");
   }
 };
 

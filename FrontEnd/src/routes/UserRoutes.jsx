@@ -12,8 +12,10 @@ import VerifyEmail from "../pages/VerifyEmail/VerifyEmail";
 import OTPVerification from "../pages/OTPVerification/OTPVerification";
 import CartPage from "../pages/CartPage/CartPage";
 import CheckoutPage from "../pages/CheckoutPage/CheckoutPage";
-import CheckoutSuccess from "../pages/CheckoutSuccess/CheckoutSuccess";
-import CheckoutFailed from "../pages/CheckoutFailed/CheckoutFailed";
+import React, { Suspense, lazy } from "react";
+
+const CheckoutSuccess = lazy(() => import("../pages/CheckoutSuccess/CheckoutSuccess"));
+const CheckoutFailed = lazy(() => import("../pages/CheckoutFailed/CheckoutFailed"));
 import Profile from "../pages/Profile/Profile";
 import Notifications from "../pages/Notifications/Notifications";
 import NotFound from "../pages/NotFound/NotFound";
@@ -87,7 +89,9 @@ const UserRoutes = () => {
           path="checkout-success/:orderId?"
           element={
             <LayoutComponent isShowHeader={true} isShowFooter={true}>
-              <CheckoutSuccess />
+              <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Đang tải...</div>}>
+                <CheckoutSuccess />
+              </Suspense>
             </LayoutComponent>
           }
         />
@@ -95,7 +99,9 @@ const UserRoutes = () => {
           path="checkout-failed/:orderId?"
           element={
             <LayoutComponent isShowHeader={true} isShowFooter={true}>
-              <CheckoutFailed />
+              <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Đang tải...</div>}>
+                <CheckoutFailed />
+              </Suspense>
             </LayoutComponent>
           }
         />

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { motion as Motion } from "framer-motion";
 import { FaStar, FaQuoteLeft } from "react-icons/fa";
-import image1 from "../../assets/000000005b6461.png";
+import image1 from "../../assets/avatar-default.webp";
 
 const Testimonials = ({ limit = 3 }) => {
   const [items, setItems] = useState([]);

@@ -24,7 +24,10 @@ import {
   checkWishlistStatusApi,
 } from "../../api/wishlistApi";
 import ReviewComponent from "../../components/ReviewComponent/ReviewComponent";
-import PricePredictionModal from "../../components/PricePredictionModal/PricePredictionModal";
+
+const PricePredictionModal = React.lazy(
+  () => import("../../components/PricePredictionModal/PricePredictionModal")
+);
 
 // Sub-components
 import ImageGallery from "./components/ImageGallery";
@@ -455,11 +458,15 @@ const ProductDetailPage = () => {
         />
       </div>
 
-      <PricePredictionModal
-        productId={product?.id}
-        isOpen={showPrediction}
-        onClose={() => setShowPrediction(false)}
-      />
+      {showPrediction && (
+        <React.Suspense fallback={null}>
+          <PricePredictionModal
+            productId={product?.id}
+            isOpen={showPrediction}
+            onClose={() => setShowPrediction(false)}
+          />
+        </React.Suspense>
+      )}
 
       {/* Sticky Bottom Add to Cart Bar */}
       <AnimatePresence>

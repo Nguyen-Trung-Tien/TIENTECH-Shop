@@ -2,9 +2,9 @@ import React from "react";
 import { FiUsers, FiTarget, FiEye, FiAward, FiTrendingUp, FiShield } from "react-icons/fi";
 import { motion as Motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import imgPro1 from "../../assets/1759303601055.png";
-import imgPro2 from "../../assets/1759303601055.png";
-import imgPro3 from "../../assets/1759555519030.png";
+import imgPro1 from "../../assets/about-pro1.webp";
+import imgPro2 from "../../assets/about-pro1.webp";
+import imgPro3 from "../../assets/about-pro2.webp";
 import Logo from "../../components/UI/Logo";
 import Button from "../../components/UI/Button";
 

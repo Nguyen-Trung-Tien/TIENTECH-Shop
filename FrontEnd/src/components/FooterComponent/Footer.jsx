@@ -11,7 +11,7 @@ import {
 } from "react-icons/fi";
 import { Link } from "react-router-dom";
 import Logo from "../UI/Logo";
-import { useSystemSettings } from "../../context/ThemeContext";
+import { useSystemSettings } from "../../context/useSystemSettings";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();

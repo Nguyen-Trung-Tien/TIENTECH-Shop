@@ -1,8 +1,9 @@
-import React, { useMemo } from "react";
+import React, { useMemo, lazy, Suspense } from "react";
 import AllProducts from "../../components/AllProducts/AllProduct";
-import ChatBot from "../../components/ChatBot/ChatBot";
 import Breadcrumbs from "../../components/Breadcrumbs/Breadcrumbs";
 import { useParams, useLocation } from "react-router-dom";
+
+const ChatBot = lazy(() => import("../../components/ChatBot/ChatBot"));
 
 const ProductListPage = () => {
   const { slug } = useParams();
@@ -20,7 +21,9 @@ const ProductListPage = () => {
 
   return (
     <main className="min-h-screen bg-white dark:bg-black transition-colors duration-300">
-      <ChatBot />
+      <Suspense fallback={null}>
+        <ChatBot />
+      </Suspense>
 
       {/* Page Header Banner */}
       <section className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white pt-10 pb-12 overflow-hidden relative shadow-lg">

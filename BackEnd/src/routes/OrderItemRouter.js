@@ -52,7 +52,7 @@ router.put(
 router.put(
   "/process/:id/process-return",
   authenticateToken,
-  authorizeRole(["admin", "customer"]),
+  authorizeRole(["admin"]),
   OrderItemController.handleProcessReturn
 );
 

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   FiEye,
@@ -71,12 +71,15 @@ const LoginPage = () => {
   const [email, setEmail] = useState(() => {
     return localStorage.getItem("tientech_remember_email") || "";
   });
-  const [password, setPassword] = useState(() => {
-    return localStorage.getItem("tientech_remember_password") || "";
-  });
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showForgotModal, setShowForgotModal] = useState(false);
+
+  // Security: Purge legacy stored passwords
+  useEffect(() => {
+    localStorage.removeItem("tientech_remember_password");
+  }, []);
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -89,16 +92,15 @@ const LoginPage = () => {
       const res = await loginUser(email, password);
 
       if (res.errCode === 0 && res.data) {
-        // Save or Clear Saved Login Credentials
+        // Save or Clear Saved Login Credentials (Only email, NEVER password)
         if (rememberMe) {
           localStorage.setItem("tientech_remember_me", "true");
           localStorage.setItem("tientech_remember_email", email);
-          localStorage.setItem("tientech_remember_password", password);
         } else {
           localStorage.removeItem("tientech_remember_me");
           localStorage.removeItem("tientech_remember_email");
-          localStorage.removeItem("tientech_remember_password");
         }
+        localStorage.removeItem("tientech_remember_password");
 
         const { user } = res.data;
         const minimalUser = {

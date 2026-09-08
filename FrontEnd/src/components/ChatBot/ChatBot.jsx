@@ -21,7 +21,7 @@ import {
 } from "react-icons/fi";
 import { useSelector } from "react-redux";
 import { motion as Motion, AnimatePresence } from "framer-motion";
-import { useSystemSettings } from "../../context/ThemeContext";
+import { useSystemSettings } from "../../context/useSystemSettings";
 
 import { sendMessage, visualSearch } from "../../api/chatApi";
 

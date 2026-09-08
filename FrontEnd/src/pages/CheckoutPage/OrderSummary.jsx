@@ -8,7 +8,7 @@ import {
 } from "react-icons/fi";
 import { PayPalButtons } from "@paypal/react-paypal-js";
 import { Button } from "../../components/UI/Button";
-import { useSystemSettings } from "../../context/ThemeContext";
+import { useSystemSettings } from "../../context/useSystemSettings";
 
 const OrderSummary = ({
   selectedItems = [],

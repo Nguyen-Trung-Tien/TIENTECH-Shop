@@ -164,13 +164,17 @@ const deleteOrderItem = async (id) => {
   }
 };
 
-const requestReturn = async (id, reason) => {
+const requestReturn = async (id, reason, user = null) => {
   try {
     const item = await db.OrderItem.findByPk(id, {
-      include: [{ model: db.Order, as: "order" }]
+      include: [{ model: db.Order, as: "order" }],
     });
     if (!item) {
       return { errCode: 1, errMessage: "OrderItem not found" };
+    }
+
+    if (user && user.role !== "admin" && item.order.userId !== user.id) {
+      return { errCode: 403, errMessage: "Bạn chỉ có thể yêu cầu trả hàng cho đơn hàng của chính mình.", status: 403 };
     }
 
     if (item.order.status !== "delivered" && item.order.status !== "completed") {
@@ -182,22 +186,28 @@ const requestReturn = async (id, reason) => {
     }
 
     item.returnStatus = "requested";
-    item.returnReason = reason;
+    item.returnReason = reason || "Khách hàng yêu cầu trả hàng";
     item.returnRequestedAt = new Date();
     await item.save();
 
     return { errCode: 0, errMessage: "Gửi yêu cầu trả hàng thành công", data: item };
   } catch (e) {
     console.error("Error requestReturn:", e);
-    throw e;
+    return { errCode: -1, errMessage: e.message || "Internal server error" };
   }
 };
 
-const cancelReturnRequest = async (id) => {
+const cancelReturnRequest = async (id, user = null) => {
   try {
-    const item = await db.OrderItem.findByPk(id);
+    const item = await db.OrderItem.findByPk(id, {
+      include: [{ model: db.Order, as: "order" }],
+    });
     if (!item) {
       return { errCode: 1, errMessage: "OrderItem not found" };
+    }
+
+    if (user && user.role !== "admin" && item.order.userId !== user.id) {
+      return { errCode: 403, errMessage: "Forbidden", status: 403 };
     }
 
     if (item.returnStatus !== "requested") {
@@ -220,64 +230,47 @@ const cancelReturnRequest = async (id) => {
     return { errCode: 0, errMessage: "Thu hồi yêu cầu trả hàng thành công", data: item };
   } catch (e) {
     console.error("Error cancelReturnRequest:", e);
-    throw e;
+    return { errCode: -1, errMessage: e.message || "Internal server error" };
   }
 };
 
-const processReturn = async (id, status, adminUser = null) => {
+const processReturn = async (id, statusOrAction, adminUser = null) => {
   const t = await db.sequelize.transaction();
   try {
     const item = await db.OrderItem.findByPk(id, {
       include: [{ model: db.Order, as: "order" }],
       transaction: t,
     });
-    
+
     if (!item) {
       await t.rollback();
       return { errCode: 1, errMessage: "OrderItem not found" };
     }
 
-    const validStatuses = ["approved", "rejected", "completed"];
-    if (!validStatuses.includes(status)) {
+    // REQUIREMENT: Admin chỉ approve/reject item đang ở trạng thái requested
+    if (item.returnStatus !== "requested") {
       await t.rollback();
-      return { errCode: 2, errMessage: "Trạng thái không hợp lệ" };
+      return { errCode: 2, errMessage: "Chỉ có thể duyệt hoặc từ chối sản phẩm đang ở trạng thái 'requested'." };
     }
 
-    const prevStatus = item.returnStatus;
-    item.returnStatus = status;
+    const isApprove = ["approved", "approve", "completed"].includes(statusOrAction);
+    const isReject = ["rejected", "reject"].includes(statusOrAction);
+
+    if (!isApprove && !isReject) {
+      await t.rollback();
+      return { errCode: 2, errMessage: "Hành động hoặc trạng thái không hợp lệ" };
+    }
+
+    const targetStatus = isApprove ? "approved" : "rejected";
+    item.returnStatus = targetStatus;
     item.returnProcessedAt = new Date();
     await item.save({ transaction: t });
 
     const order = item.order;
     const NotificationService = require("../notification/NotificationService");
 
-    // 1. Gửi thông báo cho người dùng về trạng thái trả hàng
-    let notifTitle = "";
-    let notifContent = "";
-    if (status === "approved") {
-      notifTitle = "Yêu cầu trả hàng đã được chấp nhận";
-      notifContent = `Yêu cầu trả hàng cho sản phẩm ${item.productName} của đơn hàng ${order.orderCode} đã được chấp nhận. Vui lòng gửi hàng về shop.`;
-    } else if (status === "rejected") {
-      notifTitle = "Yêu cầu trả hàng bị từ chối";
-      notifContent = `Yêu cầu trả hàng cho sản phẩm ${item.productName} của đơn hàng ${order.orderCode} đã bị từ chối.`;
-    } else if (status === "completed") {
-      notifTitle = "Hoàn tất thủ tục trả hàng";
-      notifContent = `Thủ tục trả hàng và hoàn tiền cho sản phẩm ${item.productName} của đơn hàng ${order.orderCode} đã hoàn tất.`;
-    }
-
-    if (notifTitle) {
-      await NotificationService.createNotification({
-        userId: order.userId,
-        title: notifTitle,
-        content: notifContent,
-        type: "order",
-        isRead: false
-      }, t);
-    }
-
-    // 2. Logic khi hoàn tất trả hàng (completed)
-    if (status === "completed" && prevStatus !== "completed") {
-      // a. Hoàn tồn kho
+    if (isApprove) {
+      // 1. Restock kho đúng một lần
       const product = await db.Product.findByPk(item.productId, { transaction: t });
       if (product) {
         product.totalStock = (product.totalStock || 0) + item.quantity;
@@ -293,26 +286,22 @@ const processReturn = async (id, status, adminUser = null) => {
         }
       }
 
-      // b. Khấu trừ điểm thưởng tương ứng
+      // 2. Khấu trừ điểm thưởng nếu có
       const userToUpdate = await db.User.findByPk(order.userId, { transaction: t });
       if (userToUpdate) {
         const pointsToDeduct = Math.floor(Number(item.subtotal) / 10000);
         if (pointsToDeduct > 0) {
           const newPoints = Math.max(0, (userToUpdate.points || 0) - pointsToDeduct);
-          
           let newRank = "Bronze";
           if (newPoints >= 10000) newRank = "Platinum";
           else if (newPoints >= 5000) newRank = "Gold";
           else if (newPoints >= 1000) newRank = "Silver";
 
-          await userToUpdate.update({
-            points: newPoints,
-            rank: newRank
-          }, { transaction: t });
+          await userToUpdate.update({ points: newPoints, rank: newRank }, { transaction: t });
         }
       }
 
-      // c. Hoàn tiền (Financial Reconciliation)
+      // 3. Hoàn tiền nếu đơn hàng đã thanh toán
       if (order.paymentStatus === "paid") {
         const refundAmount = item.subtotal;
         const payment = await db.Payment.findOne({
@@ -328,61 +317,68 @@ const processReturn = async (id, status, adminUser = null) => {
           if (isOnlineMethod) {
             const PaymentService = require("./PaymentService");
             const refundResult = await PaymentService.executeRefund(order, payment, method, refundAmount);
-            if (!refundResult.success) {
-              await t.rollback();
-              return { errCode: 3, errMessage: `Lỗi hoàn tiền: ${refundResult.message}` };
+            if (refundResult && refundResult.success) {
+              refundSuccess = true;
             }
-            refundSuccess = true;
           }
 
-          const refundNote = `[Refund] Hoàn tiền ${refundSuccess ? "thành công" : "thủ công"} ${Number(refundAmount).toLocaleString()}đ cho sản phẩm ${item.productName} (ID: ${item.id})`;
+          const refundNote = `[Refund] Hoàn tiền ${refundSuccess ? "tự động" : "ghi nhận"} ${Number(refundAmount).toLocaleString()}đ cho sản phẩm ${item.productName} (ID: ${item.id})`;
           payment.note = payment.note ? `${payment.note}\n${refundNote}` : refundNote;
           await payment.save({ transaction: t });
         }
-
-        // d. Kiểm tra xem tất cả items đã trả xong chưa
-        const allItems = await db.OrderItem.findAll({
-          where: { orderId: order.id },
-          transaction: t,
-        });
-
-        const allReturned = allItems.every(
-          (i) => i.id === item.id ? true : i.returnStatus === "completed"
-        );
-
-        if (allReturned) {
-          order.status = "cancelled";
-          order.cancelReason = "Tất cả sản phẩm đã được trả lại.";
-          await order.save({ transaction: t });
-
-          // Gọi sync side effects cho toàn bộ đơn hàng
-          await OrderService.syncOrderCancellationSideEffects(
-            order,
-            "Tất cả sản phẩm đã được trả lại.",
-            adminUser,
-            t
-          );
-        } else {
-          // Ghi lại lịch sử trả hàng một phần vào đơn hàng
-          const history = Array.isArray(order.confirmationHistory) ? order.confirmationHistory : [];
-          history.push({
-            status: order.status,
-            date: new Date().toISOString(),
-            actor: adminUser?.username || "admin",
-            action: `Chấp nhận trả hàng sản phẩm: ${item.productName}`
-          });
-          order.confirmationHistory = history;
-          await order.save({ transaction: t });
-        }
       }
+
+      // 4. Kiểm tra xem tất cả items trong đơn đã được duyệt trả chưa
+      const allItems = await db.OrderItem.findAll({
+        where: { orderId: order.id },
+        transaction: t,
+      });
+
+      const allReturned = allItems.every((i) =>
+        i.id === item.id ? true : (i.returnStatus === "approved" || i.returnStatus === "completed")
+      );
+
+      if (allReturned) {
+        order.status = "cancelled";
+        order.cancelReason = "Tất cả sản phẩm đã được trả lại.";
+        const history = Array.isArray(order.confirmationHistory) ? order.confirmationHistory : [];
+        history.push({
+          status: "cancelled",
+          date: new Date().toISOString(),
+          actor: adminUser?.username || "Admin",
+          action: "Tất cả sản phẩm đã được trả lại.",
+        });
+        order.confirmationHistory = history;
+        await order.save({ transaction: t });
+      }
+
+      // Gửi thông báo cho khách hàng
+      await NotificationService.createNotification({
+        userId: order.userId,
+        title: "Yêu cầu trả hàng đã được chấp nhận",
+        message: `Yêu cầu trả hàng cho sản phẩm ${item.productName} của đơn hàng #${order.orderCode} đã được duyệt thành công.`,
+        type: "order",
+      }, t);
+    } else {
+      // Từ chối trả hàng
+      await NotificationService.createNotification({
+        userId: order.userId,
+        title: "Yêu cầu trả hàng bị từ chối",
+        message: `Yêu cầu trả hàng cho sản phẩm ${item.productName} của đơn hàng #${order.orderCode} đã bị từ chối.`,
+        type: "order",
+      }, t);
     }
 
     await t.commit();
-    return { errCode: 0, errMessage: "Xử lý trả hàng thành công", data: item };
+    return {
+      errCode: 0,
+      errMessage: isApprove ? "Duyệt yêu cầu trả hàng thành công" : "Từ chối yêu cầu trả hàng thành công",
+      data: item,
+    };
   } catch (e) {
     if (t) await t.rollback();
     console.error("Error processReturn:", e);
-    throw e;
+    return { errCode: -1, errMessage: e.message || "Internal server error" };
   }
 };
 

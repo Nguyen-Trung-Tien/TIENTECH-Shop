@@ -9,27 +9,6 @@ let connectDB = async () => {
   try {
     await db.sequelize.authenticate();
     console.log(`Database connected successfully (${isProduction ? 'Production' : 'Development'})`);
-    if (!isProduction) {
-      await db.sequelize.sync();
-      console.log("Database models synchronized successfully.");
-    }
-
-    // Auto-migrate new columns safely if not yet created in table
-    try {
-      const queryInterface = db.sequelize.getQueryInterface();
-      const userTableDesc = await queryInterface.describeTable("Users");
-      if (!userTableDesc.receiveEmail) {
-        console.log("[DB Migration] Adding missing 'receiveEmail' column to Users table...");
-        await queryInterface.addColumn("Users", "receiveEmail", {
-          type: Sequelize.BOOLEAN,
-          defaultValue: true,
-          allowNull: false,
-        });
-        console.log("[DB Migration] 'receiveEmail' column added successfully.");
-      }
-    } catch (colErr) {
-      console.warn("[DB Migration Check]", colErr.message);
-    }
   } catch (error) {
     console.error("Unable to connect to database:", error);
   }

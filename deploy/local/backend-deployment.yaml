@@ -39,19 +39,40 @@ spec:
             - name: DB_PROD_NAME
               value: "project_app"
             - name: DB_USERNAME
-              value: "root"
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secrets
+                  key: DB_USERNAME
             - name: DB_PASSWORD
-              value: "123456"
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secrets
+                  key: DB_PASSWORD
             - name: JWT_SECRET
-              value: "change-me-jwt-secret"
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secrets
+                  key: JWT_SECRET
             - name: JWT_ACCESS_SECRET
-              value: "change-me-access-secret"
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secrets
+                  key: JWT_ACCESS_SECRET
             - name: JWT_REFRESH_SECRET
-              value: "change-me-refresh-secret"
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secrets
+                  key: JWT_REFRESH_SECRET
             - name: GOOGLE_CLIENT_ID
-              value: "dummy-client-id"
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secrets
+                  key: GOOGLE_CLIENT_ID
             - name: GOOGLE_CLIENT_SECRET
-              value: "dummy-client-secret"
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secrets
+                  key: GOOGLE_CLIENT_SECRET
             - name: JWT_ACCESS_EXPIRES
               value: "15m"
             - name: JWT_REFRESH_EXPIRES

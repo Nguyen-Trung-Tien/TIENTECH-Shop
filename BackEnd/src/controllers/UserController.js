@@ -43,6 +43,10 @@ const handleLogin = async (req, res) => {
     const result = await AuthService.login(email, password);
     if (result.errCode === 0) {
       setAuthCookies(res, result.data.accessToken, result.data.refreshToken);
+      const sanitizedData = { ...result.data };
+      delete sanitizedData.accessToken;
+      delete sanitizedData.refreshToken;
+      return handleResponse(res, { ...result, data: sanitizedData });
     }
     return handleResponse(res, result);
   } catch (e) {
@@ -58,6 +62,10 @@ const handleRefreshToken = async (req, res) => {
     const result = await AuthService.refreshToken(refreshToken);
     if (result.errCode === 0) {
       setAuthCookies(res, result.data.accessToken, result.data.refreshToken);
+      const sanitizedData = { ...result.data };
+      delete sanitizedData.accessToken;
+      delete sanitizedData.refreshToken;
+      return handleResponse(res, { ...result, data: sanitizedData });
     }
     return handleResponse(res, result);
   } catch (e) {

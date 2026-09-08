@@ -63,7 +63,19 @@ const optionalAuthenticateToken = async (req, res, next) => {
 
 const authorizeRole = (roles) => {
   return (req, res, next) => {
-    if (!roles || !req.user || !roles.includes(req.user.role)) {
+    if (!req.user) {
+      return res.status(401).json({
+        errCode: 1,
+        code: "UNAUTHORIZED",
+        errMessage: "Unauthorized",
+      });
+    }
+    const userRole = req.user.role;
+    const hasRole =
+      (roles && roles.includes(userRole)) ||
+      (userRole === "root" && roles && roles.includes("admin"));
+
+    if (!roles || !hasRole) {
       return res.status(403).json({
         errCode: 3,
         code: "FORBIDDEN",
