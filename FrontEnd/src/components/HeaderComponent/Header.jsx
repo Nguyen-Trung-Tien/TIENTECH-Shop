@@ -114,33 +114,33 @@ function Header() {
   return (
     <>
       <header
-        className={`sticky top-0 z-[100] w-full max-w-full overflow-x-clip transition-all duration-300 ${
+        className={`sticky top-0 z-[100] w-full max-w-full overflow-x-clip transition-all duration-200 ${
           isScrolled
-            ? "bg-white/85 dark:bg-slate-950/85 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-800/50 shadow-lg shadow-slate-900/5 py-2.5"
-            : "bg-white dark:bg-slate-950 border-b border-slate-100 dark:border-slate-900 py-3.5"
+            ? "bg-[#fbfbfa]/95 dark:bg-[#090d16]/95 backdrop-blur-md border-b border-slate-200 dark:border-[#1e2638] shadow-xs py-2.5"
+            : "bg-[#fbfbfa] dark:bg-[#090d16] border-b border-slate-200/70 dark:border-[#1e2638]/70 py-3"
         }`}
       >
-        <div className="container-custom flex items-center justify-between gap-1.5 sm:gap-4 max-w-full">
+        <div className="tt-shell flex items-center justify-between gap-2 sm:gap-4">
           {/* Logo */}
           <Link
             to="/"
-            className="flex-shrink-0 transition-transform duration-300 hover:scale-105 active:scale-95"
+            className="flex-shrink-0 transition-transform duration-200 hover:opacity-90 active:scale-98"
           >
             <Logo size="md" />
           </Link>
 
           {/* Desktop Nav Links */}
-          <nav className="hidden xl:flex items-center gap-1 bg-slate-100/60 dark:bg-slate-900/60 p-1.5 rounded-2xl border border-slate-200/50 dark:border-slate-800/50 backdrop-blur-sm shrink-0">
+          <nav className="hidden xl:flex items-center gap-1 bg-slate-100/80 dark:bg-[#0f1523] p-1 rounded-xl border border-slate-200/80 dark:border-[#1e2638] shrink-0">
             {navLinks.map((link) => {
               const isActive = location.pathname === link.path;
               return (
                 <Link
                   key={link.path}
                   to={link.path}
-                  className={`px-3 py-1.5 rounded-xl text-[11px] font-bold uppercase tracking-wide transition-all duration-300 flex items-center gap-1.5 relative whitespace-nowrap shrink-0 ${
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all duration-150 flex items-center gap-1.5 whitespace-nowrap shrink-0 ${
                     isActive
-                      ? "text-blue-600 dark:text-blue-400 bg-white dark:bg-slate-800 shadow-xs"
-                      : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-slate-800/40"
+                      ? "text-blue-600 dark:text-blue-400 bg-white dark:bg-[#131926] shadow-xs"
+                      : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/60 dark:hover:bg-[#131926]/60"
                   }`}
                 >
                   <span className="text-xs shrink-0">{link.icon}</span>
@@ -151,26 +151,24 @@ function Header() {
           </nav>
 
           {/* Search Trigger Bar (Desktop) */}
-          <div className="hidden lg:block flex-1 max-w-lg relative">
+          <div className="hidden lg:block flex-1 max-w-md relative">
             <div
               onClick={() => setIsOmniSearchOpen(true)}
               className="relative group cursor-pointer"
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-500/15 via-indigo-500/15 to-cyan-500/15 rounded-2xl blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-              
-              <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
+              <div className="absolute left-3.5 top-1/2 -translate-y-1/2 flex items-center gap-2">
                 <FiSearch className="text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors text-base" />
               </div>
 
               <input
                 type="text"
                 readOnly
-                placeholder="Tìm sản phẩm, thương hiệu, AI Smart Search..."
-                className="w-full h-11 bg-slate-100/90 dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800 rounded-2xl pl-11 pr-28 text-[13px] font-bold cursor-pointer group-hover:bg-white dark:group-hover:bg-slate-900 group-hover:border-blue-500/40 focus:border-blue-500 outline-none transition-all duration-300 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 shadow-xs"
+                placeholder="Tìm sản phẩm, thông số phần cứng, mã linh kiện..."
+                className="w-full h-10 bg-white dark:bg-[#0f1523] border border-slate-200 dark:border-[#1e2638] rounded-xl pl-10 pr-24 text-xs font-bold cursor-pointer group-hover:border-blue-500/60 dark:group-hover:border-blue-500/60 outline-none transition-all duration-200 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 shadow-xs"
               />
 
-              <div className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-2">
-                <span className="px-2.5 py-1 bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-[10px] font-black rounded-lg uppercase tracking-wider border border-slate-200/80 dark:border-slate-700/60 hidden sm:inline-flex shadow-xs">
+              <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
+                <span className="px-2 py-0.5 bg-slate-100 dark:bg-[#131926] text-slate-500 dark:text-slate-400 text-[10px] font-black rounded-md uppercase tracking-wider border border-slate-200 dark:border-[#1e2638] hidden sm:inline-flex">
                   Ctrl K
                 </span>
                 <button
@@ -179,38 +177,38 @@ function Header() {
                     e.stopPropagation();
                     setIsVisualSearchOpen(true);
                   }}
-                  className="p-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl shadow-md shadow-blue-500/20 transition-all hover:scale-105 active:scale-95 cursor-pointer flex items-center justify-center"
+                  className="p-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow-xs transition-all active:scale-95 cursor-pointer flex items-center justify-center"
                   title="Tìm kiếm bằng ảnh AI Vision"
                   aria-label="Tìm kiếm bằng ảnh AI Vision"
                 >
-                  <FiCamera size={15} />
+                  <FiCamera size={14} />
                 </button>
               </div>
             </div>
           </div>
 
           {/* Action Buttons Header */}
-          <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             {/* Quick Search Button for Mobile & Tablet */}
             <button
               type="button"
               onClick={() => setIsOmniSearchOpen(true)}
-              className="lg:hidden size-10 sm:size-11 min-h-[40px] min-w-[40px] rounded-2xl bg-blue-50/80 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/40 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/60 transition-all flex items-center justify-center cursor-pointer active:scale-95 shadow-xs shrink-0"
+              className="lg:hidden size-10 min-h-[40px] min-w-[40px] rounded-xl bg-slate-100 dark:bg-[#0f1523] border border-slate-200 dark:border-[#1e2638] text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-all flex items-center justify-center cursor-pointer active:scale-95 shadow-xs shrink-0"
               title="Tìm kiếm AI"
               aria-label="Tìm kiếm nhanh AI"
             >
-              <FiSearch size={18} />
+              <FiSearch size={17} />
             </button>
 
             {/* Theme Toggle (Desktop/Tablet) */}
             <button
               type="button"
               onClick={toggleTheme}
-              className="hidden sm:flex size-11 min-h-[44px] min-w-[44px] rounded-2xl bg-slate-100/80 dark:bg-slate-900/80 border border-slate-200/60 dark:border-slate-800/60 text-slate-600 dark:text-amber-400 hover:bg-white dark:hover:bg-slate-800 hover:border-blue-500/30 transition-all items-center justify-center cursor-pointer active:scale-95 shadow-xs shrink-0"
+              className="hidden sm:flex size-10 min-h-[40px] min-w-[40px] rounded-xl bg-slate-100 dark:bg-[#0f1523] border border-slate-200 dark:border-[#1e2638] text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-all items-center justify-center cursor-pointer active:scale-95 shadow-xs shrink-0"
               title={theme === "light" ? "Bật chế độ tối" : "Bật chế độ sáng"}
               aria-label={theme === "light" ? "Chuyển sang chế độ tối" : "Chuyển sang chế độ sáng"}
             >
-              {theme === "light" ? <FiMoon size={19} /> : <FiSun size={19} />}
+              {theme === "light" ? <FiMoon size={18} /> : <FiSun size={18} className="text-amber-400" />}
             </button>
 
             {/* Notification Bell */}
@@ -219,23 +217,23 @@ function Header() {
             {/* Wishlist Icon Button (Desktop/Tablet) */}
             <Link
               to="/wishlist"
-              className="hidden sm:flex size-11 min-h-[44px] min-w-[44px] rounded-2xl bg-slate-100/80 dark:bg-slate-900/80 border border-slate-200/60 dark:border-slate-800/60 text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-800 hover:text-rose-500 dark:hover:text-rose-400 hover:border-rose-500/30 transition-all items-center justify-center active:scale-95 shadow-xs group shrink-0"
+              className="hidden sm:flex size-10 min-h-[40px] min-w-[40px] rounded-xl bg-slate-100 dark:bg-[#0f1523] border border-slate-200 dark:border-[#1e2638] text-slate-600 dark:text-slate-300 hover:text-rose-500 dark:hover:text-rose-400 transition-all items-center justify-center active:scale-95 shadow-xs group shrink-0"
               title="Danh sách yêu thích"
               aria-label="Xem danh sách sản phẩm yêu thích"
             >
-              <FiHeart className="text-[19px] group-hover:scale-110 transition-transform" />
+              <FiHeart className="text-lg group-hover:scale-110 transition-transform" />
             </Link>
 
-            {/* Cart Icon Button */}
+            {/* Cart Icon Button - Signal Lime Accent Badge */}
             <Link
               to="/cart"
-              className="relative size-10 sm:size-11 min-h-[40px] min-w-[40px] rounded-2xl bg-slate-100/80 dark:bg-slate-900/80 border border-slate-200/60 dark:border-slate-800/60 text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-500/30 transition-all flex items-center justify-center active:scale-95 shadow-xs group shrink-0"
+              className="relative size-10 min-h-[40px] min-w-[40px] rounded-xl bg-slate-100 dark:bg-[#0f1523] border border-slate-200 dark:border-[#1e2638] text-slate-700 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 transition-all flex items-center justify-center active:scale-95 shadow-xs group shrink-0"
               title="Giỏ hàng"
               aria-label={`Xem giỏ hàng, hiện có ${cartItemCount} sản phẩm`}
             >
-              <FiShoppingCart className="text-base sm:text-[19px] group-hover:scale-110 transition-transform" />
+              <FiShoppingCart className="text-lg group-hover:scale-110 transition-transform" />
               {cartItemCount > 0 && (
-                <span className="absolute -top-1 -right-1 flex size-5 items-center justify-center rounded-full bg-gradient-to-r from-rose-500 to-red-600 text-[10px] font-black text-white ring-2 ring-white dark:ring-slate-950 shadow-md shadow-rose-500/30">
+                <span className="absolute -top-1 -right-1 flex size-5 items-center justify-center rounded-full bg-lime-500 text-slate-950 text-[10px] font-black ring-2 ring-[#fbfbfa] dark:ring-[#090d16] shadow-xs">
                   {cartItemCount > 99 ? "99+" : cartItemCount}
                 </span>
               )}

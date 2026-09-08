@@ -121,67 +121,73 @@ const CartPage = () => {
   if (loading) return <CartSkeleton />;
 
   return (
-    <main className="min-h-screen bg-slate-50 dark:bg-dark-bg py-12 transition-colors duration-300">
+    <main className="min-h-screen bg-ivory dark:bg-dark-bg py-8 sm:py-12 transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center gap-4 mb-10">
+        <div className="flex items-center gap-3 sm:gap-4 mb-8">
           <Link
             to="/"
-            className="p-3 bg-white dark:bg-dark-surface rounded-2xl shadow-sm text-slate-400 dark:text-dark-text-secondary hover:text-primary transition-all border border-transparent dark:border-dark-border"
+            aria-label="Quay lại trang chủ"
+            className="size-10 bg-white dark:bg-dark-surface rounded-lg shadow-xs flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-primary transition-all border border-slate-200 dark:border-slate-800"
           >
-            <FiArrowLeft size={20} />
+            <FiArrowLeft size={18} />
           </Link>
-          <div>
-            <h1 className="text-3xl font-black text-slate-900 dark:text-white uppercase tracking-tight">
-              Giỏ hàng của bạn
+          <div className="min-w-0">
+            <div className="tt-eyebrow mb-1">
+              <span className="size-1.5 rounded-full bg-lime-500"></span>
+              <span>INVENTORY DISPATCH // CART MANIFEST</span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white uppercase tracking-tight truncate">
+              Giỏ Hàng Của Bạn
             </h1>
-            <p className="text-slate-500 dark:text-dark-text-secondary font-medium">
-              Bạn đang có {cartItems.length} sản phẩm
+            <p className="text-xs text-slate-500 dark:text-slate-400 font-mono">
+              MANIFEST STATUS: {cartItems.length} MẶT HÀNG SẴN SÀNG KIỂM TRA
             </p>
           </div>
         </div>
 
         {cartItems.length === 0 ? (
-          <div className="bg-white dark:bg-dark-surface rounded-[40px] p-20 text-center shadow-sm border border-slate-100 dark:border-dark-border">
-            <div className="size-24 bg-slate-50 dark:bg-dark-bg rounded-full flex items-center justify-center mx-auto mb-8">
-              <FiShoppingBag
-                className="text-slate-200 dark:text-dark-border"
-                size={40}
-              />
+          <div className="tt-card p-12 sm:p-20 text-center border-dashed">
+            <div className="size-16 bg-slate-100 dark:bg-slate-800 rounded-xl flex items-center justify-center mx-auto mb-5 text-slate-400">
+              <FiShoppingBag size={30} />
             </div>
-            <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-4 uppercase">
-              Giỏ hàng trống
+            <h2 className="text-xl font-black text-slate-900 dark:text-white mb-2 uppercase tracking-tight">
+              Giỏ Hàng Trống
             </h2>
-            <p className="text-slate-500 dark:text-dark-text-secondary mb-10 max-w-sm mx-auto font-medium leading-relaxed">
-              Hàng ngàn sản phẩm công nghệ đang chờ đón bạn. Hãy chọn cho mình
-              món đồ ưng ý nhé!
+            <p className="text-slate-500 dark:text-slate-400 mb-8 max-w-sm mx-auto text-xs sm:text-sm font-normal leading-relaxed">
+              Chưa có linh kiện hoặc thiết bị nào được chọn. Hãy khám phá catalog phần cứng cao cấp của TienTech.
             </p>
             <Link
               to="/products"
-              className="inline-flex items-center gap-3 bg-slate-900 dark:bg-primary text-white px-10 py-5 rounded-2xl font-black text-sm tracking-widest hover:bg-primary dark:hover:bg-primary-hover transition-all shadow-xl shadow-slate-200 dark:shadow-none"
+              className="tt-button tt-button-primary px-8 py-3.5 text-xs font-bold uppercase tracking-wider"
             >
-              TIẾP TỤC MUA SẮM <FiChevronRight />
+              TIẾP TỤC KHÁM PHÁ <FiChevronRight />
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
-            <div className="lg:col-span-8 space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+            <div className="lg:col-span-8 space-y-5 min-w-0">
               {/* Free Shipping Progress Widget */}
-              <div className="bg-white dark:bg-dark-surface p-6 rounded-[28px] border border-slate-100 dark:border-dark-border shadow-sm">
+              <div className="tt-card p-4 sm:p-5 bg-white dark:bg-dark-surface border border-slate-200 dark:border-slate-800">
                 {(() => {
                   const freeShipThreshold = Number(freeshipMinOrder) || 5000000;
                   const percent = Math.min(100, Math.round((subtotal / freeShipThreshold) * 100));
                   const remaining = freeShipThreshold - subtotal;
                   return (
                     <div>
-                      <div className="flex items-center justify-between text-xs font-bold mb-2">
-                        <span className="text-slate-700 dark:text-white flex items-center gap-2">
-                          🚚 {remaining <= 0 ? "Bạn đã đủ điều kiện Miễn phí giao hàng!" : `Mua thêm ${(remaining).toLocaleString()}đ để nhận FreeShip!`}
+                      <div className="flex items-center justify-between text-xs font-semibold mb-2">
+                        <span className="text-slate-700 dark:text-slate-200 flex items-center gap-2 min-w-0 truncate">
+                          <span className="size-2 rounded-full bg-lime-500 shrink-0"></span>
+                          <span className="truncate">
+                            {remaining <= 0
+                              ? "Bạn đã đủ điều kiện Miễn phí vận chuyển nội thành!"
+                              : `Cần thêm ${(remaining).toLocaleString("vi-VN")}₫ để hưởng chuẩn FreeShip.`}
+                          </span>
                         </span>
-                        <span className="text-primary font-black">{percent}%</span>
+                        <span className="font-mono text-primary dark:text-blue-400 font-bold ml-2 shrink-0">{percent}%</span>
                       </div>
-                      <div className="w-full h-2.5 bg-slate-100 dark:bg-dark-bg rounded-full overflow-hidden">
+                      <div className="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                         <div
-                          className="h-full bg-gradient-to-r from-primary to-emerald-500 rounded-full transition-all duration-500"
+                          className="h-full bg-primary rounded-full transition-all duration-500"
                           style={{ width: `${percent}%` }}
                         />
                       </div>
@@ -190,12 +196,13 @@ const CartPage = () => {
                 })()}
               </div>
 
-              <div className="bg-white dark:bg-dark-surface rounded-[32px] shadow-sm border border-slate-100 dark:border-dark-border overflow-hidden">
-                <div className="p-6 border-b border-slate-50 dark:border-dark-border bg-slate-50/30 dark:bg-dark-bg/30 flex justify-between items-center">
-                  <div className="flex items-center gap-3">
+              <div className="tt-card bg-white dark:bg-dark-surface border border-slate-200 dark:border-slate-800 overflow-hidden">
+                <div className="p-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40 flex justify-between items-center">
+                  <div className="flex items-center gap-2.5">
                     <input
                       type="checkbox"
-                      className="size-5 rounded-lg border-2 border-slate-200 dark:border-dark-border text-primary focus:ring-primary dark:bg-dark-bg"
+                      id="select-all-cart"
+                      className="size-4 rounded border-slate-300 dark:border-slate-700 text-primary focus:ring-primary dark:bg-slate-900 cursor-pointer"
                       checked={
                         selectedItems.length === cartItems.length &&
                         cartItems.length > 0
@@ -208,15 +215,15 @@ const CartPage = () => {
                         )
                       }
                     />
-                    <span className="text-xs font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest">
-                      Chọn tất cả
-                    </span>
+                    <label htmlFor="select-all-cart" className="text-xs font-mono font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider cursor-pointer">
+                      Chọn tất cả ({cartItems.length})
+                    </label>
                   </div>
-                  <span className="text-[10px] font-black text-slate-300 dark:text-dark-text-secondary/30 uppercase tracking-[0.2em]">
-                    TienTech Official
+                  <span className="text-[10px] font-mono font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                    TIENTECH VERIFIED
                   </span>
                 </div>
-                <div className="divide-y divide-slate-50 dark:divide-dark-border">
+                <div className="divide-y divide-slate-100 dark:divide-slate-800">
                   {cartItems.map((item) => (
                     <CartItem
                       key={item.id}

@@ -46,26 +46,30 @@ const GenericAdminTable = ({
       {/* Header Area */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-6">
         <div>
-          <h1 className="text-xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2.5 sm:gap-3">
-            <div className="size-10 sm:size-12 rounded-2xl bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/20 shrink-0">
+          <div className="tt-eyebrow mb-1">
+            <span className="size-1.5 rounded-full bg-lime-500"></span>
+            <span>OPERATIONS DATABASE // RECORD VIEW</span>
+          </div>
+          <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2.5">
+            <div className="size-9 rounded-lg bg-primary text-white flex items-center justify-center shadow-xs shrink-0 text-base">
               {Icon && (typeof Icon === "function" ? <Icon /> : Icon)}
             </div>
             <span className="truncate">{title}</span>
           </h1>
           {subtitle && (
-            <p className="text-slate-500 dark:text-dark-text-secondary font-bold text-[10px] sm:text-xs uppercase tracking-widest mt-1 sm:mt-1.5 ml-1">
+            <p className="text-slate-500 dark:text-dark-text-secondary font-mono text-xs uppercase tracking-wider mt-1">
               {subtitle}
             </p>
           )}
         </div>
 
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 w-full sm:w-auto">
-          <div className="relative group w-full sm:w-64 md:w-80 transition-all duration-300">
-            <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-dark-text-secondary group-focus-within:text-primary transition-colors text-base" />
+          <div className="relative group w-full sm:w-64 md:w-80">
+            <FiSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 group-focus-within:text-primary transition-colors text-sm" />
             <input
               type="text"
               placeholder={searchPlaceholder}
-              className="w-full min-h-[44px] bg-white dark:bg-dark-surface border border-slate-200/80 dark:border-dark-border/60 rounded-2xl pl-11 pr-10 text-sm font-bold text-slate-900 dark:text-white focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all outline-none"
+              className="tt-input w-full pl-9 pr-9 text-xs sm:text-sm font-medium"
               value={searchTerm || ""}
               onChange={(e) => onSearchChange(e.target.value)}
             />
@@ -73,50 +77,50 @@ const GenericAdminTable = ({
               <button
                 type="button"
                 onClick={() => onSearchChange("")}
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 size-7 rounded-full bg-slate-100 dark:bg-dark-bg text-slate-400 hover:text-slate-700 dark:hover:text-white flex items-center justify-center transition-all cursor-pointer"
+                className="absolute right-3 top-1/2 -translate-y-1/2 size-5 rounded bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-700 dark:hover:text-white flex items-center justify-center transition-all cursor-pointer"
                 title="Xóa ô tìm kiếm"
                 aria-label="Xóa từ khóa tìm kiếm"
               >
-                <FiX size={13} />
+                <FiX size={12} />
               </button>
             )}
           </div>
 
           <button
             onClick={onAddClick}
-            className="btn-modern-primary group min-h-[44px] px-5 flex items-center justify-center gap-2 cursor-pointer active:scale-98 shrink-0 text-sm font-bold"
+            className="tt-button tt-button-primary group px-4 py-2 flex items-center justify-center gap-2 cursor-pointer shrink-0 text-xs sm:text-sm font-bold uppercase tracking-wider"
           >
-            <FiPlus className="text-xl group-hover:rotate-90 transition-transform duration-300" />
+            <FiPlus className="text-base group-hover:rotate-90 transition-transform duration-200" />
             <span>{addLabel}</span>
           </button>
         </div>
       </div>
 
       {/* Table Area */}
-      <div className="bg-white dark:bg-dark-surface rounded-2xl sm:rounded-[40px] border border-slate-100 dark:border-dark-border shadow-soft overflow-hidden">
+      <div className="tt-card bg-white dark:bg-dark-surface border border-slate-200 dark:border-slate-800 shadow-xs overflow-hidden">
         <div className="overflow-x-auto custom-scrollbar">
           <table className="w-full text-left border-collapse min-w-[550px] md:min-w-full">
             <thead>
-              <tr className="bg-slate-50/50 dark:bg-dark-bg/50 border-b border-slate-100 dark:border-dark-border">
+              <tr className="bg-slate-50/80 dark:bg-slate-900/60 border-b border-slate-200/80 dark:border-slate-800">
                 {safeColumns.map((col, idx) => (
                   <th
                     key={idx}
-                    className={`px-3 py-3 md:px-8 md:py-6 text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary ${col.className || ""}`}
+                    className={`px-4 py-3 md:px-6 md:py-3.5 text-[10px] font-mono font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 ${col.className || ""}`}
                   >
                     {col.header}
                   </th>
                 ))}
-                <th className="px-3 py-3 md:px-8 md:py-6 text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary text-right">
+                <th className="px-4 py-3 md:px-6 md:py-3.5 text-[10px] font-mono font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 text-right">
                   Thao tác
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-50 dark:divide-dark-border">
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800/80">
               {loading ? (
                 <tr>
                   <td
                     colSpan={safeColumns.length + 1}
-                    className="px-3 py-8 md:px-8"
+                    className="px-4 py-8 md:px-6"
                   >
                     <AdminTableSkeleton rows={8} cols={safeColumns.length + 1} />
                   </td>
@@ -125,62 +129,62 @@ const GenericAdminTable = ({
                 <tr>
                   <td
                     colSpan={safeColumns.length + 1}
-                    className="px-3 py-16 md:px-8 text-center"
+                    className="px-4 py-16 md:px-6 text-center"
                   >
                     <div className="max-w-xs mx-auto">
-                      <div className="size-16 bg-slate-50 dark:bg-dark-bg rounded-full flex items-center justify-center text-slate-300 dark:text-slate-700 mx-auto mb-4">
-                        <FiSearch size={32} />
+                      <div className="size-12 bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center text-slate-400 mx-auto mb-3">
+                        <FiSearch size={22} />
                       </div>
-                      <p className="text-slate-900 dark:text-white font-bold">Không tìm thấy dữ liệu</p>
-                      <p className="text-xs text-slate-400 dark:text-dark-text-secondary mt-1">Vui lòng điều chỉnh lại bộ lọc hoặc từ khóa tìm kiếm.</p>
+                      <p className="text-slate-900 dark:text-white font-bold text-xs uppercase tracking-wider font-mono">Dữ liệu trống</p>
+                      <p className="text-xs text-slate-400 mt-1">Không có bản ghi nào phù hợp với điều kiện tìm kiếm.</p>
                     </div>
                   </td>
                 </tr>
               ) : (
                 safeData.map((item, rowIdx) => (
                   <Motion.tr
-                    initial={{ opacity: 0, y: 10 }}
+                    initial={{ opacity: 0, y: 6 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: rowIdx * 0.03 }}
+                    transition={{ delay: rowIdx * 0.02 }}
                     key={item.id || rowIdx}
-                    className="hover:bg-primary/5 dark:hover:bg-primary/5 transition-colors group"
+                    className="hover:bg-slate-50/60 dark:hover:bg-slate-900/40 transition-colors group"
                   >
                     {columns.map((col, colIdx) => (
                       <td
                         key={colIdx}
-                        className={`px-3 py-3 md:px-8 md:py-5 ${col.className || ""}`}
+                        className={`px-4 py-3 md:px-6 md:py-3 text-xs md:text-sm ${col.className || ""}`}
                       >
                         {col.render ? (
                           col.render(item)
                         ) : (
-                          <span className="text-xs md:text-sm font-bold text-slate-700 dark:text-slate-300">
+                          <span className="font-medium text-slate-800 dark:text-slate-200">
                             {item[col.accessor]}
                           </span>
                         )}
                       </td>
                     ))}
-                    <td className="px-3 py-3 md:px-8 md:py-5 text-right">
+                    <td className="px-4 py-3 md:px-6 md:py-3 text-right">
                       {renderActions ? (
                         renderActions(item)
                       ) : (
-                        <div className="flex items-center justify-end gap-1.5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                        <div className="flex items-center justify-end gap-1.5 opacity-100 sm:opacity-70 sm:group-hover:opacity-100 transition-opacity">
                           <button
                             type="button"
                             onClick={() => onEditClick(item)}
-                            className="size-9 sm:size-10 text-primary dark:text-primary-light bg-slate-50 dark:bg-dark-bg border border-slate-200/60 dark:border-dark-border/40 rounded-xl sm:rounded-2xl hover:shadow-lg transition-all cursor-pointer flex items-center justify-center active:scale-95"
+                            className="size-8 text-primary dark:text-blue-400 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md hover:border-primary transition-all cursor-pointer flex items-center justify-center active:scale-95"
                             title="Chỉnh sửa"
                             aria-label="Chỉnh sửa bản ghi"
                           >
-                            <FiEdit2 size={15} />
+                            <FiEdit2 size={13} />
                           </button>
                           <button
                             type="button"
                             onClick={() => onDeleteClick(item)}
-                            className="size-9 sm:size-10 text-rose-600 dark:text-rose-400 bg-slate-50 dark:bg-dark-bg border border-slate-200/60 dark:border-dark-border/40 rounded-xl sm:rounded-2xl hover:shadow-lg transition-all cursor-pointer flex items-center justify-center active:scale-95"
+                            className="size-8 text-rose-600 dark:text-rose-400 bg-white dark:bg-slate-900 border border-rose-200 dark:border-rose-900/50 rounded-md hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-all cursor-pointer flex items-center justify-center active:scale-95"
                             title="Xóa"
                             aria-label="Xóa bản ghi"
                           >
-                            <FiTrash2 size={15} />
+                            <FiTrash2 size={13} />
                           </button>
                         </div>
                       )}
@@ -194,7 +198,7 @@ const GenericAdminTable = ({
 
         {/* Pagination Area */}
         {totalPages > 1 && (
-          <div className="p-4 sm:p-8 border-t border-slate-50 dark:border-dark-border bg-slate-50/20 dark:bg-dark-bg/20 flex justify-center">
+          <div className="p-3 sm:p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30 flex justify-center">
             <AppPagination
               page={page}
               totalPages={totalPages}

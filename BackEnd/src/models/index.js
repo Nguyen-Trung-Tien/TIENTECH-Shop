@@ -10,10 +10,19 @@ const config = require(__dirname + '/../config/config.js')[env];
 const db = {};
 
 let sequelize;
+const sequelizeConfig = { ...config };
+try {
+  if (!sequelizeConfig.dialectModule) {
+    sequelizeConfig.dialectModule = require('mysql2');
+  }
+} catch (e) {
+  // fallback
+}
+
 if (config.use_env_variable) {
-  sequelize = new Sequelize(process.env[config.use_env_variable], config);
+  sequelize = new Sequelize(process.env[config.use_env_variable], sequelizeConfig);
 } else {
-  sequelize = new Sequelize(config.database, config.username, config.password, config);
+  sequelize = new Sequelize(config.database, config.username, config.password, sequelizeConfig);
 }
 
 fs

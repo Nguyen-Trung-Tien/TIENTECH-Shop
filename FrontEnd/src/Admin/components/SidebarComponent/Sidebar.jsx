@@ -222,17 +222,17 @@ const Sidebar = ({ collapsed, mobileOpen, onCloseMobile }) => {
                         onClick={() => toggleMenu(item.label)}
                         aria-label={`Mục menu ${item.label}`}
                         aria-expanded={isExpanded}
-                        className={`w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-2xl transition-all duration-200 cursor-pointer ${
+                        className={`w-full flex items-center justify-between gap-3 px-3 py-2 rounded-lg transition-all duration-150 cursor-pointer ${
                           isSubActive
-                            ? "text-primary dark:text-primary-light bg-primary/10 dark:bg-primary/20 font-bold"
-                            : "hover:bg-slate-100/70 dark:hover:bg-dark-bg text-slate-600 dark:text-dark-text-secondary"
+                            ? "text-primary dark:text-blue-400 bg-primary/10 dark:bg-primary/20 font-bold border-l-2 border-primary"
+                            : "hover:bg-slate-100/80 dark:hover:bg-dark-bg text-slate-700 dark:text-dark-text-secondary"
                         }`}
                       >
-                        <div className="flex items-center gap-3 min-w-0">
+                        <div className="flex items-center gap-2.5 min-w-0">
                           <span
-                            className={`text-lg flex-shrink-0 transition-colors ${
+                            className={`text-base flex-shrink-0 transition-colors ${
                               isSubActive
-                                ? "text-primary dark:text-primary-light"
+                                ? "text-primary dark:text-blue-400"
                                 : "text-slate-400 dark:text-dark-text-secondary group-hover:text-primary"
                             }`}
                           >
@@ -248,12 +248,12 @@ const Sidebar = ({ collapsed, mobileOpen, onCloseMobile }) => {
                         {!collapsed && (
                           <div className="flex items-center gap-1.5">
                             {totalBadges > 0 && (
-                              <span className="flex items-center justify-center min-w-[18px] h-[18px] px-1.5 bg-rose-500 text-white text-[10px] font-black rounded-full shadow-md shadow-rose-500/20 animate-pulse">
+                              <span className="flex items-center justify-center min-w-[18px] h-[18px] px-1 bg-rose-600 text-white text-[9px] font-mono font-black rounded shadow-xs">
                                 {totalBadges > 99 ? "99+" : totalBadges}
                               </span>
                             )}
                             <FiChevronDown
-                              className={`text-slate-400 transition-transform duration-200 ${
+                              className={`text-slate-400 text-xs transition-transform duration-200 ${
                                 isExpanded ? "rotate-180" : ""
                               }`}
                             />
@@ -263,7 +263,7 @@ const Sidebar = ({ collapsed, mobileOpen, onCloseMobile }) => {
 
                       {/* Tooltip when collapsed */}
                       {collapsed && !mobileOpen && (
-                        <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3 px-3 py-1.5 bg-slate-900 dark:bg-slate-800 text-white text-xs font-bold rounded-xl shadow-xl opacity-0 group-hover:opacity-100 pointer-events-none transition-all z-50 whitespace-nowrap">
+                        <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2.5 py-1 bg-slate-900 dark:bg-slate-800 text-white text-xs font-mono font-bold rounded shadow-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-all z-50 whitespace-nowrap">
                           {item.label}
                         </div>
                       )}
@@ -276,7 +276,7 @@ const Sidebar = ({ collapsed, mobileOpen, onCloseMobile }) => {
                               initial={{ opacity: 0, height: 0 }}
                               animate={{ opacity: 1, height: "auto" }}
                               exit={{ opacity: 0, height: 0 }}
-                              className="overflow-hidden ml-4 pl-3 border-l-2 border-slate-200/60 dark:border-dark-border/60 space-y-1 pt-1"
+                              className="overflow-hidden ml-3 pl-3 border-l border-slate-200 dark:border-slate-800 space-y-0.5 pt-0.5"
                             >
                               {item.subItems.map((sub) => {
                                 const badgeCount = sub.badgeKey
@@ -287,15 +287,15 @@ const Sidebar = ({ collapsed, mobileOpen, onCloseMobile }) => {
                                   <Link
                                     key={sub.to}
                                     to={sub.to}
-                                    className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs transition-all ${
+                                    className={`flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs transition-all ${
                                       isItemActive
-                                        ? "text-primary dark:text-primary-light bg-primary/10 dark:bg-primary/20 font-black"
-                                        : "text-slate-500 dark:text-dark-text-secondary hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/60 dark:hover:bg-dark-bg font-medium"
+                                        ? "text-primary dark:text-blue-400 bg-primary/10 dark:bg-primary/20 font-bold"
+                                        : "text-slate-500 dark:text-dark-text-secondary hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/60 dark:hover:bg-dark-bg"
                                     }`}
                                   >
                                     <span className="truncate">{sub.label}</span>
                                     {badgeCount > 0 && (
-                                      <span className="flex items-center justify-center min-w-[18px] h-[18px] px-1 bg-rose-500 text-white text-[10px] font-black rounded-full shadow-md shadow-rose-500/20">
+                                      <span className="flex items-center justify-center min-w-[16px] h-[16px] px-1 bg-rose-600 text-white text-[9px] font-mono font-black rounded shadow-xs">
                                         {badgeCount > 99 ? "99+" : badgeCount}
                                       </span>
                                     )}
@@ -317,14 +317,14 @@ const Sidebar = ({ collapsed, mobileOpen, onCloseMobile }) => {
                   <div key={item.to} className="relative group">
                     <Link
                       to={item.to}
-                      className={`flex items-center gap-3 px-3 py-2.5 rounded-2xl transition-all duration-200 ${
+                      className={`flex items-center gap-2.5 px-3 py-2 rounded-lg transition-all duration-150 ${
                         isActive
-                          ? "bg-gradient-to-r from-primary to-blue-600 text-white font-bold shadow-lg shadow-primary/25"
-                          : "hover:bg-slate-100/70 dark:hover:bg-dark-bg text-slate-600 dark:text-dark-text-secondary font-medium"
+                          ? "bg-primary text-white font-bold shadow-xs"
+                          : "hover:bg-slate-100/80 dark:hover:bg-dark-bg text-slate-700 dark:text-dark-text-secondary"
                       }`}
                     >
                       <span
-                        className={`text-lg flex-shrink-0 transition-transform group-hover:scale-110 ${
+                        className={`text-base flex-shrink-0 ${
                           isActive
                             ? "text-white"
                             : "text-slate-400 dark:text-dark-text-secondary group-hover:text-primary"
@@ -339,7 +339,7 @@ const Sidebar = ({ collapsed, mobileOpen, onCloseMobile }) => {
 
                     {/* Tooltip when collapsed */}
                     {collapsed && !mobileOpen && (
-                      <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3 px-3 py-1.5 bg-slate-900 dark:bg-slate-800 text-white text-xs font-bold rounded-xl shadow-xl opacity-0 group-hover:opacity-100 pointer-events-none transition-all z-50 whitespace-nowrap">
+                      <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2.5 py-1 bg-slate-900 dark:bg-slate-800 text-white text-xs font-mono font-bold rounded shadow-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-all z-50 whitespace-nowrap">
                         {item.label}
                       </div>
                     )}
@@ -351,27 +351,27 @@ const Sidebar = ({ collapsed, mobileOpen, onCloseMobile }) => {
         </nav>
 
         {/* User Info & Quick Logout Footer */}
-        <div className="p-3 border-t border-slate-100 dark:border-dark-border/60 shrink-0 bg-slate-50/50 dark:bg-dark-bg/30">
+        <div className="p-3 border-t border-slate-200/80 dark:border-dark-border/80 shrink-0 bg-slate-50/50 dark:bg-dark-bg/30">
           {(mobileOpen || !collapsed) && (
-            <div className="flex items-center gap-3 p-2 mb-2 rounded-2xl bg-white dark:bg-dark-surface border border-slate-100 dark:border-dark-border/60 shadow-2xs">
+            <div className="flex items-center gap-2.5 p-2 mb-2 rounded-lg bg-white dark:bg-dark-surface border border-slate-200/80 dark:border-dark-border/80 shadow-2xs">
               {user.avatar ? (
                 <img
                   src={user.avatar}
                   alt={user.username}
-                  className="size-9 rounded-xl object-cover ring-2 ring-primary/20 shrink-0"
+                  className="size-8 rounded-lg object-cover ring-1 ring-primary/30 shrink-0"
                 />
               ) : (
-                <div className="size-9 rounded-xl bg-primary/10 text-primary font-black flex items-center justify-center text-sm shrink-0">
+                <div className="size-8 rounded-lg bg-primary/10 text-primary font-mono font-black flex items-center justify-center text-xs shrink-0">
                   {user.username?.charAt(0).toUpperCase() || "A"}
                 </div>
               )}
               <div className="min-w-0 flex-1">
-                <p className="text-xs font-black text-slate-900 dark:text-white truncate">
+                <p className="text-xs font-bold text-slate-900 dark:text-white truncate">
                   {user.username || "Admin"}
                 </p>
                 <div className="flex items-center gap-1 mt-0.5">
-                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 text-[9px] font-black uppercase tracking-wider">
-                    <FiShield size={10} /> {user.role || "Admin"}
+                  <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded bg-lime-50 dark:bg-lime-950/40 text-lime-700 dark:text-lime-400 text-[9px] font-mono font-bold uppercase tracking-wider">
+                    <span className="size-1 rounded-full bg-lime-500"></span> {user.role || "ADMIN"}
                   </span>
                 </div>
               </div>
@@ -383,7 +383,7 @@ const Sidebar = ({ collapsed, mobileOpen, onCloseMobile }) => {
             onClick={handleLogout}
             disabled={loggingOut}
             aria-label="Đăng xuất khỏi trang quản trị"
-            className={`flex items-center gap-3 px-3 py-2.5 w-full rounded-2xl text-rose-600 dark:text-rose-400 bg-rose-50/60 dark:bg-rose-950/20 hover:bg-rose-500 hover:text-white dark:hover:bg-rose-600 transition-all duration-200 group disabled:opacity-60 cursor-pointer text-xs font-bold border border-rose-100 dark:border-rose-900/30 ${
+            className={`flex items-center gap-2.5 px-3 py-2 w-full rounded-lg text-rose-600 dark:text-rose-400 bg-rose-50/60 dark:bg-rose-950/20 hover:bg-rose-600 hover:text-white transition-all duration-150 group disabled:opacity-60 cursor-pointer text-xs font-semibold border border-rose-200/60 dark:border-rose-900/40 ${
               collapsed && !mobileOpen ? "justify-center" : ""
             }`}
             title={collapsed ? "Đăng xuất" : ""}
@@ -391,11 +391,11 @@ const Sidebar = ({ collapsed, mobileOpen, onCloseMobile }) => {
             {loggingOut ? (
               <UnifiedSpinner size="xs" variant="danger" />
             ) : (
-              <FiLogOut className="text-base flex-shrink-0 group-hover:-translate-x-0.5 transition-transform" />
+              <FiLogOut className="text-sm flex-shrink-0 group-hover:-translate-x-0.5 transition-transform" />
             )}
             {(mobileOpen || !collapsed) && (
               <span className="truncate">
-                {loggingOut ? "Đang đăng xuất..." : "Đăng xuất"}
+                {loggingOut ? "Đang xử lý..." : "Đăng xuất console"}
               </span>
             )}
           </button>

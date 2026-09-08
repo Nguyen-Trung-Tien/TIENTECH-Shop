@@ -101,10 +101,10 @@ export default function Logo({
             <span className={`${tienTextColor} transition-colors drop-shadow-xs`}>
               TIEN
             </span>
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 via-indigo-500 to-cyan-500 dark:from-blue-400 dark:via-indigo-300 dark:to-cyan-300">
+            <span className="text-blue-600 dark:text-blue-400 ml-0.5">
               TECH
             </span>
-            <span className="inline-block w-1.5 h-1.5 rounded-full bg-cyan-400 ml-0.5 animate-pulse shadow-xs"></span>
+            <span className="inline-block w-1.5 h-1.5 rounded-full bg-lime-500 ml-1 shadow-xs"></span>
           </div>
         </div>
       )}

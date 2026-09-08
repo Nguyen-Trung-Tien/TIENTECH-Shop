@@ -33,119 +33,131 @@ const AboutPage = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black transition-colors duration-300">
-      
-      {/* HERO SECTION - REFINED */}
-      <section className="relative h-[70vh] flex items-center justify-center overflow-hidden bg-slate-950">
-        <div className="absolute inset-0 z-0">
-          <img
-            src="https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1500&q=80"
-            className="w-full h-full object-cover opacity-30"
-            alt="Hero Background"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-blue-900/20 via-black/40 to-black"></div>
-        </div>
+    <div className="min-h-screen bg-ivory dark:bg-dark-bg transition-colors duration-300">
+      {/* HERO SECTION - TECHNICAL EDITORIAL */}
+      <section className="relative py-16 md:py-24 bg-slate-950 text-white overflow-hidden border-b border-slate-800">
+        <div className="absolute inset-0 z-0 opacity-20 pointer-events-none bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:32px_32px]"></div>
 
-        <div className="container mx-auto px-4 relative z-10 text-center">
+        <div className="container mx-auto px-4 relative z-10 text-center max-w-4xl">
           <Motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
+            transition={{ duration: 0.5 }}
             className="flex flex-col items-center"
           >
-            <div className="mb-8 p-6 bg-white/5 backdrop-blur-xl rounded-[3rem] border border-white/10 flex items-center justify-center shadow-2xl">
-              <Logo size="xl" variant="light" />
+            <div className="tt-eyebrow mb-6 bg-slate-900 border-slate-800 text-slate-300">
+              <span className="size-1.5 rounded-full bg-lime-400"></span>
+              <span>TIENTECH MANIFESTO // ARCHITECTURE &amp; ENGINEERING</span>
             </div>
-            <h1 className="text-4xl md:text-6xl font-black text-white mb-6 leading-[1.1] max-w-4xl tracking-tight">
-              Định nghĩa lại <span className="text-blue-500">Tương lai số</span> <br />
-              cùng TienTech Shop
+
+            <h1 className="text-3xl sm:text-4xl md:text-6xl font-black text-white mb-6 leading-[1.15] tracking-tight uppercase">
+              Chuẩn Mực Tuyển Chọn <br />
+              <span className="text-primary dark:text-blue-400">Công Nghệ Đỉnh Cao</span>
             </h1>
-            <p className="text-slate-400 text-lg md:text-xl max-w-2xl mb-10 font-medium">
-              Chúng tôi không chỉ cung cấp thiết bị, chúng tôi kiến tạo giải pháp công nghệ tối ưu cho cuộc sống hiện đại.
+
+            <p className="text-slate-400 text-sm sm:text-base md:text-lg max-w-2xl mb-8 font-normal leading-relaxed">
+              Chúng tôi không định nghĩa bản thân là một cửa hàng bán lẻ đại trà. TienTech là hệ thống kiểm chuẩn, tuyển lựa và triển khai phần cứng công nghệ cao với cam kết tuyệt đối về độ tin cậy và minh bạch kỹ thuật.
             </p>
-            <div className="flex gap-4">
-                <Button
-                variant="primary"
-                className="px-10 h-14 !rounded-2xl text-sm font-black bg-primary hover:bg-primary-hover shadow-xl shadow-primary/20 cursor-pointer"
+
+            <div className="flex flex-wrap justify-center gap-3">
+              <button
+                type="button"
+                className="tt-button tt-button-primary px-8 py-3.5 text-xs font-bold uppercase tracking-wider"
                 onClick={() => navigate("/products")}
-                >
-                KHÁM PHÁ SẢN PHẨM
-                </Button>
+              >
+                Khám phá catalog sản phẩm
+              </button>
+              <button
+                type="button"
+                className="tt-button tt-button-secondary px-8 py-3.5 text-xs font-bold uppercase tracking-wider bg-slate-900 border-slate-800 text-white hover:bg-slate-800"
+                onClick={() => navigate("/contact")}
+              >
+                Liên hệ kỹ sư tư vấn
+              </button>
             </div>
           </Motion.div>
         </div>
       </section>
 
-      {/* STATS SECTION - TIGHT & IMPACTFUL */}
-      <section className="py-10 bg-white dark:bg-black border-b border-slate-100 dark:border-gray-900">
+      {/* STATS SECTION - TECHNICAL METRICS LEDGER */}
+      <section className="py-8 bg-white dark:bg-dark-surface border-b border-slate-200/80 dark:border-slate-800">
         <div className="container mx-auto px-4">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-                {[
-                    { label: "Khách hàng tin dùng", val: "50k+", icon: FiUsers },
-                    { label: "Sản phẩm chính hãng", val: "100%", icon: FiShield },
-                    { label: "Năm kinh nghiệm", val: "5+", icon: FiAward },
-                    { label: "Tăng trưởng hàng năm", val: "200%", icon: FiTrendingUp }
-                ].map((s, i) => (
-                    <div key={i} className="flex flex-col items-center text-center">
-                        <s.icon className="text-primary mb-2" size={20} />
-                        <p className="text-3xl font-black text-slate-900 dark:text-white mb-1">{s.val}</p>
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{s.label}</p>
-                    </div>
-                ))}
-            </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+            {[
+              { label: "Khách hàng tin chọn", val: "50,000+", icon: FiUsers, sub: "TỶ LỆ HÀI LÒNG 99.4%" },
+              { label: "Kiểm định chính hãng", val: "100%", icon: FiShield, sub: "CHUẨN NHÀ SẢN XUẤT" },
+              { label: "Kinh nghiệm phát triển", val: "05 NĂM", icon: FiAward, sub: "CHUYÊN GIA PHẦN CỨNG" },
+              { label: "Chỉ số tăng trưởng", val: "200%+", icon: FiTrendingUp, sub: "DOANH THU HÀNG NĂM" }
+            ].map((s, i) => (
+              <div key={i} className="flex flex-col p-4 rounded-xl bg-slate-50/70 dark:bg-slate-900/50 border border-slate-200/60 dark:border-slate-800/80 min-w-0">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider">{s.sub}</span>
+                  <s.icon className="text-primary dark:text-blue-400 text-sm" />
+                </div>
+                <p className="text-2xl sm:text-3xl font-black font-mono text-slate-900 dark:text-white mb-1 leading-none">{s.val}</p>
+                <p className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-tight">{s.label}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* STORY SECTION - REFINED SPACING */}
-      <section className="py-16 md:py-20 bg-slate-50 dark:bg-gray-950 transition-colors">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+      {/* STORY SECTION */}
+      <section className="py-14 md:py-20 bg-ivory dark:bg-dark-bg transition-colors border-b border-slate-200/80 dark:border-slate-800">
+        <div className="container mx-auto px-4 max-w-6xl">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
             <Motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="relative"
+              className="relative min-w-0"
             >
-              <div className="relative z-10 rounded-[3rem] overflow-hidden shadow-2xl border-4 border-white dark:border-gray-800">
+              <div className="tt-card p-2 bg-white dark:bg-dark-surface border border-slate-200 dark:border-slate-800 shadow-lg overflow-hidden">
                 <img
                   src="https://images.unsplash.com/photo-1519389950473-47ba0277781c"
-                  alt="TienTech Office"
-                  className="w-full h-auto grayscale hover:grayscale-0 transition-all duration-700"
+                  alt="TienTech Engineering Hub"
+                  className="w-full h-auto rounded-lg object-cover"
                 />
+                <div className="p-3 text-[11px] font-mono text-slate-500 dark:text-slate-400 flex items-center justify-between border-t border-slate-100 dark:border-slate-800 mt-2">
+                  <span>TIENTECH LAB &bull; VERIFICATION CENTER</span>
+                  <span className="text-lime-600 dark:text-lime-400 font-bold">ACTIVE</span>
+                </div>
               </div>
-              <div className="absolute -bottom-6 -right-6 size-40 bg-primary/10 rounded-full blur-3xl"></div>
             </Motion.div>
 
             <Motion.div
-              initial={{ opacity: 0, x: 30 }}
-              whileInView={{ opacity: 1, x: 0 }}
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
+              className="min-w-0"
             >
-              <span className="inline-block px-3 py-1 bg-primary text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-full mb-6">
-                Câu chuyện của chúng tôi
-              </span>
-              <h2 className="text-3xl md:text-5xl font-black text-slate-900 dark:text-white mb-8 leading-tight tracking-tight uppercase">
-                Nâng tầm giá trị <br /> <span className="text-primary dark:text-primary-light">Công nghệ Việt</span>
+              <div className="tt-eyebrow mb-3">
+                <span className="size-1.5 rounded-full bg-lime-500"></span>
+                <span>ORIGIN &bull; IDENTITY</span>
+              </div>
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-900 dark:text-white mb-5 leading-tight tracking-tight uppercase">
+                Xây dựng chuẩn mực mới <br />
+                <span className="text-primary dark:text-blue-400">Cho Hệ Sinh Thái Công Nghệ</span>
               </h2>
-              <div className="space-y-6 text-slate-600 dark:text-slate-400 text-base md:text-lg leading-relaxed font-medium">
+              <div className="space-y-4 text-slate-600 dark:text-slate-300 text-sm sm:text-base leading-relaxed">
                 <p>
-                  <strong className="text-slate-900 dark:text-white">TienTech Shop</strong> ra đời với tâm thế của những người trẻ khao khát mang những tinh hoa công nghệ đỉnh cao thế giới đến gần hơn với cộng đồng người dùng Việt Nam.
+                  <strong className="text-slate-900 dark:text-white font-bold">TienTech Shop</strong> được kiến tạo bởi các kỹ sư phần mềm và chuyên gia phần cứng có chung niềm đam mê sâu sắc với kiến trúc thiết bị tối tân.
                 </p>
                 <p>
-                  Chúng tôi không chỉ bán thiết bị, mà còn đồng hành tư vấn, hỗ trợ cá nhân hóa công nghệ chuẩn phong cách sống hiện đại cho từng khách hàng.
+                  Chúng tôi loại bỏ hoàn toàn mô hình bán hàng mập mờ linh kiện. Mọi cấu hình bán ra đều có mã SKU chuẩn, kiểm chuẩn nhiệt độ và tài liệu bảo hành 1-1 điện tử rõ ràng.
                 </p>
               </div>
 
               {/* Development Milestones */}
-              <div className="mt-8 grid grid-cols-3 gap-4 border-t border-slate-200 dark:border-gray-800 pt-6">
+              <div className="mt-8 grid grid-cols-3 gap-3 border-t border-slate-200 dark:border-slate-800 pt-5">
                 {[
-                  { year: "2022", text: "Thành lập cửa hàng đầu tiên" },
-                  { year: "2024", text: "Đạt mốc 50k+ khách hàng" },
-                  { year: "2026", text: "Tích hợp AI tư vấn Phong thủy" }
+                  { year: "2022", text: "Khởi động trung tâm kiểm chuẩn phần cứng" },
+                  { year: "2024", text: "Phục vụ hơn 50.000 chuyên gia kỹ thuật" },
+                  { year: "2026", text: "Hệ thống AI Price Predictor & Spec Matcher" }
                 ].map((m, i) => (
-                  <div key={i} className="text-left">
-                    <p className="text-xl font-black text-primary">{m.year}</p>
-                    <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 mt-1 leading-snug">{m.text}</p>
+                  <div key={i} className="text-left min-w-0">
+                    <p className="text-lg sm:text-xl font-mono font-black text-primary dark:text-blue-400">{m.year}</p>
+                    <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 mt-1 leading-snug">{m.text}</p>
                   </div>
                 ))}
               </div>
@@ -154,112 +166,125 @@ const AboutPage = () => {
         </div>
       </section>
 
-      {/* MISSION & VISION - MODERN CARDS */}
-      <section className="py-16 md:py-20 bg-white dark:bg-black transition-colors">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
+      {/* MISSION & VISION */}
+      <section className="py-14 md:py-20 bg-white dark:bg-dark-surface transition-colors border-b border-slate-200/80 dark:border-slate-800">
+        <div className="container mx-auto px-4 max-w-5xl">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
             <Motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="group p-8 md:p-12 bg-gray-50 dark:bg-gray-900 rounded-[3rem] border border-transparent hover:border-primary/20 transition-all duration-500"
+              className="tt-card p-6 sm:p-8 bg-slate-50/70 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800"
             >
-              <div className="size-14 bg-primary rounded-2xl flex items-center justify-center text-white mb-8 shadow-lg shadow-primary/20 group-hover:scale-110 transition-transform">
-                <FiTarget size={28} />
+              <div className="size-11 bg-primary text-white rounded-lg flex items-center justify-center mb-5 shadow-xs">
+                <FiTarget size={22} />
               </div>
-              <h4 className="text-2xl font-black text-slate-900 dark:text-white mb-4 uppercase tracking-tight">Sứ mệnh</h4>
-              <p className="text-slate-500 dark:text-slate-400 text-base md:text-lg leading-relaxed font-medium">
-                Cung cấp hệ sinh thái thiết bị công nghệ chính hãng, giúp tối ưu hóa hiệu suất làm việc và nâng cao chất lượng cuộc sống cho mọi khách hàng.
+              <h3 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white mb-2 uppercase tracking-tight font-mono">
+                01 // SỨ MỆNH KỸ THUẬT
+              </h3>
+              <p className="text-slate-600 dark:text-slate-300 text-xs sm:text-sm leading-relaxed">
+                Đưa những giải pháp công nghệ đỉnh cao và linh kiện nguyên bản tới tay người dùng Việt Nam với chi phí minh bạch, tư vấn chuẩn xác và trách nhiệm bảo hành cao nhất.
               </p>
             </Motion.div>
 
             <Motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: 0.1 }}
-              className="group p-8 md:p-12 bg-primary rounded-[3rem] text-white shadow-2xl shadow-primary/20 hover:-translate-y-2 transition-all duration-500"
+              transition={{ delay: 0.08 }}
+              className="tt-card p-6 sm:p-8 bg-slate-50/70 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800"
             >
-              <div className="size-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-white mb-8 border border-white/20 group-hover:scale-110 transition-transform">
-                <FiEye size={28} />
+              <div className="size-11 bg-lime-500 text-slate-950 rounded-lg flex items-center justify-center mb-5 shadow-xs font-bold">
+                <FiEye size={22} />
               </div>
-              <h4 className="text-2xl font-black text-white mb-4 uppercase tracking-tight">Tầm nhìn</h4>
-              <p className="text-white/80 text-base md:text-lg leading-relaxed font-medium">
-                Trở thành biểu tượng của niềm tin và sự đổi mới trong lĩnh vực bán lẻ công nghệ tại Việt Nam, mang tầm vóc quốc tế.
+              <h3 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white mb-2 uppercase tracking-tight font-mono">
+                02 // TẦM NHÌN DÀI HẠN
+              </h3>
+              <p className="text-slate-600 dark:text-slate-300 text-xs sm:text-sm leading-relaxed">
+                Trở thành hệ thống tham chiếu hàng đầu về cung cấp phần cứng máy tính và thiết bị thông minh, nơi khách hàng tìm thấy sự an tâm tuyệt đối trong từng quyết định đầu tư.
               </p>
             </Motion.div>
           </div>
         </div>
       </section>
 
-      {/* TEAM SECTION - TIGHTER GRID */}
-      <section className="py-16 md:py-20 bg-slate-50 dark:bg-gray-950 transition-colors">
-        <div className="container mx-auto px-4">
-          <div className="text-center max-w-2xl mx-auto mb-16">
-            <FiUsers size={32} className="text-primary mx-auto mb-4" />
-            <h2 className="text-3xl md:text-4xl font-black text-slate-900 dark:text-white mb-4 uppercase tracking-tight">Đội ngũ sáng lập</h2>
-            <p className="text-slate-500 dark:text-slate-400 text-sm md:text-base font-bold uppercase tracking-widest opacity-70">Những nhân tố cốt lõi xây dựng nên TienTech</p>
+      {/* TEAM SECTION */}
+      <section className="py-14 md:py-20 bg-ivory dark:bg-dark-bg transition-colors border-b border-slate-200/80 dark:border-slate-800">
+        <div className="container mx-auto px-4 max-w-5xl">
+          <div className="text-center max-w-2xl mx-auto mb-12">
+            <div className="tt-eyebrow mb-2">
+              <span className="size-1.5 rounded-full bg-lime-500"></span>
+              <span>ENGINEERING LEADERSHIP</span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white uppercase tracking-tight">
+              Đội Ngũ Kiến Trúc Sư
+            </h2>
+            <p className="text-xs font-mono text-slate-500 dark:text-slate-400 mt-1 uppercase tracking-wider">
+              NHÂN SỰ NÒNG CỐT ĐỒNG HÀNH CÙNG TIENTECH
+            </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-10">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
             {teamMembers.map((member, idx) => (
               <Motion.div
                 key={idx}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 16 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: idx * 0.1 }}
-                className="group flex flex-col items-center text-center"
+                transition={{ delay: idx * 0.08 }}
+                className="tt-card p-4 bg-white dark:bg-dark-surface border border-slate-200 dark:border-slate-800 flex flex-col items-center text-center min-w-0"
               >
-                <div className="relative w-full aspect-square rounded-[3rem] overflow-hidden mb-6 shadow-xl border-4 border-white dark:border-gray-800 transition-all duration-500 group-hover:shadow-2xl group-hover:border-primary/20">
+                <div className="relative w-full aspect-square rounded-lg overflow-hidden mb-4 bg-slate-100 dark:bg-slate-900">
                   <img
                     src={member.img}
                     alt={member.name}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    className="w-full h-full object-cover transition-transform duration-500 hover:scale-103"
                   />
-                  <div className="absolute inset-0 bg-primary/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <p className="text-white font-black text-[10px] uppercase tracking-[0.3em]">TienTech Founder</p>
-                  </div>
                 </div>
-                <h4 className="text-xl font-black text-slate-900 dark:text-white mb-1 group-hover:text-primary transition-colors uppercase tracking-tight">
+                <h4 className="text-base font-black text-slate-900 dark:text-white uppercase tracking-tight">
                   {member.name}
                 </h4>
-                <p className="text-primary font-black uppercase tracking-widest text-[10px] mb-4">
+                <p className="text-primary dark:text-blue-400 font-mono font-bold uppercase tracking-wider text-[11px] mb-2">
                   {member.role}
                 </p>
-                <p className="text-slate-500 dark:text-slate-400 text-sm font-medium px-4 leading-relaxed line-clamp-2">{member.desc}</p>
+                <p className="text-slate-500 dark:text-slate-400 text-xs leading-relaxed line-clamp-3">
+                  {member.desc}
+                </p>
               </Motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* CTA SECTION - IMPACTFUL & CLEAN */}
-      <section className="py-16 md:py-24 bg-white dark:bg-black transition-colors overflow-hidden">
-        <div className="container mx-auto px-4">
-          <div className="bg-primary rounded-[3rem] md:rounded-[4rem] p-10 md:p-20 text-center relative overflow-hidden shadow-2xl shadow-primary/30">
-            <div className="absolute top-0 left-0 size-64 bg-white/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
-            <div className="absolute bottom-0 right-0 size-64 bg-black/10 rounded-full blur-3xl translate-x-1/2 translate-y-1/2"></div>
-            
-            <div className="relative z-10">
-                <h2 className="text-3xl md:text-5xl font-black text-white mb-6 uppercase tracking-tight">Sẵn sàng trải nghiệm cùng TienTech?</h2>
-                <p className="text-blue-50 text-base md:text-lg mb-10 font-bold uppercase tracking-widest opacity-80 max-w-xl mx-auto">
-                    Kiến tạo phong cách sống công nghệ đỉnh cao ngay hôm nay.
-                </p>
-                <div className="flex flex-wrap justify-center gap-4">
-                    <button
-                        className="h-14 px-10 bg-white text-primary font-black text-sm rounded-2xl hover:bg-slate-100 transition-all shadow-xl active:scale-95 cursor-pointer"
-                        onClick={() => navigate("/contact")}
-                    >
-                        LIÊN HỆ TƯ VẤN
-                    </button>
-                    <button
-                        className="h-14 px-10 bg-primary-hover text-white font-black text-sm rounded-2xl hover:bg-primary transition-all border border-primary/30 active:scale-95 cursor-pointer"
-                        onClick={() => navigate("/products")}
-                    >
-                        MUA SẮM NGAY
-                    </button>
-                </div>
+      {/* CTA SECTION */}
+      <section className="py-14 md:py-20 bg-white dark:bg-dark-surface transition-colors">
+        <div className="container mx-auto px-4 max-w-4xl">
+          <div className="tt-card p-8 sm:p-12 bg-slate-900 text-white text-center border border-slate-800">
+            <div className="tt-eyebrow mb-4 bg-slate-800 border-slate-700 text-lime-400">
+              <span className="size-1.5 rounded-full bg-lime-400"></span>
+              <span>READY FOR DEPLOYMENT</span>
+            </div>
+            <h2 className="text-2xl sm:text-4xl font-black mb-4 uppercase tracking-tight">
+              Sẵn Sàng Nâng Tầm Trải Nghiệm Công Nghệ?
+            </h2>
+            <p className="text-slate-400 text-xs sm:text-sm mb-8 max-w-md mx-auto leading-relaxed">
+              Trang bị hệ thống máy tính và thiết bị công nghệ chính hãng với chính sách hỗ trợ kỹ thuật 24/7 từ đội ngũ TienTech.
+            </p>
+            <div className="flex flex-wrap justify-center gap-3">
+              <button
+                type="button"
+                className="tt-button tt-button-accent px-8 py-3.5 text-xs font-bold uppercase tracking-wider"
+                onClick={() => navigate("/products")}
+              >
+                Mua sắm ngay
+              </button>
+              <button
+                type="button"
+                className="tt-button tt-button-secondary px-8 py-3.5 text-xs font-bold uppercase tracking-wider bg-slate-800 border-slate-700 text-white hover:bg-slate-700"
+                onClick={() => navigate("/contact")}
+              >
+                Liên hệ tư vấn
+              </button>
             </div>
           </div>
         </div>

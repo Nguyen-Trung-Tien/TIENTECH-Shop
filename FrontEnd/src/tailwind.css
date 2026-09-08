@@ -8,31 +8,33 @@
   --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
   
-  /* TienTech Signature Identity - Công nghệ cao cấp & Tinh gọn */
+  /* TienTech Technical Editorial - Curated High-End Tech Hardware */
   --color-primary: #1d4ed8;         /* Deep Technical Blue */
   --color-primary-hover: #1e40af; 
   --color-primary-light: #3b82f6;
   --color-primary-dark: #172554;
   --color-primary-subtle: #eff6ff;
 
-  --color-brand: #0284c7;           /* Cerulean Blue */
-  --color-brand-hover: #0369a1;
-  --color-brand-light: #38bdf8;
-  --color-brand-dark: #075985;
+  --color-brand: #1d4ed8;           /* Technical Blue */
+  --color-brand-hover: #1e40af;
+  --color-brand-light: #3b82f6;
+  --color-brand-dark: #172554;
   
-  --color-accent: #f97316;          /* Warm Tech Amber/Coral */
-  --color-accent-hover: #ea580c;
+  --color-accent: #84cc16;          /* Signal Lime */
+  --color-accent-hover: #65a30d;
+  --color-accent-light: #bef264;
+  --color-accent-dark: #365314;
   
-  /* Neutral Palette - Slate Precision */
-  --color-surface-50: #f8fafc;
-  --color-surface-100: #f1f5f9;
-  --color-surface-200: #e2e8f0;
-  --color-surface-300: #cbd5e1;
-  --color-surface-400: #94a3b8;
-  --color-surface-500: #64748b;
-  --color-surface-600: #475569;
-  --color-surface-700: #334155;
-  --color-surface-800: #1e293b;
+  /* Neutral Palette - Ivory / Slate Precision */
+  --color-surface-50: #fbfbfa;
+  --color-surface-100: #f4f4f0;
+  --color-surface-200: #e4e4e7;
+  --color-surface-300: #d4d4d8;
+  --color-surface-400: #a1a1aa;
+  --color-surface-500: #71717a;
+  --color-surface-600: #52525b;
+  --color-surface-700: #3f3f46;
+  --color-surface-800: #27272a;
   --color-surface-900: #0f172a;
   --color-surface-950: #020617;
 
@@ -43,18 +45,19 @@
   --color-warning-light: #f59e0b;
   --color-danger: #dc2626;
   --color-danger-light: #ef4444;
-  --color-info: #0284c7;
+  --color-info: #1d4ed8;
 
-  /* Dark Mode specific mappings */
-  --color-dark-bg: #0b0f19;
-  --color-dark-surface: #131b2e;
-  --color-dark-card: #182238;
-  --color-dark-border: #1e2d4a;
+  /* Dark Mode specific mappings - Graphite / Ink */
+  --color-dark-bg: #090d16;
+  --color-dark-surface: #0f1523;
+  --color-dark-card: #131926;
+  --color-dark-border: #1e2638;
   --color-dark-text-primary: #f8fafc;
   --color-dark-text-secondary: #94a3b8;
 
-  /* Shadows - Tinh tế, không bị gắt */
-  --shadow-sm: 0 1px 2px 0 rgb(15 23 42 / 0.04);
+  /* Shadows - Tinh tế, có kiểm soát */
+  --shadow-xs: 0 1px 2px 0 rgb(15 23 42 / 0.05);
+  --shadow-sm: 0 1px 3px 0 rgb(15 23 42 / 0.07), 0 1px 2px -1px rgb(15 23 42 / 0.05);
   --shadow-md: 0 4px 12px -2px rgb(15 23 42 / 0.06), 0 2px 4px -2px rgb(15 23 42 / 0.04);
   --shadow-lg: 0 12px 24px -4px rgb(15 23 42 / 0.08), 0 4px 6px -4px rgb(15 23 42 / 0.03);
   --shadow-soft: 0 8px 30px -6px rgba(15, 23, 42, 0.06);
@@ -66,7 +69,7 @@
   --radius-3xl: 1.25rem;
 
   /* Spacing */
-  --spacing-container: 1240px;
+  --spacing-container: 1280px;
 
   /* Keyframes */
   @keyframes slide-left {
@@ -105,13 +108,13 @@
   }
   
   :root {
-    --bg-main: #f8fafc;
+    --bg-main: #fbfbfa;
     --bg-card: #ffffff;
     --text-main: #0f172a;
     --text-muted: #64748b;
-    --border-color: #e2e8f0;
-    --glass-bg: rgba(255, 255, 255, 0.92);
-    --glass-border: #e2e8f0;
+    --border-color: #e4e4e7;
+    --glass-bg: rgba(255, 255, 255, 0.94);
+    --glass-border: #e4e4e7;
     --glass-shadow: var(--shadow-glass);
   }
   
@@ -121,8 +124,8 @@
     --text-main: var(--color-dark-text-primary);
     --text-muted: var(--color-dark-text-secondary);
     --border-color: var(--color-dark-border);
-    --glass-bg: rgba(19, 27, 46, 0.90);
-    --glass-border: rgba(255, 255, 255, 0.08);
+    --glass-bg: rgba(15, 21, 35, 0.92);
+    --glass-border: rgba(255, 255, 255, 0.07);
     --glass-shadow: var(--shadow-glass-dark);
   }
 
@@ -304,13 +307,63 @@
     @apply inline-flex items-center gap-0.5 px-2 py-0.5 text-[10px] font-semibold text-slate-500 bg-slate-100 border border-slate-200 rounded-md dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700 shadow-xs;
   }
 
-  /* Soft borders softening */
-  .border-slate-200 {
-    @apply border-slate-100;
+  /* TienTech Technical Editorial Primitives */
+  .tt-shell {
+    @apply max-w-[var(--spacing-container)] mx-auto px-4 sm:px-6 lg:px-8 w-full;
   }
-  
-  .dark .dark\:border-dark-border {
-    border-color: rgba(51, 65, 85, 0.25);
+
+  .tt-section {
+    @apply py-10 sm:py-14 md:py-18;
+  }
+
+  .tt-eyebrow {
+    @apply inline-flex items-center gap-2 text-[10px] sm:text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400;
+  }
+
+  .tt-card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    @apply rounded-xl sm:rounded-2xl transition-all duration-200;
+  }
+
+  .tt-card-hover {
+    @apply hover:border-blue-600/40 dark:hover:border-blue-500/40 hover:shadow-md;
+  }
+
+  .tt-button {
+    @apply inline-flex items-center justify-center gap-2 min-h-[42px] px-4 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm tracking-wide transition-all duration-200 disabled:opacity-50 disabled:pointer-events-none cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600;
+  }
+
+  .tt-button-primary {
+    @apply inline-flex items-center justify-center gap-2 min-h-[42px] px-4 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm tracking-wide transition-all duration-200 disabled:opacity-50 disabled:pointer-events-none cursor-pointer bg-blue-600 hover:bg-blue-700 text-white shadow-xs hover:shadow-md active:scale-98;
+  }
+
+  .tt-button-secondary {
+    @apply inline-flex items-center justify-center gap-2 min-h-[42px] px-4 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm tracking-wide transition-all duration-200 disabled:opacity-50 disabled:pointer-events-none cursor-pointer bg-slate-100 hover:bg-slate-200/90 dark:bg-[#131926] dark:hover:bg-[#182236] text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-[#1e2638] active:scale-98;
+  }
+
+  .tt-button-accent {
+    @apply inline-flex items-center justify-center gap-2 min-h-[42px] px-4 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm tracking-wide transition-all duration-200 disabled:opacity-50 disabled:pointer-events-none cursor-pointer bg-lime-500 hover:bg-lime-600 text-slate-950 shadow-xs hover:shadow-md active:scale-98;
+  }
+
+  .tt-button-ghost {
+    @apply inline-flex items-center justify-center gap-2 min-h-[42px] px-4 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm tracking-wide transition-all duration-200 disabled:opacity-50 disabled:pointer-events-none cursor-pointer bg-transparent hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300;
+  }
+
+  .tt-input {
+    @apply w-full min-h-[44px] px-4 bg-white dark:bg-[#0f1523] border border-slate-200 dark:border-[#1e2638] rounded-xl text-sm font-medium text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none focus:border-blue-600 dark:focus:border-blue-500 focus:ring-2 focus:ring-blue-600/10 dark:focus:ring-blue-500/20 transition-all;
+  }
+
+  .tt-grid {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6;
+  }
+
+  .tt-badge-lime {
+    @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-lime-500/15 border border-lime-500/30 text-lime-700 dark:text-lime-300 text-[10px] font-black uppercase tracking-wider;
+  }
+
+  .tt-badge-blue {
+    @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-blue-500/15 border border-blue-500/30 text-blue-700 dark:text-blue-300 text-[10px] font-black uppercase tracking-wider;
   }
 }
 

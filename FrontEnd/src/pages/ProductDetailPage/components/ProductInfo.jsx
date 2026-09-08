@@ -127,42 +127,42 @@ const ProductInfo = ({
       </div>
 
       {/* Guarantee & Perks Box */}
-      <div className="grid grid-cols-3 gap-3 p-3.5 bg-blue-50/50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/30 rounded-2xl">
-        <div className="flex items-center gap-2 text-xs font-bold text-slate-700 dark:text-slate-300">
-          <FiShield className="text-blue-600 text-lg shrink-0" />
-          <span>Chính hãng 100%</span>
+      <div className="grid grid-cols-3 gap-2.5 p-3 bg-white dark:bg-dark-surface border border-slate-200 dark:border-slate-800 rounded-xl">
+        <div className="flex items-center gap-2 text-xs font-semibold text-slate-700 dark:text-slate-300 min-w-0">
+          <FiShield className="text-primary dark:text-blue-400 text-base shrink-0" />
+          <span className="truncate">Chính hãng 100%</span>
         </div>
-        <div className="flex items-center gap-2 text-xs font-bold text-slate-700 dark:text-slate-300">
-          <FiRefreshCw className="text-emerald-600 text-lg shrink-0" />
-          <span>1 Đổi 1 30 Ngày</span>
+        <div className="flex items-center gap-2 text-xs font-semibold text-slate-700 dark:text-slate-300 min-w-0">
+          <FiRefreshCw className="text-lime-600 dark:text-lime-400 text-base shrink-0" />
+          <span className="truncate">1 Đổi 1 30 Ngày</span>
         </div>
-        <div className="flex items-center gap-2 text-xs font-bold text-slate-700 dark:text-slate-300">
-          <FiTruck className="text-indigo-600 text-lg shrink-0" />
-          <span>Giao siêu tốc 2H</span>
+        <div className="flex items-center gap-2 text-xs font-semibold text-slate-700 dark:text-slate-300 min-w-0">
+          <FiTruck className="text-primary dark:text-blue-400 text-base shrink-0" />
+          <span className="truncate">Giao siêu tốc 2H</span>
         </div>
       </div>
 
       {/* AI Price Insight Callout */}
-      <div className="p-3.5 bg-gradient-to-r from-indigo-50/80 to-purple-50/80 dark:from-indigo-950/30 dark:to-purple-950/30 border border-indigo-100 dark:border-indigo-900/40 rounded-2xl flex items-center justify-between gap-3 shadow-xs">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-indigo-600 text-white rounded-xl shadow-xs shrink-0">
-            <FiTrendingUp className="w-4 h-4" />
+      <div className="p-3 bg-slate-50 dark:bg-dark-surface/80 border border-slate-200 dark:border-slate-800 rounded-xl flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="p-2 bg-primary text-white rounded-lg shadow-xs shrink-0">
+            <FiTrendingUp className="size-4" />
           </div>
-          <div>
-            <div className="text-xs font-bold text-indigo-950 dark:text-indigo-200 flex items-center gap-1.5">
-              AI Price Insight: <span className="text-emerald-600 dark:text-emerald-400 font-extrabold">Mức giá cạnh tranh</span>
+          <div className="min-w-0">
+            <div className="text-xs font-bold text-slate-900 dark:text-slate-100 flex items-center gap-1.5 truncate">
+              AI Price Insight: <span className="text-lime-600 dark:text-lime-400 font-extrabold">Giá tối ưu</span>
             </div>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400">
-              Đề xuất: <span className="font-semibold text-indigo-600 dark:text-indigo-400">Thời điểm tốt để mua ngay</span>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+              Đề xuất: <span className="font-semibold text-primary dark:text-blue-400">Thời điểm tốt để mua</span>
             </p>
           </div>
         </div>
         <button
           type="button"
           onClick={() => setShowPrediction(true)}
-          className="px-3 py-1.5 text-xs font-bold text-indigo-600 dark:text-indigo-300 bg-white dark:bg-slate-800 border border-indigo-200 dark:border-indigo-800 rounded-xl hover:bg-indigo-600 hover:text-white transition shrink-0 shadow-xs cursor-pointer"
+          className="px-3 py-1.5 text-xs font-bold text-primary dark:text-blue-400 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:border-primary transition shrink-0 cursor-pointer"
         >
-          Dự báo giá 30 ngày
+          Dự báo 30 ngày
         </button>
       </div>
 
@@ -170,18 +170,18 @@ const ProductInfo = ({
       {Object.keys(allAttributes).length > 0 && (
         <div className="space-y-4 py-3 border-y border-slate-200/80 dark:border-slate-800">
           {Object.entries(allAttributes).map(([attrName, values]) => (
-            <div key={attrName} className="space-y-2.5">
+            <div key={attrName} className="space-y-2">
               <div className="flex justify-between items-center">
-                <label className="text-xs font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                <label className="text-xs font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400 font-mono">
                   Chọn {attrName}:
                 </label>
                 {selectedAttributes[attrName] && (
-                  <span className="text-[11px] font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-2.5 py-0.5 rounded-lg border border-blue-100 dark:border-blue-800">
+                  <span className="text-[11px] font-mono font-bold text-primary dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-2 py-0.5 rounded border border-blue-200/60 dark:border-blue-800">
                     {selectedAttributes[attrName]}
                   </span>
                 )}
               </div>
-              <div className="flex flex-wrap gap-2.5">
+              <div className="flex flex-wrap gap-2">
                 {values.map((val) => {
                   const isSelected = selectedAttributes[attrName] === val;
                   const isAvailable = checkAttributeAvailability(attrName, val);
@@ -190,11 +190,11 @@ const ProductInfo = ({
                       key={val}
                       disabled={!isAvailable}
                       onClick={() => onSelectAttribute(attrName, val)}
-                      className={`min-w-[65px] px-4 py-2 rounded-xl text-xs font-bold transition-all border-2 flex items-center justify-center gap-1.5 cursor-pointer ${
+                      className={`min-w-[65px] px-3.5 py-2 rounded-lg text-xs font-bold transition-all border flex items-center justify-center gap-1.5 cursor-pointer font-mono ${
                         isSelected
-                          ? "bg-blue-600 border-blue-600 text-white shadow-md shadow-blue-500/20"
+                          ? "bg-primary border-primary text-white shadow-xs"
                           : isAvailable
-                            ? "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-blue-500/60 text-slate-800 dark:text-slate-200"
+                            ? "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-primary text-slate-800 dark:text-slate-200"
                             : "bg-slate-100 dark:bg-slate-800/50 border-slate-200/50 dark:border-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed opacity-50"
                       }`}
                     >
@@ -212,50 +212,52 @@ const ProductInfo = ({
       {/* Action Buttons */}
       <div className="space-y-3 pt-2">
         <div className="flex flex-col sm:flex-row gap-3">
-          <div className="flex flex-1 gap-3">
+          <div className="flex flex-1 gap-2.5">
             <button
               onClick={onAddToCart}
               disabled={addingCart || (!selectedVariant && product.variants?.length > 0)}
-              className={`flex-1 h-13 rounded-2xl font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 border-2 cursor-pointer ${
+              className={`flex-1 h-12 rounded-xl font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 border cursor-pointer ${
                 !selectedVariant && product.variants?.length > 0
                   ? "bg-slate-100 dark:bg-slate-800 text-slate-400 border-slate-200/50 cursor-not-allowed"
-                  : "bg-white dark:bg-slate-900 border-slate-900 dark:border-slate-200 text-slate-900 dark:text-white hover:bg-slate-900 dark:hover:bg-white hover:text-white dark:hover:text-slate-900"
+                  : "bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white hover:border-primary dark:hover:border-primary"
               }`}
             >
-              <FiShoppingCart className="text-lg" />
+              <FiShoppingCart className="text-base" />
               {addingCart ? "Đang thêm..." : "THÊM GIỎ HÀNG"}
             </button>
 
             <button
               onClick={handleBuyNow}
               disabled={addingCart || (!selectedVariant && product.variants?.length > 0)}
-              className={`flex-[1.4] h-13 rounded-2xl font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-lg cursor-pointer ${
+              className={`flex-[1.4] h-12 rounded-xl font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer ${
                 !selectedVariant && product.variants?.length > 0
                   ? "bg-slate-200 dark:bg-slate-800 text-slate-400 cursor-not-allowed"
-                  : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-blue-500/25 active:scale-98"
+                  : "bg-primary hover:bg-primary-hover text-white active:scale-98"
               }`}
             >
-              <FiCreditCard className="text-lg" />
+              <FiCreditCard className="text-base" />
               MUA NGAY
             </button>
           </div>
 
           <button
+            type="button"
             onClick={handleWishlist}
             disabled={loadingWishlist}
-            className={`w-full sm:size-13 h-13 rounded-2xl border-2 flex items-center justify-center transition-all shadow-sm cursor-pointer shrink-0 ${
+            aria-label={isWishlisted ? "Xóa khỏi danh sách yêu thích" : "Thêm vào danh sách yêu thích"}
+            className={`w-full sm:size-12 h-12 rounded-xl border flex items-center justify-center transition-all shadow-xs cursor-pointer shrink-0 ${
               isWishlisted
-                ? "border-red-200 dark:border-red-900/40 bg-red-50 dark:bg-red-950/30 text-red-500"
-                : "border-slate-200 dark:border-slate-800 text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-red-500"
+                ? "border-rose-200 dark:border-rose-900/40 bg-rose-50 dark:bg-rose-950/30 text-rose-500"
+                : "border-slate-200 dark:border-slate-800 text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-rose-500"
             }`}
           >
-            {isWishlisted ? <FaHeart className="text-xl" /> : <FiHeart className="text-xl" />}
+            {isWishlisted ? <FaHeart className="text-lg" /> : <FiHeart className="text-lg" />}
           </button>
         </div>
 
         {!selectedVariant && product.variants?.length > 0 && (
-          <p className="text-center text-red-500 text-xs font-bold uppercase tracking-wider bg-red-50 dark:bg-red-950/30 py-2.5 rounded-xl border border-red-200 dark:border-red-900/40">
-            ⚠️ Vui lòng chọn phiên bản trước khi tiếp tục
+          <p className="text-center text-rose-600 dark:text-rose-400 text-xs font-mono font-bold uppercase tracking-wider bg-rose-50 dark:bg-rose-950/30 py-2 rounded-lg border border-rose-200 dark:border-rose-900/40">
+            CẦN CHỌN PHIÊN BẢN (SKU) TRƯỚC KHI TIẾP TỤC
           </p>
         )}
       </div>

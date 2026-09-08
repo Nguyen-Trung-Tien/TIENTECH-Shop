@@ -62,67 +62,58 @@ const CategorySection = React.memo(({ categories: propCategories = [], loading: 
   if (!categories || categories.length === 0) return null;
 
   return (
-    <section className="py-8 md:py-12 bg-slate-50/40 dark:bg-black/40 border-b border-slate-100 dark:border-slate-800/80 transition-colors duration-300">
+    <section className="py-8 md:py-12 bg-ivory dark:bg-dark-bg/60 border-b border-slate-200/80 dark:border-slate-800 transition-colors duration-300">
       <div className="container-custom">
-        <div className="flex flex-col items-center mb-8 md:mb-10 text-center">
-          <Motion.div
-            initial={{ opacity: 0, y: -10 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="flex items-center gap-2 text-blue-600 dark:text-blue-400 text-[10px] font-black uppercase tracking-[0.2em] mb-2"
-          >
-            <FiGrid className="text-sm" />
-            Khám phá theo nhu cầu
-          </Motion.div>
-          <Motion.h2
-            initial={{ opacity: 0, y: 15 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white tracking-tight uppercase"
-          >
-            Danh Mục Nổi Bật
-          </Motion.h2>
-          <Motion.div
-            initial={{ scaleX: 0 }}
-            whileInView={{ scaleX: 1 }}
-            style={{ originX: 0 }}
-            viewport={{ once: true }}
-            className="h-1.5 w-16 bg-gradient-to-r from-blue-600 to-indigo-600 mt-3 rounded-full shadow-lg shadow-blue-500/20"
-          ></Motion.div>
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
+          <div>
+            <div className="tt-eyebrow mb-2">
+              <span className="size-1.5 rounded-full bg-lime-500"></span>
+              <span>HARDWARE TAXONOMY</span>
+            </div>
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-black text-slate-900 dark:text-white uppercase tracking-tight">
+              Danh Mục Ngành Hàng
+            </h2>
+          </div>
+          <p className="text-xs text-slate-500 dark:text-slate-400 font-mono">
+            SELECT CATEGORY // DIRECT DEPLOYMENT
+          </p>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
           {categories.map((cat, index) => (
             <Motion.div
               key={cat.id || index}
-              initial={{ opacity: 0, y: 15 }}
+              initial={{ opacity: 0, y: 12 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: index * 0.04 }}
+              transition={{ delay: index * 0.03 }}
               onClick={() => navigate(`/category/${cat.slug}`)}
-              className="group cursor-pointer"
+              className="group cursor-pointer min-w-0"
             >
-              <div className="relative aspect-square rounded-[22px] overflow-hidden bg-white dark:bg-dark-surface border border-slate-200/80 dark:border-slate-800 shadow-sm hover:shadow-xl hover:border-blue-500/40 transition-all duration-300 group-hover:-translate-y-1.5 p-3 flex flex-col justify-between">
-                <div className="relative w-full aspect-square rounded-xl overflow-hidden bg-slate-50 dark:bg-slate-900/60 mb-2 flex items-center justify-center p-2">
+              <div className="tt-card tt-card-hover relative p-3 bg-white dark:bg-dark-surface border border-slate-200/80 dark:border-slate-800 transition-all duration-200 flex flex-col justify-between h-full">
+                <div className="relative w-full aspect-square rounded-lg overflow-hidden bg-slate-50 dark:bg-slate-900/60 mb-2.5 flex items-center justify-center p-2.5">
                   <img
                     src={
                       cat.image || cat.imageUrl || "/images/default-category.jpg"
                     }
                     alt={cat.name}
-                    className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-110"
+                    className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105"
                     loading="lazy"
                   />
                   {cat.productCount > 0 && (
-                    <span className="absolute top-2 right-2 bg-slate-900/80 dark:bg-blue-600/90 text-white backdrop-blur-md px-2 py-0.5 rounded-md text-[9px] font-black tracking-wider">
-                      {cat.productCount} SP
+                    <span className="absolute top-2 right-2 font-mono text-[9px] font-bold bg-slate-900/85 dark:bg-slate-800/90 text-white px-1.5 py-0.5 rounded border border-slate-700/40">
+                      {cat.productCount}
                     </span>
                   )}
                 </div>
 
-                <div className="text-center mt-auto">
-                  <h3 className="text-slate-800 dark:text-slate-100 font-bold text-xs md:text-sm tracking-tight truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                <div className="text-left mt-auto min-w-0">
+                  <h3 className="text-slate-900 dark:text-slate-100 font-bold text-xs sm:text-sm tracking-tight truncate group-hover:text-primary dark:group-hover:text-blue-400 transition-colors">
                     {cat.name}
                   </h3>
+                  <span className="text-[10px] font-mono text-slate-400 dark:text-slate-500 block truncate">
+                    EXPLORE &rarr;
+                  </span>
                 </div>
               </div>
             </Motion.div>

@@ -1,4 +1,10 @@
 require("dotenv").config();
+let mysql2;
+try {
+  mysql2 = require("mysql2");
+} catch {
+  // fallback if not yet installed
+}
 
 module.exports = {
   development: {
@@ -8,6 +14,7 @@ module.exports = {
     host: process.env.DB_HOST || "127.0.0.1",
     port: process.env.DB_PORT || 3306,
     dialect: process.env.DB_DIALECT || "mysql",
+    dialectModule: mysql2,
     logging: false,
     pool: {
       max: parseInt(process.env.DB_POOL_MAX || "5", 10),
@@ -23,6 +30,7 @@ module.exports = {
     host: process.env.DB_HOST || "127.0.0.1",
     port: process.env.DB_PORT || 3306,
     dialect: process.env.DB_DIALECT || "mysql",
+    dialectModule: mysql2,
     logging: false,
   },
   production: {
@@ -32,6 +40,7 @@ module.exports = {
     host: process.env.DB_HOST,
     port: process.env.DB_PORT,
     dialect: "mysql",
+    dialectModule: mysql2,
 
     dialectOptions: {
       ssl: {
