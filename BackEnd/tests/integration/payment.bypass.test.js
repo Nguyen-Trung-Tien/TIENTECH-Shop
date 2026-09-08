@@ -32,11 +32,11 @@ describe("Payment Bypass & Security Integration Tests", () => {
 
   afterAll(async () => {
     try {
-      if (testOrder) {
+      if (testOrder?.id) {
         await db.Payment.destroy({ where: { orderId: testOrder.id } });
         await db.Order.destroy({ where: { id: testOrder.id } });
       }
-      if (testUser) {
+      if (testUser?.id) {
         await db.User.destroy({ where: { id: testUser.id } });
       }
     } catch (e) {

@@ -9,6 +9,17 @@ jest.mock("uuid", () => ({
   v4: jest.fn(() => "test-uuid-v4-1234-5678"),
 }));
 
+beforeAll(async () => {
+  try {
+    const db = require("../src/models");
+    if (db && db.sequelize && typeof db.sequelize.sync === "function") {
+      await db.sequelize.sync();
+    }
+  } catch (err) {
+    console.warn("[Test Setup] DB sync warning:", err?.message);
+  }
+});
+
 afterAll(async () => {
   try {
     const db = require("../src/models");

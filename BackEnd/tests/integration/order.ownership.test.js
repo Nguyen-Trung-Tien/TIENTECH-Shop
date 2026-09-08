@@ -49,9 +49,12 @@ describe("Order Ownership & Access Control Tests", () => {
 
   afterAll(async () => {
     try {
-      await db.User.destroy({
-        where: { id: [customerA.id, customerB.id, adminUser.id] },
-      });
+      const userIds = [customerA?.id, customerB?.id, adminUser?.id].filter(Boolean);
+      if (userIds.length > 0) {
+        await db.User.destroy({
+          where: { id: userIds },
+        });
+      }
     } catch (e) {
       console.error(e);
     }

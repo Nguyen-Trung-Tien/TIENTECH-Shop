@@ -62,12 +62,15 @@ describe("Order Return Flow & Idempotency Tests", () => {
 
   afterAll(async () => {
     try {
-      if (orderItem) await db.OrderItem.destroy({ where: { id: orderItem.id } });
-      if (order) await db.Order.destroy({ where: { id: order.id } });
-      if (product) await db.Product.destroy({ where: { id: product.id } });
-      await db.User.destroy({
-        where: { id: [customerUser.id, otherUser.id, adminUser.id] },
-      });
+      if (orderItem?.id) await db.OrderItem.destroy({ where: { id: orderItem.id } });
+      if (order?.id) await db.Order.destroy({ where: { id: order.id } });
+      if (product?.id) await db.Product.destroy({ where: { id: product.id } });
+      const userIds = [customerUser?.id, otherUser?.id, adminUser?.id].filter(Boolean);
+      if (userIds.length > 0) {
+        await db.User.destroy({
+          where: { id: userIds },
+        });
+      }
     } catch (e) {
       console.error(e);
     }
