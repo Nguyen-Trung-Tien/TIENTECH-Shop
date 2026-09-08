@@ -195,6 +195,7 @@ const HeaderAdmin = ({ toggleSidebar, isCollapsed, theme, toggleTheme }) => {
                   setSearchQuery("");
                   setShowSuggestions(false);
                 }}
+                aria-label="Xóa từ khóa tìm kiếm"
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 dark:hover:text-white p-1"
               >
                 <FiX size={14} />
@@ -397,25 +398,31 @@ const HeaderAdmin = ({ toggleSidebar, isCollapsed, theme, toggleTheme }) => {
       <div className="flex items-center gap-2 md:gap-4">
         {/* Search Icon Trigger (Mobile) */}
         <button
+          type="button"
           onClick={() => setShowMobileSearch(true)}
           className="flex md:hidden size-10 items-center justify-center rounded-xl bg-slate-50 dark:bg-dark-bg text-slate-500 dark:text-dark-text-secondary border border-slate-100 dark:border-dark-border hover:text-primary transition-all shadow-sm cursor-pointer"
           title="Tìm kiếm"
+          aria-label="Mở tìm kiếm nhanh trên di động"
         >
           <FiSearch className="text-lg" />
         </button>
 
         {/* Theme Toggle */}
         <button
+          type="button"
           onClick={toggleTheme}
           className="flex size-10 items-center justify-center rounded-xl bg-slate-50/50 dark:bg-dark-bg/50 text-slate-500 dark:text-dark-text-secondary border border-slate-100 dark:border-dark-border/40 hover:text-primary transition-all shadow-sm cursor-pointer"
           title={theme === "dark" ? "Chế độ sáng" : "Chế độ tối"}
+          aria-label={theme === "dark" ? "Chuyển sang chế độ sáng" : "Chuyển sang chế độ tối"}
         >
           {theme === "dark" ? <FiSun className="text-amber-500" /> : <FiMoon />}
         </button>
 
         {/* Quick Actions */}
         <button
+          type="button"
           onClick={() => navigate("/")}
+          aria-label="Về trang chủ khách hàng"
           className="hidden sm:flex h-10 items-center gap-2 rounded-xl border border-slate-100 dark:border-dark-border/40 bg-white dark:bg-dark-surface px-4 text-sm font-semibold text-slate-600 dark:text-dark-text-secondary hover:bg-slate-50 dark:hover:bg-dark-bg transition-colors shadow-sm cursor-pointer"
         >
           <FiHome />
@@ -430,8 +437,12 @@ const HeaderAdmin = ({ toggleSidebar, isCollapsed, theme, toggleTheme }) => {
         {/* Profile Dropdown */}
         <div className="relative">
           <button
+            type="button"
             onClick={() => setShowProfileMenu(!showProfileMenu)}
-            className="flex items-center gap-3 rounded-xl p-1 pr-3 hover:bg-slate-50 dark:hover:bg-dark-bg transition-colors"
+            aria-label="Menu tài khoản quản trị"
+            aria-expanded={showProfileMenu}
+            aria-haspopup="true"
+            className="flex items-center gap-3 rounded-xl p-1 pr-3 hover:bg-slate-50 dark:hover:bg-dark-bg transition-colors cursor-pointer"
           >
             {user?.avatar ? (
               <img

@@ -211,41 +211,42 @@ const ProductCard = ({ product }) => {
             className="w-full h-full object-contain p-2 mix-blend-multiply dark:mix-blend-normal transition-transform duration-500 group-hover:scale-108"
           />
 
-          {/* Badges - dùng effectiveDiscountPct nhất quán */}
-          <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-10">
-            {flashSaleActive && effectiveDiscountPct > 0 && (
-              <span className="px-2.5 py-1 bg-gradient-to-r from-red-600 to-orange-500 text-white font-black text-[9px] uppercase tracking-wider rounded-lg shadow-sm flex items-center gap-1">
+          {/* Clean Tech Badges */}
+          <div className="absolute top-2.5 left-2.5 flex flex-col gap-1 z-10">
+            {flashSaleActive && effectiveDiscountPct > 0 ? (
+              <span className="px-2 py-0.5 bg-amber-500 text-slate-950 font-black text-[9px] uppercase tracking-wider rounded-md shadow-xs flex items-center gap-0.5">
                 ⚡ -{Math.round(effectiveDiscountPct)}%
               </span>
-            )}
-            {!flashSaleActive && effectiveDiscountPct > 0 && (
-              <span className="px-2.5 py-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-black text-[9px] uppercase tracking-wider rounded-lg shadow-sm">
+            ) : effectiveDiscountPct > 0 ? (
+              <span className="px-2 py-0.5 bg-blue-600 text-white font-black text-[9px] uppercase tracking-wider rounded-md shadow-xs">
                 -{Math.round(effectiveDiscountPct)}%
               </span>
-            )}
+            ) : null}
             {Boolean(
               hasVariants === true ||
               hasVariants === 1 ||
               hasVariants === "true" ||
               (Array.isArray(product.variants) && product.variants.length > 0)
             ) && (
-              <span className="px-2.5 py-0.5 bg-indigo-950/80 backdrop-blur-md text-indigo-300 font-bold text-[9px] uppercase tracking-wider rounded-lg border border-indigo-500/30 w-fit">
-                🎨 Có nhiều phiên bản
+              <span className="px-1.5 py-0.5 bg-slate-900/80 dark:bg-slate-800/90 backdrop-blur-sm text-slate-200 font-bold text-[8px] uppercase tracking-wider rounded border border-slate-700/50 w-fit">
+                Nhiều phiên bản
               </span>
             )}
           </div>
 
-          {/* Wishlist Button */}
+          {/* Wishlist Button with aria-label */}
           <button
+            type="button"
             onClick={handleWishlist}
-            className="absolute top-3 right-3 z-20 size-8 flex items-center justify-center bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200/50 dark:border-slate-700/50 rounded-full shadow-sm hover:scale-110 hover:bg-white dark:hover:bg-slate-800 transition-all duration-300 active:scale-95 group/heart"
+            aria-label={isWishlisted ? "Xóa khỏi danh sách yêu thích" : "Thêm vào danh sách yêu thích"}
+            className="absolute top-2.5 right-2.5 z-20 size-8 flex items-center justify-center bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm border border-slate-200/60 dark:border-slate-700/60 rounded-full shadow-xs hover:scale-105 hover:bg-white dark:hover:bg-slate-800 transition-all active:scale-95 group/heart cursor-pointer"
           >
             {isWishlisted ? (
-              <FaHeart className="text-red-500" size={14} />
+              <FaHeart className="text-rose-500" size={13} />
             ) : (
               <FiHeart
-                className="text-slate-400 group-hover/heart:text-red-500 transition-colors"
-                size={14}
+                className="text-slate-400 group-hover/heart:text-rose-500 transition-colors"
+                size={13}
               />
             )}
           </button>
@@ -262,11 +263,11 @@ const ProductCard = ({ product }) => {
           </div>
 
           {/* Desktop hover action */}
-          <div className="absolute inset-x-0 bottom-0 p-3 translate-y-full group-hover:translate-y-0 transition-all duration-300 z-20 bg-gradient-to-t from-white via-white/90 dark:from-dark-surface dark:via-dark-surface/90 to-transparent hidden lg:block">
+          <div className="absolute inset-x-0 bottom-0 p-3 translate-y-full group-hover:translate-y-0 transition-all duration-250 z-20 bg-white/95 dark:bg-dark-surface/95 backdrop-blur-sm border-t border-slate-100 dark:border-slate-800 hidden lg:block">
             <Button
               variant="primary"
               size="sm"
-              className="w-full !rounded-xl font-bold text-[10px] tracking-wider uppercase py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-md"
+              className="w-full !rounded-xl font-bold text-[11px] tracking-wide uppercase py-2 bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
               onClick={handleAddToCartClick}
               disabled={loadingCart}
             >

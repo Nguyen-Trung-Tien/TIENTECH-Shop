@@ -36,15 +36,15 @@ const HeroSection = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
-              className="text-4xl md:text-5xl lg:text-6xl font-black text-slate-900 dark:text-white leading-[1.15] mb-6 tracking-tight"
+              className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-slate-900 dark:text-white leading-[1.15] mb-6 tracking-tight"
             >
               TIENTECH{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-600 dark:from-blue-400 dark:to-cyan-400">
                 SHOP
               </span>
               <br />
-              <span className="text-2xl md:text-3xl font-bold text-slate-500 dark:text-slate-400 tracking-normal">
-                Công Nghệ Đỉnh Cao - Trải Nghiệm Hoàn Hảo
+              <span className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-600 dark:text-slate-300 tracking-normal mt-2 block">
+                Công Nghệ Đỉnh Cao &bull; Trải Nghiệm Hoàn Hảo
               </span>
             </Motion.h1>
 
@@ -52,7 +52,7 @@ const HeroSection = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
-              className="text-base md:text-lg text-slate-600 dark:text-slate-300 leading-relaxed max-w-2xl mx-auto lg:mx-0 mb-8 font-medium"
+              className="text-sm sm:text-base md:text-lg text-slate-600 dark:text-slate-300 leading-relaxed max-w-2xl mx-auto lg:mx-0 mb-8 font-medium"
             >
               Chuyên phân phối Smartphone, Laptop, PC Gaming và Linh phụ kiện cao cấp chính hãng 100%. Cam kết giá cạnh tranh cùng chính sách hậu mãi vượt trội.
             </Motion.p>
@@ -61,20 +61,24 @@ const HeroSection = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.3 }}
-              className="flex flex-wrap items-center justify-center lg:justify-start gap-4"
+              className="flex flex-wrap items-center justify-center lg:justify-start gap-3 sm:gap-4"
             >
               <button
+                type="button"
                 onClick={() => navigate("/products")}
-                className="group flex items-center gap-3 px-7 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-2xl font-black text-xs md:text-sm transition-all shadow-xl shadow-blue-500/25 active:scale-95 cursor-pointer uppercase tracking-wider"
+                aria-label="Khám phá các sản phẩm tại TienTech"
+                className="group flex items-center gap-2.5 px-6 sm:px-7 py-3.5 sm:py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-black text-xs md:text-sm transition-all shadow-lg shadow-blue-500/20 active:scale-95 cursor-pointer uppercase tracking-wider focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500"
               >
-                <FiShoppingBag className="text-lg" />
+                <FiShoppingBag className="text-base sm:text-lg" />
                 Khám phá sản phẩm
                 <FiArrowRight className="group-hover:translate-x-1 transition-transform" />
               </button>
 
               <button
+                type="button"
                 onClick={() => navigate("/about")}
-                className="flex items-center gap-3 px-7 py-4 bg-white dark:bg-slate-900 text-slate-800 dark:text-white border border-slate-200 dark:border-slate-800 rounded-2xl font-bold text-xs md:text-sm hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-all shadow-sm active:scale-95 cursor-pointer uppercase tracking-wider"
+                aria-label="Tìm hiểu về TienTech Shop"
+                className="flex items-center gap-2.5 px-6 sm:px-7 py-3.5 sm:py-4 bg-white dark:bg-slate-900 text-slate-800 dark:text-white border border-slate-200 dark:border-slate-800 rounded-2xl font-bold text-xs md:text-sm hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-all shadow-xs active:scale-95 cursor-pointer uppercase tracking-wider focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500"
               >
                 Về TienTech
               </button>

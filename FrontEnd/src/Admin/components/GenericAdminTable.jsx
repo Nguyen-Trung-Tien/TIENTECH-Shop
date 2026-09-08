@@ -75,6 +75,7 @@ const GenericAdminTable = ({
                 onClick={() => onSearchChange("")}
                 className="absolute right-3.5 top-1/2 -translate-y-1/2 size-7 rounded-full bg-slate-100 dark:bg-dark-bg text-slate-400 hover:text-slate-700 dark:hover:text-white flex items-center justify-center transition-all cursor-pointer"
                 title="Xóa ô tìm kiếm"
+                aria-label="Xóa từ khóa tìm kiếm"
               >
                 <FiX size={13} />
               </button>
@@ -164,16 +165,20 @@ const GenericAdminTable = ({
                       ) : (
                         <div className="flex items-center justify-end gap-1.5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                           <button
+                            type="button"
                             onClick={() => onEditClick(item)}
                             className="size-9 sm:size-10 text-primary dark:text-primary-light bg-slate-50 dark:bg-dark-bg border border-slate-200/60 dark:border-dark-border/40 rounded-xl sm:rounded-2xl hover:shadow-lg transition-all cursor-pointer flex items-center justify-center active:scale-95"
                             title="Chỉnh sửa"
+                            aria-label="Chỉnh sửa bản ghi"
                           >
                             <FiEdit2 size={15} />
                           </button>
                           <button
+                            type="button"
                             onClick={() => onDeleteClick(item)}
                             className="size-9 sm:size-10 text-rose-600 dark:text-rose-400 bg-slate-50 dark:bg-dark-bg border border-slate-200/60 dark:border-dark-border/40 rounded-xl sm:rounded-2xl hover:shadow-lg transition-all cursor-pointer flex items-center justify-center active:scale-95"
                             title="Xóa"
+                            aria-label="Xóa bản ghi"
                           >
                             <FiTrash2 size={15} />
                           </button>

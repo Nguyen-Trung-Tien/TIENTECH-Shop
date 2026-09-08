@@ -27,9 +27,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { removeUser } from "../../redux/userSlice";
 import { clearCart } from "../../redux/cartSlice";
 import { logoutUserApi } from "../../api/userApi";
-import { searchSuggestionsApi } from "../../api/productApi";
 import { useCurrentUser } from "../../hooks/useUser";
-import { debounce } from "lodash";
 import Logo from "../UI/Logo";
 import { toast } from "react-toastify";
 import NotificationBell from "./NotificationBell";
@@ -42,16 +40,7 @@ function Header() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
-  const searchRef = useRef(null);
 
-  const [searchInput, setSearchInput] = useState("");
-  const [suggestions, setSuggestions] = useState({
-    products: [],
-    keywords: [],
-    brands: [],
-    categories: [],
-  });
-  const [showSuggestions, setShowSuggestions] = useState(false);
   const [isVisualSearchOpen, setIsVisualSearchOpen] = useState(false);
   const [isOmniSearchOpen, setIsOmniSearchOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -82,7 +71,6 @@ function Header() {
   useEffect(() => {
     setIsMobileMenuOpen(false);
     setIsUserMenuOpen(false);
-    setShowSuggestions(false);
   }, [location.pathname]);
 
   // Global Ctrl+K / Cmd+K listener
@@ -193,6 +181,7 @@ function Header() {
                   }}
                   className="p-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl shadow-md shadow-blue-500/20 transition-all hover:scale-105 active:scale-95 cursor-pointer flex items-center justify-center"
                   title="Tìm kiếm bằng ảnh AI Vision"
+                  aria-label="Tìm kiếm bằng ảnh AI Vision"
                 >
                   <FiCamera size={15} />
                 </button>
@@ -204,18 +193,22 @@ function Header() {
           <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
             {/* Quick Search Button for Mobile & Tablet */}
             <button
+              type="button"
               onClick={() => setIsOmniSearchOpen(true)}
               className="lg:hidden size-10 sm:size-11 min-h-[40px] min-w-[40px] rounded-2xl bg-blue-50/80 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/40 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/60 transition-all flex items-center justify-center cursor-pointer active:scale-95 shadow-xs shrink-0"
               title="Tìm kiếm AI"
+              aria-label="Tìm kiếm nhanh AI"
             >
               <FiSearch size={18} />
             </button>
 
             {/* Theme Toggle (Desktop/Tablet) */}
             <button
+              type="button"
               onClick={toggleTheme}
               className="hidden sm:flex size-11 min-h-[44px] min-w-[44px] rounded-2xl bg-slate-100/80 dark:bg-slate-900/80 border border-slate-200/60 dark:border-slate-800/60 text-slate-600 dark:text-amber-400 hover:bg-white dark:hover:bg-slate-800 hover:border-blue-500/30 transition-all items-center justify-center cursor-pointer active:scale-95 shadow-xs shrink-0"
               title={theme === "light" ? "Bật chế độ tối" : "Bật chế độ sáng"}
+              aria-label={theme === "light" ? "Chuyển sang chế độ tối" : "Chuyển sang chế độ sáng"}
             >
               {theme === "light" ? <FiMoon size={19} /> : <FiSun size={19} />}
             </button>
@@ -228,6 +221,7 @@ function Header() {
               to="/wishlist"
               className="hidden sm:flex size-11 min-h-[44px] min-w-[44px] rounded-2xl bg-slate-100/80 dark:bg-slate-900/80 border border-slate-200/60 dark:border-slate-800/60 text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-800 hover:text-rose-500 dark:hover:text-rose-400 hover:border-rose-500/30 transition-all items-center justify-center active:scale-95 shadow-xs group shrink-0"
               title="Danh sách yêu thích"
+              aria-label="Xem danh sách sản phẩm yêu thích"
             >
               <FiHeart className="text-[19px] group-hover:scale-110 transition-transform" />
             </Link>
@@ -237,6 +231,7 @@ function Header() {
               to="/cart"
               className="relative size-10 sm:size-11 min-h-[40px] min-w-[40px] rounded-2xl bg-slate-100/80 dark:bg-slate-900/80 border border-slate-200/60 dark:border-slate-800/60 text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-500/30 transition-all flex items-center justify-center active:scale-95 shadow-xs group shrink-0"
               title="Giỏ hàng"
+              aria-label={`Xem giỏ hàng, hiện có ${cartItemCount} sản phẩm`}
             >
               <FiShoppingCart className="text-base sm:text-[19px] group-hover:scale-110 transition-transform" />
               {cartItemCount > 0 && (
@@ -250,7 +245,11 @@ function Header() {
             {user ? (
               <div className="relative">
                 <button
+                  type="button"
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                  aria-label="Menu tài khoản cá nhân"
+                  aria-expanded={isUserMenuOpen}
+                  aria-haspopup="true"
                   className="flex items-center gap-1.5 p-1 pr-2 rounded-2xl bg-slate-100/80 dark:bg-slate-900/80 border border-slate-200/60 dark:border-slate-800/60 hover:bg-white dark:hover:bg-slate-800 hover:border-blue-500/30 transition-all cursor-pointer active:scale-95 shadow-xs shrink-0"
                 >
                   <div className="relative size-8 rounded-xl overflow-hidden ring-2 ring-blue-500/20">
@@ -351,7 +350,10 @@ function Header() {
 
             {/* Mobile Menu Toggle */}
             <button
+              type="button"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              aria-label="Menu điều hướng chính"
+              aria-expanded={isMobileMenuOpen}
               className="lg:hidden size-10 sm:size-11 min-h-[40px] min-w-[40px] rounded-2xl bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors flex items-center justify-center cursor-pointer active:scale-95 shrink-0"
               title="Menu"
             >
@@ -381,6 +383,7 @@ function Header() {
                     setIsMobileMenuOpen(false);
                     setIsOmniSearchOpen(true);
                   }}
+                  aria-label="Mở tìm kiếm nhanh thông minh"
                   className="w-full min-h-[44px] flex items-center justify-between bg-slate-100 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl px-4 text-xs font-bold text-slate-500 dark:text-slate-400 cursor-pointer active:scale-98 transition-all"
                 >
                   <div className="flex items-center gap-3">
@@ -395,7 +398,9 @@ function Header() {
                 {/* Quick Tools Row (Theme Toggle, Wishlist, Visual Vision Search) */}
                 <div className="grid grid-cols-3 gap-2 p-2 bg-slate-50 dark:bg-slate-900/60 rounded-2xl border border-slate-100 dark:border-slate-800">
                   <button
+                    type="button"
                     onClick={toggleTheme}
+                    aria-label={theme === "light" ? "Chuyển sang giao diện tối" : "Chuyển sang giao diện sáng"}
                     className="flex flex-col items-center justify-center p-2.5 rounded-xl bg-white dark:bg-slate-800 text-slate-700 dark:text-amber-400 border border-slate-200/60 dark:border-slate-700/60 active:scale-95 transition-all cursor-pointer"
                   >
                     {theme === "light" ? <FiMoon size={18} /> : <FiSun size={18} />}
@@ -407,6 +412,7 @@ function Header() {
                   <Link
                     to="/wishlist"
                     onClick={() => setIsMobileMenuOpen(false)}
+                    aria-label="Xem danh sách yêu thích"
                     className="flex flex-col items-center justify-center p-2.5 rounded-xl bg-white dark:bg-slate-800 text-rose-500 border border-slate-200/60 dark:border-slate-700/60 active:scale-95 transition-all cursor-pointer"
                   >
                     <FiHeart size={18} />
@@ -414,10 +420,12 @@ function Header() {
                   </Link>
 
                   <button
+                    type="button"
                     onClick={() => {
                       setIsMobileMenuOpen(false);
                       setIsVisualSearchOpen(true);
                     }}
+                    aria-label="Tìm kiếm bằng ảnh chụp với AI Vision"
                     className="flex flex-col items-center justify-center p-2.5 rounded-xl bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 border border-slate-200/60 dark:border-slate-700/60 active:scale-95 transition-all cursor-pointer"
                   >
                     <FiCamera size={18} />

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { motion as Motion, AnimatePresence } from "framer-motion";
 import { FiX, FiAlertTriangle, FiCheckCircle, FiInfo, FiTrash2 } from "react-icons/fi";
 import { Button } from "./Button";
@@ -19,7 +19,22 @@ const Modal = ({
   loading = false,
   loadingMessage = "Đang xử lý...",
 }) => {
-  const isModalOpen = isOpen || show;
+  const isModalOpen = Boolean(isOpen || show);
+  const modalRef = useRef(null);
+
+  // Keyboard accessibility: Close on Escape key
+  useEffect(() => {
+    if (!isModalOpen) return;
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        if (onClose) onClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isModalOpen, onClose]);
+
   const sizes = {
     xs: "max-w-xs",
     sm: "max-w-sm",
@@ -34,7 +49,12 @@ const Modal = ({
   return (
     <AnimatePresence>
       {isModalOpen && (
-        <div className="fixed inset-0 z-[1000] flex items-end sm:items-center justify-center p-0 sm:p-4">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby={title ? "modal-title" : undefined}
+          className="fixed inset-0 z-[1000] flex items-end sm:items-center justify-center p-0 sm:p-4"
+        >
           {/* Overlay */}
           <Motion.div
             initial={{ opacity: 0 }}
@@ -42,10 +62,12 @@ const Modal = ({
             exit={{ opacity: 0 }}
             onClick={closeOnOverlayClick ? onClose : undefined}
             className="absolute inset-0 bg-slate-950/60 backdrop-blur-md transition-opacity"
+            aria-hidden="true"
           />
 
           {/* Modal Window Container */}
           <Motion.div
+            ref={modalRef}
             initial={{ opacity: 0, y: 30, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 30, scale: 0.96 }}
@@ -53,7 +75,7 @@ const Modal = ({
             className={`relative w-full ${sizes[size]} max-h-[92vh] sm:max-h-[85vh] bg-white/98 dark:bg-slate-900/98 backdrop-blur-2xl rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col border border-slate-200/80 dark:border-slate-800 transition-colors duration-300 ${className}`}
           >
             {/* Mobile Drag Indicator Pill */}
-            <div className="flex justify-center pt-2.5 pb-1 sm:hidden bg-slate-50/80 dark:bg-slate-950/60">
+            <div className="flex justify-center pt-2.5 pb-1 sm:hidden bg-slate-50/80 dark:bg-slate-950/60" aria-hidden="true">
               <div className="w-10 h-1 rounded-full bg-slate-300 dark:bg-slate-700" />
             </div>
 
@@ -78,7 +100,7 @@ const Modal = ({
             {(title || showClose) && (
               <div className="flex items-center justify-between p-5 sm:p-6 pb-3.5 border-b border-slate-100 dark:border-slate-800/80">
                 <div>
-                  <h3 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">
+                  <h3 id="modal-title" className="text-lg sm:text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">
                     {title}
                   </h3>
                   {subtitle && (
@@ -91,6 +113,7 @@ const Modal = ({
                   <button
                     type="button"
                     onClick={onClose}
+                    aria-label="Đóng hộp thoại"
                     className="size-8 sm:size-9 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl flex items-center justify-center text-slate-400 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all cursor-pointer"
                   >
                     <FiX size={18} />

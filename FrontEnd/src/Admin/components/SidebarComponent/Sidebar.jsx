@@ -180,7 +180,9 @@ const Sidebar = ({ collapsed, mobileOpen, onCloseMobile }) => {
           </Link>
           {mobileOpen && (
             <button
+              type="button"
               onClick={onCloseMobile}
+              aria-label="Đóng thanh điều hướng quản trị"
               className="md:hidden size-9 rounded-xl bg-slate-100 dark:bg-dark-bg text-slate-500 dark:text-dark-text-secondary flex items-center justify-center hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
             >
               <FiX className="text-lg" />
@@ -216,7 +218,10 @@ const Sidebar = ({ collapsed, mobileOpen, onCloseMobile }) => {
                   return (
                     <div key={item.label} className="space-y-1 relative group">
                       <button
+                        type="button"
                         onClick={() => toggleMenu(item.label)}
+                        aria-label={`Mục menu ${item.label}`}
+                        aria-expanded={isExpanded}
                         className={`w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-2xl transition-all duration-200 cursor-pointer ${
                           isSubActive
                             ? "text-primary dark:text-primary-light bg-primary/10 dark:bg-primary/20 font-bold"
@@ -374,8 +379,10 @@ const Sidebar = ({ collapsed, mobileOpen, onCloseMobile }) => {
           )}
 
           <button
+            type="button"
             onClick={handleLogout}
             disabled={loggingOut}
+            aria-label="Đăng xuất khỏi trang quản trị"
             className={`flex items-center gap-3 px-3 py-2.5 w-full rounded-2xl text-rose-600 dark:text-rose-400 bg-rose-50/60 dark:bg-rose-950/20 hover:bg-rose-500 hover:text-white dark:hover:bg-rose-600 transition-all duration-200 group disabled:opacity-60 cursor-pointer text-xs font-bold border border-rose-100 dark:border-rose-900/30 ${
               collapsed && !mobileOpen ? "justify-center" : ""
             }`}

@@ -34,7 +34,7 @@ const OrderItemsList = ({ order, onOpenReturnModal, onCancelReturn }) => {
               <div className="size-20 sm:size-24 rounded-2xl bg-white dark:bg-dark-bg border border-slate-100 dark:border-dark-border p-2 flex-shrink-0 group-hover:scale-105 transition-transform">
                 <img
                   src={item.image}
-                  alt=""
+                  alt={item.productName || "Sản phẩm"}
                   className="w-full h-full object-contain dark:mix-blend-normal"
                 />
               </div>

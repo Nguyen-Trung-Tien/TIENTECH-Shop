@@ -104,6 +104,16 @@ const CheckoutForm = ({ formData, setFormData, user }) => {
     }
   }, [user, setFormData]);
 
+  // Escape key handler for address modal
+  useEffect(() => {
+    if (!showAddAddressModal) return;
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") setShowAddAddressModal(false);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [showAddAddressModal]);
+
   const fetchAddresses = React.useCallback(async () => {
     try {
       const res = await getAddressesApi();
@@ -454,18 +464,23 @@ const CheckoutForm = ({ formData, setFormData, user }) => {
             />
 
             <Motion.div
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="add-address-title"
               initial={{ scale: 0.95, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 20 }}
               className="relative w-full max-w-lg bg-white dark:bg-dark-surface rounded-[32px] p-6 md:p-8 shadow-2xl z-10 border border-slate-100 dark:border-dark-border"
             >
               <div className="flex items-center justify-between mb-6 border-b pb-4 border-slate-100 dark:border-dark-border">
-                <h3 className="text-base font-black text-slate-900 dark:text-white uppercase tracking-tight">
+                <h3 id="add-address-title" className="text-base font-black text-slate-900 dark:text-white uppercase tracking-tight">
                   Thêm Địa Chỉ Giao Hàng Mới
                 </h3>
                 <button
+                  type="button"
                   onClick={() => setShowAddAddressModal(false)}
-                  className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-xl transition-colors"
+                  aria-label="Đóng modal thêm địa chỉ"
+                  className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-xl transition-colors cursor-pointer"
                 >
                   <FiX size={20} />
                 </button>
