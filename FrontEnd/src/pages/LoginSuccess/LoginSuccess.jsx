@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { toast } from "react-toastify";
 import { getMeApi } from "../../api/userApi";
@@ -9,6 +9,8 @@ import Loading from "../../components/Loading/Loading";
 const LoginSuccess = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const [searchParams] = useSearchParams();
+  const target = searchParams.get("target");
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -28,21 +30,33 @@ const LoginSuccess = () => {
             rank: user.rank,
           };
           dispatch(setUser({ user: minimalUser }));
+
+          if (target === "admin" || user.role === "admin") {
+            if (user.role !== "admin") {
+              toast.error("Bạn không có quyền truy cập trang quản trị!");
+              navigate("/admin/login");
+              return;
+            }
+            toast.success("Đăng nhập Quản trị viên thành công!");
+            navigate("/admin/dashboard");
+            return;
+          }
+
           toast.success("Đăng nhập Google thành công!");
           navigate("/");
         } else {
           toast.error("Không thể lấy thông tin người dùng!");
-          navigate("/login");
+          navigate(target === "admin" ? "/admin/login" : "/login");
         }
       } catch (error) {
         console.error("Login success fetch error:", error);
         toast.error("Đã có lỗi xảy ra khi đăng nhập!");
-        navigate("/login");
+        navigate(target === "admin" ? "/admin/login" : "/login");
       }
     };
 
     fetchUserData();
-  }, [dispatch, navigate]);
+  }, [dispatch, navigate, target]);
 
   return (
     <div className="min-h-screen flex items-center justify-center">

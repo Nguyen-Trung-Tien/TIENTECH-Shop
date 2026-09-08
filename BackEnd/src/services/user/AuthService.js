@@ -272,6 +272,58 @@ class AuthService {
       return { errCode: -1, errMessage: error.message };
     }
   }
+
+  async processGoogleAuth(user, isAdmin = false) {
+    try {
+      if (!user) {
+        return { errCode: 1, errorType: "auth_failed", errMessage: "Xác thực Google thất bại!" };
+      }
+
+      if (!user.isActive) {
+        return { errCode: 2, errorType: "account_locked", errMessage: "Tài khoản của bạn đã bị khóa!" };
+      }
+
+      if (isAdmin && user.role !== "admin") {
+        return { errCode: 3, errorType: "not_admin", errMessage: "Tài khoản không có quyền quản trị viên!" };
+      }
+
+      const payload = { id: user.id, email: user.email, role: user.role };
+      const accessToken = generateAccessToken(payload);
+      const refreshToken = generateRefreshToken(payload);
+
+      const refreshTokenHash = hashToken(refreshToken);
+      const refreshTokenExpiresAt = getTokenExpiryDate(refreshToken);
+
+      if (typeof user.update === "function") {
+        await user.update({
+          refreshTokenHash,
+          refreshTokenExpiresAt,
+        });
+      }
+
+      const userData = typeof user.toJSON === "function" ? user.toJSON() : { ...user };
+      delete userData.password;
+
+      await setCache(getUserProfileKey(user.id), userData, 900);
+      await setCache(
+        getRefreshTokenKey(user.id),
+        { hash: refreshTokenHash, expiresAt: refreshTokenExpiresAt, email: user.email, role: user.role },
+        7 * 24 * 3600
+      );
+
+      return {
+        errCode: 0,
+        errMessage: "Đăng nhập Google thành công!",
+        data: {
+          accessToken,
+          refreshToken,
+          user: userData,
+        },
+      };
+    } catch (error) {
+      return { errCode: -1, errorType: "server_error", errMessage: error.message };
+    }
+  }
 }
 
 module.exports = new AuthService();

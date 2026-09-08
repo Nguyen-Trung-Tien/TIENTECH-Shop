@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   FiEye,
   FiEyeOff,
@@ -8,7 +8,8 @@ import {
   FiShield,
   FiCheckCircle,
 } from "react-icons/fi";
-import { useNavigate } from "react-router-dom";
+import { FcGoogle } from "react-icons/fc";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { showErrorToast, showSuccessToast } from "../../../utils/toastHelper";
 import { loginUser } from "../../../api/userApi";
@@ -16,6 +17,7 @@ import { setUser } from "../../../redux/userSlice";
 import Logo from "../../../components/UI/Logo";
 import ForgotPasswordModal from "../../../components/ForgotPasswordModal/ForgotPasswordModal";
 import UnifiedSpinner from "../../../components/Loading/UnifiedSpinner";
+import { appConfig } from "../../../config/runtimeConfig";
 
 const AdminLogin = () => {
   const [rememberMe, setRememberMe] = useState(() => {
@@ -29,13 +31,31 @@ const AdminLogin = () => {
   const [loading, setLoading] = useState(false);
   const [showForgotModal, setShowForgotModal] = useState(false);
 
-  // Security: Proactively purge legacy stored plaintext passwords
-  React.useEffect(() => {
-    localStorage.removeItem("tientech_admin_remember_password");
-  }, []);
-
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const [searchParams] = useSearchParams();
+
+  // Handle errors redirected from Google OAuth callback
+  useEffect(() => {
+    const error = searchParams.get("error");
+    if (error) {
+      if (error === "not_admin") {
+        showErrorToast("Tài khoản Google này không có quyền quản trị viên!");
+      } else if (error === "account_locked") {
+        showErrorToast("Tài khoản của bạn đã bị khóa!");
+      } else if (error === "auth_failed") {
+        showErrorToast("Đăng nhập Google thất bại!");
+      } else if (error === "server_error") {
+        showErrorToast("Đã xảy ra lỗi máy chủ khi đăng nhập Google!");
+      }
+      navigate("/admin/login", { replace: true });
+    }
+  }, [searchParams, navigate]);
+
+  // Security: Proactively purge legacy stored plaintext passwords
+  useEffect(() => {
+    localStorage.removeItem("tientech_admin_remember_password");
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -215,6 +235,29 @@ const AdminLogin = () => {
                     "TRUY CẬP DASHBOARD"
                   )}
                 </button>
+
+                <div className="relative my-4">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-slate-200 dark:border-slate-800"></div>
+                  </div>
+                  <div className="relative flex justify-center text-[10px]">
+                    <span className="px-3 bg-white dark:bg-slate-900 text-slate-400 font-extrabold uppercase tracking-wider">
+                      Hoặc tiếp tục với
+                    </span>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    window.location.href = `${appConfig.apiUrl}/user/auth/google?from=admin`;
+                  }}
+                  className="w-full h-12 bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white font-bold rounded-2xl flex items-center justify-center gap-2 text-xs transition-all hover:bg-slate-50 dark:hover:bg-slate-800 active:scale-[0.98] cursor-pointer"
+                >
+                  <FcGoogle size={18} />
+                  <span>Đăng nhập với Google</span>
+                </button>
+
                 <button
                   type="button"
                   onClick={() => navigate("/")}

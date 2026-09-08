@@ -239,25 +239,30 @@ const handleResendVerification = async (req, res) => {
 };
 
 const handleGoogleAuthCallback = async (req, res) => {
+  const state = req.query.state;
+  const isAdmin = state === "admin" || (typeof state === "string" && state.includes("admin"));
+  const failureBase = isAdmin
+    ? `${process.env.FRONTEND_URL}/admin/login`
+    : `${process.env.FRONTEND_URL}/login`;
+
   try {
-    const user = req.user;
-    if (!user) return res.redirect(`${process.env.FRONTEND_URL}/login?error=auth_failed`);
+    const result = await AuthService.processGoogleAuth(req.user, isAdmin);
+    if (result.errCode !== 0) {
+      const errorParam = result.errorType || "auth_failed";
+      return res.redirect(`${failureBase}?error=${errorParam}`);
+    }
 
-    const payload = { id: user.id, email: user.email, role: user.role };
-    const accessToken = generateAccessToken(payload);
-    const refreshToken = generateRefreshToken(payload);
-
-    const decoded = require("jsonwebtoken").decode(refreshToken);
-    await user.update({
-      refreshTokenHash: hashToken(refreshToken),
-      refreshTokenExpiresAt: decoded?.exp ? new Date(decoded.exp * 1000) : null,
-    });
-
+    const { accessToken, refreshToken } = result.data;
     setAuthCookies(res, accessToken, refreshToken);
-    return res.redirect(`${process.env.FRONTEND_URL}/login-success`);
+
+    const redirectTarget = isAdmin
+      ? `${process.env.FRONTEND_URL}/login-success?target=admin`
+      : `${process.env.FRONTEND_URL}/login-success`;
+
+    return res.redirect(redirectTarget);
   } catch (error) {
-    console.error("Google Auth error:", error);
-    return res.redirect(`${process.env.FRONTEND_URL}/login?error=server_error`);
+    console.error("Google Auth callback error:", error);
+    return res.redirect(`${failureBase}?error=server_error`);
   }
 };
 

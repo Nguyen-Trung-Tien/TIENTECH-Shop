@@ -13,14 +13,26 @@ const { loginSchema, registerSchema } = require("../utils/zodSchemas");
 const { loginAuthLimiter, sensitiveActionLimiter, otpVerificationLimiter } = require("../middleware/rateLimiter");
 
 router.post("/login", loginAuthLimiter, validate(loginSchema), UserController.handleLogin);
-router.get(
-  "/auth/google",
-  passport.authenticate("google", { scope: ["profile", "email"], session: false })
-);
+router.get("/auth/google", (req, res, next) => {
+  const state = req.query.from || req.query.state || "";
+  passport.authenticate("google", {
+    scope: ["profile", "email"],
+    session: false,
+    state: state ? String(state) : undefined,
+  })(req, res, next);
+});
 
 router.get(
   "/auth/google/callback",
-  passport.authenticate("google", { failureRedirect: `${process.env.FRONTEND_URL}/login?error=auth_failed`, session: false }),
+  (req, res, next) => {
+    const state = req.query.state;
+    const isAdmin = state === "admin" || (typeof state === "string" && state.includes("admin"));
+    const failureRedirect = isAdmin
+      ? `${process.env.FRONTEND_URL}/admin/login?error=auth_failed`
+      : `${process.env.FRONTEND_URL}/login?error=auth_failed`;
+
+    passport.authenticate("google", { failureRedirect, session: false })(req, res, next);
+  },
   UserController.handleGoogleAuthCallback
 );
 
