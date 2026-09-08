@@ -23,7 +23,7 @@ const getPagingData = (data, page, limit) => {
   const currentPage = page ? parseInt(page) : 1;
   const totalPages = Math.ceil(totalItems / limit);
 
-  return { totalItems, items, totalPages, currentPage };
+  return { totalItems, items, rows: items, totalPages, currentPage };
 };
 
 module.exports = {

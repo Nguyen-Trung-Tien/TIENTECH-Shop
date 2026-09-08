@@ -253,7 +253,7 @@ const OrderManage = () => {
         );
         if (res?.errCode === 0) {
           setOrders(res.data || []);
-          setPage(res.pagination?.page || currentPage);
+          setPage(res.pagination?.currentPage || res.pagination?.page || currentPage);
           setTotalPages(res.pagination?.totalPages || 1);
         } else {
           setOrders([]);

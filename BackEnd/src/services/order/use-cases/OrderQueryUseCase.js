@@ -2,27 +2,47 @@ const db = require("../../../models");
 const { getPagination, getPagingData } = require("../../../utils/paginationHelper");
 const { Op } = require("sequelize");
 
-const getAllOrders = async ({
-  page = 1,
-  limit = 10,
-  search = "",
-  status = "",
-  paymentStatus = "",
-  paymentMethod = "",
-  startDate = "",
-  endDate = "",
-  hasReturn = false,
-  hasCancel = false,
-}) => {
+const getAllOrders = async (params = {}, ...legacyArgs) => {
   try {
+    let opts = {};
+    if (typeof params === "object" && params !== null && !Array.isArray(params)) {
+      opts = params;
+    } else {
+      opts = {
+        page: params,
+        limit: legacyArgs[0],
+        search: legacyArgs[1],
+        status: legacyArgs[2],
+        hasReturn: legacyArgs[3],
+        hasCancel: legacyArgs[4],
+      };
+    }
+
+    const {
+      page = 1,
+      limit = 10,
+      search = "",
+      searchTerm = "",
+      status = "",
+      paymentStatus = "",
+      paymentMethod = "",
+      startDate = "",
+      endDate = "",
+      hasReturn = false,
+      isReturn = false,
+      hasCancel = false,
+      isCancelRequested = false,
+    } = opts;
+
     const { limit: l, offset } = getPagination(page, limit);
     const where = {};
 
-    if (search) {
+    const querySearch = (search || searchTerm || "").trim();
+    if (querySearch) {
       where[Op.or] = [
-        { orderCode: { [Op.like]: `%${search}%` } },
-        { receiverName: { [Op.like]: `%${search}%` } },
-        { receiverPhone: { [Op.like]: `%${search}%` } },
+        { orderCode: { [Op.like]: `%${querySearch}%` } },
+        { receiverName: { [Op.like]: `%${querySearch}%` } },
+        { receiverPhone: { [Op.like]: `%${querySearch}%` } },
       ];
     }
 
@@ -49,11 +69,13 @@ const getAllOrders = async ({
     }
 
     const orderItemWhere = {};
-    if (hasReturn) {
+    const queryHasReturn = Boolean(hasReturn || isReturn);
+    if (queryHasReturn) {
       orderItemWhere.returnStatus = { [Op.ne]: "none" };
     }
 
-    if (hasCancel) {
+    const queryHasCancel = Boolean(hasCancel || isCancelRequested);
+    if (queryHasCancel) {
       where.status = { [Op.in]: ["cancel_requested", "cancelled"] };
     }
 
@@ -94,7 +116,7 @@ const getAllOrders = async ({
     return {
       errCode: 0,
       errMessage: "Get all orders successfully",
-      data: pagingData.rows,
+      data: pagingData.items || pagingData.rows || [],
       pagination: {
         totalItems: pagingData.totalItems,
         totalPages: pagingData.totalPages,
@@ -185,7 +207,7 @@ const getOrdersByUserId = async (userId, page = 1, limit = 10, status = "all") =
     return {
       errCode: 0,
       errMessage: "Get orders by userId successfully",
-      data: pagingData.rows,
+      data: pagingData.items || pagingData.rows || [],
       pagination: {
         totalItems: pagingData.totalItems,
         totalPages: pagingData.totalPages,
@@ -232,7 +254,7 @@ const getActiveOrdersByUserId = async (userId, page = 1, limit = 10) => {
     return {
       errCode: 0,
       errMessage: "Get active orders successfully",
-      data: pagingData.rows,
+      data: pagingData.items || pagingData.rows || [],
       pagination: {
         totalItems: pagingData.totalItems,
         totalPages: pagingData.totalPages,

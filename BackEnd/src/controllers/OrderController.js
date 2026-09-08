@@ -11,7 +11,15 @@ const handleGetAllOrders = async (req, res) => {
     const isReturn = req.query.isReturn === "true";
     const isCancelRequested = req.query.isCancelRequested === "true";
 
-    const result = await OrderService.getAllOrders(page, limit, searchTerm, status, isReturn, isCancelRequested);
+    const result = await OrderService.getAllOrders({
+      page,
+      limit,
+      search: searchTerm,
+      searchTerm,
+      status,
+      hasReturn: isReturn,
+      hasCancel: isCancelRequested,
+    });
     return handleResponse(res, result, 200);
   } catch (e) {
     return handleError(res, e, "handleGetAllOrders");
