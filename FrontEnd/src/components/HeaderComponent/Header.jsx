@@ -163,12 +163,12 @@ function Header() {
               <input
                 type="text"
                 readOnly
-                placeholder="Tìm sản phẩm, thông số phần cứng, mã linh kiện..."
-                className="w-full h-10 bg-white dark:bg-[#0f1523] border border-slate-200 dark:border-[#1e2638] rounded-xl pl-10 pr-24 text-xs font-bold cursor-pointer group-hover:border-blue-500/60 dark:group-hover:border-blue-500/60 outline-none transition-all duration-200 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 shadow-xs"
+                placeholder="Tìm sản phẩm, thương hiệu, linh kiện..."
+                className="w-full h-10 bg-slate-100/70 dark:bg-[#0f1523] border border-slate-200/80 dark:border-[#1e2638] rounded-2xl pl-10 pr-24 text-xs font-medium cursor-pointer group-hover:border-blue-500/50 group-hover:bg-white dark:group-hover:bg-[#131926] outline-none transition-all duration-200 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 shadow-2xs"
               />
 
               <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
-                <span className="px-2 py-0.5 bg-slate-100 dark:bg-[#131926] text-slate-500 dark:text-slate-400 text-[10px] font-black rounded-md uppercase tracking-wider border border-slate-200 dark:border-[#1e2638] hidden sm:inline-flex">
+                <span className="px-1.5 py-0.5 bg-white dark:bg-[#131926] text-slate-500 dark:text-slate-400 text-[10px] font-semibold rounded-md border border-slate-200 dark:border-[#1e2638] hidden sm:inline-flex shadow-2xs">
                   Ctrl K
                 </span>
                 <button
@@ -177,7 +177,7 @@ function Header() {
                     e.stopPropagation();
                     setIsVisualSearchOpen(true);
                   }}
-                  className="p-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow-xs transition-all active:scale-95 cursor-pointer flex items-center justify-center"
+                  className="p-1.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-600 hover:text-white rounded-xl shadow-2xs transition-all active:scale-95 cursor-pointer flex items-center justify-center"
                   title="Tìm kiếm bằng ảnh AI Vision"
                   aria-label="Tìm kiếm bằng ảnh AI Vision"
                 >

@@ -225,80 +225,85 @@ export default function OmniSearchModal({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: -20 }}
             transition={{ duration: 0.25, ease: "easeOut" }}
-            className="relative w-full max-w-3xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl rounded-[2.5rem] shadow-2xl overflow-hidden z-10 border border-slate-200/80 dark:border-slate-800"
+            className="relative w-full max-w-3xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl rounded-3xl shadow-2xl overflow-hidden z-10 border border-slate-200/80 dark:border-slate-800"
           >
             {/* Top Search Bar Input Area */}
-            <form
-              onSubmit={handleFormSubmit}
-              className="relative flex items-center px-5 py-4 border-b border-slate-100 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80"
-            >
-              <FiSearch className="w-5 h-5 text-blue-600 dark:text-blue-400 shrink-0 ml-1" />
+            <div className="p-3.5 sm:p-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
+              <form
+                onSubmit={handleFormSubmit}
+                className="relative flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl bg-white dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/80 shadow-[0_2px_10px_rgba(15,23,42,0.03)] focus-within:border-blue-500 focus-within:ring-3 focus-within:ring-blue-500/15 transition-all duration-200"
+              >
+                <div className="flex items-center justify-center size-8 rounded-xl bg-blue-50 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 shrink-0">
+                  <FiSearch className="w-4 h-4" />
+                </div>
 
-              <input
-                ref={inputRef}
-                type="text"
-                value={query}
-                onChange={handleInputChange}
-                placeholder="Tìm sản phẩm, thương hiệu, danh mục... (Nhấn Enter để tìm)"
-                className="w-full pl-3 pr-28 py-1.5 text-sm md:text-base font-bold bg-transparent text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none"
-              />
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={query}
+                  onChange={handleInputChange}
+                  placeholder="Tìm kiếm sản phẩm, thương hiệu, linh kiện..."
+                  className="w-full py-1 text-sm sm:text-base font-medium bg-transparent text-slate-900 dark:text-white placeholder:text-slate-400 border-none outline-none focus:outline-none focus:ring-0 ring-0 focus-visible:outline-none shadow-none"
+                  style={{ outline: "none", boxShadow: "none" }}
+                />
 
-              {/* Action Tools: Clear, Voice Search, Camera */}
-              <div className="flex items-center gap-2 shrink-0 pr-1">
-                {query && (
+                {/* Action Tools: Clear, Voice Search, Camera */}
+                <div className="flex items-center gap-1 shrink-0">
+                  {query && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setQuery("");
+                        setSuggestions({ products: [], keywords: [], brands: [], categories: [] });
+                      }}
+                      className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700/60 transition cursor-pointer"
+                      title="Xóa từ khóa"
+                    >
+                      <FiX className="w-4 h-4" />
+                    </button>
+                  )}
+
+                  {/* Voice Search Button */}
+                  <button
+                    type="button"
+                    onClick={toggleVoiceSearch}
+                    className={`p-2 rounded-xl transition cursor-pointer ${
+                      isListening
+                        ? "bg-rose-500 text-white animate-pulse shadow-xs"
+                        : "text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-slate-700/60 dark:text-slate-400"
+                    }`}
+                    title={isListening ? "Đang nghe..." : "Tìm kiếm bằng giọng nói"}
+                  >
+                    {isListening ? (
+                      <FiMicOff className="w-4 h-4" />
+                    ) : (
+                      <FiMic className="w-4 h-4" />
+                    )}
+                  </button>
+
+                  {/* Visual Search Button */}
                   <button
                     type="button"
                     onClick={() => {
-                      setQuery("");
-                      setSuggestions({ products: [], keywords: [], brands: [], categories: [] });
+                      onClose();
+                      if (onOpenVisualSearch) onOpenVisualSearch();
                     }}
-                    className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-white rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
-                    title="Xóa từ khóa"
+                    className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-slate-700/60 dark:text-slate-400 rounded-xl transition cursor-pointer"
+                    title="Tìm kiếm bằng hình ảnh Camera AI"
                   >
-                    <FiX className="w-4 h-4" />
+                    <FiCamera className="w-4 h-4" />
                   </button>
-                )}
-
-                {/* Voice Search Button */}
-                <button
-                  type="button"
-                  onClick={toggleVoiceSearch}
-                  className={`p-2 rounded-xl transition cursor-pointer ${
-                    isListening
-                      ? "bg-rose-500 text-white animate-pulse"
-                      : "text-slate-500 hover:text-blue-600 hover:bg-slate-100 dark:hover:bg-slate-800 dark:text-slate-400"
-                  }`}
-                  title={isListening ? "Đang nghe..." : "Tìm kiếm bằng giọng nói"}
-                >
-                  {isListening ? (
-                    <FiMicOff className="w-4 h-4" />
-                  ) : (
-                    <FiMic className="w-4 h-4" />
-                  )}
-                </button>
-
-                {/* Visual Search Button */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    onClose();
-                    if (onOpenVisualSearch) onOpenVisualSearch();
-                  }}
-                  className="p-2 text-slate-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-slate-800 dark:text-slate-400 rounded-xl transition cursor-pointer"
-                  title="Tìm kiếm bằng hình ảnh Camera AI"
-                >
-                  <FiCamera className="w-4 h-4" />
-                </button>
-              </div>
-            </form>
+                </div>
+              </form>
+            </div>
 
             {/* Body Content Area */}
-            <div className="max-h-[60vh] md:max-h-[65vh] overflow-y-auto p-5 space-y-6 custom-scrollbar">
+            <div className="max-h-[60vh] md:max-h-[65vh] overflow-y-auto p-4 sm:p-5 space-y-5 custom-scrollbar">
               {/* Loading Indicator */}
               {loading && (
-                <div className="flex items-center justify-center py-10 text-xs font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 gap-3">
+                <div className="flex items-center justify-center py-10 text-xs font-medium text-slate-500 dark:text-slate-400 gap-3">
                   <UnifiedSpinner size="sm" variant="primary" />
-                  <span>Đang truy vấn kho dữ liệu...</span>
+                  <span>Đang tìm kiếm sản phẩm phù hợp...</span>
                 </div>
               )}
 
@@ -308,8 +313,8 @@ export default function OmniSearchModal({
                   {/* Direct Product Match */}
                   {suggestions.products.length > 0 && (
                     <div>
-                      <div className="flex items-center justify-between text-[11px] font-black text-slate-400 uppercase tracking-widest mb-3 px-1">
-                        <span>Sản Phẩm Gợi Ý ({suggestions.products.length})</span>
+                      <div className="flex items-center justify-between text-xs font-semibold text-slate-500 dark:text-slate-400 mb-3 px-1">
+                        <span>Sản phẩm gợi ý ({suggestions.products.length})</span>
                       </div>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         {suggestions.products.map((item) => (
@@ -320,9 +325,9 @@ export default function OmniSearchModal({
                               onClose();
                               navigate(`/product-detail/${item.slug || item.id}`);
                             }}
-                            className="flex items-center gap-3.5 p-3 rounded-2xl bg-slate-50/80 dark:bg-slate-800/40 hover:bg-blue-50/80 dark:hover:bg-slate-800/90 border border-slate-100 dark:border-slate-800 hover:border-blue-200 dark:hover:border-blue-900/50 cursor-pointer transition-all duration-300 group shadow-xs"
+                            className="flex items-center gap-3.5 p-3 rounded-2xl bg-slate-50/80 dark:bg-slate-800/40 hover:bg-white dark:hover:bg-slate-800 border border-slate-100 dark:border-slate-800 hover:border-blue-200 dark:hover:border-blue-800/60 cursor-pointer transition-all duration-200 group shadow-2xs hover:shadow-sm"
                           >
-                            <div className="size-14 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-700/50 p-1.5 shrink-0 group-hover:scale-105 transition-transform">
+                            <div className="size-13 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-700/50 p-1.5 shrink-0 group-hover:scale-105 transition-transform">
                               <img
                                 src={item.thumbnail || item.image || "/images/placeholder.png"}
                                 alt={item.name}
@@ -330,21 +335,21 @@ export default function OmniSearchModal({
                               />
                             </div>
                             <div className="flex-1 min-w-0">
-                              <h4 className="text-xs font-bold text-slate-900 dark:text-white truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                              <h4 className="text-xs font-semibold text-slate-900 dark:text-white truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                                 {item.name}
                               </h4>
                               <div className="flex items-center gap-2 mt-1">
-                                <span className="text-xs font-black text-blue-600 dark:text-blue-400">
+                                <span className="text-xs font-bold text-blue-600 dark:text-blue-400">
                                   {item.price ? `${Number(item.price).toLocaleString("vi-VN")}đ` : "Liên hệ"}
                                 </span>
                                 {item.isFlashSale && (
-                                  <span className="px-1.5 py-0.5 bg-rose-500 text-white text-[9px] font-black rounded uppercase">
-                                    FLASH SALE
+                                  <span className="px-1.5 py-0.5 bg-rose-500 text-white text-[9px] font-bold rounded-full">
+                                    Hot
                                   </span>
                                 )}
                               </div>
                             </div>
-                            <FiArrowRight className="w-4 h-4 text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0" />
+                            <FiArrowRight className="w-4 h-4 text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0 shrink-0" />
                           </div>
                         ))}
                       </div>
@@ -356,7 +361,7 @@ export default function OmniSearchModal({
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       {suggestions.categories.length > 0 && (
                         <div>
-                          <div className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2.5 px-1">
+                          <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2.5 px-1">
                             Danh mục liên quan
                           </div>
                           <div className="flex flex-wrap gap-2">
@@ -364,7 +369,7 @@ export default function OmniSearchModal({
                               <button
                                 key={cat.id}
                                 onClick={() => executeSearch(cat.name)}
-                                className="px-3.5 py-2 text-xs font-bold rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-blue-600 hover:text-white dark:hover:bg-blue-600 dark:hover:text-white transition-all cursor-pointer border border-slate-200/50 dark:border-slate-700/50"
+                                className="px-3 py-1.5 text-xs font-medium rounded-full bg-slate-100 hover:bg-slate-200/80 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition cursor-pointer border border-slate-200/60 dark:border-slate-700/60"
                               >
                                 {cat.name}
                               </button>
@@ -375,7 +380,7 @@ export default function OmniSearchModal({
 
                       {suggestions.brands.length > 0 && (
                         <div>
-                          <div className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2.5 px-1">
+                          <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2.5 px-1">
                             Thương hiệu
                           </div>
                           <div className="flex flex-wrap gap-2">
@@ -383,7 +388,7 @@ export default function OmniSearchModal({
                               <button
                                 key={brand.id}
                                 onClick={() => executeSearch(brand.name)}
-                                className="px-3.5 py-2 text-xs font-bold rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-blue-600 hover:text-white dark:hover:bg-blue-600 dark:hover:text-white transition-all cursor-pointer border border-slate-200/50 dark:border-slate-700/50"
+                                className="px-3 py-1.5 text-xs font-medium rounded-full bg-slate-100 hover:bg-slate-200/80 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition cursor-pointer border border-slate-200/60 dark:border-slate-700/60"
                               >
                                 {brand.name}
                               </button>
@@ -403,9 +408,9 @@ export default function OmniSearchModal({
                         <button
                           type="button"
                           onClick={() => executeSearch(query)}
-                          className="mt-4 inline-flex items-center gap-2 px-5 py-2.5 text-xs font-black uppercase tracking-wider text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-all shadow-md cursor-pointer"
+                          className="mt-4 inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition shadow-xs cursor-pointer"
                         >
-                          <span>Tìm tất cả sản phẩm với từ khóa này</span> <FiCornerDownLeft />
+                          <span>Tìm kiếm tất cả sản phẩm với từ khóa này</span> <FiCornerDownLeft />
                         </button>
                       </div>
                     )}
@@ -418,14 +423,14 @@ export default function OmniSearchModal({
                   {/* Recent Searches */}
                   {history.length > 0 && (
                     <div>
-                      <div className="flex items-center justify-between text-[11px] font-black text-slate-400 uppercase tracking-widest mb-3 px-1">
+                      <div className="flex items-center justify-between text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2.5 px-1">
                         <span className="flex items-center gap-1.5">
-                          <FiClock className="w-3.5 h-3.5" /> Lịch sử tìm kiếm
+                          <FiClock className="w-3.5 h-3.5 text-slate-400" /> Lịch sử tìm kiếm
                         </span>
                         <button
                           type="button"
                           onClick={clearHistory}
-                          className="text-slate-400 hover:text-rose-500 transition cursor-pointer"
+                          className="text-xs text-slate-400 hover:text-rose-500 transition cursor-pointer"
                         >
                           Xóa tất cả
                         </button>
@@ -437,7 +442,7 @@ export default function OmniSearchModal({
                             <button
                               key={index}
                               onClick={() => executeSearch(displayTerm)}
-                              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-xl bg-slate-100 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition cursor-pointer"
+                              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full bg-slate-100 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 hover:bg-slate-200/80 dark:hover:bg-slate-700 transition cursor-pointer border border-slate-200/50 dark:border-slate-700/50"
                             >
                               {displayTerm}
                             </button>
@@ -449,7 +454,7 @@ export default function OmniSearchModal({
 
                   {/* Trending Search Keywords */}
                   <div>
-                    <div className="flex items-center gap-1.5 text-[11px] font-black text-slate-400 uppercase tracking-widest mb-3 px-1">
+                    <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2.5 px-1">
                       <FiTrendingUp className="w-3.5 h-3.5 text-rose-500" />
                       <span>Xu hướng tìm kiếm</span>
                     </div>
@@ -458,10 +463,10 @@ export default function OmniSearchModal({
                         <button
                           key={index}
                           onClick={() => executeSearch(item)}
-                          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-xl bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 hover:bg-blue-600 hover:text-white transition cursor-pointer border border-blue-100 dark:border-blue-800/50"
+                          className="flex items-center gap-2 px-3.5 py-1.5 text-xs font-medium rounded-full bg-slate-100/90 hover:bg-blue-50 hover:text-blue-600 dark:bg-slate-800/80 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200/60 dark:border-slate-700/60 hover:border-blue-200 dark:hover:border-blue-800/60 transition-all duration-150 cursor-pointer shadow-2xs hover:scale-[1.02]"
                         >
-                          <FiZap className="w-3 h-3" />
-                          {item}
+                          <span className="size-1.5 rounded-full bg-blue-500"></span>
+                          <span>{item}</span>
                         </button>
                       ))}
                     </div>
@@ -469,11 +474,11 @@ export default function OmniSearchModal({
 
                   {/* Quick Category Nav */}
                   <div>
-                    <div className="flex items-center gap-1.5 text-[11px] font-black text-slate-400 uppercase tracking-widest mb-3 px-1">
+                    <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2.5 px-1">
                       <FiTag className="w-3.5 h-3.5 text-indigo-500" />
                       <span>Danh mục phổ biến</span>
                     </div>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                       {QUICK_CATEGORIES.map((cat, idx) => (
                         <button
                           key={idx}
@@ -481,10 +486,12 @@ export default function OmniSearchModal({
                             onClose();
                             navigate(cat.path);
                           }}
-                          className="flex items-center gap-2 p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/50 hover:bg-blue-50 dark:hover:bg-slate-800 transition text-left border border-slate-100 dark:border-slate-800/80 cursor-pointer group"
+                          className="flex items-center gap-2.5 p-2.5 rounded-2xl bg-slate-50/80 dark:bg-slate-800/40 hover:bg-white dark:hover:bg-slate-800 border border-slate-100 dark:border-slate-800 hover:border-blue-200 dark:hover:border-blue-800/60 hover:shadow-2xs transition-all duration-200 text-left cursor-pointer group"
                         >
-                          <span className="text-xl group-hover:scale-110 transition-transform">{cat.icon}</span>
-                          <span className="text-xs font-bold text-slate-800 dark:text-slate-200 group-hover:text-blue-600 dark:group-hover:text-blue-400">
+                          <span className="size-8 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-700/50 flex items-center justify-center text-base shrink-0 group-hover:scale-105 transition-transform shadow-2xs">
+                            {cat.icon}
+                          </span>
+                          <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 truncate transition-colors">
                             {cat.name}
                           </span>
                         </button>
@@ -496,21 +503,20 @@ export default function OmniSearchModal({
             </div>
 
             {/* Modal Footer Controls */}
-            <div className="flex items-center justify-between px-6 py-3 border-t border-slate-100 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/80 text-xs text-slate-400 font-medium">
-              <div className="flex items-center gap-4">
-                <span className="flex items-center gap-1.5">
-                  <kbd className="px-2 py-0.5 text-[10px] font-black rounded-md bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 shadow-2xs">Ctrl</kbd>
-                  <kbd className="px-2 py-0.5 text-[10px] font-black rounded-md bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 shadow-2xs">K</kbd>
-                  <span>bật/tắt</span>
+            <div className="flex items-center justify-between px-5 py-2.5 border-t border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/60 text-xs text-slate-400">
+              <div className="flex items-center gap-3">
+                <span className="flex items-center gap-1 text-[11px]">
+                  <kbd className="px-1.5 py-0.5 text-[10px] font-semibold rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 shadow-2xs">Ctrl K</kbd>
+                  <span>mở</span>
                 </span>
-                <span className="flex items-center gap-1.5">
-                  <kbd className="px-2 py-0.5 text-[10px] font-black rounded-md bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 shadow-2xs">ESC</kbd>
+                <span className="flex items-center gap-1 text-[11px]">
+                  <kbd className="px-1.5 py-0.5 text-[10px] font-semibold rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 shadow-2xs">ESC</kbd>
                   <span>đóng</span>
                 </span>
               </div>
-              <div className="flex items-center gap-1.5 font-bold text-blue-600 dark:text-blue-400">
-                <FiZap className="w-3.5 h-3.5 fill-current" />
-                <span>TIENTECH Search Engine</span>
+              <div className="flex items-center gap-1.5 text-xs font-medium text-slate-500 dark:text-slate-400">
+                <FiZap className="w-3 h-3 text-amber-500" />
+                <span>TienTech Search</span>
               </div>
             </div>
           </Motion.div>
