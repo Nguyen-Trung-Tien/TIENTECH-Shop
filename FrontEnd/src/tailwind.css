@@ -108,13 +108,13 @@
   }
   
   :root {
-    --bg-main: #fbfbfa;
+    --bg-main: #f8fafc;
     --bg-card: #ffffff;
     --text-main: #0f172a;
     --text-muted: #64748b;
-    --border-color: #e4e4e7;
+    --border-color: #f1f5f9;
     --glass-bg: rgba(255, 255, 255, 0.94);
-    --glass-border: #e4e4e7;
+    --glass-border: #f1f5f9;
     --glass-shadow: var(--shadow-glass);
   }
   
@@ -123,7 +123,7 @@
     --bg-card: var(--color-dark-surface);
     --text-main: var(--color-dark-text-primary);
     --text-muted: var(--color-dark-text-secondary);
-    --border-color: var(--color-dark-border);
+    --border-color: #1e293b;
     --glass-bg: rgba(15, 21, 35, 0.92);
     --glass-border: rgba(255, 255, 255, 0.07);
     --glass-shadow: var(--shadow-glass-dark);
@@ -307,51 +307,51 @@
     @apply inline-flex items-center gap-0.5 px-2 py-0.5 text-[10px] font-semibold text-slate-500 bg-slate-100 border border-slate-200 rounded-md dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700 shadow-xs;
   }
 
-  /* TienTech Technical Editorial Primitives */
+  /* TienTech Modern Primitives */
   .tt-shell {
     @apply max-w-[var(--spacing-container)] mx-auto px-4 sm:px-6 lg:px-8 w-full;
   }
 
   .tt-section {
-    @apply py-10 sm:py-14 md:py-18;
+    @apply py-10 sm:py-14 md:py-16;
   }
 
   .tt-eyebrow {
-    @apply inline-flex items-center gap-2 text-[10px] sm:text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400;
+    @apply inline-flex items-center gap-2 text-xs font-semibold text-primary dark:text-blue-400 tracking-wide;
   }
 
   .tt-card {
     background-color: var(--bg-card);
     border: 1px solid var(--border-color);
-    @apply rounded-xl sm:rounded-2xl transition-all duration-200;
+    @apply rounded-2xl shadow-[0_2px_12px_rgba(15,23,42,0.03)] dark:shadow-none transition-all duration-300;
   }
 
   .tt-card-hover {
-    @apply hover:border-blue-600/40 dark:hover:border-blue-500/40 hover:shadow-md;
+    @apply hover:border-blue-500/40 dark:hover:border-blue-500/40 hover:shadow-xl hover:shadow-slate-200/50 dark:hover:shadow-black/50;
   }
 
   .tt-button {
-    @apply inline-flex items-center justify-center gap-2 min-h-[42px] px-4 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm tracking-wide transition-all duration-200 disabled:opacity-50 disabled:pointer-events-none cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600;
+    @apply inline-flex items-center justify-center gap-2 min-h-[44px] px-5 sm:px-6 py-2.5 rounded-2xl font-bold text-xs sm:text-sm tracking-wide transition-all duration-200 disabled:opacity-50 disabled:pointer-events-none cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600;
   }
 
   .tt-button-primary {
-    @apply inline-flex items-center justify-center gap-2 min-h-[42px] px-4 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm tracking-wide transition-all duration-200 disabled:opacity-50 disabled:pointer-events-none cursor-pointer bg-blue-600 hover:bg-blue-700 text-white shadow-xs hover:shadow-md active:scale-98;
+    @apply inline-flex items-center justify-center gap-2 min-h-[44px] px-6 py-2.5 rounded-2xl font-bold text-xs sm:text-sm tracking-wide transition-all duration-200 disabled:opacity-50 disabled:pointer-events-none cursor-pointer bg-primary hover:bg-primary-hover text-white shadow-md shadow-blue-500/20 hover:shadow-lg hover:shadow-blue-500/30 active:scale-98;
   }
 
   .tt-button-secondary {
-    @apply inline-flex items-center justify-center gap-2 min-h-[42px] px-4 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm tracking-wide transition-all duration-200 disabled:opacity-50 disabled:pointer-events-none cursor-pointer bg-slate-100 hover:bg-slate-200/90 dark:bg-[#131926] dark:hover:bg-[#182236] text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-[#1e2638] active:scale-98;
+    @apply inline-flex items-center justify-center gap-2 min-h-[44px] px-5 sm:px-6 py-2.5 rounded-2xl font-bold text-xs sm:text-sm tracking-wide transition-all duration-200 disabled:opacity-50 disabled:pointer-events-none cursor-pointer bg-slate-100 hover:bg-slate-200/80 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200/70 dark:border-slate-700 active:scale-98;
   }
 
   .tt-button-accent {
-    @apply inline-flex items-center justify-center gap-2 min-h-[42px] px-4 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm tracking-wide transition-all duration-200 disabled:opacity-50 disabled:pointer-events-none cursor-pointer bg-lime-500 hover:bg-lime-600 text-slate-950 shadow-xs hover:shadow-md active:scale-98;
+    @apply inline-flex items-center justify-center gap-2 min-h-[44px] px-6 py-2.5 rounded-2xl font-bold text-xs sm:text-sm tracking-wide transition-all duration-200 disabled:opacity-50 disabled:pointer-events-none cursor-pointer bg-emerald-500 hover:bg-emerald-600 text-white shadow-md shadow-emerald-500/20 active:scale-98;
   }
 
   .tt-button-ghost {
-    @apply inline-flex items-center justify-center gap-2 min-h-[42px] px-4 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm tracking-wide transition-all duration-200 disabled:opacity-50 disabled:pointer-events-none cursor-pointer bg-transparent hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300;
+    @apply inline-flex items-center justify-center gap-2 min-h-[44px] px-4 sm:px-5 py-2.5 rounded-2xl font-bold text-xs sm:text-sm tracking-wide transition-all duration-200 disabled:opacity-50 disabled:pointer-events-none cursor-pointer bg-transparent hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300;
   }
 
   .tt-input {
-    @apply w-full min-h-[44px] px-4 bg-white dark:bg-[#0f1523] border border-slate-200 dark:border-[#1e2638] rounded-xl text-sm font-medium text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none focus:border-blue-600 dark:focus:border-blue-500 focus:ring-2 focus:ring-blue-600/10 dark:focus:ring-blue-500/20 transition-all;
+    @apply w-full min-h-[44px] px-4 bg-white dark:bg-[#0f1523] border border-slate-200/90 dark:border-slate-800 rounded-2xl text-sm font-medium text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none focus:border-blue-600 dark:focus:border-blue-500 focus:ring-2 focus:ring-blue-600/10 dark:focus:ring-blue-500/20 transition-all;
   }
 
   .tt-grid {
@@ -359,11 +359,11 @@
   }
 
   .tt-badge-lime {
-    @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-lime-500/15 border border-lime-500/30 text-lime-700 dark:text-lime-300 text-[10px] font-black uppercase tracking-wider;
+    @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-800/60 text-[10px] font-semibold;
   }
 
   .tt-badge-blue {
-    @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-blue-500/15 border border-blue-500/30 text-blue-700 dark:text-blue-300 text-[10px] font-black uppercase tracking-wider;
+    @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border border-blue-200/60 dark:border-blue-800/60 text-[10px] font-semibold;
   }
 }
 

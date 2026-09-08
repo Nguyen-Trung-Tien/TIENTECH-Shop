@@ -127,56 +127,62 @@ const ProductInfo = ({
       </div>
 
       {/* Guarantee & Perks Box */}
-      <div className="grid grid-cols-3 gap-2.5 p-3 bg-white dark:bg-dark-surface border border-slate-200 dark:border-slate-800 rounded-xl">
-        <div className="flex items-center gap-2 text-xs font-semibold text-slate-700 dark:text-slate-300 min-w-0">
-          <FiShield className="text-primary dark:text-blue-400 text-base shrink-0" />
+      <div className="grid grid-cols-3 gap-2.5 p-3.5 bg-slate-50/70 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800/80 rounded-2xl">
+        <div className="flex items-center gap-2.5 text-xs font-semibold text-slate-700 dark:text-slate-300 min-w-0">
+          <div className="size-7 rounded-lg bg-blue-50 dark:bg-blue-900/30 text-primary dark:text-blue-400 flex items-center justify-center shrink-0">
+            <FiShield size={14} />
+          </div>
           <span className="truncate">Chính hãng 100%</span>
         </div>
-        <div className="flex items-center gap-2 text-xs font-semibold text-slate-700 dark:text-slate-300 min-w-0">
-          <FiRefreshCw className="text-lime-600 dark:text-lime-400 text-base shrink-0" />
+        <div className="flex items-center gap-2.5 text-xs font-semibold text-slate-700 dark:text-slate-300 min-w-0">
+          <div className="size-7 rounded-lg bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+            <FiRefreshCw size={14} />
+          </div>
           <span className="truncate">1 Đổi 1 30 Ngày</span>
         </div>
-        <div className="flex items-center gap-2 text-xs font-semibold text-slate-700 dark:text-slate-300 min-w-0">
-          <FiTruck className="text-primary dark:text-blue-400 text-base shrink-0" />
-          <span className="truncate">Giao siêu tốc 2H</span>
+        <div className="flex items-center gap-2.5 text-xs font-semibold text-slate-700 dark:text-slate-300 min-w-0">
+          <div className="size-7 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
+            <FiTruck size={14} />
+          </div>
+          <span className="truncate">Giao hàng 2H</span>
         </div>
       </div>
 
       {/* AI Price Insight Callout */}
-      <div className="p-3 bg-slate-50 dark:bg-dark-surface/80 border border-slate-200 dark:border-slate-800 rounded-xl flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2.5 min-w-0">
-          <div className="p-2 bg-primary text-white rounded-lg shadow-xs shrink-0">
-            <FiTrendingUp className="size-4" />
+      <div className="p-3.5 bg-gradient-to-r from-blue-50/70 to-indigo-50/40 dark:from-slate-900/60 dark:to-slate-800/40 border border-blue-100 dark:border-slate-800 rounded-2xl flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="size-9 bg-primary text-white rounded-xl shadow-sm shadow-blue-500/20 flex items-center justify-center shrink-0">
+            <FiTrendingUp className="size-4.5" />
           </div>
           <div className="min-w-0">
             <div className="text-xs font-bold text-slate-900 dark:text-slate-100 flex items-center gap-1.5 truncate">
-              AI Price Insight: <span className="text-lime-600 dark:text-lime-400 font-extrabold">Giá tối ưu</span>
+              Phân tích giá AI: <span className="text-emerald-600 dark:text-emerald-400 font-bold">Mức giá hợp lý</span>
             </div>
             <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
-              Đề xuất: <span className="font-semibold text-primary dark:text-blue-400">Thời điểm tốt để mua</span>
+              Thời điểm thích hợp để đặt mua sản phẩm này
             </p>
           </div>
         </div>
         <button
           type="button"
           onClick={() => setShowPrediction(true)}
-          className="px-3 py-1.5 text-xs font-bold text-primary dark:text-blue-400 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:border-primary transition shrink-0 cursor-pointer"
+          className="px-3.5 py-1.5 text-xs font-semibold text-primary dark:text-blue-400 bg-white dark:bg-slate-800 border border-blue-200 dark:border-slate-700 rounded-xl hover:shadow-xs transition shrink-0 cursor-pointer"
         >
-          Dự báo 30 ngày
+          Xem dự báo giá
         </button>
       </div>
 
       {/* Variant Selector */}
       {Object.keys(allAttributes).length > 0 && (
-        <div className="space-y-4 py-3 border-y border-slate-200/80 dark:border-slate-800">
+        <div className="space-y-4 py-3.5 border-y border-slate-100 dark:border-slate-800/80">
           {Object.entries(allAttributes).map(([attrName, values]) => (
             <div key={attrName} className="space-y-2">
-              <div className="flex justify-between items-center">
-                <label className="text-xs font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400 font-mono">
+              <div className="flex justify-between items-center text-xs">
+                <span className="font-bold text-slate-700 dark:text-slate-300">
                   Chọn {attrName}:
-                </label>
+                </span>
                 {selectedAttributes[attrName] && (
-                  <span className="text-[11px] font-mono font-bold text-primary dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-2 py-0.5 rounded border border-blue-200/60 dark:border-blue-800">
+                  <span className="font-semibold text-primary dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-2.5 py-0.5 rounded-full">
                     {selectedAttributes[attrName]}
                   </span>
                 )}
@@ -190,12 +196,12 @@ const ProductInfo = ({
                       key={val}
                       disabled={!isAvailable}
                       onClick={() => onSelectAttribute(attrName, val)}
-                      className={`min-w-[65px] px-3.5 py-2 rounded-lg text-xs font-bold transition-all border flex items-center justify-center gap-1.5 cursor-pointer font-mono ${
+                      className={`min-w-[68px] px-4 py-2 rounded-xl text-xs font-semibold transition-all border flex items-center justify-center gap-1.5 cursor-pointer ${
                         isSelected
-                          ? "bg-primary border-primary text-white shadow-xs"
+                          ? "bg-primary border-primary text-white shadow-sm shadow-blue-500/25 ring-2 ring-primary/20"
                           : isAvailable
-                            ? "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-primary text-slate-800 dark:text-slate-200"
-                            : "bg-slate-100 dark:bg-slate-800/50 border-slate-200/50 dark:border-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed opacity-50"
+                            ? "bg-white dark:bg-dark-surface border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-primary/60 hover:text-primary"
+                            : "bg-slate-50 dark:bg-slate-800/40 border-slate-200/40 dark:border-slate-800 text-slate-400 dark:text-slate-600 cursor-not-allowed opacity-50"
                       }`}
                     >
                       {val}
@@ -216,27 +222,27 @@ const ProductInfo = ({
             <button
               onClick={onAddToCart}
               disabled={addingCart || (!selectedVariant && product.variants?.length > 0)}
-              className={`flex-1 h-12 rounded-xl font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 border cursor-pointer ${
+              className={`flex-1 h-12 rounded-2xl font-bold text-xs sm:text-sm transition-all flex items-center justify-center gap-2 border cursor-pointer ${
                 !selectedVariant && product.variants?.length > 0
                   ? "bg-slate-100 dark:bg-slate-800 text-slate-400 border-slate-200/50 cursor-not-allowed"
-                  : "bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white hover:border-primary dark:hover:border-primary"
+                  : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white hover:border-primary dark:hover:border-primary shadow-xs hover:shadow-sm"
               }`}
             >
-              <FiShoppingCart className="text-base" />
-              {addingCart ? "Đang thêm..." : "THÊM GIỎ HÀNG"}
+              <FiShoppingCart className="text-base text-primary" />
+              {addingCart ? "Đang thêm..." : "Thêm vào giỏ"}
             </button>
 
             <button
               onClick={handleBuyNow}
               disabled={addingCart || (!selectedVariant && product.variants?.length > 0)}
-              className={`flex-[1.4] h-12 rounded-xl font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer ${
+              className={`flex-[1.4] h-12 rounded-2xl font-bold text-xs sm:text-sm transition-all flex items-center justify-center gap-2 shadow-md shadow-blue-600/20 cursor-pointer ${
                 !selectedVariant && product.variants?.length > 0
-                  ? "bg-slate-200 dark:bg-slate-800 text-slate-400 cursor-not-allowed"
+                  ? "bg-slate-200 dark:bg-slate-800 text-slate-400 cursor-not-allowed shadow-none"
                   : "bg-primary hover:bg-primary-hover text-white active:scale-98"
               }`}
             >
               <FiCreditCard className="text-base" />
-              MUA NGAY
+              Mua ngay
             </button>
           </div>
 
@@ -245,7 +251,7 @@ const ProductInfo = ({
             onClick={handleWishlist}
             disabled={loadingWishlist}
             aria-label={isWishlisted ? "Xóa khỏi danh sách yêu thích" : "Thêm vào danh sách yêu thích"}
-            className={`w-full sm:size-12 h-12 rounded-xl border flex items-center justify-center transition-all shadow-xs cursor-pointer shrink-0 ${
+            className={`w-full sm:size-12 h-12 rounded-2xl border flex items-center justify-center transition-all shadow-xs cursor-pointer shrink-0 ${
               isWishlisted
                 ? "border-rose-200 dark:border-rose-900/40 bg-rose-50 dark:bg-rose-950/30 text-rose-500"
                 : "border-slate-200 dark:border-slate-800 text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-rose-500"
@@ -256,8 +262,8 @@ const ProductInfo = ({
         </div>
 
         {!selectedVariant && product.variants?.length > 0 && (
-          <p className="text-center text-rose-600 dark:text-rose-400 text-xs font-mono font-bold uppercase tracking-wider bg-rose-50 dark:bg-rose-950/30 py-2 rounded-lg border border-rose-200 dark:border-rose-900/40">
-            CẦN CHỌN PHIÊN BẢN (SKU) TRƯỚC KHI TIẾP TỤC
+          <p className="text-center text-rose-600 dark:text-rose-400 text-xs font-semibold bg-rose-50 dark:bg-rose-950/30 py-2.5 rounded-xl border border-rose-200 dark:border-rose-900/40">
+            Vui lòng chọn phân loại sản phẩm trước khi mua hàng
           </p>
         )}
       </div>

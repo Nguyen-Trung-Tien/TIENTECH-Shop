@@ -62,24 +62,23 @@ const CategorySection = React.memo(({ categories: propCategories = [], loading: 
   if (!categories || categories.length === 0) return null;
 
   return (
-    <section className="py-8 md:py-12 bg-ivory dark:bg-dark-bg/60 border-b border-slate-200/80 dark:border-slate-800 transition-colors duration-300">
+    <section className="py-8 md:py-12 bg-white dark:bg-dark-bg border-b border-slate-100 dark:border-slate-800/80 transition-colors duration-300">
       <div className="container-custom">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
           <div>
-            <div className="tt-eyebrow mb-2">
-              <span className="size-1.5 rounded-full bg-lime-500"></span>
-              <span>HARDWARE TAXONOMY</span>
-            </div>
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-black text-slate-900 dark:text-white uppercase tracking-tight">
-              Danh Mục Ngành Hàng
+            <span className="text-xs font-semibold text-primary dark:text-blue-400 uppercase tracking-wider block mb-1">
+              Khám phá danh mục
+            </span>
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900 dark:text-white tracking-tight">
+              Danh mục nổi bật
             </h2>
           </div>
-          <p className="text-xs text-slate-500 dark:text-slate-400 font-mono">
-            SELECT CATEGORY // DIRECT DEPLOYMENT
+          <p className="text-xs text-slate-400 dark:text-slate-500 font-medium">
+            Lựa chọn thiết bị phù hợp với nhu cầu của bạn
           </p>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5 sm:gap-4.5">
           {categories.map((cat, index) => (
             <Motion.div
               key={cat.id || index}
@@ -90,29 +89,29 @@ const CategorySection = React.memo(({ categories: propCategories = [], loading: 
               onClick={() => navigate(`/category/${cat.slug}`)}
               className="group cursor-pointer min-w-0"
             >
-              <div className="tt-card tt-card-hover relative p-3 bg-white dark:bg-dark-surface border border-slate-200/80 dark:border-slate-800 transition-all duration-200 flex flex-col justify-between h-full">
-                <div className="relative w-full aspect-square rounded-lg overflow-hidden bg-slate-50 dark:bg-slate-900/60 mb-2.5 flex items-center justify-center p-2.5">
+              <div className="relative p-3.5 bg-white dark:bg-dark-surface rounded-2xl border border-slate-100 dark:border-slate-800 shadow-2xs hover:shadow-lg hover:shadow-slate-200/50 dark:hover:shadow-black/50 hover:border-blue-500/40 dark:hover:border-blue-500/40 transition-all duration-300 flex flex-col justify-between h-full">
+                <div className="relative w-full aspect-square rounded-xl overflow-hidden bg-slate-50/80 dark:bg-slate-900/60 mb-3 flex items-center justify-center p-3">
                   <img
                     src={
                       cat.image || cat.imageUrl || "/images/default-category.jpg"
                     }
                     alt={cat.name}
-                    className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105"
+                    className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-110"
                     loading="lazy"
                   />
                   {cat.productCount > 0 && (
-                    <span className="absolute top-2 right-2 font-mono text-[9px] font-bold bg-slate-900/85 dark:bg-slate-800/90 text-white px-1.5 py-0.5 rounded border border-slate-700/40">
+                    <span className="absolute top-2 right-2 text-[10px] font-semibold bg-slate-900/80 dark:bg-slate-800/90 text-white px-2 py-0.5 rounded-full shadow-xs">
                       {cat.productCount}
                     </span>
                   )}
                 </div>
 
-                <div className="text-left mt-auto min-w-0">
-                  <h3 className="text-slate-900 dark:text-slate-100 font-bold text-xs sm:text-sm tracking-tight truncate group-hover:text-primary dark:group-hover:text-blue-400 transition-colors">
+                <div className="text-center mt-auto min-w-0 px-1">
+                  <h3 className="text-slate-800 dark:text-slate-200 font-bold text-xs sm:text-sm tracking-tight truncate group-hover:text-primary dark:group-hover:text-blue-400 transition-colors">
                     {cat.name}
                   </h3>
-                  <span className="text-[10px] font-mono text-slate-400 dark:text-slate-500 block truncate">
-                    EXPLORE &rarr;
+                  <span className="text-[11px] text-slate-400 dark:text-slate-500 font-medium block truncate mt-0.5 group-hover:text-primary transition-colors">
+                    Xem sản phẩm &rarr;
                   </span>
                 </div>
               </div>

@@ -39,27 +39,21 @@ const ProductSection = ({ products: propProducts }) => {
   }, [propProducts]);
 
   return (
-    <section className="py-8 md:py-12 bg-ivory dark:bg-dark-bg/60 border-b border-slate-200/80 dark:border-slate-800 transition-colors duration-300">
+    <section className="py-8 md:py-12 bg-slate-50/50 dark:bg-dark-bg border-b border-slate-100 dark:border-slate-800/80 transition-colors duration-300">
       <div className="container-custom">
         {/* Section Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
           <div className="max-w-2xl min-w-0">
-            <Motion.div
-              initial={{ opacity: 0, x: -10 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              className="tt-eyebrow mb-2"
-            >
-              <span className="size-1.5 rounded-full bg-lime-500"></span>
-              <span>CURATED SELECTION // READY TO SHIP</span>
-            </Motion.div>
+            <span className="text-xs font-semibold text-primary dark:text-blue-400 uppercase tracking-wider block mb-1">
+              Tuyển chọn hàng đầu
+            </span>
             <Motion.h2
               initial={{ opacity: 0, y: 10 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="text-xl sm:text-2xl md:text-3xl font-black text-slate-900 dark:text-white leading-tight uppercase tracking-tight"
+              className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900 dark:text-white leading-tight tracking-tight"
             >
-              Thiết Bị &amp; Linh Kiện Nổi Bật
+              Sản phẩm nổi bật
             </Motion.h2>
           </div>
           <Motion.button
@@ -67,9 +61,9 @@ const ProductSection = ({ products: propProducts }) => {
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
             onClick={() => navigate("/products")}
-            className="tt-button tt-button-ghost text-xs font-bold text-primary dark:text-blue-400 hover:text-primary-hover transition-colors flex items-center gap-2 uppercase tracking-wider self-start md:self-auto cursor-pointer"
+            className="text-xs sm:text-sm font-semibold text-primary dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors flex items-center gap-1.5 self-start md:self-auto cursor-pointer"
           >
-            Xem tất cả catalog
+            Xem tất cả sản phẩm
             <span className="text-base">&rarr;</span>
           </Motion.button>
         </div>

@@ -197,28 +197,28 @@ const ProductCard = ({ product }) => {
         initial={{ opacity: 0, y: 10 }}
         whileInView={{ opacity: 1, y: 0 }}
         whileHover={{ y: -4 }}
-        transition={{ duration: 0.2, ease: "easeOut" }}
+        transition={{ duration: 0.25, ease: "easeOut" }}
         viewport={{ once: true }}
-        className={`group relative flex flex-col h-full bg-white dark:bg-dark-surface rounded-xl border border-slate-200/90 dark:border-slate-800 overflow-hidden shadow-xs hover:shadow-lg hover:border-primary/50 dark:hover:border-primary/60 transition-all duration-200 cursor-pointer min-w-0 ${!isActive ? "opacity-60 grayscale pointer-events-none" : ""}`}
+        className={`group relative flex flex-col h-full bg-white dark:bg-dark-surface rounded-2xl border border-slate-100 dark:border-slate-800/80 overflow-hidden shadow-xs hover:shadow-xl hover:shadow-slate-200/50 dark:hover:shadow-black/50 hover:border-blue-500/40 dark:hover:border-blue-500/40 transition-all duration-300 cursor-pointer min-w-0 ${!isActive ? "opacity-60 grayscale pointer-events-none" : ""}`}
         onClick={() => navigate(`/product-detail/${slug || id}`)}
       >
         {/* Image Container */}
-        <div className="relative aspect-square overflow-hidden bg-slate-50/80 dark:bg-dark-bg/60 p-3.5 flex items-center justify-center border-b border-slate-100 dark:border-slate-800/80">
+        <div className="relative aspect-square overflow-hidden bg-slate-50/70 dark:bg-dark-bg/50 p-4 flex items-center justify-center border-b border-slate-100/80 dark:border-slate-800/60">
           <img
             src={image || "/images/no-image.png"}
             alt={name}
             loading="lazy"
-            className="w-full h-full object-contain p-2 mix-blend-multiply dark:mix-blend-normal transition-transform duration-300 group-hover:scale-105"
+            className="w-full h-full object-contain p-2 mix-blend-multiply dark:mix-blend-normal transition-transform duration-500 group-hover:scale-108"
           />
 
-          {/* Technical Badges */}
-          <div className="absolute top-2.5 left-2.5 flex flex-col gap-1 z-10">
+          {/* Badges */}
+          <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-10">
             {flashSaleActive && effectiveDiscountPct > 0 ? (
-              <span className="tt-badge-lime text-[9px] py-0.5 shadow-xs flex items-center gap-1 font-mono">
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-red-600 text-white text-[10px] font-bold shadow-sm shadow-red-500/30">
                 ⚡ -{Math.round(effectiveDiscountPct)}%
               </span>
             ) : effectiveDiscountPct > 0 ? (
-              <span className="tt-badge-blue text-[9px] py-0.5 shadow-xs font-mono">
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-blue-600 text-white text-[10px] font-bold shadow-sm shadow-blue-500/20">
                 -{Math.round(effectiveDiscountPct)}%
               </span>
             ) : null}
@@ -228,8 +228,8 @@ const ProductCard = ({ product }) => {
               hasVariants === "true" ||
               (Array.isArray(product.variants) && product.variants.length > 0)
             ) && (
-              <span className="px-1.5 py-0.5 bg-slate-900/85 dark:bg-slate-800/90 text-slate-300 font-mono text-[8px] uppercase tracking-wider rounded border border-slate-700/60 w-fit">
-                SKU CONFIG
+              <span className="px-2 py-0.5 bg-slate-900/75 dark:bg-slate-800/80 backdrop-blur-xs text-white text-[9px] font-semibold rounded-full w-fit">
+                Nhiều phiên bản
               </span>
             )}
           </div>
@@ -239,59 +239,59 @@ const ProductCard = ({ product }) => {
             type="button"
             onClick={handleWishlist}
             aria-label={isWishlisted ? "Xóa khỏi danh sách yêu thích" : "Thêm vào danh sách yêu thích"}
-            className="absolute top-2.5 right-2.5 z-20 size-8 flex items-center justify-center bg-white/95 dark:bg-slate-900/95 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xs hover:border-slate-400 dark:hover:border-slate-500 transition-all active:scale-95 group/heart cursor-pointer"
+            className="absolute top-3 right-3 z-20 size-8.5 flex items-center justify-center bg-white/90 dark:bg-slate-900/90 backdrop-blur-xs border border-slate-200/70 dark:border-slate-700/70 rounded-full shadow-xs hover:scale-110 transition-all active:scale-95 group/heart cursor-pointer"
           >
             {isWishlisted ? (
-              <FaHeart className="text-rose-500" size={13} />
+              <FaHeart className="text-rose-500" size={14} />
             ) : (
               <FiHeart
                 className="text-slate-400 group-hover/heart:text-rose-500 transition-colors"
-                size={13}
+                size={14}
               />
             )}
           </button>
 
           {/* Mobile quick add button */}
-          <div className="absolute bottom-2.5 right-2.5 lg:hidden">
+          <div className="absolute bottom-3 right-3 lg:hidden">
             <button
               type="button"
               onClick={handleAddToCartClick}
               disabled={loadingCart}
               aria-label="Thêm vào giỏ hàng"
-              className="size-8 rounded-lg bg-primary text-white flex items-center justify-center shadow-xs active:scale-95 transition-all cursor-pointer"
+              className="size-8.5 rounded-xl bg-primary text-white flex items-center justify-center shadow-md shadow-blue-500/25 active:scale-95 transition-all cursor-pointer"
             >
-              <FiShoppingCart size={14} />
+              <FiShoppingCart size={15} />
             </button>
           </div>
 
           {/* Desktop hover action */}
-          <div className="absolute inset-x-0 bottom-0 p-2.5 translate-y-full group-hover:translate-y-0 transition-all duration-200 z-20 bg-white/95 dark:bg-dark-surface/95 backdrop-blur-sm border-t border-slate-100 dark:border-slate-800 hidden lg:block">
+          <div className="absolute inset-x-0 bottom-0 p-3 translate-y-full group-hover:translate-y-0 transition-all duration-200 z-20 bg-white/95 dark:bg-dark-surface/95 backdrop-blur-md border-t border-slate-100 dark:border-slate-800 hidden lg:block">
             <button
               type="button"
-              className="tt-button tt-button-primary w-full py-1.5 text-[11px] font-bold tracking-wider uppercase cursor-pointer"
+              className="w-full py-2 bg-primary hover:bg-primary-hover text-white text-xs font-bold rounded-xl transition-all shadow-sm shadow-blue-500/20 active:scale-98 cursor-pointer flex items-center justify-center gap-1.5"
               onClick={handleAddToCartClick}
               disabled={loadingCart}
             >
-              <FiShoppingCart size={13} className="mr-1.5 inline" />
-              {loadingCart ? "Đang xử lý..." : "Thêm giỏ hàng"}
+              <FiShoppingCart size={14} />
+              {loadingCart ? "Đang xử lý..." : "Thêm vào giỏ"}
             </button>
           </div>
         </div>
 
         {/* Content Area */}
-        <div className="p-3.5 flex flex-col flex-1 min-w-0">
-          <div className="flex items-center justify-between gap-1 mb-1">
-            <p className="text-[9px] font-mono font-bold text-primary dark:text-blue-400 uppercase tracking-wider truncate">
-              {product.brand?.name || "LINH KIỆN CHÍNH HÃNG"}
+        <div className="p-4 flex flex-col flex-1 min-w-0">
+          <div className="flex items-center justify-between gap-1 mb-1.5">
+            <p className="text-[11px] font-bold text-primary dark:text-blue-400 uppercase tracking-wide truncate">
+              {product.brand?.name || "Chính hãng"}
             </p>
             {/* Stock indicator */}
-            <span className="flex items-center gap-1 text-[9px] font-mono text-slate-500 dark:text-slate-400">
-              <span className={`size-1.5 rounded-full ${stock > 0 ? "bg-lime-500" : "bg-rose-500"}`}></span>
-              {stock > 0 ? "SẴN" : "HẾT"}
+            <span className="flex items-center gap-1.5 text-[10px] text-slate-500 dark:text-slate-400 font-medium">
+              <span className={`size-1.5 rounded-full ${stock > 0 ? "bg-emerald-500" : "bg-red-500"}`}></span>
+              {stock > 0 ? "Còn hàng" : "Tạm hết"}
             </span>
           </div>
 
-          <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100 line-clamp-2 leading-snug mb-2 min-h-[2.4rem] group-hover:text-primary dark:group-hover:text-blue-400 transition-colors break-words [overflow-wrap:anywhere]">
+          <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100 line-clamp-2 leading-snug mb-2.5 min-h-[2.4rem] group-hover:text-primary dark:group-hover:text-blue-400 transition-colors break-words [overflow-wrap:anywhere]">
             {name}
           </h3>
 
@@ -305,7 +305,7 @@ const ProductCard = ({ product }) => {
                   return (
                     <span
                       key={idx}
-                      className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800/80 text-[9px] font-mono font-semibold text-slate-600 dark:text-slate-300 rounded border border-slate-200/60 dark:border-slate-700/60"
+                      className="px-2 py-0.5 bg-slate-50 dark:bg-slate-800/80 text-[10px] font-medium text-slate-600 dark:text-slate-300 rounded-md border border-slate-100 dark:border-slate-800"
                     >
                       {attr.value}
                     </span>
