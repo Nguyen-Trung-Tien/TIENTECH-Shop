@@ -19,8 +19,8 @@ const DeliveryInfo = ({ order }) => {
   if (!order) return null;
 
   return (
-    <div className="bg-white dark:bg-dark-surface p-8 rounded-[32px] border border-surface-200 dark:border-dark-border shadow-sm print:border print:shadow-none print:avoid-break">
-      <h3 className="text-lg font-semibold text-surface-900 dark:text-white mb-6 flex items-center gap-3">
+    <div className="bg-white dark:bg-dark-surface p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-[32px] border border-surface-200 dark:border-dark-border shadow-sm print:border print:shadow-none print:avoid-break">
+      <h3 className="text-base sm:text-lg font-semibold text-surface-900 dark:text-white mb-4 sm:mb-6 flex items-center gap-3">
         <FiMapPin className="text-primary" /> Thông tin nhận hàng
       </h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12">

@@ -147,10 +147,10 @@ const RegisterPage = () => {
   };
 
   return (
-    <div className="h-screen w-screen bg-slate-100 dark:bg-slate-950 flex items-center justify-center p-4 overflow-hidden fixed inset-0">
+    <div className="min-h-screen w-screen bg-slate-100 dark:bg-slate-950 flex items-center justify-center p-3 sm:p-4 md:p-6 overflow-y-auto fixed inset-0">
       {loading && <Loading />}
 
-      <div className="w-full max-w-4xl h-fit max-h-[95vh] grid grid-cols-1 lg:grid-cols-12 bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-2xl border border-slate-200/60 dark:border-slate-800 overflow-hidden">
+      <div className="w-full max-w-4xl h-fit max-h-[96vh] grid grid-cols-1 lg:grid-cols-12 bg-white dark:bg-slate-900 rounded-3xl sm:rounded-[2.5rem] shadow-2xl border border-slate-200/60 dark:border-slate-800 overflow-hidden">
         {/* Left Side - Visual Banner */}
         <div className="hidden lg:flex lg:col-span-5 relative bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 items-center justify-center p-8 overflow-hidden">
           <div className="absolute top-[-10%] left-[-10%] w-[70%] h-[70%] bg-blue-600/20 rounded-full blur-[90px]"></div>

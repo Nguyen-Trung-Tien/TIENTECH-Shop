@@ -60,7 +60,7 @@ const ImageGallery = ({ mainImage, setMainImage, displayImages, discountPercent,
         <button
           type="button"
           onClick={() => setIsLightboxOpen(true)}
-          className="absolute bottom-4 right-4 size-10 bg-white/80 dark:bg-slate-800/80 backdrop-blur-md rounded-2xl flex items-center justify-center text-slate-700 dark:text-slate-200 opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110 shadow-md border border-slate-200/60 dark:border-slate-700/60 cursor-pointer"
+          className="absolute bottom-4 right-4 size-10 bg-white/80 dark:bg-slate-800/80 backdrop-blur-md rounded-2xl flex items-center justify-center text-slate-700 dark:text-slate-200 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-300 hover:scale-110 shadow-md border border-slate-200/60 dark:border-slate-700/60 cursor-pointer"
           title="Xem ảnh phóng to"
         >
           <FiMaximize2 size={16} />

@@ -208,7 +208,7 @@ const OrderHistoryPage = () => {
 
                   {/* Order Footer */}
                   <div className="mt-8 pt-6 border-t border-surface-100 dark:border-dark-border flex flex-col sm:flex-row items-center justify-between gap-6">
-                    <div className="flex flex-col items-center sm:items-start">
+                    <div className="flex flex-col items-center sm:items-start w-full sm:w-auto text-center sm:text-left">
                       <p className="text-[11px] font-black text-surface-400 dark:text-dark-text-secondary uppercase tracking-widest mb-1">
                         Tổng cộng đơn hàng
                       </p>
@@ -217,7 +217,7 @@ const OrderHistoryPage = () => {
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-3 w-full sm:w-auto">
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full sm:w-auto">
                       <Button
                         variant="secondary"
                         size="md"

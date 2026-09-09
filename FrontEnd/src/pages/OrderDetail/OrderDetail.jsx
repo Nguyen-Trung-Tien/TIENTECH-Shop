@@ -257,7 +257,7 @@ const OrderDetail = () => {
     order.status === "cancelled" || order.status === "cancel_requested";
 
   return (
-    <div className="min-h-screen bg-surface-50 dark:bg-dark-bg py-12 transition-colors duration-300">
+    <div className="min-h-screen bg-surface-50 dark:bg-dark-bg py-6 sm:py-10 md:py-12 transition-colors duration-300">
       <div className="container-custom">
         <OrderDetailHeader
           orderCode={order.orderCode}

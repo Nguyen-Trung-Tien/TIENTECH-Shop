@@ -77,22 +77,22 @@ const AdminSearch = () => {
                      (results?.users?.length || 0);
 
   return (
-    <div className="space-y-10 pb-20 p-4 md:p-0">
+    <div className="space-y-6 sm:space-y-10 pb-20 p-2.5 sm:p-4 md:p-0">
       {/* Header Info */}
-      <div className="bg-white dark:bg-dark-surface rounded-[2.5rem] p-8 md:p-12 border border-slate-100 dark:border-dark-border shadow-xl shadow-slate-200/50 dark:shadow-none flex flex-col md:flex-row items-center justify-between gap-8 transition-colors">
+      <div className="bg-white dark:bg-dark-surface rounded-2xl sm:rounded-[2.5rem] p-4 sm:p-8 md:p-12 border border-slate-100 dark:border-dark-border shadow-xl shadow-slate-200/50 dark:shadow-none flex flex-col md:flex-row items-start md:items-center justify-between gap-4 sm:gap-8 transition-colors">
         <div>
-          <h1 className="text-3xl md:text-4xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-4">
-            <FiSearch className="text-indigo-600 dark:text-indigo-400 animate-pulse" />
-            Kết quả tìm kiếm
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-3 sm:gap-4">
+            <FiSearch className="text-indigo-600 dark:text-indigo-400 animate-pulse shrink-0" />
+            <span className="truncate">Kết quả tìm kiếm</span>
           </h1>
-          <p className="text-slate-500 dark:text-dark-text-secondary font-bold mt-2 ml-1">
+          <p className="text-slate-500 dark:text-dark-text-secondary font-bold text-xs sm:text-sm mt-1 sm:mt-2 ml-1 break-words [overflow-wrap:anywhere]">
             Đang hiển thị kết quả cho từ khóa: <span className="text-indigo-600 dark:text-indigo-400 italic">"{query}"</span>
           </p>
         </div>
-        <div className="flex items-center gap-3 bg-slate-50 dark:bg-dark-bg p-2 rounded-2xl border border-slate-200/50 dark:border-dark-border">
-           <div className="px-6 py-3 bg-white dark:bg-dark-surface rounded-xl shadow-sm text-center border border-transparent dark:border-dark-border">
-              <span className="text-[10px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest block mb-1">Tổng cộng</span>
-              <span className="text-2xl font-black text-slate-900 dark:text-white">
+        <div className="flex items-center gap-3 bg-slate-50 dark:bg-dark-bg p-2 rounded-2xl border border-slate-200/50 dark:border-dark-border self-stretch sm:self-auto justify-center">
+           <div className="px-6 py-2 sm:py-3 bg-white dark:bg-dark-surface rounded-xl shadow-sm text-center border border-transparent dark:border-dark-border w-full sm:w-auto">
+              <span className="text-[10px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest block mb-0.5 sm:mb-1">Tổng cộng</span>
+              <span className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
                 {totalCount}
               </span>
            </div>
@@ -172,16 +172,16 @@ const AdminSearch = () => {
             />
             {results.orders?.length > 0 ? (
                <div className="bg-white dark:bg-dark-surface rounded-[2.5rem] border border-slate-100 dark:border-dark-border shadow-soft overflow-hidden transition-colors">
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left">
+                  <div className="overflow-x-auto custom-scrollbar">
+                    <table className="w-full text-left min-w-[600px] md:min-w-full">
                       <thead>
                         <tr className="bg-slate-50/50 dark:bg-dark-bg/50 border-b border-slate-100 dark:border-dark-border">
-                          <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary">Mã đơn</th>
-                          <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary">Khách hàng</th>
-                          <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary">Ngày đặt</th>
-                          <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary text-right">Tổng tiền</th>
-                          <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary text-center">Trạng thái</th>
-                          <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary text-right">Thao tác</th>
+                          <th className="px-4 sm:px-6 md:px-8 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary">Mã đơn</th>
+                          <th className="px-4 sm:px-6 md:px-8 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary">Khách hàng</th>
+                          <th className="px-4 sm:px-6 md:px-8 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary">Ngày đặt</th>
+                          <th className="px-4 sm:px-6 md:px-8 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary text-right">Tổng tiền</th>
+                          <th className="px-4 sm:px-6 md:px-8 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary text-center">Trạng thái</th>
+                          <th className="px-4 sm:px-6 md:px-8 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary text-right">Thao tác</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-50 dark:divide-dark-border">
@@ -191,26 +191,26 @@ const AdminSearch = () => {
                             className="hover:bg-emerald-50/10 dark:hover:bg-emerald-500/5 transition-colors group cursor-pointer"
                             onClick={() => navigate(`/admin/orders?search=${o.orderCode}`)}
                           >
-                            <td className="px-8 py-4">
+                            <td className="px-4 sm:px-6 md:px-8 py-3.5">
                               <span className="text-sm font-black text-slate-800 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">#{o.orderCode}</span>
                             </td>
-                            <td className="px-8 py-4">
-                              <span className="text-sm font-bold text-slate-600 dark:text-dark-text-secondary transition-colors">{o.user?.username || "Ẩn danh"}</span>
+                            <td className="px-4 sm:px-6 md:px-8 py-3.5">
+                              <span className="text-sm font-bold text-slate-600 dark:text-dark-text-secondary transition-colors truncate max-w-[150px] block">{o.user?.username || "Ẩn danh"}</span>
                             </td>
-                            <td className="px-8 py-4">
-                              <span className="text-[11px] font-bold text-slate-400 dark:text-dark-text-secondary">{o.createdAt ? new Date(o.createdAt).toLocaleDateString('vi-VN') : "—"}</span>
+                            <td className="px-4 sm:px-6 md:px-8 py-3.5">
+                              <span className="text-[11px] font-bold text-slate-400 dark:text-dark-text-secondary whitespace-nowrap">{o.createdAt ? new Date(o.createdAt).toLocaleDateString('vi-VN') : "—"}</span>
                             </td>
-                            <td className="px-8 py-4 text-right">
-                              <span className="text-sm font-black text-slate-900 dark:text-white transition-colors">{formatPrice(o.totalPrice || 0)}</span>
+                            <td className="px-4 sm:px-6 md:px-8 py-3.5 text-right">
+                              <span className="text-sm font-black text-slate-900 dark:text-white transition-colors whitespace-nowrap">{formatPrice(o.totalPrice || 0)}</span>
                             </td>
-                            <td className="px-8 py-4 text-center">
-                              <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${o.status === 'delivered' ? 'bg-emerald-100 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400' : 'bg-amber-100 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400'}`}>
+                            <td className="px-4 sm:px-6 md:px-8 py-3.5 text-center">
+                              <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest whitespace-nowrap ${o.status === 'delivered' ? 'bg-emerald-100 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400' : 'bg-amber-100 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400'}`}>
                                 {o.status}
                               </span>
                             </td>
-                            <td className="px-8 py-4 text-right">
+                            <td className="px-4 sm:px-6 md:px-8 py-3.5 text-right">
                               <button 
-                                className="p-2.5 bg-slate-50 dark:bg-dark-bg text-slate-400 dark:text-dark-text-secondary rounded-xl group-hover:bg-emerald-500 group-hover:text-white transition-all shadow-sm dark:border dark:border-transparent dark:group-hover:border-emerald-500"
+                                className="p-2 bg-slate-50 dark:bg-dark-bg text-slate-400 dark:text-dark-text-secondary rounded-xl group-hover:bg-emerald-500 group-hover:text-white transition-all shadow-sm dark:border dark:border-transparent dark:group-hover:border-emerald-500"
                               >
                                 <FiEye />
                               </button>

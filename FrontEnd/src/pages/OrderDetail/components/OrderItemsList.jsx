@@ -17,8 +17,8 @@ const OrderItemsList = ({ order, onOpenReturnModal, onCancelReturn }) => {
   if (!order || !order.orderItems) return null;
 
   return (
-    <div className="bg-white dark:bg-dark-surface rounded-[32px] border border-surface-200 dark:border-dark-border shadow-sm overflow-hidden print:border print:shadow-none print:avoid-break">
-      <div className="p-8 border-b border-surface-100 dark:border-dark-border bg-slate-50/50 dark:bg-dark-bg/50 flex items-center gap-3">
+    <div className="bg-white dark:bg-dark-surface rounded-2xl sm:rounded-[32px] border border-surface-200 dark:border-dark-border shadow-sm overflow-hidden print:border print:shadow-none print:avoid-break">
+      <div className="p-4 sm:p-6 md:p-8 border-b border-surface-100 dark:border-dark-border bg-slate-50/50 dark:bg-dark-bg/50 flex items-center gap-3">
         <FiPackage className="text-primary" size={20} />
         <h3 className="text-sm font-black uppercase tracking-widest text-slate-900 dark:text-white">
           Danh mục sản phẩm
@@ -28,7 +28,7 @@ const OrderItemsList = ({ order, onOpenReturnModal, onCancelReturn }) => {
         {order.orderItems.map((item) => (
           <div
             key={item.id}
-            className="p-8 flex flex-col gap-6 group hover:bg-slate-50/50 dark:hover:bg-dark-bg/20 transition-all"
+            className="p-4 sm:p-6 md:p-8 flex flex-col gap-6 group hover:bg-slate-50/50 dark:hover:bg-dark-bg/20 transition-all"
           >
             <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 min-w-0">
               <div className="size-20 sm:size-24 rounded-2xl bg-white dark:bg-dark-bg border border-slate-100 dark:border-dark-border p-2 flex-shrink-0 group-hover:scale-105 transition-transform">

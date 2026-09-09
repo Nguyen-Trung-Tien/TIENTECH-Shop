@@ -127,7 +127,7 @@ const ProductInfo = ({
       </div>
 
       {/* Guarantee & Perks Box */}
-      <div className="grid grid-cols-3 gap-2.5 p-3.5 bg-slate-50/70 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800/80 rounded-2xl">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-2.5 p-3 sm:p-3.5 bg-slate-50/70 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800/80 rounded-2xl">
         <div className="flex items-center gap-2.5 text-xs font-semibold text-slate-700 dark:text-slate-300 min-w-0">
           <div className="size-7 rounded-lg bg-blue-50 dark:bg-blue-900/30 text-primary dark:text-blue-400 flex items-center justify-center shrink-0">
             <FiShield size={14} />

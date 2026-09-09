@@ -98,19 +98,25 @@ const GenericAdminTable = ({
 
       {/* Table Area */}
       <div className="tt-card bg-white dark:bg-dark-surface border border-slate-200 dark:border-slate-800 shadow-xs overflow-hidden">
+        {/* Mobile Swipe Hint */}
+        <div className="sm:hidden px-3.5 py-1.5 bg-slate-50 dark:bg-slate-900/60 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between text-[10px] text-slate-400 dark:text-slate-500 font-mono">
+          <span>&larr; Cuộn ngang xem thêm</span>
+          <span className="font-bold uppercase tracking-wider text-[9px] bg-slate-200/60 dark:bg-slate-800 px-1.5 py-0.5 rounded">Bảng dữ liệu</span>
+        </div>
+
         <div className="overflow-x-auto custom-scrollbar">
-          <table className="w-full text-left border-collapse min-w-[550px] md:min-w-full">
+          <table className="w-full text-left border-collapse min-w-[580px] md:min-w-full">
             <thead>
               <tr className="bg-slate-50/80 dark:bg-slate-900/60 border-b border-slate-200/80 dark:border-slate-800">
                 {safeColumns.map((col, idx) => (
                   <th
                     key={idx}
-                    className={`px-4 py-3 md:px-6 md:py-3.5 text-[10px] font-mono font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 ${col.className || ""}`}
+                    className={`px-3 sm:px-4 py-3 md:px-6 md:py-3.5 text-[10px] font-mono font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 ${col.className || ""}`}
                   >
                     {col.header}
                   </th>
                 ))}
-                <th className="px-4 py-3 md:px-6 md:py-3.5 text-[10px] font-mono font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 text-right">
+                <th className="sticky right-0 bg-slate-50/95 dark:bg-slate-900/95 backdrop-blur-xs px-3 sm:px-4 py-3 md:px-6 md:py-3.5 text-[10px] font-mono font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 text-right border-l border-slate-200/50 dark:border-slate-800/50 shadow-[-4px_0_6px_-2px_rgba(0,0,0,0.03)] z-10">
                   Thao tác
                 </th>
               </tr>
@@ -152,7 +158,7 @@ const GenericAdminTable = ({
                     {columns.map((col, colIdx) => (
                       <td
                         key={colIdx}
-                        className={`px-4 py-3 md:px-6 md:py-3 text-xs md:text-sm ${col.className || ""}`}
+                        className={`px-3 sm:px-4 py-3 md:px-6 md:py-3 text-xs md:text-sm ${col.className || ""}`}
                       >
                         {col.render ? (
                           col.render(item)
@@ -163,7 +169,7 @@ const GenericAdminTable = ({
                         )}
                       </td>
                     ))}
-                    <td className="px-4 py-3 md:px-6 md:py-3 text-right">
+                    <td className="sticky right-0 bg-white/95 dark:bg-dark-surface/95 backdrop-blur-xs group-hover:bg-slate-50/95 dark:group-hover:bg-slate-900/95 px-3 sm:px-4 py-3 md:px-6 md:py-3 text-right border-l border-slate-100 dark:border-slate-800/50 shadow-[-4px_0_6px_-2px_rgba(0,0,0,0.03)] z-10">
                       {renderActions ? (
                         renderActions(item)
                       ) : (

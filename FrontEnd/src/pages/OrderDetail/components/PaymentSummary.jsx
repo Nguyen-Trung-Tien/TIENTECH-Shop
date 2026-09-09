@@ -9,8 +9,8 @@ const PaymentSummary = ({ order, onRepay }) => {
   if (!order) return null;
 
   return (
-    <div className="bg-white dark:bg-dark-surface p-8 rounded-[32px] border border-surface-200 dark:border-dark-border shadow-xl print:border print:shadow-none print:avoid-break">
-      <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-6 flex items-center gap-3">
+    <div className="bg-white dark:bg-dark-surface p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-[32px] border border-surface-200 dark:border-dark-border shadow-xl print:border print:shadow-none print:avoid-break">
+      <h3 className="text-base sm:text-lg font-semibold text-slate-900 dark:text-white mb-4 sm:mb-6 flex items-center gap-3">
         <FiCreditCard className="text-primary" /> Thanh toán
       </h3>
       <div className="space-y-4 mb-8">

@@ -157,8 +157,10 @@ const HeaderAdmin = ({ toggleSidebar, isCollapsed, theme, toggleTheme }) => {
       <div className="flex items-center gap-2 sm:gap-4 shrink-0">
         {/* Toggle Sidebar Button */}
         <button
+          type="button"
           onClick={toggleSidebar}
-          className="flex size-10 items-center justify-center rounded-lg text-slate-500 dark:text-dark-text-secondary hover:bg-slate-100 dark:hover:bg-dark-bg transition-colors"
+          aria-label="Menu điều hướng quản trị"
+          className="flex size-10 items-center justify-center rounded-lg text-slate-500 dark:text-dark-text-secondary hover:bg-slate-100 dark:hover:bg-dark-bg transition-colors cursor-pointer active:scale-95"
           title={isCollapsed ? "Mở rộng" : "Thu gọn"}
         >
           <FiMenu className="text-xl" />
@@ -167,13 +169,13 @@ const HeaderAdmin = ({ toggleSidebar, isCollapsed, theme, toggleTheme }) => {
         {/* Brand / Title Logo (Click sang trang chủ) */}
         <Link
           to="/"
-          className="flex items-center gap-2 cursor-pointer hover:opacity-85 transition-opacity"
+          className="flex items-center gap-2 cursor-pointer hover:opacity-85 transition-opacity min-w-0 shrink-0"
           title="Về trang chủ TienTech Shop"
         >
-          <Logo size="sm" />
+          <Logo size="sm" className="[&>div:last-child]:hidden sm:[&>div:last-child]:flex" />
         </Link>
 
-        {/* Search Bar (Desktop) */}
+        {/* Search Bar (Desktop & Tablet) */}
         <div ref={searchRef} className="hidden md:block relative group">
           <form onSubmit={handleSearch} className="flex relative group">
             <FiSearch
@@ -186,7 +188,7 @@ const HeaderAdmin = ({ toggleSidebar, isCollapsed, theme, toggleTheme }) => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onFocus={() => searchQuery && setShowSuggestions(true)}
-              className="h-10 w-80 lg:w-96 rounded-xl border border-slate-200 dark:border-dark-border bg-slate-50 dark:bg-dark-bg pl-10 pr-16 text-sm font-medium text-slate-900 dark:text-white outline-none focus:border-primary focus:bg-white dark:focus:bg-dark-surface focus:ring-4 focus:ring-primary/10 transition-all"
+              className="h-10 w-60 lg:w-96 rounded-xl border border-slate-200 dark:border-dark-border bg-slate-50 dark:bg-dark-bg pl-10 pr-16 text-sm font-medium text-slate-900 dark:text-white outline-none focus:border-primary focus:bg-white dark:focus:bg-dark-surface focus:ring-4 focus:ring-primary/10 transition-all"
             />
             {searchQuery ? (
               <button
@@ -395,23 +397,23 @@ const HeaderAdmin = ({ toggleSidebar, isCollapsed, theme, toggleTheme }) => {
         </div>
       </div>
 
-      <div className="flex items-center gap-2 md:gap-4">
+      <div className="flex items-center gap-1.5 sm:gap-2.5 md:gap-3">
         {/* Search Icon Trigger (Mobile) */}
         <button
           type="button"
           onClick={() => setShowMobileSearch(true)}
-          className="flex md:hidden size-10 items-center justify-center rounded-xl bg-slate-50 dark:bg-dark-bg text-slate-500 dark:text-dark-text-secondary border border-slate-100 dark:border-dark-border hover:text-primary transition-all shadow-sm cursor-pointer"
+          className="flex md:hidden size-9 sm:size-10 items-center justify-center rounded-xl bg-slate-50 dark:bg-dark-bg text-slate-500 dark:text-dark-text-secondary border border-slate-100 dark:border-dark-border hover:text-primary transition-all shadow-sm cursor-pointer active:scale-95"
           title="Tìm kiếm"
           aria-label="Mở tìm kiếm nhanh trên di động"
         >
-          <FiSearch className="text-lg" />
+          <FiSearch className="text-base sm:text-lg" />
         </button>
 
         {/* Theme Toggle */}
         <button
           type="button"
           onClick={toggleTheme}
-          className="flex size-10 items-center justify-center rounded-xl bg-slate-50/50 dark:bg-dark-bg/50 text-slate-500 dark:text-dark-text-secondary border border-slate-100 dark:border-dark-border/40 hover:text-primary transition-all shadow-sm cursor-pointer"
+          className="flex size-9 sm:size-10 items-center justify-center rounded-xl bg-slate-50/50 dark:bg-dark-bg/50 text-slate-500 dark:text-dark-text-secondary border border-slate-100 dark:border-dark-border/40 hover:text-primary transition-all shadow-sm cursor-pointer active:scale-95"
           title={theme === "dark" ? "Chế độ sáng" : "Chế độ tối"}
           aria-label={theme === "dark" ? "Chuyển sang chế độ sáng" : "Chuyển sang chế độ tối"}
         >
@@ -423,7 +425,7 @@ const HeaderAdmin = ({ toggleSidebar, isCollapsed, theme, toggleTheme }) => {
           type="button"
           onClick={() => navigate("/")}
           aria-label="Về trang chủ khách hàng"
-          className="hidden sm:flex h-10 items-center gap-2 rounded-xl border border-slate-100 dark:border-dark-border/40 bg-white dark:bg-dark-surface px-4 text-sm font-semibold text-slate-600 dark:text-dark-text-secondary hover:bg-slate-50 dark:hover:bg-dark-bg transition-colors shadow-sm cursor-pointer"
+          className="hidden sm:flex h-9 sm:h-10 items-center gap-2 rounded-xl border border-slate-100 dark:border-dark-border/40 bg-white dark:bg-dark-surface px-3 sm:px-4 text-xs sm:text-sm font-semibold text-slate-600 dark:text-dark-text-secondary hover:bg-slate-50 dark:hover:bg-dark-bg transition-colors shadow-sm cursor-pointer active:scale-95"
         >
           <FiHome />
           <span>Trang chủ</span>
@@ -432,7 +434,7 @@ const HeaderAdmin = ({ toggleSidebar, isCollapsed, theme, toggleTheme }) => {
         {/* Notifications */}
         <NotificationBell />
 
-        <div className="h-8 w-[1px] bg-slate-200 dark:bg-dark-border mx-1"></div>
+        <div className="h-6 sm:h-8 w-[1px] bg-slate-200 dark:bg-dark-border mx-0.5 sm:mx-1"></div>
 
         {/* Profile Dropdown */}
         <div className="relative">
@@ -442,17 +444,17 @@ const HeaderAdmin = ({ toggleSidebar, isCollapsed, theme, toggleTheme }) => {
             aria-label="Menu tài khoản quản trị"
             aria-expanded={showProfileMenu}
             aria-haspopup="true"
-            className="flex items-center gap-3 rounded-xl p-1 pr-3 hover:bg-slate-50 dark:hover:bg-dark-bg transition-colors cursor-pointer"
+            className="flex items-center gap-2 sm:gap-3 rounded-xl p-1 pr-1.5 sm:pr-3 hover:bg-slate-50 dark:hover:bg-dark-bg transition-colors cursor-pointer active:scale-95"
           >
             {user?.avatar ? (
               <img
                 src={user.avatar}
                 alt="Avatar"
-                className="size-8 rounded-lg object-cover ring-2 ring-primary/10"
+                className="size-7 sm:size-8 rounded-lg object-cover ring-2 ring-primary/10"
               />
             ) : (
-              <div className="size-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-                <FiUser className="text-lg" />
+              <div className="size-7 sm:size-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                <FiUser className="text-base sm:text-lg" />
               </div>
             )}
             <div className="hidden text-left sm:block">
@@ -468,10 +470,10 @@ const HeaderAdmin = ({ toggleSidebar, isCollapsed, theme, toggleTheme }) => {
           {showProfileMenu && (
             <>
               <div
-                className="fixed inset-0 z-10"
+                className="fixed inset-0 z-40"
                 onClick={() => setShowProfileMenu(false)}
               ></div>
-              <div className="fixed inset-x-3 top-16 sm:absolute sm:inset-auto sm:right-0 sm:top-full sm:mt-2 w-auto sm:w-56 origin-top-right rounded-2xl border border-slate-200 dark:border-dark-border bg-white dark:bg-dark-surface p-2 shadow-2xl z-30 transition-all">
+              <div className="fixed inset-x-3 top-16 sm:absolute sm:inset-auto sm:right-0 sm:top-full sm:mt-2 w-auto sm:w-56 origin-top-right rounded-2xl border border-slate-200 dark:border-dark-border bg-white dark:bg-dark-surface p-2 shadow-2xl z-50 transition-all">
                 <div className="px-3 py-2 border-b border-slate-100 dark:border-dark-border mb-1">
                   <p className="text-sm font-bold text-slate-900 dark:text-white">
                     {user?.username || "Admin"}

@@ -30,8 +30,8 @@ const OrderSummary = ({
   const total = Math.max(0, subtotal + shippingFee - discountAmount);
 
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-[32px] p-8 text-gray-900 dark:text-white shadow-xl border border-gray-200 dark:border-gray-800">
-      <h2 className="text-xl font-black uppercase tracking-widest mb-8 flex items-center gap-3">
+    <div className="bg-white dark:bg-gray-900 rounded-2xl sm:rounded-[32px] p-4 sm:p-6 md:p-8 text-gray-900 dark:text-white shadow-xl border border-gray-200 dark:border-gray-800">
+      <h2 className="text-lg sm:text-xl font-black uppercase tracking-widest mb-6 sm:mb-8 flex items-center gap-3">
         <FiCheckCircle className="text-primary" />
         Tóm tắt đơn hàng
       </h2>
@@ -68,19 +68,19 @@ const OrderSummary = ({
           </div>
         )}
 
-        <div className="pt-5 border-t border-gray-200 dark:border-gray-800 flex justify-between items-end">
+        <div className="pt-5 border-t border-gray-200 dark:border-gray-800 flex flex-col sm:flex-row justify-between sm:items-end gap-2">
           <div>
             <span className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">
               Tổng thanh toán
             </span>
-            <span className="text-3xl font-black text-primary tracking-tighter">
+            <span className="text-2xl sm:text-3xl font-black text-primary tracking-tighter">
               {total.toLocaleString()}₫
             </span>
           </div>
 
           {shippingFee === 0 && (
-            <div className="mb-1">
-              <span className="bg-emerald-500/10 text-emerald-500 text-[9px] font-black px-2 py-1 rounded-lg border border-emerald-500/20 uppercase tracking-widest">
+            <div className="sm:mb-1">
+              <span className="inline-block bg-emerald-500/10 text-emerald-500 text-[9px] font-black px-2 py-1 rounded-lg border border-emerald-500/20 uppercase tracking-widest">
                 Tiết kiệm{" "}
                 {discountAmount > 0
                   ? (discountAmount + 30000).toLocaleString()

@@ -201,7 +201,7 @@ const CheckoutPage = () => {
             />
 
             {/* List items section */}
-            <div className="bg-white dark:bg-dark-surface rounded-[32px] p-8 shadow-sm border border-slate-100 dark:border-dark-border">
+            <div className="bg-white dark:bg-dark-surface rounded-2xl sm:rounded-[32px] p-4 sm:p-6 md:p-8 shadow-sm border border-slate-100 dark:border-dark-border">
               <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-widest mb-6 flex items-center gap-2">
                 <FiShoppingBag className="text-primary" /> Sản phẩm (
                 {selectedItems.length})
@@ -257,7 +257,7 @@ const CheckoutPage = () => {
             </div>
 
             {/* Voucher Selection in Checkout */}
-            <div className="bg-white dark:bg-dark-surface rounded-[32px] p-8 shadow-sm border border-slate-100 dark:border-dark-border">
+            <div className="bg-white dark:bg-dark-surface rounded-2xl sm:rounded-[32px] p-4 sm:p-6 md:p-8 shadow-sm border border-slate-100 dark:border-dark-border">
               <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-widest mb-6 flex items-center gap-2">
                 <FiCheckCircle className="text-primary" /> Ưu đãi của bạn
               </h3>

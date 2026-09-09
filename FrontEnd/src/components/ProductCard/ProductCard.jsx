@@ -43,6 +43,7 @@ const ProductCard = ({ product }) => {
     displayPrice,
     discount = 0,
     stock,
+    totalStock,
     sold,
     image,
     isActive,
@@ -53,6 +54,20 @@ const ProductCard = ({ product }) => {
     basePrice,
     hasVariants,
   } = product;
+
+  // Tính toán tồn kho thực tế: hỗ trợ cả totalStock (backend DB field), stock và tổng biến thể
+  const effectiveStock = useMemo(() => {
+    const rawStock = product.totalStock ?? product.stock;
+    if (rawStock != null && Number(rawStock) > 0) return Number(rawStock);
+    if (Array.isArray(product.variants) && product.variants.length > 0) {
+      const variantStock = product.variants.reduce(
+        (sum, v) => sum + Number(v.stock || v.quantity || 0),
+        0
+      );
+      if (variantStock > 0) return variantStock;
+    }
+    return rawStock != null ? Number(rawStock) : 0;
+  }, [product.totalStock, product.stock, product.variants]);
 
   const handleWishlist = async (e) => {
     e.stopPropagation();
@@ -104,10 +119,11 @@ const ProductCard = ({ product }) => {
     if (!isActive) return toast.error("Sản phẩm đã ngưng kinh doanh!");
 
     setLoadingCart(true);
+    let fullP = null;
     try {
       const res = await getProductByIdApi(id);
       if (res.errCode === 0 && res.product) {
-        const fullP = res.product;
+        fullP = res.product;
         const checkHasVariants =
           fullP.hasVariants === true ||
           fullP.hasVariants === 1 ||
@@ -125,7 +141,11 @@ const ProductCard = ({ product }) => {
       console.error("Fetch product for cart error:", err);
     }
 
-    if (stock < 1) {
+    const currentStock = fullP
+      ? (fullP.totalStock ?? fullP.stock ?? effectiveStock)
+      : effectiveStock;
+
+    if (currentStock < 1) {
       setLoadingCart(false);
       return toast.error("Sản phẩm tạm hết hàng!");
     }
@@ -286,8 +306,8 @@ const ProductCard = ({ product }) => {
             </p>
             {/* Stock indicator */}
             <span className="flex items-center gap-1.5 text-[10px] text-slate-500 dark:text-slate-400 font-medium">
-              <span className={`size-1.5 rounded-full ${stock > 0 ? "bg-emerald-500" : "bg-red-500"}`}></span>
-              {stock > 0 ? "Còn hàng" : "Tạm hết"}
+              <span className={`size-1.5 rounded-full ${effectiveStock > 0 ? "bg-emerald-500" : "bg-red-500"}`}></span>
+              {effectiveStock > 0 ? "Còn hàng" : "Tạm hết"}
             </span>
           </div>
 

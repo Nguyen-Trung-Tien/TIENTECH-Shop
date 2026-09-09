@@ -358,36 +358,36 @@ const OrderPage = () => {
                 )}
 
                 {/* Order Items */}
-                <div className="p-5">
+                <div className="p-4 sm:p-5">
                   <div className="space-y-4">
                     {o.orderItems?.map((i) => {
                       return (
                         <div key={i.id} className="flex flex-col gap-3">
-                          <div className="flex gap-4 items-center">
-                            <div className="size-16 bg-slate-50 dark:bg-dark-bg rounded-xl border border-slate-100 dark:border-dark-border p-2 flex-shrink-0">
+                          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 sm:items-center min-w-0">
+                            <div className="size-16 bg-slate-50 dark:bg-dark-bg rounded-xl border border-slate-100 dark:border-dark-border p-2 shrink-0">
                               <img
                                 src={i.image}
                                 alt={i.productName}
                                 className="w-full h-full object-contain dark:mix-blend-normal"
                               />
                             </div>
-                            <div className="flex-grow min-w-0">
+                            <div className="flex-1 min-w-0">
                               <h4
-                                className="text-sm font-bold text-slate-900 dark:text-white line-clamp-1 hover:text-primary dark:hover:text-brand transition-colors cursor-pointer"
+                                className="text-sm font-bold text-slate-900 dark:text-white line-clamp-2 sm:line-clamp-1 hover:text-primary dark:hover:text-brand transition-colors cursor-pointer break-words [overflow-wrap:anywhere]"
                                 onClick={() =>
                                   navigate(`/orders-detail/${o.id}`)
                                 }
                               >
                                 {i.productName}
                               </h4>
-                              <div className="flex items-center gap-3 mt-1 text-[11px] font-medium text-slate-400 dark:text-dark-text-secondary">
+                              <div className="flex flex-wrap items-center gap-2 sm:gap-3 mt-1 text-[11px] font-medium text-slate-400 dark:text-dark-text-secondary">
                                 <span>
                                   Số lượng:{" "}
                                   <span className="text-slate-900 dark:text-white font-bold">
                                     {i.quantity}
                                   </span>
                                 </span>
-                                <div className="size-1 bg-slate-200 dark:bg-dark-border rounded-full"></div>
+                                <div className="size-1 bg-slate-200 dark:bg-dark-border rounded-full hidden sm:block"></div>
                                 <span>
                                   Đơn giá:{" "}
                                   <span className="text-slate-900 dark:text-white font-bold">
@@ -398,7 +398,7 @@ const OrderPage = () => {
                             </div>
                           </div>
                           {i.returnStatus !== "none" && i.returnReason && (
-                            <div className="ml-20 p-3 bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/20 rounded-xl">
+                            <div className="sm:ml-20 p-3 bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/20 rounded-xl break-words [overflow-wrap:anywhere]">
                               <p className="text-[9px] font-black text-amber-600 dark:text-amber-500 uppercase tracking-widest mb-1 flex items-center gap-2">
                                 <FiRefreshCw size={10} /> Lý do trả hàng
                               </p>
@@ -414,7 +414,7 @@ const OrderPage = () => {
 
                   {/* Order Footer */}
                   <div className="mt-6 pt-5 border-t border-slate-100 dark:border-dark-border flex flex-col sm:flex-row items-center justify-between gap-4">
-                    <div className="text-center sm:text-left">
+                    <div className="text-center sm:text-left w-full sm:w-auto">
                       <p className="text-[10px] font-bold text-slate-400 dark:text-dark-text-secondary uppercase tracking-wider mb-0.5">
                         Tổng thanh toán
                       </p>
@@ -423,7 +423,7 @@ const OrderPage = () => {
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-2 w-full sm:w-auto">
+                    <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
                       <button
                         onClick={() => navigate(`/orders-detail/${o.id}`)}
                         className="flex-1 sm:flex-none h-10 px-5 bg-slate-100 dark:bg-dark-bg text-slate-600 dark:text-dark-text-secondary rounded-xl text-xs font-bold hover:bg-slate-200 dark:hover:bg-dark-border transition-all flex items-center justify-center gap-2"

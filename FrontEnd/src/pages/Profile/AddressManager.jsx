@@ -185,28 +185,28 @@ const AddressManager = () => {
                   : "bg-white dark:bg-dark-surface border-surface-100 dark:border-dark-border hover:border-surface-200 dark:hover:border-slate-700"
               }`}
             >
-              <div className="flex justify-between items-start">
-                <div className="space-y-2">
-                  <div className="flex items-center gap-3">
-                    <span className="font-bold text-surface-900 dark:text-white text-lg">
+              <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
+                <div className="space-y-2 min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <span className="font-bold text-surface-900 dark:text-white text-lg break-words [overflow-wrap:anywhere]">
                       {addr.fullName}
                     </span>
                     {addr.isDefault && (
-                      <Badge variant="primary" className="text-[10px]">
+                      <Badge variant="primary" className="text-[10px] shrink-0">
                         MẶC ĐỊNH
                       </Badge>
                     )}
                   </div>
                   <div className="flex items-center gap-2 text-surface-600 dark:text-dark-text-secondary">
-                    <FiPhone size={14} className="text-primary" />
+                    <FiPhone size={14} className="text-primary shrink-0" />
                     <span className="text-sm font-medium">{addr.phone}</span>
                   </div>
-                  <div className="flex items-start gap-2 text-surface-600 dark:text-dark-text-secondary max-w-lg">
+                  <div className="flex items-start gap-2 text-surface-600 dark:text-dark-text-secondary min-w-0">
                     <FiMapPin
                       size={14}
                       className="mt-1 text-primary shrink-0"
                     />
-                    <span className="text-sm">
+                    <span className="text-sm break-words [overflow-wrap:anywhere]">
                       {[addr.detailAddress, addr.ward, addr.province]
                         .filter(Boolean)
                         .join(", ")}
@@ -214,7 +214,7 @@ const AddressManager = () => {
                   </div>
                 </div>
 
-                <div className="flex gap-2">
+                <div className="flex gap-2 self-end sm:self-start shrink-0">
                   <button
                     onClick={() => handleOpenModal(addr)}
                     className="p-2 text-surface-400 dark:text-dark-text-secondary hover:text-primary transition-colors bg-surface-50 dark:bg-dark-bg rounded-lg"

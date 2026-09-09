@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   FiHome,
@@ -99,10 +99,15 @@ const Sidebar = ({ collapsed, mobileOpen, onCloseMobile }) => {
     returnRequestedCount: 0,
   });
 
-  // Tự động đóng mobile drawer khi chuyển route trên điện thoại
+  const prevPathnameRef = useRef(location.pathname);
+
+  // Tự động đóng mobile drawer CHỈ khi pathname thực sự thay đổi (chuyển trang)
   useEffect(() => {
-    if (onCloseMobile) {
-      onCloseMobile();
+    if (prevPathnameRef.current !== location.pathname) {
+      prevPathnameRef.current = location.pathname;
+      if (onCloseMobile) {
+        onCloseMobile();
+      }
     }
   }, [location.pathname, onCloseMobile]);
 
@@ -161,7 +166,7 @@ const Sidebar = ({ collapsed, mobileOpen, onCloseMobile }) => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onCloseMobile}
-            className="fixed inset-0 bg-slate-950/60 backdrop-blur-md z-40 md:hidden"
+            className="fixed inset-0 bg-slate-950/60 backdrop-blur-md z-50 md:hidden"
           />
         )}
       </AnimatePresence>
@@ -238,14 +243,14 @@ const Sidebar = ({ collapsed, mobileOpen, onCloseMobile }) => {
                           >
                             {item.icon}
                           </span>
-                          {!collapsed && (
+                          {(mobileOpen || !collapsed) && (
                             <span className="text-xs font-bold truncate">
                               {item.label}
                             </span>
                           )}
                         </div>
 
-                        {!collapsed && (
+                        {(mobileOpen || !collapsed) && (
                           <div className="flex items-center gap-1.5">
                             {totalBadges > 0 && (
                               <span className="flex items-center justify-center min-w-[18px] h-[18px] px-1 bg-rose-600 text-white text-[9px] font-mono font-black rounded shadow-xs">
@@ -269,7 +274,7 @@ const Sidebar = ({ collapsed, mobileOpen, onCloseMobile }) => {
                       )}
 
                       {/* Sub-items dropdown */}
-                      {!collapsed && (
+                      {(!collapsed || mobileOpen) && (
                         <AnimatePresence>
                           {isExpanded && (
                             <Motion.div
@@ -287,6 +292,7 @@ const Sidebar = ({ collapsed, mobileOpen, onCloseMobile }) => {
                                   <Link
                                     key={sub.to}
                                     to={sub.to}
+                                    onClick={onCloseMobile}
                                     className={`flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs transition-all ${
                                       isItemActive
                                         ? "text-primary dark:text-blue-400 bg-primary/10 dark:bg-primary/20 font-bold"
@@ -317,6 +323,7 @@ const Sidebar = ({ collapsed, mobileOpen, onCloseMobile }) => {
                   <div key={item.to} className="relative group">
                     <Link
                       to={item.to}
+                      onClick={onCloseMobile}
                       className={`flex items-center gap-2.5 px-3 py-2 rounded-lg transition-all duration-150 ${
                         isActive
                           ? "bg-primary text-white font-bold shadow-xs"

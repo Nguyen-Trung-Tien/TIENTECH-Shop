@@ -658,19 +658,24 @@ const OrderManage = () => {
             orders.map((order) => (
               <div key={order.id} className="p-4 space-y-3">
                 {/* Mobile Card Header */}
-                <div className="flex items-center justify-between gap-2">
-                  <div>
-                    <span className="font-black text-xs text-slate-900 dark:text-white uppercase tracking-wider">
+                <div className="flex items-start justify-between gap-2 min-w-0">
+                  <div className="min-w-0 flex-1">
+                    <span className="font-black text-xs text-slate-900 dark:text-white uppercase tracking-wider block truncate">
                       #{order.orderCode}
                     </span>
                     <p className="text-[10px] text-slate-400 font-medium mt-0.5 flex items-center gap-1">
                       <FiCalendar /> {formatDate(order.createdAt)}
                     </p>
+                    {order.cancelReason && (
+                      <p className="mt-1 text-[10px] text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 px-2 py-0.5 rounded-md border border-rose-100 dark:border-rose-900/30 break-words [overflow-wrap:anywhere]">
+                        Lý do hủy: {order.cancelReason}
+                      </p>
+                    )}
                   </div>
                   <StatusBadge
                     map={statusMap}
                     status={order.status}
-                    className="text-[10px] px-2.5 py-1 font-bold rounded-lg"
+                    className="text-[10px] px-2.5 py-1 font-bold rounded-lg shrink-0"
                   />
                 </div>
 

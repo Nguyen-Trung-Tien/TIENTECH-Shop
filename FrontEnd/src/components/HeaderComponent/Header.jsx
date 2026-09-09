@@ -130,7 +130,7 @@ function Header() {
           </Link>
 
           {/* Desktop Nav Links */}
-          <nav className="hidden xl:flex items-center gap-1 bg-slate-100/80 dark:bg-[#0f1523] p-1 rounded-xl border border-slate-200/80 dark:border-[#1e2638] shrink-0">
+          <nav className="hidden lg:flex items-center gap-1 bg-slate-100/80 dark:bg-[#0f1523] p-1 rounded-xl border border-slate-200/80 dark:border-[#1e2638] shrink-0">
             {navLinks.map((link) => {
               const isActive = location.pathname === link.path;
               return (

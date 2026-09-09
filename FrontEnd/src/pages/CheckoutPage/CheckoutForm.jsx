@@ -243,11 +243,11 @@ const CheckoutForm = ({ formData, setFormData, user }) => {
   }, [paymentOptions, setFormData]);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       {/* Shipping Info */}
-      <section className="bg-white dark:bg-dark-surface rounded-[32px] p-8 shadow-sm border border-slate-100 dark:border-dark-border">
-        <div className="flex items-center gap-3 mb-8">
-          <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+      <section className="bg-white dark:bg-dark-surface rounded-2xl sm:rounded-[32px] p-4 sm:p-6 md:p-8 shadow-sm border border-slate-100 dark:border-dark-border">
+        <div className="flex items-center gap-3 mb-6 sm:mb-8">
+          <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
             <FiTruck size={20} />
           </div>
           <h2 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-widest">
@@ -401,9 +401,9 @@ const CheckoutForm = ({ formData, setFormData, user }) => {
       </section>
 
       {/* Payment Method */}
-      <section className="bg-white dark:bg-dark-surface rounded-[32px] p-8 shadow-sm border border-slate-100 dark:border-dark-border">
-        <div className="flex items-center gap-3 mb-8">
-          <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+      <section className="bg-white dark:bg-dark-surface rounded-2xl sm:rounded-[32px] p-4 sm:p-6 md:p-8 shadow-sm border border-slate-100 dark:border-dark-border">
+        <div className="flex items-center gap-3 mb-6 sm:mb-8">
+          <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
             <FiCreditCard size={20} />
           </div>
           <h2 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-widest">
@@ -422,14 +422,14 @@ const CheckoutForm = ({ formData, setFormData, user }) => {
                 onClick={() =>
                   setFormData((prev) => ({ ...prev, paymentMethod: opt.id }))
                 }
-                className={`flex items-center gap-4 p-5 rounded-2xl border-2 transition-all ${
+                className={`flex items-center gap-4 p-4 sm:p-5 rounded-2xl border-2 transition-all ${
                   isSelected
                     ? "border-primary bg-primary/5 dark:bg-primary/10 shadow-lg shadow-primary/5"
                     : "border-slate-50 dark:border-dark-bg bg-slate-50 dark:bg-dark-bg hover:border-slate-200 dark:hover:border-slate-700"
                 }`}
               >
                 <div
-                  className={`size-10 rounded-xl flex items-center justify-center ${
+                  className={`size-10 rounded-xl flex items-center justify-center shrink-0 ${
                     isSelected
                       ? "bg-primary text-white"
                       : "bg-slate-100 dark:bg-dark-surface text-slate-400 dark:text-dark-text-secondary"
@@ -437,11 +437,11 @@ const CheckoutForm = ({ formData, setFormData, user }) => {
                 >
                   <Icon size={20} />
                 </div>
-                <div className="text-left">
-                  <p className="text-xs font-black text-slate-900 dark:text-white uppercase">
+                <div className="text-left min-w-0 flex-1">
+                  <p className="text-xs font-black text-slate-900 dark:text-white uppercase truncate">
                     {opt.label}
                   </p>
-                  <p className="text-[10px] font-bold text-slate-400 dark:text-dark-text-secondary">
+                  <p className="text-[10px] font-bold text-slate-400 dark:text-dark-text-secondary truncate">
                     {opt.desc}
                   </p>
                 </div>
@@ -454,7 +454,7 @@ const CheckoutForm = ({ formData, setFormData, user }) => {
       {/* Modal Thêm Địa Chỉ Mới */}
       <AnimatePresence>
         {showAddAddressModal && (
-          <div className="fixed inset-0 z-[999] flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[999] flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
             <Motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -470,7 +470,7 @@ const CheckoutForm = ({ formData, setFormData, user }) => {
               initial={{ scale: 0.95, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 20 }}
-              className="relative w-full max-w-lg bg-white dark:bg-dark-surface rounded-[32px] p-6 md:p-8 shadow-2xl z-10 border border-slate-100 dark:border-dark-border"
+              className="relative w-full max-w-lg bg-white dark:bg-dark-surface rounded-2xl sm:rounded-[32px] p-4 sm:p-6 md:p-8 shadow-2xl z-10 border border-slate-100 dark:border-dark-border max-h-[90vh] overflow-y-auto custom-scrollbar"
             >
               <div className="flex items-center justify-between mb-6 border-b pb-4 border-slate-100 dark:border-dark-border">
                 <h3 id="add-address-title" className="text-base font-black text-slate-900 dark:text-white uppercase tracking-tight">

@@ -10,9 +10,10 @@ const ProductInfo = ({ product, avgRating, totalReviews }) => {
 
   // Stock status logic
   const getStockStatus = () => {
+    const effectiveStock = product.totalStock ?? product.stock;
     if (!product.isActive) return { label: "Ngừng kinh doanh", color: "text-slate-400", icon: FiAlertCircle };
-    if (product.stock > 0) return { label: `Còn hàng (${product.stock})`, color: "text-emerald-500", icon: FiCheckCircle };
-    if (product.stock === 0) return { label: "Đặt trước", color: "text-amber-500", icon: FiClock };
+    if (effectiveStock > 0) return { label: `Còn hàng (${effectiveStock})`, color: "text-emerald-500", icon: FiCheckCircle };
+    if (effectiveStock === 0) return { label: "Đặt trước", color: "text-amber-500", icon: FiClock };
     return { label: "Hết hàng", color: "text-danger", icon: FiAlertCircle };
   };
 

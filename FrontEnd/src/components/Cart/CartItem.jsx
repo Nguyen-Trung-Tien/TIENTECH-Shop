@@ -90,11 +90,11 @@ const CartItem = ({
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95 }}
-        className={`p-6 md:p-8 flex flex-col sm:flex-row items-center gap-6 md:gap-8 ${!isLast ? "border-b border-slate-100 dark:border-dark-border" : ""}`}
+        className={`p-3.5 sm:p-6 md:p-8 flex flex-col sm:flex-row items-center gap-4 sm:gap-6 md:gap-8 ${!isLast ? "border-b border-slate-100 dark:border-dark-border" : ""}`}
       >
       {/* Selection & Image */}
-      <div className="flex items-center gap-6 w-full sm:w-auto">
-        <label className="flex items-center cursor-pointer group">
+      <div className="flex items-center gap-3 sm:gap-6 w-full sm:w-auto">
+        <label className="flex items-center cursor-pointer group shrink-0">
           <input
             type="checkbox"
             className="peer sr-only"
@@ -107,7 +107,7 @@ const CartItem = ({
         </label>
 
         <div
-          className="size-28 flex-shrink-0 bg-slate-50 dark:bg-dark-bg rounded-2xl border border-slate-100 dark:border-dark-border p-4 overflow-hidden group cursor-pointer shadow-sm hover:shadow-md transition-all"
+          className="size-20 sm:size-28 shrink-0 bg-slate-50 dark:bg-dark-bg rounded-2xl border border-slate-100 dark:border-dark-border p-2 sm:p-4 overflow-hidden group cursor-pointer shadow-xs hover:shadow-md transition-all"
           onClick={() =>
             navigate(
               `/product-detail/${item.product?.id}?variant=${item.variant?.id}`,
@@ -174,8 +174,8 @@ const CartItem = ({
       </div>
 
       {/* Control Actions */}
-      <div className="flex flex-row sm:flex-col items-center justify-between sm:justify-center gap-6 w-full sm:w-auto border-t sm:border-t-0 sm:border-l border-slate-100 dark:border-dark-border pt-4 sm:pt-0 sm:pl-8">
-        <div className="flex items-center bg-slate-50 dark:bg-dark-bg rounded-2xl border border-slate-100 dark:border-dark-border p-1 shadow-inner">
+      <div className="flex flex-row sm:flex-col items-center justify-between sm:justify-center gap-3 sm:gap-6 w-full sm:w-auto border-t sm:border-t-0 sm:border-l border-slate-100 dark:border-dark-border pt-3 sm:pt-0 sm:pl-6 md:pl-8">
+        <div className="flex items-center bg-slate-50 dark:bg-dark-bg rounded-2xl border border-slate-100 dark:border-dark-border p-1 shadow-inner shrink-0">
           <button
             onClick={() => onUpdateQty(item.id, Math.max(1, item.quantity - 1))}
             className="size-9 flex items-center justify-center bg-white dark:bg-dark-surface rounded-xl text-slate-500 dark:text-dark-text-secondary hover:text-primary transition-all shadow-sm active:scale-90"

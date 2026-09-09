@@ -1,4 +1,4 @@
-import React, { useState, Suspense } from "react";
+import React, { useState, useCallback, Suspense } from "react";
 import { Outlet } from "react-router-dom";
 import HeaderAdmin from "./components/HeaderAdminComponent/HeaderAdmin";
 import Sidebar from "./components/SidebarComponent/Sidebar";
@@ -10,17 +10,17 @@ const AdminLayout = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
 
-  const toggleSidebar = () => {
-    if (window.innerWidth < 768) {
+  const toggleSidebar = useCallback(() => {
+    if (typeof window !== "undefined" && window.innerWidth < 768) {
       setMobileOpen((prev) => !prev);
     } else {
       setCollapsed((prev) => !prev);
     }
-  };
+  }, []);
 
-  const closeMobileSidebar = () => {
+  const closeMobileSidebar = useCallback(() => {
     setMobileOpen(false);
-  };
+  }, []);
 
   return (
     <div className="h-screen w-screen overflow-hidden bg-slate-50 dark:bg-dark-bg text-slate-900 dark:text-dark-text-primary transition-colors duration-300 flex">

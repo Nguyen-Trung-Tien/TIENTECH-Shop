@@ -401,8 +401,8 @@ const PaymentPage = () => {
 
       {/* Table Area */}
       <div className="bg-white dark:bg-dark-surface rounded-[40px] border border-slate-100 dark:border-dark-border shadow-soft overflow-hidden print:shadow-none print:border-none">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+        <div className="overflow-x-auto custom-scrollbar">
+          <table className="w-full text-left border-collapse min-w-[720px] md:min-w-full">
             <thead>
               <tr className="bg-slate-50/50 dark:bg-dark-bg/50 border-b border-slate-100 dark:border-dark-border">
                 <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-dark-text-secondary">
@@ -431,7 +431,7 @@ const PaymentPage = () => {
             <tbody className="divide-y divide-slate-50 dark:divide-dark-border">
               {loading ? (
                 <tr>
-                  <td colSpan="6" className="px-6 py-32 text-center">
+                  <td colSpan="7" className="px-6 py-32 text-center">
                     <div className="flex flex-col items-center gap-4">
                       <FiRefreshCw className="text-4xl text-indigo-600/20 animate-spin" />
                       <p className="text-[10px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest">
@@ -442,7 +442,7 @@ const PaymentPage = () => {
                 </tr>
               ) : payments.length === 0 ? (
                 <tr>
-                  <td colSpan="6" className="px-6 py-32 text-center">
+                  <td colSpan="7" className="px-6 py-32 text-center">
                     <p className="text-slate-400 dark:text-dark-text-secondary font-bold text-sm">
                       Không tìm thấy giao dịch nào phù hợp.
                     </p>

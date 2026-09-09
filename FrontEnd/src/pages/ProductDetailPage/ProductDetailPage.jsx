@@ -486,16 +486,16 @@ const ProductDetailPage = () => {
                   alt={product?.name}
                   className="w-11 h-11 object-cover rounded-lg bg-slate-100 dark:bg-slate-800 shrink-0 border border-slate-200 dark:border-slate-700"
                 />
-                <div className="min-w-0 hidden sm:block">
+                <div className="min-w-0">
                   <h4 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100 truncate">
                     {product?.name}
                   </h4>
                   <div className="flex items-baseline gap-2">
-                    <span className="text-sm font-extrabold text-rose-600 dark:text-rose-500">
+                    <span className="text-xs sm:text-sm font-extrabold text-rose-600 dark:text-rose-500 truncate">
                       {Number(currentPrice).toLocaleString("vi-VN")}₫
                     </span>
                     {discountPercent > 0 && (
-                      <span className="text-[10px] text-slate-400 line-through">
+                      <span className="text-[10px] text-slate-400 line-through hidden sm:inline">
                         {Number(originalPrice).toLocaleString("vi-VN")}₫
                       </span>
                     )}

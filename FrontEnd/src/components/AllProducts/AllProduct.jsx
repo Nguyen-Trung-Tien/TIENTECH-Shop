@@ -233,7 +233,7 @@ const AllProducts = React.memo(() => {
             {/* Product Grid */}
             {!loading && !error && products.length > 0 && (
               <div className="space-y-12">
-                <div className="grid grid-cols-2 md:grid-cols-2 xl:grid-cols-4 gap-x-5 gap-y-8 md:gap-x-6 md:gap-y-10">
+                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5 md:gap-6">
                   {products.map((product) => (
                     <ProductCard key={product.id} product={product} />
                   ))}
