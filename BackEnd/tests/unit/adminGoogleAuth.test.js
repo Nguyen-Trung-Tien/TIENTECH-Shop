@@ -1,6 +1,12 @@
 const AuthService = require("../../src/services/user/AuthService");
 
 describe("AuthService.processGoogleAuth Unit Tests", () => {
+  beforeAll(() => {
+    process.env.JWT_ACCESS_SECRET = "test_access_secret";
+    process.env.JWT_REFRESH_SECRET = "test_refresh_secret";
+    process.env.JWT_ACCESS_EXPIRES = "15m";
+    process.env.JWT_REFRESH_EXPIRES = "7d";
+  });
   test("Should fail if user object is not provided", async () => {
     const result = await AuthService.processGoogleAuth(null, true);
     expect(result.errCode).toBe(1);

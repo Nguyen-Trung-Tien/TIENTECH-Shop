@@ -1,24 +1,29 @@
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
+const getAccessSecret = () =>
+  process.env.JWT_ACCESS_SECRET || process.env.JWT_SECRET || "tientech_jwt_access_secret_fallback";
+const getRefreshSecret = () =>
+  process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET || "tientech_jwt_refresh_secret_fallback";
+
 // Tạo Access Token
 const generateAccessToken = (payload) => {
-  return jwt.sign(payload, process.env.JWT_ACCESS_SECRET, {
-    expiresIn: process.env.JWT_ACCESS_EXPIRES,
+  return jwt.sign(payload, getAccessSecret(), {
+    expiresIn: process.env.JWT_ACCESS_EXPIRES || "15m",
   });
 };
 
 // Tạo Refresh Token
 const generateRefreshToken = (payload) => {
-  return jwt.sign(payload, process.env.JWT_REFRESH_SECRET, {
-    expiresIn: process.env.JWT_REFRESH_EXPIRES,
+  return jwt.sign(payload, getRefreshSecret(), {
+    expiresIn: process.env.JWT_REFRESH_EXPIRES || "7d",
   });
 };
 
 // Verify Access Token (Basic)
 const verifyAccessToken = (token) => {
   try {
-    return jwt.verify(token, process.env.JWT_ACCESS_SECRET);
+    return jwt.verify(token, getAccessSecret());
   } catch (e) {
     return null;
   }
@@ -27,7 +32,7 @@ const verifyAccessToken = (token) => {
 // Verify Access Token (Detailed with expiration & error check)
 const verifyAccessTokenDetailed = (token) => {
   try {
-    const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
+    const decoded = jwt.verify(token, getAccessSecret());
     return { valid: true, expired: false, decoded };
   } catch (e) {
     if (e.name === "TokenExpiredError") {
@@ -39,7 +44,7 @@ const verifyAccessTokenDetailed = (token) => {
 
 const verifyRefreshToken = (token) => {
   try {
-    return jwt.verify(token, process.env.JWT_REFRESH_SECRET);
+    return jwt.verify(token, getRefreshSecret());
   } catch (e) {
     return null;
   }
@@ -47,7 +52,7 @@ const verifyRefreshToken = (token) => {
 
 const verifyRefreshTokenDetailed = (token) => {
   try {
-    const decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET);
+    const decoded = jwt.verify(token, getRefreshSecret());
     return { valid: true, expired: false, decoded };
   } catch (e) {
     if (e.name === "TokenExpiredError") {

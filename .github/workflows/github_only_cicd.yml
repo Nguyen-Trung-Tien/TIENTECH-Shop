@@ -61,6 +61,8 @@ jobs:
           JWT_SECRET: github_test_secret
           JWT_ACCESS_SECRET: github_test_access_secret
           JWT_REFRESH_SECRET: github_test_refresh_secret
+          JWT_ACCESS_EXPIRES: 15m
+          JWT_REFRESH_EXPIRES: 7d
           GOOGLE_CLIENT_ID: dummy_google_client_id
           GOOGLE_CLIENT_SECRET: dummy_google_client_secret
 
