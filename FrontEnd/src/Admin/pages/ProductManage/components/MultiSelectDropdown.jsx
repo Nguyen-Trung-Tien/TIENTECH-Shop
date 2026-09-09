@@ -33,7 +33,7 @@ const MultiSelectDropdown = React.memo(({ label, options = [], selected = [], on
   }, []);
 
   return (
-    <div className="relative flex-1 min-w-[150px]" ref={dropdownRef}>
+    <div className="relative flex-1 min-w-[130px] sm:min-w-[150px]" ref={dropdownRef}>
       <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
@@ -57,7 +57,7 @@ const MultiSelectDropdown = React.memo(({ label, options = [], selected = [], on
       </button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 mt-2 w-56 p-2 bg-white dark:bg-dark-surface border border-slate-200/90 dark:border-dark-border rounded-2xl shadow-xl shadow-slate-300/40 dark:shadow-none z-50 max-h-60 overflow-y-auto custom-scrollbar animate-in fade-in slide-in-from-top-2 duration-150">
+        <div className="absolute top-full left-0 mt-2 w-56 max-w-[calc(100vw-2.5rem)] p-2 bg-white dark:bg-dark-surface border border-slate-200/90 dark:border-dark-border rounded-2xl shadow-xl shadow-slate-300/40 dark:shadow-none z-50 max-h-60 overflow-y-auto custom-scrollbar animate-in fade-in slide-in-from-top-2 duration-150">
           {safeOptions.length === 0 ? (
             <div className="p-3 text-center text-xs font-medium text-slate-400">
               Không có tùy chọn

@@ -403,59 +403,59 @@ const OrderManage = () => {
       </div>
 
       {/* Overview Stat Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="bg-white dark:bg-dark-surface p-4 rounded-2xl border border-slate-100 dark:border-dark-border shadow-2xs flex items-center gap-3">
-          <div className="size-10 rounded-xl bg-slate-100 dark:bg-dark-bg text-slate-600 dark:text-slate-300 flex items-center justify-center text-lg shrink-0">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3">
+        <div className="bg-white dark:bg-dark-surface p-3 sm:p-4 rounded-2xl border border-slate-100 dark:border-dark-border shadow-2xs flex items-center gap-2.5 sm:gap-3 min-w-0">
+          <div className="size-9 sm:size-10 rounded-xl bg-slate-100 dark:bg-dark-bg text-slate-600 dark:text-slate-300 flex items-center justify-center text-base sm:text-lg shrink-0">
             <FiShoppingBag />
           </div>
-          <div>
-            <p className="text-[11px] font-bold text-slate-400 dark:text-dark-text-secondary uppercase tracking-wider">
+          <div className="min-w-0 flex-1">
+            <p className="text-[10px] sm:text-[11px] font-bold text-slate-400 dark:text-dark-text-secondary uppercase tracking-wider truncate">
               Tổng số trang
             </p>
-            <p className="text-base sm:text-lg font-black text-slate-900 dark:text-white mt-0.5">
-              {summaryStats.total} <span className="text-xs font-semibold text-slate-400">đơn</span>
+            <p className="text-sm sm:text-lg font-black text-slate-900 dark:text-white mt-0.5 truncate">
+              {summaryStats.total} <span className="text-[10px] sm:text-xs font-semibold text-slate-400">đơn</span>
             </p>
           </div>
         </div>
 
-        <div className="bg-white dark:bg-dark-surface p-4 rounded-2xl border border-slate-100 dark:border-dark-border shadow-2xs flex items-center gap-3">
-          <div className="size-10 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-500 flex items-center justify-center text-lg shrink-0">
+        <div className="bg-white dark:bg-dark-surface p-3 sm:p-4 rounded-2xl border border-slate-100 dark:border-dark-border shadow-2xs flex items-center gap-2.5 sm:gap-3 min-w-0">
+          <div className="size-9 sm:size-10 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-500 flex items-center justify-center text-base sm:text-lg shrink-0">
             <FiClock />
           </div>
-          <div>
-            <p className="text-[11px] font-bold text-slate-400 dark:text-dark-text-secondary uppercase tracking-wider">
+          <div className="min-w-0 flex-1">
+            <p className="text-[10px] sm:text-[11px] font-bold text-slate-400 dark:text-dark-text-secondary uppercase tracking-wider truncate">
               Chờ xử lý
             </p>
-            <p className="text-base sm:text-lg font-black text-amber-600 dark:text-amber-400 mt-0.5">
-              {summaryStats.pending} <span className="text-xs font-semibold text-slate-400">đơn</span>
+            <p className="text-sm sm:text-lg font-black text-amber-600 dark:text-amber-400 mt-0.5 truncate">
+              {summaryStats.pending} <span className="text-[10px] sm:text-xs font-semibold text-slate-400">đơn</span>
             </p>
           </div>
         </div>
 
-        <div className="bg-white dark:bg-dark-surface p-4 rounded-2xl border border-slate-100 dark:border-dark-border shadow-2xs flex items-center gap-3">
-          <div className="size-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-500 flex items-center justify-center text-lg shrink-0">
+        <div className="bg-white dark:bg-dark-surface p-3 sm:p-4 rounded-2xl border border-slate-100 dark:border-dark-border shadow-2xs flex items-center gap-2.5 sm:gap-3 min-w-0">
+          <div className="size-9 sm:size-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-500 flex items-center justify-center text-base sm:text-lg shrink-0">
             <FiTruck />
           </div>
-          <div>
-            <p className="text-[11px] font-bold text-slate-400 dark:text-dark-text-secondary uppercase tracking-wider">
+          <div className="min-w-0 flex-1">
+            <p className="text-[10px] sm:text-[11px] font-bold text-slate-400 dark:text-dark-text-secondary uppercase tracking-wider truncate">
               Đang xử lý/Giao
             </p>
-            <p className="text-base sm:text-lg font-black text-indigo-600 dark:text-indigo-400 mt-0.5">
-              {summaryStats.shipping} <span className="text-xs font-semibold text-slate-400">đơn</span>
+            <p className="text-sm sm:text-lg font-black text-indigo-600 dark:text-indigo-400 mt-0.5 truncate">
+              {summaryStats.shipping} <span className="text-[10px] sm:text-xs font-semibold text-slate-400">đơn</span>
             </p>
           </div>
         </div>
 
-        <div className="bg-white dark:bg-dark-surface p-4 rounded-2xl border border-slate-100 dark:border-dark-border shadow-2xs flex items-center gap-3">
-          <div className="size-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-500 flex items-center justify-center text-lg shrink-0">
+        <div className="bg-white dark:bg-dark-surface p-3 sm:p-4 rounded-2xl border border-slate-100 dark:border-dark-border shadow-2xs flex items-center gap-2.5 sm:gap-3 min-w-0">
+          <div className="size-9 sm:size-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-500 flex items-center justify-center text-base sm:text-lg shrink-0">
             <FiCheckCircle />
           </div>
-          <div>
-            <p className="text-[11px] font-bold text-slate-400 dark:text-dark-text-secondary uppercase tracking-wider">
+          <div className="min-w-0 flex-1">
+            <p className="text-[10px] sm:text-[11px] font-bold text-slate-400 dark:text-dark-text-secondary uppercase tracking-wider truncate">
               Đã giao / Hoàn tất
             </p>
-            <p className="text-base sm:text-lg font-black text-emerald-600 dark:text-emerald-400 mt-0.5">
-              {summaryStats.completed} <span className="text-xs font-semibold text-slate-400">đơn</span>
+            <p className="text-sm sm:text-lg font-black text-emerald-600 dark:text-emerald-400 mt-0.5 truncate">
+              {summaryStats.completed} <span className="text-[10px] sm:text-xs font-semibold text-slate-400">đơn</span>
             </p>
           </div>
         </div>
@@ -736,7 +736,7 @@ const OrderManage = () => {
                 </div>
 
                 {/* Mobile Card Action Buttons */}
-                <div className="flex items-center justify-end gap-2 pt-1 border-t border-slate-100 dark:border-dark-border/60">
+                <div className="flex items-center justify-end gap-1.5 sm:gap-2 pt-1 border-t border-slate-100 dark:border-dark-border/60 flex-wrap">
                   <button
                     onClick={() => navigate(`/admin/order/${order.id}`)}
                     className="px-3 py-1.5 bg-slate-100 dark:bg-dark-bg text-slate-600 dark:text-dark-text-secondary rounded-lg text-[10px] font-bold flex items-center gap-1 cursor-pointer"

@@ -536,7 +536,7 @@ const SystemSettingsPage = () => {
                       </div>
                       {!isBoolean && (
                         <div className="pt-1 space-y-2">
-                          <div className="flex items-center gap-2">
+                          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                             {isTextarea ? (
                               <textarea
                                 rows={3}
@@ -558,7 +558,7 @@ const SystemSettingsPage = () => {
                             )}
 
                             {isDirty && (
-                              <div className="flex items-center gap-1.5 shrink-0">
+                              <div className="flex items-center justify-end gap-1.5 shrink-0">
                                 <button
                                   type="button"
                                   onClick={() => handleSaveSingle(item)}

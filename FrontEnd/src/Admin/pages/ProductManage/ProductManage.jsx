@@ -308,15 +308,15 @@ const ProductManage = () => {
 
   return (
     <LazyMotion features={domAnimation}>
-      <div className="space-y-6 max-w-7xl mx-auto p-4 md:p-6 pb-20">
+      <div className="space-y-4 sm:space-y-6 max-w-7xl mx-auto p-2 sm:p-4 md:p-6 pb-20">
         {/* Top Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-dark-text-primary tracking-tight flex items-center gap-3">
-              <div className="size-12 rounded-2xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-200 dark:shadow-none">
-                <FiBox className="text-2xl" />
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-slate-900 dark:text-dark-text-primary tracking-tight flex items-center gap-2.5 sm:gap-3">
+              <div className="size-10 sm:size-12 rounded-2xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-200 dark:shadow-none shrink-0">
+                <FiBox className="text-xl sm:text-2xl" />
               </div>
-              Quản lý Sản phẩm Kho hàng
+              <span className="truncate">Quản lý Sản phẩm Kho hàng</span>
             </h1>
             <p className="text-xs sm:text-sm text-slate-500 dark:text-dark-text-secondary font-medium mt-1">
               Hệ thống tạo & phân loại sản phẩm siêu tốc tích hợp Trợ lý AI.

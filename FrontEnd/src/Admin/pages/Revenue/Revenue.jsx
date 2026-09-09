@@ -181,8 +181,8 @@ const Revenue = () => {
               LIVE
             </div>
           </div>
-          <div className="h-[380px] sm:h-[650px]">
-            <ChartCard />
+          <div className="w-full">
+            <ChartCard embedded={true} />
           </div>
         </div>
 

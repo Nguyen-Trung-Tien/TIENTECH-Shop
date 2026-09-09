@@ -48,7 +48,7 @@ const formatCurrency = (value) => {
   return value.toLocaleString("vi-VN");
 };
 
-const ChartCard = ({ token }) => {
+const ChartCard = ({ token, embedded = false }) => {
   const [type, setType] = useState(PERIOD.WEEK);
   const [loading, setLoading] = useState(false);
   const [dashboardData, setDashboardData] = useState({
@@ -107,30 +107,36 @@ const ChartCard = ({ token }) => {
     <Motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white dark:bg-dark-surface rounded-3xl border border-slate-200 dark:border-dark-border shadow-soft overflow-hidden p-4 sm:p-6 md:p-8 transition-colors duration-300 w-full"
+      className={`w-full transition-colors duration-300 ${
+        embedded
+          ? ""
+          : "bg-white dark:bg-dark-surface rounded-3xl border border-slate-200 dark:border-dark-border shadow-soft overflow-hidden p-4 sm:p-6 md:p-8"
+      }`}
     >
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-        <div>
-          <h5 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white tracking-tight">
-            Biểu đồ doanh thu
-          </h5>
-          <p className="text-[10px] sm:text-[11px] font-bold text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest mt-0.5">
-            Dữ liệu thời gian thực (Real-time analytics)
-          </p>
+      {!embedded && (
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+          <div>
+            <h5 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white tracking-tight">
+              Biểu đồ doanh thu
+            </h5>
+            <p className="text-[10px] sm:text-[11px] font-bold text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest mt-0.5">
+              Dữ liệu thời gian thực (Real-time analytics)
+            </p>
+          </div>
+          <button
+            onClick={fetchDashboard}
+            disabled={loading}
+            className="flex items-center gap-2 min-h-[44px] px-5 bg-slate-100 hover:bg-slate-200 dark:bg-dark-bg dark:hover:bg-slate-800 text-slate-700 dark:text-dark-text-secondary rounded-2xl text-xs font-bold transition-all border border-slate-200/80 dark:border-dark-border active:scale-95 shadow-sm cursor-pointer"
+          >
+            {loading ? (
+              <UnifiedSpinner size="xs" variant="primary" />
+            ) : (
+              <FiRefreshCw className="text-base" />
+            )}
+            <span>Làm mới dữ liệu</span>
+          </button>
         </div>
-        <button
-          onClick={fetchDashboard}
-          disabled={loading}
-          className="flex items-center gap-2 min-h-[44px] px-5 bg-slate-100 hover:bg-slate-200 dark:bg-dark-bg dark:hover:bg-slate-800 text-slate-700 dark:text-dark-text-secondary rounded-2xl text-xs font-bold transition-all border border-slate-200/80 dark:border-dark-border active:scale-95 shadow-sm cursor-pointer"
-        >
-          {loading ? (
-            <UnifiedSpinner size="xs" variant="primary" />
-          ) : (
-            <FiRefreshCw className="text-base" />
-          )}
-          <span>Làm mới dữ liệu</span>
-        </button>
-      </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-6 md:mb-8">
         <div className="bg-indigo-50/50 dark:bg-indigo-500/5 border border-indigo-100 dark:border-indigo-500/10 rounded-2xl p-4 sm:p-5">
@@ -156,6 +162,20 @@ const ChartCard = ({ token }) => {
               {p === "week" ? "Tuần" : p === "month" ? "Tháng" : "Năm"}
             </button>
           ))}
+          {embedded && (
+            <button
+              onClick={fetchDashboard}
+              disabled={loading}
+              className="flex items-center gap-2 min-h-[44px] px-4 bg-slate-100 hover:bg-slate-200 dark:bg-dark-bg dark:hover:bg-slate-800 text-slate-700 dark:text-dark-text-secondary rounded-2xl text-xs font-bold transition-all border border-slate-200/80 dark:border-dark-border active:scale-95 shadow-sm cursor-pointer"
+              title="Làm mới dữ liệu"
+            >
+              {loading ? (
+                <UnifiedSpinner size="xs" variant="primary" />
+              ) : (
+                <FiRefreshCw className="text-base" />
+              )}
+            </button>
+          )}
         </div>
       </div>
 

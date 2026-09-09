@@ -23,7 +23,7 @@ const AdminLayout = () => {
   }, []);
 
   return (
-    <div className="h-screen w-screen overflow-hidden bg-slate-50 dark:bg-dark-bg text-slate-900 dark:text-dark-text-primary transition-colors duration-300 flex">
+    <div className="h-screen w-full max-w-full min-w-0 overflow-hidden bg-slate-50 dark:bg-dark-bg text-slate-900 dark:text-dark-text-primary transition-colors duration-300 flex">
       {/* Sidebar - Desktop Sticky + Mobile Off-Canvas Drawer */}
       <Sidebar
         collapsed={collapsed}

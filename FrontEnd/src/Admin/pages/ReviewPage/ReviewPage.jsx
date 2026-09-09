@@ -123,13 +123,13 @@ const ReviewPage = () => {
     <div className="space-y-8 p-4 md:p-8 max-w-[1200px] mx-auto transition-colors duration-300">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-3">
-            <div className="size-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary shadow-sm">
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2.5 sm:gap-3">
+            <div className="size-10 sm:size-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary shadow-sm shrink-0">
               <FiMessageSquare />
             </div>
-            Quản lý đánh giá
+            <span>Quản lý đánh giá</span>
           </h1>
-          <p className="text-slate-500 dark:text-dark-text-secondary font-bold text-xs uppercase tracking-widest mt-2 ml-15">
+          <p className="text-slate-500 dark:text-dark-text-secondary font-bold text-xs uppercase tracking-widest mt-1.5 sm:mt-2 ml-0 sm:ml-15">
             Lắng nghe khách hàng & Phản hồi cộng đồng
           </p>
         </div>
@@ -214,18 +214,18 @@ const ReviewPage = () => {
               key={review.id}
               className="bg-white dark:bg-dark-surface rounded-[32px] border border-slate-100 dark:border-dark-border shadow-soft overflow-hidden group"
             >
-              <div className="p-8">
+              <div className="p-4 sm:p-6 md:p-8">
                 {/* Header Info */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-                  <div className="flex items-center gap-4">
-                    <div className="size-12 rounded-2xl bg-slate-100 dark:bg-dark-bg flex items-center justify-center text-slate-400 dark:text-dark-text-secondary group-hover:bg-primary/5 transition-colors border border-transparent dark:border-dark-border">
+                  <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
+                    <div className="size-10 sm:size-12 rounded-2xl bg-slate-100 dark:bg-dark-bg flex items-center justify-center text-slate-400 dark:text-dark-text-secondary group-hover:bg-primary/5 transition-colors border border-transparent dark:border-dark-border shrink-0">
                       <FiUser size={20} />
                     </div>
-                    <div>
-                      <h4 className="text-base font-black text-slate-900 dark:text-white leading-tight mb-1">
+                    <div className="min-w-0 flex-1">
+                      <h4 className="text-base font-black text-slate-900 dark:text-white leading-tight mb-1 truncate">
                         {review.user?.username || "Unknown User"}
                       </h4>
-                      <p className="text-[10px] font-black text-primary uppercase tracking-widest">
+                      <p className="text-[10px] font-black text-primary uppercase tracking-widest truncate">
                         {review.product?.name}
                       </p>
                     </div>
@@ -268,7 +268,7 @@ const ReviewPage = () => {
                 </div>
 
                 {/* Replies Area */}
-                <div className="space-y-4 ml-6 border-l-2 border-slate-100 dark:border-dark-border pl-6">
+                <div className="space-y-4 ml-2 sm:ml-6 border-l-2 border-slate-100 dark:border-dark-border pl-3 sm:pl-6">
                   {(replies[review.id] || []).map((rep) => (
                     <div
                       key={rep.id}

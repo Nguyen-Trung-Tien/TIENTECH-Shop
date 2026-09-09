@@ -150,15 +150,15 @@ const OrdersReturnPage = () => {
                 </div>
 
                 <div className="p-5 flex-grow space-y-5">
-                  <div className="flex items-center gap-3">
-                    <div className="size-10 bg-indigo-600/10 dark:bg-indigo-500/20 rounded-xl flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="size-10 bg-indigo-600/10 dark:bg-indigo-500/20 rounded-xl flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0">
                       <FiUser />
                     </div>
-                    <div>
-                      <p className="text-sm font-bold text-slate-900 dark:text-white">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-bold text-slate-900 dark:text-white truncate">
                         {order.user?.username}
                       </p>
-                      <p className="text-[11px] text-slate-500 dark:text-dark-text-secondary font-medium">
+                      <p className="text-[11px] text-slate-500 dark:text-dark-text-secondary font-medium truncate">
                         {order.user?.phone}
                       </p>
                     </div>

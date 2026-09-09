@@ -99,13 +99,13 @@ const AIInsightsWidget = () => {
                 </p>
               </div>
             ) : insights ? (
-              <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-8 border-t border-slate-100 dark:border-dark-border">
+              <div className="p-4 sm:p-6 md:p-8 grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 md:gap-8 border-t border-slate-100 dark:border-dark-border">
                 {/* Promotion Suggestions */}
                 <div className="space-y-4">
                   <h4 className="flex items-center gap-2 text-[10px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest">
                     <FiTrendingUp className="text-rose-500" /> Đẩy mạnh doanh số
                   </h4>
-                  <div className="bg-slate-50 dark:bg-dark-bg/50 rounded-2xl p-5 border border-slate-100 dark:border-dark-border">
+                  <div className="bg-slate-50 dark:bg-dark-bg/50 rounded-2xl p-4 sm:p-5 border border-slate-100 dark:border-dark-border">
                     <ul className="space-y-3">
                       {insights.promotionSuggestions?.map((item, i) => (
                         <li
@@ -125,7 +125,7 @@ const AIInsightsWidget = () => {
                   <h4 className="flex items-center gap-2 text-[10px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest">
                     <FiShoppingBag className="text-sky-500" /> Quản lý tồn kho
                   </h4>
-                  <div className="bg-slate-50 dark:bg-dark-bg/50 rounded-2xl p-5 border border-slate-100 dark:border-dark-border">
+                  <div className="bg-slate-50 dark:bg-dark-bg/50 rounded-2xl p-4 sm:p-5 border border-slate-100 dark:border-dark-border">
                     <ul className="space-y-3">
                       {insights.restockSuggestions?.map((item, i) => (
                         <li
@@ -141,13 +141,13 @@ const AIInsightsWidget = () => {
                 </div>
 
                 {/* Strategic Advice & 1-Click Action */}
-                <div className="md:col-span-2 border-t border-slate-100 dark:border-dark-border pt-6 mt-2">
-                  <div className="bg-indigo-50/50 dark:bg-indigo-500/5 border border-indigo-100 dark:border-indigo-500/10 rounded-2xl p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                    <div className="flex items-start gap-4">
+                <div className="md:col-span-2 border-t border-slate-100 dark:border-dark-border pt-4 sm:pt-6 mt-2">
+                  <div className="bg-indigo-50/50 dark:bg-indigo-500/5 border border-indigo-100 dark:border-indigo-500/10 rounded-2xl p-4 sm:p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                    <div className="flex items-start gap-3 sm:gap-4 min-w-0 flex-1">
                       <div className="size-10 rounded-xl bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0">
                         <FiAlertCircle size={20} />
                       </div>
-                      <div>
+                      <div className="min-w-0 flex-1">
                         <p className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest mb-1">
                           Lời khuyên chiến lược từ AI
                         </p>
@@ -160,7 +160,7 @@ const AIInsightsWidget = () => {
                     <a
                       href="/admin/vouchers"
                       onClick={() => toast.success("AI đã đề xuất cấu hình Flash Sale 15% cho bạn tại trang Vouchers!")}
-                      className="px-5 py-2.5 text-xs font-black uppercase tracking-wider text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 rounded-xl shadow-md shrink-0 flex items-center gap-2 transition"
+                      className="w-full md:w-auto text-center justify-center px-5 py-2.5 text-xs font-black uppercase tracking-wider text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 rounded-xl shadow-md shrink-0 flex items-center gap-2 transition cursor-pointer"
                     >
                       <FiCpu className="w-4 h-4 animate-spin" /> 1-Click Tạo Flash Sale AI
                     </a>

@@ -23,8 +23,8 @@ const ProductFilterBar = ({
 }) => {
   return (
     <div className="bg-white dark:bg-dark-surface rounded-3xl shadow-lg shadow-slate-200/50 dark:shadow-none border border-slate-200/80 dark:border-dark-border relative z-20">
-      <div className="p-6 bg-slate-50/50 dark:bg-dark-bg/50 border-b border-slate-100 dark:border-dark-border space-y-4">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+      <div className="p-3.5 sm:p-6 bg-slate-50/50 dark:bg-dark-bg/50 border-b border-slate-100 dark:border-dark-border space-y-3 sm:space-y-4">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 sm:gap-4">
           {/* Search Input */}
           <div className="relative flex-1">
             <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-dark-text-secondary" />
@@ -38,18 +38,18 @@ const ProductFilterBar = ({
           </div>
 
           {/* Action Buttons */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5 sm:gap-3 w-full sm:w-auto">
             <button
               type="button"
               onClick={clearFilters}
-              className="flex items-center gap-1.5 px-4 h-11 rounded-2xl bg-white dark:bg-dark-bg border border-slate-200 dark:border-dark-border text-slate-500 hover:text-rose-500 font-bold text-xs transition-all hover:border-rose-200 cursor-pointer"
+              className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-4 h-11 rounded-2xl bg-white dark:bg-dark-bg border border-slate-200 dark:border-dark-border text-slate-500 hover:text-rose-500 font-bold text-xs transition-all hover:border-rose-200 cursor-pointer"
             >
               <FiTrash2 /> Xóa bộ lọc
             </button>
             <button
               type="button"
               onClick={() => fetchProducts(1)}
-              className="size-11 bg-indigo-600 text-white rounded-2xl flex items-center justify-center hover:bg-indigo-700 transition-all shadow-md shadow-indigo-200 dark:shadow-none cursor-pointer"
+              className="size-11 shrink-0 bg-indigo-600 text-white rounded-2xl flex items-center justify-center hover:bg-indigo-700 transition-all shadow-md shadow-indigo-200 dark:shadow-none cursor-pointer"
               title="Làm mới dữ liệu"
             >
               <FiRefreshCw className={loadingTable ? "animate-spin" : ""} />

@@ -207,7 +207,7 @@ const Dashboard = () => {
                 </span>
               </div>
             </div>
-            <ChartCard />
+            <ChartCard embedded={true} />
           </div>
         </div>
       )}
