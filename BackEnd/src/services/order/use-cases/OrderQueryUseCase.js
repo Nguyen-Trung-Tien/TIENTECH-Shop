@@ -130,7 +130,7 @@ const getAllOrders = async (params = {}, ...legacyArgs) => {
   }
 };
 
-const getOrderById = async (id) => {
+const getOrderById = async (id, currentUser = null) => {
   try {
     const order = await db.Order.findByPk(id, {
       include: [
@@ -158,7 +158,22 @@ const getOrderById = async (id) => {
     });
 
     if (!order) {
-      return { errCode: 1, errMessage: "Order not found" };
+      return { errCode: 1, errMessage: "Order not found", statusCode: 404 };
+    }
+
+    // SECURITY: Prevent IDOR - customers can only view their own orders
+    if (
+      currentUser &&
+      currentUser.role !== "admin" &&
+      currentUser.role !== "root" &&
+      String(order.userId) !== String(currentUser.id)
+    ) {
+      return {
+        errCode: 403,
+        statusCode: 403,
+        status: "FORBIDDEN",
+        errMessage: "Bạn không có quyền truy cập đơn hàng của người dùng khác.",
+      };
     }
 
     return { errCode: 0, errMessage: "Get order successfully", data: order };

@@ -198,10 +198,15 @@ class AuthService {
 
       const user = await db.User.findOne({ where: { email } });
       if (!user || user.resetToken !== hashToken(token)) return { errCode: 1, errMessage: "Token không hợp lệ" };
+      if (user.resetTokenExpiresAt && new Date(user.resetTokenExpiresAt) < new Date()) {
+        return { errCode: 2, errMessage: "Token đặt lại mật khẩu đã hết hạn!" };
+      }
       
       user.password = await hashUserPassword(newPassword);
       user.resetToken = null;
       user.resetTokenExpiresAt = null;
+      user.refreshTokenHash = null;
+      user.refreshTokenExpiresAt = null;
       await user.save();
 
       await deleteCache(getUserProfileKey(user.id));

@@ -46,7 +46,7 @@ const handleError = (res, e, method = "API") => {
     statusCode: HTTP_STATUS.INTERNAL_SERVER_ERROR,
     errCode: -1,
     errMessage: "Lỗi máy chủ nội bộ. Vui lòng thử lại sau.",
-    message: e.message || "Internal server error",
+    message: process.env.NODE_ENV === "production" ? "Internal server error" : (e.message || "Internal server error"),
     details: process.env.NODE_ENV === "development" ? e.stack : undefined,
   });
 };

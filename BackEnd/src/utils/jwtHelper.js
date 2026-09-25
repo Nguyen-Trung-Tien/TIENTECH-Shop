@@ -1,10 +1,27 @@
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
-const getAccessSecret = () =>
-  process.env.JWT_ACCESS_SECRET || process.env.JWT_SECRET || "tientech_jwt_access_secret_fallback";
-const getRefreshSecret = () =>
-  process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET || "tientech_jwt_refresh_secret_fallback";
+const getAccessSecret = () => {
+  const secret = process.env.JWT_ACCESS_SECRET || process.env.JWT_SECRET;
+  if (!secret) {
+    if (process.env.NODE_ENV === "production") {
+      throw new Error("FATAL CONFIG ERROR: JWT_ACCESS_SECRET is required in production environment!");
+    }
+    return "dev_local_access_secret_do_not_use_in_prod";
+  }
+  return secret;
+};
+
+const getRefreshSecret = () => {
+  const secret = process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET;
+  if (!secret) {
+    if (process.env.NODE_ENV === "production") {
+      throw new Error("FATAL CONFIG ERROR: JWT_REFRESH_SECRET is required in production environment!");
+    }
+    return "dev_local_refresh_secret_do_not_use_in_prod";
+  }
+  return secret;
+};
 
 // Tạo Access Token
 const generateAccessToken = (payload) => {

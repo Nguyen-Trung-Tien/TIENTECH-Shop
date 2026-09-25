@@ -268,8 +268,9 @@ const filterProducts = async ({
         const values = Array.isArray(val) ? val : String(val).split(",").map(v => v.trim());
         if (values.length > 0) {
           // Mỗi loại thuộc tính phải thỏa mãn ít nhất một trong các giá trị đã chọn (OR trong nhóm, AND giữa các nhóm)
-          // Sửa cú pháp quote cho MySQL (sử dụng backticks thay vì double quotes)
-          const escapedValues = values.map(v => `'${v.replace(/'/g, "''")}'`).join(",");
+          // Escape both attribute key and values using dialect-aware escaping (db.sequelize.escape)
+          const safeKey = db.sequelize.escape(key);
+          const safeValues = values.map((v) => db.sequelize.escape(String(v))).join(",");
           andConditions.push({
             id: {
               [Op.in]: db.sequelize.literal(`(
@@ -277,9 +278,9 @@ const filterProducts = async ({
                 FROM ProductAttributeValues AS pav
                 JOIN AttributeValues AS av ON pav.attributeValueId = av.id
                 JOIN Attributes AS a ON av.attributeId = a.id
-                WHERE a.code = '${key}' AND av.value IN (${escapedValues})
-              )`)
-            }
+                WHERE a.code = ${safeKey} AND av.value IN (${safeValues})
+              )`),
+            },
           });
         }
       }

@@ -6,6 +6,8 @@ const ProductService = require("./services/product/ProductService");
 const { initOrderCron } = require("./cron/orderCron");
 const { initInventoryCron } = require("./cron/inventoryCron");
 const { verifyAccessToken } = require("./utils/jwtHelper");
+const { getCache } = require("./config/redis");
+const { getTokenBlacklistKey } = require("./services/user/AuthHelper");
 
 const server = http.createServer(app);
 
@@ -59,29 +61,43 @@ if (process.env.NODE_ENV !== "test") {
 /*
 SOCKET CONNECTION & AUTHENTICATION
 */
-io.use((socket, next) => {
-  const token =
-    socket.handshake.auth?.token ||
-    (socket.handshake.headers?.authorization &&
-      socket.handshake.headers.authorization.split(" ")[1]);
+io.use(async (socket, next) => {
+  try {
+    const token =
+      socket.handshake.auth?.token ||
+      (socket.handshake.headers?.authorization &&
+        socket.handshake.headers.authorization.split(" ")[1]) ||
+      socket.handshake.headers?.cookie
+        ?.split("; ")
+        .find((row) => row.startsWith("accessToken="))
+        ?.split("=")[1];
 
-  if (token) {
-    const decoded = verifyAccessToken(token);
-    if (decoded) {
-      socket.user = decoded;
+    if (token) {
+      const isBlacklisted = await getCache(getTokenBlacklistKey(token));
+      if (!isBlacklisted) {
+        const decoded = verifyAccessToken(token);
+        if (decoded) {
+          socket.user = decoded;
+        }
+      }
     }
+  } catch (err) {
+    console.error("Socket authentication error:", err);
   }
   next();
 });
 
 io.on("connection", (socket) => {
-  console.log(`User connected: ${socket.id}`);
+  // Automatically isolate authenticated user into personal room for order/notification updates
+  if (socket.user && socket.user.id) {
+    socket.join(`user_${socket.user.id}`);
+  }
 
   socket.on("join_admin", () => {
-    if (socket.user && socket.user.role === "admin") {
+    if (socket.user && ["admin", "root"].includes(socket.user.role)) {
       socket.join("admin_room");
       console.log(
-        `Socket ${socket.id} (Admin ID: ${socket.user.id}) joined admin_room`
+        `Socket ${socket.id} (Role: ${socket.user.role}, ID: ${socket.user.id}) joined admin_room`
       );
     } else {
       console.warn(`Unauthorized join_admin attempt by socket ${socket.id}`);
@@ -93,7 +109,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("disconnect", () => {
-    console.log(`User disconnected: ${socket.id}`);
+    // Socket disconnected
   });
 });
 

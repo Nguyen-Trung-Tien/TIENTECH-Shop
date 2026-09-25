@@ -6,6 +6,7 @@
 .env.local
 .env.development
 .env.production
+!.env.example
 # Nếu bạn dùng file config/secrets khác
 secrets.json
 

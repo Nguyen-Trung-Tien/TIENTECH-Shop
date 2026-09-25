@@ -9,7 +9,7 @@ const upload = require("./multer");
 const passport = require("../config/passport");
 
 const { validate } = require("../middleware/zodMiddleware");
-const { loginSchema, registerSchema } = require("../utils/zodSchemas");
+const { loginSchema, registerSchema, updateUserSchema } = require("../utils/zodSchemas");
 const { loginAuthLimiter, sensitiveActionLimiter, otpVerificationLimiter } = require("../middleware/rateLimiter");
 
 router.post("/login", loginAuthLimiter, validate(loginSchema), UserController.handleLogin);
@@ -59,6 +59,7 @@ router.put(
   authenticateToken,
   authorizeRole(["admin", "customer"]),
   upload.single("avatar"),
+  validate(updateUserSchema),
   UserController.handleUpdateUser
 );
 

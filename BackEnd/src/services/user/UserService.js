@@ -60,7 +60,8 @@ class UserService extends BaseService {
       // Kiểm tra cấu hình hệ thống: Có bắt buộc xác thực OTP không
       const requireOtp = await SystemSettingService.getSetting("REQUIRE_OTP_VERIFICATION", true);
       
-      const isExplicitActive = data.isActive === true || data.isActive === "true" || data.isActive === "1";
+      const isCreatorAdmin = data.creatorRole === "admin" || data.creatorRole === "root";
+      const isExplicitActive = isCreatorAdmin && (data.isActive === true || data.isActive === "true" || data.isActive === "1");
       let verificationToken = null;
       let isActive = isExplicitActive;
 
@@ -71,13 +72,17 @@ class UserService extends BaseService {
         isActive = true;
       }
       
+      // SECURITY: Default role is strictly 'customer'. Only admin/root creators can assign higher roles.
+      const assignedRole = (isCreatorAdmin && data.role) ? data.role : "customer";
+
       const userData = {
-        ...data,
         email,
         username: rawUsername,
         phone: data.phone ? String(data.phone).trim() : null,
+        address: data.address ? String(data.address).trim() : null,
+        avatar: data.avatar || null,
         password: hashedPassword,
-        role: data.role || "customer",
+        role: assignedRole,
         isActive,
         verificationToken: verificationToken ? hashToken(verificationToken) : null,
         verificationTokenExpiresAt: verificationToken ? new Date(Date.now() + 24 * 60 * 60 * 1000) : null,
@@ -85,7 +90,7 @@ class UserService extends BaseService {
 
       const user = await this.model.create(userData);
       
-      if (requireOtp && !data.isActive && verificationToken) {
+      if (requireOtp && !isActive && verificationToken) {
         sendEmailAsync(sendVerificationEmail, user, verificationToken);
       }
 
@@ -94,8 +99,8 @@ class UserService extends BaseService {
       return { 
         errCode: 0, 
         data: safeUser,
-        requireOtp: Boolean(requireOtp && !data.isActive),
-        errMessage: requireOtp && !data.isActive 
+        requireOtp: Boolean(requireOtp && !isActive),
+        errMessage: requireOtp && !isActive 
           ? "Đăng ký thành công! Vui lòng kiểm tra mã OTP trong email."
           : "Đăng ký thành công! Bạn có thể đăng nhập ngay."
       };
@@ -126,33 +131,72 @@ class UserService extends BaseService {
       const user = await this.model.findByPk(userId);
       if (!user) return { errCode: 1, errMessage: "User not found" };
 
-      if (data.email && data.email !== user.email) {
-        const exist = await this.model.findOne({ where: { email: data.email } });
-        if (exist) return { errCode: 1, errMessage: "Email already exists" };
-      }
+      const isElevated = currentUserRole === "admin" || currentUserRole === "root";
 
-      if (data.role && currentUserRole !== "admin") {
-        delete data.role;
-      }
+      // SECURITY: Whitelist updatable fields to prevent Mass Assignment
+      const safeUpdateData = {};
 
-      if (data.receiveEmail !== undefined) {
-        data.receiveEmail = data.receiveEmail === true || data.receiveEmail === "true" || data.receiveEmail === 1 || data.receiveEmail === "1";
-      }
-
-      // If avatar is base64 string, upload to Cloudinary before saving to DB
-      if (data.avatar && typeof data.avatar === "string" && data.avatar.startsWith("data:image")) {
-        try {
-          const { uploadToCloudinary } = require("../../config/cloudinaryConfig");
-          const buffer = Buffer.from(data.avatar.split(",")[1], "base64");
-          const uploadRes = await uploadToCloudinary(buffer, "avatars");
-          data.avatar = uploadRes.secure_url;
-        } catch (uploadErr) {
-          console.error("Cloudinary avatar upload error:", uploadErr);
-          return { errCode: 2, errMessage: "Lỗi upload ảnh đại diện lên Cloudinary: " + uploadErr.message };
+      if (data.username !== undefined && data.username !== user.username) {
+        const rawUsername = String(data.username).trim();
+        if (rawUsername.length >= 3 && rawUsername.length <= 50) {
+          const existUsername = await this.model.findOne({ where: { username: rawUsername } });
+          if (existUsername && existUsername.id !== user.id) {
+            return { errCode: 1, errMessage: "Tên người dùng (username) này đã tồn tại." };
+          }
+          safeUpdateData.username = rawUsername;
         }
       }
 
-      const updatedUser = await user.update(data);
+      if (data.email && data.email !== user.email) {
+        const exist = await this.model.findOne({ where: { email: data.email } });
+        if (exist) return { errCode: 1, errMessage: "Email already exists" };
+        safeUpdateData.email = String(data.email).trim().toLowerCase();
+      }
+
+      if (data.phone !== undefined) {
+        safeUpdateData.phone = data.phone ? String(data.phone).trim() : null;
+      }
+
+      if (data.address !== undefined) {
+        safeUpdateData.address = data.address ? String(data.address).trim() : null;
+      }
+
+      if (data.receiveEmail !== undefined) {
+        safeUpdateData.receiveEmail = data.receiveEmail === true || data.receiveEmail === "true" || data.receiveEmail === 1 || data.receiveEmail === "1";
+      }
+
+      if (isElevated) {
+        if (data.role && ["customer", "admin"].includes(data.role)) {
+          // Non-root cannot promote anyone to root
+          safeUpdateData.role = data.role;
+        }
+        if (data.isActive !== undefined) {
+          safeUpdateData.isActive = data.isActive === true || data.isActive === "true" || data.isActive === 1 || data.isActive === "1";
+        }
+      }
+
+      // If avatar is base64 string, upload to Cloudinary before saving to DB
+      if (data.avatar && typeof data.avatar === "string") {
+        if (data.avatar.startsWith("data:image")) {
+          try {
+            const { uploadToCloudinary } = require("../../config/cloudinaryConfig");
+            const { validateImageBuffer } = require("../../utils/imageValidator");
+            const buffer = Buffer.from(data.avatar.split(",")[1], "base64");
+            if (!validateImageBuffer(buffer)) {
+              return { errCode: 2, errMessage: "Ảnh đại diện không hợp lệ (magic bytes mismatch)." };
+            }
+            const uploadRes = await uploadToCloudinary(buffer, "avatars");
+            safeUpdateData.avatar = uploadRes.secure_url;
+          } catch (uploadErr) {
+            console.error("Cloudinary avatar upload error:", uploadErr);
+            return { errCode: 2, errMessage: "Lỗi upload ảnh đại diện lên Cloudinary: " + uploadErr.message };
+          }
+        } else if (data.avatar.startsWith("http://") || data.avatar.startsWith("https://")) {
+          safeUpdateData.avatar = data.avatar;
+        }
+      }
+
+      const updatedUser = await user.update(safeUpdateData);
       const { password, ...userData } = updatedUser.toJSON();
       return { errCode: 0, data: userData };
     } catch (e) {

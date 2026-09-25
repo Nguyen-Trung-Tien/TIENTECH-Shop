@@ -45,16 +45,28 @@ const registerSchema = z.object({
         .min(3, "Tên người dùng phải có ít nhất 3 ký tự")
         .max(50, "Tên người dùng không được vượt quá 50 ký tự"),
       phone: z.union([z.string(), z.literal(""), z.null()]).optional(),
-      role: z
-        .union([z.enum(["customer", "admin", "root"]), z.literal(""), z.null()])
-        .optional()
-        .default("customer"),
       address: z.union([z.string(), z.literal(""), z.null()]).optional(),
-      isActive: z.union([z.boolean(), z.string(), z.null()]).optional(),
       avatar: z.any().optional(),
       confirmPassword: z.string().optional(),
+    }),
+});
+
+const updateUserSchema = z.object({
+  body: z
+    .object({
+      id: z.union([z.string(), z.number()]).optional(),
+      username: z
+        .string()
+        .min(3, "Tên người dùng phải có ít nhất 3 ký tự")
+        .max(50, "Tên người dùng không được vượt quá 50 ký tự")
+        .optional(),
+      email: z.string().email("Email không hợp lệ").optional(),
+      phone: z.union([z.string(), z.literal(""), z.null()]).optional(),
+      address: z.union([z.string(), z.literal(""), z.null()]).optional(),
+      avatar: z.any().optional(),
+      receiveEmail: z.union([z.boolean(), z.string(), z.number()]).optional(),
     })
-    .passthrough(),
+    .strict(),
 });
 
 const orderSchema = z.object({
@@ -123,4 +135,5 @@ module.exports = {
   cartItemSchema,
   updateCartItemSchema,
   reviewSchema,
+  updateUserSchema,
 };

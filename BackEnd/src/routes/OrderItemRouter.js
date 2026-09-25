@@ -9,31 +9,31 @@ const {
 router.get(
   "/get-order-item",
   authenticateToken,
-  authorizeRole(["admin", "customer"]),
+  authorizeRole(["admin"]),
   OrderItemController.handleGetAllOrderItems
 );
 router.get(
   "/order-item/:id",
   authenticateToken,
-  authorizeRole(["admin", "customer"]),
+  authorizeRole(["admin"]),
   OrderItemController.handleGetOrderItemById
 );
 router.post(
   "/create-new-order-item",
   authenticateToken,
-  authorizeRole(["admin", "customer"]),
+  authorizeRole(["admin"]),
   OrderItemController.handleCreateOrderItem
 );
 router.put(
   "/update-order-item/:id",
   authenticateToken,
-  authorizeRole(["admin", "customer"]),
+  authorizeRole(["admin"]),
   OrderItemController.handleUpdateOrderItem
 );
 router.delete(
   "/delete-order-item/:id",
   authenticateToken,
-  authorizeRole(["admin", "customer"]),
+  authorizeRole(["admin"]),
   OrderItemController.handleDeleteOrderItem
 );
 

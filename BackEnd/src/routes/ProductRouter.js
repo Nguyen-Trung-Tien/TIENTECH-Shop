@@ -9,6 +9,7 @@ const {
 } = require("../middleware/authMiddleware");
 const { validate } = require("../middleware/zodMiddleware");
 const { createProductSchema, updateProductSchema } = require("../middleware/schemas/productSchema");
+const { aiApiLimiter } = require("../middleware/rateLimiter");
 
 router.post(
   "/create-new-product",
@@ -49,13 +50,14 @@ router.delete(
 router.get("/discounted", ProductController.handleGetDiscountedProducts);
 router.get("/flash-sale", ProductController.handleGetFlashSaleProducts);
 router.get("/filter", ProductController.handleFilterProducts);
-router.get("/recommend/:id", ProductController.handleRecommendProducts);
-router.get("/smart-recommendations/:id", ProductController.handleGetSmartRecommendations);
+router.get("/recommend/:id", aiApiLimiter, ProductController.handleRecommendProducts);
+router.get("/smart-recommendations/:id", aiApiLimiter, ProductController.handleGetSmartRecommendations);
 router.get("/personalized", optionalAuthenticateToken, ProductController.handleGetPersonalizedRecommendations);
 router.get(
   "/recommend-fortune",
+  aiApiLimiter,
   ProductController.handleRecommendFortuneProducts,
 );
-router.get("/semantic-search", ProductController.handleSemanticSearch);
+router.get("/semantic-search", aiApiLimiter, ProductController.handleSemanticSearch);
 
 module.exports = router;

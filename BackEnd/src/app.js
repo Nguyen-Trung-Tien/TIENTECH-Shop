@@ -93,17 +93,28 @@ app.use((req, res, next) => {
   }
 
   // Bypass CSRF for public payment webhooks / unauthenticated endpoints
-  const path = req.originalUrl || req.path || "";
-  if (
-    path.includes("/vnpay/vnpay_ipn") ||
-    path.includes("/vnpay_ipn") ||
-    path.includes("/webhook") ||
-    path.includes("/user/forgot-password") ||
-    path.includes("/user/login") ||
-    path.includes("/user/create-new-user") ||
-    path.includes("/user/verify-otp") ||
-    path.includes("/user/refresh-token")
-  ) {
+  // Strip query parameters to prevent query-string injection bypass (e.g. ?bypass=/webhook)
+  const normalizedPath = (req.originalUrl || req.path || "").split("?")[0].replace(/\/+$/, "") || "/";
+  const CSRF_EXEMPT_EXACT = [
+    "/api/v1/vnpay/vnpay_ipn",
+    "/api/v1/vnpay/vnpay-ipn",
+    "/api/v1/user/forgot-password",
+    "/api/v1/user/reset-password",
+    "/api/v1/user/login",
+    "/api/v1/user/create",
+    "/api/v1/user/create-new-user",
+    "/api/v1/user/verify-otp",
+    "/api/v1/user/verify-email",
+    "/api/v1/user/refresh-token",
+  ];
+
+  const isExempt =
+    CSRF_EXEMPT_EXACT.includes(normalizedPath) ||
+    normalizedPath.startsWith("/api/v1/webhook") ||
+    normalizedPath.startsWith("/api/v1/vnpay/vnpay_ipn") ||
+    normalizedPath.startsWith("/api/v1/vnpay/vnpay-ipn");
+
+  if (isExempt) {
     return next();
   }
 

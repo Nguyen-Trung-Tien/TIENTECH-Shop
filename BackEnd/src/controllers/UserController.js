@@ -22,7 +22,7 @@ const setAuthCookies = (res, accessToken, refreshToken) => {
 
 const handleCreateNewUser = async (req, res) => {
   try {
-    const userData = { ...req.body };
+    const userData = { ...req.body, creatorRole: req.user?.role || "customer" };
     const avatarUrl = await handleFileUpload(req, "avatars");
     if (avatarUrl) userData.avatar = avatarUrl;
 
@@ -98,7 +98,8 @@ const handleUpdateUser = async (req, res) => {
     const id = req.body.id || req.user?.id;
     if (!id) return handleResponse(res, { errCode: 1, errMessage: "User ID is required" });
 
-    if (req.user.role !== "admin" && String(req.user.id) !== String(id)) {
+    const isElevated = ["admin", "root"].includes(req.user.role);
+    if (!isElevated && String(req.user.id) !== String(id)) {
       return res.status(403).json({ errCode: 403, errMessage: "Forbidden" });
     }
 
@@ -131,7 +132,8 @@ const handleGetAllUsers = async (req, res) => {
 const handleGetUserById = async (req, res) => {
   try {
     const userId = req.params.id;
-    if (req.user.role !== "admin" && String(req.user.id) !== String(userId)) {
+    const isElevated = ["admin", "root"].includes(req.user.role);
+    if (!isElevated && String(req.user.id) !== String(userId)) {
       return res.status(403).json({ errCode: 403, errMessage: "Forbidden" });
     }
     const result = await UserService.getUserById(userId);
@@ -144,7 +146,8 @@ const handleGetUserById = async (req, res) => {
 const handleDeleteUser = async (req, res) => {
   try {
     const { id } = req.params;
-    if (req.user.role !== "admin" && String(req.user.id) !== String(id)) {
+    const isElevated = ["admin", "root"].includes(req.user.role);
+    if (!isElevated && String(req.user.id) !== String(id)) {
       return res.status(403).json({ errCode: 403, errMessage: "Forbidden" });
     }
     const result = await UserService.deleteUser(id, req.user.id);
