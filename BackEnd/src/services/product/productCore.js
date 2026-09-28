@@ -21,6 +21,7 @@ const createProduct = async (data, imageRecords = []) => {
       options,
       price,
       stock,
+      totalStock,
       image,
       imageFile,
       deletedImages,
@@ -32,7 +33,17 @@ const createProduct = async (data, imageRecords = []) => {
       productData.slug = `${slugify(productData.name)}-${Date.now()}`;
     }
     productData.sku = await ensureUniqueSKU(productData.sku, t);
-    productData.hasVariants = Array.isArray(variants) && variants.length > 0;
+
+    const hasVariantsExplicit = data.hasVariants !== undefined
+      ? (data.hasVariants === true || data.hasVariants === "true" || data.hasVariants === 1 || data.hasVariants === "1")
+      : null;
+
+    if (hasVariantsExplicit !== null) {
+      productData.hasVariants = hasVariantsExplicit;
+    } else {
+      productData.hasVariants = Array.isArray(variants) && variants.length > 0;
+    }
+
     productData.basePrice = Number(productData.basePrice || price || 0);
 
     if (specifications) {
@@ -42,10 +53,12 @@ const createProduct = async (data, imageRecords = []) => {
           : specifications;
     }
     
-    if (productData.hasVariants) {
+    if (productData.hasVariants && Array.isArray(variants) && variants.length > 0) {
       productData.totalStock = variants.reduce((sum, v) => sum + Number(v.stock || 0), 0);
     } else {
-      productData.totalStock = Number(stock || productData.totalStock || 0);
+      productData.hasVariants = false;
+      const rawStock = stock !== undefined ? stock : (totalStock !== undefined ? totalStock : (productData.totalStock !== undefined ? productData.totalStock : 0));
+      productData.totalStock = !isNaN(Number(rawStock)) ? Number(rawStock) : 0;
     }
 
     // Xóa các trường rỗng không hợp lệ đối với kiểu dữ liệu trong DB
@@ -160,27 +173,41 @@ const updateProduct = async (id, data, imageRecords = []) => {
       await AttributeService.assignAttributesToProduct(id, attrs, t);
     }
 
-    if (updatedData.variants && Array.isArray(updatedData.variants)) {
-      const incomingVariantIds = updatedData.variants
-        .filter((v) => v.id)
-        .map((v) => v.id);
+    // Determine hasVariants
+    let hasVariantsFinal;
+    if (updatedData.hasVariants !== undefined) {
+      hasVariantsFinal =
+        updatedData.hasVariants === true ||
+        updatedData.hasVariants === "true" ||
+        updatedData.hasVariants === 1 ||
+        updatedData.hasVariants === "1";
+    } else {
+      hasVariantsFinal = product.hasVariants;
+    }
 
-      await db.ProductVariant.destroy({
-        where: {
-          productId: id,
-          id: { [Op.notIn]: incomingVariantIds },
-        },
-        transaction: t,
-      });
+    if (hasVariantsFinal) {
+      if (updatedData.variants && Array.isArray(updatedData.variants)) {
+        const incomingVariantIds = updatedData.variants
+          .filter((v) => v.id)
+          .map((v) => v.id);
 
-      for (const vData of updatedData.variants) {
-        if (vData.id) {
-          await ProductVariantService.updateVariant(vData.id, vData, t);
-        } else {
-          await ProductVariantService.createVariant({
-            ...vData,
+        await db.ProductVariant.destroy({
+          where: {
             productId: id,
-          }, t);
+            id: { [Op.notIn]: incomingVariantIds },
+          },
+          transaction: t,
+        });
+
+        for (const vData of updatedData.variants) {
+          if (vData.id) {
+            await ProductVariantService.updateVariant(vData.id, vData, t);
+          } else {
+            await ProductVariantService.createVariant({
+              ...vData,
+              productId: id,
+            }, t);
+          }
         }
       }
 
@@ -189,31 +216,39 @@ const updateProduct = async (id, data, imageRecords = []) => {
         transaction: t,
       });
       
-      // Use user's hasVariants toggle if provided, otherwise derive from variants length
-      const hasVariantsFinal = updatedData.hasVariants !== undefined 
-        ? updatedData.hasVariants 
-        : updatedData.variants.length > 0;
+      const totalStockCalculated = finalTotalStock || 0;
+      await updatedProduct.update(
+        {
+          totalStock: totalStockCalculated,
+          hasVariants: true,
+        },
+        { transaction: t },
+      );
+      updatedProduct.totalStock = totalStockCalculated;
+      updatedProduct.hasVariants = true;
+    } else {
+      // Khi không bật biến thể:
+      // 1. Xóa các biến thể cũ của sản phẩm nếu có trong DB
+      await db.ProductVariant.destroy({
+        where: { productId: id },
+        transaction: t,
+      });
+
+      // 2. Lấy tồn kho từ stock hoặc totalStock gửi lên, nếu không có thì giữ nguyên tồn kho hiện tại
+      const rawStock = updatedData.stock !== undefined
+        ? updatedData.stock
+        : (updatedData.totalStock !== undefined ? updatedData.totalStock : product.totalStock);
+      const stockVal = !isNaN(Number(rawStock)) ? Number(rawStock) : 0;
 
       await updatedProduct.update(
         {
-          totalStock: finalTotalStock || 0,
-          hasVariants: hasVariantsFinal,
+          totalStock: stockVal,
+          hasVariants: false,
         },
         { transaction: t },
       );
-    } else if (updatedData.stock !== undefined) {
-      await updatedProduct.update(
-        { 
-          totalStock: Number(updatedData.stock),
-          hasVariants: updatedData.hasVariants !== undefined ? updatedData.hasVariants : product.hasVariants
-        },
-        { transaction: t },
-      );
-    } else if (updatedData.hasVariants !== undefined) {
-      await updatedProduct.update(
-        { hasVariants: updatedData.hasVariants },
-        { transaction: t }
-      );
+      updatedProduct.totalStock = stockVal;
+      updatedProduct.hasVariants = false;
     }
 
     if (imageRecords.length > 0) {
@@ -436,7 +471,9 @@ const getProductBySlug = async (slug) => {
       prices.length > 0 ? Math.min(...prices) : Number(plainProduct.basePrice);
     const maxPrice =
       prices.length > 0 ? Math.max(...prices) : Number(plainProduct.basePrice);
-    const totalStock = variants.reduce((sum, v) => sum + (v.stock || 0), 0);
+    const totalStock = variants.length > 0
+      ? variants.reduce((sum, v) => sum + (v.stock || 0), 0)
+      : Number(plainProduct.totalStock || 0);
 
     const primaryImage =
       plainProduct.images?.find((img) => img.isPrimary) ||

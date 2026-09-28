@@ -16,6 +16,7 @@ const prepareProductEmbeddingText = (product) => {
 };
 
 const updateProductEmbedding = async (product, transaction) => {
+  if (process.env.NODE_ENV === "test") return false;
   try {
     const text = prepareProductEmbeddingText(product);
     const embedding = await generateEmbedding(text);

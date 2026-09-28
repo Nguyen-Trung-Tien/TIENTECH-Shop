@@ -45,7 +45,18 @@ const sanitizeProductInput = (rawBody) => {
     delete data.categoryId;
   }
 
-  if (data.stock !== undefined) data.stock = parseInt(data.stock);
+  if (data.stock !== undefined) {
+    const parsedStock = parseInt(data.stock, 10);
+    data.stock = isNaN(parsedStock) ? 0 : parsedStock;
+    if (data.totalStock === undefined) {
+      data.totalStock = data.stock;
+    }
+  } else if (data.totalStock !== undefined) {
+    const parsedTotalStock = parseInt(data.totalStock, 10);
+    data.totalStock = isNaN(parsedTotalStock) ? 0 : parsedTotalStock;
+    data.stock = data.totalStock;
+  }
+
   if (data.price !== undefined && data.basePrice === undefined) data.basePrice = data.price;
   if (data.isActive !== undefined) data.isActive = parseBoolean(data.isActive);
   if (data.hasVariants !== undefined) data.hasVariants = parseBoolean(data.hasVariants);

@@ -192,7 +192,6 @@ export const useProductForm = ({ editProduct, onSuccess, onClose }) => {
         setFormData((prev) => ({
           ...prev,
           variants: fetchedVariants,
-          hasVariants: fetchedVariants.length > 0 ? true : prev.hasVariants,
           options: extractedOptions.length > 0 ? extractedOptions : prev.options,
         }));
       }
@@ -269,11 +268,11 @@ export const useProductForm = ({ editProduct, onSuccess, onClose }) => {
       description: product.description || "",
       price: product.basePrice || product.price || "",
       discount: product.discount || "0",
-      stock: product.totalStock || product.stock || "0",
+      stock: product.totalStock != null ? String(product.totalStock) : (product.stock != null ? String(product.stock) : "0"),
       categoryId: product.categoryId || "",
       brandId: product.brandId || "",
       isActive: product.isActive ?? true,
-      hasVariants: initialVariantsList.length > 0 ? true : (product.hasVariants ?? false),
+      hasVariants: Boolean(product.hasVariants),
       isFlashSale: product.isFlashSale ?? false,
       flashSalePrice: product.flashSalePrice || "",
       flashSaleStart: product.flashSaleStart
@@ -437,20 +436,19 @@ export const useProductForm = ({ editProduct, onSuccess, onClose }) => {
 
     const data = new FormData();
 
-    const activeVariantsList = (formData.variants && formData.variants.length > 0) ? formData.variants : variants;
-    const finalVariants = activeVariantsList.map((v) => {
-      const normalizedAttr = normalizeVariantAttributes(v);
-      return {
-        ...v,
-        price: v.price !== "" && v.price != null ? Number(v.price) : Number(formData.price || 0),
-        stock: v.stock !== "" && v.stock != null ? Number(v.stock) : Number(formData.stock || 0),
-        attributes: normalizedAttr,
-        attributeValues: normalizedAttr,
-      };
-    });
-
-    if (finalVariants.length > 0) {
-      formData.hasVariants = true;
+    let finalVariants = [];
+    if (formData.hasVariants) {
+      const activeVariantsList = (formData.variants && formData.variants.length > 0) ? formData.variants : variants;
+      finalVariants = activeVariantsList.map((v) => {
+        const normalizedAttr = normalizeVariantAttributes(v);
+        return {
+          ...v,
+          price: v.price !== "" && v.price != null ? Number(v.price) : Number(formData.price || 0),
+          stock: v.stock !== "" && v.stock != null ? Number(v.stock) : Number(formData.stock || 0),
+          attributes: normalizedAttr,
+          attributeValues: normalizedAttr,
+        };
+      });
     }
 
     const finalSpecs = { ...formData.specifications, ...formData.attributes };
@@ -474,6 +472,15 @@ export const useProductForm = ({ editProduct, onSuccess, onClose }) => {
         data.append(key, formData[key]);
       }
     });
+
+    data.set("hasVariants", Boolean(formData.hasVariants));
+
+    if (!formData.hasVariants) {
+      const stockVal = formData.stock !== "" && formData.stock != null ? Number(formData.stock) : 0;
+      data.set("stock", stockVal);
+      data.set("totalStock", stockVal);
+      data.set("variants", JSON.stringify([]));
+    }
 
     galleryFiles.forEach((file) => data.append("images", file));
 
