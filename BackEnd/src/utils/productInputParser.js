@@ -49,6 +49,7 @@ const sanitizeProductInput = (rawBody) => {
   if (data.price !== undefined && data.basePrice === undefined) data.basePrice = data.price;
   if (data.isActive !== undefined) data.isActive = parseBoolean(data.isActive);
   if (data.hasVariants !== undefined) data.hasVariants = parseBoolean(data.hasVariants);
+  if (data.isFlashSale !== undefined) data.isFlashSale = parseBoolean(data.isFlashSale);
 
   if (data.flashSaleStart && String(data.flashSaleStart).trim() !== "") {
     const startDate = new Date(data.flashSaleStart);

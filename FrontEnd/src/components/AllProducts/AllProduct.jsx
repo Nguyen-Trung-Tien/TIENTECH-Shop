@@ -54,6 +54,7 @@ const AllProducts = React.memo(() => {
       maxPrice: "",
       sort: "newest",
       flashSale: "",
+      isFlashSale: "",
       ram: "",
       rom: "",
       os: "",
@@ -64,26 +65,60 @@ const AllProducts = React.memo(() => {
   };
 
   const removeFilterItem = (key, value) => {
+    if (key === "isFlashSale" || key === "flashSale") {
+      handleUpdateFilters({ isFlashSale: "", flashSale: "" });
+      return;
+    }
     const currentValues = filters[key] ? filters[key].split(",") : [];
-    const newValues = currentValues.filter(v => v !== value.toString());
+    const newValues = currentValues.filter((v) => v !== value.toString());
     handleUpdateFilters({ [key]: newValues.join(",") });
   };
+
+  const isFlashSaleActive = Boolean(
+    filters.isFlashSale === "true" ||
+      filters.flashSale === "true" ||
+      filters.flashSaleOnly
+  );
 
   // Lấy danh sách các bộ lọc đang active để hiển thị Chip
   const activeFilters = React.useMemo(() => {
     const chips = [];
     if (filters.search) {
-      chips.push({ key: "search", val: filters.search, label: `Từ khóa: "${filters.search}"` });
+      chips.push({
+        key: "search",
+        val: filters.search,
+        label: `Từ khóa: "${filters.search}"`,
+      });
     }
-    const filterKeys = ["brandId", "categoryId", "ram", "rom", "os", "refresh_rate", "screen", "battery"];
-    
-    filterKeys.forEach(key => {
+
+    if (isFlashSaleActive) {
+      chips.push({
+        key: "isFlashSale",
+        val: "true",
+        label: "⚡ Flash Sale",
+      });
+    }
+
+    const filterKeys = [
+      "brandId",
+      "categoryId",
+      "ram",
+      "rom",
+      "os",
+      "refresh_rate",
+      "screen",
+      "battery",
+    ];
+
+    filterKeys.forEach((key) => {
       if (filters[key]) {
-        filters[key].split(",").forEach(val => {
+        filters[key].split(",").forEach((val) => {
           let label = val;
-          if (key === "brandId") label = brands.find(b => b.id.toString() === val)?.name || val;
-          if (key === "categoryId") label = categories.find(c => c.id.toString() === val)?.name || val;
-          
+          if (key === "brandId")
+            label = brands.find((b) => b.id.toString() === val)?.name || val;
+          if (key === "categoryId")
+            label = categories.find((c) => c.id.toString() === val)?.name || val;
+
           chips.push({ key, val, label });
         });
       }
@@ -91,16 +126,16 @@ const AllProducts = React.memo(() => {
 
     if (filters.minPrice || filters.maxPrice) {
       if (filters.minPrice !== "" || filters.maxPrice !== "") {
-        chips.push({ 
-          key: "price", 
-          val: "range", 
-          label: `${Number(filters.minPrice || 0).toLocaleString()}₫ - ${Number(filters.maxPrice || 100000000).toLocaleString()}₫` 
+        chips.push({
+          key: "price",
+          val: "range",
+          label: `${Number(filters.minPrice || 0).toLocaleString()}₫ - ${Number(filters.maxPrice || 100000000).toLocaleString()}₫`,
         });
       }
     }
 
     return chips;
-  }, [filters, brands, categories]);
+  }, [filters, brands, categories, isFlashSaleActive]);
 
   return (
     <section className="py-4 md:py-6 bg-white dark:bg-black transition-colors duration-300">
@@ -117,7 +152,7 @@ const AllProducts = React.memo(() => {
             <h2 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white tracking-tight uppercase">
               {filters.search
                 ? `Kết quả cho: "${filters.search}"`
-                : filters.flashSaleOnly
+                : isFlashSaleActive
                   ? "Săn Deal Hot"
                   : "Khám phá Công nghệ"}
             </h2>
@@ -126,18 +161,26 @@ const AllProducts = React.memo(() => {
           <div className="flex flex-wrap items-center gap-3">
             {/* Flash Sale Toggle */}
             <button
+              type="button"
               onClick={() =>
                 handleUpdateFilters({
-                  flashSale: filters.flashSaleOnly ? "" : "true",
+                  isFlashSale: isFlashSaleActive ? "" : "true",
+                  flashSale: isFlashSaleActive ? "" : "true",
                 })
               }
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all border ${
-                filters.flashSaleOnly
+              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all border cursor-pointer ${
+                isFlashSaleActive
                   ? "bg-orange-500 border-orange-500 text-white shadow-lg shadow-orange-500/20"
                   : "bg-white dark:bg-gray-900 border-slate-200 dark:border-gray-800 text-slate-600 dark:text-gray-400 hover:border-orange-500"
               }`}
             >
-              <FiZap className={filters.flashSaleOnly ? "fill-current text-white" : "text-orange-500"} />{" "}
+              <FiZap
+                className={
+                  isFlashSaleActive
+                    ? "fill-current text-white"
+                    : "text-orange-500"
+                }
+              />{" "}
               Flash Sale
             </button>
 

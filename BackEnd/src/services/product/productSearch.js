@@ -355,17 +355,20 @@ const filterProducts = async ({
     const pagingData = getPagingData(data, page, l);
     const { items, ...paginationMetadata } = pagingData;
 
+    const mappedProducts = items.map((p) => {
+      const pJSON = p.toJSON();
+      const primary =
+        pJSON.images?.find((i) => i.isPrimary) || pJSON.images?.[0];
+      return {
+        ...applyFlashSaleToProduct(pJSON),
+        image: primary?.imageUrl || null,
+      };
+    });
+
     return {
       errCode: 0,
-      data: items.map((p) => {
-        const pJSON = p.toJSON();
-        const primary =
-          pJSON.images?.find((i) => i.isPrimary) || pJSON.images?.[0];
-        return {
-          ...applyFlashSaleToProduct(pJSON),
-          image: primary?.imageUrl || null,
-        };
-      }),
+      data: mappedProducts,
+      products: mappedProducts,
       pagination: paginationMetadata,
     };
   } catch (error) {

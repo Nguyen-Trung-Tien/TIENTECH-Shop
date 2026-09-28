@@ -194,6 +194,7 @@ export const filterProductsApi = async ({
   limit = 10,
   isAdmin = false,
   isFlashSale = false,
+  flashSale = false,
 } = {}) => {
   try {
     const params = {
@@ -212,8 +213,16 @@ export const filterProductsApi = async ({
       page,
       limit,
       isAdmin,
-      isFlashSale,
     };
+
+    if (
+      isFlashSale === true ||
+      isFlashSale === "true" ||
+      flashSale === true ||
+      flashSale === "true"
+    ) {
+      params.isFlashSale = true;
+    }
 
     if (minPrice !== "" && minPrice !== undefined && minPrice !== null) {
       params.minPrice = minPrice;

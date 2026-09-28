@@ -37,37 +37,82 @@ const initialFormState = {
 export const normalizeVariantAttributes = (v) => {
   if (!v) return {};
 
-  if (
-    v.attributeValues &&
-    typeof v.attributeValues === "object" &&
-    !Array.isArray(v.attributeValues)
-  ) {
-    return v.attributeValues;
-  }
+  const result = {};
 
-  if (
-    v.attributes &&
-    typeof v.attributes === "object" &&
-    !Array.isArray(v.attributes)
-  ) {
-    return v.attributes;
-  }
-
-  const attrArr = Array.isArray(v.attributes)
+  // 1. Thử lấy từ mảng v.attributes (hệ thống relational AttributeValue)
+  const rawAttrs = Array.isArray(v.attributes)
     ? v.attributes
-    : Array.isArray(v.attributeValues)
-    ? v.attributeValues
+    : typeof v.attributes === "string"
+    ? (() => {
+        try {
+          const parsed = JSON.parse(v.attributes);
+          return Array.isArray(parsed) ? parsed : [];
+        } catch {
+          return [];
+        }
+      })()
     : [];
 
-  const result = {};
-  attrArr.forEach((item) => {
-    const key =
-      item.attribute?.name || item.attribute?.code || item.attributeName || "Thuộc tính";
-    const val = typeof item === "object" ? item.value : item;
-    if (key && val) {
-      result[key] = String(val).trim();
+  if (rawAttrs.length > 0) {
+    rawAttrs.forEach((item) => {
+      const key =
+        item.attribute?.name || item.attributeName || item.name || item.attribute?.code || "Thuộc tính";
+      const val = typeof item === "object" && item !== null ? item.value : item;
+      if (key && val != null) {
+        result[String(key).trim()] = String(val).trim();
+      }
+    });
+    if (Object.keys(result).length > 0) return result;
+  }
+
+  // 2. Thử lấy từ v.attributeValues (JSON object hoặc JSON string)
+  let attrValues = v.attributeValues;
+  if (typeof attrValues === "string") {
+    try {
+      attrValues = JSON.parse(attrValues);
+    } catch {
+      attrValues = null;
     }
-  });
+  }
+
+  if (attrValues && typeof attrValues === "object" && !Array.isArray(attrValues)) {
+    Object.entries(attrValues).forEach(([k, val]) => {
+      if (k && val != null) {
+        result[String(k).trim()] = String(val).trim();
+      }
+    });
+    if (Object.keys(result).length > 0) return result;
+  }
+
+  // 3. Fallback nếu v.attributes là object thông thường (key-value)
+  let attrs = v.attributes;
+  if (typeof attrs === "string") {
+    try {
+      attrs = JSON.parse(attrs);
+    } catch {
+      attrs = null;
+    }
+  }
+  if (attrs && typeof attrs === "object" && !Array.isArray(attrs)) {
+    Object.entries(attrs).forEach(([k, val]) => {
+      if (k && val != null) {
+        result[String(k).trim()] = String(val).trim();
+      }
+    });
+    if (Object.keys(result).length > 0) return result;
+  }
+
+  // 4. Fallback nếu v.attributeValues là mảng
+  if (Array.isArray(attrValues) && attrValues.length > 0) {
+    attrValues.forEach((item) => {
+      const key =
+        item.attribute?.name || item.attributeName || item.name || item.attribute?.code || "Thuộc tính";
+      const val = typeof item === "object" && item !== null ? item.value : item;
+      if (key && val != null) {
+        result[String(key).trim()] = String(val).trim();
+      }
+    });
+  }
 
   return result;
 };
@@ -79,18 +124,7 @@ export const extractOptionsFromVariants = (variantsList = []) => {
   const map = new Map(); // key: code -> { name, code, valuesSet }
 
   variantsList.forEach((v) => {
-    let attrsObj = {};
-    if (Array.isArray(v.attributes)) {
-      v.attributes.forEach((attrVal) => {
-        const key = attrVal.attribute?.name || attrVal.attribute?.code || "Thuộc tính";
-        const val = attrVal.value || attrVal;
-        if (key && val) attrsObj[key] = val;
-      });
-    } else if (typeof v.attributes === "object" && v.attributes !== null) {
-      attrsObj = v.attributes;
-    } else if (typeof v.attributeValues === "object" && v.attributeValues !== null) {
-      attrsObj = v.attributeValues;
-    }
+    const attrsObj = normalizeVariantAttributes(v);
 
     Object.entries(attrsObj).forEach(([codeOrName, val]) => {
       if (!val) return;

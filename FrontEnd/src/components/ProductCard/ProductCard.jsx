@@ -89,16 +89,21 @@ const ProductCard = ({ product }) => {
   };
 
   const avgRating = useMemo(() => {
-    if (product.avgRating != null) return Number(product.avgRating);
-    if (product.averageRating != null) return Number(product.averageRating);
+    if (product.avgRating != null && !isNaN(product.avgRating)) return Number(product.avgRating);
+    if (product.averageRating != null && !isNaN(product.averageRating)) return Number(product.averageRating);
+    if (product.rating != null && !isNaN(product.rating)) return Number(product.rating);
     const list = Array.isArray(reviews) ? reviews : [];
-    if (!list.length) return 5;
+    if (!list.length) return 5.0;
     return (
       list.reduce((sum, r) => sum + (r.rating || 0), 0) / list.length
     );
-  }, [reviews, product.avgRating, product.averageRating]);
+  }, [reviews, product.avgRating, product.averageRating, product.rating]);
 
-  const reviewCount = product.reviewCount ?? product.reviewsCount ?? (Array.isArray(reviews) ? reviews.length : 0);
+  const reviewCount =
+    product.reviewCount ??
+    product.reviewsCount ??
+    product.totalReviews ??
+    (Array.isArray(reviews) ? reviews.length : 0);
 
   // Tổng hợp % giảm giá: ưu tiên flash sale > discount % thông thường
   // Backend đã tính sẵn discountPercent trong applyFlashSaleToProduct
@@ -337,17 +342,25 @@ const ProductCard = ({ product }) => {
           )}
 
           <div className="flex items-center gap-1.5 mb-2.5 text-[10px]">
-            <div className="flex text-amber-400 text-[9px] gap-0.5">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <FaStar
-                  key={i}
-                  className={
-                    avgRating >= i + 1
-                      ? "fill-current"
-                      : "text-slate-200 dark:text-slate-700"
-                  }
-                />
-              ))}
+            <div className="flex items-center gap-1">
+              <div
+                className="flex text-amber-400 text-[9px] gap-0.5"
+                aria-label={`Đánh giá ${Number(avgRating || 5).toFixed(1)} sao`}
+              >
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <FaStar
+                    key={i}
+                    className={
+                      Number(avgRating || 5) >= i + 1
+                        ? "fill-current"
+                        : "text-slate-200 dark:text-slate-700"
+                    }
+                  />
+                ))}
+              </div>
+              <span className="font-bold text-amber-500 dark:text-amber-400 font-mono text-[10px] leading-none">
+                {Number(avgRating || 5).toFixed(1)}
+              </span>
             </div>
             <span className="font-mono text-slate-400 dark:text-slate-500">
               ({reviewCount})

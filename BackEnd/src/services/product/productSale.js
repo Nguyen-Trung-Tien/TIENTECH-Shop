@@ -37,6 +37,18 @@ const getFlashSaleProducts = async (page = 1, limit = 10) => {
           attributes: ["id", "rating"],
           required: false,
         },
+        {
+          model: db.ProductVariant,
+          as: "variants",
+          include: [
+            {
+              model: db.AttributeValue,
+              as: "attributes",
+              include: [{ model: db.Attribute, as: "attribute", attributes: ["id", "name", "code"] }],
+            },
+            { model: db.ProductImage, as: "images" },
+          ],
+        },
       ],
       limit: l,
       offset,
@@ -57,6 +69,24 @@ const getFlashSaleProducts = async (page = 1, limit = 10) => {
           model: db.ProductImage,
           as: "images",
           attributes: ["imageUrl", "isPrimary"],
+        },
+        {
+          model: db.Review,
+          as: "reviews",
+          attributes: ["id", "rating"],
+          required: false,
+        },
+        {
+          model: db.ProductVariant,
+          as: "variants",
+          include: [
+            {
+              model: db.AttributeValue,
+              as: "attributes",
+              include: [{ model: db.Attribute, as: "attribute", attributes: ["id", "name", "code"] }],
+            },
+            { model: db.ProductImage, as: "images" },
+          ],
         },
       ],
       limit: 6,
@@ -81,6 +111,10 @@ const getFlashSaleProducts = async (page = 1, limit = 10) => {
       return applyFlashSaleToProduct({
         ...pJSON,
         image: primary?.imageUrl || null,
+        variants: pJSON.variants?.map((v) => ({
+          ...v,
+          imageUrl: v.images?.[0]?.imageUrl || null,
+        })) || [],
       });
     });
 
@@ -90,6 +124,10 @@ const getFlashSaleProducts = async (page = 1, limit = 10) => {
       return {
         ...pJSON,
         image: primary?.imageUrl || null,
+        variants: pJSON.variants?.map((v) => ({
+          ...v,
+          imageUrl: v.images?.[0]?.imageUrl || null,
+        })) || [],
       };
     });
 

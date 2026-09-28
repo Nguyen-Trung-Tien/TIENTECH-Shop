@@ -211,6 +211,7 @@ const handleFilterProducts = async (req, res) => {
       os,
       refresh_rate,
       isFlashSale,
+      flashSale,
       isAdmin,
     } = req.query;
     const page = Math.max(1, Number(req.query.page) || 1);
@@ -231,7 +232,7 @@ const handleFilterProducts = async (req, res) => {
       battery,
       os,
       refresh_rate,
-      isFlashSale,
+      isFlashSale: isFlashSale !== undefined ? isFlashSale : flashSale,
       isAdmin,
       page: Number(page),
       limit: Number(limit),

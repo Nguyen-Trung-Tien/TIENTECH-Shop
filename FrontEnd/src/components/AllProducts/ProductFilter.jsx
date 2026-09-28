@@ -129,6 +129,7 @@ const ProductFilter = ({ filters, onFilterChange, onClearFilters }) => {
       if (filters[k]) count += filters[k].split(",").filter(Boolean).length;
     });
     if (filters.minPrice || filters.maxPrice) count += 1;
+    if (filters.isFlashSale === "true" || filters.flashSale === "true" || filters.isFlashSale === true) count += 1;
     return count;
   }, [filters]);
 
@@ -270,6 +271,31 @@ const FilterContent = ({
   activeCount,
 }) => (
   <div className="space-y-5">
+    {/* Flash Sale Filter Option */}
+    <div className="border-b border-slate-100 dark:border-slate-800/80 pb-4">
+      <label className="flex items-center justify-between p-2.5 rounded-xl border border-orange-200/70 dark:border-orange-900/40 bg-orange-50/50 dark:bg-orange-950/20 hover:bg-orange-50 dark:hover:bg-orange-950/30 cursor-pointer group transition-all">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <input
+            type="checkbox"
+            checked={Boolean(
+              filters.isFlashSale === "true" ||
+                filters.flashSale === "true" ||
+                filters.isFlashSale === true
+            )}
+            onChange={(e) => {
+              const val = e.target.checked ? "true" : "";
+              onFilterChange("isFlashSale", val);
+              onFilterChange("flashSale", val);
+            }}
+            className="size-4 text-orange-600 border-slate-300 dark:border-slate-700 bg-transparent rounded focus:ring-orange-500/20 cursor-pointer"
+          />
+          <span className="text-xs font-bold text-orange-600 dark:text-orange-400 flex items-center gap-1.5">
+            <FiZap className="fill-current text-orange-500" /> Chỉ sản phẩm Flash Sale
+          </span>
+        </div>
+      </label>
+    </div>
+
     {/* Categories Section */}
     {!filters.category && (
       <div className="border-b border-slate-100 dark:border-slate-800/80 pb-4">

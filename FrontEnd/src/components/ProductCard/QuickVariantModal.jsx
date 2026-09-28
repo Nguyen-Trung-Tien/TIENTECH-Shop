@@ -1,6 +1,6 @@
 import React from "react";
 import { motion as Motion, AnimatePresence } from "framer-motion";
-import { FiX, FiCheck, FiShoppingCart, FiCreditCard, FiAlertCircle } from "react-icons/fi";
+import { FiX, FiCheck, FiShoppingCart, FiCreditCard, FiAlertCircle, FiZap } from "react-icons/fi";
 import { useProductVariants } from "../../hooks/useProductVariants";
 import { Button } from "../UI/Button";
 
@@ -37,23 +37,45 @@ const QuickVariantModal = ({ product, isOpen, onClose, onAdd, onBuyNow }) => {
 
   if (!isOpen) return null;
 
+  const isFlashSale = Boolean(
+    product?.flashSale?.isActive ?? product?.flashSaleActive ?? product?.isFlashSale
+  );
+  const flashSalePrice = Number(
+    product?.flashSale?.price ?? product?.flashSalePrice ?? 0
+  );
+
   const originalPrice = displayVariant
     ? Number(displayVariant.price || 0)
     : Number(product.originalPrice || product.basePrice || product.price || 0);
 
-  const variantDiscountPct = Number(
-    displayVariant?.discount != null && Number(displayVariant.discount) > 0
-      ? displayVariant.discount
-      : (product.discountPercent || product.discount || 0)
-  );
+  let currentPrice = originalPrice;
+  let variantDiscountPct = 0;
 
-  const currentPrice = displayVariant
-    ? Number(displayVariant.salePrice) > 0 && Number(displayVariant.salePrice) < originalPrice
-      ? Number(displayVariant.salePrice)
-      : variantDiscountPct > 0
-      ? Math.round(originalPrice * (1 - variantDiscountPct / 100))
-      : originalPrice
-    : product.displayPrice || product.basePrice || product.price;
+  if (isFlashSale && flashSalePrice > 0) {
+    currentPrice = flashSalePrice;
+    variantDiscountPct = originalPrice > 0
+      ? Math.round(((originalPrice - currentPrice) / originalPrice) * 100)
+      : 0;
+  } else {
+    variantDiscountPct = Number(
+      displayVariant?.discount != null && Number(displayVariant.discount) > 0
+        ? displayVariant.discount
+        : (product.discountPercent || product.discount || 0)
+    );
+
+    if (
+      displayVariant &&
+      Number(displayVariant.salePrice) > 0 &&
+      Number(displayVariant.salePrice) < originalPrice
+    ) {
+      currentPrice = Number(displayVariant.salePrice);
+      variantDiscountPct = Math.round(((originalPrice - currentPrice) / originalPrice) * 100);
+    } else if (variantDiscountPct > 0) {
+      currentPrice = Math.round(originalPrice * (1 - variantDiscountPct / 100));
+    } else {
+      currentPrice = Number(product.displayPrice || product.basePrice || product.price || 0);
+    }
+  }
 
   // Format label string for currently selected variant combination
   const selectedVariantLabel = selectedVariant
@@ -106,9 +128,16 @@ const QuickVariantModal = ({ product, isOpen, onClose, onAdd, onBuyNow }) => {
                 />
               </div>
               <div className="flex-1 min-w-0 space-y-1">
-                <h3 className="text-base font-bold text-slate-900 dark:text-white line-clamp-2 leading-snug">
-                  {product.name}
-                </h3>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white line-clamp-2 leading-snug">
+                    {product.name}
+                  </h3>
+                  {isFlashSale && (
+                    <span className="shrink-0 bg-gradient-to-r from-red-600 to-orange-500 text-white text-[9px] font-black px-2 py-0.5 rounded-md uppercase tracking-wider flex items-center gap-0.5 shadow-xs">
+                      <FiZap className="fill-current size-2.5" /> FLASH SALE
+                    </span>
+                  )}
+                </div>
                 <div className="flex items-center flex-wrap gap-2 pt-1">
                   <span className="text-xl font-black text-indigo-600 dark:text-indigo-400">
                     {Number(currentPrice).toLocaleString("vi-VN")} ₫

@@ -25,6 +25,9 @@ export const useProductList = (limit = 12) => {
 
   // Lấy các filter từ URL
   const filtersFromUrl = useMemo(() => {
+    const isFlashSaleVal =
+      searchParams.get("isFlashSale") || searchParams.get("flashSale") || "";
+
     const filters = {
       search: searchParams.get("search") || "",
       minPrice: searchParams.get("minPrice") || "",
@@ -33,6 +36,9 @@ export const useProductList = (limit = 12) => {
       // Luôn lấy từ SearchParams trước để ủng hộ việc đa chọn
       brandId: searchParams.get("brandId") || "",
       categoryId: searchParams.get("categoryId") || "",
+      isFlashSale: isFlashSaleVal,
+      flashSale: isFlashSaleVal,
+      flashSaleOnly: isFlashSaleVal === "true" || isFlashSaleVal === true,
     };
 
     // Hỗ trợ fallback cho tham số 'price' dạng 'min,max' nếu có
@@ -66,9 +72,15 @@ export const useProductList = (limit = 12) => {
         append ? setLoadingMore(true) : setLoading(true);
         setError("");
 
+        const isFlashSaleActive =
+          filtersFromUrl.isFlashSale === "true" ||
+          filtersFromUrl.flashSale === "true" ||
+          filtersFromUrl.flashSaleOnly === true;
+
         // Chuẩn bị params cho API
         const apiParams = {
           ...filtersFromUrl,
+          isFlashSale: isFlashSaleActive,
           page,
           limit,
         };

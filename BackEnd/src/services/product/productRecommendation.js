@@ -3,6 +3,7 @@ const { Op } = require("sequelize");
 const { getPagination, getPagingData } = require("../../utils/paginationHelper");
 const { getFengShuiDetail } = require("../../utils/fortuneUtils");
 const { cosineSimilarity } = require("../../utils/embeddingHelper");
+const { applyFlashSaleToProduct } = require("./productHelper");
 
 const recommendProducts = async (productId, page = 1, limit = 6) => {
   try {
@@ -322,6 +323,25 @@ const getPersonalizedRecommendations = async (userId, limit = 6) => {
       // Fallback for non-logged in users: trending products
       const trending = await db.Product.findAll({
         where: { isActive: true },
+        attributes: [
+          "id", "name", "slug", "sku", "basePrice", "discount", "totalStock", "hasVariants", "sold", "isFlashSale", "flashSalePrice", "flashSaleStart", "flashSaleEnd", "isActive", "categoryId", "brandId",
+          [
+            db.sequelize.literal(`(
+              SELECT COALESCE(ROUND(AVG(rating), 1), 5.0)
+              FROM Reviews AS r
+              WHERE r.productId = Product.id
+            )`),
+            "avgRating",
+          ],
+          [
+            db.sequelize.literal(`(
+              SELECT COUNT(*)
+              FROM Reviews AS r
+              WHERE r.productId = Product.id
+            )`),
+            "reviewCount",
+          ],
+        ],
         order: [["sold", "DESC"]],
         limit,
         include: [{ model: db.ProductImage, as: "images", where: { isPrimary: true }, required: false }],
@@ -330,7 +350,11 @@ const getPersonalizedRecommendations = async (userId, limit = 6) => {
         errCode: 0,
         products: trending.map(p => {
           const plain = p.get({ plain: true });
-          return { ...plain, image: plain.images?.[0]?.imageUrl || null, reason: "Xu hướng" };
+          return {
+            ...applyFlashSaleToProduct(plain),
+            image: plain.images?.[0]?.imageUrl || null,
+            reason: "Xu hướng"
+          };
         })
       };
       await setCache(cacheKey, result, 3600); // 1 hour for guests
@@ -378,7 +402,25 @@ const getPersonalizedRecommendations = async (userId, limit = 6) => {
         id: { [Op.notIn]: historyProducts.map(p => p.id) }, // Don't recommend what they already have/wishlisted
         embedding: { [Op.ne]: null },
       },
-      attributes: ["id", "name", "slug", "basePrice", "discount", "embedding"],
+      attributes: [
+        "id", "name", "slug", "sku", "basePrice", "discount", "totalStock", "hasVariants", "sold", "isFlashSale", "flashSalePrice", "flashSaleStart", "flashSaleEnd", "isActive", "categoryId", "brandId", "embedding",
+        [
+          db.sequelize.literal(`(
+            SELECT COALESCE(ROUND(AVG(rating), 1), 5.0)
+            FROM Reviews AS r
+            WHERE r.productId = Product.id
+          )`),
+          "avgRating",
+        ],
+        [
+          db.sequelize.literal(`(
+            SELECT COUNT(*)
+            FROM Reviews AS r
+            WHERE r.productId = Product.id
+          )`),
+          "reviewCount",
+        ],
+      ],
       include: [{ model: db.ProductImage, as: "images", where: { isPrimary: true }, required: false }],
     });
 
@@ -387,7 +429,7 @@ const getPersonalizedRecommendations = async (userId, limit = 6) => {
         const plain = p.get({ plain: true });
         const similarity = cosineSimilarity(userTasteVector, JSON.parse(plain.embedding));
         return {
-          ...plain,
+          ...applyFlashSaleToProduct(plain),
           image: plain.images?.[0]?.imageUrl || null,
           similarity,
           reason: "Dựa trên sở thích của bạn"
