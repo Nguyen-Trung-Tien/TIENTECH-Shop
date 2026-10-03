@@ -64,3 +64,53 @@
    - Khi yêu cầu AI phân tích (như Price Predictor, Insights), bắt buộc cấu hình `{ responseMimeType: "application/json" }` trong `generationConfig` và có `try ... catch` an toàn khi parse JSON.
 3. **Fallback Khi AI Gặp Sự Cố:**
    - Luôn có logic tính toán dự phòng (heuristic/statistical algorithm) để người dùng vẫn nhận được dữ liệu hợp lý ngay cả khi API key hết hạn hoặc bị rate limit (429).
+
+---
+
+## 5. Chiến Lược Tối Ưu Hóa Token Cho AI Gemini (Token Efficiency Guidelines)
+
+### 5.1. Định vị và Đọc mã nguồn có trọng tâm (Targeted Inspection)
+- **Tuyệt đối không đọc toàn bộ file dài (> 100 dòng):** Sử dụng `grep_search` để định vị vị trí hàm/biến cần xử lý, sau đó gọi `view_file` với `StartLine` và `EndLine` trong phạm vi hẹp (khoảng 30 - 80 dòng liên quan).
+- **Tránh xa các thư mục rác và build artifacts:** Không bao giờ liệt kê (`list_dir`) hoặc tìm kiếm trong `node_modules`, `dist`, `build`, `coverage`, `.git`.
+- **Đọc schema/types trước:** Khi làm việc với database hoặc API, chỉ cần xem định nghĩa model hoặc file route tương ứng thay vì đọc lan man cả controller và service khác.
+
+### 5.2. Chỉnh sửa mã nguồn vi phẫu (Surgical Edits)
+- **Ưu tiên công cụ thay thế cục bộ:** Luôn sử dụng `replace_file_content` hoặc `multi_replace_file_content` cho các khối lệnh cần thay đổi.
+- **Cấm ghi đè toàn bộ file lớn bằng `write_to_file`:** Ghi đè toàn bộ file đã tồn tại gây lãng phí hàng nghìn output token không cần thiết và tiềm ẩn rủi ro làm mất code cũ.
+
+### 5.3. Tiết kiệm Token Giao tiếp & Trả lời (Concise Communication)
+- **Không in lại mã nguồn hoàn chỉnh trong chat:** Chỉ trình bày tóm tắt bản chất thay đổi, điểm mấu chốt và code diff ngắn gọn.
+- **Sử dụng liên kết file dạng clickable:** Dẫn chiếu trực tiếp `[filename](file:///...)` hoặc `[ClassName](file:///path#L10-L20)` thay vì trích dẫn lại đoạn code dài vào phản hồi.
+
+### 5.4. Chạy Test & Debug có phạm vi hẹp (Scoped Testing)
+- **Test từng phần trước khi test toàn bộ:** Khi phát triển hoặc sửa lỗi, chạy lệnh kiểm thử nhắm trực tiếp vào file test liên quan (ví dụ: `npm test -- OrderService.test.js`) để log output ngắn gọn, không làm tràn context window của model.
+- **Chỉ chạy full-suite ở bước cuối cùng:** Sau khi đã pass unit test cục bộ, mới chạy `npm run test` và `npm run lint` từ root để xác nhận vượt qua gate.
+
+---
+
+## 6. Quy Trình 5 Bước Code Chức Năng Chính Xác (Precision Execution Protocol)
+
+### Bước 1: Khảo sát định vị & Đọc Data Contract
+- Dùng `grep_search` tìm router, controller, service và Sequelize Model liên quan.
+- Xác định rõ các trường trong bảng (kiểu dữ liệu, `allowNull`, `defaultValue`, foreign keys) để tránh lỗi runtime Sequelize ValidationError.
+
+### Bước 2: Tuân thủ Kiến trúc 4 tầng (Layered Architecture)
+- **Router:** Chỉ định tuyến + middleware (`authenticateToken`, `authorizeRole`, `validate(schema)`). Không đặt logic tại đây.
+- **Controller:** Tiếp nhận `req`, gọi Service và trả lời qua `handleResponse(res, result)` / `handleError(res, error)`.
+- **Service:** Xử lý 100% nghiệp vụ, trả về `ServiceResult.success(data, message, meta)` hoặc `ServiceResult.error(message, errCode)`.
+- **Model:** Khai báo schema và quan hệ associations chuẩn xác.
+
+### Bước 3: Bảo toàn Tính toàn vẹn dữ liệu với Transaction
+- Mọi thao tác ghi/sửa từ 2 bảng trở lên (ví dụ: Đơn hàng + Chi tiết đơn + Trừ kho + Hoàn tiền + Thông báo) **bắt buộc** phải bọc trong `const t = await db.sequelize.transaction()`.
+- Luôn có đầy đủ `await t.commit()` trong nhánh thành công và `await t.rollback()` trong khối `catch`.
+
+### Bước 4: Chuẩn hóa Giao diện Frontend (Zero-Overflow & Stable React)
+- Mọi component hiển thị chuỗi ký tự động (địa chỉ, mã đơn, tên sản phẩm, lý do hủy) phải có:
+  `min-w-0 flex-1 break-words [overflow-wrap:anywhere]` kết hợp responsive `flex flex-col sm:flex-row`.
+- Hook fetch dữ liệu phải bọc trong `useCallback` với danh sách dependencies chuẩn mực trước khi truyền vào `useEffect`.
+- Không export các object hằng số phụ trợ (như `buttonVariants`) chung trong file `.jsx` để đảm bảo Fast Refresh hoạt động trơn tru.
+
+### Bước 5: Tự Động Kiểm Chứng Trước Khi Hoàn Tất (Self-Verification)
+- Kiểm tra tính đúng đắn bằng cách chạy test cục bộ hoặc linter.
+- Đảm bảo mã thoát `0` cho lệnh `npm run test` và `npm run lint` ở root monorepo trước khi báo cáo hoàn thành cho người dùng.
+
