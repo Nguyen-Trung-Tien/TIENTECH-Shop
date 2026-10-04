@@ -38,41 +38,43 @@ const BrandSection = ({ brands: propBrands }) => {
   if (loading) return null;
 
   return (
-    <div className="container-custom py-4">
-      <Swiper
-        modules={[Autoplay]}
-        spaceBetween={10}
-        slidesPerView={4}
-        autoplay={{
-          delay: 2500,
-          disableOnInteraction: false,
-        }}
-        breakpoints={{
-          640: { slidesPerView: 5 },
-          768: { slidesPerView: 7 },
-          1024: { slidesPerView: 10 },
-        }}
-        className="flex items-center"
-      >
-        {brands.map((brand, index) => (
-          <SwiperSlide key={brand.id}>
-            <Motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.02 }}
-              className="group cursor-pointer bg-white dark:bg-gray-900 border border-slate-100 dark:border-gray-800 shadow-sm rounded-2xl transition-all duration-300 flex items-center justify-center h-[36px] px-2 hover:shadow-md hover:border-primary/30"
-              onClick={() => navigate(`/brand/${brand.slug}`)}
-            >
-              <img
-                src={brand.image}
-                alt={brand.name}
-                className="max-w-full max-h-[20px] object-contain transition-transform duration-300 opacity-100 group-hover:scale-110"
-              />
-            </Motion.div>
-          </SwiperSlide>
-        ))}
-      </Swiper>
+    <div className="container-custom py-6">
+      <div className="p-3.5 rounded-2xl bg-white/60 dark:bg-slate-900/60 backdrop-blur-md border border-slate-200/80 dark:border-slate-800/80 shadow-2xs">
+        <Swiper
+          modules={[Autoplay]}
+          spaceBetween={12}
+          slidesPerView={4}
+          autoplay={{
+            delay: 2500,
+            disableOnInteraction: false,
+          }}
+          breakpoints={{
+            640: { slidesPerView: 5 },
+            768: { slidesPerView: 7 },
+            1024: { slidesPerView: 10 },
+          }}
+          className="flex items-center"
+        >
+          {brands.map((brand, index) => (
+            <SwiperSlide key={brand.id}>
+              <Motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.02 }}
+                className="group cursor-pointer bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/90 shadow-2xs rounded-xl transition-all duration-300 flex items-center justify-center h-[40px] px-2.5 hover:shadow-md hover:border-cyan-500/40 dark:hover:border-cyan-500/40 hover:-translate-y-0.5"
+                onClick={() => navigate(`/brand/${brand.slug}`)}
+              >
+                <img
+                  src={brand.image}
+                  alt={brand.name}
+                  className="max-w-full max-h-[22px] object-contain transition-transform duration-300 opacity-90 group-hover:opacity-100 group-hover:scale-110"
+                />
+              </Motion.div>
+            </SwiperSlide>
+          ))}
+        </Swiper>
+      </div>
     </div>
   );
 };

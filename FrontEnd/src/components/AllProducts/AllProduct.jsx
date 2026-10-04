@@ -6,7 +6,7 @@ import LoadMoreButton from "../LoadMoreButton/LoadMoreButton";
 import ProductFilter from "./ProductFilter";
 import { getAllCategoryApi } from "../../api/categoryApi";
 import { getAllBrandApi } from "../../api/brandApi";
-import { FiAlertCircle, FiSearch, FiLayers, FiZap, FiX } from "react-icons/fi";
+import { FiAlertCircle, FiSearch, FiX, FiLayout, FiSidebar, FiRotateCcw, FiSliders } from "react-icons/fi";
 
 const AllProducts = React.memo(() => {
   const limit = 12;
@@ -137,103 +137,163 @@ const AllProducts = React.memo(() => {
     return chips;
   }, [filters, brands, categories, isFlashSaleActive]);
 
+  const [filterLayout, setFilterLayout] = React.useState(() => {
+    return localStorage.getItem("tientech_product_filter_layout") || "topbar";
+  });
+
+  const handleToggleLayout = React.useCallback(() => {
+    setFilterLayout((prev) => {
+      const next = prev === "topbar" ? "sidebar" : "topbar";
+      localStorage.setItem("tientech_product_filter_layout", next);
+      return next;
+    });
+  }, []);
+
   return (
     <section className="py-4 md:py-6 bg-white dark:bg-black transition-colors duration-300">
       <div className="container-custom">
         {/* Modern Header Section */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-6 md:mb-8 gap-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
           <div className="space-y-1">
-            <div className="flex items-center gap-2 text-blue-600 dark:text-blue-500 uppercase">
-              <div className="w-6 h-[2px] bg-blue-600 rounded-full shadow-sm"></div>
-              <span className="text-[10px] font-black tracking-[0.2em]">
-                Hệ thống sản phẩm
+            <div className="flex items-center gap-2 text-cyan-600 dark:text-cyan-400 uppercase font-mono">
+              <div className="w-6 h-[2px] bg-cyan-500 rounded-full shadow-[0_0_8px_rgba(6,182,212,0.8)]"></div>
+              <span className="text-[10px] font-bold tracking-[0.2em]">
+                COMMAND CENTER // HỆ THỐNG THIẾT BỊ
               </span>
             </div>
             <h2 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white tracking-tight uppercase">
               {filters.search
                 ? `Kết quả cho: "${filters.search}"`
                 : isFlashSaleActive
-                  ? "Săn Deal Hot"
-                  : "Khám phá Công nghệ"}
+                  ? "Săn Deal Flash Sale"
+                  : "Khám Phá Công Nghệ Tương Lai"}
             </h2>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
-            {/* Flash Sale Toggle */}
-            <button
-              type="button"
-              onClick={() =>
-                handleUpdateFilters({
-                  isFlashSale: isFlashSaleActive ? "" : "true",
-                  flashSale: isFlashSaleActive ? "" : "true",
-                })
-              }
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all border cursor-pointer ${
-                isFlashSaleActive
-                  ? "bg-orange-500 border-orange-500 text-white shadow-lg shadow-orange-500/20"
-                  : "bg-white dark:bg-gray-900 border-slate-200 dark:border-gray-800 text-slate-600 dark:text-gray-400 hover:border-orange-500"
-              }`}
-            >
-              <FiZap
-                className={
-                  isFlashSaleActive
-                    ? "fill-current text-white"
-                    : "text-orange-500"
-                }
-              />{" "}
-              Flash Sale
-            </button>
-
-            {/* Sort Dropdown */}
-            <div className="relative group">
-              <select
-                value={filters.sort}
-                onChange={(e) => handleUpdateFilters({ sort: e.target.value })}
-                className="appearance-none bg-white dark:bg-gray-900 border border-slate-200 dark:border-gray-800 text-slate-900 dark:text-white text-[10px] font-black uppercase tracking-widest rounded-xl px-5 py-2.5 pr-10 shadow-sm outline-none focus:border-blue-500 transition-all cursor-pointer"
+          <div className="flex items-center gap-2.5">
+            {/* View Mode Toggle Switch */}
+            <div className="hidden lg:flex items-center bg-slate-100 dark:bg-slate-900/80 p-1 rounded-xl border border-slate-200/90 dark:border-slate-800">
+              <button
+                type="button"
+                onClick={() => {
+                  setFilterLayout("topbar");
+                  localStorage.setItem("tientech_product_filter_layout", "topbar");
+                }}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  filterLayout === "topbar"
+                    ? "bg-white dark:bg-[#0c101a] text-cyan-600 dark:text-cyan-400 shadow-[0_0_10px_rgba(6,182,212,0.2)] border border-slate-200 dark:border-cyan-900/50"
+                    : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
+                }`}
+                title="Bố cục thanh lọc ngang hiện đại (tối đa diện tích sản phẩm)"
               >
-                <option value="newest">Mới nhất</option>
-                <option value="price_asc">Giá tăng dần</option>
-                <option value="price_desc">Giá giảm dần</option>
-              </select>
-              <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-                <FiLayers size={10} />
-              </div>
+                <FiLayout className="text-xs" />
+                <span>Thanh ngang</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setFilterLayout("sidebar");
+                  localStorage.setItem("tientech_product_filter_layout", "sidebar");
+                }}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  filterLayout === "sidebar"
+                    ? "bg-white dark:bg-[#0c101a] text-cyan-600 dark:text-cyan-400 shadow-[0_0_10px_rgba(6,182,212,0.2)] border border-slate-200 dark:border-cyan-900/50"
+                    : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
+                }`}
+                title="Bố cục cột bên truyền thống"
+              >
+                <FiSidebar className="text-xs" />
+                <span>Cột bên</span>
+              </button>
             </div>
           </div>
         </div>
 
-        {/* Active Filter Chips */}
+        {/* TOPBAR MODE: Horizontal Filter Bar */}
+        {filterLayout === "topbar" && (
+          <ProductFilter
+            filters={filters}
+            onFilterChange={(name, val) => handleUpdateFilters({ [name]: val })}
+            onClearFilters={handleClearFilters}
+            layout="topbar"
+            onToggleLayout={handleToggleLayout}
+            totalProductsCount={products.length}
+          />
+        )}
+
+        {/* Active Filter Chips Bar */}
         {activeFilters.length > 0 && (
-          <div className="flex flex-wrap items-center gap-2 mb-8 animate-in fade-in slide-in-from-top-1 duration-500">
-            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 mr-2 border-r border-slate-100 dark:border-gray-800 pr-3 h-4 flex items-center">Đang lọc</span>
+          <div className="flex flex-wrap items-center gap-2 mb-4 animate-in fade-in slide-in-from-top-1 duration-300">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mr-1 border-r border-slate-200 dark:border-slate-800 pr-2.5 h-4 flex items-center font-mono">
+              Đang kích hoạt:
+            </span>
             {activeFilters.map((chip, idx) => (
               <button
                 key={`${chip.key}-${chip.val}-${idx}`}
-                onClick={() => chip.key === "price" ? handleUpdateFilters({ minPrice: "", maxPrice: "" }) : removeFilterItem(chip.key, chip.val)}
-                className="flex items-center gap-2 px-3 py-1.5 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-full text-[10px] font-bold text-blue-600 dark:text-blue-400 hover:bg-rose-50 hover:border-rose-200 hover:text-rose-500 transition-all group"
+                onClick={() =>
+                  chip.key === "price"
+                    ? handleUpdateFilters({ minPrice: "", maxPrice: "" })
+                    : removeFilterItem(chip.key, chip.val)
+                }
+                className="flex items-center gap-1.5 px-3 py-1 bg-cyan-50 dark:bg-cyan-950/30 border border-cyan-200 dark:border-cyan-500/40 rounded-full text-xs font-mono font-semibold text-cyan-700 dark:text-cyan-300 hover:bg-rose-50 hover:border-rose-400 hover:text-rose-500 transition-all group shadow-[0_0_8px_rgba(6,182,212,0.1)] cursor-pointer"
               >
-                {chip.label}
-                <FiX className="text-blue-300 group-hover:text-rose-400" />
+                <span>{chip.label}</span>
+                <FiX className="text-cyan-400 group-hover:text-rose-500 text-xs transition-colors" />
               </button>
             ))}
             <button
               onClick={handleClearFilters}
-              className="text-[10px] font-black text-rose-500 uppercase ml-2 hover:underline tracking-widest"
+              className="text-[11px] font-bold text-rose-500 hover:underline uppercase ml-2 tracking-wider flex items-center gap-1 cursor-pointer font-mono"
             >
+              <FiRotateCcw className="text-xs" />
               Xóa tất cả
             </button>
           </div>
         )}
 
-        <div className="flex flex-col lg:flex-row gap-10 lg:gap-12">
-          {/* Dynamic Sidebar Filter */}
-          <div className="lg:w-64 flex-shrink-0">
-            <ProductFilter
+        {/* Catalog Sub-Header Controls */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 py-2.5 mb-6 border-y border-slate-200/80 dark:border-slate-800/80">
+          <div className="flex items-center gap-3">
+            <span className="px-2.5 py-1 rounded-lg bg-cyan-500/10 border border-cyan-500/30 text-cyan-600 dark:text-cyan-400 font-mono text-[11px] font-bold">
+              [ HIỂN THỊ {products.length} SẢN PHẨM PHÙ HỢP ]
+            </span>
+            <span className="text-xs text-slate-500 dark:text-slate-400 hidden sm:inline font-mono">
+              Tối ưu theo AI Match Rate 2.0
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <label className="text-[11px] font-mono text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+              SẮP XẾP:
+            </label>
+            <select
+              value={filters.sort || "newest"}
+              onChange={(e) => handleUpdateFilters({ sort: e.target.value })}
+              className="px-3 py-1 rounded-xl bg-slate-100 dark:bg-[#0c101a] border border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-800 dark:text-slate-200 outline-none focus:border-cyan-500 cursor-pointer"
+            >
+              <option value="newest">Mới nhất 2025</option>
+              <option value="price-asc">Giá: Thấp đến Cao</option>
+              <option value="price-desc">Giá: Cao đến Thấp</option>
+              <option value="best-seller">Bán chạy nhất (Hot Deals)</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Product Grid Area: Responsive according to layout mode */}
+        <div className={filterLayout === "sidebar" ? "flex flex-col lg:flex-row gap-8 lg:gap-10" : "w-full"}>
+          {/* SIDEBAR MODE: Column Filter */}
+          {filterLayout === "sidebar" && (
+            <div className="lg:w-72 flex-shrink-0">
+              <ProductFilter
                 filters={filters}
                 onFilterChange={(name, val) => handleUpdateFilters({ [name]: val })}
                 onClearFilters={handleClearFilters}
-            />
-          </div>
+                layout="sidebar"
+                onToggleLayout={handleToggleLayout}
+                totalProductsCount={products.length}
+              />
+            </div>
+          )}
 
           {/* Main Feed */}
           <div className="flex-1 min-w-0">
@@ -254,7 +314,7 @@ const AllProducts = React.memo(() => {
             )}
 
             {/* Loading State */}
-            {loading && !products.length && !error && renderSkeletons(8)}
+            {loading && !products.length && !error && renderSkeletons(filterLayout === "topbar" ? 10 : 8)}
 
             {/* Empty State */}
             {!loading && !error && products.length === 0 && (
@@ -276,23 +336,29 @@ const AllProducts = React.memo(() => {
             {/* Product Grid */}
             {!loading && !error && products.length > 0 && (
               <div className="space-y-12">
-                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5 md:gap-6">
+                <div
+                  className={
+                    filterLayout === "topbar"
+                      ? "grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 gap-3.5 sm:gap-5 md:gap-6"
+                      : "grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3.5 sm:gap-5 md:gap-6"
+                  }
+                >
                   {products.map((product) => (
                     <ProductCard key={product.id} product={product} />
                   ))}
                 </div>
 
-                {loadingMore && renderSkeletons(4)}
+                {loadingMore && renderSkeletons(filterLayout === "topbar" ? 5 : 4)}
 
                 {currentPage < totalPages && (
-                   <div className="flex justify-center pt-8 border-t border-slate-50 dark:border-gray-900/50">
+                  <div className="flex justify-center pt-8 border-t border-slate-50 dark:border-gray-900/50">
                     <LoadMoreButton
-                        currentPage={currentPage}
-                        totalPages={totalPages}
-                        loading={loadingMore}
-                        onLoadMore={handleLoadMore}
+                      currentPage={currentPage}
+                      totalPages={totalPages}
+                      loading={loadingMore}
+                      onLoadMore={handleLoadMore}
                     />
-                   </div>
+                  </div>
                 )}
               </div>
             )}

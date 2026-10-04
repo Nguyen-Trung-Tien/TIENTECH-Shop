@@ -62,19 +62,26 @@ const CategorySection = React.memo(({ categories: propCategories = [], loading: 
   if (!categories || categories.length === 0) return null;
 
   return (
-    <section className="py-8 md:py-12 bg-white dark:bg-dark-bg border-b border-slate-100 dark:border-slate-800/80 transition-colors duration-300">
-      <div className="container-custom">
+    <section className="py-10 md:py-16 bg-white dark:bg-dark-bg border-b border-slate-200/80 dark:border-slate-800/80 transition-colors duration-300 relative overflow-hidden">
+      {/* Subtle ambient accent glow */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[250px] bg-cyan-500/5 dark:bg-cyan-500/10 blur-[120px] rounded-full pointer-events-none"></div>
+
+      <div className="container-custom relative z-10">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
-          <div>
-            <span className="text-xs font-semibold text-primary dark:text-blue-400 uppercase tracking-wider block mb-1">
-              Khám phá danh mục
-            </span>
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900 dark:text-white tracking-tight">
-              Danh mục nổi bật
+          <div className="min-w-0">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 dark:bg-cyan-950/40 border border-cyan-500/30 text-cyan-600 dark:text-cyan-400 text-[11px] font-bold uppercase tracking-wider mb-2 font-mono">
+              <FiGrid className="text-xs" />
+              <span>Hệ sinh thái thiết bị</span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+              Danh Mục Công Nghệ{" "}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-500 to-blue-600">
+                Tiên Phong
+              </span>
             </h2>
           </div>
-          <p className="text-xs text-slate-400 dark:text-slate-500 font-medium">
-            Lựa chọn thiết bị phù hợp với nhu cầu của bạn
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium max-w-md">
+            Khám phá trọn vẹn những dòng sản phẩm công nghệ cao cấp dẫn đầu xu hướng 2025
           </p>
         </div>
 
@@ -89,8 +96,9 @@ const CategorySection = React.memo(({ categories: propCategories = [], loading: 
               onClick={() => navigate(`/category/${cat.slug}`)}
               className="group cursor-pointer min-w-0"
             >
-              <div className="relative p-3.5 bg-white dark:bg-dark-surface rounded-2xl border border-slate-100 dark:border-slate-800 shadow-2xs hover:shadow-lg hover:shadow-slate-200/50 dark:hover:shadow-black/50 hover:border-blue-500/40 dark:hover:border-blue-500/40 transition-all duration-300 flex flex-col justify-between h-full">
-                <div className="relative w-full aspect-square rounded-xl overflow-hidden bg-slate-50/80 dark:bg-slate-900/60 mb-3 flex items-center justify-center p-3">
+              <div className="relative p-4 bg-white/90 dark:bg-slate-900/70 backdrop-blur-xl rounded-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-xs hover:shadow-[0_10px_25px_rgba(6,182,212,0.15)] dark:hover:shadow-[0_10px_25px_rgba(6,182,212,0.25)] hover:border-cyan-500/50 dark:hover:border-cyan-500/50 transition-all duration-300 flex flex-col justify-between h-full group-hover:-translate-y-1">
+                {/* Image showcase */}
+                <div className="relative w-full aspect-square rounded-xl overflow-hidden bg-slate-50 dark:bg-dark-card mb-3 flex items-center justify-center p-3 border border-slate-100 dark:border-slate-800/60">
                   <img
                     src={
                       cat.image || cat.imageUrl || "/images/default-category.jpg"
@@ -100,17 +108,17 @@ const CategorySection = React.memo(({ categories: propCategories = [], loading: 
                     loading="lazy"
                   />
                   {cat.productCount > 0 && (
-                    <span className="absolute top-2 right-2 text-[10px] font-semibold bg-slate-900/80 dark:bg-slate-800/90 text-white px-2 py-0.5 rounded-full shadow-xs">
+                    <span className="absolute top-2 right-2 text-[10px] font-bold font-mono bg-slate-900/85 dark:bg-slate-800/90 text-cyan-300 border border-cyan-500/30 px-2 py-0.5 rounded-full shadow-xs">
                       {cat.productCount}
                     </span>
                   )}
                 </div>
 
                 <div className="text-center mt-auto min-w-0 px-1">
-                  <h3 className="text-slate-800 dark:text-slate-200 font-bold text-xs sm:text-sm tracking-tight truncate group-hover:text-primary dark:group-hover:text-blue-400 transition-colors">
+                  <h3 className="text-slate-800 dark:text-slate-200 font-bold text-xs sm:text-sm tracking-tight truncate group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors">
                     {cat.name}
                   </h3>
-                  <span className="text-[11px] text-slate-400 dark:text-slate-500 font-medium block truncate mt-0.5 group-hover:text-primary transition-colors">
+                  <span className="text-[11px] text-slate-400 dark:text-slate-500 font-semibold block truncate mt-1 group-hover:text-cyan-500 transition-colors">
                     Xem sản phẩm &rarr;
                   </span>
                 </div>

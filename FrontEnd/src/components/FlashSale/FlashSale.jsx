@@ -120,43 +120,49 @@ const FlashSale = ({ products: propProducts }) => {
   };
 
   return (
-    <section className="py-8 md:py-12 bg-gradient-to-b from-red-50/40 via-white to-slate-50/40 dark:from-red-950/10 dark:via-black dark:to-slate-900/20 border-y border-slate-200/60 dark:border-slate-800/80 transition-colors duration-300">
-      <div className="container-custom">
+    <section
+      id="flash-sale-section"
+      className="py-10 md:py-16 bg-gradient-to-b from-red-50/60 via-white to-slate-50/50 dark:from-red-950/20 dark:via-dark-bg dark:to-dark-bg border-y border-red-200/60 dark:border-red-900/30 transition-colors duration-300 relative overflow-hidden"
+    >
+      {/* Ambient Red/Orange cyber glow */}
+      <div className="absolute top-0 right-1/4 w-[400px] h-[200px] bg-red-600/10 blur-[130px] rounded-full pointer-events-none"></div>
+
+      <div className="container-custom relative z-10">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 bg-white/80 dark:bg-slate-900/80 p-5 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm backdrop-blur-md">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 bg-white/90 dark:bg-slate-900/80 p-5 md:p-6 rounded-3xl border border-red-500/20 dark:border-red-500/30 shadow-lg shadow-red-500/5 backdrop-blur-xl">
           <div className="flex items-center gap-4">
-            <div className="size-12 bg-gradient-to-tr from-red-600 to-orange-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-red-500/25 animate-pulse shrink-0">
-              <FiZap className="text-2xl fill-current" />
+            <div className="size-13 bg-gradient-to-tr from-red-600 via-rose-600 to-amber-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-red-600/30 shrink-0">
+              <FiZap className="text-2xl fill-current animate-bounce" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white uppercase tracking-tight">
-                  Flash Sale
+              <div className="flex items-center gap-2.5">
+                <h2 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+                  CYBER FLASH SALE
                 </h2>
-                <span className="px-2.5 py-0.5 rounded-full bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400 font-extrabold text-[10px] uppercase">
-                  Giá Sốc
+                <span className="px-2.5 py-0.5 rounded-full bg-gradient-to-r from-red-600 to-amber-600 text-white font-black text-[10px] uppercase font-mono tracking-wider shadow-xs">
+                  SĂN DEAL GIỜ VÀNG 🔥
                 </span>
               </div>
-              <p className="text-slate-500 dark:text-slate-400 text-xs font-semibold mt-0.5">
+              <p className="text-slate-500 dark:text-slate-400 text-xs font-semibold mt-1">
                 {products.length > 0
-                  ? "Săn deal giảm sốc có giới hạn thời gian"
+                  ? "Săn deal giảm sốc có giới hạn thời gian • Số lượng có hạn"
                   : isUpcoming
-                    ? "Flash Sale sắp diễn ra trong ít phút nữa"
+                    ? "Flash Sale tiếp theo sắp diễn ra trong ít phút nữa"
                     : "Đang cập nhật Flash Sale mới"}
               </p>
             </div>
           </div>
 
           {(products.length > 0 || isUpcoming) && (
-            <div className="flex items-center gap-3.5 bg-slate-900 dark:bg-slate-800 p-2.5 px-4 rounded-2xl shadow-md border border-slate-800">
-              <span className="text-[11px] font-bold text-slate-300 uppercase tracking-wider hidden sm:block">
+            <div className="flex items-center gap-3.5 bg-slate-950 p-3 px-5 rounded-2xl shadow-xl border border-red-500/30 shadow-red-950/20">
+              <span className="text-[11px] font-bold text-slate-300 uppercase tracking-wider hidden sm:block font-mono">
                 {products.length > 0
-                  ? "Kết thúc sau:"
+                  ? "KẾT THÚC SAU:"
                   : isUpcoming
-                    ? "Bắt đầu sau:"
+                    ? "BẮT ĐẦU SAU:"
                     : ""}
               </span>
-              <div className="flex items-center gap-1.5 font-mono">
+              <div className="flex items-center gap-2 font-mono">
                 {[
                   { val: h, label: "GIỜ" },
                   { val: m, label: "PHÚT" },
@@ -164,15 +170,15 @@ const FlashSale = ({ products: propProducts }) => {
                 ].map((item, idx) => (
                   <React.Fragment key={item.label}>
                     <div className="flex flex-col items-center">
-                      <div className="min-w-[36px] h-9 px-2 bg-gradient-to-b from-red-600 to-red-700 rounded-lg flex items-center justify-center text-white font-black text-base shadow-sm">
+                      <div className="min-w-[40px] h-10 px-2.5 bg-gradient-to-b from-red-600 via-rose-600 to-red-700 rounded-xl flex items-center justify-center text-white font-black text-base shadow-[0_0_12px_rgba(220,38,38,0.4)] border border-red-400/40">
                         {item.val}
                       </div>
-                      <span className="text-[8px] font-bold text-slate-400 mt-1 uppercase">
+                      <span className="text-[9px] font-bold text-slate-400 mt-1 uppercase tracking-wider">
                         {item.label}
                       </span>
                     </div>
                     {idx < 2 && (
-                      <span className="text-lg font-black text-slate-400 self-start mt-1">
+                      <span className="text-xl font-black text-red-500 self-start mt-1.5 animate-pulse">
                         :
                       </span>
                     )}
