@@ -6,7 +6,15 @@ import LoadMoreButton from "../LoadMoreButton/LoadMoreButton";
 import ProductFilter from "./ProductFilter";
 import { getAllCategoryApi } from "../../api/categoryApi";
 import { getAllBrandApi } from "../../api/brandApi";
-import { FiAlertCircle, FiSearch, FiX, FiLayout, FiSidebar, FiRotateCcw, FiSliders } from "react-icons/fi";
+import {
+  FiAlertCircle,
+  FiSearch,
+  FiX,
+  FiLayout,
+  FiSidebar,
+  FiRotateCcw,
+  FiSliders,
+} from "react-icons/fi";
 
 const AllProducts = React.memo(() => {
   const limit = 12;
@@ -32,7 +40,8 @@ const AllProducts = React.memo(() => {
         getAllBrandApi(),
       ]);
       if (catRes.errCode === 0) setCategories(catRes.data || []);
-      if (brandRes.errCode === 0) setBrands(brandRes.brands || brandRes.data || []);
+      if (brandRes.errCode === 0)
+        setBrands(brandRes.brands || brandRes.data || []);
     };
     fetchData();
   }, []);
@@ -76,8 +85,8 @@ const AllProducts = React.memo(() => {
 
   const isFlashSaleActive = Boolean(
     filters.isFlashSale === "true" ||
-      filters.flashSale === "true" ||
-      filters.flashSaleOnly
+    filters.flashSale === "true" ||
+    filters.flashSaleOnly,
   );
 
   // Lấy danh sách các bộ lọc đang active để hiển thị Chip
@@ -117,7 +126,8 @@ const AllProducts = React.memo(() => {
           if (key === "brandId")
             label = brands.find((b) => b.id.toString() === val)?.name || val;
           if (key === "categoryId")
-            label = categories.find((c) => c.id.toString() === val)?.name || val;
+            label =
+              categories.find((c) => c.id.toString() === val)?.name || val;
 
           chips.push({ key, val, label });
         });
@@ -177,7 +187,10 @@ const AllProducts = React.memo(() => {
                 type="button"
                 onClick={() => {
                   setFilterLayout("topbar");
-                  localStorage.setItem("tientech_product_filter_layout", "topbar");
+                  localStorage.setItem(
+                    "tientech_product_filter_layout",
+                    "topbar",
+                  );
                 }}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                   filterLayout === "topbar"
@@ -193,7 +206,10 @@ const AllProducts = React.memo(() => {
                 type="button"
                 onClick={() => {
                   setFilterLayout("sidebar");
-                  localStorage.setItem("tientech_product_filter_layout", "sidebar");
+                  localStorage.setItem(
+                    "tientech_product_filter_layout",
+                    "sidebar",
+                  );
                 }}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                   filterLayout === "sidebar"
@@ -257,9 +273,6 @@ const AllProducts = React.memo(() => {
             <span className="px-2.5 py-1 rounded-lg bg-cyan-500/10 border border-cyan-500/30 text-cyan-600 dark:text-cyan-400 font-mono text-[11px] font-bold">
               [ HIỂN THỊ {products.length} SẢN PHẨM PHÙ HỢP ]
             </span>
-            <span className="text-xs text-slate-500 dark:text-slate-400 hidden sm:inline font-mono">
-              Tối ưu theo AI Match Rate 2.0
-            </span>
           </div>
 
           <div className="flex items-center gap-2">
@@ -280,13 +293,21 @@ const AllProducts = React.memo(() => {
         </div>
 
         {/* Product Grid Area: Responsive according to layout mode */}
-        <div className={filterLayout === "sidebar" ? "flex flex-col lg:flex-row gap-8 lg:gap-10" : "w-full"}>
+        <div
+          className={
+            filterLayout === "sidebar"
+              ? "flex flex-col lg:flex-row gap-8 lg:gap-10"
+              : "w-full"
+          }
+        >
           {/* SIDEBAR MODE: Column Filter */}
           {filterLayout === "sidebar" && (
             <div className="lg:w-72 flex-shrink-0">
               <ProductFilter
                 filters={filters}
-                onFilterChange={(name, val) => handleUpdateFilters({ [name]: val })}
+                onFilterChange={(name, val) =>
+                  handleUpdateFilters({ [name]: val })
+                }
                 onClearFilters={handleClearFilters}
                 layout="sidebar"
                 onToggleLayout={handleToggleLayout}
@@ -303,7 +324,9 @@ const AllProducts = React.memo(() => {
                 <div className="size-16 bg-rose-50 dark:bg-rose-900/20 text-rose-500 rounded-2xl flex items-center justify-center mx-auto mb-5">
                   <FiAlertCircle size={28} />
                 </div>
-                <p className="text-slate-900 dark:text-white font-black text-base mb-2">Đã có lỗi xảy ra</p>
+                <p className="text-slate-900 dark:text-white font-black text-base mb-2">
+                  Đã có lỗi xảy ra
+                </p>
                 <button
                   onClick={() => window.location.reload()}
                   className="px-6 py-2.5 bg-blue-600 text-white font-black text-[10px] uppercase tracking-widest rounded-xl hover:bg-blue-700 shadow-lg shadow-blue-500/20 transition-all"
@@ -314,7 +337,10 @@ const AllProducts = React.memo(() => {
             )}
 
             {/* Loading State */}
-            {loading && !products.length && !error && renderSkeletons(filterLayout === "topbar" ? 10 : 8)}
+            {loading &&
+              !products.length &&
+              !error &&
+              renderSkeletons(filterLayout === "topbar" ? 10 : 8)}
 
             {/* Empty State */}
             {!loading && !error && products.length === 0 && (
@@ -322,8 +348,12 @@ const AllProducts = React.memo(() => {
                 <div className="size-20 bg-slate-50 dark:bg-gray-800 text-slate-300 dark:text-gray-700 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
                   <FiSearch size={32} />
                 </div>
-                <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2 uppercase tracking-tight">Không tìm thấy sản phẩm</h3>
-                <p className="text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-widest max-w-xs mx-auto opacity-70">Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm.</p>
+                <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2 uppercase tracking-tight">
+                  Không tìm thấy sản phẩm
+                </h3>
+                <p className="text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-widest max-w-xs mx-auto opacity-70">
+                  Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm.
+                </p>
                 <button
                   onClick={handleClearFilters}
                   className="mt-8 px-8 py-3 bg-slate-900 dark:bg-blue-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:opacity-90 transition-all active:scale-95"
@@ -348,7 +378,8 @@ const AllProducts = React.memo(() => {
                   ))}
                 </div>
 
-                {loadingMore && renderSkeletons(filterLayout === "topbar" ? 5 : 4)}
+                {loadingMore &&
+                  renderSkeletons(filterLayout === "topbar" ? 5 : 4)}
 
                 {currentPage < totalPages && (
                   <div className="flex justify-center pt-8 border-t border-slate-50 dark:border-gray-900/50">
