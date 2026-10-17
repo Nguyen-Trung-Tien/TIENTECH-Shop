@@ -20,6 +20,11 @@ import {
   Legend,
 } from "recharts";
 
+const currencyFormatter = new Intl.NumberFormat("vi-VN", {
+  style: "currency",
+  currency: "VND",
+});
+
 const RevenueForecastWidget = () => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -54,11 +59,7 @@ const RevenueForecastWidget = () => {
     fetchForecast();
   }, [isExpanded]);
 
-  const formatCurrency = (value) =>
-    new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: "VND",
-    }).format(value);
+  const formatCurrency = (value) => currencyFormatter.format(value);
 
   // Chuẩn bị dữ liệu cho biểu đồ
   const chartData = data

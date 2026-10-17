@@ -152,12 +152,17 @@ const AllProducts = React.memo(() => {
   });
 
   const handleToggleLayout = React.useCallback(() => {
-    setFilterLayout((prev) => {
-      const next = prev === "topbar" ? "sidebar" : "topbar";
-      localStorage.setItem("tientech_product_filter_layout", next);
-      return next;
-    });
+    setFilterLayout((prev) => (prev === "topbar" ? "sidebar" : "topbar"));
   }, []);
+
+  React.useEffect(() => {
+    try {
+      localStorage.setItem("tientech_product_filter_layout", filterLayout);
+    } catch (e) {
+      // Ignore localStorage write failure in restricted environments
+      void e;
+    }
+  }, [filterLayout]);
 
   return (
     <section className="py-4 md:py-6 bg-white dark:bg-black transition-colors duration-300">

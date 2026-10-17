@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { getPublicSettingsApi } from "../api/systemSettingApi";
 import {
   SystemSettingsContext,
@@ -45,32 +45,35 @@ export const SystemSettingsProvider = ({ children }) => {
   const defaultShippingFee = Number(settings.DEFAULT_SHIPPING_FEE) || 30000;
   const freeshipMinOrder = Number(settings.FREESHIP_MIN_ORDER) || 500000;
 
+  const contextValue = useMemo(
+    () => ({
+      settings,
+      loading,
+      refetchSettings: fetchPublicSettings,
+      storeName: settings.STORE_NAME || "TIENTECH Store",
+      storeHotline: settings.STORE_HOTLINE || "1900 6868",
+      storeEmail: settings.STORE_EMAIL || "support@tientech.vn",
+      storeAddress:
+        settings.STORE_ADDRESS ||
+        "Tầng 5, Tòa Nhà Công Nghệ TIENTECH, Cầu Giấy, Hà Nội",
+      storeFacebook: settings.STORE_FACEBOOK,
+      storeZalo: settings.STORE_ZALO,
+      storeTiktok: settings.STORE_TIKTOK,
+      defaultShippingFee,
+      freeshipMinOrder,
+      isCodEnabled: settings.PAYMENT_COD_ENABLED !== false,
+      isVnpayEnabled: settings.PAYMENT_VNPAY_ENABLED !== false,
+      isPaypalEnabled: settings.PAYMENT_PAYPAL_ENABLED !== false,
+      isMomoEnabled: settings.PAYMENT_MOMO_ENABLED === true,
+      isMaintenance: settings.MAINTENANCE_MODE === true,
+      maintenanceMessage: settings.MAINTENANCE_MESSAGE,
+      isAiEnabled: settings.AI_BOT_ENABLED !== false,
+    }),
+    [settings, loading, defaultShippingFee, freeshipMinOrder]
+  );
+
   return (
-    <SystemSettingsContext.Provider
-      value={{
-        settings,
-        loading,
-        refetchSettings: fetchPublicSettings,
-        storeName: settings.STORE_NAME || "TIENTECH Store",
-        storeHotline: settings.STORE_HOTLINE || "1900 6868",
-        storeEmail: settings.STORE_EMAIL || "support@tientech.vn",
-        storeAddress:
-          settings.STORE_ADDRESS ||
-          "Tầng 5, Tòa Nhà Công Nghệ TIENTECH, Cầu Giấy, Hà Nội",
-        storeFacebook: settings.STORE_FACEBOOK,
-        storeZalo: settings.STORE_ZALO,
-        storeTiktok: settings.STORE_TIKTOK,
-        defaultShippingFee,
-        freeshipMinOrder,
-        isCodEnabled: settings.PAYMENT_COD_ENABLED !== false,
-        isVnpayEnabled: settings.PAYMENT_VNPAY_ENABLED !== false,
-        isPaypalEnabled: settings.PAYMENT_PAYPAL_ENABLED !== false,
-        isMomoEnabled: settings.PAYMENT_MOMO_ENABLED === true,
-        isMaintenance: settings.MAINTENANCE_MODE === true,
-        maintenanceMessage: settings.MAINTENANCE_MESSAGE,
-        isAiEnabled: settings.AI_BOT_ENABLED !== false,
-      }}
-    >
+    <SystemSettingsContext.Provider value={contextValue}>
       {children}
     </SystemSettingsContext.Provider>
   );

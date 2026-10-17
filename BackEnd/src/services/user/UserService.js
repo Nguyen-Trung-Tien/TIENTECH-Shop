@@ -2,10 +2,14 @@ const db = require("../../models");
 const BaseService = require("../BaseService");
 const { sendVerificationEmail, sendEmailAsync } = require("../common/EmailService");
 const SystemSettingService = require("../system/SystemSettingService");
+const NotificationService = require("../notification/NotificationService");
+const { deleteCache } = require("../../config/redis");
 const { 
   hashToken, 
   generateRandomToken, 
-  hashUserPassword 
+  hashUserPassword,
+  getUserProfileKey,
+  getRefreshTokenKey,
 } = require("./AuthHelper");
 
 class UserService extends BaseService {
@@ -13,17 +17,58 @@ class UserService extends BaseService {
     super(db.User, "User");
   }
 
-  async getAllUsers(page = 1, limit = 10, search = "") {
+  async getAllUsers(page = 1, limit = 10, search = "", filters = {}) {
     const { Op } = require("sequelize");
-    const options = {
-      searchFields: ["username", "email", "phone"],
-      where: {
-        role: { [Op.ne]: "root" }
-      },
-      attributes: { exclude: ["password", "refreshTokenHash", "resetToken", "verificationToken"] },
-      order: [["createdAt", "DESC"]]
+    const where = {
+      role: { [Op.ne]: "root" },
     };
-    return await this.getAll(page, limit, search, options);
+
+    if (filters.status) {
+      if (filters.status === "active") {
+        where.isActive = true;
+      } else if (filters.status === "pending") {
+        where.isActive = false;
+        where.verificationToken = { [Op.ne]: null };
+      } else if (filters.status === "suspended" || filters.status === "inactive") {
+        where.isActive = false;
+        where.verificationToken = null;
+      }
+    }
+
+    if (filters.role && ["customer", "admin"].includes(filters.role)) {
+      where.role = filters.role;
+    }
+
+    const searchTrimmed = String(search || "").trim();
+    if (searchTrimmed) {
+      const orClauses = [
+        { username: { [Op.like]: `%${searchTrimmed}%` } },
+        { email: { [Op.like]: `%${searchTrimmed}%` } },
+        { phone: { [Op.like]: `%${searchTrimmed}%` } },
+      ];
+      if (!isNaN(searchTrimmed) && Number(searchTrimmed) > 0) {
+        orClauses.push({ id: Number(searchTrimmed) });
+      }
+      where[Op.or] = orClauses;
+    }
+
+    const options = {
+      where,
+      searchFields: [],
+      attributes: {
+        include: [
+          [
+            db.Sequelize.literal(
+              "CASE WHEN isActive = 1 THEN 'active' WHEN verificationToken IS NOT NULL THEN 'pending' ELSE 'suspended' END"
+            ),
+            "accountStatus",
+          ],
+        ],
+        exclude: ["password", "refreshTokenHash", "resetToken", "verificationToken"],
+      },
+      order: [["createdAt", "DESC"]],
+    };
+    return await this.getAll(page, limit, "", options);
   }
 
   async getUserById(userId) {
@@ -126,10 +171,14 @@ class UserService extends BaseService {
   }
 
 
-  async updateUser(userId, data, currentUserRole = "customer") {
+  async updateUser(userId, data, currentUserRole = "customer", currentUserId = null) {
     try {
       const user = await this.model.findByPk(userId);
       if (!user) return { errCode: 1, errMessage: "User not found" };
+
+      if (user.role === "root") {
+        return { errCode: 2, errMessage: "Cannot modify root user" };
+      }
 
       const isElevated = currentUserRole === "admin" || currentUserRole === "root";
 
@@ -171,7 +220,21 @@ class UserService extends BaseService {
           safeUpdateData.role = data.role;
         }
         if (data.isActive !== undefined) {
-          safeUpdateData.isActive = data.isActive === true || data.isActive === "true" || data.isActive === 1 || data.isActive === "1";
+          const nextActive = data.isActive === true || data.isActive === "true" || data.isActive === 1 || data.isActive === "1";
+          if (!nextActive && currentUserId && String(userId) === String(currentUserId)) {
+            return { errCode: 1, errMessage: "Bạn không thể tự vô hiệu hóa tài khoản của chính mình." };
+          }
+          safeUpdateData.isActive = nextActive;
+          if (!nextActive) {
+            safeUpdateData.refreshTokenHash = null;
+            safeUpdateData.refreshTokenExpiresAt = null;
+            try {
+              await deleteCache(getRefreshTokenKey(userId));
+              await deleteCache(getUserProfileKey(userId));
+            } catch (err) {
+              console.warn("[UserService.updateUser] Redis eviction warning:", err?.message);
+            }
+          }
         }
       }
 
@@ -202,6 +265,279 @@ class UserService extends BaseService {
     } catch (e) {
       console.error("UserService.updateUser error:", e);
       return { errCode: 2, errMessage: e.message };
+    }
+  }
+
+  async updateUserStatus({ adminId, targetUserId, status, reason = "", req = null }) {
+    try {
+      if (!adminId || !targetUserId) {
+        return { errCode: 1, errMessage: "Thiếu thông tin người thực hiện hoặc người dùng mục tiêu." };
+      }
+
+      if (String(adminId) === String(targetUserId)) {
+        return { errCode: 1, errMessage: "Bạn không thể tự thay đổi trạng thái của chính mình." };
+      }
+
+      const user = await this.model.findByPk(targetUserId);
+      if (!user) {
+        return { errCode: 1, errMessage: "Người dùng không tồn tại trên hệ thống." };
+      }
+
+      if (user.role === "root") {
+        return { errCode: 2, errMessage: "Không có quyền thay đổi trạng thái tài khoản cấp cao nhất." };
+      }
+
+      const shouldActivate = status === "active";
+      const previousState = {
+        isActive: user.isActive,
+        isPending: !user.isActive && Boolean(user.verificationToken),
+        role: user.role,
+      };
+
+      // Idempotency: if already in requested state
+      if (shouldActivate && user.isActive) {
+        return {
+          errCode: 0,
+          errMessage: "Tài khoản đã ở trạng thái hoạt động.",
+          data: { id: user.id, username: user.username, email: user.email, isActive: true, accountStatus: "active" },
+        };
+      }
+      if (!shouldActivate && !user.isActive && !user.verificationToken) {
+        return {
+          errCode: 0,
+          errMessage: "Tài khoản đã ở trạng thái vô hiệu hóa.",
+          data: { id: user.id, username: user.username, email: user.email, isActive: false, accountStatus: "suspended" },
+        };
+      }
+
+      const action = shouldActivate ? "ACCOUNT_ACTIVATED" : "ACCOUNT_DEACTIVATED";
+      const defaultReason = shouldActivate
+        ? "Quản trị viên kích hoạt tài khoản"
+        : "Quản trị viên tạm khóa tài khoản";
+
+      const t = await db.sequelize.transaction();
+      try {
+        const updatePayload = {
+          isActive: shouldActivate,
+          verificationToken: null,
+          verificationTokenExpiresAt: null,
+        };
+
+        if (!shouldActivate) {
+          updatePayload.refreshTokenHash = null;
+          updatePayload.refreshTokenExpiresAt = null;
+        }
+
+        await user.update(updatePayload, { transaction: t });
+
+        if (db.AuditLog) {
+          await db.AuditLog.create(
+            {
+              adminId,
+              targetUserId,
+              action,
+              previousState,
+              newState: {
+                isActive: shouldActivate,
+                isPending: false,
+                role: user.role,
+              },
+              reason: reason?.trim() || defaultReason,
+              status: "SUCCESS",
+              ipAddress: req?.ip || req?.headers?.["x-forwarded-for"] || null,
+              userAgent: req?.headers?.["user-agent"] || null,
+            },
+            { transaction: t }
+          );
+        }
+
+        await t.commit();
+      } catch (dbErr) {
+        await t.rollback();
+        console.error("UserService.updateUserStatus transaction error:", dbErr);
+        return { errCode: 2, errMessage: "Lỗi cơ sở dữ liệu: " + dbErr.message };
+      }
+
+      // Evict Redis caches
+      try {
+        await deleteCache(getUserProfileKey(targetUserId));
+        if (!shouldActivate) {
+          await deleteCache(getRefreshTokenKey(targetUserId));
+        }
+      } catch (cacheErr) {
+        console.warn("[UserService] Cache eviction warning:", cacheErr?.message);
+      }
+
+      // Isolated in-app notification
+      try {
+        await NotificationService.createNotification({
+          userId: targetUserId,
+          title: shouldActivate ? "Tài khoản đã được kích hoạt" : "Tài khoản đã bị tạm khóa",
+          message: shouldActivate
+            ? "Tài khoản của bạn đã được quản trị viên kích hoạt. Bạn hiện có thể đăng nhập và sử dụng dịch vụ bình thường."
+            : `Tài khoản của bạn đã bị quản trị viên tạm khóa.${reason ? ` Lý do: ${reason}` : ""}`,
+          type: "system",
+        });
+      } catch (notifErr) {
+        console.warn("[UserService] Notification dispatch warning:", notifErr?.message);
+      }
+
+      return {
+        errCode: 0,
+        errMessage: shouldActivate ? "Kích hoạt tài khoản thành công!" : "Vô hiệu hóa tài khoản thành công!",
+        data: {
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          isActive: shouldActivate,
+          accountStatus: shouldActivate ? "active" : "suspended",
+        },
+      };
+    } catch (e) {
+      console.error("UserService.updateUserStatus error:", e);
+      return { errCode: 2, errMessage: e.message || "Đã xảy ra lỗi khi cập nhật trạng thái tài khoản." };
+    }
+  }
+
+  async bulkUpdateUserStatus({ adminId, userIds, status, reason = "", req = null }) {
+    try {
+      if (!Array.isArray(userIds) || userIds.length === 0) {
+        return { errCode: 1, errMessage: "Danh sách tài khoản không được để trống." };
+      }
+      if (userIds.length > 50) {
+        return { errCode: 1, errMessage: "Tối đa chỉ xử lý 50 tài khoản mỗi lần." };
+      }
+
+      const results = [];
+      let successCount = 0;
+      let failureCount = 0;
+
+      for (const rawId of userIds) {
+        const targetUserId = Number(rawId);
+        if (isNaN(targetUserId)) {
+          results.push({ id: rawId, success: false, message: "ID không hợp lệ." });
+          failureCount++;
+          continue;
+        }
+
+        if (String(adminId) === String(targetUserId)) {
+          results.push({ id: targetUserId, success: false, message: "Không thể tự thao tác trên chính mình." });
+          failureCount++;
+          continue;
+        }
+
+        const res = await this.updateUserStatus({
+          adminId,
+          targetUserId,
+          status,
+          reason,
+          req,
+        });
+
+        if (res.errCode === 0) {
+          results.push({ id: targetUserId, success: true, message: res.errMessage });
+          successCount++;
+        } else {
+          results.push({ id: targetUserId, success: false, message: res.errMessage });
+          failureCount++;
+        }
+      }
+
+      return {
+        errCode: 0,
+        errMessage: `Đã xử lý xong: ${successCount} thành công, ${failureCount} thất bại.`,
+        data: {
+          total: userIds.length,
+          successCount,
+          failureCount,
+          results,
+        },
+      };
+    } catch (e) {
+      console.error("UserService.bulkUpdateUserStatus error:", e);
+      return { errCode: 2, errMessage: e.message || "Lỗi thao tác hàng loạt." };
+    }
+  }
+
+  async getUserMetrics() {
+    const { Op } = require("sequelize");
+    try {
+      const [totalUsers, activeUsers, pendingUsers, suspendedUsers, adminUsers, customerUsers] = await Promise.all([
+        this.model.count({ where: { role: { [Op.ne]: "root" } } }),
+        this.model.count({ where: { isActive: true, role: { [Op.ne]: "root" } } }),
+        this.model.count({ where: { isActive: false, verificationToken: { [Op.ne]: null }, role: { [Op.ne]: "root" } } }),
+        this.model.count({ where: { isActive: false, verificationToken: null, role: { [Op.ne]: "root" } } }),
+        this.model.count({ where: { role: "admin" } }),
+        this.model.count({ where: { role: "customer" } }),
+      ]);
+
+      return {
+        errCode: 0,
+        data: {
+          totalUsers,
+          activeUsers,
+          pendingUsers,
+          suspendedUsers,
+          adminUsers,
+          customerUsers,
+        },
+      };
+    } catch (e) {
+      console.error("UserService.getUserMetrics error:", e);
+      return { errCode: 2, errMessage: "Lỗi tải thống kê người dùng: " + e.message };
+    }
+  }
+
+  async getUserAuditLogs(page = 1, limit = 10, targetUserId = null, action = null) {
+    try {
+      if (!db.AuditLog) {
+        return { errCode: 0, data: [], pagination: { totalItems: 0, currentPage: 1, totalPages: 1, limit } };
+      }
+
+      const p = Math.max(1, +page || 1);
+      const l = Math.min(100, Math.max(1, +limit || 10));
+      const offset = (p - 1) * l;
+
+      const where = {};
+      if (targetUserId) {
+        where.targetUserId = Number(targetUserId);
+      }
+      if (action) {
+        where.action = action;
+      }
+
+      const { count, rows } = await db.AuditLog.findAndCountAll({
+        where,
+        limit: l,
+        offset,
+        order: [["createdAt", "DESC"]],
+        include: [
+          {
+            model: db.User,
+            as: "admin",
+            attributes: ["id", "username", "email", "avatar"],
+          },
+          {
+            model: db.User,
+            as: "targetUser",
+            attributes: ["id", "username", "email", "avatar"],
+          },
+        ],
+      });
+
+      return {
+        errCode: 0,
+        data: rows,
+        pagination: {
+          totalItems: count,
+          currentPage: p,
+          totalPages: Math.ceil(count / l) || 1,
+          limit: l,
+        },
+      };
+    } catch (e) {
+      console.error("UserService.getUserAuditLogs error:", e);
+      return { errCode: 2, errMessage: "Lỗi tải nhật ký quản trị: " + e.message };
     }
   }
 

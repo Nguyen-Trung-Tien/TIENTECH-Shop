@@ -1,13 +1,25 @@
 import axiosClient from "../utils/axiosClient";
 
-export const getAllUsersApi = (page, limit, search) =>
-  axiosClient.get(`/user/get-all`, { params: { page, limit, query: search } });
+export const getAllUsersApi = (page, limit, search, extraParams = {}) =>
+  axiosClient.get(`/user/get-all`, { params: { page, limit, query: search, ...extraParams } });
 
 export const getUserApi = (id) =>
   axiosClient.get(`/user/get-by-id/${id}`);
 
 export const deleteUserApi = (id) =>
   axiosClient.delete(`/user/delete/${id}`);
+
+export const updateUserStatusApi = (userId, status, reason = "") =>
+  axiosClient.put(`/user/admin/status`, { userId, status, reason });
+
+export const bulkUpdateUserStatusApi = (userIds, status, reason = "") =>
+  axiosClient.post(`/user/admin/bulk-status`, { userIds, status, reason });
+
+export const getUserMetricsApi = () =>
+  axiosClient.get(`/user/admin/metrics`);
+
+export const getUserAuditLogsApi = (params = {}) =>
+  axiosClient.get(`/user/admin/audit-logs`, { params });
 
 export const updateUserApi = (data) => {
   const config = data instanceof FormData 
@@ -81,5 +93,9 @@ export const userApi = {
   resendVerification: resendVerificationApi,
   updatePassword: updatePasswordApi,
   forgotPassword: forgotPasswordApi,
-  resetPassword: resetPasswordApi
+  resetPassword: resetPasswordApi,
+  updateStatus: updateUserStatusApi,
+  bulkUpdateStatus: bulkUpdateUserStatusApi,
+  getMetrics: getUserMetricsApi,
+  getAuditLogs: getUserAuditLogsApi,
 };

@@ -57,6 +57,18 @@ module.exports = (sequelize, DataTypes) => {
         as: "reviewLikes",
         onDelete: "CASCADE",
       });
+      if (models.AuditLog) {
+        User.hasMany(models.AuditLog, {
+          foreignKey: "adminId",
+          as: "adminAuditLogs",
+          onDelete: "SET NULL",
+        });
+        User.hasMany(models.AuditLog, {
+          foreignKey: "targetUserId",
+          as: "targetAuditLogs",
+          onDelete: "CASCADE",
+        });
+      }
     }
   }
 

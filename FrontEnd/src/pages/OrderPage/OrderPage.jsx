@@ -23,6 +23,7 @@ import { getOrdersByUserId, updateOrderStatus } from "../../api/orderApi";
 import { showErrorToast, showSuccessToast } from "../../utils/toastHelper";
 import AppPagination from "../../components/Pagination/Pagination";
 import { statusMap, paymentStatusMap } from "../../utils/StatusMap";
+import { getProductImage, handleImageError } from "../../utils/imageHelper";
 import { StatusBadge } from "../../utils/StatusBadge";
 import ReviewModal from "../../components/ReviewComponent/ReviewModal";
 import UnifiedSpinner from "../../components/Loading/UnifiedSpinner";
@@ -364,11 +365,13 @@ const OrderPage = () => {
                       return (
                         <div key={i.id} className="flex flex-col gap-3">
                           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 sm:items-center min-w-0">
-                            <div className="size-16 bg-slate-50 dark:bg-dark-bg rounded-xl border border-slate-100 dark:border-dark-border p-2 shrink-0">
+                            <div className="size-16 bg-slate-50 dark:bg-dark-bg rounded-xl border border-slate-100 dark:border-dark-border p-2 shrink-0 flex items-center justify-center overflow-hidden">
                               <img
-                                src={i.image}
-                                alt={i.productName}
+                                src={getProductImage(i)}
+                                alt={i.productName || "Sản phẩm"}
+                                onError={handleImageError}
                                 className="w-full h-full object-contain dark:mix-blend-normal"
+                                loading="lazy"
                               />
                             </div>
                             <div className="flex-1 min-w-0">

@@ -2,6 +2,32 @@ const db = require("../../../models");
 const { getPagination, getPagingData } = require("../../../utils/paginationHelper");
 const { Op } = require("sequelize");
 
+const enrichOrderItemsWithImage = (order) => {
+  if (!order) return order;
+  const plain = order.toJSON ? order.toJSON() : { ...order };
+  if (Array.isArray(plain.orderItems)) {
+    plain.orderItems = plain.orderItems.map((item) => {
+      const itemObj = item.toJSON ? item.toJSON() : { ...item };
+      const productImages =
+        itemObj.productInfo?.images || itemObj.product?.images || [];
+      const primaryImg =
+        productImages.find((img) => img.isPrimary)?.imageUrl ||
+        productImages[0]?.imageUrl ||
+        null;
+      const resolvedImage = itemObj.image || primaryImg;
+      return {
+        ...itemObj,
+        image: resolvedImage,
+        product: itemObj.product || {
+          ...(itemObj.productInfo || {}),
+          image: resolvedImage,
+        },
+      };
+    });
+  }
+  return plain;
+};
+
 const getAllOrders = async (params = {}, ...legacyArgs) => {
   try {
     let opts = {};
@@ -95,6 +121,14 @@ const getAllOrders = async (params = {}, ...legacyArgs) => {
               model: db.Product,
               as: "productInfo",
               attributes: ["id", "name", "slug"],
+              include: [
+                {
+                  model: db.ProductImage,
+                  as: "images",
+                  attributes: ["imageUrl", "isPrimary"],
+                  required: false,
+                },
+              ],
             },
           ],
         },
@@ -112,11 +146,14 @@ const getAllOrders = async (params = {}, ...legacyArgs) => {
     });
 
     const pagingData = getPagingData({ count, rows }, page, l);
+    const enrichedItems = (pagingData.items || pagingData.rows || []).map(
+      enrichOrderItemsWithImage
+    );
 
     return {
       errCode: 0,
       errMessage: "Get all orders successfully",
-      data: pagingData.items || pagingData.rows || [],
+      data: enrichedItems,
       pagination: {
         totalItems: pagingData.totalItems,
         totalPages: pagingData.totalPages,
@@ -142,6 +179,14 @@ const getOrderById = async (id, currentUser = null) => {
               model: db.Product,
               as: "productInfo",
               attributes: ["id", "name", "slug"],
+              include: [
+                {
+                  model: db.ProductImage,
+                  as: "images",
+                  attributes: ["imageUrl", "isPrimary"],
+                  required: false,
+                },
+              ],
             },
           ],
         },
@@ -176,7 +221,11 @@ const getOrderById = async (id, currentUser = null) => {
       };
     }
 
-    return { errCode: 0, errMessage: "Get order successfully", data: order };
+    return {
+      errCode: 0,
+      errMessage: "Get order successfully",
+      data: enrichOrderItemsWithImage(order),
+    };
   } catch (e) {
     console.error("Error in getOrderById:", e);
     throw e;
@@ -206,6 +255,14 @@ const getOrdersByUserId = async (userId, page = 1, limit = 10, status = "all") =
               model: db.Product,
               as: "productInfo",
               attributes: ["id", "name", "slug"],
+              include: [
+                {
+                  model: db.ProductImage,
+                  as: "images",
+                  attributes: ["imageUrl", "isPrimary"],
+                  required: false,
+                },
+              ],
             },
           ],
         },
@@ -218,11 +275,14 @@ const getOrdersByUserId = async (userId, page = 1, limit = 10, status = "all") =
     });
 
     const pagingData = getPagingData({ count, rows }, page, l);
+    const enrichedItems = (pagingData.items || pagingData.rows || []).map(
+      enrichOrderItemsWithImage
+    );
 
     return {
       errCode: 0,
       errMessage: "Get orders by userId successfully",
-      data: pagingData.items || pagingData.rows || [],
+      data: enrichedItems,
       pagination: {
         totalItems: pagingData.totalItems,
         totalPages: pagingData.totalPages,

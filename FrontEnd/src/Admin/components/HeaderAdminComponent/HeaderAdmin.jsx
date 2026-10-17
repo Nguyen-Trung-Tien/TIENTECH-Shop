@@ -17,6 +17,7 @@ import {
 import { useNavigate, Link } from "react-router-dom";
 import { logoutUserApi } from "../../../api/userApi";
 import { globalSearchApi } from "../../../api/adminApi";
+import { getProductImage, handleImageError } from "../../../utils/imageHelper";
 import { removeUser } from "../../../redux/userSlice";
 import { clearCart } from "../../../redux/cartSlice";
 import { useDispatch, useSelector } from "react-redux";
@@ -244,30 +245,41 @@ const HeaderAdmin = ({ toggleSidebar, isCollapsed, theme, toggleTheme }) => {
                                 navigate(`/admin/product/edit/${p.id}`);
                                 setShowSuggestions(false);
                               }}
-                              className="flex items-center justify-between w-full px-3 py-2 hover:bg-slate-50 dark:hover:bg-dark-bg rounded-xl transition-all group text-left"
+                              className="flex items-center justify-between w-full px-3 py-2 hover:bg-slate-50 dark:hover:bg-dark-bg rounded-xl transition-all group text-left gap-3"
                             >
-                              <div className="min-w-0">
-                                <p className="text-sm font-bold text-slate-800 dark:text-white group-hover:text-primary transition-colors truncate">
-                                  {p.name}
-                                </p>
-                                <p className="text-[10px] text-slate-500 dark:text-dark-text-secondary font-medium">
-                                  SKU:{" "}
-                                  <span className="font-bold text-slate-700 dark:text-slate-300">
-                                    {p.sku}
-                                  </span>{" "}
-                                  • Kho:{" "}
-                                  <span
-                                    className={
-                                      p.totalStock > 0
-                                        ? "text-emerald-600"
-                                        : "text-rose-500"
-                                    }
-                                  >
-                                    {p.totalStock}
-                                  </span>
-                                </p>
+                              <div className="flex items-center gap-3 min-w-0 flex-1">
+                                <div className="size-9 rounded-lg bg-slate-50 dark:bg-dark-bg border border-slate-100 dark:border-dark-border p-1 shrink-0 overflow-hidden flex items-center justify-center">
+                                  <img
+                                    src={getProductImage(p)}
+                                    alt={p.name || "Sản phẩm"}
+                                    onError={handleImageError}
+                                    className="w-full h-full object-contain"
+                                    loading="lazy"
+                                  />
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <p className="text-sm font-bold text-slate-800 dark:text-white group-hover:text-primary transition-colors truncate">
+                                    {p.name}
+                                  </p>
+                                  <p className="text-[10px] text-slate-500 dark:text-dark-text-secondary font-medium truncate">
+                                    SKU:{" "}
+                                    <span className="font-bold text-slate-700 dark:text-slate-300">
+                                      {p.sku}
+                                    </span>{" "}
+                                    • Kho:{" "}
+                                    <span
+                                      className={
+                                        p.totalStock > 0
+                                          ? "text-emerald-600"
+                                          : "text-rose-500"
+                                      }
+                                    >
+                                      {p.totalStock}
+                                    </span>
+                                  </p>
+                                </div>
                               </div>
-                              <span className="text-xs font-black text-slate-900 dark:text-white ml-4">
+                              <span className="text-xs font-black text-slate-900 dark:text-white shrink-0">
                                 {formatPrice(p.basePrice)}
                               </span>
                             </button>

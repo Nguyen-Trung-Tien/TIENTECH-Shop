@@ -5,6 +5,7 @@ import {
   FiArrowRight, FiEdit2, FiTrash2, FiEye, FiX
 } from "react-icons/fi";
 import { globalSearchApi } from "../../../api/adminApi";
+import { getProductImage, handleImageError } from "../../../utils/imageHelper";
 import { AdminTableSkeleton } from "../../components/AdminLoading";
 import { motion as Motion } from "framer-motion";
 
@@ -130,15 +131,24 @@ const AdminSearch = () => {
                     transition={{ delay: idx * 0.05 }}
                     className="bg-white dark:bg-dark-surface rounded-[2rem] border border-slate-100 dark:border-dark-border p-5 shadow-soft hover:shadow-xl dark:hover:shadow-none transition-all group"
                   >
-                    <div className="flex gap-4">
-                      <div className="size-20 rounded-2xl bg-slate-50 dark:bg-dark-bg border border-slate-100 dark:border-dark-border p-2 shrink-0 overflow-hidden group-hover:scale-105 transition-transform">
-                        <img src={p.image} alt="" className="w-full h-full object-contain" />
+                    <div className="flex gap-4 min-w-0">
+                      <div className="size-20 rounded-2xl bg-slate-50 dark:bg-dark-bg border border-slate-100 dark:border-dark-border p-2 shrink-0 overflow-hidden group-hover:scale-105 transition-transform flex items-center justify-center">
+                        <img
+                          src={getProductImage(p)}
+                          alt={p.name || "Sản phẩm"}
+                          onError={handleImageError}
+                          className="w-full h-full object-contain"
+                          loading="lazy"
+                        />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <h4 className="font-black text-slate-800 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors truncate">
+                        <h4
+                          className="font-black text-slate-800 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors line-clamp-2 break-words [overflow-wrap:anywhere]"
+                          title={p.name}
+                        >
                           {p.name}
                         </h4>
-                        <p className="text-[10px] font-bold text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest mt-1">
+                        <p className="text-[10px] font-bold text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest mt-1 truncate">
                           SKU: {p.sku || "N/A"}
                         </p>
                         <div className="flex items-center justify-between mt-3">

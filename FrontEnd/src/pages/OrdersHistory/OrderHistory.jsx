@@ -23,6 +23,7 @@ import ReviewModal from "../../components/ReviewComponent/ReviewModal";
 import UnifiedSpinner from "../../components/Loading/UnifiedSpinner";
 import OrderHistorySkeleton from "./components/OrderHistorySkeleton";
 import { showErrorToast, showSuccessToast } from "../../utils/toastHelper";
+import { getProductImage, handleImageError } from "../../utils/imageHelper";
 
 const OrderHistoryPage = () => {
   const navigate = useNavigate();
@@ -149,11 +150,13 @@ const OrderHistoryPage = () => {
                       const p = i.product;
                       return (
                         <div key={i.id} className="flex flex-col sm:flex-row gap-4 md:gap-6 min-w-0">
-                          <div className="size-20 md:w-24 md:h-24 bg-surface-50 dark:bg-dark-bg rounded-2xl border border-surface-100 dark:border-dark-border p-2 flex-shrink-0 group-hover:border-primary/10 dark:group-hover:border-brand/10 transition-colors">
+                          <div className="size-20 md:w-24 md:h-24 bg-surface-50 dark:bg-dark-bg rounded-2xl border border-surface-100 dark:border-dark-border p-2 flex-shrink-0 group-hover:border-primary/10 dark:group-hover:border-brand/10 transition-colors flex items-center justify-center overflow-hidden">
                             <img
-                              src={p?.image || "/images/no-image.png"}
-                              alt={p?.name || i.productName}
+                              src={getProductImage(i)}
+                              alt={p?.name || i.productName || "Sản phẩm"}
+                              onError={handleImageError}
                               className="w-full h-full object-contain dark:mix-blend-normal"
+                              loading="lazy"
                             />
                           </div>
                           <div className="flex-grow min-w-0 py-1">

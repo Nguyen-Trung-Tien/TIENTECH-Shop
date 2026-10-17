@@ -124,38 +124,40 @@ const ProductCard = ({ product }) => {
     if (!isActive) return toast.error("Sản phẩm đã ngưng kinh doanh!");
 
     setLoadingCart(true);
-    let fullP = null;
     try {
-      const res = await getProductByIdApi(id);
-      if (res.errCode === 0 && res.product) {
-        fullP = res.product;
-        const checkHasVariants =
-          fullP.hasVariants === true ||
-          fullP.hasVariants === 1 ||
-          fullP.hasVariants === "true" ||
-          (Array.isArray(fullP.variants) && fullP.variants.length > 0);
+      let fullP = null;
+      try {
+        const res = await getProductByIdApi(id);
+        if (res.errCode === 0 && res.product) {
+          fullP = res.product;
+          const checkHasVariants =
+            fullP.hasVariants === true ||
+            fullP.hasVariants === 1 ||
+            fullP.hasVariants === "true" ||
+            (Array.isArray(fullP.variants) && fullP.variants.length > 0);
 
-        if (checkHasVariants) {
-          setFullProduct(fullP);
-          setShowQuickModal(true);
-          setLoadingCart(false);
-          return;
+          if (checkHasVariants) {
+            setFullProduct(fullP);
+            setShowQuickModal(true);
+            return;
+          }
         }
+      } catch (err) {
+        console.error("Fetch product for cart error:", err);
       }
-    } catch (err) {
-      console.error("Fetch product for cart error:", err);
-    }
 
-    const currentStock = fullP
-      ? (fullP.totalStock ?? fullP.stock ?? effectiveStock)
-      : effectiveStock;
+      const currentStock = fullP
+        ? (fullP.totalStock ?? fullP.stock ?? effectiveStock)
+        : effectiveStock;
 
-    if (currentStock < 1) {
+      if (currentStock < 1) {
+        return toast.error("Sản phẩm tạm hết hàng!");
+      }
+
+      await executeAddToCart(id);
+    } finally {
       setLoadingCart(false);
-      return toast.error("Sản phẩm tạm hết hàng!");
     }
-
-    await executeAddToCart(id);
   };
 
   const executeAddToCart = async (targetId, isVariant = false, showToast = true) => {

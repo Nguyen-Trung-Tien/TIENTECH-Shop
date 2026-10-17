@@ -71,6 +71,13 @@ module.exports = (sequelize, DataTypes) => {
           fields: ["orderId"],
         },
       ],
+      hooks: {
+        beforeCreate: (payment) => {
+          if (!payment.transactionId) {
+            payment.transactionId = `DH${Date.now()}${payment.orderId || Math.floor(1000 + Math.random() * 9000)}`;
+          }
+        },
+      },
     }
   );
 

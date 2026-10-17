@@ -80,9 +80,6 @@ axiosClient.interceptors.response.use(
         ) {
           store.dispatch(removeUser());
           store.dispatch(clearCart());
-          if (!window.location.pathname.includes("/login")) {
-            window.location.href = `/login?from=${encodeURIComponent(window.location.pathname)}`;
-          }
         }
 
         return Promise.reject(refreshError);

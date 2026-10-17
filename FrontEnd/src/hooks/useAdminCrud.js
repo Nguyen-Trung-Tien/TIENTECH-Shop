@@ -12,6 +12,7 @@ export const useAdminCrud = (api, options = {}) => {
     searchDebounceTime = 500,
     itemName = "Dữ liệu",
     fetchOnMount = true,
+    filterParams = {},
   } = options;
 
   const [data, setData] = useState([]);
@@ -31,11 +32,14 @@ export const useAdminCrud = (api, options = {}) => {
   const searchTimeoutRef = useRef(null);
   const isFirstRender = useRef(true);
 
+  const filterParamsKey = JSON.stringify(filterParams);
+
   const fetchData = useCallback(
     async (currentPage = 1, currentSearch = "", extraParams = {}) => {
       setLoading(true);
       try {
-        const res = await api.getAll(currentPage, limit, currentSearch, extraParams);
+        const combinedParams = { ...filterParams, ...extraParams };
+        const res = await api.getAll(currentPage, limit, currentSearch, combinedParams);
         if (res.errCode === 0) {
           // Normalize different response structures from existing APIs
           const items = res.data || res.brands || res.categories || res.vouchers || [];
@@ -56,7 +60,8 @@ export const useAdminCrud = (api, options = {}) => {
         setLoading(false);
       }
     },
-    [api, limit, itemName]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [api, limit, itemName, filterParamsKey]
   );
 
   const handlePageChange = useCallback(
@@ -85,7 +90,7 @@ export const useAdminCrud = (api, options = {}) => {
     return () => {
       if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
     };
-  }, [searchTerm, searchDebounceTime, fetchOnMount, fetchData]);
+  }, [searchTerm, searchDebounceTime, fetchOnMount, fetchData, filterParamsKey]);
 
   const handleShowModal = (item = null) => {
     setEditingItem(item);
@@ -173,5 +178,6 @@ export const useAdminCrud = (api, options = {}) => {
     setShowDeleteModal,
     deletingItem,
     confirmDelete,
+    setData,
   };
 };

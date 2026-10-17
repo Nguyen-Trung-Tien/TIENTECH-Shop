@@ -465,7 +465,7 @@ const PaymentPage = () => {
                     </td>
                     <td className="px-6 py-5">
                       <p className="text-xs font-mono font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 px-2 py-1 rounded-lg inline-block">
-                        {p.transactionId || "N/A"}
+                        {p.transactionId || (p.order?.orderCode ? `DH${p.order.orderCode.replace(/^#?ORD/i, "")}` : (p.orderId ? `DH${p.orderId}` : `TXN${p.id}`))}
                       </p>
                     </td>
                     <td className="px-6 py-5">
@@ -681,7 +681,7 @@ const PaymentPage = () => {
                     Mã giao dịch
                   </p>
                   <p className="text-xs font-mono font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 px-3 py-2 rounded-xl">
-                    {selectedPayment.transactionId || "N/A"}
+                    {selectedPayment.transactionId || (selectedPayment.order?.orderCode ? `DH${selectedPayment.order.orderCode.replace(/^#?ORD/i, "")}` : (selectedPayment.orderId ? `DH${selectedPayment.orderId}` : `TXN${selectedPayment.id}`))}
                   </p>
                 </div>
                 {selectedPayment.status === "refunded" && (

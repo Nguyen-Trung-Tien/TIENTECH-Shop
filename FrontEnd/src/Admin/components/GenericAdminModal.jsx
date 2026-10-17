@@ -148,12 +148,12 @@ const GenericAdminModal = ({
                         name={field.name}
                         value={formData[field.name] || ""}
                         onChange={handleChange}
-                        className="w-full min-h-[44px] bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-2xl px-4 text-sm font-medium focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none appearance-none text-slate-900 dark:text-white"
+                        className="w-full min-h-[44px] bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-2xl px-4 text-sm font-medium focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none appearance-none text-slate-900 dark:text-white dark:[color-scheme:dark] [&>option]:bg-white [&>option]:text-slate-900 dark:[&>option]:bg-slate-900 dark:[&>option]:text-slate-100"
                         required={field.required}
                       >
-                        <option value="">-- Chọn {field.label} --</option>
+                        <option value="" className="bg-white text-slate-900 dark:bg-slate-900 dark:text-slate-100">-- Chọn {field.label} --</option>
                         {field.options?.map((opt) => (
-                          <option key={opt.value} value={opt.value}>
+                          <option key={opt.value} value={opt.value} className="bg-white text-slate-900 dark:bg-slate-900 dark:text-slate-100">
                             {opt.label}
                           </option>
                         ))}

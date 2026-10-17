@@ -9,7 +9,13 @@ const upload = require("./multer");
 const passport = require("../config/passport");
 
 const { validate } = require("../middleware/zodMiddleware");
-const { loginSchema, registerSchema, updateUserSchema } = require("../utils/zodSchemas");
+const { 
+  loginSchema, 
+  registerSchema, 
+  updateUserSchema,
+  adminUpdateUserStatusSchema,
+  adminBulkUserStatusSchema,
+} = require("../utils/zodSchemas");
 const { loginAuthLimiter, sensitiveActionLimiter, otpVerificationLimiter } = require("../middleware/rateLimiter");
 
 router.post("/login", loginAuthLimiter, validate(loginSchema), UserController.handleLogin);
@@ -46,6 +52,36 @@ router.get(
   authenticateToken,
   authorizeRole(["admin"]),
   UserController.handleGetAllUsers
+);
+
+router.put(
+  "/admin/status",
+  authenticateToken,
+  authorizeRole(["admin"]),
+  validate(adminUpdateUserStatusSchema),
+  UserController.handleUpdateUserStatus
+);
+
+router.post(
+  "/admin/bulk-status",
+  authenticateToken,
+  authorizeRole(["admin"]),
+  validate(adminBulkUserStatusSchema),
+  UserController.handleBulkUpdateUserStatus
+);
+
+router.get(
+  "/admin/metrics",
+  authenticateToken,
+  authorizeRole(["admin"]),
+  UserController.handleGetUserMetrics
+);
+
+router.get(
+  "/admin/audit-logs",
+  authenticateToken,
+  authorizeRole(["admin"]),
+  UserController.handleGetUserAuditLogs
 );
 
 router.get(

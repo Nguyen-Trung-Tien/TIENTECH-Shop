@@ -34,8 +34,11 @@ const CartPage = () => {
   useEffect(() => {
     const loadCart = async () => {
       setLoading(true);
-      await fetchCart();
-      setLoading(false);
+      try {
+        await fetchCart();
+      } finally {
+        setLoading(false);
+      }
     };
     loadCart();
   }, [fetchCart]);

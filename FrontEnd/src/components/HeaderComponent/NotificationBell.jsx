@@ -40,6 +40,7 @@ const NotificationBell = () => {
   const [loading, setLoading] = useState(false);
   const [activeFilter, setActiveFilter] = useState("all"); // all, order, promotion, system, unread
   const [showAdminModal, setShowAdminModal] = useState(false);
+  const [selectedNotification, setSelectedNotification] = useState(null);
   const [broadcastForm, setBroadcastForm] = useState({
     title: "",
     message: "",
@@ -118,6 +119,10 @@ const NotificationBell = () => {
   const handleNotificationClick = async (n) => {
     if (!n.isRead) {
       try {
+        setNotifications((prev) =>
+          prev.map((item) => (item.id === n.id ? { ...item, isRead: true } : item))
+        );
+        setUnreadCount((prev) => Math.max(0, prev - 1));
         await markAsReadApi(n.id);
         fetchNotifications();
       } catch (err) {
@@ -125,9 +130,7 @@ const NotificationBell = () => {
       }
     }
     setShowDropdown(false);
-    if (n.link) {
-      navigate(n.link);
-    }
+    setSelectedNotification(n);
   };
 
   const handleDeleteNotification = async (e, id) => {
@@ -346,22 +349,47 @@ const NotificationBell = () => {
                         </div>
 
                         <h4
-                          className={`text-xs font-black text-slate-900 dark:text-white leading-snug truncate ${
+                          className={`text-xs font-black text-slate-900 dark:text-white leading-snug line-clamp-1 break-words [overflow-wrap:anywhere] ${
                             !n.isRead ? "" : "opacity-75 font-bold"
                           }`}
+                          title={n.title}
                         >
                           {n.title}
                         </h4>
 
-                        <p className="text-[11px] font-medium text-slate-500 dark:text-dark-text-secondary line-clamp-2 mt-0.5 leading-relaxed">
+                        <p className="text-[11px] font-medium text-slate-500 dark:text-dark-text-secondary line-clamp-2 mt-0.5 leading-relaxed break-words [overflow-wrap:anywhere]">
                           {n.message}
                         </p>
 
-                        {n.link && (
-                          <span className="inline-flex items-center gap-1 mt-2 text-[10px] font-bold text-primary dark:text-primary-light group-hover:underline">
-                            Chi tiết <FiExternalLink size={10} />
-                          </span>
-                        )}
+                        <div className="flex items-center gap-3 mt-2">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleNotificationClick(n);
+                            }}
+                            className="text-[10px] font-bold text-slate-500 dark:text-dark-text-secondary hover:text-primary dark:hover:text-primary-light transition-colors cursor-pointer"
+                          >
+                            Xem chi tiết
+                          </button>
+                          {n.link && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (!n.isRead) {
+                                  markAsReadApi(n.id).catch(() => {});
+                                  setUnreadCount((prev) => Math.max(0, prev - 1));
+                                }
+                                setShowDropdown(false);
+                                navigate(n.link);
+                              }}
+                              className="inline-flex items-center gap-1 text-[10px] font-bold text-primary dark:text-primary-light hover:underline cursor-pointer"
+                            >
+                              Đến trang <FiExternalLink size={10} />
+                            </button>
+                          )}
+                        </div>
                       </div>
 
                       <div className="flex flex-col items-end justify-between shrink-0">
@@ -531,6 +559,88 @@ const NotificationBell = () => {
                     </button>
                   </div>
                 </form>
+              </Motion.div>
+            </div>
+          </AnimatePresence>,
+          document.body
+        )}
+
+      {/* Notification Detail Modal (Zero Screen Overflow) */}
+      {selectedNotification &&
+        createPortal(
+          <AnimatePresence>
+            <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 sm:p-6 overflow-y-auto bg-slate-950/60 backdrop-blur-md">
+              <Motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 15 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 15 }}
+                transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                className="relative w-full max-w-lg bg-white dark:bg-dark-surface rounded-3xl p-6 sm:p-8 shadow-2xl border border-slate-200 dark:border-dark-border my-auto overflow-hidden"
+              >
+                {/* Header */}
+                <div className="flex items-start justify-between pb-4 mb-5 border-b border-slate-100 dark:border-dark-border gap-4 min-w-0">
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <div
+                      className={`size-11 rounded-2xl border flex items-center justify-center shrink-0 shadow-xs ${
+                        getTypeStyle(selectedNotification.type).bg
+                      }`}
+                    >
+                      {getTypeStyle(selectedNotification.type).icon}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <span className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded bg-slate-100 dark:bg-dark-bg text-slate-500 dark:text-dark-text-secondary">
+                        {getTypeStyle(selectedNotification.type).badge}
+                      </span>
+                      <p className="text-[10px] font-bold text-slate-400 mt-1">
+                        {new Date(selectedNotification.createdAt).toLocaleString("vi-VN")}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedNotification(null)}
+                    className="size-9 rounded-xl bg-slate-100 dark:bg-dark-bg text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center justify-center transition-colors cursor-pointer shrink-0"
+                    title="Đóng"
+                  >
+                    <FiX size={18} />
+                  </button>
+                </div>
+
+                {/* Title */}
+                <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white mb-3 break-words [overflow-wrap:anywhere] min-w-0">
+                  {selectedNotification.title}
+                </h3>
+
+                {/* Detailed Message Container (Zero Overflow) */}
+                <div className="bg-slate-50 dark:bg-dark-bg p-4 sm:p-5 rounded-2xl border border-slate-100 dark:border-dark-border max-h-72 overflow-y-auto custom-scrollbar mb-6">
+                  <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-200 leading-relaxed break-words [overflow-wrap:anywhere] whitespace-pre-wrap min-w-0 flex-1 select-text">
+                    {selectedNotification.message}
+                  </p>
+                </div>
+
+                {/* Actions */}
+                <div className="flex items-center justify-end gap-3 pt-2">
+                  {selectedNotification.link && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const link = selectedNotification.link;
+                        setSelectedNotification(null);
+                        navigate(link);
+                      }}
+                      className="px-5 py-2.5 bg-primary text-white rounded-xl text-xs font-black uppercase tracking-wider hover:opacity-90 transition-all flex items-center gap-2 cursor-pointer shadow-md shadow-primary/20"
+                    >
+                      Đi đến trang liên kết <FiExternalLink size={14} />
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => setSelectedNotification(null)}
+                    className="px-5 py-2.5 bg-slate-100 dark:bg-dark-bg text-slate-700 dark:text-slate-200 rounded-xl text-xs font-black uppercase tracking-wider hover:bg-slate-200 dark:hover:bg-slate-800 transition-all cursor-pointer"
+                  >
+                    Đóng
+                  </button>
+                </div>
               </Motion.div>
             </div>
           </AnimatePresence>,

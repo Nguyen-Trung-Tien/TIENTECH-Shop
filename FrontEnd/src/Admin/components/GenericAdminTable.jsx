@@ -34,6 +34,9 @@ const GenericAdminTable = ({
   addLabel = "Thêm mới",
   searchPlaceholder = "Tìm kiếm...",
   renderActions,
+  headerExtra,
+  extraControls,
+  bulkActionsBar,
 }) => {
   const safeData = Array.isArray(data) ? data : [];
   const safeColumns = Array.isArray(columns) ? columns : [];
@@ -42,6 +45,9 @@ const GenericAdminTable = ({
     <div className="space-y-4 sm:space-y-8 p-2.5 sm:p-6 md:p-8 max-w-[1600px] mx-auto">
       {/* Action Loader Overlay */}
       {actionLoading && <AdminActionLoader message={actionMessage} />}
+
+      {/* Header Extra (e.g. Metric Cards) */}
+      {headerExtra}
 
       {/* Header Area */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-6">
@@ -64,6 +70,7 @@ const GenericAdminTable = ({
         </div>
 
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 w-full sm:w-auto">
+          {extraControls}
           <div className="relative group w-full sm:w-64 md:w-80">
             <FiSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 group-focus-within:text-primary transition-colors text-sm" />
             <input
@@ -95,6 +102,9 @@ const GenericAdminTable = ({
           </button>
         </div>
       </div>
+
+      {/* Bulk Actions Toolbar */}
+      {bulkActionsBar}
 
       {/* Table Area */}
       <div className="tt-card bg-white dark:bg-dark-surface border border-slate-200 dark:border-slate-800 shadow-xs overflow-hidden">

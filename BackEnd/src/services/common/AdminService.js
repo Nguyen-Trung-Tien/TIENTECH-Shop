@@ -346,7 +346,15 @@ const globalSearch = async (query) => {
         ],
       },
       attributes: ["id", "name", "sku", "basePrice", "totalStock", "sold"],
-      limit: 5,
+      include: [
+        {
+          model: db.ProductImage,
+          as: "images",
+          attributes: ["imageUrl", "isPrimary"],
+          required: false,
+        },
+      ],
+      limit: 10,
     }),
 
     db.Order.findAll({
@@ -382,10 +390,22 @@ const globalSearch = async (query) => {
     }),
   ]);
 
+  const formattedProducts = products.map((p) => {
+    const plain = p.toJSON ? p.toJSON() : p;
+    const primaryImg =
+      plain.images?.find((img) => img.isPrimary)?.imageUrl ||
+      plain.images?.[0]?.imageUrl ||
+      null;
+    return {
+      ...plain,
+      image: primaryImg,
+    };
+  });
+
   return {
     errCode: 0,
     data: {
-      products,
+      products: formattedProducts,
       orders,
       users,
     },

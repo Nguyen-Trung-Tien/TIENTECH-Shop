@@ -340,6 +340,9 @@ const updateOrderStatus = async (
         await existingPayment.update(
           {
             status: "completed",
+            transactionId:
+              existingPayment.transactionId ||
+              (order.orderCode ? `DH${order.orderCode.replace(/^#?ORD/i, "")}` : `DH${Date.now()}${order.id}`),
             paymentDate: existingPayment.paymentDate || new Date(),
           },
           { transaction: t }
@@ -352,6 +355,7 @@ const updateOrderStatus = async (
             amount: order.totalPrice,
             method: order.paymentMethod || "cod",
             status: "completed",
+            transactionId: order.orderCode ? `DH${order.orderCode.replace(/^#?ORD/i, "")}` : `DH${Date.now()}${order.id}`,
             paymentDate: new Date(),
           },
           { transaction: t }
@@ -426,6 +430,11 @@ const updatePaymentStatus = async (id, paymentStatus) => {
         payment.status = "refunded";
       } else {
         payment.status = "pending";
+      }
+      if (!payment.transactionId) {
+        payment.transactionId = order.orderCode
+          ? `DH${order.orderCode.replace(/^#?ORD/i, "")}`
+          : `DH${Date.now()}${order.id}`;
       }
       await payment.save({ transaction: t });
     }

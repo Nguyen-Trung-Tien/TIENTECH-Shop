@@ -125,6 +125,29 @@ const reviewSchema = z.object({
   }),
 });
 
+const adminUpdateUserStatusSchema = z.object({
+  body: z
+    .object({
+      userId: z.union([z.string(), z.number()]),
+      status: z.enum(["active", "inactive", "suspended"]),
+      reason: z.string().max(255).optional(),
+    })
+    .strict(),
+});
+
+const adminBulkUserStatusSchema = z.object({
+  body: z
+    .object({
+      userIds: z
+        .array(z.union([z.string(), z.number()]))
+        .min(1, "Danh sách người dùng không được để trống")
+        .max(50, "Tối đa 50 tài khoản mỗi lần"),
+      status: z.enum(["active", "inactive", "suspended"]),
+      reason: z.string().max(255).optional(),
+    })
+    .strict(),
+});
+
 module.exports = {
   voucherSchema,
   checkVoucherSchema,
@@ -136,4 +159,6 @@ module.exports = {
   updateCartItemSchema,
   reviewSchema,
   updateUserSchema,
+  adminUpdateUserStatusSchema,
+  adminBulkUserStatusSchema,
 };

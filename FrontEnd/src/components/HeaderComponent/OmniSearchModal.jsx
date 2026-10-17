@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { motion as Motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import {
@@ -15,7 +15,7 @@ import {
   FiCornerDownLeft,
 } from "react-icons/fi";
 import { searchSuggestionsApi } from "../../api/productApi";
-import { debounce } from "lodash";
+import debounce from "lodash/debounce";
 import { toast } from "react-toastify";
 import UnifiedSpinner from "../Loading/UnifiedSpinner";
 
@@ -92,32 +92,34 @@ export default function OmniSearchModal({
   }, [isOpen]);
 
   // Debounced Search API call
-  const fetchSuggestions = useRef(
-    debounce(async (searchQuery) => {
-      if (!searchQuery.trim()) {
-        setSuggestions({ products: [], keywords: [], brands: [], categories: [] });
-        setLoading(false);
-        return;
-      }
-      try {
-        setLoading(true);
-        const res = await searchSuggestionsApi(searchQuery);
-        if (res?.errCode === 0) {
-          const suggestData = res.suggestions || res.data || {};
-          setSuggestions({
-            products: suggestData.products || [],
-            keywords: suggestData.keywords || [],
-            brands: suggestData.brands || [],
-            categories: suggestData.categories || [],
-          });
+  const fetchSuggestions = useMemo(
+    () =>
+      debounce(async (searchQuery) => {
+        if (!searchQuery.trim()) {
+          setSuggestions({ products: [], keywords: [], brands: [], categories: [] });
+          setLoading(false);
+          return;
         }
-      } catch (err) {
-        console.error("Search suggestion error:", err);
-      } finally {
-        setLoading(false);
-      }
-    }, 250)
-  ).current;
+        try {
+          setLoading(true);
+          const res = await searchSuggestionsApi(searchQuery);
+          if (res?.errCode === 0) {
+            const suggestData = res.suggestions || res.data || {};
+            setSuggestions({
+              products: suggestData.products || [],
+              keywords: suggestData.keywords || [],
+              brands: suggestData.brands || [],
+              categories: suggestData.categories || [],
+            });
+          }
+        } catch (err) {
+          console.error("Search suggestion error:", err);
+        } finally {
+          setLoading(false);
+        }
+      }, 250),
+    []
+  );
 
   const handleInputChange = (e) => {
     const value = e.target.value;

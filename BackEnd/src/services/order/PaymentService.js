@@ -161,10 +161,24 @@ const getAllPayments = async ({
 
     const pagingData = getPagingData(data, page, l);
 
+    const items = await Promise.all(
+      pagingData.items.map(async (paymentInstance) => {
+        const p = typeof paymentInstance.toJSON === "function" ? paymentInstance.toJSON() : paymentInstance;
+        if (!p.transactionId) {
+          const fallbackTxn = p.order?.orderCode
+            ? `DH${p.order.orderCode.replace(/^#?ORD/i, "")}`
+            : `DH${Date.now()}${p.orderId || p.id}`;
+          p.transactionId = fallbackTxn;
+          db.Payment.update({ transactionId: fallbackTxn }, { where: { id: p.id } }).catch(() => {});
+        }
+        return p;
+      })
+    );
+
     return {
       errCode: 0,
       errMessage: "OK",
-      data: pagingData.items,
+      data: items,
       pagination: {
         totalItems: pagingData.totalItems,
         currentPage: pagingData.currentPage,
@@ -192,6 +206,17 @@ const getPaymentById = async (id) => {
     });
 
     if (!payment) return { errCode: 1, errMessage: "Payment not found" };
+
+    if (!payment.transactionId) {
+      const fallbackTxn = payment.order?.orderCode
+        ? `DH${payment.order.orderCode.replace(/^#?ORD/i, "")}`
+        : `DH${Date.now()}${payment.orderId || payment.id}`;
+      payment.transactionId = fallbackTxn;
+      db.Payment.update(
+        { transactionId: fallbackTxn },
+        { where: { id: payment.id } }
+      ).catch(() => {});
+    }
 
     return { errCode: 0, errMessage: "OK", data: payment };
   } catch (e) {

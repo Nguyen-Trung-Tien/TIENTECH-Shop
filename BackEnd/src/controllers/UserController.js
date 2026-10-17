@@ -107,7 +107,7 @@ const handleUpdateUser = async (req, res) => {
     const avatarUrl = await handleFileUpload(req, "avatars");
     if (avatarUrl) updateData.avatar = avatarUrl;
 
-    const result = await UserService.updateUser(id, updateData, req.user.role);
+    const result = await UserService.updateUser(id, updateData, req.user.role, req.user.id);
     if (result.errCode === 0) {
       await deleteCache(getUserProfileKey(id));
     }
@@ -122,10 +122,70 @@ const handleGetAllUsers = async (req, res) => {
     const page = Math.max(1, +req.query.page || 1);
     const limit = Math.min(100, Math.max(1, +req.query.limit || 10));
     const search = req.query.query || "";
-    const result = await UserService.getAllUsers(page, limit, search);
+    const filters = {
+      status: req.query.status,
+      role: req.query.role,
+    };
+    const result = await UserService.getAllUsers(page, limit, search, filters);
     return handleResponse(res, result);
   } catch (e) {
     return handleError(res, e, "handleGetAllUsers");
+  }
+};
+
+const handleUpdateUserStatus = async (req, res) => {
+  try {
+    const adminId = req.user.id;
+    const { userId, status, reason } = req.body;
+    const result = await UserService.updateUserStatus({
+      adminId,
+      targetUserId: userId,
+      status,
+      reason,
+      req,
+    });
+    return handleResponse(res, result);
+  } catch (e) {
+    return handleError(res, e, "handleUpdateUserStatus");
+  }
+};
+
+const handleBulkUpdateUserStatus = async (req, res) => {
+  try {
+    const adminId = req.user.id;
+    const { userIds, status, reason } = req.body;
+    const result = await UserService.bulkUpdateUserStatus({
+      adminId,
+      userIds,
+      status,
+      reason,
+      req,
+    });
+    return handleResponse(res, result);
+  } catch (e) {
+    return handleError(res, e, "handleBulkUpdateUserStatus");
+  }
+};
+
+const handleGetUserMetrics = async (req, res) => {
+  try {
+    const result = await UserService.getUserMetrics();
+    return handleResponse(res, result);
+  } catch (e) {
+    return handleError(res, e, "handleGetUserMetrics");
+  }
+};
+
+const handleGetUserAuditLogs = async (req, res) => {
+  try {
+    const page = Math.max(1, +req.query.page || 1);
+    const limit = Math.min(100, Math.max(1, +req.query.limit || 10));
+    const targetUserId = req.query.targetUserId || null;
+    const action = req.query.action || null;
+    const result = await UserService.getUserAuditLogs(page, limit, targetUserId, action);
+    return handleResponse(res, result);
+  } catch (e) {
+    return handleError(res, e, "handleGetUserAuditLogs");
   }
 };
 
@@ -286,4 +346,8 @@ module.exports = {
   handleVerifyEmail,
   handleResendVerification,
   handleGoogleAuthCallback,
+  handleUpdateUserStatus,
+  handleBulkUpdateUserStatus,
+  handleGetUserMetrics,
+  handleGetUserAuditLogs,
 };

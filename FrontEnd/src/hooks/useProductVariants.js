@@ -1,5 +1,28 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
+
+// Danh mục chuẩn hóa tên thuộc tính hiển thị (tránh trùng lặp giữa code tiếng Anh và tiếng Việt)
+const CANONICAL_ATTR_NAMES = {
+  color: "Màu sắc",
+  colour: "Màu sắc",
+  màu: "Màu sắc",
+  "màu sắc": "Màu sắc",
+  rom: "Dung lượng",
+  storage: "Dung lượng",
+  "bộ nhớ": "Dung lượng",
+  "bộ nhớ trong": "Dung lượng",
+  "dung lượng": "Dung lượng",
+  ram: "RAM",
+  "bộ nhớ ram": "RAM",
+  memory: "RAM",
+};
+
+export const getCanonicalAttributeName = (rawName) => {
+  if (!rawName) return "Thuộc tính";
+  const trimmed = String(rawName).trim();
+  const lower = trimmed.toLowerCase();
+  return CANONICAL_ATTR_NAMES[lower] || trimmed;
+};
 
 // Danh mục từ đồng nghĩa hỗ trợ khớp linh hoạt giữa code và tên tiếng Việt
 const ATTRIBUTE_SYNONYMS = {
@@ -19,6 +42,22 @@ export const extractVariantAttributes = (v) => {
   if (!v) return [];
   const list = [];
   const seen = new Set();
+
+  const addAttr = (rawName, rawCode, rawVal) => {
+    if (!rawName || rawVal == null) return;
+    const strVal = String(rawVal).trim();
+    if (!strVal) return;
+    const canonicalName = getCanonicalAttributeName(rawName);
+    const key = `${canonicalName.toLowerCase()}:::${strVal.toLowerCase()}`;
+    if (!seen.has(key)) {
+      seen.add(key);
+      list.push({
+        name: canonicalName,
+        code: String(rawCode || rawName).trim().toLowerCase(),
+        value: strVal,
+      });
+    }
+  };
 
   // 1. Kiểm tra mảng v.attributes (hệ thống relational AttributeValue)
   const rawAttrs = Array.isArray(v.attributes)
@@ -40,18 +79,10 @@ export const extractVariantAttributes = (v) => {
         item.attribute?.name ||
         item.attributeName ||
         item.name ||
-        item.attribute?.code ||
-        "Thuộc tính";
-      const code = item.attribute?.code || name.toLowerCase();
+        item.attribute?.code;
+      const code = item.attribute?.code || name;
       const val = typeof item === "object" && item !== null ? item.value : item;
-      if (name && val != null) {
-        const strVal = String(val).trim();
-        const key = `${name.toLowerCase()}:::${strVal.toLowerCase()}`;
-        if (!seen.has(key)) {
-          seen.add(key);
-          list.push({ name: String(name).trim(), code: String(code).trim().toLowerCase(), value: strVal });
-        }
-      }
+      addAttr(name, code, val);
     });
   }
 
@@ -67,28 +98,14 @@ export const extractVariantAttributes = (v) => {
 
   if (attrValues && typeof attrValues === "object" && !Array.isArray(attrValues)) {
     Object.entries(attrValues).forEach(([k, val]) => {
-      if (k && val != null) {
-        const strVal = String(val).trim();
-        const key = `${k.toLowerCase()}:::${strVal.toLowerCase()}`;
-        if (!seen.has(key)) {
-          seen.add(key);
-          list.push({ name: String(k).trim(), code: String(k).trim().toLowerCase(), value: strVal });
-        }
-      }
+      addAttr(k, k, val);
     });
   }
 
   // 3. Fallback nếu v.attributes là object thông thường (key-value)
   if (v.attributes && typeof v.attributes === "object" && !Array.isArray(v.attributes)) {
     Object.entries(v.attributes).forEach(([k, val]) => {
-      if (k && val != null) {
-        const strVal = String(val).trim();
-        const key = `${k.toLowerCase()}:::${strVal.toLowerCase()}`;
-        if (!seen.has(key)) {
-          seen.add(key);
-          list.push({ name: String(k).trim(), code: String(k).trim().toLowerCase(), value: strVal });
-        }
-      }
+      addAttr(k, k, val);
     });
   }
 
@@ -101,17 +118,16 @@ export const extractVariantAttributes = (v) => {
 export const matchVariantAttribute = (variant, targetName, targetValue) => {
   if (!variant || !targetName || targetValue == null) return false;
   const attrs = extractVariantAttributes(variant);
-  const normTargetName = String(targetName).trim().toLowerCase();
+  const normCanonicalTarget = getCanonicalAttributeName(targetName).toLowerCase();
   const normTargetValue = String(targetValue).trim().toLowerCase();
-
-  const synonyms = ATTRIBUTE_SYNONYMS[normTargetName] || [];
+  const synonyms = ATTRIBUTE_SYNONYMS[normCanonicalTarget] || [];
 
   return attrs.some((a) => {
     const aName = a.name.toLowerCase();
     const aCode = a.code.toLowerCase();
     const isNameMatch =
-      aName === normTargetName ||
-      aCode === normTargetName ||
+      aName === normCanonicalTarget ||
+      aCode === normCanonicalTarget ||
       synonyms.includes(aName) ||
       synonyms.includes(aCode);
 
@@ -146,12 +162,26 @@ export const useProductVariants = (product, syncUrl = true) => {
 
   // 2. Trạng thái các thuộc tính đang được người dùng chọn
   const [selectedAttributes, setSelectedAttributes] = useState({});
+  const isInitializedRef = useRef(false);
+  const prevProductIdRef = useRef(product?.id);
 
-  // Tự động khởi tạo hoặc khớp từ URL / Chọn variant đầu tiên khả dụng
+  // Khi chuyển sang sản phẩm khác, reset cờ khởi tạo
+  useEffect(() => {
+    if (prevProductIdRef.current !== product?.id) {
+      prevProductIdRef.current = product?.id;
+      isInitializedRef.current = false;
+    }
+  }, [product?.id]);
+
+  // Tự động khởi tạo hoặc khớp từ URL / Chọn variant đầu tiên khả dụng (chỉ chạy khi chưa khởi tạo hoặc đổi product)
   useEffect(() => {
     const attrKeys = Object.keys(allAttributes);
     if (attrKeys.length === 0) {
       setSelectedAttributes({});
+      return;
+    }
+
+    if (isInitializedRef.current) {
       return;
     }
 
@@ -160,7 +190,15 @@ export const useProductVariants = (product, syncUrl = true) => {
 
     if (syncUrl) {
       attrKeys.forEach((key) => {
-        const urlVal = searchParams.get(key.toLowerCase());
+        const canonicalKey = getCanonicalAttributeName(key).toLowerCase();
+        const urlVal =
+          searchParams.get(key.toLowerCase()) ||
+          searchParams.get(canonicalKey) ||
+          (ATTRIBUTE_SYNONYMS[canonicalKey] || []).reduce(
+            (found, syn) => found || searchParams.get(syn),
+            null
+          );
+
         if (urlVal && allAttributes[key].some((v) => v.toLowerCase() === urlVal.toLowerCase())) {
           const matchedVal = allAttributes[key].find((v) => v.toLowerCase() === urlVal.toLowerCase());
           initial[key] = matchedVal;
@@ -172,10 +210,11 @@ export const useProductVariants = (product, syncUrl = true) => {
     // Nếu URL có đủ thông tin thì dùng URL
     if (hasUrlMatch && attrKeys.every((k) => initial[k])) {
       setSelectedAttributes(initial);
+      isInitializedRef.current = true;
       return;
     }
 
-    // Nếu chưa chọn hoặc mới load product, tự động chọn biến thể khả dụng đầu tiên
+    // Tự động chọn biến thể khả dụng đầu tiên
     const firstActiveVariant =
       variants.find((v) => v.isActive !== false && (Number(v.stock) > 0 || v.stock == null)) ||
       variants[0];
@@ -184,9 +223,7 @@ export const useProductVariants = (product, syncUrl = true) => {
       const vAttrs = extractVariantAttributes(firstActiveVariant);
       attrKeys.forEach((key) => {
         const matched = vAttrs.find(
-          (a) =>
-            a.name.toLowerCase() === key.toLowerCase() ||
-            (ATTRIBUTE_SYNONYMS[key.toLowerCase()] || []).includes(a.name.toLowerCase())
+          (a) => a.name.toLowerCase() === key.toLowerCase()
         );
         if (matched) {
           initial[key] = matched.value;
@@ -195,6 +232,7 @@ export const useProductVariants = (product, syncUrl = true) => {
         }
       });
       setSelectedAttributes(initial);
+      isInitializedRef.current = true;
     }
   }, [allAttributes, variants, syncUrl, searchParams]);
 
@@ -290,10 +328,13 @@ export const useProductVariants = (product, syncUrl = true) => {
     setSelectedAttributes(newSelection);
 
     if (syncUrl) {
-      const newParams = new URLSearchParams(searchParams);
-      if (newSelection[attrName]) newParams.set(attrName.toLowerCase(), attrValue);
-      else newParams.delete(attrName.toLowerCase());
-      setSearchParams(newParams);
+      const newParams = new URLSearchParams();
+      Object.entries(newSelection).forEach(([k, val]) => {
+        if (val) {
+          newParams.set(k.toLowerCase(), val);
+        }
+      });
+      setSearchParams(newParams, { replace: true });
     }
   };
 

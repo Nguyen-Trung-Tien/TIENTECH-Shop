@@ -10,7 +10,9 @@ import {
   FiTag,
   FiShield,
   FiExternalLink,
+  FiX,
 } from "react-icons/fi";
+import { createPortal } from "react-dom";
 import {
   getNotificationsApi,
   markAsReadApi,
@@ -36,6 +38,17 @@ const Notifications = () => {
   const [hasMore, setHasMore] = useState(true);
   const [filterTab, setFilterTab] = useState("all"); // all, order, promotion, system, unread
   const [showClearModal, setShowClearModal] = useState(false);
+  const [selectedNotification, setSelectedNotification] = useState(null);
+  const [expandedIds, setExpandedIds] = useState(new Set());
+
+  const toggleExpand = (id) => {
+    setExpandedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
 
   const fetchNotifications = useCallback(
     async (isLoadMore = false) => {
@@ -131,9 +144,7 @@ const Notifications = () => {
     if (!n.isRead) {
       handleMarkAsRead(n.id);
     }
-    if (n.link) {
-      navigate(n.link);
-    }
+    setSelectedNotification(n);
   };
 
   if (!user) return null;
@@ -282,22 +293,36 @@ const Notifications = () => {
                       </div>
 
                       <h3
-                        className={`text-base font-black text-slate-900 dark:text-white leading-snug mb-1 ${
+                        className={`text-base font-black text-slate-900 dark:text-white leading-snug mb-2 break-words [overflow-wrap:anywhere] min-w-0 ${
                           !n.isRead ? "" : "opacity-75 font-semibold"
                         }`}
                       >
                         {n.title}
                       </h3>
 
-                      <p
-                        className={`text-xs text-slate-600 dark:text-dark-text-secondary leading-relaxed mb-4 ${
-                          !n.isRead ? "font-medium" : ""
-                        }`}
-                      >
-                        {n.message}
-                      </p>
+                      <div className="mb-4 min-w-0">
+                        <p
+                          className={`text-xs sm:text-sm text-slate-600 dark:text-dark-text-secondary leading-relaxed break-words [overflow-wrap:anywhere] whitespace-pre-wrap min-w-0 ${
+                            !n.isRead ? "font-medium" : ""
+                          } ${!expandedIds.has(n.id) && n.message?.length > 220 ? "line-clamp-3" : ""}`}
+                        >
+                          {n.message}
+                        </p>
+                        {n.message?.length > 220 && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleExpand(n.id);
+                            }}
+                            className="text-xs font-bold text-primary dark:text-primary-light hover:underline mt-1.5 inline-block cursor-pointer"
+                          >
+                            {expandedIds.has(n.id) ? "Thu gọn" : "Xem thêm"}
+                          </button>
+                        )}
+                      </div>
 
-                      <div className="flex items-center justify-between">
+                      <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
                         <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest">
                           <FiClock className="text-primary" />
                           {new Date(n.createdAt).toLocaleTimeString("vi-VN", {
@@ -308,11 +333,31 @@ const Notifications = () => {
                           {new Date(n.createdAt).toLocaleDateString("vi-VN")}
                         </div>
 
-                        {n.link && (
-                          <span className="inline-flex items-center gap-1 text-xs font-bold text-primary dark:text-primary-light group-hover:underline">
-                            Xem chi tiết <FiExternalLink size={13} />
-                          </span>
-                        )}
+                        <div className="flex items-center gap-3">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleNotificationClick(n);
+                            }}
+                            className="text-xs font-bold text-slate-500 dark:text-dark-text-secondary hover:text-primary dark:hover:text-primary-light transition-colors cursor-pointer"
+                          >
+                            Chi tiết
+                          </button>
+                          {n.link && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (!n.isRead) handleMarkAsRead(n.id);
+                                navigate(n.link);
+                              }}
+                              className="inline-flex items-center gap-1 text-xs font-bold text-primary dark:text-primary-light group-hover:underline cursor-pointer"
+                            >
+                              Xem trang liên quan <FiExternalLink size={13} />
+                            </button>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </Motion.div>
@@ -366,6 +411,92 @@ const Notifications = () => {
         icon={FiTrash2}
         iconClassName="bg-rose-50 dark:bg-rose-950/40 text-rose-500 border-rose-100 dark:border-rose-900/40"
       />
+
+      {/* Notification Detail Modal (Zero Screen Overflow) */}
+      {selectedNotification &&
+        createPortal(
+          <AnimatePresence>
+            <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 sm:p-6 overflow-y-auto bg-slate-950/60 backdrop-blur-md">
+              <Motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 15 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 15 }}
+                transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                className="relative w-full max-w-lg bg-white dark:bg-dark-surface rounded-3xl p-6 sm:p-8 shadow-2xl border border-slate-200 dark:border-dark-border my-auto overflow-hidden"
+              >
+                {/* Header */}
+                <div className="flex items-start justify-between pb-4 mb-5 border-b border-slate-100 dark:border-dark-border gap-4 min-w-0">
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <div
+                      className={`size-12 rounded-2xl border flex items-center justify-center shrink-0 text-xl shadow-xs ${
+                        getTypeBadge(selectedNotification.type).color
+                      }`}
+                    >
+                      {getTypeBadge(selectedNotification.type).icon}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <span
+                        className={`text-[10px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded-lg border ${
+                          getTypeBadge(selectedNotification.type).color
+                        }`}
+                      >
+                        {getTypeBadge(selectedNotification.type).label}
+                      </span>
+                      <p className="text-[11px] font-bold text-slate-400 mt-1">
+                        {new Date(selectedNotification.createdAt).toLocaleString("vi-VN")}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedNotification(null)}
+                    className="size-9 rounded-xl bg-slate-100 dark:bg-dark-bg text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center justify-center transition-colors cursor-pointer shrink-0"
+                    title="Đóng"
+                  >
+                    <FiX size={18} />
+                  </button>
+                </div>
+
+                {/* Title */}
+                <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white mb-3 break-words [overflow-wrap:anywhere] min-w-0">
+                  {selectedNotification.title}
+                </h3>
+
+                {/* Detailed Message Container (Zero Overflow) */}
+                <div className="bg-slate-50 dark:bg-dark-bg p-4 sm:p-5 rounded-2xl border border-slate-100 dark:border-dark-border max-h-72 overflow-y-auto custom-scrollbar mb-6">
+                  <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-200 leading-relaxed break-words [overflow-wrap:anywhere] whitespace-pre-wrap min-w-0 flex-1 select-text">
+                    {selectedNotification.message}
+                  </p>
+                </div>
+
+                {/* Actions */}
+                <div className="flex items-center justify-end gap-3 pt-2">
+                  {selectedNotification.link && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const link = selectedNotification.link;
+                        setSelectedNotification(null);
+                        navigate(link);
+                      }}
+                      className="px-5 py-2.5 bg-primary text-white rounded-xl text-xs font-black uppercase tracking-wider hover:opacity-90 transition-all flex items-center gap-2 cursor-pointer shadow-md shadow-primary/20"
+                    >
+                      Đi đến trang liên quan <FiExternalLink size={14} />
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => setSelectedNotification(null)}
+                    className="px-5 py-2.5 bg-slate-100 dark:bg-dark-bg text-slate-700 dark:text-slate-200 rounded-xl text-xs font-black uppercase tracking-wider hover:bg-slate-200 dark:hover:bg-slate-800 transition-all cursor-pointer"
+                  >
+                    Đóng
+                  </button>
+                </div>
+              </Motion.div>
+            </div>
+          </AnimatePresence>,
+          document.body
+        )}
     </div>
   );
 };

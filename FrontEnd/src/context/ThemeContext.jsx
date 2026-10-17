@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { getPublicSettingsApi } from "../api/systemSettingApi";
 import {
   ThemeContext,
@@ -48,25 +48,28 @@ export const ThemeProvider = ({ children }) => {
     return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
 
-  const toggleTheme = () => {
+  const toggleTheme = useCallback(() => {
     setThemeState((prev) => (prev === "light" ? "dark" : "light"));
-  };
+  }, []);
 
-  const setTheme = (newTheme) => {
+  const setTheme = useCallback((newTheme) => {
     if (newTheme === "light" || newTheme === "dark") {
       setThemeState(newTheme);
     }
-  };
+  }, []);
+
+  const contextValue = useMemo(
+    () => ({
+      theme,
+      isDark: theme === "dark",
+      toggleTheme,
+      setTheme,
+    }),
+    [theme, toggleTheme, setTheme]
+  );
 
   return (
-    <ThemeContext.Provider
-      value={{
-        theme,
-        isDark: theme === "dark",
-        toggleTheme,
-        setTheme,
-      }}
-    >
+    <ThemeContext.Provider value={contextValue}>
       {children}
     </ThemeContext.Provider>
   );

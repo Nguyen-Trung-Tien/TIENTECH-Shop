@@ -4,6 +4,7 @@ import { FiPackage, FiRefreshCcw, FiRotateCcw } from "react-icons/fi";
 import { StatusBadge } from "../../../utils/StatusBadge";
 import { returnStatusMap } from "../../../utils/StatusMap";
 import { formatCurrency } from "../../../utils/format";
+import { getProductImage, handleImageError } from "../../../utils/imageHelper";
 
 const isWithin12Hours = (dateString) => {
   if (!dateString) return false;
@@ -31,11 +32,13 @@ const OrderItemsList = ({ order, onOpenReturnModal, onCancelReturn }) => {
             className="p-4 sm:p-6 md:p-8 flex flex-col gap-6 group hover:bg-slate-50/50 dark:hover:bg-dark-bg/20 transition-all"
           >
             <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 min-w-0">
-              <div className="size-20 sm:size-24 rounded-2xl bg-white dark:bg-dark-bg border border-slate-100 dark:border-dark-border p-2 flex-shrink-0 group-hover:scale-105 transition-transform">
+              <div className="size-20 sm:size-24 rounded-2xl bg-white dark:bg-dark-bg border border-slate-100 dark:border-dark-border p-2 flex-shrink-0 group-hover:scale-105 transition-transform flex items-center justify-center overflow-hidden">
                 <img
-                  src={item.image}
+                  src={getProductImage(item)}
                   alt={item.productName || "Sản phẩm"}
+                  onError={handleImageError}
                   className="w-full h-full object-contain dark:mix-blend-normal"
+                  loading="lazy"
                 />
               </div>
               <div className="flex-grow min-w-0">
