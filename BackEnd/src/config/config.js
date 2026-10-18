@@ -16,6 +16,16 @@ module.exports = {
     dialect: process.env.DB_DIALECT || "mysql",
     dialectModule: mysql2,
     logging: false,
+    dialectOptions:
+      process.env.DB_SSL === "true" ||
+      (process.env.DB_HOST && process.env.DB_HOST.includes("tidbcloud.com"))
+        ? {
+            ssl: {
+              require: true,
+              rejectUnauthorized: false,
+            },
+          }
+        : {},
     pool: {
       max: parseInt(process.env.DB_POOL_MAX || "5", 10),
       min: parseInt(process.env.DB_POOL_MIN || "0", 10),

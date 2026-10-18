@@ -355,6 +355,9 @@ class UserService extends BaseService {
       } catch (dbErr) {
         await t.rollback();
         console.error("UserService.updateUserStatus transaction error:", dbErr);
+        if (dbErr.message && dbErr.message.includes("AuditLogs' doesn't exist") && db.AuditLog) {
+          await db.AuditLog.sync({ alter: false }).catch(() => {});
+        }
         return { errCode: 2, errMessage: "Lỗi cơ sở dữ liệu: " + dbErr.message };
       }
 
@@ -537,6 +540,16 @@ class UserService extends BaseService {
       };
     } catch (e) {
       console.error("UserService.getUserAuditLogs error:", e);
+      if (e.message && e.message.includes("AuditLogs' doesn't exist")) {
+        if (db.AuditLog) {
+          await db.AuditLog.sync({ alter: false }).catch(() => {});
+        }
+        return {
+          errCode: 0,
+          data: [],
+          pagination: { totalItems: 0, currentPage: 1, totalPages: 1, limit: +limit || 10 },
+        };
+      }
       return { errCode: 2, errMessage: "Lỗi tải nhật ký quản trị: " + e.message };
     }
   }
