@@ -74,7 +74,7 @@ router.post(
 );
 
 router.put(
-  "/change-payment-method/:id",
+  ["/change-payment-method/:id", "/update-payment-method/:id"],
   authenticateToken,
   authorizeRole(["admin", "customer"]),
   validate(changePaymentMethodSchema),
