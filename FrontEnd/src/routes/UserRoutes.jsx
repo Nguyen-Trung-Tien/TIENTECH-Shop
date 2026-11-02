@@ -16,6 +16,7 @@ import React, { Suspense, lazy } from "react";
 
 const CheckoutSuccess = lazy(() => import("../pages/CheckoutSuccess/CheckoutSuccess"));
 const CheckoutFailed = lazy(() => import("../pages/CheckoutFailed/CheckoutFailed"));
+const ProductCompareHub = lazy(() => import("../pages/ProductCompare/ProductCompareHub"));
 import Profile from "../pages/Profile/Profile";
 import Notifications from "../pages/Notifications/Notifications";
 import NotFound from "../pages/NotFound/NotFound";
@@ -208,6 +209,16 @@ const UserRoutes = () => {
         element={
           <LayoutComponent isShowHeader={true} isShowFooter={true}>
             <AllProducts />
+          </LayoutComponent>
+        }
+      />
+      <Route
+        path="compare"
+        element={
+          <LayoutComponent isShowHeader={true} isShowFooter={true}>
+            <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Đang tải ma trận so sánh...</div>}>
+              <ProductCompareHub />
+            </Suspense>
           </LayoutComponent>
         }
       />
