@@ -7,7 +7,7 @@ const {
 } = require("../middleware/authMiddleware");
 
 const { validate } = require("../middleware/zodMiddleware");
-const { orderSchema } = require("../utils/zodSchemas");
+const { orderSchema, changePaymentMethodSchema } = require("../utils/zodSchemas");
 
 router.get(
   "/get-all-orders",
@@ -71,6 +71,14 @@ router.post(
   authenticateToken,
   authorizeRole(["admin"]),
   OrderController.handleReturnAction
+);
+
+router.put(
+  "/change-payment-method/:id",
+  authenticateToken,
+  authorizeRole(["admin", "customer"]),
+  validate(changePaymentMethodSchema),
+  OrderController.handleChangePaymentMethod
 );
 
 module.exports = router;

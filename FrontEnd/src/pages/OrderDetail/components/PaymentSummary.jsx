@@ -1,12 +1,17 @@
 import React from "react";
-import { FiCreditCard, FiRefreshCcw } from "react-icons/fi";
+import { FiCreditCard, FiRefreshCcw, FiTruck } from "react-icons/fi";
 import { StatusBadge } from "../../../utils/StatusBadge";
 import { paymentStatusMap } from "../../../utils/constants";
 import { formatCurrency } from "../../../utils/format";
 import { Button } from "../../../components/UI";
 
-const PaymentSummary = ({ order, onRepay }) => {
+const PaymentSummary = ({ order, onRepay, onChangeToCod, changingMethod = false }) => {
   if (!order) return null;
+
+  const canChangePayment =
+    order.paymentStatus === "unpaid" &&
+    ["pending", "confirmed"].includes(order.status) &&
+    order.paymentMethod?.toLowerCase() !== "cod";
 
   return (
     <div className="bg-white dark:bg-dark-surface p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-[32px] border border-surface-200 dark:border-dark-border shadow-xl print:border print:shadow-none print:avoid-break">
@@ -46,17 +51,34 @@ const PaymentSummary = ({ order, onRepay }) => {
           {formatCurrency(order.totalPrice)}
         </div>
       </div>
-      {order.paymentStatus === "unpaid" &&
-        order.paymentMethod === "VNPAY" && (
-          <Button
-            variant="primary"
-            className="w-full mt-6"
-            icon={FiRefreshCcw}
-            onClick={onRepay}
-          >
-            THANH TOÁN LẠI
-          </Button>
-        )}
+
+      {canChangePayment && (
+        <div className="space-y-3 mt-6">
+          {order.paymentMethod?.toUpperCase() === "VNPAY" && onRepay && (
+            <Button
+              variant="primary"
+              className="w-full"
+              icon={FiRefreshCcw}
+              onClick={onRepay}
+            >
+              THANH TOÁN LẠI VNPAY
+            </Button>
+          )}
+
+          {onChangeToCod && (
+            <Button
+              variant="outline"
+              className="w-full border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-bold"
+              icon={FiTruck}
+              loading={changingMethod}
+              disabled={changingMethod}
+              onClick={onChangeToCod}
+            >
+              ĐỔI SANG GIAO HÀNG (COD)
+            </Button>
+          )}
+        </div>
+      )}
     </div>
   );
 };

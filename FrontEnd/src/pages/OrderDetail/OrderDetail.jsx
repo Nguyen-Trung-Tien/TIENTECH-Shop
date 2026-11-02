@@ -3,7 +3,7 @@ import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { FiXCircle } from "react-icons/fi";
 import { Button } from "../../components/UI";
-import { getOrderById, updateOrderStatus } from "../../api/orderApi";
+import { getOrderById, updateOrderStatus, changePaymentMethod } from "../../api/orderApi";
 import { requestReturn, cancelReturnRequest } from "../../api/orderItemApi";
 import { createVnpayPaymentApi } from "../../api/paymentApi";
 import { showErrorToast, showSuccessToast } from "../../utils/toastHelper";
@@ -144,6 +144,24 @@ const OrderDetail = () => {
       }
     } catch (err) {
       showErrorToast(err, "Lỗi khi xác nhận nhận hàng");
+    } finally {
+      dispatch({ type: "SET_SUBMITTING", payload: false });
+    }
+  };
+
+  const handleChangeToCod = async () => {
+    if (!order?.id) return;
+    dispatch({ type: "SET_SUBMITTING", payload: true });
+    try {
+      const res = await changePaymentMethod(order.id, "cod");
+      if (res && res.errCode === 0) {
+        showSuccessToast("Đã đổi sang phương thức Giao hàng (COD) thành công!");
+        dispatch({ type: "SET_ORDER", payload: res.data });
+      } else {
+        showErrorToast(res?.errMessage || "Không thể đổi phương thức thanh toán");
+      }
+    } catch (err) {
+      showErrorToast(err, "Lỗi khi đổi phương thức thanh toán");
     } finally {
       dispatch({ type: "SET_SUBMITTING", payload: false });
     }
@@ -291,7 +309,7 @@ const OrderDetail = () => {
           </div>
 
           <div className="lg:col-span-4 space-y-8 print:w-full print:space-y-6">
-            <PaymentSummary order={order} onRepay={handleRepay} />
+            <PaymentSummary order={order} onRepay={handleRepay} onChangeToCod={handleChangeToCod} changingMethod={submitting} />
             <OrderActions
               order={order}
               submitting={submitting}

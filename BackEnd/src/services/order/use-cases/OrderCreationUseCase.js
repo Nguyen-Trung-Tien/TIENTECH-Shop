@@ -2,8 +2,33 @@ const db = require("../../../models");
 const VoucherService = require("../../marketing/VoucherService");
 const SystemSettingService = require("../../system/SystemSettingService");
 const { sendOrderCreatedEmail } = require("../../common/EmailService");
+const { acquireLock, releaseLock } = require("../../../config/redis");
 
 const createOrder = async (data, actor = null) => {
+  // SECURITY: Always enforce effectiveUserId based on caller
+  let effectiveUserId = data.userId;
+  if (actor && actor.role !== "admin") {
+    effectiveUserId = actor.id;
+  } else if (!effectiveUserId && actor) {
+    effectiveUserId = actor.id;
+  }
+
+  if (!effectiveUserId) {
+    return {
+      errCode: 1,
+      errMessage: "Missing required fields (userId)",
+    };
+  }
+
+  const lockKey = `order_create:${effectiveUserId}`;
+  const lockToken = await acquireLock(lockKey, 8);
+  if (!lockToken) {
+    return {
+      errCode: 429,
+      errMessage: "Hệ thống đang xử lý đơn hàng của bạn, vui lòng không nhấn đặt hàng liên tục.",
+    };
+  }
+
   const t = await db.sequelize.transaction();
   try {
     const {
@@ -16,19 +41,11 @@ const createOrder = async (data, actor = null) => {
       voucherCode,
     } = data;
 
-    // SECURITY: Always enforce effectiveUserId based on caller
-    let effectiveUserId = data.userId;
-    if (actor && actor.role !== "admin") {
-      effectiveUserId = actor.id;
-    } else if (!effectiveUserId && actor) {
-      effectiveUserId = actor.id;
-    }
-
-    if (!effectiveUserId || !shippingAddress || !orderItems.length) {
+    if (!shippingAddress || !orderItems.length) {
       await t.rollback();
       return {
         errCode: 1,
-        errMessage: "Missing required fields (userId, shippingAddress, orderItems)",
+        errMessage: "Missing required fields (shippingAddress, orderItems)",
       };
     }
 
@@ -245,6 +262,10 @@ const createOrder = async (data, actor = null) => {
     await t.rollback();
     console.error("Error in createOrder:", e);
     return { errCode: 2, errMessage: e.message || "Lỗi tạo đơn hàng." };
+  } finally {
+    if (lockToken) {
+      await releaseLock(lockKey, lockToken);
+    }
   }
 };
 

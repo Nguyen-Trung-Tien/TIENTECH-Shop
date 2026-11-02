@@ -15,6 +15,7 @@ const {
   updateOrderStatus,
   deleteOrder,
   updatePaymentStatus,
+  changePaymentMethod,
   syncOrderCancellationSideEffects,
   VALID_ADMIN_TRANSITIONS,
 } = require("./use-cases/OrderStatusUseCase");
@@ -31,6 +32,7 @@ module.exports = {
   updateOrderStatus,
   deleteOrder,
   updatePaymentStatus,
+  changePaymentMethod,
   getOrdersByUserId,
   getActiveOrdersByUserId,
   getOrderByCode,

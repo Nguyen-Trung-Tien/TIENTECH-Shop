@@ -454,6 +454,112 @@ const updatePaymentStatus = async (id, paymentStatus) => {
   }
 };
 
+const changePaymentMethod = async (orderId, newPaymentMethod, currentUser = null) => {
+  const t = await db.sequelize.transaction();
+  try {
+    if (!orderId || !newPaymentMethod) {
+      await t.rollback();
+      return {
+        errCode: 1,
+        errMessage: "Thiếu thông tin đơn hàng hoặc phương thức thanh toán mới.",
+      };
+    }
+
+    const normalizedMethod = String(newPaymentMethod).toLowerCase();
+    const ALLOWED_METHODS = ["cod", "bank", "paypal", "momo", "vnpay"];
+    if (!ALLOWED_METHODS.includes(normalizedMethod)) {
+      await t.rollback();
+      return {
+        errCode: 2,
+        errMessage: `Phương thức thanh toán '${newPaymentMethod}' không hợp lệ.`,
+      };
+    }
+
+    // Tìm order theo ID hoặc orderCode
+    let order;
+    if (isNaN(orderId)) {
+      order = await db.Order.findOne({
+        where: { orderCode: orderId },
+        transaction: t,
+        lock: t.LOCK.UPDATE,
+      });
+    } else {
+      order = await db.Order.findByPk(orderId, {
+        transaction: t,
+        lock: t.LOCK.UPDATE,
+      });
+    }
+
+    if (!order) {
+      await t.rollback();
+      return {
+        errCode: 3,
+        errMessage: "Không tìm thấy đơn hàng.",
+      };
+    }
+
+    // Bảo mật: Người dùng chỉ được sửa đơn của chính mình, trừ Admin
+    if (currentUser && currentUser.role !== "admin" && order.userId !== currentUser.id) {
+      await t.rollback();
+      return {
+        errCode: 4,
+        errMessage: "Bạn không có quyền thay đổi phương thức thanh toán cho đơn hàng này.",
+      };
+    }
+
+    // Kiểm tra trạng thái thanh toán
+    if (order.paymentStatus === "paid") {
+      await t.rollback();
+      return {
+        errCode: 5,
+        errMessage: "Đơn hàng này đã được thanh toán thành công, không thể đổi phương thức.",
+      };
+    }
+
+    // Kiểm tra trạng thái đơn hàng: Chỉ cho phép đổi khi đang pending hoặc confirmed chưa xuất kho
+    const DISALLOWED_ORDER_STATUSES = ["shipped", "shipping", "delivered", "completed", "cancelled"];
+    if (DISALLOWED_ORDER_STATUSES.includes(order.status)) {
+      await t.rollback();
+      return {
+        errCode: 6,
+        errMessage: `Không thể đổi phương thức thanh toán khi đơn hàng đang ở trạng thái '${order.status}'.`,
+      };
+    }
+
+    const oldMethod = order.paymentMethod;
+    order.paymentMethod = normalizedMethod;
+
+    // Ghi nhận lịch sử
+    const history = Array.isArray(order.confirmationHistory)
+      ? [...order.confirmationHistory]
+      : [];
+    history.push({
+      timestamp: new Date().toISOString(),
+      action: "change_payment_method",
+      from: oldMethod,
+      to: normalizedMethod,
+      actor: currentUser?.username || "customer",
+    });
+    order.confirmationHistory = history;
+
+    await order.save({ transaction: t });
+    await t.commit();
+
+    return {
+      errCode: 0,
+      errMessage: "Cập nhật phương thức thanh toán thành công.",
+      data: order,
+    };
+  } catch (e) {
+    await t.rollback();
+    console.error("Error in changePaymentMethod:", e);
+    return {
+      errCode: 7,
+      errMessage: e.message || "Lỗi cập nhật phương thức thanh toán.",
+    };
+  }
+};
+
 module.exports = {
   VALID_ADMIN_TRANSITIONS,
   validateCustomerStatusTransition,
@@ -462,4 +568,5 @@ module.exports = {
   updateOrderStatus,
   deleteOrder,
   updatePaymentStatus,
+  changePaymentMethod,
 };

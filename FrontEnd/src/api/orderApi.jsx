@@ -96,3 +96,15 @@ export const getActiveOrdersByUser = async (userId, page = 1, limit = 10) => {
     throw err;
   }
 };
+
+export const changePaymentMethod = async (orderId, paymentMethod) => {
+  try {
+    const res = await axiosClient.put(`/order/change-payment-method/${orderId}`, {
+      paymentMethod,
+    });
+    return res;
+  } catch (error) {
+    console.error("Error changing payment method:", error);
+    throw error;
+  }
+};

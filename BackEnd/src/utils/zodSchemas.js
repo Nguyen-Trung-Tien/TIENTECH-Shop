@@ -90,6 +90,15 @@ const orderSchema = z.object({
   }),
 });
 
+const changePaymentMethodSchema = z.object({
+  body: z.object({
+    paymentMethod: z.preprocess(
+      (val) => (typeof val === "string" ? val.toLowerCase() : val),
+      z.enum(["cod", "bank", "paypal", "momo", "vnpay"])
+    ),
+  }),
+});
+
 const addressSchema = z.object({
   body: z.object({
     fullName: z.string().min(1, "Họ tên không được để trống"),
@@ -154,6 +163,7 @@ module.exports = {
   loginSchema,
   registerSchema,
   orderSchema,
+  changePaymentMethodSchema,
   addressSchema,
   cartItemSchema,
   updateCartItemSchema,

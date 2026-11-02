@@ -105,7 +105,7 @@ const OrderSummary = ({
             className="w-full h-16 rounded-2xl font-black text-sm tracking-[0.2em] mb-8 group shadow-xl shadow-primary/20"
             onClick={onPlaceOrder}
             loading={loading}
-            disabled={selectedItems.length === 0}
+            disabled={selectedItems.length === 0 || loading}
           >
             {paymentMethod === "VNPAY" ? "THANH TOÁN VNPAY" : "ĐẶT HÀNG NGAY"}
             <FiArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />

@@ -169,7 +169,9 @@ const getAllOrders = async (params = {}, ...legacyArgs) => {
 
 const getOrderById = async (id, currentUser = null) => {
   try {
-    const order = await db.Order.findByPk(id, {
+    const whereClause = isNaN(id) ? { orderCode: id } : { id };
+    const order = await db.Order.findOne({
+      where: whereClause,
       include: [
         {
           model: db.OrderItem,

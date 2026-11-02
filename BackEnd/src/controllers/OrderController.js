@@ -210,6 +210,20 @@ const handleReturnAction = async (req, res) => {
   }
 };
 
+const handleChangePaymentMethod = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { paymentMethod } = req.body;
+    const result = await OrderService.changePaymentMethod(id, paymentMethod, req.user);
+    if (result.errCode === 0) {
+      return handleResponse(res, result, 200);
+    }
+    return handleResponse(res, result, 400);
+  } catch (e) {
+    return handleError(res, e, "handleChangePaymentMethod");
+  }
+};
+
 module.exports = {
   handleGetAllOrders,
   handleGetOrderById,
@@ -221,4 +235,5 @@ module.exports = {
   getActiveOrdersByUserId,
   handleRequestReturn,
   handleReturnAction,
+  handleChangePaymentMethod,
 };

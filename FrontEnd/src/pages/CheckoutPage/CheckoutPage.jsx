@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   FiArrowLeft,
@@ -27,6 +27,7 @@ const CheckoutPage = () => {
   const { selectedItems = [] } = location.state || {};
 
   const [loading, setLoading] = useState(false);
+  const isSubmitting = useRef(false);
   const [formData, setCheckoutData] = useState({
     shippingAddress: "",
     paymentMethod: "COD",
@@ -66,6 +67,7 @@ const CheckoutPage = () => {
   }, 0);
 
   const handlePlaceOrder = async () => {
+    if (isSubmitting.current || loading) return;
     const receiverName = formData.fullName?.trim() || user?.username || user?.fullName || "";
     const receiverPhone = formData.phone?.trim() || user?.phone || "";
 
@@ -79,6 +81,7 @@ const CheckoutPage = () => {
       return toast.error("Vui lòng nhập hoặc chọn địa chỉ giao hàng");
     }
 
+    isSubmitting.current = true;
     setLoading(true);
     try {
       const orderData = {
@@ -113,6 +116,7 @@ const CheckoutPage = () => {
             return;
           } else {
             showErrorToast(vnpayRes?.errMessage || "Không thể khởi tạo thanh toán VNPAY");
+            navigate(`/checkout-failed/${res.data.orderCode}`);
             return;
           }
         }
@@ -125,11 +129,15 @@ const CheckoutPage = () => {
     } catch (error) {
       showErrorToast(error, "Lỗi đặt hàng, vui lòng thử lại");
     } finally {
+      isSubmitting.current = false;
       setLoading(false);
     }
   };
 
   const handlePayPalApprove = async (data, actions) => {
+    if (isSubmitting.current || loading) return;
+    isSubmitting.current = true;
+    setLoading(true);
     try {
       const details = await actions.order.capture();
       // Sau khi PayPal capture thành công, tạo đơn hàng với paymentMethod là PAYPAL và status là paid
