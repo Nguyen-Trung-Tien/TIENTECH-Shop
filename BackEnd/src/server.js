@@ -93,6 +93,19 @@ io.on("connection", (socket) => {
     socket.join(`user_${socket.user.id}`);
   }
 
+  socket.on("join", (room) => {
+    if (typeof room === "string") {
+      if (room.startsWith("user_")) {
+        const targetUserId = room.replace("user_", "");
+        if (!socket.user || String(socket.user.id) === targetUserId || ["admin", "root"].includes(socket.user.role)) {
+          socket.join(room);
+        }
+      } else if (room === "admin_room" && socket.user && ["admin", "root"].includes(socket.user.role)) {
+        socket.join("admin_room");
+      }
+    }
+  });
+
   socket.on("join_admin", () => {
     if (socket.user && ["admin", "root"].includes(socket.user.role)) {
       socket.join("admin_room");

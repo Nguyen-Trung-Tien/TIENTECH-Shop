@@ -3,13 +3,14 @@ const BaseService = require("../BaseService");
 const { sendVerificationEmail, sendEmailAsync } = require("../common/EmailService");
 const SystemSettingService = require("../system/SystemSettingService");
 const NotificationService = require("../notification/NotificationService");
-const { deleteCache } = require("../../config/redis");
+const { deleteCache, setCache } = require("../../config/redis");
 const { 
   hashToken, 
   generateRandomToken, 
   hashUserPassword,
   getUserProfileKey,
   getRefreshTokenKey,
+  getUserStatusKey,
 } = require("./AuthHelper");
 
 class UserService extends BaseService {
@@ -361,14 +362,40 @@ class UserService extends BaseService {
         return { errCode: 2, errMessage: "Lỗi cơ sở dữ liệu: " + dbErr.message };
       }
 
-      // Evict Redis caches
+      // Evict & update Redis caches
       try {
+        await setCache(
+          getUserStatusKey(targetUserId),
+          { isActive: shouldActivate, role: user.role },
+          86400
+        );
         await deleteCache(getUserProfileKey(targetUserId));
         if (!shouldActivate) {
           await deleteCache(getRefreshTokenKey(targetUserId));
         }
       } catch (cacheErr) {
         console.warn("[UserService] Cache eviction warning:", cacheErr?.message);
+      }
+
+      // Realtime notification & account lock event via Socket.IO
+      try {
+        const io = req?.app?.get?.("io");
+        if (io) {
+          if (!shouldActivate) {
+            io.to(`user_${targetUserId}`).emit("account_locked", {
+              userId: targetUserId,
+              reason: reason?.trim() || "Tài khoản của bạn đã bị quản trị viên khóa.",
+              lockedAt: new Date().toISOString(),
+            });
+          } else {
+            io.to(`user_${targetUserId}`).emit("account_unlocked", {
+              userId: targetUserId,
+              unlockedAt: new Date().toISOString(),
+            });
+          }
+        }
+      } catch (socketErr) {
+        console.warn("[UserService] Socket dispatch warning:", socketErr?.message);
       }
 
       // Isolated in-app notification

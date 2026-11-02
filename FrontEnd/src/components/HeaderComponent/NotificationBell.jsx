@@ -19,7 +19,7 @@ import {
   deleteNotificationApi,
   sendBroadcastNotificationApi,
 } from "../../api/notificationApi";
-import { io } from "socket.io-client";
+import { getSocket, initUserSocket } from "../../utils/socket";
 import { useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { appConfig } from "../../config/runtimeConfig";
@@ -72,37 +72,38 @@ const NotificationBell = () => {
   useEffect(() => {
     fetchNotifications();
 
-    const socket = io(appConfig.socketUrl);
+    if (!user) return;
 
-    if (user) {
-      socket.emit("join", `user_${user.id}`);
-      if (user.role === "admin") {
-        socket.emit("join_admin");
-        socket.on("new_order", () => {
-          fetchNotifications();
-          showInfoToast("🔔 Bạn có đơn hàng mới từ khách hàng!");
-        });
+    const socket = initUserSocket(user);
+
+    const handleNewOrder = () => {
+      fetchNotifications();
+      showInfoToast("🔔 Bạn có đơn hàng mới từ khách hàng!");
+    };
+
+    const handleOrderStatusUpdated = () => {
+      fetchNotifications();
+    };
+
+    const handleNotification = (data) => {
+      fetchNotifications();
+      if (data?.title) {
+        showInfoToast(`🔔 ${data.title}`);
       }
+    };
 
-      socket.on("order_status_updated", () => {
-        fetchNotifications();
-      });
-
-      socket.on("notification", (data) => {
-        fetchNotifications();
-        if (data?.title) {
-          showInfoToast(`🔔 ${data.title}`);
-        }
-      });
+    if (user.role === "admin" || user.role === "root") {
+      socket.on("new_order", handleNewOrder);
     }
+    socket.on("order_status_updated", handleOrderStatusUpdated);
+    socket.on("notification", handleNotification);
 
     return () => {
-      if (user) {
-        socket.off("new_order");
-        socket.off("order_status_updated");
-        socket.off("notification");
+      if (user.role === "admin" || user.role === "root") {
+        socket.off("new_order", handleNewOrder);
       }
-      socket.disconnect();
+      socket.off("order_status_updated", handleOrderStatusUpdated);
+      socket.off("notification", handleNotification);
     };
   }, [user, activeFilter, fetchNotifications]);
 

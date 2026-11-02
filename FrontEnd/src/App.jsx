@@ -1,6 +1,8 @@
 import { useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import AccountLockedModal from "./components/UI/AccountLockedModal";
+import { initUserSocket, getSocket, disconnectSocket } from "./utils/socket";
 import UserRoutes from "./routes/UserRoutes";
 import AdminRoutes from "./routes/AdminRoutes";
 import { ToastContainer } from "react-toastify";
@@ -15,7 +17,28 @@ import { useTheme } from "./context/useTheme";
 const App = () => {
   const dispatch = useDispatch();
   const { theme } = useTheme();
+  const user = useSelector((state) => state.user.user);
 
+  useEffect(() => {
+    if (user?.id) {
+      const socket = initUserSocket(user);
+      const handleAccountLocked = (data) => {
+        window.dispatchEvent(
+          new CustomEvent("tiêntech:account_locked", {
+            detail: { reason: data?.reason },
+          })
+        );
+      };
+
+      socket.on("account_locked", handleAccountLocked);
+
+      return () => {
+        socket.off("account_locked", handleAccountLocked);
+      };
+    } else {
+      disconnectSocket();
+    }
+  }, [user]);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -42,6 +65,7 @@ const App = () => {
   return (
     <div className="min-h-screen bg-white dark:bg-dark-bg text-gray-900 dark:text-dark-text-primary transition-colors duration-300">
       <RouteProgressBar />
+      <AccountLockedModal />
       <LazyMotion features={domAnimation}>
         <Routes>
           <Route path="/admin/*" element={<AdminRoutes />} />

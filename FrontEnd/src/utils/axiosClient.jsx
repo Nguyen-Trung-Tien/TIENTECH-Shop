@@ -34,7 +34,33 @@ axiosClient.interceptors.response.use(
   (response) => response.data,
   async (error) => {
     const originalRequest = error.config;
-    const isRefreshRequest = originalRequest.url.includes("/user/refresh-token");
+    const isRefreshRequest = originalRequest?.url?.includes("/user/refresh-token");
+
+    // Intercept Account Locked error (403 with code ACCOUNT_LOCKED or lock message)
+    const errData = error.response?.data;
+    const isLockedError =
+      error.response?.status === 403 &&
+      (errData?.code === "ACCOUNT_LOCKED" ||
+        (typeof errData?.errMessage === "string" &&
+          errData.errMessage.toLowerCase().includes("khóa")));
+
+    if (isLockedError) {
+      const reason =
+        errData?.errMessage || "Tài khoản của bạn đã bị quản trị viên khóa.";
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(
+          new CustomEvent("tiêntech:account_locked", {
+            detail: { reason },
+          })
+        );
+      }
+      store.dispatch(removeUser());
+      store.dispatch(clearCart());
+      if (errData?.errMessage) {
+        error.errMessage = errData.errMessage;
+      }
+      return Promise.reject(error);
+    }
 
     if (
       error.response?.status === 401 &&

@@ -48,6 +48,7 @@ const performDummyBcryptCompare = async (password) => {
 
 const getUserProfileKey = (userId) => `user:profile:${userId}`;
 const getRefreshTokenKey = (userId) => `user:refreshtoken:${userId}`;
+const getUserStatusKey = (userId) => `user:status:${userId}`;
 const getTokenBlacklistKey = (token) => `blacklist:token:${hashToken(token)}`;
 
 module.exports = {
@@ -59,6 +60,7 @@ module.exports = {
   performDummyBcryptCompare,
   getUserProfileKey,
   getRefreshTokenKey,
+  getUserStatusKey,
   getTokenBlacklistKey,
 };
 

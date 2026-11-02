@@ -1,6 +1,6 @@
 const { verifyAccessTokenDetailed } = require("../utils/jwtHelper");
-const { getCache } = require("../config/redis");
-const { getTokenBlacklistKey } = require("../services/user/AuthHelper");
+const { getCache, setCache } = require("../config/redis");
+const { getTokenBlacklistKey, getUserStatusKey } = require("../services/user/AuthHelper");
 
 const authenticateToken = async (req, res, next) => {
   const authHeader = req.headers["authorization"];
@@ -37,7 +37,46 @@ const authenticateToken = async (req, res, next) => {
       .json({ errCode: 2, code: "INVALID_TOKEN", errMessage: "Invalid token" });
   }
 
-  req.user = result.decoded;
+  const userId = result.decoded?.id;
+  if (userId) {
+    const statusKey = getUserStatusKey(userId);
+    let userStatus = await getCache(statusKey);
+
+    if (!userStatus) {
+      try {
+        const db = require("../models");
+        const dbUser = await db.User.findByPk(userId, {
+          attributes: ["id", "isActive", "role"],
+        });
+        if (!dbUser) {
+          return res.status(401).json({
+            errCode: 2,
+            code: "USER_NOT_FOUND",
+            errMessage: "Người dùng không tồn tại",
+          });
+        }
+        userStatus = { isActive: Boolean(dbUser.isActive), role: dbUser.role };
+        await setCache(statusKey, userStatus, 300);
+      } catch (dbErr) {
+        console.error("AuthMiddleware status check error:", dbErr?.message);
+      }
+    }
+
+    if (userStatus && !userStatus.isActive) {
+      return res.status(403).json({
+        errCode: 3,
+        code: "ACCOUNT_LOCKED",
+        errMessage: "Tài khoản của bạn đã bị khóa hoặc tạm ngưng hoạt động. Vui lòng liên hệ quản trị viên.",
+      });
+    }
+
+    req.user = {
+      ...result.decoded,
+      role: userStatus?.role || result.decoded.role,
+    };
+  } else {
+    req.user = result.decoded;
+  }
   next();
 };
 
@@ -54,7 +93,30 @@ const optionalAuthenticateToken = async (req, res, next) => {
     if (!isBlacklisted) {
       const result = verifyAccessTokenDetailed(token);
       if (result.valid) {
-        req.user = result.decoded;
+        const userId = result.decoded?.id;
+        if (userId) {
+          const statusKey = getUserStatusKey(userId);
+          let userStatus = await getCache(statusKey);
+          if (!userStatus) {
+            try {
+              const db = require("../models");
+              const dbUser = await db.User.findByPk(userId, {
+                attributes: ["id", "isActive", "role"],
+              });
+              if (dbUser) {
+                userStatus = { isActive: Boolean(dbUser.isActive), role: dbUser.role };
+                await setCache(statusKey, userStatus, 300);
+              }
+            } catch (e) {
+              // ignore
+            }
+          }
+          if (userStatus && userStatus.isActive) {
+            req.user = { ...result.decoded, role: userStatus.role || result.decoded.role };
+          }
+        } else {
+          req.user = result.decoded;
+        }
       }
     }
   }
