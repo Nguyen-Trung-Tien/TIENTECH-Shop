@@ -1,6 +1,13 @@
 import axiosClient from "../utils/axiosClient";
 
-export const getAllOrders = async (page = 1, limit = 10, searchTerm = "", status = "", isReturn = false, isCancelRequested = false) => {
+export const getAllOrders = async (
+  page = 1,
+  limit = 10,
+  searchTerm = "",
+  status = "",
+  isReturn = false,
+  isCancelRequested = false,
+) => {
   try {
     const res = await axiosClient.get("/order/get-all-orders", {
       params: { page, limit, searchTerm, status, isReturn, isCancelRequested },
@@ -36,7 +43,7 @@ export const updateOrderStatus = async (orderId, status, reason = "") => {
   try {
     const res = await axiosClient.put(
       `/order/update-status-order/${orderId}/status`,
-      { status, reason }
+      { status, reason },
     );
     return res;
   } catch (error) {
@@ -49,7 +56,7 @@ export const updatePaymentStatus = async (orderId, paymentStatus) => {
   try {
     const res = await axiosClient.put(
       `/order/update-payment-status/${orderId}`,
-      { paymentStatus }
+      { paymentStatus },
     );
     return res;
   } catch (error) {
@@ -72,7 +79,7 @@ export const getOrdersByUserId = async (
   userId,
   page = 1,
   limit = 10,
-  status = ""
+  status = "",
 ) => {
   try {
     const res = await axiosClient.get(`/order/user/${userId}`, {
@@ -99,9 +106,12 @@ export const getActiveOrdersByUser = async (userId, page = 1, limit = 10) => {
 
 export const changePaymentMethod = async (orderId, paymentMethod) => {
   try {
-    const res = await axiosClient.put(`/order/change-payment-method/${orderId}`, {
-      paymentMethod,
-    });
+    const res = await axiosClient.put(
+      `/order/change-payment-method/${orderId}`,
+      {
+        paymentMethod,
+      },
+    );
     return res;
   } catch (error) {
     console.error("Error changing payment method:", error);
