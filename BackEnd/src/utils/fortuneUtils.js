@@ -118,6 +118,39 @@ const getCungPhi = (year, gender) => {
   return { cung, element: cungToElement[cung] };
 };
 
+const elementTips = {
+  Kim: {
+    advice: "Năng lượng Kim giúp gia tăng tư duy phân tích sắc bén, sự quyết đoán và độ bền bỉ khi làm việc.",
+    workspaceTip: "Đặt thiết bị chính hướng Tây hoặc Tây Bắc để kích hoạt Cung Quý Nhân. Giữ không gian làm việc tối giản, thanh khiết.",
+    compatible: "Thổ sinh Kim (Hợp nhất) & Kim hòa hợp Kim",
+    incompatible: "Hỏa khắc Kim (Nên hạn chế sắc Đỏ rực)",
+  },
+  Thủy: {
+    advice: "Năng lượng Thủy hỗ trợ dòng chảy thông tin thông suốt, giao tiếp trôi chảy và tích lũy tài lộc dồi dào.",
+    workspaceTip: "Bố trí thiết bị hướng Bắc (Cung Quan Lộc). Cài hình nền thác nước, đại dương hoặc bầu trời đêm huyền ảo.",
+    compatible: "Kim sinh Thủy (Hợp nhất) & Thủy hòa hợp Thủy",
+    incompatible: "Thổ khắc Thủy (Nên hạn chế sắc Nâu trầm)",
+  },
+  Mộc: {
+    advice: "Năng lượng Mộc tượng trưng cho sự sinh sôi nảy nở, tư duy phát triển bền vững và sức bật mạnh mẽ.",
+    workspaceTip: "Đặt thiết bị hướng Đông hoặc Đông Nam (Cung Tài Lộc). Đặt thêm 1 chậu cây xanh nhỏ cạnh màn hình.",
+    compatible: "Thủy sinh Mộc (Hợp nhất) & Mộc hòa hợp Mộc",
+    incompatible: "Kim khắc Mộc (Nên hạn chế sắc Ánh bạc chói)",
+  },
+  Hỏa: {
+    advice: "Năng lượng Hỏa kích thích nguồn cảm hứng mãnh liệt, năng lượng làm việc bùng nổ và mở rộng uy tín.",
+    workspaceTip: "Đặt thiết bị hướng Nam (Cung Danh Tiếng). Kết hợp đèn bàn ánh sáng ấm hoặc hình nền rực rỡ.",
+    compatible: "Mộc sinh Hỏa (Hợp nhất) & Hỏa hòa hợp Hỏa",
+    incompatible: "Thủy khắc Hỏa (Nên hạn chế sắc Xanh biển đậm)",
+  },
+  Thổ: {
+    advice: "Năng lượng Thổ tạo điểm tựa vững chãi như bàn thạch, tích lũy tài chính an toàn và tâm thế bình an.",
+    workspaceTip: "Đặt thiết bị hướng Đông Bắc hoặc Tây Nam. Giữ mặt bàn bằng phẳng, dùng hình nền phong cảnh đồi cát, sa mạc.",
+    compatible: "Hỏa sinh Thổ (Hợp nhất) & Thổ hòa hợp Thổ",
+    incompatible: "Mộc khắc Thổ (Nên hạn chế sắc Xanh lá mạ)",
+  },
+};
+
 // 3. Lấy thông tin tổng hợp
 const getFengShuiDetail = (year, gender = "male") => {
   const menhNien = getMienNien(year);
@@ -125,7 +158,8 @@ const getFengShuiDetail = (year, gender = "male") => {
 
   // Ưu tiên Cung Phi cho việc chọn màu sắc cá nhân (Theo quan điểm phong thủy hiện đại)
   const mainElement = cungPhi.element;
-  const info = elementColors[mainElement];
+  const info = elementColors[mainElement] || elementColors.Kim;
+  const tip = elementTips[mainElement] || elementTips.Kim;
 
   return {
     year,
@@ -139,7 +173,21 @@ const getFengShuiDetail = (year, gender = "male") => {
     gradient: info.gradient,
     hex: info.hex,
     luckyNumbers: getLuckyNumbers(mainElement),
+    advice: tip.advice,
+    workspaceTip: tip.workspaceTip,
+    compatible: tip.compatible,
+    incompatible: tip.incompatible,
   };
+};
+
+const getAllElementsMetadata = () => {
+  return [
+    { key: "Kim", name: "Mệnh Kim", icon: "🪙", colors: elementColors.Kim.main.join(", ") },
+    { key: "Mộc", name: "Mệnh Mộc", icon: "🌿", colors: elementColors.Mộc.main.join(", ") },
+    { key: "Thủy", name: "Mệnh Thủy", icon: "🌊", colors: elementColors.Thủy.main.join(", ") },
+    { key: "Hỏa", name: "Mệnh Hỏa", icon: "🔥", colors: elementColors.Hỏa.main.join(", ") },
+    { key: "Thổ", name: "Mệnh Thổ", icon: "🏔️", colors: elementColors.Thổ.main.join(", ") },
+  ];
 };
 
 const getLuckyNumbers = (element) => {
@@ -155,5 +203,6 @@ const getLuckyNumbers = (element) => {
 
 module.exports = {
   getFengShuiDetail,
+  getAllElementsMetadata,
   elementColors,
 };

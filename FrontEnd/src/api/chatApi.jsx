@@ -51,6 +51,18 @@ export const predictPrice = async (productId) => {
   }
 };
 
+export const getFengShuiDetailApi = async (birthYear, gender = "male") => {
+  try {
+    const res = await axiosClient.get("/chat/fengshui-detail", {
+      params: { birthYear, gender },
+    });
+    return res;
+  } catch (error) {
+    console.error("getFengShuiDetailApi error:", error);
+    return { errCode: -1, errMessage: error.message };
+  }
+};
+
 export const fengShuiChatApi = async (data) => {
   try {
     const res = await axiosClient.post("/chat/fengshui", data);

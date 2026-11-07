@@ -38,6 +38,7 @@ router.post(
   PricePredictorController.handlePricePredict
 );
 
+router.get("/fengshui-detail", FengShuiChatController.handleGetFengShuiDetail);
 router.post(
   "/fengshui",
   aiApiLimiter,

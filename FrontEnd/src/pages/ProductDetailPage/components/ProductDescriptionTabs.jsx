@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   FiBookOpen,
   FiCpu,
@@ -11,13 +11,9 @@ import {
   FiHelpCircle,
   FiChevronDown,
   FiChevronUp,
-  FiMonitor,
-  FiZap,
-  FiBattery,
-  FiSmartphone,
 } from "react-icons/fi";
 import { motion as Motion, AnimatePresence } from "framer-motion";
-import { calculateFengShuiByYear, ALL_FENG_SHUI_ELEMENTS } from "../utils/fengShuiHelper";
+import { getFengShuiDetailApi } from "../../../api/chatApi";
 
 const ProductDescriptionTabs = ({
   product,
@@ -31,9 +27,28 @@ const ProductDescriptionTabs = ({
   const [isSpecsExpanded, setIsSpecsExpanded] = useState(false);
   const [isFengShuiTableExpanded, setIsFengShuiTableExpanded] = useState(false);
 
-  // Tab 3 Feng Shui Year Lookup
+  // Tab 3 Feng Shui Year Lookup (Tải động từ máy chủ Backend - Không hardcode)
   const [fengShuiYear, setFengShuiYear] = useState("1998");
-  const currentFengShuiData = calculateFengShuiByYear(fengShuiYear);
+  const [fsData, setFsData] = useState(null);
+  const [loadingFs, setLoadingFs] = useState(false);
+
+  const fetchTabFengShui = useCallback(async (yr) => {
+    setLoadingFs(true);
+    try {
+      const res = await getFengShuiDetailApi(yr);
+      if (res?.errCode === 0 && res.data) {
+        setFsData(res.data);
+      }
+    } catch (err) {
+      console.error("Lỗi tải phong thủy tab từ máy chủ:", err);
+    } finally {
+      setLoadingFs(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchTabFengShui(fengShuiYear);
+  }, [fengShuiYear, fetchTabFengShui]);
 
   const tabs = [
     {
@@ -130,7 +145,7 @@ const ProductDescriptionTabs = ({
                 </div>
               </div>
 
-              {/* Quick Specs Glance Grid (Không bao giờ để thiếu chi tiết thông số) */}
+              {/* Quick Specs Glance Grid */}
               {keySpecs.length > 0 && (
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 p-3.5 bg-slate-50/70 dark:bg-dark-card/60 rounded-2xl border border-slate-100 dark:border-dark-border">
                   {keySpecs.map((spec, i) => (
@@ -306,15 +321,15 @@ const ProductDescriptionTabs = ({
                   Bát Trạch Bàn Làm Việc & Năng Lượng Thiết Bị Số
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-dark-text-secondary mt-1">
-                  Ứng dụng nguyên lý Ngũ Hành Tương Sinh và Bát Trạch để khai mở vượng khí, gia tăng sáng tạo và thu hút tài lộc công danh.
+                  Dữ liệu được tính toán tự động từ TienTech FengShui Engine máy chủ để khai mở vượng khí, gia tăng sáng tạo và thu hút tài lộc công danh.
                 </p>
               </div>
 
-              {/* Tra Cứu Nhanh Năm Sinh Bản Mệnh */}
+              {/* Tra Cứu Nhanh Năm Sinh Bản Mệnh (API Động) */}
               <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-50/70 via-white to-blue-50/50 dark:from-dark-card dark:to-dark-surface border border-amber-200/80 dark:border-dark-border space-y-3">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <div className="font-extrabold text-xs sm:text-sm text-slate-900 dark:text-white flex items-center gap-2">
-                    <FiCompass className="text-amber-500" /> Tra cứu phong thuỷ theo năm sinh:
+                    <FiCompass className="text-amber-500" /> Tra cứu phong thuỷ từ máy chủ:
                   </div>
                   <select
                     value={fengShuiYear}
@@ -329,18 +344,24 @@ const ProductDescriptionTabs = ({
                   </select>
                 </div>
 
-                {currentFengShuiData && (
-                  <div className={`p-4 rounded-xl border text-xs space-y-2 ${currentFengShuiData.accent}`}>
+                {loadingFs && (
+                  <div className="p-4 text-center text-xs text-slate-400">
+                    Đang tra cứu phong thủy từ TienTech Engine...
+                  </div>
+                )}
+
+                {!loadingFs && fsData && (
+                  <div className="p-4 rounded-xl border border-amber-300 bg-amber-50/80 dark:bg-amber-950/30 text-amber-900 dark:text-amber-200 text-xs space-y-2">
                     <div className="flex items-center justify-between font-extrabold text-sm border-b border-black/10 dark:border-white/10 pb-1.5">
-                      <span>{currentFengShuiData.icon} {currentFengShuiData.name} ({currentFengShuiData.lunarYear} - {currentFengShuiData.year})</span>
-                      <span className="text-[11px] font-bold">{currentFengShuiData.symbol}</span>
+                      <span>Cung Phi {fsData.cungPhi} (Hành {fsData.element}) • Năm {fsData.year}</span>
+                      <span className="text-[11px] font-bold">Mệnh Niên: {fsData.menhNien}</span>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                      <p><strong>🌟 Tương sinh:</strong> {currentFengShuiData.compatible}</p>
-                      <p><strong>🎨 Màu sắc tương sinh:</strong> {currentFengShuiData.luckyColors.join(", ")}</p>
+                      <p><strong>🌟 Màu Đại Cát (Tương sinh):</strong> {fsData.supportColors?.join(", ")}</p>
+                      <p><strong>🎨 Màu Bình An (Bản mệnh):</strong> {fsData.luckyColors?.join(", ")}</p>
                     </div>
                     <p className="pt-1 text-[11px] border-t border-black/5 dark:border-white/5">
-                      <strong>💡 Lời khuyên thiết bị:</strong> {currentFengShuiData.advice}
+                      <strong>💡 Lời khuyên thiết bị:</strong> {fsData.advice}
                     </p>
                   </div>
                 )}
@@ -385,54 +406,41 @@ const ProductDescriptionTabs = ({
                 </div>
               </div>
 
-              {/* Bảng Tra Cứu 60 Hoa Giáp Toàn Diện (Hỗ trợ Thu gọn / Xem chi tiết) */}
-              <div className="rounded-2xl border border-slate-200/80 dark:border-dark-border overflow-hidden">
-                <div className="p-4 bg-slate-50 dark:bg-dark-card flex items-center justify-between">
-                  <div className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                    <FiCompass className="text-primary" /> Bảng Tra Cứu Bản Mệnh Ngũ Hành Theo Năm Sinh
+              {/* Bảng Các Bản Mệnh Ngũ Hành từ Máy Chủ */}
+              {fsData?.elements && fsData.elements.length > 0 && (
+                <div className="rounded-2xl border border-slate-200/80 dark:border-dark-border overflow-hidden">
+                  <div className="p-4 bg-slate-50 dark:bg-dark-card flex items-center justify-between">
+                    <div className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                      <FiCompass className="text-primary" /> Bảng Ngũ Hành & Màu Sắc Đại Diện (Từ TienTech Engine)
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setIsFengShuiTableExpanded(!isFengShuiTableExpanded)}
+                      className="text-xs font-bold text-primary dark:text-primary-light flex items-center gap-1 cursor-pointer"
+                    >
+                      <span>{isFengShuiTableExpanded ? "Thu gọn bảng" : "Xem toàn bộ"}</span>
+                      {isFengShuiTableExpanded ? <FiChevronUp size={14} /> : <FiChevronDown size={14} />}
+                    </button>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => setIsFengShuiTableExpanded(!isFengShuiTableExpanded)}
-                    className="text-xs font-bold text-primary dark:text-primary-light flex items-center gap-1 cursor-pointer"
-                  >
-                    <span>{isFengShuiTableExpanded ? "Thu gọn bảng" : "Xem toàn bộ bảng"}</span>
-                    {isFengShuiTableExpanded ? <FiChevronUp size={14} /> : <FiChevronDown size={14} />}
-                  </button>
-                </div>
 
-                {isFengShuiTableExpanded && (
-                  <div className="p-4 bg-white dark:bg-dark-surface border-t border-slate-100 dark:border-dark-border text-xs">
-                    <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5 text-center">
-                      <div className="p-3 rounded-xl bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/40">
-                        <strong className="text-amber-800 dark:text-amber-400 block mb-1">MỆNH KIM</strong>
-                        <p className="text-[11px] text-slate-500 dark:text-slate-400">1984, 1985, 1992, 1993, 2000, 2001</p>
-                        <span className="text-[10px] text-amber-700 font-bold block mt-1">Hợp: Trắng, Bạc, Vàng</span>
-                      </div>
-                      <div className="p-3 rounded-xl bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/40">
-                        <strong className="text-emerald-800 dark:text-emerald-400 block mb-1">MỆNH MỘC</strong>
-                        <p className="text-[11px] text-slate-500 dark:text-slate-400">1980, 1981, 1988, 1989, 2002, 2003</p>
-                        <span className="text-[10px] text-emerald-700 font-bold block mt-1">Hợp: Xanh Lá, Đen</span>
-                      </div>
-                      <div className="p-3 rounded-xl bg-blue-50/60 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900/40">
-                        <strong className="text-blue-800 dark:text-blue-400 block mb-1">MỆNH THỦY</strong>
-                        <p className="text-[11px] text-slate-500 dark:text-slate-400">1982, 1983, 1996, 1997, 2004, 2005</p>
-                        <span className="text-[10px] text-blue-700 font-bold block mt-1">Hợp: Xanh Biển, Đen, Bạc</span>
-                      </div>
-                      <div className="p-3 rounded-xl bg-rose-50/60 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/40">
-                        <strong className="text-rose-800 dark:text-rose-400 block mb-1">MỆNH HỎA</strong>
-                        <p className="text-[11px] text-slate-500 dark:text-slate-400">1986, 1987, 1994, 1995, 2008, 2009</p>
-                        <span className="text-[10px] text-rose-700 font-bold block mt-1">Hợp: Đỏ, Cam, Xanh Lá</span>
-                      </div>
-                      <div className="p-3 rounded-xl bg-amber-50/60 dark:bg-stone-900/40 border border-stone-200 dark:border-stone-800 col-span-2 sm:col-span-1">
-                        <strong className="text-amber-900 dark:text-amber-300 block mb-1">MỆNH THỔ</strong>
-                        <p className="text-[11px] text-slate-500 dark:text-slate-400">1990, 1991, 1998, 1999, 2006, 2007</p>
-                        <span className="text-[10px] text-amber-800 font-bold block mt-1">Hợp: Vàng, Nâu, Đỏ</span>
+                  {isFengShuiTableExpanded && (
+                    <div className="p-4 bg-white dark:bg-dark-surface border-t border-slate-100 dark:border-dark-border text-xs">
+                      <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5 text-center">
+                        {fsData.elements.map((el) => (
+                          <div
+                            key={el.key}
+                            className="p-3 rounded-xl bg-slate-50 dark:bg-dark-card border border-slate-200 dark:border-dark-border"
+                          >
+                            <span className="text-lg block mb-1">{el.icon}</span>
+                            <strong className="text-slate-800 dark:text-white block mb-0.5">{el.name}</strong>
+                            <span className="text-[11px] text-slate-500 dark:text-slate-400 block">{el.colors}</span>
+                          </div>
+                        ))}
                       </div>
                     </div>
-                  </div>
-                )}
-              </div>
+                  )}
+                </div>
+              )}
             </Motion.div>
           )}
 

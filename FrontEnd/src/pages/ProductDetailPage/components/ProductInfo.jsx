@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import {
   FiZap,
   FiClock,
@@ -15,10 +15,11 @@ import {
   FiChevronDown,
   FiChevronUp,
   FiSearch,
+  FiMessageSquare,
 } from "react-icons/fi";
 import { FaHeart } from "react-icons/fa";
 import { motion as Motion, AnimatePresence } from "framer-motion";
-import { calculateFengShuiByYear, ALL_FENG_SHUI_ELEMENTS } from "../utils/fengShuiHelper";
+import { getFengShuiDetailApi, fengShuiChatApi } from "../../../api/chatApi";
 
 const ProductInfo = ({
   product,
@@ -42,50 +43,91 @@ const ProductInfo = ({
   selectedVariant,
   addingCart,
 }) => {
-  // Feng Shui State
+  // Feng Shui Dynamic API State (Không hardcode)
   const [isFengShuiOpen, setIsFengShuiOpen] = useState(false);
-  const [selectedElementKey, setSelectedElementKey] = useState("kim");
-  const [birthYearInput, setBirthYearInput] = useState("1998");
-  const [calculatedFengShui, setCalculatedFengShui] = useState(() => calculateFengShuiByYear(1998));
+  const [birthYear, setBirthYear] = useState("1998");
+  const [gender, setGender] = useState("male");
+  const [fsData, setFsData] = useState(null);
+  const [loadingFs, setLoadingFs] = useState(false);
+
+  // AI Master Chat Consultation
+  const [aiAdvice, setAiAdvice] = useState(null);
+  const [askingAi, setAskingAi] = useState(false);
+
+  // Fetch Feng Shui Data from Backend API
+  const fetchFengShuiData = useCallback(async (yr, gd) => {
+    setLoadingFs(true);
+    try {
+      const res = await getFengShuiDetailApi(yr, gd);
+      if (res?.errCode === 0 && res.data) {
+        setFsData(res.data);
+      }
+    } catch (err) {
+      console.error("Lỗi tải phong thủy từ máy chủ:", err);
+    } finally {
+      setLoadingFs(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchFengShuiData(birthYear, gender);
+  }, [birthYear, gender, fetchFengShuiData]);
 
   const handleYearChange = (e) => {
     const yr = e.target.value;
-    setBirthYearInput(yr);
-    const res = calculateFengShuiByYear(yr);
-    if (res) {
-      setCalculatedFengShui(res);
-      setSelectedElementKey(res.key);
+    setBirthYear(yr);
+    setAiAdvice(null);
+  };
+
+  const handleGenderToggle = () => {
+    const nextGd = gender === "male" ? "female" : "male";
+    setGender(nextGd);
+    setAiAdvice(null);
+  };
+
+  // Ask TienTech FengShui Master AI
+  const handleAskFengShuiMaster = async () => {
+    setAskingAi(true);
+    try {
+      const prompt = `Tôi sinh năm ${birthYear} (${gender === "male" ? "Nam" : "Nữ"}), đang tìm hiểu đặt mua sản phẩm "${product?.name}". Xin TienTech Master cho lời khuyên phong thủy ngắn gọn về độ hợp mệnh, màu sắc và vị trí đặt máy!`;
+      const res = await fengShuiChatApi({
+        birthYear: Number(birthYear),
+        gender,
+        message: prompt,
+      });
+      if (res?.errCode === 0 && res.data?.reply) {
+        setAiAdvice(res.data.reply);
+      } else {
+        setAiAdvice("Hệ thống phong thủy AI đang bận tiếp nhận năng lượng, vui lòng thử lại sau ít phút.");
+      }
+    } catch {
+      setAiAdvice("Không thể kết nối với TienTech FengShui Master lúc này.");
+    } finally {
+      setAskingAi(false);
     }
   };
 
-  const handleSelectElementDirectly = (key) => {
-    setSelectedElementKey(key);
-    // Find representative year for this element
-    const representativeYears = {
-      kim: 2000,
-      thuy: 1996,
-      hoa: 1995,
-      tho: 1998,
-      moc: 2002,
-    };
-    const res = calculateFengShuiByYear(representativeYears[key] || 2000);
-    if (res) {
-      setCalculatedFengShui(res);
-      setBirthYearInput(String(representativeYears[key] || 2000));
-    }
-  };
-
-  // Check if current variant matches lucky colors
+  // Dynamic Color Matching (Đối chiếu từ dữ liệu Backend trả về)
   const variantColorMatch = useMemo(() => {
-    if (!calculatedFengShui || !selectedAttributes) return null;
-    const variantColor = (selectedAttributes["Màu sắc"] || selectedAttributes["Color"] || selectedVariant?.name || "").toLowerCase();
+    if (!fsData || !selectedAttributes) return null;
+    const variantColor = (
+      selectedAttributes["Màu sắc"] ||
+      selectedAttributes["Color"] ||
+      selectedVariant?.name ||
+      ""
+    ).toLowerCase();
     if (!variantColor) return null;
 
-    const isMatch = calculatedFengShui.luckyColors.some((c) =>
+    const allGoodColors = [
+      ...(fsData.luckyColors || []),
+      ...(fsData.supportColors || []),
+    ];
+
+    const isMatch = allGoodColors.some((c) =>
       variantColor.includes(c.toLowerCase()) || c.toLowerCase().includes(variantColor)
     );
     return isMatch;
-  }, [calculatedFengShui, selectedAttributes, selectedVariant]);
+  }, [fsData, selectedAttributes, selectedVariant]);
 
   const formatTime = (seconds) => {
     const h = Math.floor(seconds / 3600);
@@ -223,7 +265,7 @@ const ProductInfo = ({
         </div>
       </div>
 
-      {/* NÂNG CẤP: Góc Phong Thuỷ Công Nghệ Số (Hỗ trợ Thu gọn / Chi tiết hoàn chỉnh) */}
+      {/* Góc Phong Thuỷ Công Nghệ Số (Kết nối API Backend động - Không hardcode) */}
       <div className="rounded-3xl bg-gradient-to-r from-amber-50/60 via-white to-blue-50/40 dark:from-dark-card dark:to-dark-surface border border-amber-200/80 dark:border-dark-border overflow-hidden transition-all shadow-xs">
         {/* Widget Header with Toggle */}
         <div className="p-3.5 sm:p-4 flex items-center justify-between gap-3">
@@ -239,9 +281,11 @@ const ProductInfo = ({
                 </span>
               </div>
               <p className="text-[11px] text-slate-500 dark:text-dark-text-secondary truncate">
-                {calculatedFengShui
-                  ? `Năm ${calculatedFengShui.year} (${calculatedFengShui.lunarYear}) • ${calculatedFengShui.name} • ${calculatedFengShui.symbol}`
-                  : "Tra cứu bản mệnh ngũ hành & màu sắc may mắn"}
+                {loadingFs
+                  ? "Đang tra cứu phong thủy..."
+                  : fsData
+                  ? `Năm ${fsData.year} (${fsData.gender}) • Mệnh ${fsData.menhNien} • Cung ${fsData.cungPhi} (${fsData.element})`
+                  : "Tra cứu bản mệnh ngũ hành & màu sắc may mắn từ TienTech Engine"}
               </p>
             </div>
           </div>
@@ -257,15 +301,25 @@ const ProductInfo = ({
         </div>
 
         {/* Collapsed Compact Preview Bar */}
-        {!isFengShuiOpen && calculatedFengShui && (
+        {!isFengShuiOpen && fsData && (
           <div className="px-4 pb-3 pt-0 flex items-center justify-between flex-wrap gap-2 text-xs border-t border-slate-100/80 dark:border-dark-border/40 mt-1">
             <div className="flex items-center gap-2 text-[11px] text-slate-600 dark:text-slate-300">
               <span className="font-bold text-amber-700 dark:text-amber-400">Màu hợp mệnh:</span>
-              <span className="font-medium">{calculatedFengShui.luckyColors.slice(0, 3).join(", ")}...</span>
+              <span className="font-medium">
+                {fsData.luckyColors?.slice(0, 3).join(", ")}...
+              </span>
             </div>
             {variantColorMatch !== null && (
-              <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${variantColorMatch ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300" : "bg-slate-100 text-slate-600 dark:bg-dark-card dark:text-slate-400"}`}>
-                {variantColorMatch ? "✨ Màu đang chọn cực hợp mệnh!" : "☯️ Có thể phối thêm ốp lưng tương sinh"}
+              <span
+                className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${
+                  variantColorMatch
+                    ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300"
+                    : "bg-slate-100 text-slate-600 dark:bg-dark-card dark:text-slate-400"
+                }`}
+              >
+                {variantColorMatch
+                  ? "✨ Màu đang chọn cực hợp mệnh!"
+                  : "☯️ Có thể phối thêm ốp lưng tương sinh"}
               </span>
             )}
           </div>
@@ -281,85 +335,107 @@ const ProductInfo = ({
               transition={{ duration: 0.25 }}
               className="border-t border-amber-200/60 dark:border-dark-border p-4 sm:p-5 space-y-4 bg-white/70 dark:bg-dark-surface/70"
             >
-              {/* Year Selector & Element Selector Grid */}
-              <div className="space-y-2">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+              {/* Year & Gender Selector Grid */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                <div className="flex items-center gap-2">
                   <label className="font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-                    <FiSearch className="text-primary" /> Chọn năm sinh của bạn:
+                    <FiSearch className="text-primary" /> Năm sinh:
                   </label>
-                  <div className="flex items-center gap-2">
-                    <select
-                      value={birthYearInput}
-                      onChange={handleYearChange}
-                      className="bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-primary/20"
-                    >
-                      {Array.from({ length: 45 }, (_, i) => 2012 - i).map((yr) => (
-                        <option key={yr} value={yr}>
-                          Năm {yr}
-                        </option>
-                      ))}
-                    </select>
-                    <span className="text-[11px] text-slate-400">hoặc chọn Mệnh:</span>
-                  </div>
+                  <select
+                    value={birthYear}
+                    onChange={handleYearChange}
+                    className="bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-primary/20"
+                  >
+                    {Array.from({ length: 45 }, (_, i) => 2012 - i).map((yr) => (
+                      <option key={yr} value={yr}>
+                        Năm {yr}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
-                {/* 5 Elements Direct Buttons */}
-                <div className="grid grid-cols-5 gap-1.5">
-                  {ALL_FENG_SHUI_ELEMENTS.map((el) => {
-                    const isSelected = selectedElementKey === el.key;
-                    return (
-                      <button
-                        key={el.key}
-                        type="button"
-                        onClick={() => handleSelectElementDirectly(el.key)}
-                        className={`py-2 px-1 rounded-2xl text-[11px] font-bold transition-all border flex flex-col items-center justify-center gap-0.5 cursor-pointer ${
-                          isSelected
-                            ? "bg-amber-500 text-white border-amber-500 shadow-md shadow-amber-500/30 scale-102"
-                            : "bg-white dark:bg-dark-card border-slate-200 dark:border-dark-border text-slate-700 dark:text-slate-300 hover:border-amber-400"
-                        }`}
-                      >
-                        <span className="text-base">{el.icon}</span>
-                        <span className="truncate">{el.name.replace("Mệnh ", "")}</span>
-                      </button>
-                    );
-                  })}
+                <div className="flex items-center gap-2">
+                  <span className="font-bold text-slate-700 dark:text-slate-300">Giới tính:</span>
+                  <button
+                    type="button"
+                    onClick={handleGenderToggle}
+                    className="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-dark-border bg-white dark:bg-dark-card text-xs font-bold text-slate-800 dark:text-white hover:border-primary cursor-pointer"
+                  >
+                    {gender === "male" ? "👨 Nam" : "👩 Nữ"} (Đổi)
+                  </button>
                 </div>
               </div>
 
-              {/* Detailed Feng Shui Result Card */}
-              {calculatedFengShui && (
-                <div className={`p-4 rounded-2xl border text-xs space-y-2.5 ${calculatedFengShui.accent}`}>
+              {/* Dynamic Feng Shui Result Card từ Backend */}
+              {fsData && (
+                <div className="p-4 rounded-2xl border border-amber-300 bg-amber-50/80 dark:bg-amber-950/30 text-amber-900 dark:text-amber-200 text-xs space-y-2.5">
                   <div className="flex items-center justify-between flex-wrap gap-2 border-b border-black/10 dark:border-white/10 pb-2">
                     <div className="font-extrabold flex items-center gap-2 text-sm">
-                      <span className="text-lg">{calculatedFengShui.icon}</span>
-                      <span>{calculatedFengShui.name} ({calculatedFengShui.lunarYear} - {calculatedFengShui.year})</span>
+                      <span>Cung Phi {fsData.cungPhi} (Hành {fsData.element})</span>
                     </div>
                     <span className="px-2.5 py-0.5 rounded-full font-bold bg-black/10 dark:bg-white/10 text-[10px]">
-                      {calculatedFengShui.symbol}
+                      Mệnh Niên: {fsData.menhNien}
                     </span>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs leading-relaxed">
                     <div>
-                      <strong className="block mb-0.5">🌟 Tương sinh & Tương hợp:</strong>
-                      <p className="opacity-90">{calculatedFengShui.compatible}</p>
+                      <strong className="block mb-0.5">🌟 Màu Đại Cát (Tương sinh):</strong>
+                      <p className="opacity-90">{fsData.supportColors?.join(", ")}</p>
                     </div>
                     <div>
-                      <strong className="block mb-0.5">🎨 Màu sắc công nghệ may mắn:</strong>
-                      <p className="opacity-90">{calculatedFengShui.luckyColors.join(", ")}</p>
+                      <strong className="block mb-0.5">🎨 Màu Bình An (Bản mệnh):</strong>
+                      <p className="opacity-90">{fsData.luckyColors?.join(", ")}</p>
                     </div>
                   </div>
 
                   <div className="pt-1 text-[11px] leading-relaxed border-t border-black/5 dark:border-white/5 space-y-1">
                     <p>
-                      <strong>💡 Lời khuyên thiết bị:</strong> {calculatedFengShui.advice}
+                      <strong>💡 Lời khuyên thiết bị:</strong> {fsData.advice}
                     </p>
                     <p>
-                      <strong>🧭 Bố trí bàn làm việc:</strong> {calculatedFengShui.workspaceTip}
+                      <strong>🧭 Bố trí bàn làm việc:</strong> {fsData.workspaceTip}
                     </p>
                   </div>
                 </div>
               )}
+
+              {/* TienTech FengShui Master AI Consultation Button */}
+              <div className="pt-2 border-t border-slate-100 dark:border-dark-border">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="text-xs text-slate-600 dark:text-slate-300">
+                    Bạn muốn nghe lời khuyên riêng cho sản phẩm này?
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleAskFengShuiMaster}
+                    disabled={askingAi}
+                    className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-white font-bold text-xs shadow-sm hover:opacity-95 transition cursor-pointer"
+                  >
+                    <FiMessageSquare className="size-3.5" />
+                    <span>{askingAi ? "TienTech AI đang xem quẻ..." : "Hỏi TienTech Master AI"}</span>
+                  </button>
+                </div>
+
+                {/* AI Master Consultation Response */}
+                <AnimatePresence>
+                  {aiAdvice && (
+                    <Motion.div
+                      initial={{ opacity: 0, y: 5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -5 }}
+                      className="mt-3 p-3.5 rounded-2xl bg-amber-50/90 dark:bg-amber-950/50 border border-amber-300/80 text-xs text-slate-800 dark:text-slate-200 leading-relaxed space-y-1.5"
+                    >
+                      <div className="font-extrabold text-amber-800 dark:text-amber-400 flex items-center gap-1.5">
+                        <span>🧙‍♂️ Lời khuyên từ TienTech FengShui Master:</span>
+                      </div>
+                      <p className="text-[11px] whitespace-pre-line leading-relaxed">
+                        {aiAdvice}
+                      </p>
+                    </Motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             </Motion.div>
           )}
         </AnimatePresence>
