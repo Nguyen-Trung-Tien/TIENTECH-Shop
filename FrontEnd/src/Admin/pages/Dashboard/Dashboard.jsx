@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { FaBox, FaShoppingCart, FaDollarSign, FaUsers, FaUndo, FaTimesCircle } from "react-icons/fa";
+import { FiPlus, FiDownload, FiCheckCircle } from "react-icons/fi";
 import StatsCard from "../../components/StatsCardComponent/StatsCard";
 import ChartCard from "../../components/ChartCardComponent/ChartCard";
 import AIInsightsWidget from "../../components/AIInsightsWidget/AIInsightsWidget";
@@ -13,6 +14,7 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
   const [stats, setStats] = useState([]);
+  const [lowStock, setLowStock] = useState({ count: 0, products: [] });
   const [error, setError] = useState(null);
 
   const handleExport = async () => {
@@ -54,8 +56,15 @@ const Dashboard = () => {
             totalUsers = 0,
             cancelRequestedCount = 0,
             returnRequestedCount = 0,
+            lowStockCount = 0,
+            lowStockProducts = [],
             change = {},
           } = data;
+
+          setLowStock({
+            count: lowStockCount,
+            products: lowStockProducts,
+          });
 
           const {
             products: changeProducts = 0,
@@ -106,7 +115,7 @@ const Dashboard = () => {
               icon: <FaTimesCircle className="text-rose-500" />,
               change: "Cần xử lý",
               isIncrease: false,
-              link: "/admin/orders-cancel",
+              link: "/admin/orders?tab=cancel_requested",
             },
             {
               title: "Yêu cầu trả hàng",
@@ -114,7 +123,7 @@ const Dashboard = () => {
               icon: <FaUndo className="text-amber-500" />,
               change: "Cần duyệt",
               isIncrease: false,
-              link: "/admin/orders-return",
+              link: "/admin/orders?tab=return_requested",
             },
           ]);
         } else {
@@ -130,39 +139,61 @@ const Dashboard = () => {
     fetchDashboard();
   }, []);
 
-  return (
-    <div className="space-y-6 sm:space-y-10 p-2.5 sm:p-6 md:p-8 max-w-[1600px] mx-auto text-slate-900 dark:text-dark-text-primary transition-colors duration-300">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight mb-1 sm:mb-2">
-            Bảng điều khiển
-          </h1>
-          <p className="text-slate-500 dark:text-dark-text-secondary font-bold text-[10px] sm:text-sm tracking-widest uppercase">
-            Tổng quan hệ thống & Phân tích kinh doanh
-          </p>
-        </div>
+  const greeting = useMemo(() => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Chào buổi sáng";
+    if (hour < 18) return "Chào buổi chiều";
+    return "Chào buổi tối";
+  }, []);
 
-        <div className="grid grid-cols-2 sm:flex items-center gap-2.5 sm:gap-4 w-full sm:w-auto">
-          <button
-            onClick={handleExport}
-            disabled={exporting}
-            className="px-4 sm:px-6 py-2.5 bg-white dark:bg-dark-surface border border-slate-200 dark:border-dark-border rounded-2xl text-[11px] sm:text-xs font-black uppercase tracking-widest text-slate-600 dark:text-dark-text-secondary hover:border-primary hover:text-primary transition-all shadow-sm disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2 min-h-[44px]"
-          >
-            {exporting ? (
-              <>
-                <UnifiedSpinner size="xs" variant="primary" />
-                <span>Đang xuất...</span>
-              </>
-            ) : (
-              "Xuất báo cáo"
-            )}
-          </button>
-          <Link
-            to="/admin/products"
-            className="px-4 sm:px-6 py-2.5 bg-primary text-white rounded-2xl text-[11px] sm:text-xs font-black uppercase tracking-widest hover:bg-primary-hover transition-all shadow-lg shadow-primary/20 flex items-center justify-center text-center min-h-[44px]"
-          >
-            Thêm sản phẩm
-          </Link>
+  return (
+    <div className="space-y-6 sm:space-y-8 p-2.5 sm:p-6 md:p-8 max-w-[1600px] mx-auto text-slate-900 dark:text-dark-text-primary transition-colors duration-300">
+      {/* Executive Hero Banner */}
+      <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-slate-900 via-[#0e1628] to-slate-900 text-white p-5 sm:p-7 md:p-8 border border-slate-800 shadow-xl">
+        {/* Ambient Glow Orbs */}
+        <div className="absolute -top-16 -right-16 size-64 bg-primary/20 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-16 left-1/3 size-56 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5 sm:gap-6">
+          <div className="space-y-2 max-w-2xl min-w-0">
+            <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/10 text-[10px] font-mono font-bold uppercase tracking-wider text-emerald-400">
+              <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span>HỆ THỐNG VẬN HÀNH TIÊU CHUẨN // LIVE METRICS</span>
+            </div>
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-black tracking-tight text-white truncate">
+              {greeting}, Quản trị viên!
+            </h1>
+            <p className="text-xs sm:text-sm text-slate-300 font-medium">
+              Chào mừng bạn trở lại hệ thống quản trị TienTech. Dưới đây là phân tích vận hành kinh doanh, hiệu suất đơn hàng và báo cáo tài chính mới nhất.
+            </p>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 shrink-0">
+            <button
+              onClick={handleExport}
+              disabled={exporting}
+              className="px-4 sm:px-5 py-2.5 bg-white/10 hover:bg-white/15 active:scale-98 border border-white/15 backdrop-blur-md rounded-xl text-xs font-bold text-white transition-all shadow-sm disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2 min-h-[42px]"
+            >
+              {exporting ? (
+                <>
+                  <UnifiedSpinner size="xs" variant="white" />
+                  <span>Đang xuất Excel...</span>
+                </>
+              ) : (
+                <>
+                  <FiDownload className="text-sm" />
+                  <span>Xuất báo cáo</span>
+                </>
+              )}
+            </button>
+            <Link
+              to="/admin/products"
+              className="px-4 sm:px-5 py-2.5 bg-primary hover:bg-primary-hover active:scale-98 text-white rounded-xl text-xs font-bold transition-all shadow-lg shadow-primary/30 flex items-center justify-center gap-2 text-center min-h-[42px]"
+            >
+              <FiPlus className="text-sm" />
+              <span>Thêm sản phẩm</span>
+            </Link>
+          </div>
         </div>
       </div>
 
@@ -185,6 +216,31 @@ const Dashboard = () => {
               </Link>
             ))}
           </div>
+
+          {/* Low Stock Alert Banner */}
+          {lowStock.count > 0 && (
+            <div className="p-4 sm:p-5 bg-amber-50/90 dark:bg-amber-950/20 border border-amber-200/90 dark:border-amber-900/40 rounded-2xl sm:rounded-3xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm animate-in fade-in">
+              <div className="flex items-center gap-3.5 min-w-0">
+                <div className="size-10 rounded-2xl bg-amber-500 text-white flex items-center justify-center font-black text-base shrink-0 shadow-sm shadow-amber-500/20">
+                  !
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h4 className="text-xs sm:text-sm font-black text-amber-900 dark:text-amber-300 uppercase tracking-tight">
+                    Cảnh Báo Tồn Kho ({lowStock.count} sản phẩm sắp hết hàng)
+                  </h4>
+                  <p className="text-[11px] sm:text-xs text-amber-700/90 dark:text-amber-400 mt-0.5 truncate">
+                    {lowStock.products.map((p) => `${p.name} (còn ${p.totalStock})`).join(", ")}
+                  </p>
+                </div>
+              </div>
+              <Link
+                to="/admin/products"
+                className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-xl transition-colors shrink-0 text-center"
+              >
+                Quản lý kho hàng
+              </Link>
+            </div>
+          )}
 
           {/* AI Insights Section */}
           <AIInsightsWidget />

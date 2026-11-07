@@ -12,16 +12,34 @@ const normalizeType = (type) => {
 const createNotification = async (data, t = null, io = null) => {
   try {
     const payload = {
-      ...data,
+      userId: data.userId !== undefined ? data.userId : null,
+      title: data.title || "Thông báo hệ thống",
       message: data.message || data.content || "",
       type: normalizeType(data.type),
+      link: data.link || null,
+      isRead: false,
     };
     const notification = await db.Notification.create(payload, { transaction: t });
+    
+    // Controlled real-time dispatch preventing excess data exposure
     if (io) {
+      const sanitized = {
+        id: notification.id,
+        userId: notification.userId,
+        title: notification.title,
+        message: notification.message,
+        type: notification.type,
+        link: notification.link,
+        isRead: notification.isRead,
+        createdAt: notification.createdAt,
+      };
+
       if (payload.userId) {
-        io.to(`user_${payload.userId}`).emit("notification", notification);
+        // Emit only to the targeted user's room
+        io.to(`user_${payload.userId}`).emit("notification", sanitized);
       } else {
-        io.emit("notification", notification);
+        // Admin alerts are strictly restricted to admin_room
+        io.to("admin_room").emit("notification", sanitized);
       }
     }
     return { errCode: 0, data: notification };
@@ -35,8 +53,9 @@ const getNotifications = async (userId, role, page = 1, limit = 10, type = null)
   try {
     const offset = (page - 1) * limit;
     const where = {};
+    const isAdmin = role === "admin" || role === "root";
 
-    if (role === "admin") {
+    if (isAdmin) {
       where.userId = { [db.Sequelize.Op.or]: [userId, null] };
     } else {
       where.userId = userId;
@@ -55,11 +74,21 @@ const getNotifications = async (userId, role, page = 1, limit = 10, type = null)
       limit,
       offset,
       order: [["createdAt", "DESC"]],
+      attributes: [
+        "id",
+        "userId",
+        "title",
+        "message",
+        "type",
+        "isRead",
+        "link",
+        "createdAt",
+      ],
     });
 
     const unreadCount = await db.Notification.count({
       where: {
-        ...(role === "admin"
+        ...(isAdmin
           ? { userId: { [db.Sequelize.Op.or]: [userId, null] } }
           : { userId }),
         isRead: false,
@@ -68,6 +97,7 @@ const getNotifications = async (userId, role, page = 1, limit = 10, type = null)
 
     return {
       errCode: 0,
+      errMessage: "OK",
       data: rows,
       total: count,
       unreadCount,
@@ -81,10 +111,11 @@ const getNotifications = async (userId, role, page = 1, limit = 10, type = null)
 
 const markAsRead = async (id, userId, role) => {
   try {
+    const isAdmin = role === "admin" || role === "root";
     const notification = await db.Notification.findByPk(id);
     if (notification) {
-      if (role !== "admin" && notification.userId && notification.userId !== userId) {
-        return { errCode: 1, errMessage: "Không có quyền thực hiện." };
+      if (!isAdmin && notification.userId !== userId) {
+        return { errCode: 403, errMessage: "Không có quyền thực hiện." };
       }
       await notification.update({ isRead: true });
     }
@@ -96,8 +127,9 @@ const markAsRead = async (id, userId, role) => {
 
 const markAllAsRead = async (userId, role = "user") => {
   try {
+    const isAdmin = role === "admin" || role === "root";
     const where = {};
-    if (role === "admin") {
+    if (isAdmin) {
       where.userId = { [db.Sequelize.Op.or]: [userId, null] };
     } else {
       where.userId = userId;
@@ -112,11 +144,12 @@ const markAllAsRead = async (userId, role = "user") => {
 
 const deleteNotification = async (id, userId, role) => {
   try {
+    const isAdmin = role === "admin" || role === "root";
     const notification = await db.Notification.findByPk(id);
     if (!notification) return { errCode: 1, errMessage: "Không tìm thấy thông báo." };
 
-    if (role !== "admin" && notification.userId && notification.userId !== userId) {
-      return { errCode: 1, errMessage: "Không có quyền xóa thông báo này." };
+    if (!isAdmin && notification.userId !== userId) {
+      return { errCode: 403, errMessage: "Không có quyền xóa thông báo này." };
     }
 
     await notification.destroy();
@@ -129,8 +162,9 @@ const deleteNotification = async (id, userId, role) => {
 
 const clearAllNotifications = async (userId, role) => {
   try {
+    const isAdmin = role === "admin" || role === "root";
     const where = {};
-    if (role === "admin") {
+    if (isAdmin) {
       where.userId = { [db.Sequelize.Op.or]: [userId, null] };
     } else {
       where.userId = userId;

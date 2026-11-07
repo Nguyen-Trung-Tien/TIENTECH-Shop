@@ -57,6 +57,9 @@ const ERROR_TRANSLATIONS = {
   "Invalid quantity": "Số lượng không hợp lệ.",
   "Cart is empty": "Giỏ hàng của bạn đang trống.",
   "Payment failed": "Thanh toán thất bại. Vui lòng thử lại!",
+  "Account locked": "Tài khoản của bạn đã bị tạm khóa vì lý do an toàn. Vui lòng liên hệ hỗ trợ!",
+  "Your account has been locked": "Tài khoản của bạn đã bị tạm khóa vì lý do an toàn. Vui lòng liên hệ hỗ trợ!",
+  "Mật khẩu cũ không chính xác": "Mật khẩu cũ không chính xác. Vui lòng kiểm tra lại!",
 
   // Hệ thống, Axios & Server
   "Internal server error": "Đã xảy ra lỗi máy chủ nội bộ. Đội ngũ kỹ thuật đang xử lý.",
@@ -220,35 +223,61 @@ export const extractErrorMessage = (error, defaultFallback = "Đã có lỗi x�
 };
 
 /**
- * Hiển thị Toast thông báo lỗi bằng Tiếng Việt chuẩn xác
+ * Hiển thị Toast thông báo lỗi bằng Tiếng Việt chuẩn xác (có chống spam duplicate)
  */
-export const showErrorToast = (error, defaultFallback = "Đã có lỗi xảy ra. Vui lòng thử lại!") => {
+export const showErrorToast = (
+  error,
+  defaultFallback = "Đã có lỗi xảy ra. Vui lòng thử lại!",
+  options = {}
+) => {
   const msg = extractErrorMessage(error, defaultFallback);
-  toast.error(msg);
+  const toastId =
+    options.toastId ||
+    (typeof msg === "string" ? `err_${msg.slice(0, 50)}` : undefined);
+  toast.error(msg, { toastId, ...options });
   return msg;
 };
 
 /**
  * Hiển thị Toast thông báo thành công bằng Tiếng Việt chuẩn xác và tự động lọc 'OK'
  */
-export const showSuccessToast = (message, fallback = "Thao tác thành công!") => {
+export const showSuccessToast = (
+  message,
+  fallback = "Thao tác thành công!",
+  options = {}
+) => {
   const finalMsg = sanitizeSuccessMessage(message, fallback);
-  toast.success(finalMsg);
+  const toastId =
+    options.toastId ||
+    (typeof finalMsg === "string" ? `succ_${finalMsg.slice(0, 50)}` : undefined);
+  toast.success(finalMsg, { toastId, ...options });
   return finalMsg;
 };
 
 /**
- * Hiển thị Toast cảnh báo bằng Tiếng Việt
+ * Hiển thị Toast cảnh báo bằng Tiếng Việt (chống lặp thông báo)
  */
-export const showWarningToast = (message = "Vui lòng kiểm tra lại thông tin!") => {
-  toast.warning(message);
+export const showWarningToast = (
+  message = "Vui lòng kiểm tra lại thông tin!",
+  options = {}
+) => {
+  const toastId =
+    options.toastId ||
+    (typeof message === "string" ? `warn_${message.slice(0, 50)}` : undefined);
+  toast.warning(message, { toastId, ...options });
 };
 
 /**
  * Hiển thị Toast thông tin hệ thống bằng Tiếng Việt
  */
-export const showInfoToast = (message = "Thông báo hệ thống") => {
-  toast.info(message);
+export const showInfoToast = (
+  message = "Thông báo hệ thống",
+  options = {}
+) => {
+  const toastId =
+    options.toastId ||
+    (typeof message === "string" ? `info_${message.slice(0, 50)}` : undefined);
+  toast.info(message, { toastId, ...options });
 };
 
 export default {

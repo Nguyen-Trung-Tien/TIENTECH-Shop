@@ -40,10 +40,11 @@ Trả về JSON THUẦN:
       const product = lowStockProducts.find(p => p.id === alert.productId);
       if (product) {
         await NotificationService.createNotification({
-          userId: 1,
+          userId: null,
           title: `Cảnh báo tồn kho: ${product.name}`,
-          content: `${alert.reason}. Hiện chỉ còn ${product.totalStock} sản phẩm. Độ ưu tiên: ${alert.priority}`,
+          message: `${alert.reason}. Hiện chỉ còn ${product.totalStock} sản phẩm. Độ ưu tiên: ${alert.priority}`,
           type: "system",
+          link: "/admin/products",
         });
       }
     }

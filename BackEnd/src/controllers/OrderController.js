@@ -2,6 +2,20 @@ const OrderService = require("../services/order/OrderService");
 const NotificationService = require("../services/notification/NotificationService");
 const { handleResponse, handleError } = require("../utils/controllerHelper");
 
+const ORDER_STATUS_LABELS = {
+  pending: "Chờ xác nhận",
+  confirmed: "Đã xác nhận",
+  processing: "Đang chuẩn bị hàng",
+  shipped: "Đang vận chuyển",
+  shipping: "Đang giao hàng",
+  delivered: "Giao hàng thành công",
+  completed: "Hoàn tất đơn hàng",
+  cancelled: "Đã hủy đơn hàng",
+  cancel_requested: "Yêu cầu hủy đơn",
+  return_requested: "Yêu cầu trả hàng",
+  returned: "Đã hoàn trả hàng",
+};
+
 const handleGetAllOrders = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
@@ -51,19 +65,26 @@ const handleCreateOrder = async (req, res) => {
     if (result.errCode === 0) {
       const io = req.app.get("io");
       
-      // 1. Lưu thông báo cho Admin vào DB
-      await NotificationService.createNotification({
-        title: "Đơn hàng mới!",
-        message: `Đơn hàng #${result.data.orderCode} vừa được tạo.`,
-        type: "order",
-        link: `/admin/orders`,
-      });
+      // 1. Lưu thông báo cho Admin vào DB và gửi socket an toàn
+      await NotificationService.createNotification(
+        {
+          userId: null,
+          title: "Đơn hàng mới!",
+          message: `Đơn hàng #${result.data.orderCode} vừa được tạo bởi khách hàng.`,
+          type: "order",
+          link: `/admin/orders`,
+        },
+        null,
+        io
+      );
 
-      // 2. Gửi real-time tới Admin nếu io tồn tại
+      // 2. Gửi real-time tới Admin nếu io tồn tại (chỉ gửi các trường cần thiết, tránh lộ dữ liệu thừa)
       if (io) {
         io.to("admin_room").emit("new_order", {
           message: "Có đơn hàng mới!",
-          order: result.data,
+          orderId: result.data.id,
+          orderCode: result.data.orderCode,
+          totalPrice: result.data.totalPrice,
         });
       }
       return handleResponse(res, result, 201);
@@ -83,30 +104,55 @@ const handleUpdateOrderStatus = async (req, res) => {
     if (result.errCode === 0) {
       const io = req.app.get("io");
       const order = result.data;
+      const statusText = ORDER_STATUS_LABELS[order.status] || order.status;
 
-      // 1. Lưu thông báo cho User vào DB
-      await NotificationService.createNotification({
-        userId: order.userId,
-        title: "Cập nhật đơn hàng",
-        message: `Đơn hàng #${order.orderCode} của bạn đã chuyển sang trạng thái: ${order.status}`,
-        type: "order",
-        link: `/orders-detail/${id}`,
-      });
+      // 1. Lưu thông báo thân thiện và chính xác cho User vào DB
+      let userMessage = `Đơn hàng #${order.orderCode} của bạn đã chuyển sang trạng thái: "${statusText}".`;
+      if (reason) userMessage += ` (Ghi chú: ${reason})`;
 
-      // 2. Gửi real-time tới User nếu io tồn tại
-      if (io) {
-        io.to(`user_${order.userId}`).emit("order_status_updated", {
-          orderId: id,
-          status: order.status,
-          message: `Đơn hàng #${id} của bạn đã chuyển sang trạng thái: ${order.status}`,
-        });
+      await NotificationService.createNotification(
+        {
+          userId: order.userId,
+          title: `Cập nhật đơn hàng #${order.orderCode}`,
+          message: userMessage,
+          type: "order",
+          link: `/orders-detail/${id}`,
+        },
+        null,
+        io
+      );
 
-        if (order.status === "cancel_requested") {
+      // 2. Nếu đơn hàng chuyển sang trạng thái yêu cầu hủy đơn, gửi thông báo trực tiếp cho Admin
+      if (order.status === "cancel_requested") {
+        await NotificationService.createNotification(
+          {
+            userId: null,
+            title: "Yêu cầu hủy đơn hàng mới!",
+            message: `Khách hàng yêu cầu hủy đơn hàng #${order.orderCode}.${reason ? ` Lý do: ${reason}` : ""}`,
+            type: "order",
+            link: "/admin/orders?tab=cancel_requested",
+          },
+          null,
+          io
+        );
+
+        if (io) {
           io.to("admin_room").emit("new_order", {
             message: `Có yêu cầu hủy đơn hàng #${order.orderCode}`,
             orderId: id,
           });
         }
+      }
+
+      // 3. Gửi real-time tới đúng User phòng riêng (kiểm soát chặt chẽ dữ liệu gửi đi)
+      if (io) {
+        io.to(`user_${order.userId}`).emit("order_status_updated", {
+          orderId: id,
+          orderCode: order.orderCode,
+          status: order.status,
+          statusText,
+          message: userMessage,
+        });
       }
     }
     

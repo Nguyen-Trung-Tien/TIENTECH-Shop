@@ -261,7 +261,13 @@ class UserService extends BaseService {
       }
 
       const updatedUser = await user.update(safeUpdateData);
-      const { password, ...userData } = updatedUser.toJSON();
+      const {
+        password,
+        refreshTokenHash,
+        resetToken,
+        verificationToken,
+        ...userData
+      } = updatedUser.toJSON();
       return { errCode: 0, data: userData };
     } catch (e) {
       console.error("UserService.updateUser error:", e);

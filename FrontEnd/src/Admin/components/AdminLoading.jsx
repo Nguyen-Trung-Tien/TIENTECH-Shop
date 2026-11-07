@@ -78,3 +78,48 @@ export const AdminActionLoader = ({ message = "Đang xử lý..." }) => {
     </div>
   );
 };
+
+/**
+ * AdminStatSkeleton - Giữ chỗ cho lưới thẻ số liệu thống kê
+ */
+export const AdminStatSkeleton = ({ count = 6 }) => {
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3.5 sm:gap-6">
+      {Array.from({ length: count }).map((_, i) => (
+        <div
+          key={i}
+          className="p-5 rounded-2xl sm:rounded-3xl bg-white dark:bg-dark-surface border border-slate-100 dark:border-dark-border shadow-xs space-y-3"
+        >
+          <div className="flex items-center justify-between">
+            <div className="size-10 rounded-2xl bg-slate-100 dark:bg-dark-bg animate-pulse" />
+            <div className="h-4 w-12 rounded-full bg-slate-100 dark:bg-dark-bg animate-pulse" />
+          </div>
+          <div className="space-y-1.5 pt-1">
+            <div className="h-3 w-20 rounded bg-slate-100 dark:bg-dark-bg animate-pulse" />
+            <div className="h-6 w-28 rounded-lg bg-slate-200 dark:bg-slate-800 animate-pulse" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+/**
+ * AdminCardSkeleton - Giữ chỗ cho Widget hoặc Card biểu đồ
+ */
+export const AdminCardSkeleton = ({ height = "h-72" }) => {
+  return (
+    <div
+      className={`w-full ${height} rounded-2xl sm:rounded-3xl bg-white dark:bg-dark-surface border border-slate-100 dark:border-dark-border p-6 shadow-xs flex flex-col justify-between`}
+    >
+      <div className="flex items-center justify-between">
+        <div className="space-y-2">
+          <div className="h-4 w-36 rounded bg-slate-200 dark:bg-slate-800 animate-pulse" />
+          <div className="h-3 w-24 rounded bg-slate-100 dark:bg-dark-bg animate-pulse" />
+        </div>
+        <div className="h-8 w-24 rounded-xl bg-slate-100 dark:bg-dark-bg animate-pulse" />
+      </div>
+      <div className="h-32 w-full rounded-2xl bg-slate-50 dark:bg-dark-bg/60 animate-pulse" />
+    </div>
+  );
+};

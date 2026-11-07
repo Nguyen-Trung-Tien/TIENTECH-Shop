@@ -190,6 +190,33 @@ const requestReturn = async (id, reason, user = null) => {
     item.returnRequestedAt = new Date();
     await item.save();
 
+    try {
+      const NotificationService = require("../notification/NotificationService");
+      const prodName = item.productName || item.product?.name || `Sản phẩm #${item.productId}`;
+      
+      // 1. Thông báo cho Admin biết có yêu cầu hoàn trả mới
+      await NotificationService.createNotification({
+        userId: null,
+        title: "Yêu cầu trả hàng mới!",
+        message: `Khách hàng yêu cầu trả "${prodName}" thuộc đơn hàng #${item.order.orderCode}. Lý do: ${item.returnReason}`,
+        type: "order",
+        link: "/admin/orders?tab=return_requested",
+      });
+
+      // 2. Thông báo cho Khách hàng để theo dõi tiến độ
+      if (item.order.userId) {
+        await NotificationService.createNotification({
+          userId: item.order.userId,
+          title: "Yêu cầu trả hàng đã được ghi nhận",
+          message: `Yêu cầu trả "${prodName}" (Đơn #${item.order.orderCode}) đã được gửi đến ban quản trị để xem xét.`,
+          type: "order",
+          link: `/orders-detail/${item.order.id}`,
+        });
+      }
+    } catch (notifErr) {
+      console.warn("[OrderItemService] Error dispatching return notification:", notifErr?.message);
+    }
+
     return { errCode: 0, errMessage: "Gửi yêu cầu trả hàng thành công", data: item };
   } catch (e) {
     console.error("Error requestReturn:", e);

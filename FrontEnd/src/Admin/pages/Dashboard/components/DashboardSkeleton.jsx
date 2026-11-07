@@ -9,20 +9,20 @@ const Shimmer = ({ className = "" }) => (
 const DashboardSkeleton = () => {
   return (
     <div className="space-y-8 animate-fadeIn">
-      {/* 4 Stat KPI Cards Skeleton */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6">
-        {Array.from({ length: 4 }).map((_, i) => (
+      {/* 6 Stat KPI Cards Skeleton */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3.5 sm:gap-6">
+        {Array.from({ length: 6 }).map((_, i) => (
           <div
             key={i}
-            className="p-6 rounded-3xl bg-white dark:bg-dark-surface border border-slate-100 dark:border-dark-border shadow-soft space-y-4"
+            className="p-5 rounded-2xl sm:rounded-3xl bg-white dark:bg-dark-surface border border-slate-100 dark:border-dark-border shadow-soft space-y-3"
           >
             <div className="flex items-center justify-between">
-              <Shimmer className="size-12 rounded-2xl" />
-              <Shimmer className="h-6 w-16 rounded-full" />
+              <Shimmer className="size-11 sm:size-14 rounded-2xl" />
+              <Shimmer className="h-5 w-14 rounded-full" />
             </div>
-            <div className="space-y-2">
-              <Shimmer className="h-4 w-28 rounded-md" />
-              <Shimmer className="h-8 w-40 rounded-xl" />
+            <div className="space-y-1.5 pt-1">
+              <Shimmer className="h-3 w-20 rounded-md" />
+              <Shimmer className="h-7 w-28 rounded-xl" />
             </div>
           </div>
         ))}

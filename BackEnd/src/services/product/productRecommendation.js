@@ -1,6 +1,9 @@
 const db = require("../../models");
 const { Op } = require("sequelize");
-const { getPagination, getPagingData } = require("../../utils/paginationHelper");
+const {
+  getPagination,
+  getPagingData,
+} = require("../../utils/paginationHelper");
 const { getFengShuiDetail } = require("../../utils/fortuneUtils");
 const { cosineSimilarity } = require("../../utils/embeddingHelper");
 const { applyFlashSaleToProduct } = require("./productHelper");
@@ -77,7 +80,10 @@ const recommendFortuneProducts = async ({
 }) => {
   try {
     const fsDetail = getFengShuiDetail(Number(birthYear));
-    const luckyColors = [...(fsDetail.luckyColors || []), ...(fsDetail.supportColors || [])];
+    const luckyColors = [
+      ...(fsDetail.luckyColors || []),
+      ...(fsDetail.supportColors || []),
+    ];
     const where = { isActive: true };
     if (luckyColors.length) {
       where[Op.or] = luckyColors.map((color) => ({
@@ -127,11 +133,15 @@ const recommendFortuneProducts = async ({
         const primary =
           pJSON.images?.find((i) => i.isPrimary) || pJSON.images?.[0];
         const product = { ...pJSON, image: primary?.imageUrl || null };
-        const specsStr = typeof product.specifications === "string"
-          ? product.specifications
-          : JSON.stringify(product.specifications || {});
-        const nameAndDesc = `${product.name} ${product.description || ""} ${specsStr}`.toLowerCase();
-        product.isLuckyColor = luckyColors.some((color) => nameAndDesc.includes(color.toLowerCase()));
+        const specsStr =
+          typeof product.specifications === "string"
+            ? product.specifications
+            : JSON.stringify(product.specifications || {});
+        const nameAndDesc =
+          `${product.name} ${product.description || ""} ${specsStr}`.toLowerCase();
+        product.isLuckyColor = luckyColors.some((color) =>
+          nameAndDesc.includes(color.toLowerCase()),
+        );
         return product;
       }),
       luckyColors,
@@ -157,7 +167,10 @@ const getSmartRecommendations = async (productId, limit = 6) => {
     if (product.embedding) {
       let queryEmbedding = null;
       try {
-        queryEmbedding = typeof product.embedding === "string" ? JSON.parse(product.embedding) : product.embedding;
+        queryEmbedding =
+          typeof product.embedding === "string"
+            ? JSON.parse(product.embedding)
+            : product.embedding;
       } catch (e) {
         queryEmbedding = null;
       }
@@ -169,7 +182,14 @@ const getSmartRecommendations = async (productId, limit = 6) => {
             id: { [Op.ne]: productId },
             embedding: { [Op.ne]: null },
           },
-          attributes: ["id", "name", "slug", "basePrice", "discount", "embedding"],
+          attributes: [
+            "id",
+            "name",
+            "slug",
+            "basePrice",
+            "discount",
+            "embedding",
+          ],
           limit: 150,
           order: [["sold", "DESC"]],
           include: [
@@ -185,8 +205,12 @@ const getSmartRecommendations = async (productId, limit = 6) => {
           .map((p) => {
             try {
               const plain = p.get({ plain: true });
-              const primary = plain.images?.find((img) => img.isPrimary) || plain.images?.[0];
-              const pEmbedding = typeof plain.embedding === "string" ? JSON.parse(plain.embedding) : plain.embedding;
+              const primary =
+                plain.images?.find((img) => img.isPrimary) || plain.images?.[0];
+              const pEmbedding =
+                typeof plain.embedding === "string"
+                  ? JSON.parse(plain.embedding)
+                  : plain.embedding;
               if (!Array.isArray(pEmbedding)) return null;
               return {
                 id: plain.id,
@@ -249,7 +273,8 @@ const getSmartRecommendations = async (productId, limit = 6) => {
         const productMap = new Map();
         products.forEach((p) => {
           const plain = p.get({ plain: true });
-          const primary = plain.images?.find((img) => img.isPrimary) || plain.images?.[0];
+          const primary =
+            plain.images?.find((img) => img.isPrimary) || plain.images?.[0];
           productMap.set(plain.id, {
             id: plain.id,
             name: plain.name,
@@ -263,7 +288,9 @@ const getSmartRecommendations = async (productId, limit = 6) => {
         boughtTogether = frequentProductData
           .map((item) => {
             const productInfo = productMap.get(item.productId);
-            return productInfo ? { ...productInfo, reason: "Thường mua cùng" } : null;
+            return productInfo
+              ? { ...productInfo, reason: "Thường mua cùng" }
+              : null;
           })
           .filter(Boolean);
       }
@@ -306,7 +333,8 @@ const getSmartRecommendations = async (productId, limit = 6) => {
 
       fallback.forEach((p) => {
         const plain = p.get({ plain: true });
-        const primary = plain.images?.find((img) => img.isPrimary) || plain.images?.[0];
+        const primary =
+          plain.images?.find((img) => img.isPrimary) || plain.images?.[0];
         uniqueResults.push({
           id: plain.id,
           name: plain.name,
@@ -340,7 +368,22 @@ const getPersonalizedRecommendations = async (userId, limit = 6) => {
       const trending = await db.Product.findAll({
         where: { isActive: true },
         attributes: [
-          "id", "name", "slug", "sku", "basePrice", "discount", "totalStock", "hasVariants", "sold", "isFlashSale", "flashSalePrice", "flashSaleStart", "flashSaleEnd", "isActive", "categoryId", "brandId",
+          "id",
+          "name",
+          "slug",
+          "sku",
+          "basePrice",
+          "discount",
+          "totalStock",
+          "hasVariants",
+          "sold",
+          "isFlashSale",
+          "flashSalePrice",
+          "flashSaleStart",
+          "flashSaleEnd",
+          "isActive",
+          "categoryId",
+          "brandId",
           [
             db.sequelize.literal(`(
               SELECT COALESCE(ROUND(AVG(rating), 1), 5.0)
@@ -360,18 +403,25 @@ const getPersonalizedRecommendations = async (userId, limit = 6) => {
         ],
         order: [["sold", "DESC"]],
         limit,
-        include: [{ model: db.ProductImage, as: "images", where: { isPrimary: true }, required: false }],
+        include: [
+          {
+            model: db.ProductImage,
+            as: "images",
+            where: { isPrimary: true },
+            required: false,
+          },
+        ],
       });
       const result = {
         errCode: 0,
-        products: trending.map(p => {
+        products: trending.map((p) => {
           const plain = p.get({ plain: true });
           return {
             ...applyFlashSaleToProduct(plain),
             image: plain.images?.[0]?.imageUrl || null,
-            reason: "Xu hướng"
+            reason: "Xu hướng",
           };
-        })
+        }),
       };
       await setCache(cacheKey, result, 3600); // 1 hour for guests
       return result;
@@ -381,7 +431,13 @@ const getPersonalizedRecommendations = async (userId, limit = 6) => {
     const [orders, wishlist] = await Promise.all([
       db.Order.findAll({
         where: { userId },
-        include: [{ model: db.OrderItem, as: "orderItems", include: [{ model: db.Product, as: "product" }] }],
+        include: [
+          {
+            model: db.OrderItem,
+            as: "orderItems",
+            include: [{ model: db.Product, as: "product" }],
+          },
+        ],
       }),
       db.Wishlist.findAll({
         where: { userId },
@@ -390,8 +446,14 @@ const getPersonalizedRecommendations = async (userId, limit = 6) => {
     ]);
 
     const historyProducts = [];
-    orders.forEach(o => o.orderItems.forEach(item => { if (item.product) historyProducts.push(item.product); }));
-    wishlist.forEach(w => { if (w.product) historyProducts.push(w.product); });
+    orders.forEach((o) =>
+      o.orderItems.forEach((item) => {
+        if (item.product) historyProducts.push(item.product);
+      }),
+    );
+    wishlist.forEach((w) => {
+      if (w.product) historyProducts.push(w.product);
+    });
 
     if (historyProducts.length === 0) {
       // Fallback if no history
@@ -403,7 +465,9 @@ const getPersonalizedRecommendations = async (userId, limit = 6) => {
       .filter((p) => p.embedding)
       .map((p) => {
         try {
-          return typeof p.embedding === "string" ? JSON.parse(p.embedding) : p.embedding;
+          return typeof p.embedding === "string"
+            ? JSON.parse(p.embedding)
+            : p.embedding;
         } catch {
           return null;
         }
@@ -414,21 +478,39 @@ const getPersonalizedRecommendations = async (userId, limit = 6) => {
       return getPersonalizedRecommendations(null, limit);
     }
 
-    const userTasteVector = validEmbeddings[0].map((_, i) => 
-      validEmbeddings.reduce((acc, curr) => acc + curr[i], 0) / validEmbeddings.length
+    const userTasteVector = validEmbeddings[0].map(
+      (_, i) =>
+        validEmbeddings.reduce((acc, curr) => acc + curr[i], 0) /
+        validEmbeddings.length,
     );
 
     // 3. Find semantically similar products
     const allProducts = await db.Product.findAll({
       where: {
         isActive: true,
-        id: { [Op.notIn]: historyProducts.map(p => p.id) }, // Don't recommend what they already have/wishlisted
+        id: { [Op.notIn]: historyProducts.map((p) => p.id) }, // Don't recommend what they already have/wishlisted
         embedding: { [Op.ne]: null },
       },
       limit: 150,
       order: [["sold", "DESC"]],
       attributes: [
-        "id", "name", "slug", "sku", "basePrice", "discount", "totalStock", "hasVariants", "sold", "isFlashSale", "flashSalePrice", "flashSaleStart", "flashSaleEnd", "isActive", "categoryId", "brandId", "embedding",
+        "id",
+        "name",
+        "slug",
+        "sku",
+        "basePrice",
+        "discount",
+        "totalStock",
+        "hasVariants",
+        "sold",
+        "isFlashSale",
+        "flashSalePrice",
+        "flashSaleStart",
+        "flashSaleEnd",
+        "isActive",
+        "categoryId",
+        "brandId",
+        "embedding",
         [
           db.sequelize.literal(`(
             SELECT COALESCE(ROUND(AVG(rating), 1), 5.0)
@@ -446,27 +528,37 @@ const getPersonalizedRecommendations = async (userId, limit = 6) => {
           "reviewCount",
         ],
       ],
-      include: [{ model: db.ProductImage, as: "images", where: { isPrimary: true }, required: false }],
+      include: [
+        {
+          model: db.ProductImage,
+          as: "images",
+          where: { isPrimary: true },
+          required: false,
+        },
+      ],
     });
 
     const recommendations = allProducts
-      .map(p => {
+      .map((p) => {
         try {
           const plain = p.get({ plain: true });
-          const pEmbedding = typeof plain.embedding === "string" ? JSON.parse(plain.embedding) : plain.embedding;
+          const pEmbedding =
+            typeof plain.embedding === "string"
+              ? JSON.parse(plain.embedding)
+              : plain.embedding;
           if (!Array.isArray(pEmbedding)) return null;
           const similarity = cosineSimilarity(userTasteVector, pEmbedding);
           return {
             ...applyFlashSaleToProduct(plain),
             image: plain.images?.[0]?.imageUrl || null,
             similarity,
-            reason: "Dựa trên sở thích của bạn"
+            reason: "Dựa trên sở thích của bạn",
           };
         } catch {
           return null;
         }
       })
-      .filter(p => p && p.similarity > 0.6)
+      .filter((p) => p && p.similarity > 0.6)
       .sort((a, b) => b.similarity - a.similarity)
       .slice(0, limit);
 

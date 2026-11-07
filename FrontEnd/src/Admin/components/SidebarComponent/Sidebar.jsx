@@ -47,14 +47,14 @@ const MENU_SECTIONS = [
         subItems: [
           { to: "/admin/orders", label: "Tất cả đơn hàng" },
           {
-            to: "/admin/orders-return",
-            label: "Duyệt trả hàng",
-            badgeKey: "returnRequestedCount",
+            to: "/admin/orders?tab=cancel_requested",
+            label: "Duyệt hủy đơn",
+            badgeKey: "cancelRequestedCount",
           },
           {
-            to: "/admin/orders-cancel",
-            label: "Duyệt hủy hàng",
-            badgeKey: "cancelRequestedCount",
+            to: "/admin/orders?tab=return_requested",
+            label: "Duyệt trả hàng",
+            badgeKey: "returnRequestedCount",
           },
         ],
       },
@@ -113,6 +113,7 @@ const Sidebar = ({ collapsed, mobileOpen, onCloseMobile }) => {
 
   useEffect(() => {
     const fetchCounters = async () => {
+      if (typeof document !== "undefined" && document.hidden) return;
       try {
         const res = await getAdminCounters();
         if (res.errCode === 0) {
@@ -125,8 +126,15 @@ const Sidebar = ({ collapsed, mobileOpen, onCloseMobile }) => {
 
     if (user && user.role === "admin") {
       fetchCounters();
-      const interval = setInterval(fetchCounters, 30000);
-      return () => clearInterval(interval);
+      const interval = setInterval(fetchCounters, 40000);
+      const handleVisibilityChange = () => {
+        if (!document.hidden) fetchCounters();
+      };
+      document.addEventListener("visibilitychange", handleVisibilityChange);
+      return () => {
+        clearInterval(interval);
+        document.removeEventListener("visibilitychange", handleVisibilityChange);
+      };
     }
   }, [user]);
 
@@ -172,16 +180,21 @@ const Sidebar = ({ collapsed, mobileOpen, onCloseMobile }) => {
       </AnimatePresence>
 
       <aside
-        className={`fixed md:sticky top-0 left-0 h-screen bg-white dark:bg-dark-surface text-slate-600 dark:text-dark-text-secondary transition-all duration-300 ease-in-out z-50 flex flex-col border-r border-slate-200/80 dark:border-dark-border/80 ${
+        className={`fixed md:sticky top-0 left-0 h-screen bg-white/95 dark:bg-[#0f1523]/95 backdrop-blur-xl text-slate-600 dark:text-dark-text-secondary transition-all duration-300 ease-in-out z-50 flex flex-col border-r border-slate-200/80 dark:border-dark-border/80 ${
           mobileOpen
             ? "translate-x-0 w-72 shadow-2xl"
             : "-translate-x-full md:translate-x-0"
         } ${collapsed ? "md:w-20" : "md:w-64"}`}
       >
         {/* Brand Logo Header */}
-        <div className="h-16 flex items-center justify-between px-4 border-b border-slate-100 dark:border-dark-border/60 shrink-0 bg-white/50 dark:bg-dark-surface/50 backdrop-blur-sm">
-          <Link to="/admin/dashboard" className="flex items-center w-full min-w-0">
+        <div className="h-16 flex items-center justify-between px-4 border-b border-slate-100 dark:border-dark-border/60 shrink-0 bg-white/40 dark:bg-dark-surface/40 backdrop-blur-sm">
+          <Link to="/admin/dashboard" className="flex items-center gap-2 w-full min-w-0">
             <Logo showText={mobileOpen || !collapsed} size="sm" />
+            {(mobileOpen || !collapsed) && (
+              <span className="text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-md bg-primary/10 text-primary dark:bg-primary/20 dark:text-blue-400 border border-primary/20">
+                PRO
+              </span>
+            )}
           </Link>
           {mobileOpen && (
             <button
@@ -201,7 +214,7 @@ const Sidebar = ({ collapsed, mobileOpen, onCloseMobile }) => {
             <div key={sIdx} className="space-y-1">
               {(mobileOpen || !collapsed) && (
                 <div className="px-3 mb-1.5 flex items-center justify-between">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary/50">
+                  <span className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">
                     {section.title}
                   </span>
                 </div>
@@ -214,8 +227,11 @@ const Sidebar = ({ collapsed, mobileOpen, onCloseMobile }) => {
                 // Sub-menu logic
                 if (item.subItems) {
                   const isExpanded = expandedMenus.includes(item.label);
-                  const isSubActive = item.subItems.some(
-                    (sub) => location.pathname === sub.to
+                  const currentFullPath = location.pathname + location.search;
+                  const isSubActive = item.subItems.some((sub) =>
+                    sub.to.includes("?")
+                      ? currentFullPath === sub.to
+                      : location.pathname === sub.to && !location.search.includes("tab=")
                   );
                   const totalBadges =
                     counters.cancelRequestedCount + counters.returnRequestedCount;
@@ -287,7 +303,9 @@ const Sidebar = ({ collapsed, mobileOpen, onCloseMobile }) => {
                                 const badgeCount = sub.badgeKey
                                   ? counters[sub.badgeKey]
                                   : 0;
-                                const isItemActive = location.pathname === sub.to;
+                                const isItemActive = sub.to.includes("?")
+                                  ? currentFullPath === sub.to
+                                  : location.pathname === sub.to && !location.search.includes("tab=");
                                 return (
                                   <Link
                                     key={sub.to}
@@ -358,27 +376,30 @@ const Sidebar = ({ collapsed, mobileOpen, onCloseMobile }) => {
         </nav>
 
         {/* User Info & Quick Logout Footer */}
-        <div className="p-3 border-t border-slate-200/80 dark:border-dark-border/80 shrink-0 bg-slate-50/50 dark:bg-dark-bg/30">
+        <div className="p-3 border-t border-slate-200/80 dark:border-dark-border/80 shrink-0 bg-slate-50/60 dark:bg-dark-bg/40">
           {(mobileOpen || !collapsed) && (
-            <div className="flex items-center gap-2.5 p-2 mb-2 rounded-lg bg-white dark:bg-dark-surface border border-slate-200/80 dark:border-dark-border/80 shadow-2xs">
-              {user.avatar ? (
-                <img
-                  src={user.avatar}
-                  alt={user.username}
-                  className="size-8 rounded-lg object-cover ring-1 ring-primary/30 shrink-0"
-                />
-              ) : (
-                <div className="size-8 rounded-lg bg-primary/10 text-primary font-mono font-black flex items-center justify-center text-xs shrink-0">
-                  {user.username?.charAt(0).toUpperCase() || "A"}
-                </div>
-              )}
+            <div className="flex items-center gap-2.5 p-2.5 mb-2 rounded-xl bg-white dark:bg-dark-surface border border-slate-200/80 dark:border-dark-border/80 shadow-2xs">
+              <div className="relative shrink-0">
+                {user.avatar ? (
+                  <img
+                    src={user.avatar}
+                    alt={user.username}
+                    className="size-8 rounded-lg object-cover ring-1 ring-primary/30"
+                  />
+                ) : (
+                  <div className="size-8 rounded-lg bg-primary/10 text-primary font-mono font-black flex items-center justify-center text-xs">
+                    {user.username?.charAt(0).toUpperCase() || "A"}
+                  </div>
+                )}
+                <span className="absolute -bottom-0.5 -right-0.5 size-2.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-dark-surface" />
+              </div>
               <div className="min-w-0 flex-1">
                 <p className="text-xs font-bold text-slate-900 dark:text-white truncate">
                   {user.username || "Admin"}
                 </p>
-                <div className="flex items-center gap-1 mt-0.5">
-                  <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded bg-lime-50 dark:bg-lime-950/40 text-lime-700 dark:text-lime-400 text-[9px] font-mono font-bold uppercase tracking-wider">
-                    <span className="size-1 rounded-full bg-lime-500"></span> {user.role || "ADMIN"}
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 text-[9px] font-mono font-bold uppercase tracking-wider">
+                    ONLINE // {user.role || "ADMIN"}
                   </span>
                 </div>
               </div>

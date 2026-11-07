@@ -76,19 +76,24 @@ const NotificationBell = () => {
 
     const socket = initUserSocket(user);
 
-    const handleNewOrder = () => {
+    const handleNewOrder = (data) => {
       fetchNotifications();
-      showInfoToast("🔔 Bạn có đơn hàng mới từ khách hàng!");
+      const msg = data?.message || "Bạn có đơn hàng mới từ khách hàng!";
+      showInfoToast(`🔔 ${msg}`);
     };
 
-    const handleOrderStatusUpdated = () => {
+    const handleOrderStatusUpdated = (data) => {
       fetchNotifications();
+      if (data?.message) {
+        showInfoToast(`🔔 ${data.message}`);
+      }
     };
 
     const handleNotification = (data) => {
       fetchNotifications();
       if (data?.title) {
-        showInfoToast(`🔔 ${data.title}`);
+        const text = data.message ? `: ${data.message}` : "";
+        showInfoToast(`🔔 ${data.title}${text}`);
       }
     };
 

@@ -31,7 +31,7 @@ const ProductFilterBar = ({
             <input
               type="text"
               placeholder="Tìm kiếm sản phẩm theo Tên, SKU..."
-              className="input-modern h-11 pl-11 bg-white dark:bg-dark-bg border-slate-200 dark:border-dark-border focus:ring-indigo-500 font-medium w-full text-slate-900 dark:text-dark-text-primary text-xs"
+              className="input-modern h-11 pl-11 bg-white dark:bg-dark-bg border-slate-200 dark:border-dark-border focus:ring-primary font-medium w-full text-slate-900 dark:text-dark-text-primary text-xs"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -49,7 +49,7 @@ const ProductFilterBar = ({
             <button
               type="button"
               onClick={() => fetchProducts(1)}
-              className="size-11 shrink-0 bg-indigo-600 text-white rounded-2xl flex items-center justify-center hover:bg-indigo-700 transition-all shadow-md shadow-indigo-200 dark:shadow-none cursor-pointer"
+              className="size-11 shrink-0 bg-primary text-white rounded-2xl flex items-center justify-center hover:bg-primary-hover transition-all shadow-md shadow-primary/20 dark:shadow-none cursor-pointer"
               title="Làm mới dữ liệu"
             >
               <FiRefreshCw className={loadingTable ? "animate-spin" : ""} />
@@ -64,7 +64,7 @@ const ProductFilterBar = ({
             options={categories}
             selected={filterCategories}
             onToggle={onToggleCategory}
-            icon={<FiTag className="text-indigo-400" />}
+            icon={<FiTag className="text-primary dark:text-blue-400" />}
           />
 
           <MultiSelectDropdown
@@ -72,7 +72,7 @@ const ProductFilterBar = ({
             options={brands}
             selected={filterBrands}
             onToggle={onToggleBrand}
-            icon={<FiBox className="text-indigo-400" />}
+            icon={<FiBox className="text-primary dark:text-blue-400" />}
           />
 
           {attributes.slice(0, 3).map((attr) => (

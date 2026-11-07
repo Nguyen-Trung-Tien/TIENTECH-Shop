@@ -39,6 +39,47 @@ const VIETNAMESE_FALLBACK_MESSAGES = {
   500: "Lỗi máy chủ nội bộ. Đội ngũ kỹ thuật đang xử lý.",
 };
 
+const SENSITIVE_KEYS = new Set([
+  "password",
+  "refreshTokenHash",
+  "resetToken",
+  "verificationToken",
+  "_previousDataValues",
+  "isNewRecord",
+]);
+
+/**
+ * Deep sanitization to prevent accidental leakage of sensitive fields or ORM internals
+ */
+const sanitizeOutputData = (data, depth = 0) => {
+  if (data === null || data === undefined || depth > 8) return data;
+
+  if (typeof data.toJSON === "function") {
+    data = data.toJSON();
+  }
+
+  if (Array.isArray(data)) {
+    return data.map((item) => sanitizeOutputData(item, depth + 1));
+  }
+
+  if (
+    typeof data === "object" &&
+    !(data instanceof Date) &&
+    !(data instanceof RegExp) &&
+    !Buffer.isBuffer(data)
+  ) {
+    const sanitized = {};
+    for (const [key, value] of Object.entries(data)) {
+      if (!SENSITIVE_KEYS.has(key)) {
+        sanitized[key] = sanitizeOutputData(value, depth + 1);
+      }
+    }
+    return sanitized;
+  }
+
+  return data;
+};
+
 const handleError = (res, e, method = "API") => {
   console.error(`[Controller Error] in ${method}:`, e);
   return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
@@ -52,14 +93,19 @@ const handleError = (res, e, method = "API") => {
 };
 
 const handleResponse = (res, result, successStatus = HTTP_STATUS.OK) => {
-  if (result.errCode === 0) {
+  const sanitizedResult = { ...result };
+  if (sanitizedResult.data !== undefined) {
+    sanitizedResult.data = sanitizeOutputData(sanitizedResult.data);
+  }
+
+  if (sanitizedResult.errCode === 0) {
     const responsePayload = {
       status: successStatus === 201 ? "CREATED" : "SUCCESS",
       statusCode: successStatus,
       errCode: 0,
-      errMessage: result.errMessage || VIETNAMESE_FALLBACK_MESSAGES[successStatus] || "Thao tác thành công!",
-      message: result.message || (successStatus === 201 ? "Created" : "OK"),
-      ...result,
+      errMessage: sanitizedResult.errMessage || VIETNAMESE_FALLBACK_MESSAGES[successStatus] || "Thao tác thành công!",
+      message: sanitizedResult.message || (successStatus === 201 ? "Created" : "OK"),
+      ...sanitizedResult,
     };
     return res.status(successStatus).json(responsePayload);
   }
@@ -183,4 +229,5 @@ module.exports = {
   handleError,
   handleResponse,
   handleFileUpload,
+  sanitizeOutputData,
 };

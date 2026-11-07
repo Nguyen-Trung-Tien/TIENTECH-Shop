@@ -313,7 +313,7 @@ const ProductManage = () => {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6">
           <div>
             <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-slate-900 dark:text-dark-text-primary tracking-tight flex items-center gap-2.5 sm:gap-3">
-              <div className="size-10 sm:size-12 rounded-2xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-200 dark:shadow-none shrink-0">
+              <div className="size-10 sm:size-12 rounded-2xl bg-primary flex items-center justify-center text-white shadow-lg shadow-primary/20 dark:shadow-none shrink-0">
                 <FiBox className="text-xl sm:text-2xl" />
               </div>
               <span className="truncate">Quản lý Sản phẩm Kho hàng</span>
@@ -328,10 +328,10 @@ const ProductManage = () => {
               type="button"
               onClick={handleSyncAI}
               disabled={isSyncingAI}
-              className="flex items-center justify-center gap-2 px-5 h-12 rounded-2xl bg-white dark:bg-dark-surface hover:bg-slate-50 dark:hover:bg-dark-bg border border-slate-200 dark:border-dark-border text-slate-600 dark:text-dark-text-secondary hover:text-indigo-600 font-black uppercase tracking-wider text-[11px] transition-all disabled:opacity-50 cursor-pointer shadow-sm"
+              className="flex items-center justify-center gap-2 px-5 h-12 rounded-2xl bg-white dark:bg-dark-surface hover:bg-slate-50 dark:hover:bg-dark-bg border border-slate-200 dark:border-dark-border text-slate-600 dark:text-dark-text-secondary hover:text-primary font-black uppercase tracking-wider text-[11px] transition-all disabled:opacity-50 cursor-pointer shadow-sm"
             >
               <FiCpu
-                className={isSyncingAI ? "animate-spin text-indigo-600" : ""}
+                className={isSyncingAI ? "animate-spin text-primary" : ""}
               />
               {isSyncingAI ? "Đang đồng bộ..." : "Đồng bộ AI Vector"}
             </button>
@@ -339,7 +339,7 @@ const ProductManage = () => {
             <button
               type="button"
               onClick={() => handleShowModal()}
-              className="flex items-center justify-center gap-2 px-6 h-12 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-black uppercase tracking-wider text-xs shadow-lg shadow-indigo-200 dark:shadow-none active:scale-95 transition-all cursor-pointer group"
+              className="flex items-center justify-center gap-2 px-6 h-12 rounded-2xl bg-primary hover:bg-primary-hover text-white font-black uppercase tracking-wider text-xs shadow-lg shadow-primary/20 dark:shadow-none active:scale-95 transition-all cursor-pointer group"
             >
               <FiPlus className="text-xl group-hover:rotate-90 transition-transform duration-300" />
               <span>Đăng sản phẩm mới</span>

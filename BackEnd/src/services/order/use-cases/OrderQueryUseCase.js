@@ -140,6 +140,7 @@ const getAllOrders = async (params = {}, ...legacyArgs) => {
         {
           model: db.Payment,
           as: "payment",
+          attributes: ["id", "method", "status", "amount", "transactionId", "paymentDate"],
         },
       ],
       distinct: true,
@@ -200,6 +201,7 @@ const getOrderById = async (id, currentUser = null) => {
         {
           model: db.Payment,
           as: "payment",
+          attributes: ["id", "method", "status", "amount", "transactionId", "paymentDate"],
         },
       ],
     });
@@ -271,6 +273,7 @@ const getOrdersByUserId = async (userId, page = 1, limit = 10, status = "all") =
         {
           model: db.Payment,
           as: "payment",
+          attributes: ["id", "method", "status", "amount", "transactionId", "paymentDate"],
         },
       ],
       distinct: true,
@@ -321,6 +324,7 @@ const getActiveOrdersByUserId = async (userId, page = 1, limit = 10) => {
         {
           model: db.Payment,
           as: "payment",
+          attributes: ["id", "method", "status", "amount", "transactionId", "paymentDate"],
         },
       ],
       distinct: true,

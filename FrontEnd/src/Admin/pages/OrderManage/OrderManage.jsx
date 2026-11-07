@@ -38,6 +38,7 @@ import { statusMap } from "../../../utils/StatusMap";
 import { StatusBadge } from "../../../utils/StatusBadge";
 import AppPagination from "../../../components/Pagination/Pagination";
 import { ConfirmModal } from "../../../components/UI/Modal";
+import AdminOrderDetailModal from "./AdminOrderDetailModal";
 
 const TABS = [
   { id: "all", label: "Tất cả" },
@@ -47,8 +48,9 @@ const TABS = [
   { id: "shipped", label: "Đang giao" },
   { id: "delivered", label: "Đã giao" },
   { id: "completed", label: "Hoàn tất" },
+  { id: "cancel_requested", label: "Duyệt hủy đơn" },
+  { id: "return_requested", label: "Duyệt trả hàng" },
   { id: "cancelled", label: "Đã hủy" },
-  { id: "cancel_requested", label: "Yêu cầu hủy" },
 ];
 
 const STATUS_FLOW = [
@@ -213,8 +215,10 @@ const OrderManage = () => {
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const initialSearch = queryParams.get("search") || "";
+  const initialTab = queryParams.get("tab") || "all";
 
   const [orders, setOrders] = useState([]);
+  const [selectedDetailOrder, setSelectedDetailOrder] = useState(null);
   const [confirmModal, setConfirmModal] = useState({
     show: false,
     type: "delete",
@@ -237,19 +241,31 @@ const OrderManage = () => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [searchTerm, setSearchTerm] = useState(initialSearch);
-  const [activeTab, setActiveTab] = useState("all");
+  const [activeTab, setActiveTab] = useState(initialTab);
   const limit = 10;
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const tabFromUrl = params.get("tab");
+    if (tabFromUrl && tabFromUrl !== activeTab) {
+      setActiveTab(tabFromUrl);
+    }
+  }, [location.search, activeTab]);
 
   const fetchOrders = useCallback(
     async (currentPage = 1, search = "", status = "all") => {
       setLoading(true);
       try {
         const filterStatus = status === "all" ? "" : status;
+        const isReturn = status === "return_requested";
+        const isCancelRequested = status === "cancel_requested";
         const res = await getAllOrders(
           currentPage,
           limit,
           search.trim(),
-          filterStatus,
+          isReturn || isCancelRequested ? "" : filterStatus,
+          isReturn,
+          isCancelRequested,
         );
         if (res?.errCode === 0) {
           setOrders(res.data || []);
@@ -523,7 +539,7 @@ const OrderManage = () => {
                       <div className="flex flex-col">
                         <span
                           className="font-black text-slate-900 dark:text-white uppercase tracking-wider text-xs hover:text-primary transition-colors cursor-pointer"
-                          onClick={() => navigate(`/admin/order/${order.id}`)}
+                          onClick={() => setSelectedDetailOrder(order)}
                         >
                           #{order.orderCode}
                         </span>
@@ -598,7 +614,7 @@ const OrderManage = () => {
                     <td className="px-5 py-4 text-right">
                       <div className="flex items-center justify-end gap-1.5">
                         <button
-                          onClick={() => navigate(`/admin/order/${order.id}`)}
+                          onClick={() => setSelectedDetailOrder(order)}
                           title="Chi tiết đơn hàng"
                           className="size-8 rounded-xl bg-slate-100 dark:bg-dark-bg text-slate-600 dark:text-dark-text-secondary hover:bg-primary hover:text-white transition-all flex items-center justify-center cursor-pointer"
                         >
@@ -738,7 +754,7 @@ const OrderManage = () => {
                 {/* Mobile Card Action Buttons */}
                 <div className="flex items-center justify-end gap-1.5 sm:gap-2 pt-1 border-t border-slate-100 dark:border-dark-border/60 flex-wrap">
                   <button
-                    onClick={() => navigate(`/admin/order/${order.id}`)}
+                    onClick={() => setSelectedDetailOrder(order)}
                     className="px-3 py-1.5 bg-slate-100 dark:bg-dark-bg text-slate-600 dark:text-dark-text-secondary rounded-lg text-[10px] font-bold flex items-center gap-1 cursor-pointer"
                   >
                     <FiEye /> Chi tiết
@@ -1065,6 +1081,14 @@ const OrderManage = () => {
         icon={FiTrash2}
         iconClassName="bg-rose-50 text-rose-500"
         loading={isDeleting}
+      />
+
+      {/* Admin Order Detail Modal */}
+      <AdminOrderDetailModal
+        order={selectedDetailOrder}
+        isOpen={Boolean(selectedDetailOrder)}
+        onClose={() => setSelectedDetailOrder(null)}
+        onOrderUpdated={() => fetchOrders(page, searchTerm, activeTab)}
       />
     </div>
   );

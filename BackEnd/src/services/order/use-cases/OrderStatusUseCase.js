@@ -221,8 +221,17 @@ const updateOrderStatus = async (
           await NotificationService.createNotification({
             userId: order.userId,
             title: "Yêu cầu hủy đơn hàng đã gửi",
-            message: `Yêu cầu hủy đơn hàng ${order.orderCode} đã được gửi đến Admin để chờ xử lý.`,
+            message: `Yêu cầu hủy đơn hàng #${order.orderCode} đã được gửi đến Admin để chờ xử lý.`,
             type: "order",
+            link: `/orders-detail/${order.id}`,
+          });
+
+          await NotificationService.createNotification({
+            userId: null,
+            title: "Yêu cầu hủy đơn hàng mới!",
+            message: `Khách hàng yêu cầu hủy đơn hàng #${order.orderCode}.${cancelReason ? ` Lý do: ${cancelReason}` : ""}`,
+            type: "order",
+            link: "/admin/orders?tab=cancel_requested",
           });
 
           return {

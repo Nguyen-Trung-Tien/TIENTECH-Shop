@@ -142,57 +142,95 @@ const getDashboardData = async (period) => {
       users: calculateChange(usersThisMonth, usersLastMonth),
     };
 
-    // 5. Thống kê doanh thu theo chu kỳ (Tuần, Tháng, Năm)
+    // 5. Thống kê doanh thu theo chu kỳ (Tuần, Tháng, Năm) bằng SQL Aggregation
     const twelveMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 11, 1);
+    const thirtyDaysAgo = new Date(now);
+    thirtyDaysAgo.setDate(now.getDate() - 29);
+    thirtyDaysAgo.setHours(0, 0, 0, 0);
 
-    const recentOrders = await db.Order.findAll({
-      where: {
-        createdAt: { [Op.gte]: twelveMonthsAgo },
-        [Op.or]: [{ paymentStatus: "paid" }, { status: "delivered" }],
-      },
-      attributes: ["totalPrice", "createdAt"],
-      raw: true,
+    const [dailyOrders, monthlyOrders] = await Promise.all([
+      db.Order.findAll({
+        where: {
+          createdAt: { [Op.gte]: thirtyDaysAgo },
+          [Op.or]: [{ paymentStatus: "paid" }, { status: "delivered" }],
+        },
+        attributes: [
+          [db.sequelize.fn("DATE", db.sequelize.col("createdAt")), "dateKey"],
+          [db.sequelize.fn("SUM", db.sequelize.col("totalPrice")), "totalRevenue"],
+        ],
+        group: [db.sequelize.fn("DATE", db.sequelize.col("createdAt"))],
+        raw: true,
+      }),
+      db.Order.findAll({
+        where: {
+          createdAt: { [Op.gte]: twelveMonthsAgo },
+          [Op.or]: [{ paymentStatus: "paid" }, { status: "delivered" }],
+        },
+        attributes: [
+          [
+            db.sequelize.fn("DATE_FORMAT", db.sequelize.col("createdAt"), "%Y-%m"),
+            "monthKey",
+          ],
+          [
+            db.sequelize.fn("SUM", db.sequelize.col("totalPrice")),
+            "totalRevenue",
+          ],
+        ],
+        group: [
+          db.sequelize.fn("DATE_FORMAT", db.sequelize.col("createdAt"), "%Y-%m"),
+        ],
+        raw: true,
+      }),
+    ]);
+
+    const dailyMap = new Map();
+    dailyOrders.forEach((row) => {
+      if (row.dateKey) {
+        const d = new Date(row.dateKey);
+        dailyMap.set(d.toLocaleDateString("vi-VN"), Number(row.totalRevenue) || 0);
+      }
     });
 
-    const groupByDate = (orders, days) => {
+    const monthlyMap = new Map();
+    monthlyOrders.forEach((row) => {
+      if (row.monthKey) {
+        monthlyMap.set(row.monthKey, Number(row.totalRevenue) || 0);
+      }
+    });
+
+    const groupByDate = (days) => {
       const result = [];
       for (let i = days; i >= 0; i--) {
         const d = new Date(now);
         d.setDate(d.getDate() - i);
         const dateString = d.toLocaleDateString("vi-VN");
-        const revenue = orders
-          .filter(
-            (o) =>
-              new Date(o.createdAt).toLocaleDateString("vi-VN") === dateString,
-          )
-          .reduce((sum, o) => sum + Number(o.totalPrice), 0);
-        result.push({ date: dateString, revenue });
+        result.push({
+          date: dateString,
+          revenue: dailyMap.get(dateString) || 0,
+        });
       }
       return result;
     };
 
-    const groupByMonth = (orders) => {
+    const groupByMonth = () => {
       const result = [];
       for (let i = 11; i >= 0; i--) {
         const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-        const monthYear = `${d.getMonth() + 1}/${d.getFullYear()}`;
-        const revenue = orders
-          .filter((o) => {
-            const oDate = new Date(o.createdAt);
-            return (
-              oDate.getMonth() === d.getMonth() &&
-              oDate.getFullYear() === d.getFullYear()
-            );
-          })
-          .reduce((sum, o) => sum + Number(o.totalPrice), 0);
-        result.push({ date: monthYear, revenue });
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, "0");
+        const monthKey = `${year}-${month}`;
+        const label = `${d.getMonth() + 1}/${year}`;
+        result.push({
+          date: label,
+          revenue: monthlyMap.get(monthKey) || 0,
+        });
       }
       return result;
     };
 
-    const revenueByWeek = groupByDate(recentOrders, 6);
-    const revenueByMonth = groupByDate(recentOrders, 29);
-    const revenueByYear = groupByMonth(recentOrders);
+    const revenueByWeek = groupByDate(6);
+    const revenueByMonth = groupByDate(29);
+    const revenueByYear = groupByMonth();
 
     // 6. Top selling products
     const topProductsRaw = await db.OrderItem.findAll({
@@ -224,6 +262,23 @@ const getDashboardData = async (period) => {
       distinct: true,
     });
 
+    const lowStockCount = await db.Product.count({
+      where: {
+        isActive: true,
+        totalStock: { [Op.lte]: 5 },
+      },
+    });
+
+    const lowStockProducts = await db.Product.findAll({
+      where: {
+        isActive: true,
+        totalStock: { [Op.lte]: 5 },
+      },
+      attributes: ["id", "name", "sku", "totalStock", "basePrice"],
+      limit: 5,
+      raw: true,
+    });
+
     const result = {
       totalProducts,
       todayOrders,
@@ -240,6 +295,8 @@ const getDashboardData = async (period) => {
       topProducts: topProductsRaw,
       cancelRequestedCount,
       returnRequestedCount,
+      lowStockCount,
+      lowStockProducts,
     };
 
     await setCache(cacheKey, result, 300);
@@ -251,6 +308,10 @@ const getDashboardData = async (period) => {
 };
 
 const getAdminCounters = async () => {
+  const cacheKey = "admin_counters";
+  const cached = await getCache(cacheKey);
+  if (cached) return cached;
+
   try {
     const cancelRequestedCount = await db.Order.count({
       where: { status: "cancel_requested" },
@@ -268,13 +329,16 @@ const getAdminCounters = async () => {
       distinct: true,
     });
 
-    return {
+    const result = {
       errCode: 0,
       data: {
         cancelRequestedCount,
         returnRequestedCount,
       },
     };
+
+    await setCache(cacheKey, result, 15);
+    return result;
   } catch (error) {
     console.error("Error from AdminService.getAdminCounters:", error);
     throw error;

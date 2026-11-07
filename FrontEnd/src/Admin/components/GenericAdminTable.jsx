@@ -158,10 +158,7 @@ const GenericAdminTable = ({
                 </tr>
               ) : (
                 safeData.map((item, rowIdx) => (
-                  <Motion.tr
-                    initial={{ opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: rowIdx * 0.02 }}
+                  <tr
                     key={item.id || rowIdx}
                     className="hover:bg-slate-50/60 dark:hover:bg-slate-900/40 transition-colors group"
                   >
@@ -205,7 +202,7 @@ const GenericAdminTable = ({
                         </div>
                       )}
                     </td>
-                  </Motion.tr>
+                  </tr>
                 ))
               )}
             </tbody>

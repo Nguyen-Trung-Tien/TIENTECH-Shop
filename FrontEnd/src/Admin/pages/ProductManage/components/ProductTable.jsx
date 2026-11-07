@@ -179,7 +179,7 @@ const ProductTable = ({
                       <button
                         type="button"
                         onClick={() => handleShowModal(p)}
-                        className="size-9 rounded-xl text-slate-400 hover:bg-indigo-50 hover:text-indigo-600 transition-all flex items-center justify-center cursor-pointer active:scale-95"
+                        className="size-9 rounded-xl text-slate-400 hover:bg-primary/10 hover:text-primary transition-all flex items-center justify-center cursor-pointer active:scale-95"
                         title="Chỉnh sửa sản phẩm"
                         aria-label="Chỉnh sửa sản phẩm"
                       >
@@ -331,7 +331,7 @@ const ProductTable = ({
                   <button
                     type="button"
                     onClick={() => handleShowModal(p)}
-                    className="flex-1 py-2 px-3 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer active:scale-95"
+                    className="flex-1 py-2 px-3 bg-primary/10 hover:bg-primary/20 text-primary dark:text-blue-400 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer active:scale-95"
                   >
                     <FiEdit2 size={13} /> Chỉnh sửa
                   </button>

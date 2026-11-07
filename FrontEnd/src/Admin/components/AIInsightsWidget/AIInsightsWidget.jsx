@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import {
   FiCpu,
   FiTrendingUp,
@@ -157,13 +158,13 @@ const AIInsightsWidget = () => {
                       </div>
                     </div>
 
-                    <a
-                      href="/admin/vouchers"
+                    <Link
+                      to="/admin/vouchers"
                       onClick={() => toast.success("AI đã đề xuất cấu hình Flash Sale 15% cho bạn tại trang Vouchers!")}
-                      className="w-full md:w-auto text-center justify-center px-5 py-2.5 text-xs font-black uppercase tracking-wider text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 rounded-xl shadow-md shrink-0 flex items-center gap-2 transition cursor-pointer"
+                      className="w-full md:w-auto text-center justify-center px-5 py-2.5 text-xs font-black uppercase tracking-wider text-white bg-gradient-to-r from-primary to-blue-600 hover:from-primary-hover hover:to-blue-700 rounded-xl shadow-md shrink-0 flex items-center gap-2 transition cursor-pointer"
                     >
                       <FiCpu className="w-4 h-4 animate-spin" /> 1-Click Tạo Flash Sale AI
-                    </a>
+                    </Link>
                   </div>
                 </div>
               </div>
