@@ -53,26 +53,30 @@ const ProductDescriptionTabs = ({
   const tabs = [
     {
       id: "description",
-      label: "Đặc Điểm & Mô Tả",
-      icon: <FiBookOpen className="size-4" />,
+      label: "Mô Tả",
+      fullLabel: "Đặc Điểm & Mô Tả",
+      icon: <FiBookOpen className="size-4 shrink-0" />,
       badge: "Chi tiết",
     },
     {
       id: "specs",
-      label: "Thông Số Kỹ Thuật",
-      icon: <FiCpu className="size-4" />,
+      label: "Thông Số",
+      fullLabel: "Thông Số Kỹ Thuật",
+      icon: <FiCpu className="size-4 shrink-0" />,
       badge: `${mergedSpecs.length} mục`,
     },
     {
       id: "fengshui",
-      label: "Phong Thuỷ & Bàn Làm Việc",
-      icon: <FiCompass className="size-4" />,
+      label: "Phong Thuỷ",
+      fullLabel: "Phong Thuỷ Số",
+      icon: <FiCompass className="size-4 shrink-0" />,
       badge: "Vượng khí",
     },
     {
       id: "warranty",
-      label: "Chính Sách & Bảo Hành",
-      icon: <FiShield className="size-4" />,
+      label: "Chính Sách",
+      fullLabel: "Chính Sách & Bảo Hành",
+      icon: <FiShield className="size-4 shrink-0" />,
       badge: "VIP 24T",
     },
   ];
@@ -85,37 +89,40 @@ const ProductDescriptionTabs = ({
 
   return (
     <div className="bg-white dark:bg-dark-surface border border-slate-200/80 dark:border-dark-border rounded-3xl shadow-sm overflow-hidden">
-      {/* Tab Navigation Header */}
-      <div className="flex items-center gap-2 overflow-x-auto p-2 sm:p-3 border-b border-slate-100 dark:border-dark-border bg-slate-50/60 dark:bg-dark-card/50 scrollbar-none">
-        {tabs.map((tab) => {
-          const isActive = activeTab === tab.id;
-          return (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer shrink-0 ${
-                isActive
-                  ? "bg-primary text-white shadow-md shadow-primary/25"
-                  : "text-slate-600 dark:text-dark-text-secondary hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-dark-surface"
-              }`}
-            >
-              {tab.icon}
-              <span>{tab.label}</span>
-              {tab.badge && (
-                <span
-                  className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${
-                    isActive
-                      ? "bg-white/20 text-white"
-                      : "bg-slate-200/70 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
-                  }`}
-                >
-                  {tab.badge}
-                </span>
-              )}
-            </button>
-          );
-        })}
+      {/* Tab Navigation Header - Cân đối tuyệt đối 4 cột, triệt tiêu lỗi bị thọt */}
+      <div className="p-2 sm:p-2.5 border-b border-slate-100 dark:border-dark-border bg-slate-50/70 dark:bg-dark-card/50">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+          {tabs.map((tab) => {
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setActiveTab(tab.id)}
+                className={`w-full h-11 sm:h-12 flex items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-3 rounded-2xl text-xs sm:text-sm font-bold transition-all cursor-pointer min-w-0 ${
+                  isActive
+                    ? "bg-primary text-white shadow-md shadow-primary/25 ring-2 ring-primary/20"
+                    : "text-slate-600 dark:text-dark-text-secondary hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-dark-surface bg-white/60 dark:bg-dark-surface/60 border border-slate-200/60 dark:border-dark-border/60"
+                }`}
+              >
+                {tab.icon}
+                <span className="truncate hidden sm:inline">{tab.fullLabel}</span>
+                <span className="truncate sm:hidden">{tab.label}</span>
+                {tab.badge && (
+                  <span
+                    className={`hidden xl:inline-block text-[10px] px-1.5 py-0.5 rounded-full font-semibold ${
+                      isActive
+                        ? "bg-white/20 text-white"
+                        : "bg-slate-200/80 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
+                    }`}
+                  >
+                    {tab.badge}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Tab Content Body */}
@@ -498,6 +505,15 @@ const ProductDescriptionTabs = ({
                   <p className="text-xs text-slate-500 dark:text-dark-text-secondary leading-relaxed">
                     Hỗ trợ qua tổng đài 1800 6868 (miễn phí cước) hoặc hệ thống Live Chat thông minh trên ứng dụng web TIENTECH.
                   </p>
+                </div>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-primary/5 border border-primary/15 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+                <div className="text-slate-700 dark:text-slate-300">
+                  <strong className="text-primary font-bold">Cam kết vàng:</strong> Mọi sản phẩm đều được kích hoạt bảo hành điện tử chính hãng kể từ ngày nhận hàng.
+                </div>
+                <div className="text-primary font-bold flex items-center gap-1 shrink-0">
+                  <FiCheckCircle className="text-emerald-500" /> Bảo vệ quyền lợi 100%
                 </div>
               </div>
             </Motion.div>
