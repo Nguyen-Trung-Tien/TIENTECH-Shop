@@ -17,6 +17,7 @@ const createNotification = async (data, t = null, io = null) => {
       message: data.message || data.content || "",
       type: normalizeType(data.type),
       link: data.link || null,
+      metadata: data.metadata || null,
       isRead: false,
     };
     const notification = await db.Notification.create(payload, { transaction: t });
@@ -30,6 +31,7 @@ const createNotification = async (data, t = null, io = null) => {
         message: notification.message,
         type: notification.type,
         link: notification.link,
+        metadata: notification.metadata,
         isRead: notification.isRead,
         createdAt: notification.createdAt,
       };
@@ -82,6 +84,7 @@ const getNotifications = async (userId, role, page = 1, limit = 10, type = null)
         "type",
         "isRead",
         "link",
+        "metadata",
         "createdAt",
       ],
     });

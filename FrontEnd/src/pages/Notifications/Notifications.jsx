@@ -11,6 +11,7 @@ import {
   FiShield,
   FiExternalLink,
   FiX,
+  FiCopy,
 } from "react-icons/fi";
 import { createPortal } from "react-dom";
 import {
@@ -24,15 +25,20 @@ import { useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { motion as Motion, AnimatePresence } from "framer-motion";
 import { toast } from "react-toastify";
-import { showErrorToast } from "../../utils/toastHelper";
+import { showErrorToast, showSuccessToast } from "../../utils/toastHelper";
 import UnifiedSpinner from "../../components/Loading/UnifiedSpinner";
 import { ConfirmModal } from "../../components/UI/Modal";
+import {
+  extractVoucherCode,
+  formatRelativeTimeVi,
+} from "../../utils/notificationHelpers";
 
 const Notifications = () => {
   const navigate = useNavigate();
   const user = useSelector((state) => state.user.user);
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [copiedCode, setCopiedCode] = useState(null);
   const [loadingMore, setLoadingMore] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
@@ -252,6 +258,9 @@ const Notifications = () => {
             <div className="divide-y divide-slate-100 dark:divide-dark-border">
               {notifications.map((n, index) => {
                 const badge = getTypeBadge(n.type);
+                const voucherCode =
+                  extractVoucherCode(n.title + " " + n.message) ||
+                  n.metadata?.voucherCode;
                 return (
                   <Motion.div
                     initial={{ opacity: 0, y: 10 }}
@@ -278,7 +287,10 @@ const Notifications = () => {
                             {badge.label}
                           </span>
                           {!n.isRead && (
-                            <span className="w-2.5 h-2.5 rounded-full bg-rose-500 shrink-0 shadow-xs shadow-rose-500/50"></span>
+                            <span className="relative flex size-2.5">
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                              <span className="relative inline-flex rounded-full size-2.5 bg-rose-500 shadow-sm shadow-rose-500/50"></span>
+                            </span>
                           )}
                         </div>
 
@@ -322,9 +334,52 @@ const Notifications = () => {
                         )}
                       </div>
 
-                      <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
+                      {/* Interactive Micro-Action Pills */}
+                      <div className="flex flex-wrap items-center gap-2.5 mb-3">
+                        {voucherCode && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigator.clipboard.writeText(voucherCode);
+                              setCopiedCode(voucherCode);
+                              showSuccessToast(`Đã sao chép mã: ${voucherCode}`);
+                              setTimeout(() => setCopiedCode(null), 2500);
+                            }}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/40 text-xs font-black tracking-wide border border-rose-200/60 dark:border-rose-900/40 transition-colors cursor-pointer shadow-xs"
+                            title="Nhấn để sao chép mã ưu đãi"
+                          >
+                            {copiedCode === voucherCode ? (
+                              <FiCheck size={12} />
+                            ) : (
+                              <FiCopy size={12} />
+                            )}
+                            {copiedCode === voucherCode
+                              ? "Đã sao chép"
+                              : `Mã ưu đãi: ${voucherCode}`}
+                          </button>
+                        )}
+
+                        {n.type === "order" && n.link && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (!n.isRead) handleMarkAsRead(n.id);
+                              navigate(n.link);
+                            }}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-sky-50 dark:bg-sky-950/40 text-sky-600 dark:text-sky-400 hover:bg-sky-100 dark:hover:bg-sky-900/40 text-xs font-black tracking-wide border border-sky-200/60 dark:border-sky-900/40 transition-colors cursor-pointer shadow-xs"
+                          >
+                            <FiPackage size={12} /> Xem đơn hàng & Lộ trình
+                          </button>
+                        )}
+                      </div>
+
+                      <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-100/60 dark:border-dark-border/40">
                         <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest">
                           <FiClock className="text-primary" />
+                          <span>{formatRelativeTimeVi(n.createdAt)}</span>
+                          <span className="mx-1">•</span>
                           {new Date(n.createdAt).toLocaleTimeString("vi-VN", {
                             hour: "2-digit",
                             minute: "2-digit",
@@ -344,7 +399,7 @@ const Notifications = () => {
                           >
                             Chi tiết
                           </button>
-                          {n.link && (
+                          {n.link && n.type !== "order" && (
                             <button
                               type="button"
                               onClick={(e) => {
@@ -470,7 +525,29 @@ const Notifications = () => {
                 </div>
 
                 {/* Actions */}
-                <div className="flex items-center justify-end gap-3 pt-2">
+                <div className="flex flex-wrap items-center justify-end gap-3 pt-2">
+                  {extractVoucherCode(
+                    selectedNotification.title + " " + selectedNotification.message
+                  ) && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const code = extractVoucherCode(
+                          selectedNotification.title +
+                            " " +
+                            selectedNotification.message
+                        );
+                        navigator.clipboard.writeText(code);
+                        setCopiedCode(code);
+                        showSuccessToast(`Đã sao chép mã ưu đãi: ${code}`);
+                        setTimeout(() => setCopiedCode(null), 2500);
+                      }}
+                      className="px-4 py-2.5 bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-200/60 dark:border-rose-900/40 rounded-xl text-xs font-black uppercase tracking-wider hover:bg-rose-100 dark:hover:bg-rose-900/40 transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
+                    >
+                      <FiCopy size={13} />
+                      {copiedCode ? "Đã sao chép mã" : "Sao chép mã"}
+                    </button>
+                  )}
                   {selectedNotification.link && (
                     <button
                       type="button"

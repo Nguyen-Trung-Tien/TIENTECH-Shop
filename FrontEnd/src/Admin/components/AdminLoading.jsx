@@ -1,5 +1,6 @@
 import { motion as Motion } from "framer-motion";
 import UnifiedSpinner from "../../components/Loading/UnifiedSpinner";
+import Logo from "../../components/UI/Logo";
 
 /**
  * AdminTableSkeleton - Giữ chỗ cho bảng dữ liệu admin
@@ -51,8 +52,16 @@ export const AdminTableSkeleton = ({ rows = 5, cols = 5 }) => {
 export const AdminPageLoader = () => {
   return (
     <div className="flex min-h-[400px] w-full flex-col items-center justify-center space-y-4 rounded-3xl bg-white/60 dark:bg-dark-surface/60 border border-slate-100 dark:border-dark-border backdrop-blur-md p-8">
-      <UnifiedSpinner size="lg" variant="primary" />
-      <p className="animate-pulse text-xs font-black uppercase tracking-widest text-slate-500 dark:text-dark-text-secondary">
+      <Logo size="md" />
+      <div className="w-36 h-1 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden relative">
+        <Motion.div
+          className="h-full bg-gradient-to-r from-blue-600 via-indigo-500 to-cyan-400 rounded-full"
+          initial={{ x: "-100%" }}
+          animate={{ x: "100%" }}
+          transition={{ repeat: Infinity, duration: 1.4, ease: "easeInOut" }}
+        />
+      </div>
+      <p className="text-xs font-black uppercase tracking-widest text-slate-500 dark:text-dark-text-secondary">
         Đang tải phân hệ quản trị...
       </p>
     </div>

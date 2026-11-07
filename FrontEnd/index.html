@@ -48,7 +48,71 @@
       rel="stylesheet">
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div id="tientech-splash" style="position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#090d16;font-family:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,sans-serif;color:#fff;z-index:99999;user-select:none;-webkit-user-select:none;overflow:hidden;">
+        <style>
+          @keyframes tientech-pulse {
+            0%, 100% { transform: scale(1); opacity: 0.45; }
+            50% { transform: scale(1.12); opacity: 0.85; }
+          }
+          @keyframes tientech-progress {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(260%); }
+          }
+          .tientech-halo {
+            animation: tientech-pulse 2.2s ease-in-out infinite;
+          }
+          .tientech-bar {
+            animation: tientech-progress 1.5s ease-in-out infinite;
+          }
+        </style>
+
+        <!-- Ambient glowing backlight -->
+        <div style="position:absolute;width:300px;height:300px;background:radial-gradient(circle,rgba(37,99,235,0.22) 0%,transparent 70%);border-radius:50%;pointer-events:none;"></div>
+
+        <!-- Shield & Brand Icon Container -->
+        <div style="position:relative;margin-bottom:20px;display:flex;align-items:center;justify-content:center;">
+          <div class="tientech-halo" style="position:absolute;inset:-10px;background:linear-gradient(135deg,#2563eb,#6366f1,#06b6d4);border-radius:24px;filter:blur(18px);"></div>
+          <div style="position:relative;width:64px;height:64px;display:flex;align-items:center;justify-content:center;">
+            <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;filter:drop-shadow(0 4px 14px rgba(0,0,0,0.6));">
+              <defs>
+                <linearGradient id="splashGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#2563eb" />
+                  <stop offset="50%" stop-color="#6366f1" />
+                  <stop offset="100%" stop-color="#06b6d4" />
+                </linearGradient>
+                <linearGradient id="splashGlow" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95" />
+                  <stop offset="100%" stop-color="#ffffff" stop-opacity="0.4" />
+                </linearGradient>
+              </defs>
+              <path d="M50 8L88 24V50C88 73.19 71.8 91.56 50 96C28.2 91.56 12 73.19 12 50V24L50 8Z" fill="url(#splashGrad)" />
+              <path d="M50 16L80 29.5V50C80 68.5 67 83.2 50 87C33 83.2 20 68.5 20 50V29.5L50 16Z" fill="#090d16" fill-opacity="0.3" />
+              <path d="M32 34H68V42H54V74H46V42H32V34Z" fill="url(#splashGlow)" />
+              <path d="M38 34C38 27.37 43.37 22 50 22C56.63 22 62 27.37 62 34" stroke="white" stroke-width="5" stroke-linecap="round" />
+              <circle cx="50" cy="58" r="4.5" fill="#06b6d4" />
+            </svg>
+          </div>
+        </div>
+
+        <!-- Brand Typography -->
+        <div style="display:flex;align-items:center;font-size:22px;font-weight:900;letter-spacing:-0.5px;margin-bottom:18px;">
+          <span style="color:#ffffff;">TIEN</span>
+          <span style="color:#38bdf8;margin-left:3px;">TECH</span>
+          <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#84cc16;margin-left:5px;box-shadow:0 0 8px #84cc16;"></span>
+        </div>
+
+        <!-- Cyber Neon Progress Track -->
+        <div style="width:190px;height:4px;background:rgba(255,255,255,0.08);border-radius:999px;overflow:hidden;position:relative;margin-bottom:14px;box-shadow:inset 0 1px 2px rgba(0,0,0,0.4);">
+          <div class="tientech-bar" style="position:absolute;inset:0;width:45%;background:linear-gradient(90deg,#2563eb,#6366f1,#06b6d4);border-radius:999px;box-shadow:0 0 10px rgba(6,182,212,0.8);"></div>
+        </div>
+
+        <!-- Status subtitle -->
+        <div style="font-size:11px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:#94a3b8;">
+          Đang tải hệ sinh thái...
+        </div>
+      </div>
+    </div>
     <script src="/env-config.js"></script>
     <script type="module" src="/src/main.jsx"></script>
   </body>

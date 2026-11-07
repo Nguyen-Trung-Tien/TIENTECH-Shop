@@ -4,7 +4,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { getMeApi } from "../api/userApi";
 import { setUser, removeUser, setInitializing } from "../redux/userSlice";
 import { clearCart } from "../redux/cartSlice";
-import UnifiedSpinner from "../components/Loading/UnifiedSpinner";
+import BrandLoader from "../components/Loading/BrandLoader";
 
 const PrivateRoute = ({ requiredRole }) => {
   const { user, isAuthenticated, isInitializing } = useSelector(
@@ -41,13 +41,11 @@ const PrivateRoute = ({ requiredRole }) => {
 
   if (isInitializing) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-slate-50 dark:bg-slate-950">
-        <div className="flex flex-col items-center gap-4 p-8 bg-white dark:bg-slate-900 rounded-3xl shadow-soft border border-slate-100 dark:border-slate-800">
-          <UnifiedSpinner size="xl" variant="primary" />
-          <p className="text-xs font-black text-slate-600 dark:text-slate-300 uppercase tracking-widest mt-2">
-            Đang xác thực phiên đăng nhập...
-          </p>
-        </div>
+      <div className="flex flex-col items-center justify-center min-h-screen bg-slate-50 dark:bg-slate-950 p-4">
+        <BrandLoader
+          message="Đang xác thực phiên đăng nhập..."
+          subMessage="Bảo mật tài khoản TIEN TECH"
+        />
       </div>
     );
   }

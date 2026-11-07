@@ -1,7 +1,21 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { toast } from "react-toastify";
 import { createPortal } from "react-dom";
-import { FiBell, FiPackage, FiInfo, FiTag, FiTrash2, FiExternalLink, FiShield, FiSend, FiX } from "react-icons/fi";
+import {
+  FiBell,
+  FiPackage,
+  FiInfo,
+  FiTag,
+  FiTrash2,
+  FiExternalLink,
+  FiShield,
+  FiSend,
+  FiX,
+  FiVolume2,
+  FiVolumeX,
+  FiCopy,
+  FiCheck,
+} from "react-icons/fi";
 import {
   getNotificationsApi,
   markAsReadApi,
@@ -12,6 +26,15 @@ import {
 import { initUserSocket } from "../../utils/socket";
 import { useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
+import {
+  playNotificationChime,
+  isNotificationSoundEnabled,
+  toggleNotificationSound,
+} from "../../utils/notificationSound";
+import {
+  extractVoucherCode,
+  formatRelativeTimeVi,
+} from "../../utils/notificationHelpers";
 
 import UnifiedSpinner from "../Loading/UnifiedSpinner";
 import {
@@ -39,6 +62,14 @@ const NotificationBell = () => {
     target: "all",
   });
   const [sendingBroadcast, setSendingBroadcast] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(isNotificationSoundEnabled());
+  const [copiedCode, setCopiedCode] = useState(null);
+
+  const handleToggleSound = () => {
+    const next = toggleNotificationSound();
+    setSoundEnabled(next);
+    if (next) playNotificationChime();
+  };
 
   const dropdownRef = useRef(null);
   const user = useSelector((state) => state.user.user);
@@ -99,6 +130,7 @@ const NotificationBell = () => {
 
       handleNewOrder = (data) => {
         triggerDebouncedFetch();
+        playNotificationChime();
         const orderKey = data?.orderCode || data?.orderId || (typeof data?.message === "string" ? data.message : "new_order");
         if (shouldSuppressDuplicate(orderKey)) return;
 
@@ -122,6 +154,7 @@ const NotificationBell = () => {
 
       handleOrderStatusUpdated = (data) => {
         triggerDebouncedFetch();
+        playNotificationChime();
         if (!data?.message) return;
         const key = `status_${data.orderId || data.orderCode}_${data.status}`;
         if (shouldSuppressDuplicate(key)) return;
@@ -130,6 +163,7 @@ const NotificationBell = () => {
 
       handleNotification = (data) => {
         triggerDebouncedFetch();
+        playNotificationChime();
         if (!data?.title) return;
         const notifKey = data.id ? `notif_${data.id}` : `${data.title}_${data.message || ""}`;
         if (shouldSuppressDuplicate(notifKey)) return;
@@ -319,6 +353,19 @@ const NotificationBell = () => {
                 </div>
 
                 <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handleToggleSound}
+                    className="p-1.5 rounded-xl text-slate-400 hover:text-primary hover:bg-slate-100 dark:hover:bg-dark-bg transition-colors cursor-pointer"
+                    title={soundEnabled ? "Tắt âm thanh thông báo" : "Bật âm thanh thông báo"}
+                  >
+                    {soundEnabled ? (
+                      <FiVolume2 size={14} className="text-primary" />
+                    ) : (
+                      <FiVolumeX size={14} />
+                    )}
+                  </button>
+
                   {user.role === "admin" && (
                     <button
                       onClick={() => {
@@ -378,6 +425,9 @@ const NotificationBell = () => {
               ) : notifications.length > 0 ? (
                 notifications.map((n) => {
                   const style = getTypeStyle(n.type);
+                  const voucherCode =
+                    extractVoucherCode(n.title + " " + n.message) ||
+                    n.metadata?.voucherCode;
                   return (
                     <div
                       key={n.id}
@@ -398,10 +448,7 @@ const NotificationBell = () => {
                             {style.badge}
                           </span>
                           <span className="text-[9px] font-bold text-slate-400">
-                            {new Date(n.createdAt).toLocaleTimeString("vi-VN", {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}
+                            {formatRelativeTimeVi(n.createdAt)}
                           </span>
                         </div>
 
@@ -418,7 +465,47 @@ const NotificationBell = () => {
                           {n.message}
                         </p>
 
-                        <div className="flex items-center gap-3 mt-2">
+                        <div className="flex flex-wrap items-center gap-2 mt-2.5">
+                          {voucherCode && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                navigator.clipboard.writeText(voucherCode);
+                                setCopiedCode(voucherCode);
+                                showSuccessToast(`Đã sao chép mã ưu đãi: ${voucherCode}`);
+                                setTimeout(() => setCopiedCode(null), 2500);
+                              }}
+                              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/40 text-[10px] font-black tracking-wide border border-rose-200/60 dark:border-rose-900/40 transition-colors cursor-pointer"
+                              title="Nhấn để sao chép mã ưu đãi"
+                            >
+                              {copiedCode === voucherCode ? (
+                                <FiCheck size={10} />
+                              ) : (
+                                <FiCopy size={10} />
+                              )}
+                              {copiedCode === voucherCode ? "Đã chép" : `Mã: ${voucherCode}`}
+                            </button>
+                          )}
+
+                          {n.type === "order" && n.link && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (!n.isRead) {
+                                  markAsReadApi(n.id).catch(() => {});
+                                  setUnreadCount((prev) => Math.max(0, prev - 1));
+                                }
+                                setShowDropdown(false);
+                                navigate(n.link);
+                              }}
+                              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-sky-50 dark:bg-sky-950/40 text-sky-600 dark:text-sky-400 hover:bg-sky-100 dark:hover:bg-sky-900/40 text-[10px] font-black tracking-wide border border-sky-200/60 dark:border-sky-900/40 transition-colors cursor-pointer"
+                            >
+                              <FiPackage size={10} /> Xem đơn
+                            </button>
+                          )}
+
                           <button
                             type="button"
                             onClick={(e) => {
@@ -429,7 +516,8 @@ const NotificationBell = () => {
                           >
                             Xem chi tiết
                           </button>
-                          {n.link && (
+
+                          {n.link && n.type !== "order" && (
                             <button
                               type="button"
                               onClick={(e) => {
@@ -451,7 +539,10 @@ const NotificationBell = () => {
 
                       <div className="flex flex-col items-end justify-between shrink-0">
                         {!n.isRead ? (
-                          <span className="size-2.5 rounded-full bg-rose-500 shadow-sm shadow-rose-500/50"></span>
+                          <span className="relative flex size-2.5">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full size-2.5 bg-rose-500 shadow-sm shadow-rose-500/50"></span>
+                          </span>
                         ) : (
                           <div className="size-2.5" />
                         )}

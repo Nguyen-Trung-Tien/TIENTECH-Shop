@@ -1,11 +1,11 @@
-﻿import { Routes, Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import PublicRoute from "./PublicRoute";
 import PrivateRoute from "./PrivateRoute";
 
 import LayoutComponent from "../components/LayoutComponent/LayoutComponent";
 
 import React, { Suspense, lazy } from "react";
-import UnifiedSpinner from "../components/Loading/UnifiedSpinner";
+import BrandLoader from "../components/Loading/BrandLoader";
 
 const HomePage = lazy(() => import("../pages/HomePage/HomePage"));
 const LoginPage = lazy(() => import("../pages/LoginPage/LoginPage"));
@@ -38,9 +38,11 @@ const ShippingPage = lazy(() => import("../pages/SupportPage/ShippingPage"));
 const PaymentPage = lazy(() => import("../pages/SupportPage/PaymentPage"));
 
 const UserLoadingFallback = () => (
-  <div className="min-h-[60vh] w-full flex items-center justify-center bg-slate-50 dark:bg-slate-900">
-    <UnifiedSpinner size="lg" message="Đang tải dữ liệu..." />
-  </div>
+  <BrandLoader
+    minHeight="min-h-[70vh]"
+    message="Đang tải dữ liệu..."
+    subMessage="Hệ sinh thái công nghệ TIEN TECH"
+  />
 );
 
 
@@ -98,7 +100,7 @@ const UserRoutes = () => {
           path="checkout-success/:orderId?"
           element={
             <LayoutComponent isShowHeader={true} isShowFooter={true}>
-              <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Đang tải...</div>}>
+              <Suspense fallback={<BrandLoader minHeight="min-h-[60vh]" message="Đang tải kết quả đơn hàng..." />}>
                 <CheckoutSuccess />
               </Suspense>
             </LayoutComponent>
@@ -108,7 +110,7 @@ const UserRoutes = () => {
           path="checkout-failed/:orderId?"
           element={
             <LayoutComponent isShowHeader={true} isShowFooter={true}>
-              <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Đang tải...</div>}>
+              <Suspense fallback={<BrandLoader minHeight="min-h-[60vh]" message="Đang tải thông tin đơn hàng..." />}>
                 <CheckoutFailed />
               </Suspense>
             </LayoutComponent>
@@ -224,7 +226,7 @@ const UserRoutes = () => {
         path="compare"
         element={
           <LayoutComponent isShowHeader={true} isShowFooter={true}>
-            <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Đang tải ma trận so sánh...</div>}>
+            <Suspense fallback={<BrandLoader minHeight="min-h-[60vh]" message="Đang tải ma trận so sánh..." subMessage="Phân tích & đối chiếu thông số thông minh" />}>
               <ProductCompareHub />
             </Suspense>
           </LayoutComponent>

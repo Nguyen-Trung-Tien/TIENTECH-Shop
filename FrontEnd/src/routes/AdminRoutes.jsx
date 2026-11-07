@@ -3,7 +3,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import PrivateRoute from "./PrivateRoute";
 import PublicRouteAdmin from "./PublicRouteAdmin";
 import AdminLayout from "../Admin/AdminLayout";
-import UnifiedSpinner from "../components/Loading/UnifiedSpinner";
+import BrandLoader from "../components/Loading/BrandLoader";
 
 const AdminLogin = lazy(() => import("../Admin/pages/LoginAdmin/AdminLogin"));
 const Dashboard = lazy(() => import("../Admin/pages/Dashboard/Dashboard"));
@@ -21,9 +21,11 @@ const SystemSettingsPage = lazy(() => import("../Admin/pages/SystemSettings/Syst
 const NotFound = lazy(() => import("../pages/NotFound/NotFound"));
 
 const AdminLoadingFallback = () => (
-  <div className="flex h-screen w-full items-center justify-center bg-gray-50 dark:bg-slate-900">
-    <UnifiedSpinner size="lg" message="Đang tải trang quản trị..." />
-  </div>
+  <BrandLoader
+    minHeight="min-h-screen"
+    message="Đang tải trang quản trị..."
+    subMessage="TIEN TECH Admin Portal"
+  />
 );
 
 const AdminRoutes = () => {
