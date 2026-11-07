@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import {
   FiZap,
   FiClock,
@@ -12,52 +12,13 @@ import {
   FiRefreshCw,
   FiCompass,
   FiAward,
+  FiChevronDown,
+  FiChevronUp,
+  FiSearch,
 } from "react-icons/fi";
 import { FaHeart } from "react-icons/fa";
 import { motion as Motion, AnimatePresence } from "framer-motion";
-
-const FENG_SHUI_ELEMENTS = {
-  kim: {
-    name: "Mệnh Kim",
-    icon: "🪙",
-    colors: "Trắng, Bạc, Ghi, Vàng kim",
-    compat: "Thổ sinh Kim - Hợp màu Trắng, Xám, Bạc & Vàng đất",
-    advice: "Thiết bị màu bạc hoặc trắng titan giúp gia tăng sự tập trung, quyết đoán và thu hút quý nhân trợ vận.",
-    accent: "border-amber-300/80 bg-amber-50/70 dark:bg-amber-950/20 text-amber-800 dark:text-amber-300",
-  },
-  moc: {
-    name: "Mệnh Mộc",
-    icon: "🌿",
-    colors: "Xanh lục, Xanh lá, Đen",
-    compat: "Thủy sinh Mộc - Hợp màu Xanh lá, Xanh navy & Đen huyền bí",
-    advice: "Sản phẩm mang sắc xanh hoặc đen kích thích nguồn cảm hứng sáng tạo dồi dào, thăng tiến công danh.",
-    accent: "border-emerald-300/80 bg-emerald-50/70 dark:bg-emerald-950/20 text-emerald-800 dark:text-emerald-300",
-  },
-  thuy: {
-    name: "Mệnh Thủy",
-    icon: "🌊",
-    colors: "Xanh dương, Đen, Trắng ánh kim",
-    compat: "Kim sinh Thủy - Hợp màu Xanh biển, Đen & Trắng ánh kim",
-    advice: "Thiết bị mang hành Thủy giúp dòng chảy thông tin và tài vận hanh thông, công việc trôi chảy như nước xuôi dòng.",
-    accent: "border-blue-300/80 bg-blue-50/70 dark:bg-blue-950/20 text-blue-800 dark:text-blue-300",
-  },
-  hoa: {
-    name: "Mệnh Hỏa",
-    icon: "🔥",
-    colors: "Đỏ, Cam, Tím, Xanh lục",
-    compat: "Mộc sinh Hỏa - Hợp màu Đỏ, Cam, Hồng, Tím & Xanh lá",
-    advice: "Năng lượng Hỏa kích hoạt nhiệt huyết, uy tín và danh tiếng rạng rỡ trong sự nghiệp kinh doanh.",
-    accent: "border-rose-300/80 bg-rose-50/70 dark:bg-rose-950/20 text-rose-800 dark:text-rose-300",
-  },
-  tho: {
-    name: "Mệnh Thổ",
-    icon: "🏔️",
-    colors: "Vàng cát, Nâu đất, Đỏ, Cam",
-    compat: "Hỏa sinh Thổ - Hợp màu Nâu, Vàng cát, Đỏ & Cam ấm",
-    advice: "Năng lượng Thổ tạo nền móng vững như bàn thạch, tích lũy tài sản và tài chính an toàn lâu dài.",
-    accent: "border-stone-300/80 bg-amber-50/50 dark:bg-stone-900/30 text-amber-900 dark:text-amber-200",
-  },
-};
+import { calculateFengShuiByYear, ALL_FENG_SHUI_ELEMENTS } from "../utils/fengShuiHelper";
 
 const ProductInfo = ({
   product,
@@ -81,8 +42,50 @@ const ProductInfo = ({
   selectedVariant,
   addingCart,
 }) => {
-  const [selectedFengShui, setSelectedFengShui] = useState(null);
-  const [showFengShuiDrawer, setShowFengShuiDrawer] = useState(false);
+  // Feng Shui State
+  const [isFengShuiOpen, setIsFengShuiOpen] = useState(false);
+  const [selectedElementKey, setSelectedElementKey] = useState("kim");
+  const [birthYearInput, setBirthYearInput] = useState("1998");
+  const [calculatedFengShui, setCalculatedFengShui] = useState(() => calculateFengShuiByYear(1998));
+
+  const handleYearChange = (e) => {
+    const yr = e.target.value;
+    setBirthYearInput(yr);
+    const res = calculateFengShuiByYear(yr);
+    if (res) {
+      setCalculatedFengShui(res);
+      setSelectedElementKey(res.key);
+    }
+  };
+
+  const handleSelectElementDirectly = (key) => {
+    setSelectedElementKey(key);
+    // Find representative year for this element
+    const representativeYears = {
+      kim: 2000,
+      thuy: 1996,
+      hoa: 1995,
+      tho: 1998,
+      moc: 2002,
+    };
+    const res = calculateFengShuiByYear(representativeYears[key] || 2000);
+    if (res) {
+      setCalculatedFengShui(res);
+      setBirthYearInput(String(representativeYears[key] || 2000));
+    }
+  };
+
+  // Check if current variant matches lucky colors
+  const variantColorMatch = useMemo(() => {
+    if (!calculatedFengShui || !selectedAttributes) return null;
+    const variantColor = (selectedAttributes["Màu sắc"] || selectedAttributes["Color"] || selectedVariant?.name || "").toLowerCase();
+    if (!variantColor) return null;
+
+    const isMatch = calculatedFengShui.luckyColors.some((c) =>
+      variantColor.includes(c.toLowerCase()) || c.toLowerCase().includes(variantColor)
+    );
+    return isMatch;
+  }, [calculatedFengShui, selectedAttributes, selectedVariant]);
 
   const formatTime = (seconds) => {
     const h = Math.floor(seconds / 3600);
@@ -99,9 +102,9 @@ const ProductInfo = ({
   const savingsAmount = Math.max(0, originalPrice - currentPrice);
 
   return (
-    <div className="lg:col-span-7 flex flex-col space-y-6 min-w-0">
+    <div className="lg:col-span-7 flex flex-col space-y-5 min-w-0">
       {/* Brand & Auspicious Tags */}
-      <div className="space-y-3">
+      <div className="space-y-2.5">
         <div className="flex items-center flex-wrap gap-2 min-w-0">
           {product.brand && (
             <span className="bg-primary/10 text-primary dark:text-primary-light text-[10px] font-black px-2.5 py-1 rounded-xl border border-primary/20 uppercase tracking-wider">
@@ -109,7 +112,7 @@ const ProductInfo = ({
             </span>
           )}
           <span className="bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 text-[10px] font-bold px-2.5 py-1 rounded-xl border border-amber-200 dark:border-amber-800/60 flex items-center gap-1">
-            <FiAward className="size-3" /> Bảo Chứng Chính Hãng
+            <FiAward className="size-3" /> Bảo Chứng Chính Hãng TIENTECH
           </span>
           {isFlashSale && (
             <span className="bg-gradient-to-r from-red-600 to-orange-500 text-white text-[10px] font-black px-2.5 py-1 rounded-xl uppercase tracking-wider flex items-center gap-1 shadow-sm animate-pulse">
@@ -220,77 +223,143 @@ const ProductInfo = ({
         </div>
       </div>
 
-      {/* Tech Feng Shui Assistant Widget (Góc Phong Thuỷ Công Nghệ - Ngũ Hành Bản Mệnh) */}
-      <div className="p-4 rounded-3xl bg-gradient-to-r from-amber-50/50 via-white to-blue-50/40 dark:from-dark-card dark:to-dark-surface border border-amber-200/60 dark:border-dark-border space-y-3">
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <div className="size-8 rounded-xl bg-gradient-to-tr from-amber-500 to-amber-600 text-white flex items-center justify-center text-sm shadow-sm shadow-amber-500/20">
-              <FiCompass className="size-4.5" />
+      {/* NÂNG CẤP: Góc Phong Thuỷ Công Nghệ Số (Hỗ trợ Thu gọn / Chi tiết hoàn chỉnh) */}
+      <div className="rounded-3xl bg-gradient-to-r from-amber-50/60 via-white to-blue-50/40 dark:from-dark-card dark:to-dark-surface border border-amber-200/80 dark:border-dark-border overflow-hidden transition-all shadow-xs">
+        {/* Widget Header with Toggle */}
+        <div className="p-3.5 sm:p-4 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="size-9 rounded-2xl bg-gradient-to-tr from-amber-500 to-amber-600 text-white flex items-center justify-center text-base shadow-sm shadow-amber-500/20 shrink-0">
+              <FiCompass className="size-5" />
             </div>
-            <div>
-              <div className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5">
-                Góc Phong Thuỷ Công Nghệ
+            <div className="min-w-0">
+              <div className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5 truncate">
+                <span>Góc Phong Thuỷ Công Nghệ</span>
                 <span className="text-[9px] bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300 px-2 py-0.5 rounded-full font-bold">
                   Khai Vận
                 </span>
               </div>
-              <p className="text-[11px] text-slate-500 dark:text-dark-text-secondary">
-                Chọn Bản Mệnh để xem gợi ý màu sắc tương sinh & thu hút may mắn
+              <p className="text-[11px] text-slate-500 dark:text-dark-text-secondary truncate">
+                {calculatedFengShui
+                  ? `Năm ${calculatedFengShui.year} (${calculatedFengShui.lunarYear}) • ${calculatedFengShui.name} • ${calculatedFengShui.symbol}`
+                  : "Tra cứu bản mệnh ngũ hành & màu sắc may mắn"}
               </p>
             </div>
           </div>
+
           <button
             type="button"
-            onClick={() => setShowFengShuiDrawer(!showFengShuiDrawer)}
-            className="text-[11px] font-bold text-primary dark:text-primary-light hover:underline cursor-pointer shrink-0"
+            onClick={() => setIsFengShuiOpen(!isFengShuiOpen)}
+            className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-white dark:bg-dark-surface border border-slate-200 dark:border-dark-border text-xs font-bold text-primary dark:text-primary-light hover:shadow-xs transition shrink-0 cursor-pointer"
           >
-            {showFengShuiDrawer ? "Thu gọn" : "Xem chi tiết"}
+            <span>{isFengShuiOpen ? "Thu gọn" : "Xem chi tiết"}</span>
+            {isFengShuiOpen ? <FiChevronUp size={14} /> : <FiChevronDown size={14} />}
           </button>
         </div>
 
-        {/* Element Selection Pills */}
-        <div className="grid grid-cols-5 gap-1.5 sm:gap-2">
-          {Object.entries(FENG_SHUI_ELEMENTS).map(([key, item]) => {
-            const isSelected = selectedFengShui === key;
-            return (
-              <button
-                key={key}
-                type="button"
-                onClick={() => setSelectedFengShui(isSelected ? null : key)}
-                className={`py-2 px-1 rounded-2xl text-[11px] font-bold transition-all border flex flex-col items-center justify-center gap-0.5 cursor-pointer ${
-                  isSelected
-                    ? "bg-amber-500 text-white border-amber-500 shadow-md shadow-amber-500/30 scale-102"
-                    : "bg-white dark:bg-dark-card border-slate-200/80 dark:border-dark-border text-slate-700 dark:text-slate-300 hover:border-amber-400"
-                }`}
-              >
-                <span className="text-sm">{item.icon}</span>
-                <span className="truncate">{item.name.replace("Mệnh ", "")}</span>
-              </button>
-            );
-          })}
-        </div>
+        {/* Collapsed Compact Preview Bar */}
+        {!isFengShuiOpen && calculatedFengShui && (
+          <div className="px-4 pb-3 pt-0 flex items-center justify-between flex-wrap gap-2 text-xs border-t border-slate-100/80 dark:border-dark-border/40 mt-1">
+            <div className="flex items-center gap-2 text-[11px] text-slate-600 dark:text-slate-300">
+              <span className="font-bold text-amber-700 dark:text-amber-400">Màu hợp mệnh:</span>
+              <span className="font-medium">{calculatedFengShui.luckyColors.slice(0, 3).join(", ")}...</span>
+            </div>
+            {variantColorMatch !== null && (
+              <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${variantColorMatch ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300" : "bg-slate-100 text-slate-600 dark:bg-dark-card dark:text-slate-400"}`}>
+                {variantColorMatch ? "✨ Màu đang chọn cực hợp mệnh!" : "☯️ Có thể phối thêm ốp lưng tương sinh"}
+              </span>
+            )}
+          </div>
+        )}
 
-        {/* Element Insights Box */}
+        {/* Expanded Detailed Interactive Panel */}
         <AnimatePresence>
-          {selectedFengShui && (
+          {isFengShuiOpen && (
             <Motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
-              className={`p-3.5 rounded-2xl border text-xs space-y-1.5 ${
-                FENG_SHUI_ELEMENTS[selectedFengShui].accent
-              }`}
+              transition={{ duration: 0.25 }}
+              className="border-t border-amber-200/60 dark:border-dark-border p-4 sm:p-5 space-y-4 bg-white/70 dark:bg-dark-surface/70"
             >
-              <div className="font-extrabold flex items-center gap-1.5">
-                <span>{FENG_SHUI_ELEMENTS[selectedFengShui].icon}</span>
-                <span>{FENG_SHUI_ELEMENTS[selectedFengShui].name}:</span>
-                <span className="font-medium">
-                  {FENG_SHUI_ELEMENTS[selectedFengShui].compat}
-                </span>
+              {/* Year Selector & Element Selector Grid */}
+              <div className="space-y-2">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+                  <label className="font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                    <FiSearch className="text-primary" /> Chọn năm sinh của bạn:
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <select
+                      value={birthYearInput}
+                      onChange={handleYearChange}
+                      className="bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-primary/20"
+                    >
+                      {Array.from({ length: 45 }, (_, i) => 2012 - i).map((yr) => (
+                        <option key={yr} value={yr}>
+                          Năm {yr}
+                        </option>
+                      ))}
+                    </select>
+                    <span className="text-[11px] text-slate-400">hoặc chọn Mệnh:</span>
+                  </div>
+                </div>
+
+                {/* 5 Elements Direct Buttons */}
+                <div className="grid grid-cols-5 gap-1.5">
+                  {ALL_FENG_SHUI_ELEMENTS.map((el) => {
+                    const isSelected = selectedElementKey === el.key;
+                    return (
+                      <button
+                        key={el.key}
+                        type="button"
+                        onClick={() => handleSelectElementDirectly(el.key)}
+                        className={`py-2 px-1 rounded-2xl text-[11px] font-bold transition-all border flex flex-col items-center justify-center gap-0.5 cursor-pointer ${
+                          isSelected
+                            ? "bg-amber-500 text-white border-amber-500 shadow-md shadow-amber-500/30 scale-102"
+                            : "bg-white dark:bg-dark-card border-slate-200 dark:border-dark-border text-slate-700 dark:text-slate-300 hover:border-amber-400"
+                        }`}
+                      >
+                        <span className="text-base">{el.icon}</span>
+                        <span className="truncate">{el.name.replace("Mệnh ", "")}</span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-              <p className="text-[11px] leading-relaxed opacity-90">
-                {FENG_SHUI_ELEMENTS[selectedFengShui].advice}
-              </p>
+
+              {/* Detailed Feng Shui Result Card */}
+              {calculatedFengShui && (
+                <div className={`p-4 rounded-2xl border text-xs space-y-2.5 ${calculatedFengShui.accent}`}>
+                  <div className="flex items-center justify-between flex-wrap gap-2 border-b border-black/10 dark:border-white/10 pb-2">
+                    <div className="font-extrabold flex items-center gap-2 text-sm">
+                      <span className="text-lg">{calculatedFengShui.icon}</span>
+                      <span>{calculatedFengShui.name} ({calculatedFengShui.lunarYear} - {calculatedFengShui.year})</span>
+                    </div>
+                    <span className="px-2.5 py-0.5 rounded-full font-bold bg-black/10 dark:bg-white/10 text-[10px]">
+                      {calculatedFengShui.symbol}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs leading-relaxed">
+                    <div>
+                      <strong className="block mb-0.5">🌟 Tương sinh & Tương hợp:</strong>
+                      <p className="opacity-90">{calculatedFengShui.compatible}</p>
+                    </div>
+                    <div>
+                      <strong className="block mb-0.5">🎨 Màu sắc công nghệ may mắn:</strong>
+                      <p className="opacity-90">{calculatedFengShui.luckyColors.join(", ")}</p>
+                    </div>
+                  </div>
+
+                  <div className="pt-1 text-[11px] leading-relaxed border-t border-black/5 dark:border-white/5 space-y-1">
+                    <p>
+                      <strong>💡 Lời khuyên thiết bị:</strong> {calculatedFengShui.advice}
+                    </p>
+                    <p>
+                      <strong>🧭 Bố trí bàn làm việc:</strong> {calculatedFengShui.workspaceTip}
+                    </p>
+                  </div>
+                </div>
+              )}
             </Motion.div>
           )}
         </AnimatePresence>
