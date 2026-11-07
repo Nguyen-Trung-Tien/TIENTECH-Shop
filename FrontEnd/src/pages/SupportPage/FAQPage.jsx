@@ -192,21 +192,21 @@ const FAQPage = () => {
         </div>
 
         {/* Bottom CTA */}
-        <div className="max-w-3xl mx-auto mt-14 p-8 rounded-3xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-center shadow-xl space-y-4">
-          <h3 className="text-xl font-black text-white">Vẫn chưa tìm thấy câu trả lời?</h3>
-          <p className="text-white/80 text-sm max-w-md mx-auto">
+        <div className="max-w-3xl mx-auto mt-14 p-8 rounded-3xl bg-gradient-to-r from-blue-50/90 via-sky-50/60 to-slate-100/80 dark:from-blue-900/80 dark:via-indigo-950 dark:to-slate-900 text-slate-900 dark:text-white border border-blue-100 dark:border-slate-800 text-center shadow-sm dark:shadow-xl space-y-4 transition-colors duration-300">
+          <h3 className="text-xl font-black text-slate-900 dark:text-white">Vẫn chưa tìm thấy câu trả lời?</h3>
+          <p className="text-slate-600 dark:text-white/80 text-sm max-w-md mx-auto">
             Hãy liên hệ với đội ngũ hỗ trợ TienTech để nhận tư vấn trực tiếp và nhanh chóng nhất.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
             <Link
               to="/contact"
-              className="px-6 py-3 bg-white text-blue-600 font-black text-xs uppercase tracking-widest rounded-xl hover:bg-slate-100 transition-colors"
+              className="px-6 py-3 bg-primary hover:bg-primary-hover text-white font-black text-xs uppercase tracking-widest rounded-xl shadow-md shadow-primary/20 transition-all cursor-pointer"
             >
               Gửi Liên Hệ
             </Link>
             <a
               href="tel:0123456789"
-              className="px-6 py-3 bg-blue-700/80 text-white font-bold text-xs uppercase tracking-widest rounded-xl border border-white/20 hover:bg-blue-800 transition-colors flex items-center gap-2"
+              className="px-6 py-3 bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-bold text-xs uppercase tracking-widest rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/80 transition-colors flex items-center gap-2 cursor-pointer shadow-xs"
             >
               <FiPhoneCall /> Hotline 0123 456 789
             </a>

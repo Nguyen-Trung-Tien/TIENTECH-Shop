@@ -257,24 +257,24 @@ const AboutPage = () => {
       {/* CTA SECTION */}
       <section className="py-14 md:py-20 bg-white dark:bg-dark-surface transition-colors">
         <div className="container mx-auto px-4 max-w-4xl">
-          <div className="p-8 sm:p-12 rounded-3xl bg-gradient-to-r from-blue-600 via-indigo-600 to-primary text-white text-center shadow-xl shadow-blue-500/20">
-            <h2 className="text-2xl sm:text-4xl font-extrabold mb-4 tracking-tight text-white">
+          <div className="p-8 sm:p-12 rounded-3xl bg-gradient-to-r from-blue-50/90 via-sky-50/60 to-slate-100/80 dark:from-blue-900/80 dark:via-indigo-950 dark:to-slate-900 text-slate-900 dark:text-white border border-blue-100 dark:border-slate-800 text-center shadow-sm dark:shadow-xl transition-colors duration-300">
+            <h2 className="text-2xl sm:text-4xl font-extrabold mb-4 tracking-tight text-slate-900 dark:text-white">
               Sẵn sàng nâng tầm trải nghiệm công nghệ?
             </h2>
-            <p className="text-blue-100 text-xs sm:text-sm mb-8 max-w-md mx-auto leading-relaxed">
+            <p className="text-slate-600 dark:text-white/80 text-xs sm:text-sm mb-8 max-w-md mx-auto leading-relaxed">
               Trang bị các thiết bị công nghệ chính hãng với chính sách đổi mới 1-1 và hỗ trợ kỹ thuật tận tâm từ TienTech.
             </p>
             <div className="flex flex-wrap justify-center gap-3.5">
               <button
                 type="button"
-                className="px-8 py-3.5 bg-white text-primary font-bold text-xs sm:text-sm rounded-2xl shadow-md hover:bg-blue-50 transition-all active:scale-98 cursor-pointer"
+                className="px-8 py-3.5 bg-primary hover:bg-primary-hover text-white font-bold text-xs sm:text-sm rounded-2xl shadow-md shadow-primary/20 transition-all active:scale-98 cursor-pointer"
                 onClick={() => navigate("/products")}
               >
                 Mua sắm ngay
               </button>
               <button
                 type="button"
-                className="px-8 py-3.5 bg-blue-700/60 hover:bg-blue-700 text-white font-bold text-xs sm:text-sm rounded-2xl border border-blue-400/40 transition-all active:scale-98 cursor-pointer"
+                className="px-8 py-3.5 bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-bold text-xs sm:text-sm rounded-2xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/80 transition-all active:scale-98 cursor-pointer shadow-xs"
                 onClick={() => navigate("/contact")}
               >
                 Liên hệ tư vấn

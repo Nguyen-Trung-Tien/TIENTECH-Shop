@@ -32,15 +32,15 @@ const ShippingPage = () => {
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 transition-colors duration-300 py-12">
       {/* Hero Banner */}
       <div className="container-custom mb-12">
-        <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-amber-500 via-orange-600 to-red-600 text-white p-8 md:p-14 shadow-2xl">
+        <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-blue-50/90 via-sky-50/60 to-slate-100/80 dark:from-blue-900/80 dark:via-indigo-950 dark:to-slate-900 text-slate-900 dark:text-white border border-blue-100 dark:border-slate-800 p-8 md:p-14 shadow-sm dark:shadow-2xl transition-colors duration-300">
           <div className="relative z-10 max-w-2xl">
-            <span className="px-3.5 py-1 bg-white/20 backdrop-blur-md text-white text-xs font-black uppercase tracking-widest rounded-full inline-block mb-4">
+            <span className="px-3.5 py-1 bg-primary/10 text-primary border border-primary/20 dark:bg-white/20 dark:text-white dark:border-transparent backdrop-blur-md text-xs font-black uppercase tracking-widest rounded-full inline-block mb-4">
               An Tâm Mua Sắm Online
             </span>
-            <h1 className="text-3xl md:text-5xl font-black tracking-tight mb-4">
+            <h1 className="text-3xl md:text-5xl font-black tracking-tight mb-4 text-slate-900 dark:text-white">
               Chính Sách Vận Chuyển & Đổi Trả
             </h1>
-            <p className="text-white/90 text-sm md:text-base leading-relaxed">
+            <p className="text-slate-600 dark:text-white/90 text-sm md:text-base leading-relaxed">
               TienTech hỗ trợ giao hàng hỏa tốc toàn quốc, quyền lợi kiểm tra hàng trước khi thanh toán 
               và đổi trả dễ dàng trong vòng 7 ngày.
             </p>
