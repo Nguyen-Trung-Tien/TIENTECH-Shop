@@ -27,7 +27,7 @@ import logoImage from "../../../assets/logo.png";
 import Logo from "../../../components/UI/Logo";
 import NotificationBell from "../../../components/HeaderComponent/NotificationBell";
 import UnifiedSpinner from "../../../components/Loading/UnifiedSpinner";
-import debounce from "lodash/debounce";
+import debounce from "../../../utils/debounce";
 import { m as Motion, AnimatePresence } from "framer-motion";
 
 const priceFormatter = new Intl.NumberFormat("vi-VN", {

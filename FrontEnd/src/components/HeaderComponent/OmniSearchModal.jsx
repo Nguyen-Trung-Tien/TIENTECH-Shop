@@ -15,7 +15,7 @@ import {
   FiCornerDownLeft,
 } from "react-icons/fi";
 import { searchSuggestionsApi } from "../../api/productApi";
-import debounce from "lodash/debounce";
+import debounce from "../../utils/debounce";
 import { toast } from "react-toastify";
 import UnifiedSpinner from "../Loading/UnifiedSpinner";
 

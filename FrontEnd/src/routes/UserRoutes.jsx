@@ -4,41 +4,49 @@ import PrivateRoute from "./PrivateRoute";
 
 import LayoutComponent from "../components/LayoutComponent/LayoutComponent";
 
-import HomePage from "../pages/HomePage/HomePage";
-import LoginPage from "../pages/LoginPage/LoginPage";
-import RegisterPage from "../pages/RegisterPage/RegisterPage";
-import LoginSuccess from "../pages/LoginSuccess/LoginSuccess";
-import VerifyEmail from "../pages/VerifyEmail/VerifyEmail";
-import OTPVerification from "../pages/OTPVerification/OTPVerification";
-import CartPage from "../pages/CartPage/CartPage";
-import CheckoutPage from "../pages/CheckoutPage/CheckoutPage";
 import React, { Suspense, lazy } from "react";
+import UnifiedSpinner from "../components/Loading/UnifiedSpinner";
 
+const HomePage = lazy(() => import("../pages/HomePage/HomePage"));
+const LoginPage = lazy(() => import("../pages/LoginPage/LoginPage"));
+const RegisterPage = lazy(() => import("../pages/RegisterPage/RegisterPage"));
+const LoginSuccess = lazy(() => import("../pages/LoginSuccess/LoginSuccess"));
+const VerifyEmail = lazy(() => import("../pages/VerifyEmail/VerifyEmail"));
+const OTPVerification = lazy(() => import("../pages/OTPVerification/OTPVerification"));
+const CartPage = lazy(() => import("../pages/CartPage/CartPage"));
+const CheckoutPage = lazy(() => import("../pages/CheckoutPage/CheckoutPage"));
 const CheckoutSuccess = lazy(() => import("../pages/CheckoutSuccess/CheckoutSuccess"));
 const CheckoutFailed = lazy(() => import("../pages/CheckoutFailed/CheckoutFailed"));
 const ProductCompareHub = lazy(() => import("../pages/ProductCompare/ProductCompareHub"));
-import Profile from "../pages/Profile/Profile";
-import Notifications from "../pages/Notifications/Notifications";
-import NotFound from "../pages/NotFound/NotFound";
-import ProductDetailPage from "../pages/ProductDetailPage/ProductDetailPage";
-import ProductListPage from "../pages/ProductListPage/ProductListPage";
-import AllProducts from "../components/AllProducts/AllProduct";
-import FortuneProducts from "../components/FortuneProducts/FortuneProducts";
-import OrderHistory from "../pages/OrdersHistory/OrderHistory";
-import OrderPage from "../pages/OrderPage/OrderPage";
-import OrderDetail from "../pages/OrderDetail/OrderDetail";
-import AboutPage from "../pages/AboutPage/AboutPage";
-import WishlistPage from "../pages/WishlistPage/WishlistPage";
-import ContactPage from "../pages/ContactPage/ContactPage";
-import SupportHub from "../pages/SupportPage/SupportHub";
-import FAQPage from "../pages/SupportPage/FAQPage";
-import WarrantyPage from "../pages/SupportPage/WarrantyPage";
-import ShippingPage from "../pages/SupportPage/ShippingPage";
-import PaymentPage from "../pages/SupportPage/PaymentPage";
+const Profile = lazy(() => import("../pages/Profile/Profile"));
+const Notifications = lazy(() => import("../pages/Notifications/Notifications"));
+const NotFound = lazy(() => import("../pages/NotFound/NotFound"));
+const ProductDetailPage = lazy(() => import("../pages/ProductDetailPage/ProductDetailPage"));
+const ProductListPage = lazy(() => import("../pages/ProductListPage/ProductListPage"));
+const AllProducts = lazy(() => import("../components/AllProducts/AllProduct"));
+const FortuneProducts = lazy(() => import("../components/FortuneProducts/FortuneProducts"));
+const OrderHistory = lazy(() => import("../pages/OrdersHistory/OrderHistory"));
+const OrderPage = lazy(() => import("../pages/OrderPage/OrderPage"));
+const OrderDetail = lazy(() => import("../pages/OrderDetail/OrderDetail"));
+const AboutPage = lazy(() => import("../pages/AboutPage/AboutPage"));
+const WishlistPage = lazy(() => import("../pages/WishlistPage/WishlistPage"));
+const ContactPage = lazy(() => import("../pages/ContactPage/ContactPage"));
+const SupportHub = lazy(() => import("../pages/SupportPage/SupportHub"));
+const FAQPage = lazy(() => import("../pages/SupportPage/FAQPage"));
+const WarrantyPage = lazy(() => import("../pages/SupportPage/WarrantyPage"));
+const ShippingPage = lazy(() => import("../pages/SupportPage/ShippingPage"));
+const PaymentPage = lazy(() => import("../pages/SupportPage/PaymentPage"));
+
+const UserLoadingFallback = () => (
+  <div className="min-h-[60vh] w-full flex items-center justify-center bg-slate-50 dark:bg-slate-900">
+    <UnifiedSpinner size="lg" message="�ang t?i d? li?u..." />
+  </div>
+);
 
 
 const UserRoutes = () => {
   return (
+    <Suspense fallback={<UserLoadingFallback />}>
     <Routes>
       <Route element={<PublicRoute />}>
         <Route
@@ -288,6 +296,7 @@ const UserRoutes = () => {
         }
       />
     </Routes>
+    </Suspense>
   );
 };
 

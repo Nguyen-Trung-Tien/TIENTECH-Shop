@@ -111,6 +111,7 @@ module.exports = (sequelize, DataTypes) => {
       indexes: [
         { fields: ["userId"] },
         { fields: ["status"] },
+        { fields: ["status", "paymentStatus", "createdAt"] },
       ],
     },
   );

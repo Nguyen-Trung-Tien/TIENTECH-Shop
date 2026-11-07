@@ -432,6 +432,7 @@ const searchSemanticProducts = async (query, limit = 5) => {
           embedding: { [Op.ne]: null },
         },
         attributes: ["id", "name", "basePrice", "discount", "embedding", "description"],
+        limit: 500,
         include: [
           {
             model: db.ProductImage,
@@ -443,13 +444,21 @@ const searchSemanticProducts = async (query, limit = 5) => {
         ],
       });
 
-      productsData = products.map((product) => ({
-        id: product.id,
-        name: product.name,
-        price: product.basePrice * (1 - (product.discount || 0) / 100),
-        image: product.images?.[0]?.imageUrl || null,
-        embedding: JSON.parse(product.embedding)
-      }));
+      productsData = products
+        .map((product) => {
+          try {
+            return {
+              id: product.id,
+              name: product.name,
+              price: product.basePrice * (1 - (product.discount || 0) / 100),
+              image: product.images?.[0]?.imageUrl || null,
+              embedding: typeof product.embedding === "string" ? JSON.parse(product.embedding) : product.embedding,
+            };
+          } catch {
+            return null;
+          }
+        })
+        .filter((p) => p && Array.isArray(p.embedding));
 
       // Cache for 24 hours
       await setCache("semantic_embeddings", productsData, 86400);

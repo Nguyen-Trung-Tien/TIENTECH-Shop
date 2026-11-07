@@ -155,40 +155,56 @@ const getSmartRecommendations = async (productId, limit = 6) => {
 
     let semanticMatches = [];
     if (product.embedding) {
-      const queryEmbedding = JSON.parse(product.embedding);
-      const allProducts = await db.Product.findAll({
-        where: {
-          isActive: true,
-          id: { [Op.ne]: productId },
-          embedding: { [Op.ne]: null },
-        },
-        attributes: ["id", "name", "slug", "basePrice", "discount", "embedding"],
-        include: [
-          {
-            model: db.ProductImage,
-            as: "images",
-            attributes: ["imageUrl", "isPrimary"],
-          },
-        ],
-      });
+      let queryEmbedding = null;
+      try {
+        queryEmbedding = typeof product.embedding === "string" ? JSON.parse(product.embedding) : product.embedding;
+      } catch (e) {
+        queryEmbedding = null;
+      }
 
-      semanticMatches = allProducts
-        .map((p) => {
-          const plain = p.get({ plain: true });
-          const primary = plain.images?.find((img) => img.isPrimary) || plain.images?.[0];
-          return {
-            id: plain.id,
-            name: plain.name,
-            slug: plain.slug,
-            basePrice: plain.basePrice,
-            discount: plain.discount,
-            image: primary?.imageUrl || null,
-            similarity: cosineSimilarity(queryEmbedding, JSON.parse(plain.embedding)),
-            reason: "Cùng phong cách",
-          };
-        })
-        .filter((p) => p.similarity > 0.7)
-        .sort((a, b) => b.similarity - a.similarity);
+      if (queryEmbedding && Array.isArray(queryEmbedding)) {
+        const allProducts = await db.Product.findAll({
+          where: {
+            isActive: true,
+            id: { [Op.ne]: productId },
+            embedding: { [Op.ne]: null },
+          },
+          attributes: ["id", "name", "slug", "basePrice", "discount", "embedding"],
+          limit: 150,
+          order: [["sold", "DESC"]],
+          include: [
+            {
+              model: db.ProductImage,
+              as: "images",
+              attributes: ["imageUrl", "isPrimary"],
+            },
+          ],
+        });
+
+        semanticMatches = allProducts
+          .map((p) => {
+            try {
+              const plain = p.get({ plain: true });
+              const primary = plain.images?.find((img) => img.isPrimary) || plain.images?.[0];
+              const pEmbedding = typeof plain.embedding === "string" ? JSON.parse(plain.embedding) : plain.embedding;
+              if (!Array.isArray(pEmbedding)) return null;
+              return {
+                id: plain.id,
+                name: plain.name,
+                slug: plain.slug,
+                basePrice: plain.basePrice,
+                discount: plain.discount,
+                image: primary?.imageUrl || null,
+                similarity: cosineSimilarity(queryEmbedding, pEmbedding),
+                reason: "Cùng phong cách",
+              };
+            } catch {
+              return null;
+            }
+          })
+          .filter((p) => p && p.similarity > 0.7)
+          .sort((a, b) => b.similarity - a.similarity);
+      }
     }
 
     const orderItems = await db.OrderItem.findAll({
@@ -384,8 +400,15 @@ const getPersonalizedRecommendations = async (userId, limit = 6) => {
 
     // 2. Average the embeddings of history products to find "User Taste"
     const validEmbeddings = historyProducts
-      .filter(p => p.embedding)
-      .map(p => JSON.parse(p.embedding));
+      .filter((p) => p.embedding)
+      .map((p) => {
+        try {
+          return typeof p.embedding === "string" ? JSON.parse(p.embedding) : p.embedding;
+        } catch {
+          return null;
+        }
+      })
+      .filter((e) => Array.isArray(e));
 
     if (validEmbeddings.length === 0) {
       return getPersonalizedRecommendations(null, limit);
@@ -402,6 +425,8 @@ const getPersonalizedRecommendations = async (userId, limit = 6) => {
         id: { [Op.notIn]: historyProducts.map(p => p.id) }, // Don't recommend what they already have/wishlisted
         embedding: { [Op.ne]: null },
       },
+      limit: 150,
+      order: [["sold", "DESC"]],
       attributes: [
         "id", "name", "slug", "sku", "basePrice", "discount", "totalStock", "hasVariants", "sold", "isFlashSale", "flashSalePrice", "flashSaleStart", "flashSaleEnd", "isActive", "categoryId", "brandId", "embedding",
         [
@@ -426,16 +451,22 @@ const getPersonalizedRecommendations = async (userId, limit = 6) => {
 
     const recommendations = allProducts
       .map(p => {
-        const plain = p.get({ plain: true });
-        const similarity = cosineSimilarity(userTasteVector, JSON.parse(plain.embedding));
-        return {
-          ...applyFlashSaleToProduct(plain),
-          image: plain.images?.[0]?.imageUrl || null,
-          similarity,
-          reason: "Dựa trên sở thích của bạn"
-        };
+        try {
+          const plain = p.get({ plain: true });
+          const pEmbedding = typeof plain.embedding === "string" ? JSON.parse(plain.embedding) : plain.embedding;
+          if (!Array.isArray(pEmbedding)) return null;
+          const similarity = cosineSimilarity(userTasteVector, pEmbedding);
+          return {
+            ...applyFlashSaleToProduct(plain),
+            image: plain.images?.[0]?.imageUrl || null,
+            similarity,
+            reason: "Dựa trên sở thích của bạn"
+          };
+        } catch {
+          return null;
+        }
       })
-      .filter(p => p.similarity > 0.6)
+      .filter(p => p && p.similarity > 0.6)
       .sort((a, b) => b.similarity - a.similarity)
       .slice(0, limit);
 

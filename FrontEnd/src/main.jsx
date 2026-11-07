@@ -25,6 +25,7 @@ const initialOptions = {
   "client-id": appConfig.paypalClientId,
   currency: appConfig.paypalCurrency,
   intent: "capture",
+  deferLoading: true,
 };
 
 ReactDOM.createRoot(document.getElementById("root")).render(
