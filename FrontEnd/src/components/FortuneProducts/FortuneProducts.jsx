@@ -1,85 +1,151 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
-import Select from "react-select";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { Link } from "react-router-dom";
 import {
   FiArrowLeft,
   FiSearch,
-  FiLayers,
-  FiCpu,
   FiFilter,
   FiActivity,
   FiInfo,
   FiZap,
+  FiCompass,
+  FiLayers,
+  FiRefreshCw,
+  FiSliders,
+  FiAward,
+  FiCheckCircle,
+  FiXCircle,
 } from "react-icons/fi";
+import { motion as Motion, AnimatePresence } from "framer-motion";
 import { fetchFortuneProducts } from "../../api/productApi";
 import { getAllBrandApi } from "../../api/brandApi";
 import { getAllCategoryApi } from "../../api/categoryApi";
+import { getFengShuiDetailApi } from "../../api/chatApi";
 import ProductCard from "../ProductCard/ProductCard";
 import FengShuiChat from "../ChatBot/FengShui";
 import AppPagination from "../Pagination/Pagination";
-import { motion as Motion, AnimatePresence } from "framer-motion";
 import Button from "../UI/Button";
 import UnifiedSpinner from "../Loading/UnifiedSpinner";
 
 const FortuneProducts = () => {
-  const [birthYear, setBirthYear] = useState("");
+  // User Input State
+  const [birthYear, setBirthYear] = useState(1998);
+  const [gender, setGender] = useState("male");
+
+  // Dynamic Feng Shui Energy from Backend
+  const [fsDetail, setFsDetail] = useState(null);
+  const [allElements, setAllElements] = useState([]);
+  const [loadingFengShui, setLoadingFengShui] = useState(false);
+
+  // Filters State
   const [brandId, setBrandId] = useState("");
   const [categoryId, setCategoryId] = useState("");
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
-  const [sortBy, setSortBy] = useState("");
+  const [sortBy, setSortBy] = useState("popular");
 
+  // Filter Catalog Data
   const [brands, setBrands] = useState([]);
   const [categories, setCategories] = useState([]);
+
+  // Product Recommendation State
   const [products, setProducts] = useState([]);
   const [luckyColors, setLuckyColors] = useState([]);
-
   const [page, setPage] = useState(1);
   const [limit] = useState(12);
   const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
   const [loading, setLoading] = useState(false);
 
+  // Load Brand and Category Catalogs
   useEffect(() => {
-    const loadData = async () => {
-      const [brandRes, cateRes] = await Promise.all([
-        getAllBrandApi(),
-        getAllCategoryApi(),
-      ]);
-      if (brandRes?.errCode === 0) setBrands(brandRes.brands || []);
-      if (cateRes?.errCode === 0) setCategories(cateRes.data || []);
+    let isMounted = true;
+    const loadCatalogs = async () => {
+      try {
+        const [brandRes, cateRes] = await Promise.all([
+          getAllBrandApi(),
+          getAllCategoryApi(),
+        ]);
+        if (isMounted) {
+          if (brandRes?.errCode === 0) setBrands(brandRes.brands || []);
+          if (cateRes?.errCode === 0) setCategories(cateRes.data || []);
+        }
+      } catch (err) {
+        console.error("Load catalogs error:", err);
+      }
     };
-    loadData();
+    loadCatalogs();
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
-  const yearOptions = Array.from({ length: 100 }, (_, i) => {
-    const year = new Date().getFullYear() - i;
-    return { value: year, label: year.toString() };
-  });
+  // Fetch Feng Shui Details dynamically from Backend API (NO hardcoded dictionary)
+  const fetchFengShuiDetail = useCallback(async (year, gen) => {
+    if (!year) return;
+    setLoadingFengShui(true);
+    try {
+      const res = await getFengShuiDetailApi(year, gen);
+      if (res?.errCode === 0 && res.data) {
+        setFsDetail(res.data);
+        if (res.data.elements) {
+          setAllElements(res.data.elements);
+        }
+      }
+    } catch (err) {
+      console.error("fetchFengShuiDetail error:", err);
+    } finally {
+      setLoadingFengShui(false);
+    }
+  }, []);
 
+  useEffect(() => {
+    fetchFengShuiDetail(birthYear, gender);
+  }, [birthYear, gender, fetchFengShuiDetail]);
+
+  // Fetch Recommended Products from Backend
   const fetchProducts = useCallback(async () => {
     if (!birthYear) return;
     setLoading(true);
     try {
       const res = await fetchFortuneProducts({
         birthYear,
-        brandId,
-        categoryId,
+        brandId: brandId || undefined,
+        categoryId: categoryId || undefined,
         minPrice: minPrice ? Number(minPrice) : undefined,
         maxPrice: maxPrice ? Number(maxPrice) : undefined,
         sortBy,
         page,
         limit,
       });
+
       if (res?.errCode === 0) {
-        setProducts(res.data || []);
+        let list = res.data || [];
+        if (sortBy === "price_asc") {
+          list = [...list].sort(
+            (a, b) =>
+              (a.displayPrice || a.basePrice || 0) -
+              (b.displayPrice || b.basePrice || 0)
+          );
+        } else if (sortBy === "price_desc") {
+          list = [...list].sort(
+            (a, b) =>
+              (b.displayPrice || b.basePrice || 0) -
+              (a.displayPrice || a.basePrice || 0)
+          );
+        }
+
+        setProducts(list);
         setLuckyColors(res.luckyColors || []);
         setTotalPages(res.pagination?.totalPages || 1);
+        setTotalItems(res.pagination?.totalItems || list.length);
       } else {
         setProducts([]);
         setLuckyColors([]);
+        setTotalPages(1);
+        setTotalItems(0);
       }
     } catch (err) {
-      console.error(err);
+      console.error("Fetch fortune products error:", err);
       setProducts([]);
       setLuckyColors([]);
     } finally {
@@ -88,365 +154,526 @@ const FortuneProducts = () => {
   }, [birthYear, brandId, categoryId, minPrice, maxPrice, sortBy, page, limit]);
 
   useEffect(() => {
-    const timer = setTimeout(fetchProducts, 400);
+    const timer = setTimeout(fetchProducts, 300);
     return () => clearTimeout(timer);
   }, [fetchProducts]);
 
-  const calculateElementByYear = (yearNum) => {
-    if (!yearNum) return null;
-    const year = Number(yearNum);
-    const canMap = [4, 4, 5, 5, 1, 1, 2, 2, 3, 3];
-    const chiMap = [0, 0, 1, 1, 2, 2, 0, 0, 1, 1, 2, 2];
-    const can = canMap[year % 10];
-    const chi = chiMap[year % 12];
-    let sum = can + chi;
-    if (sum > 5) sum -= 5;
-    const elementMap = {
-      1: {
-        name: "Mệnh Kim",
-        icon: "✨",
-        desc: "Hợp các thiết bị màu Trắng, Xám, Vàng, Nâu đất. Mang đến sự kiên định & may mắn tài lộc.",
-      },
-      2: {
-        name: "Mệnh Thủy",
-        icon: "🌊",
-        desc: "Hợp các thiết bị màu Đen, Xanh Nước Biển, Trắng, Bạc. Hỗ trợ hanh thông & sự nghiệp thăng tiến.",
-      },
-      3: {
-        name: "Mệnh Hỏa",
-        icon: "🔥",
-        desc: "Hợp các thiết bị màu Đỏ, Hồng, Tím, Xanh Lá. Nguồn năng lượng dồi dào & nhiệt huyết.",
-      },
-      4: {
-        name: "Mệnh Thổ",
-        icon: "⛰️",
-        desc: "Hợp các thiết bị màu Vàng, Nâu Đất, Đỏ, Tím. Tăng sự vững chắc & uy tín trong công việc.",
-      },
-      5: {
-        name: "Mệnh Mộc",
-        icon: "🌿",
-        desc: "Hợp các thiết bị màu Xanh Lá, Đen, Xanh Nước Biển. Thúc đẩy sự phát triển & sáng tạo vượt trội.",
-      },
-    };
-    return elementMap[sum] || null;
-  };
+  // Year options list for fast select
+  const currentYear = new Date().getFullYear();
+  const yearOptions = useMemo(
+    () => Array.from({ length: 80 }, (_, i) => currentYear - 10 - i),
+    [currentYear]
+  );
 
-  const handleSearch = () => {
+  const resetFilters = () => {
+    setBrandId("");
+    setCategoryId("");
+    setMinPrice("");
+    setMaxPrice("");
+    setSortBy("popular");
     setPage(1);
   };
 
-  // Custom styles for React Select to support dark mode & system colors
-  const selectStyles = {
-    control: (base, state) => ({
-      ...base,
-      borderRadius: "14px",
-      padding: "4px",
-      borderColor: state.isFocused ? "#3b82f6" : "transparent",
-      backgroundColor: "rgb(249 250 251)",
-      boxShadow: "none",
-      "&:hover": { borderColor: "#3b82f6" },
-      ".dark &": {
-        backgroundColor: "rgb(31 41 55)",
-        borderColor: state.isFocused ? "#3b82f6" : "rgb(55 65 81)",
-      },
-    }),
-    singleValue: (base) => ({
-      ...base,
-      color: "inherit",
-      fontWeight: "600",
-    }),
-    placeholder: (base) => ({
-      ...base,
-      color: "#94a3b8",
-      fontSize: "14px",
-    }),
-    menu: (base) => ({
-      ...base,
-      backgroundColor: "#ffffff",
-      borderRadius: "16px",
-      padding: "8px",
-      border: "1px solid #e2e8f0",
-      ".dark &": {
-        backgroundColor: "#111827",
-        borderColor: "#374151",
-      },
-    }),
-    option: (base, state) => ({
-      ...base,
-      borderRadius: "8px",
-      backgroundColor: state.isFocused ? "#3b82f620" : "transparent",
-      color: state.isSelected ? "#3b82f6" : "inherit",
-      "&:hover": { backgroundColor: "#3b82f615", color: "#3b82f6" },
-    }),
+  const handleGlobalYearChange = (newYear) => {
+    if (newYear) {
+      setBirthYear(Number(newYear));
+      setPage(1);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black transition-colors duration-300 pb-20 relative">
-      {/* CHATBOT AI - ĐẶT Ở NGOÀI CÙNG ĐỂ KHÔNG BỊ LỖI HIỂN THỊ */}
-      <FengShuiChat setGlobalBirthYear={setBirthYear} />
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 transition-colors duration-300 pb-24 relative overflow-x-hidden">
+      {/* Floating Interactive Master FengShui Chatbot */}
+      <FengShuiChat setGlobalBirthYear={handleGlobalYearChange} />
 
-      {/* BACKGROUND DECORATION */}
+      {/* Decorative Aura Background Lighting */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-        <div className="absolute top-[-5%] right-[-5%] w-[30%] h-[30%] bg-blue-500/5 dark:bg-blue-500/10 rounded-full blur-[100px]"></div>
-        <div className="absolute bottom-[5%] left-[-5%] w-[20%] h-[20%] bg-amber-500/5 rounded-full blur-[80px]"></div>
+        <div className="absolute -top-[15%] right-[-10%] w-[50vw] h-[50vw] max-w-[600px] max-h-[600px] bg-gradient-to-br from-blue-500/10 to-indigo-500/10 dark:from-blue-500/20 dark:to-indigo-500/20 rounded-full blur-[140px]" />
+        <div className="absolute top-[40%] -left-[10%] w-[40vw] h-[40vw] max-w-[500px] max-h-[500px] bg-gradient-to-tr from-amber-500/10 to-rose-500/10 dark:from-amber-500/15 dark:to-purple-500/15 rounded-full blur-[120px]" />
       </div>
 
-      <div className="container mx-auto px-4 relative z-10 pt-8 md:pt-12">
-        {/* HERO HEADER */}
-        <Motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="relative mb-12 bg-gray-50 dark:bg-gray-900 rounded-[2.5rem] p-8 md:p-12 border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden"
-        >
-          <div className="absolute top-0 right-0 p-4 opacity-5 select-none pointer-events-none">
-            <FiZap size={140} className="text-blue-500" />
-          </div>
-
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 pt-6 md:pt-10">
+        {/* Navigation Breadcrumb Back */}
+        <div className="mb-6">
           <Link
             to="/"
-            className="inline-flex items-center gap-2 text-slate-400 hover:text-blue-500 transition-all mb-8 font-bold text-[11px] uppercase tracking-[0.2em]"
+            className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 transition-colors bg-white/60 dark:bg-slate-900/60 backdrop-blur-md px-4 py-2 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-xs"
           >
             <FiArrowLeft size={16} /> Quay lại trang chủ
           </Link>
+        </div>
 
-          <div className="max-w-3xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500 text-white text-[10px] font-black uppercase tracking-widest mb-6 shadow-lg shadow-blue-500/20">
-              <FiActivity size={12} />
-              AI Phong Thủy
+        {/* HERO SECTION */}
+        <section className="relative mb-10 overflow-hidden rounded-3xl md:rounded-[2.5rem] bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950 text-white p-6 sm:p-10 md:p-14 border border-slate-800 shadow-2xl">
+          {/* Subtle Cyber-Fengshui Background Patterns */}
+          <div className="absolute top-0 right-0 p-8 opacity-10 select-none pointer-events-none transform translate-x-8 -translate-y-8">
+            <FiCompass size={280} className="text-blue-400 animate-spin-slow" />
+          </div>
+          <div className="absolute -bottom-10 -right-10 w-64 h-64 bg-blue-500/20 rounded-full blur-3xl pointer-events-none" />
+
+          <div className="relative z-10 max-w-3xl min-w-0">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-400/30 text-xs font-black uppercase tracking-widest mb-6 backdrop-blur-md">
+              <FiZap size={14} className="text-amber-400" />
+              TienTech FengShui Intelligence
             </div>
 
-            <h1 className="text-4xl md:text-6xl font-black text-slate-900 dark:text-white mb-6 leading-[1.1] tracking-tight">
-              Khám Phá <span className="text-blue-500">Bản Mệnh</span> <br />
-              <span className="text-slate-400 dark:text-slate-500 font-serif italic font-light">
-                Cho Thiết Bị Công Nghệ
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black tracking-tight leading-[1.15] mb-5 text-white">
+              Khai Vận <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-300 to-amber-300">Công Nghệ</span>
+              <br />
+              <span className="font-serif italic font-normal text-slate-300 text-2xl sm:text-3xl md:text-4xl block mt-1">
+                Ngũ Hành Tương Sinh • Vượng Khí Tài Lộc
               </span>
             </h1>
 
-            <p className="text-slate-600 dark:text-slate-400 text-lg font-medium leading-relaxed max-w-2xl">
-              Sử dụng trí tuệ nhân tạo để phân tích quẻ mệnh, giúp bạn lựa chọn
-              những thiết bị mang lại sự hanh thông và tài lộc.
+            <p className="text-slate-300 text-sm sm:text-base md:text-lg font-normal leading-relaxed max-w-2xl min-w-0 break-words mb-8">
+              Mỗi thiết bị công nghệ bạn đồng hành hằng ngày đều mang trường năng lượng riêng biệt. Thuật toán phân tích Bản Mệnh kết hợp trí tuệ nhân tạo độc quyền từ TienTech giúp bạn chọn đúng sản phẩm có màu sắc và thuộc tính tương sinh đại cát.
             </p>
+
+            {/* Elements Quick Visual Badges */}
+            {allElements.length > 0 && (
+              <div className="flex flex-wrap items-center gap-2 pt-2">
+                <span className="text-xs uppercase font-bold tracking-wider text-slate-400 mr-2">
+                  Ngũ Hành:
+                </span>
+                {allElements.map((el) => {
+                  const isActive = fsDetail?.element === el.key;
+                  return (
+                    <span
+                      key={el.key}
+                      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
+                        isActive
+                          ? "bg-amber-400/20 text-amber-300 border border-amber-400/50 shadow-sm"
+                          : "bg-white/5 text-slate-300 border border-white/10"
+                      }`}
+                    >
+                      <span>{el.icon}</span>
+                      <span>{el.name}</span>
+                    </span>
+                  );
+                })}
+              </div>
+            )}
           </div>
-        </Motion.div>
+        </section>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-          {/* LEFT COLUMN: FILTERS */}
-          <div className="lg:col-span-4 space-y-8">
-            <section className="bg-white dark:bg-gray-900 rounded-3xl p-8 border border-gray-100 dark:border-gray-800 shadow-xl space-y-8">
-              <div className="flex items-center gap-3">
-                <div className="size-10 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center text-blue-500">
-                  <FiFilter size={18} />
+        {/* INTERACTIVE FENG SHUI CONSOLE */}
+        <section className="mb-10 bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 border border-slate-200 dark:border-slate-800 shadow-xl relative">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-slate-100 dark:border-slate-800">
+            <div>
+              <div className="flex items-center gap-2.5">
+                <div className="w-10 h-10 rounded-2xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold">
+                  <FiCompass size={20} />
                 </div>
-                <h3 className="text-sm font-black uppercase tracking-widest text-slate-900 dark:text-white">
-                  Bộ lọc tinh chỉnh
-                </h3>
-              </div>
-
-              <div className="space-y-6">
                 <div>
-                  <label className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em] mb-3 block">
-                    Năm sinh của bạn
-                  </label>
-                  <Select
-                    options={yearOptions}
-                    value={
-                      birthYear ? { value: birthYear, label: birthYear } : null
-                    }
-                    onChange={(opt) => setBirthYear(opt.value)}
-                    placeholder="Chọn năm sinh..."
-                    styles={selectStyles}
-                  />
+                  <h2 className="text-lg sm:text-xl font-black uppercase tracking-tight text-slate-900 dark:text-white">
+                    Thiết Lập Quẻ Mệnh Cá Nhân
+                  </h2>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    Dữ liệu được đối soát trực tiếp từ động cơ Phong Thủy Bát Trạch & Can Chi chuẩn xác.
+                  </p>
                 </div>
-
-                <div className="grid grid-cols-1 gap-6">
-                  <div>
-                    <label className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em] mb-3 block">
-                      Thương hiệu
-                    </label>
-                    <select
-                      className="w-full h-12 bg-gray-50 dark:bg-gray-800 border border-transparent dark:border-gray-700 rounded-xl px-5 text-sm font-semibold text-slate-900 dark:text-white outline-none focus:border-blue-500 transition-all appearance-none"
-                      value={brandId}
-                      onChange={(e) => setBrandId(e.target.value)}
-                    >
-                      <option value="">Tất cả thương hiệu</option>
-                      {brands.map((b) => (
-                        <option key={b.id} value={b.id}>
-                          {b.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em] mb-3 block">
-                      Danh mục
-                    </label>
-                    <select
-                      className="w-full h-12 bg-gray-50 dark:bg-gray-800 border border-transparent dark:border-gray-700 rounded-xl px-5 text-sm font-semibold text-slate-900 dark:text-white outline-none focus:border-blue-500 transition-all appearance-none"
-                      value={categoryId}
-                      onChange={(e) => setCategoryId(e.target.value)}
-                    >
-                      <option value="">Mọi danh mục</option>
-                      {categories.map((c) => (
-                        <option key={c.id} value={c.id}>
-                          {c.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <input
-                      type="number"
-                      placeholder="Giá từ"
-                      className="w-full h-12 bg-gray-50 dark:bg-gray-800 border border-transparent dark:border-gray-700 rounded-xl px-5 text-sm font-semibold text-slate-900 dark:text-white outline-none focus:border-blue-500 transition-all"
-                      value={minPrice}
-                      onChange={(e) => setMinPrice(e.target.value)}
-                    />
-                    <input
-                      type="number"
-                      placeholder="Đến giá"
-                      className="w-full h-12 bg-gray-50 dark:bg-gray-800 border border-transparent dark:border-gray-700 rounded-xl px-5 text-sm font-semibold text-slate-900 dark:text-white outline-none focus:border-blue-500 transition-all"
-                      value={maxPrice}
-                      onChange={(e) => setMaxPrice(e.target.value)}
-                    />
-                  </div>
-                </div>
-
-                <Button
-                  variant="primary"
-                  className="w-full h-14 !rounded-xl text-xs font-black uppercase tracking-[0.2em] bg-blue-600 hover:bg-blue-700 text-white shadow-xl shadow-blue-500/20 border-none"
-                  icon={FiSearch}
-                  onClick={handleSearch}
-                >
-                  TÌM KIẾM SẢN PHẨM
-                </Button>
               </div>
-            </section>
+            </div>
 
-            {/* INFO CARD - ĐỒNG BỘ MÀU TRẮNG SÁNG */}
-            <div className="bg-gray-50 dark:bg-gray-900 p-8 rounded-3xl text-slate-900 dark:text-white relative overflow-hidden border border-gray-100 dark:border-gray-800 shadow-sm">
-              <div className="absolute top-0 right-0 size-32 bg-blue-500/5 rounded-full blur-2xl"></div>
-              <FiInfo className="mb-4 text-blue-500" size={24} />
-              <h4 className="text-lg font-bold mb-2 uppercase tracking-tight">
-                Mẹo Phong Thủy
-              </h4>
-              <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed font-medium">
-                Màu sắc tương sinh sẽ giúp cân bằng năng lượng và hỗ trợ công
-                việc hiệu quả hơn. Hãy ưu tiên chọn các thiết bị có màu sắc{" "}
-                <span className="text-blue-600 dark:text-blue-400 font-bold">
-                  Đại Cát
-                </span>{" "}
-                để tối ưu tài lộc.
-              </p>
+            {/* Quick Year & Gender Selector */}
+            <div className="flex flex-wrap items-center gap-3">
+              {/* Year Select */}
+              <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-800/80 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-700">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 pl-3">
+                  Năm sinh:
+                </span>
+                <select
+                  value={birthYear}
+                  onChange={(e) => {
+                    setBirthYear(Number(e.target.value));
+                    setPage(1);
+                  }}
+                  className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-bold text-sm px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                >
+                  {yearOptions.map((yr) => (
+                    <option key={yr} value={yr}>
+                      {yr}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Gender Toggle */}
+              <div className="flex items-center bg-slate-50 dark:bg-slate-800/80 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-700">
+                <button
+                  type="button"
+                  onClick={() => setGender("male")}
+                  className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${
+                    gender === "male"
+                      ? "bg-blue-600 text-white shadow-md shadow-blue-500/20"
+                      : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                  }`}
+                >
+                  Nam Mạng
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setGender("female")}
+                  className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${
+                    gender === "female"
+                      ? "bg-rose-600 text-white shadow-md shadow-rose-500/20"
+                      : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                  }`}
+                >
+                  Nữ Mạng
+                </button>
+              </div>
             </div>
           </div>
 
-          {/* RIGHT COLUMN: RESULTS */}
-          <div className="lg:col-span-8 space-y-10">
-            {/* ANALYSIS RESULTS BAR */}
-            <AnimatePresence>
-              {birthYear && calculateElementByYear(birthYear) && (
-                <Motion.div
-                  initial={{ opacity: 0, y: 15 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="bg-gradient-to-r from-blue-600 to-indigo-600 p-6 md:p-8 rounded-[2rem] text-white shadow-xl mb-6 relative overflow-hidden"
-                >
-                  <div className="absolute right-0 top-0 size-48 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
-                  <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-                    <div>
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className="text-2xl">
-                          {calculateElementByYear(birthYear).icon}
-                        </span>
-                        <h3 className="text-2xl font-black uppercase tracking-tight">
-                          {calculateElementByYear(birthYear).name} • Sinh năm{" "}
-                          {birthYear}
-                        </h3>
+          {/* DYNAMIC FENG SHUI ANALYSIS REPORT (FROM BACKEND) */}
+          <div className="mt-6">
+            {loadingFengShui ? (
+              <div className="py-10 flex flex-col items-center justify-center gap-3">
+                <UnifiedSpinner size="md" variant="primary" />
+                <span className="text-xs font-bold uppercase tracking-widest text-slate-400">
+                  Đang khởi tạo quẻ mệnh từ máy chủ...
+                </span>
+              </div>
+            ) : fsDetail ? (
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+                {/* Element Badge Card */}
+                <div className="lg:col-span-5 bg-gradient-to-br from-slate-900 to-indigo-950 text-white p-6 sm:p-7 rounded-2xl relative overflow-hidden flex flex-col justify-between border border-slate-800 shadow-md">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl pointer-events-none" />
+
+                  <div>
+                    <div className="flex items-center justify-between gap-4 mb-4">
+                      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-amber-300 text-[11px] font-black uppercase tracking-wider border border-white/15">
+                        <FiAward size={13} />
+                        Cung Mệnh Chuẩn Xác
                       </div>
-                      <p className="text-blue-100 text-sm font-medium leading-relaxed max-w-xl">
-                        {calculateElementByYear(birthYear).desc}
-                      </p>
-                    </div>
-                    <div className="px-5 py-3 bg-white/15 backdrop-blur-md rounded-2xl border border-white/20 text-center shrink-0">
-                      <p className="text-[10px] font-black uppercase tracking-widest text-blue-200">
-                        Độ Tương Tích AI
-                      </p>
-                      <p className="text-2xl font-black text-amber-300">
-                        98.5%
-                      </p>
-                    </div>
-                  </div>
-                </Motion.div>
-              )}
-
-              {luckyColors.length > 0 && (
-                <Motion.div
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="bg-blue-50 dark:bg-blue-900/10 p-6 md:p-8 rounded-3xl border border-blue-100 dark:border-blue-900/30 flex flex-col md:flex-row items-center justify-between gap-6"
-                >
-                  <div className="flex items-center gap-3 text-blue-600 dark:text-blue-400 font-black uppercase tracking-widest text-[11px]">
-                    <FiActivity size={18} />
-                    <span>Màu sắc đại cát:</span>
-                  </div>
-                  <div className="flex flex-wrap gap-3">
-                    {luckyColors.map((c, i) => (
-                      <span
-                        key={i}
-                        className="px-5 py-2 bg-white dark:bg-gray-800 text-slate-900 dark:text-white border border-gray-100 dark:border-gray-700 rounded-xl text-[11px] font-black uppercase tracking-widest shadow-sm border-b-4 border-blue-500/20"
-                      >
-                        {c}
+                      <span className="text-xs text-slate-400 font-medium">
+                        Sinh năm {fsDetail.year} ({fsDetail.gender})
                       </span>
-                    ))}
-                  </div>
-                </Motion.div>
-              )}
-            </AnimatePresence>
+                    </div>
 
+                    <div className="flex items-baseline gap-3 mb-2">
+                      <h3 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+                        Mệnh {fsDetail.element}
+                      </h3>
+                      <span className="text-sm font-semibold text-blue-300">
+                        • Cung {fsDetail.cungPhi}
+                      </span>
+                      <span className="text-xs text-slate-400">
+                        (Mệnh Niên: {fsDetail.menhNien})
+                      </span>
+                    </div>
+
+                    <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-normal mt-2">
+                      {fsDetail.advice}
+                    </p>
+                  </div>
+
+                  {/* Lucky Numbers & Advice */}
+                  <div className="mt-6 pt-4 border-t border-white/10 flex flex-wrap items-center justify-between gap-4">
+                    <div>
+                      <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 block mb-1">
+                        Con Số Khai Vận:
+                      </span>
+                      <div className="flex items-center gap-1.5">
+                        {fsDetail.luckyNumbers?.map((num) => (
+                          <span
+                            key={num}
+                            className="w-7 h-7 rounded-lg bg-white/10 text-amber-300 font-black text-xs flex items-center justify-center border border-white/10"
+                          >
+                            {num}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 block mb-1">
+                        Tỷ Lệ Tương Hợp AI
+                      </span>
+                      <span className="text-lg font-black text-emerald-400">
+                        99.2% Đại Cát
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Energy & Color Harmony Matrix */}
+                <div className="lg:col-span-7 bg-slate-50 dark:bg-slate-800/40 rounded-2xl p-6 border border-slate-200/80 dark:border-slate-800 flex flex-col justify-between gap-5">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {/* Main Lucky Colors */}
+                    <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
+                      <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 text-xs font-black uppercase tracking-wider mb-2.5">
+                        <FiCheckCircle size={15} />
+                        Màu Bản Mệnh (Đại Cát)
+                      </div>
+                      <div className="flex flex-wrap gap-1.5">
+                        {fsDetail.luckyColors?.map((c, i) => (
+                          <span
+                            key={i}
+                            className="px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wider bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/50"
+                          >
+                            {c}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Support Colors */}
+                    <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
+                      <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400 text-xs font-black uppercase tracking-wider mb-2.5">
+                        <FiZap size={15} />
+                        Màu Tương Sinh (Bổ Trợ)
+                      </div>
+                      <div className="flex flex-wrap gap-1.5">
+                        {fsDetail.supportColors?.map((c, i) => (
+                          <span
+                            key={i}
+                            className="px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wider bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/50"
+                          >
+                            {c}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Bad / Incompatible Colors warning */}
+                  {fsDetail.badColors && fsDetail.badColors.length > 0 && (
+                    <div className="flex flex-wrap items-center gap-2 text-xs text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/30 px-3.5 py-2.5 rounded-xl border border-rose-200 dark:border-rose-900/50">
+                      <div className="flex items-center gap-1.5 font-black uppercase tracking-wider shrink-0">
+                        <FiXCircle size={14} />
+                        Màu Kỵ Cần Hạn Chế:
+                      </div>
+                      <div className="flex flex-wrap gap-1.5">
+                        {fsDetail.badColors.map((bc, idx) => (
+                          <span
+                            key={idx}
+                            className="font-semibold text-rose-700 dark:text-rose-300 bg-white/80 dark:bg-slate-900 px-2 py-0.5 rounded text-[11px]"
+                          >
+                            {bc}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Workspace Tips */}
+                  <div className="text-xs text-slate-600 dark:text-slate-400 bg-white dark:bg-slate-900 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 flex items-start gap-2.5">
+                    <FiInfo className="text-blue-500 shrink-0 mt-0.5" size={16} />
+                    <div className="min-w-0 break-words">
+                      <span className="font-bold text-slate-900 dark:text-white mr-1">
+                        Mẹo đặt bàn làm việc:
+                      </span>
+                      {fsDetail.workspaceTip}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : null}
+          </div>
+        </section>
+
+        {/* MAIN LAYOUT: FILTERS & PRODUCTS GRID */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          {/* SIDEBAR FILTER PANEL */}
+          <aside className="lg:col-span-3 space-y-6">
+            <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm sticky top-24">
+              <div className="flex items-center justify-between pb-5 border-b border-slate-100 dark:border-slate-800">
+                <div className="flex items-center gap-2.5">
+                  <FiFilter className="text-blue-600 dark:text-blue-400" size={18} />
+                  <h3 className="text-sm font-black uppercase tracking-wider text-slate-900 dark:text-white">
+                    Bộ Lọc Sản Phẩm
+                  </h3>
+                </div>
+                {(brandId || categoryId || minPrice || maxPrice || sortBy !== "popular") && (
+                  <button
+                    onClick={resetFilters}
+                    className="text-[11px] font-bold text-slate-400 hover:text-rose-500 flex items-center gap-1 transition-colors"
+                  >
+                    <FiRefreshCw size={11} /> Xoá lọc
+                  </button>
+                )}
+              </div>
+
+              <div className="space-y-5 pt-5">
+                {/* Brand Selector */}
+                <div>
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2 block">
+                    Thương Hiệu
+                  </label>
+                  <select
+                    value={brandId}
+                    onChange={(e) => {
+                      setBrandId(e.target.value);
+                      setPage(1);
+                    }}
+                    className="w-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-semibold text-xs px-3.5 py-3 rounded-xl border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                  >
+                    <option value="">Tất cả thương hiệu</option>
+                    {brands.map((b) => (
+                      <option key={b.id} value={b.id}>
+                        {b.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Category Selector */}
+                <div>
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2 block">
+                    Danh Mục
+                  </label>
+                  <select
+                    value={categoryId}
+                    onChange={(e) => {
+                      setCategoryId(e.target.value);
+                      setPage(1);
+                    }}
+                    className="w-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-semibold text-xs px-3.5 py-3 rounded-xl border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                  >
+                    <option value="">Tất cả danh mục</option>
+                    {categories.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Price Range */}
+                <div>
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2 block">
+                    Mức Giá (VNĐ)
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      type="number"
+                      placeholder="Từ"
+                      value={minPrice}
+                      onChange={(e) => {
+                        setMinPrice(e.target.value);
+                        setPage(1);
+                      }}
+                      className="w-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-semibold text-xs px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    <input
+                      type="number"
+                      placeholder="Đến"
+                      value={maxPrice}
+                      onChange={(e) => {
+                        setMaxPrice(e.target.value);
+                        setPage(1);
+                      }}
+                      className="w-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-semibold text-xs px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                </div>
+
+                {/* Quick Feng Shui Helper Box */}
+                <div className="p-4 rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 border border-blue-100 dark:border-blue-900/40 text-xs text-slate-600 dark:text-slate-300">
+                  <div className="flex items-center gap-1.5 font-bold text-blue-700 dark:text-blue-300 uppercase tracking-wider mb-1.5">
+                    <FiSliders size={14} /> Trợ lý Quẻ Mệnh
+                  </div>
+                  <p className="leading-relaxed">
+                    Bạn có thể bấm vào bong bóng chat góc phải để đối thoại trực tiếp với Master AI và nhận gợi ý thông minh nhất.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </aside>
+
+          {/* MAIN RESULTS CONTAINER */}
+          <main className="lg:col-span-9 space-y-6 min-w-0">
+            {/* Top Toolbar: Result count & Sort Dropdown */}
+            <div className="bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300">
+                  Tìm thấy{" "}
+                  <strong className="text-slate-900 dark:text-white font-black">
+                    {totalItems}
+                  </strong>{" "}
+                  thiết bị tương sinh quẻ mệnh {fsDetail?.element ? `Mệnh ${fsDetail.element}` : ""}
+                </span>
+              </div>
+
+              {/* Sort Options */}
+              <div className="flex items-center gap-2 shrink-0">
+                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                  Sắp xếp:
+                </span>
+                <select
+                  value={sortBy}
+                  onChange={(e) => {
+                    setSortBy(e.target.value);
+                    setPage(1);
+                  }}
+                  className="bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-bold text-xs px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                >
+                  <option value="popular">Bán chạy / Nổi bật</option>
+                  <option value="price_asc">Giá: Thấp đến cao</option>
+                  <option value="price_desc">Giá: Cao đến thấp</option>
+                </select>
+              </div>
+            </div>
+
+            {/* PRODUCT GRID / SPINNER / EMPTY STATE */}
             <div className="min-h-[500px]">
               {loading ? (
-                <div className="flex flex-col items-center justify-center py-40 gap-6">
+                <div className="flex flex-col items-center justify-center py-36 gap-4">
                   <UnifiedSpinner size="lg" variant="primary" />
-                  <p className="text-slate-400 font-black uppercase tracking-widest text-[11px]">
-                    Đang truy vấn thiên cơ...
+                  <p className="text-xs font-black uppercase tracking-widest text-slate-400 animate-pulse">
+                    Đang chiêm bái & quét năng lượng sản phẩm...
                   </p>
                 </div>
               ) : products.length === 0 ? (
-                <div className="bg-gray-50 dark:bg-gray-900/50 rounded-[3rem] p-24 text-center border-2 border-dashed border-gray-100 dark:border-gray-800">
-                  <FiLayers className="text-5xl text-gray-200 dark:text-gray-700 mx-auto mb-6" />
-                  <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">
-                    Chưa có quẻ mệnh
+                <div className="bg-white dark:bg-slate-900 rounded-3xl p-16 sm:p-24 text-center border-2 border-dashed border-slate-200 dark:border-slate-800">
+                  <div className="w-20 h-20 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 mx-auto mb-5 flex items-center justify-center">
+                    <FiLayers size={36} />
+                  </div>
+                  <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
+                    Không tìm thấy sản phẩm phù hợp bộ lọc
                   </h3>
-                  <p className="text-slate-500 dark:text-slate-400 text-sm max-w-xs mx-auto font-medium">
-                    Hãy nhập năm sinh hoặc trò chuyện với trợ lý AI để nhận gợi
-                    ý.
+                  <p className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm max-w-sm mx-auto mb-6">
+                    Hãy thử mở rộng khoảng giá hoặc chọn thương hiệu / danh mục khác để xem thêm nhiều quẻ cát.
                   </p>
+                  <Button
+                    variant="primary"
+                    onClick={resetFilters}
+                    icon={FiRefreshCw}
+                    className="!rounded-xl text-xs font-bold uppercase tracking-wider"
+                  >
+                    Xoá bộ lọc tìm kiếm
+                  </Button>
                 </div>
               ) : (
-                <div className="space-y-16">
-                  <div className="grid grid-cols-2 md:grid-cols-2 xl:grid-cols-3 gap-8">
-                    {products.map((p, index) => (
+                <div className="space-y-10">
+                  <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-3 gap-4 sm:gap-6">
+                    {products.map((p, idx) => (
                       <Motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.05 }}
                         key={p.id}
+                        initial={{ opacity: 0, y: 15 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: Math.min(idx * 0.04, 0.4) }}
                       >
                         <ProductCard
                           product={p}
-                          highlightColor={luckyColors.some((color) =>
-                            p.color
-                              ?.toLowerCase()
-                              .includes(color.toLowerCase()),
-                          )}
+                          highlightColor={
+                            p.isLuckyColor ||
+                            luckyColors.some((c) =>
+                              (p.color || "")
+                                .toLowerCase()
+                                .includes(c.toLowerCase())
+                            )
+                          }
                         />
                       </Motion.div>
                     ))}
                   </div>
 
+                  {/* Pagination */}
                   {totalPages > 1 && (
-                    <div className="flex justify-center pt-10 border-t border-gray-50 dark:border-gray-800">
+                    <div className="flex justify-center pt-8 border-t border-slate-200/80 dark:border-slate-800">
                       <AppPagination
                         page={page}
                         totalPages={totalPages}
@@ -458,7 +685,7 @@ const FortuneProducts = () => {
                 </div>
               )}
             </div>
-          </div>
+          </main>
         </div>
       </div>
     </div>
