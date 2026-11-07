@@ -88,15 +88,15 @@ const GenericAdminModal = ({
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 60, scale: 0.96 }}
           transition={{ type: "spring", stiffness: 320, damping: 28 }}
-          className="relative w-full max-w-2xl bg-white dark:bg-slate-900 rounded-t-[32px] sm:rounded-[32px] shadow-2xl overflow-hidden flex flex-col border border-slate-200/80 dark:border-slate-800 max-h-[92vh] sm:max-h-[85vh]"
+          className="relative w-full max-w-2xl bg-white dark:bg-dark-surface rounded-t-[32px] sm:rounded-[32px] shadow-2xl overflow-hidden flex flex-col border border-slate-200/80 dark:border-dark-border max-h-[92vh] sm:max-h-[85vh]"
         >
           {/* Mobile Drag Indicator Pill */}
-          <div className="flex justify-center pt-3 pb-1 sm:hidden bg-slate-50/80 dark:bg-slate-950/60">
+          <div className="flex justify-center pt-3 pb-1 sm:hidden bg-slate-50/80 dark:bg-dark-bg/60">
             <div className="w-12 h-1.5 rounded-full bg-slate-300 dark:bg-slate-700" />
           </div>
 
           {/* Header */}
-          <div className="p-4 sm:p-6 md:p-8 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/60 dark:bg-slate-950/40">
+          <div className="p-4 sm:p-6 md:p-8 border-b border-slate-100 dark:border-dark-border flex items-center justify-between bg-slate-50/60 dark:bg-dark-bg/40">
             <div className="flex items-center gap-3">
               <div className="size-10 bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 rounded-2xl flex items-center justify-center text-xl shrink-0">
                 {editingItem ? <FiEdit3 /> : <FiPlusCircle />}
@@ -105,7 +105,7 @@ const GenericAdminModal = ({
                 <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white tracking-tight truncate">
                   {editingItem ? `Chỉnh sửa ${title}` : `Thêm mới ${title}`}
                 </h2>
-                <p className="text-[10px] sm:text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mt-0.5">
+                <p className="text-[10px] sm:text-[11px] font-bold text-slate-400 dark:text-dark-text-secondary uppercase tracking-wider mt-0.5">
                   Quản trị hệ thống TienTech
                 </p>
               </div>
@@ -114,7 +114,7 @@ const GenericAdminModal = ({
             <button
               type="button"
               onClick={onClose}
-              className="size-10 rounded-2xl bg-white dark:bg-slate-800 text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center justify-center transition-all cursor-pointer border border-slate-200/60 dark:border-slate-700 shrink-0 active:scale-95"
+              className="size-10 rounded-2xl bg-white dark:bg-dark-card text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center justify-center transition-all cursor-pointer border border-slate-200/60 dark:border-dark-border shrink-0 active:scale-95"
             >
               <FiX size={18} />
             </button>
@@ -140,7 +140,7 @@ const GenericAdminModal = ({
                         value={formData[field.name] || ""}
                         onChange={handleChange}
                         placeholder={field.placeholder}
-                        className="w-full bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 text-sm font-medium focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none min-h-[110px] text-slate-900 dark:text-white placeholder:text-slate-400"
+                        className="w-full bg-slate-50 dark:bg-dark-bg/60 border border-slate-200 dark:border-dark-border rounded-2xl p-4 text-sm font-medium focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none min-h-[110px] text-slate-900 dark:text-white placeholder:text-slate-400"
                         required={field.required}
                       />
                     ) : field.type === "select" ? (
@@ -148,19 +148,19 @@ const GenericAdminModal = ({
                         name={field.name}
                         value={formData[field.name] || ""}
                         onChange={handleChange}
-                        className="w-full min-h-[44px] bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-2xl px-4 text-sm font-medium focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none appearance-none text-slate-900 dark:text-white dark:[color-scheme:dark] [&>option]:bg-white [&>option]:text-slate-900 dark:[&>option]:bg-slate-900 dark:[&>option]:text-slate-100"
+                        className="w-full min-h-[44px] bg-slate-50 dark:bg-dark-bg/60 border border-slate-200 dark:border-dark-border rounded-2xl px-4 text-sm font-medium focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none appearance-none text-slate-900 dark:text-white dark:[color-scheme:dark] [&>option]:bg-white [&>option]:text-slate-900 dark:[&>option]:bg-dark-surface dark:[&>option]:text-slate-100"
                         required={field.required}
                       >
-                        <option value="" className="bg-white text-slate-900 dark:bg-slate-900 dark:text-slate-100">-- Chọn {field.label} --</option>
+                        <option value="" className="bg-white text-slate-900 dark:bg-dark-surface dark:text-slate-100">-- Chọn {field.label} --</option>
                         {field.options?.map((opt) => (
-                          <option key={opt.value} value={opt.value} className="bg-white text-slate-900 dark:bg-slate-900 dark:text-slate-100">
+                          <option key={opt.value} value={opt.value} className="bg-white text-slate-900 dark:bg-dark-surface dark:text-slate-100">
                             {opt.label}
                           </option>
                         ))}
                       </select>
                     ) : field.type === "image" ? (
                       <div className="space-y-3">
-                        <div className="relative group w-full aspect-video bg-slate-50 dark:bg-slate-800/60 rounded-2xl overflow-hidden border-2 border-dashed border-slate-200 dark:border-slate-700 hover:border-blue-500 transition-colors">
+                        <div className="relative group w-full aspect-video bg-slate-50 dark:bg-dark-bg/60 rounded-2xl overflow-hidden border-2 border-dashed border-slate-200 dark:border-dark-border hover:border-blue-500 transition-colors">
                           {previews[field.name] ? (
                             <img
                               src={previews[field.name]}
@@ -184,7 +184,7 @@ const GenericAdminModal = ({
                         </div>
                       </div>
                     ) : field.type === "checkbox" ? (
-                      <div className="flex items-center gap-3 min-h-[44px] p-3.5 bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700">
+                      <div className="flex items-center gap-3 min-h-[44px] p-3.5 bg-slate-50 dark:bg-dark-bg/60 rounded-2xl border border-slate-200 dark:border-dark-border">
                         <input
                           type="checkbox"
                           name={field.name}
@@ -203,7 +203,7 @@ const GenericAdminModal = ({
                         value={formData[field.name] || ""}
                         onChange={handleChange}
                         placeholder={field.placeholder}
-                        className="w-full min-h-[44px] bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-2xl px-4 text-sm font-medium focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none text-slate-900 dark:text-white placeholder:text-slate-400"
+                        className="w-full min-h-[44px] bg-slate-50 dark:bg-dark-bg/60 border border-slate-200 dark:border-dark-border rounded-2xl px-4 text-sm font-medium focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none text-slate-900 dark:text-white placeholder:text-slate-400"
                         required={field.required}
                       />
                     )}
@@ -213,7 +213,7 @@ const GenericAdminModal = ({
             </div>
 
             {/* Sticky Action Footer */}
-            <div className="p-4 sm:p-6 border-t border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-950/40 flex items-center justify-end gap-3">
+            <div className="p-4 sm:p-6 border-t border-slate-100 dark:border-dark-border bg-slate-50/60 dark:bg-dark-bg/40 flex items-center justify-end gap-3">
               <button
                 type="button"
                 onClick={onClose}

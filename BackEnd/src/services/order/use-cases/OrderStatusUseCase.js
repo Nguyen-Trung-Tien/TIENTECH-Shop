@@ -1,5 +1,6 @@
 const db = require("../../../models");
 const NotificationService = require("../../notification/NotificationService");
+const { deleteCacheByPattern } = require("../../../config/redis");
 
 const VALID_ADMIN_TRANSITIONS = {
   pending: ["confirmed", "cancelled"],
@@ -386,6 +387,12 @@ const updateOrderStatus = async (
     await order.save({ transaction: t });
     await t.commit();
 
+    try {
+      await deleteCacheByPattern("dashboard_*");
+    } catch (cacheErr) {
+      console.warn("Failed to invalidate dashboard cache:", cacheErr?.message);
+    }
+
     return {
       errCode: 0,
       errMessage: "Update order status successfully",
@@ -450,6 +457,12 @@ const updatePaymentStatus = async (id, paymentStatus) => {
 
     await order.save({ transaction: t });
     await t.commit();
+
+    try {
+      await deleteCacheByPattern("dashboard_*");
+    } catch (cacheErr) {
+      console.warn("Failed to invalidate dashboard cache:", cacheErr?.message);
+    }
 
     return {
       errCode: 0,

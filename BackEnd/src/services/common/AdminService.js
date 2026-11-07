@@ -46,91 +46,78 @@ const getDashboardData = async (period) => {
     else if (period === "month") startDate = startOfThisMonth;
     else startDate = new Date(0); // All time
 
-    // 1. Sản phẩm: Tổng số và tăng trưởng tháng này vs tháng trước
-    const totalProducts = await db.Product.count();
-    const productsThisMonth = await db.Product.count({
-      where: { createdAt: { [Op.gte]: startOfThisMonth } },
-    });
-    const productsLastMonth = await db.Product.count({
-      where: {
-        createdAt: {
-          [Op.gte]: startOfLastMonth,
-          [Op.lt]: startOfThisMonth,
+    // Parallelized DB metrics execution for high performance
+    const [
+      totalProducts,
+      productsThisMonth,
+      productsLastMonth,
+      todayOrders,
+      yesterdayOrders,
+      totalOrders,
+      totalRevenueResultAllTime,
+      revenueThisPeriodResult,
+      totalUsersAllTime,
+      newUsers,
+      usersThisMonth,
+      usersLastMonth,
+      revenueThisMonthResult,
+      revenueLastMonthResult,
+    ] = await Promise.all([
+      // 1. Sản phẩm: Tổng số và tăng trưởng
+      db.Product.count(),
+      db.Product.count({ where: { createdAt: { [Op.gte]: startOfThisMonth } } }),
+      db.Product.count({
+        where: { createdAt: { [Op.gte]: startOfLastMonth, [Op.lt]: startOfThisMonth } },
+      }),
+      // 2. Đơn hàng: Hôm nay và hôm qua
+      db.Order.count({ where: { createdAt: { [Op.gte]: startOfToday } } }),
+      db.Order.count({
+        where: { createdAt: { [Op.gte]: startOfYesterday, [Op.lt]: startOfToday } },
+      }),
+      // Summary for current period
+      db.Order.count({ where: { createdAt: { [Op.gte]: startDate } } }),
+      // 3. Doanh thu
+      db.Order.sum("totalPrice", {
+        where: { [Op.or]: [{ paymentStatus: "paid" }, { status: "delivered" }] },
+      }),
+      db.Order.sum("totalPrice", {
+        where: {
+          createdAt: { [Op.gte]: startDate },
+          [Op.or]: [{ paymentStatus: "paid" }, { status: "delivered" }],
         },
-      },
-    });
-
-    // 2. Đơn hàng: Hôm nay và tăng trưởng hôm nay vs hôm qua
-    const todayOrders = await db.Order.count({
-      where: { createdAt: { [Op.gte]: startOfToday } },
-    });
-    const yesterdayOrders = await db.Order.count({
-      where: {
-        createdAt: {
-          [Op.gte]: startOfYesterday,
-          [Op.lt]: startOfToday,
+      }),
+      // 4. Người dùng
+      db.User.count({ where: { role: "customer" } }),
+      db.User.count({
+        where: { role: "customer", createdAt: { [Op.gte]: startDate } },
+      }),
+      db.User.count({
+        where: { role: "customer", createdAt: { [Op.gte]: startOfThisMonth } },
+      }),
+      db.User.count({
+        where: {
+          role: "customer",
+          createdAt: { [Op.gte]: startOfLastMonth, [Op.lt]: startOfThisMonth },
         },
-      },
-    });
+      }),
+      // Doanh thu tháng này vs tháng trước
+      db.Order.sum("totalPrice", {
+        where: {
+          createdAt: { [Op.gte]: startOfThisMonth },
+          [Op.or]: [{ paymentStatus: "paid" }, { status: "delivered" }],
+        },
+      }),
+      db.Order.sum("totalPrice", {
+        where: {
+          createdAt: { [Op.gte]: startOfLastMonth, [Op.lt]: startOfThisMonth },
+          [Op.or]: [{ paymentStatus: "paid" }, { status: "delivered" }],
+        },
+      }),
+    ]);
 
-    // Summary for current period
-    const totalOrders = await db.Order.count({
-      where: { createdAt: { [Op.gte]: startDate } },
-    });
-
-    // 3. Doanh thu: Tổng và tăng trưởng tháng này vs tháng trước (Chỉ tính đơn đã thanh toán hoặc đã giao)
-    const totalRevenueResultAllTime = await db.Order.sum("totalPrice", {
-      where: {
-        [Op.or]: [{ paymentStatus: "paid" }, { status: "delivered" }],
-      },
-    });
     const totalRevenueAllTime = totalRevenueResultAllTime || 0;
-
-    const revenueThisPeriodResult = await db.Order.sum("totalPrice", {
-      where: {
-        createdAt: { [Op.gte]: startDate },
-        [Op.or]: [{ paymentStatus: "paid" }, { status: "delivered" }],
-      },
-    });
     const totalRevenuePeriod = revenueThisPeriodResult || 0;
-
-    // 4. Người dùng: Tổng và tăng trưởng người mới tháng này vs tháng trước
-    const totalUsersAllTime = await db.User.count({
-      where: { role: "customer" },
-    });
-    const newUsers = await db.User.count({
-      where: {
-        role: "customer",
-        createdAt: { [Op.gte]: startDate },
-      },
-    });
-    const usersThisMonth = await db.User.count({
-      where: {
-        role: "customer",
-        createdAt: { [Op.gte]: startOfThisMonth },
-      },
-    });
-    const usersLastMonth = await db.User.count({
-      where: {
-        role: "customer",
-        createdAt: { [Op.gte]: startOfLastMonth, [Op.lt]: startOfThisMonth },
-      },
-    });
-
-    const revenueThisMonthResult = await db.Order.sum("totalPrice", {
-      where: {
-        createdAt: { [Op.gte]: startOfThisMonth },
-        [Op.or]: [{ paymentStatus: "paid" }, { status: "delivered" }],
-      },
-    });
     const revenueThisMonth = revenueThisMonthResult || 0;
-
-    const revenueLastMonthResult = await db.Order.sum("totalPrice", {
-      where: {
-        createdAt: { [Op.gte]: startOfLastMonth, [Op.lt]: startOfThisMonth },
-        [Op.or]: [{ paymentStatus: "paid" }, { status: "delivered" }],
-      },
-    });
     const revenueLastMonth = revenueLastMonthResult || 0;
 
     const totalProfit = Math.round(totalRevenuePeriod * 0.2);
@@ -232,52 +219,56 @@ const getDashboardData = async (period) => {
     const revenueByMonth = groupByDate(29);
     const revenueByYear = groupByMonth();
 
-    // 6. Top selling products
-    const topProductsRaw = await db.OrderItem.findAll({
-      attributes: [
-        "productId",
-        "productName",
-        [db.sequelize.fn("SUM", db.sequelize.col("quantity")), "totalSold"],
-        [db.sequelize.fn("SUM", db.sequelize.col("subtotal")), "totalRevenue"],
-      ],
-      group: ["productId", "productName"],
-      order: [[db.sequelize.fn("SUM", db.sequelize.col("quantity")), "DESC"]],
-      limit: 5,
-      raw: true,
-    });
-
-    const cancelRequestedCount = await db.Order.count({
-      where: { status: "cancel_requested" },
-    });
-
-    const returnRequestedCount = await db.Order.count({
-      include: [
-        {
-          model: db.OrderItem,
-          as: "orderItems",
-          where: { returnStatus: "requested" },
-          required: true,
+    // 6. Top selling products, pending requests and low stock (Parallelized)
+    const [
+      topProductsRaw,
+      cancelRequestedCount,
+      returnRequestedCount,
+      lowStockCount,
+      lowStockProducts,
+    ] = await Promise.all([
+      db.OrderItem.findAll({
+        attributes: [
+          "productId",
+          "productName",
+          [db.sequelize.fn("SUM", db.sequelize.col("quantity")), "totalSold"],
+          [db.sequelize.fn("SUM", db.sequelize.col("subtotal")), "totalRevenue"],
+        ],
+        group: ["productId", "productName"],
+        order: [[db.sequelize.fn("SUM", db.sequelize.col("quantity")), "DESC"]],
+        limit: 5,
+        raw: true,
+      }),
+      db.Order.count({
+        where: { status: "cancel_requested" },
+      }),
+      db.Order.count({
+        include: [
+          {
+            model: db.OrderItem,
+            as: "orderItems",
+            where: { returnStatus: "requested" },
+            required: true,
+          },
+        ],
+        distinct: true,
+      }),
+      db.Product.count({
+        where: {
+          isActive: true,
+          totalStock: { [Op.lte]: 5 },
         },
-      ],
-      distinct: true,
-    });
-
-    const lowStockCount = await db.Product.count({
-      where: {
-        isActive: true,
-        totalStock: { [Op.lte]: 5 },
-      },
-    });
-
-    const lowStockProducts = await db.Product.findAll({
-      where: {
-        isActive: true,
-        totalStock: { [Op.lte]: 5 },
-      },
-      attributes: ["id", "name", "sku", "totalStock", "basePrice"],
-      limit: 5,
-      raw: true,
-    });
+      }),
+      db.Product.findAll({
+        where: {
+          isActive: true,
+          totalStock: { [Op.lte]: 5 },
+        },
+        attributes: ["id", "name", "sku", "totalStock", "basePrice"],
+        limit: 5,
+        raw: true,
+      }),
+    ]);
 
     const result = {
       totalProducts,

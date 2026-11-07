@@ -20,6 +20,10 @@ import {
   FiShoppingBag,
   FiCreditCard,
   FiChevronDown,
+  FiRotateCcw,
+  FiSlash,
+  FiAlertTriangle,
+  FiAlertCircle,
 } from "react-icons/fi";
 import { motion as Motion, AnimatePresence } from "framer-motion";
 
@@ -34,6 +38,7 @@ import {
   updateOrderStatus,
   deleteOrder,
 } from "../../../api/orderApi";
+import { processReturn } from "../../../api/orderItemApi";
 import { statusMap } from "../../../utils/StatusMap";
 import { StatusBadge } from "../../../utils/StatusBadge";
 import AppPagination from "../../../components/Pagination/Pagination";
@@ -221,10 +226,11 @@ const OrderManage = () => {
   const [selectedDetailOrder, setSelectedDetailOrder] = useState(null);
   const [confirmModal, setConfirmModal] = useState({
     show: false,
-    type: "delete",
+    type: "delete", // "delete" | "approve_cancel" | "reject_cancel" | "admin_cancel" | "process_return"
+    order: null,
     orderId: null,
     orderCode: null,
-    data: null,
+    reason: "",
   });
 
   const [statusModal, setStatusModal] = useState({
@@ -244,13 +250,33 @@ const OrderManage = () => {
   const [activeTab, setActiveTab] = useState(initialTab);
   const limit = 10;
 
+  const handleTabChange = useCallback(
+    (newTab) => {
+      setActiveTab(newTab);
+      setPage(1);
+      const params = new URLSearchParams(location.search);
+      if (newTab === "all") {
+        params.delete("tab");
+      } else {
+        params.set("tab", newTab);
+      }
+      const newSearch = params.toString();
+      navigate(newSearch ? `/admin/orders?${newSearch}` : "/admin/orders", { replace: true });
+    },
+    [location.search, navigate],
+  );
+
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const tabFromUrl = params.get("tab");
-    if (tabFromUrl && tabFromUrl !== activeTab) {
-      setActiveTab(tabFromUrl);
-    }
-  }, [location.search, activeTab]);
+    const tabFromUrl = params.get("tab") || "all";
+    setActiveTab((prev) => {
+      if (tabFromUrl !== prev) {
+        setPage(1);
+        return tabFromUrl;
+      }
+      return prev;
+    });
+  }, [location.search]);
 
   const fetchOrders = useCallback(
     async (currentPage = 1, search = "", status = "all") => {
@@ -338,28 +364,135 @@ const OrderManage = () => {
     }
   };
 
-  const onConfirmDelete = async () => {
-    const { orderId, orderCode } = confirmModal;
+  const handleApproveCancelRequest = (order) => {
+    setConfirmModal({
+      show: true,
+      type: "approve_cancel",
+      order,
+      orderId: order.id,
+      orderCode: order.orderCode,
+      reason: "",
+    });
+  };
+
+  const handleRejectCancelRequest = (order) => {
+    setConfirmModal({
+      show: true,
+      type: "reject_cancel",
+      order,
+      orderId: order.id,
+      orderCode: order.orderCode,
+      reason: "",
+    });
+  };
+
+  const handleAdminCancelOrder = (order) => {
+    setConfirmModal({
+      show: true,
+      type: "admin_cancel",
+      order,
+      orderId: order.id,
+      orderCode: order.orderCode,
+      reason: "",
+    });
+  };
+
+  const handleProcessReturnModal = (order) => {
+    setConfirmModal({
+      show: true,
+      type: "process_return",
+      order,
+      orderId: order.id,
+      orderCode: order.orderCode,
+      reason: "",
+    });
+  };
+
+  const handleConfirmModalAction = async (overrideType) => {
+    const actionType = overrideType || confirmModal.type;
+    const { order, orderId, orderCode, reason } = confirmModal;
     setIsDeleting(true);
+    setLoadingId(orderId);
     try {
-      setLoadingId(orderId);
-      const res = await deleteOrder(orderId);
-      if (res?.errCode === 0) {
-        showSuccessToast(res?.errMessage, `Đã xóa đơn ${orderCode || `DH${orderId}`}`);
-        fetchOrders(page, searchTerm, activeTab);
+      if (actionType === "delete") {
+        const res = await deleteOrder(orderId);
+        if (res?.errCode === 0) {
+          showSuccessToast(res?.errMessage, `Đã xóa đơn ${orderCode || `DH${orderId}`}`);
+          fetchOrders(page, searchTerm, activeTab);
+        } else {
+          showErrorToast(res?.errMessage, "Lỗi khi xóa đơn hàng");
+        }
+      } else if (actionType === "approve_cancel") {
+        const res = await updateOrderStatus(
+          orderId,
+          "cancelled",
+          reason || "Admin duyệt yêu cầu hủy đơn",
+        );
+        if (res?.errCode === 0) {
+          showSuccessToast(`Đã duyệt hủy đơn #${orderCode} và hoàn tồn kho thành công!`);
+          fetchOrders(page, searchTerm, activeTab);
+        } else {
+          showErrorToast(res?.errMessage, "Không thể duyệt hủy đơn");
+        }
+      } else if (actionType === "reject_cancel") {
+        const res = await updateOrderStatus(
+          orderId,
+          "confirmed",
+          reason || "Admin từ chối yêu cầu hủy đơn",
+        );
+        if (res?.errCode === 0) {
+          showSuccessToast(`Đã từ chối yêu cầu hủy đơn #${orderCode}! Đơn chuyển về trạng thái Đã xác nhận.`);
+          fetchOrders(page, searchTerm, activeTab);
+        } else {
+          showErrorToast(res?.errMessage, "Không thể từ chối yêu cầu hủy");
+        }
+      } else if (actionType === "admin_cancel") {
+        if (!reason || !reason.trim()) {
+          showErrorToast("Vui lòng nhập lý do hủy đơn hàng!");
+          setIsDeleting(false);
+          setLoadingId(null);
+          return;
+        }
+        const res = await updateOrderStatus(orderId, "cancelled", reason.trim());
+        if (res?.errCode === 0) {
+          showSuccessToast(`Đã hủy đơn hàng #${orderCode} thành công!`);
+          fetchOrders(page, searchTerm, activeTab);
+        } else {
+          showErrorToast(res?.errMessage, "Không thể hủy đơn hàng");
+        }
+      } else if (actionType === "approve_return" || actionType === "reject_return") {
+        const requestedItems =
+          order?.orderItems?.filter((i) => i.returnStatus === "requested") || [];
+        if (requestedItems.length === 0) {
+          showInfoToast("Không tìm thấy sản phẩm nào đang yêu cầu trả hàng.");
+        } else {
+          const isApprove = actionType === "approve_return";
+          const finalStatus = isApprove ? "completed" : "rejected";
+          for (const item of requestedItems) {
+            await processReturn(item.id, finalStatus);
+          }
+          showSuccessToast(
+            isApprove
+              ? `Đã duyệt trả hàng cho đơn #${orderCode} (Kho đã cập nhật)!`
+              : `Đã từ chối yêu cầu trả hàng của đơn #${orderCode}!`,
+          );
+          fetchOrders(page, searchTerm, activeTab);
+        }
       }
-    } catch (err) {
-      console.error(err);
-      showErrorToast(err, "Lỗi khi xóa đơn hàng");
-    } finally {
-      setIsDeleting(false);
-      setLoadingId(null);
       setConfirmModal({
         show: false,
         type: "delete",
+        order: null,
         orderId: null,
         orderCode: null,
+        reason: "",
       });
+    } catch (err) {
+      console.error(err);
+      showErrorToast(err, "Lỗi xử lý thao tác");
+    } finally {
+      setIsDeleting(false);
+      setLoadingId(null);
     }
   };
 
@@ -485,10 +618,7 @@ const OrderManage = () => {
             return (
               <button
                 key={tab.id}
-                onClick={() => {
-                  setActiveTab(tab.id);
-                  setPage(1);
-                }}
+                onClick={() => handleTabChange(tab.id)}
                 className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
                   isActive
                     ? "bg-primary text-white shadow-md shadow-primary/20"
@@ -601,10 +731,15 @@ const OrderManage = () => {
                         />
                         {order.cancelReason && (
                           <span
-                            className="text-[9px] text-rose-500 bg-rose-50 dark:bg-rose-950/40 px-1.5 py-0.5 rounded truncate max-w-[110px]"
+                            className="text-[9px] text-rose-500 bg-rose-50 dark:bg-rose-950/40 px-1.5 py-0.5 rounded truncate max-w-[120px]"
                             title={order.cancelReason}
                           >
                             Lý do: {order.cancelReason}
+                          </span>
+                        )}
+                        {order.orderItems?.some((i) => i.returnStatus === "requested") && (
+                          <span className="text-[9px] font-black text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 rounded border border-amber-200 dark:border-amber-900/40 flex items-center gap-1">
+                            <FiRotateCcw size={10} /> Y/c trả ({order.orderItems.filter((i) => i.returnStatus === "requested").length})
                           </span>
                         )}
                       </div>
@@ -612,7 +747,39 @@ const OrderManage = () => {
 
                     {/* Actions */}
                     <td className="px-5 py-4 text-right">
-                      <div className="flex items-center justify-end gap-1.5">
+                      <div className="flex items-center justify-end gap-1.5 flex-wrap">
+                        {/* 1. Nút Duyệt Hủy / Từ Chối Hủy khi khách gửi yêu cầu */}
+                        {order.status === "cancel_requested" && (
+                          <>
+                            <button
+                              onClick={() => handleApproveCancelRequest(order)}
+                              title="Duyệt yêu cầu hủy đơn (Hoàn tồn kho)"
+                              className="px-2.5 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-600 hover:text-white transition-all text-[11px] font-black flex items-center gap-1 cursor-pointer border border-emerald-200 dark:border-emerald-900/30 shadow-2xs"
+                            >
+                              <FiCheckCircle size={13} /> Duyệt hủy
+                            </button>
+                            <button
+                              onClick={() => handleRejectCancelRequest(order)}
+                              title="Từ chối yêu cầu hủy đơn"
+                              className="px-2.5 py-1.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 hover:bg-rose-600 hover:text-white transition-all text-[11px] font-black flex items-center gap-1 cursor-pointer border border-rose-200 dark:border-rose-900/30 shadow-2xs"
+                            >
+                              <FiXCircle size={13} /> Từ chối
+                            </button>
+                          </>
+                        )}
+
+                        {/* 2. Nút Duyệt / Từ Chối Trả Hàng */}
+                        {order.orderItems?.some((i) => i.returnStatus === "requested") && (
+                          <button
+                            onClick={() => handleProcessReturnModal(order)}
+                            title="Xử lý yêu cầu trả hàng từ khách"
+                            className="px-2.5 py-1.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 hover:bg-amber-600 hover:text-white transition-all text-[11px] font-black flex items-center gap-1 cursor-pointer border border-amber-200 dark:border-amber-900/30 shadow-2xs"
+                          >
+                            <FiRotateCcw size={13} /> Duyệt trả
+                          </button>
+                        )}
+
+                        {/* 3. Nút Chi tiết */}
                         <button
                           onClick={() => setSelectedDetailOrder(order)}
                           title="Chi tiết đơn hàng"
@@ -620,6 +787,8 @@ const OrderManage = () => {
                         >
                           <FiEye size={15} />
                         </button>
+
+                        {/* 4. Nút Cập nhật trạng thái */}
                         <button
                           onClick={() => openStatusModal(order)}
                           title="Cập nhật trạng thái"
@@ -630,13 +799,28 @@ const OrderManage = () => {
                             className={loadingId === order.id ? "animate-spin" : ""}
                           />
                         </button>
+
+                        {/* 5. Nút Hủy đơn chủ động của Admin */}
+                        {["pending", "confirmed", "processing", "shipped"].includes(order.status) && (
+                          <button
+                            onClick={() => handleAdminCancelOrder(order)}
+                            title="Admin hủy đơn hàng"
+                            className="size-8 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 hover:bg-rose-600 hover:text-white transition-all flex items-center justify-center cursor-pointer"
+                          >
+                            <FiSlash size={14} />
+                          </button>
+                        )}
+
+                        {/* 6. Nút Xóa đơn */}
                         <button
                           onClick={() =>
                             setConfirmModal({
                               show: true,
                               type: "delete",
+                              order,
                               orderId: order.id,
                               orderCode: order.orderCode,
+                              reason: "",
                             })
                           }
                           title="Xóa đơn hàng"
@@ -685,6 +869,11 @@ const OrderManage = () => {
                     {order.cancelReason && (
                       <p className="mt-1 text-[10px] text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 px-2 py-0.5 rounded-md border border-rose-100 dark:border-rose-900/30 break-words [overflow-wrap:anywhere]">
                         Lý do hủy: {order.cancelReason}
+                      </p>
+                    )}
+                    {order.orderItems?.some((i) => i.returnStatus === "requested") && (
+                      <p className="mt-1 text-[10px] text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 rounded-md border border-amber-200 dark:border-amber-900/30 flex items-center gap-1">
+                        <FiRotateCcw size={10} /> Yêu cầu trả ({order.orderItems.filter((i) => i.returnStatus === "requested").length} SP)
                       </p>
                     )}
                   </div>
@@ -752,31 +941,66 @@ const OrderManage = () => {
                 </div>
 
                 {/* Mobile Card Action Buttons */}
-                <div className="flex items-center justify-end gap-1.5 sm:gap-2 pt-1 border-t border-slate-100 dark:border-dark-border/60 flex-wrap">
+                <div className="flex items-center justify-end gap-1.5 sm:gap-2 pt-2 border-t border-slate-100 dark:border-dark-border/60 flex-wrap">
+                  {order.status === "cancel_requested" && (
+                    <>
+                      <button
+                        onClick={() => handleApproveCancelRequest(order)}
+                        className="px-2.5 py-1.5 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900/30 rounded-lg text-[10px] font-black flex items-center gap-1 cursor-pointer"
+                      >
+                        <FiCheckCircle size={12} /> Duyệt hủy
+                      </button>
+                      <button
+                        onClick={() => handleRejectCancelRequest(order)}
+                        className="px-2.5 py-1.5 bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-900/30 rounded-lg text-[10px] font-black flex items-center gap-1 cursor-pointer"
+                      >
+                        <FiXCircle size={12} /> Từ chối
+                      </button>
+                    </>
+                  )}
+                  {order.orderItems?.some((i) => i.returnStatus === "requested") && (
+                    <button
+                      onClick={() => handleProcessReturnModal(order)}
+                      className="px-2.5 py-1.5 bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-900/30 rounded-lg text-[10px] font-black flex items-center gap-1 cursor-pointer"
+                    >
+                      <FiRotateCcw size={12} /> Duyệt trả
+                    </button>
+                  )}
                   <button
                     onClick={() => setSelectedDetailOrder(order)}
-                    className="px-3 py-1.5 bg-slate-100 dark:bg-dark-bg text-slate-600 dark:text-dark-text-secondary rounded-lg text-[10px] font-bold flex items-center gap-1 cursor-pointer"
+                    className="px-2.5 py-1.5 bg-slate-100 dark:bg-dark-bg text-slate-600 dark:text-dark-text-secondary rounded-lg text-[10px] font-bold flex items-center gap-1 cursor-pointer"
                   >
-                    <FiEye /> Chi tiết
+                    <FiEye size={12} /> Chi tiết
                   </button>
                   <button
                     onClick={() => openStatusModal(order)}
-                    className="px-3 py-1.5 bg-primary/10 text-primary rounded-lg text-[10px] font-bold flex items-center gap-1 cursor-pointer"
+                    className="px-2.5 py-1.5 bg-primary/10 text-primary rounded-lg text-[10px] font-bold flex items-center gap-1 cursor-pointer"
                   >
-                    <FiRefreshCcw /> Cập nhật TT
+                    <FiRefreshCcw size={12} /> Cập nhật TT
                   </button>
+                  {["pending", "confirmed", "processing", "shipped"].includes(order.status) && (
+                    <button
+                      onClick={() => handleAdminCancelOrder(order)}
+                      className="px-2.5 py-1.5 bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 rounded-lg text-[10px] font-bold flex items-center gap-1 cursor-pointer"
+                    >
+                      <FiSlash size={12} /> Hủy đơn
+                    </button>
+                  )}
                   <button
                     onClick={() =>
                       setConfirmModal({
                         show: true,
                         type: "delete",
+                        order,
                         orderId: order.id,
                         orderCode: order.orderCode,
+                        reason: "",
                       })
                     }
-                    className="p-1.5 bg-rose-50 dark:bg-rose-950/40 text-rose-500 rounded-lg text-[10px] cursor-pointer"
+                    className="p-2 bg-rose-50 dark:bg-rose-950/40 text-rose-500 rounded-lg text-[10px] cursor-pointer"
+                    title="Xóa đơn"
                   >
-                    <FiTrash2 />
+                    <FiTrash2 size={12} />
                   </button>
                 </div>
               </div>
@@ -1062,26 +1286,217 @@ const OrderManage = () => {
         )}
       </AnimatePresence>
 
+      {/* Action & Confirm Modals */}
       <ConfirmModal
         isOpen={confirmModal.show && confirmModal.type === "delete"}
         onClose={() =>
           setConfirmModal({
             show: false,
             type: "delete",
+            order: null,
             orderId: null,
             orderCode: null,
-            data: null,
+            reason: "",
           })
         }
-        onConfirm={onConfirmDelete}
+        onConfirm={() => handleConfirmModalAction("delete")}
         title="Xác nhận xóa đơn hàng?"
-        message={`Hành động này sẽ gỡ bỏ đơn hàng ${confirmModal.orderCode || `DH${confirmModal.orderId}`} vĩnh viễn khỏi hệ thống. Bạn có chắc chắn?`}
+        message={`Hành động này sẽ gỡ bỏ đơn hàng #${confirmModal.orderCode || `DH${confirmModal.orderId}`} vĩnh viễn khỏi hệ thống. Bạn có chắc chắn?`}
         confirmText="Đồng ý xóa"
         variant="danger"
         icon={FiTrash2}
         iconClassName="bg-rose-50 text-rose-500"
         loading={isDeleting}
       />
+
+      <ConfirmModal
+        isOpen={confirmModal.show && confirmModal.type === "approve_cancel"}
+        onClose={() =>
+          setConfirmModal({
+            show: false,
+            type: "delete",
+            order: null,
+            orderId: null,
+            orderCode: null,
+            reason: "",
+          })
+        }
+        onConfirm={() => handleConfirmModalAction("approve_cancel")}
+        title="Duyệt yêu cầu hủy đơn?"
+        message={`Bạn có đồng ý chấp nhận hủy đơn hàng #${confirmModal.orderCode}? Hệ thống sẽ hoàn lại số lượng tồn kho cho các sản phẩm trong đơn.`}
+        confirmText="Duyệt hủy (Hoàn kho)"
+        variant="danger"
+        icon={FiCheckCircle}
+        loading={isDeleting}
+      >
+        <div className="w-full bg-slate-50 dark:bg-dark-bg/60 p-3 rounded-xl border border-slate-200 dark:border-dark-border text-left mb-2">
+          <p className="text-[10px] font-black uppercase text-slate-400 dark:text-dark-text-secondary tracking-wider mb-1">
+            Lý do từ khách hàng:
+          </p>
+          <p className="text-xs text-rose-600 dark:text-rose-400 font-semibold italic">
+            "{confirmModal.order?.cancelReason || "Khách không để lại lý do"}"
+          </p>
+        </div>
+      </ConfirmModal>
+
+      <ConfirmModal
+        isOpen={confirmModal.show && confirmModal.type === "reject_cancel"}
+        onClose={() =>
+          setConfirmModal({
+            show: false,
+            type: "delete",
+            order: null,
+            orderId: null,
+            orderCode: null,
+            reason: "",
+          })
+        }
+        onConfirm={() => handleConfirmModalAction("reject_cancel")}
+        title="Từ chối yêu cầu hủy đơn?"
+        message={`Đơn hàng #${confirmModal.orderCode} sẽ được chuyển về trạng thái "Đã xác nhận" để tiếp tục giao dịch.`}
+        confirmText="Xác nhận từ chối"
+        variant="primary"
+        icon={FiXCircle}
+        loading={isDeleting}
+      >
+        <div className="w-full text-left space-y-1.5 mb-2">
+          <label className="text-[10px] font-black uppercase text-slate-400 dark:text-dark-text-secondary tracking-wider block">
+            Ghi chú / Lý do từ chối:
+          </label>
+          <input
+            type="text"
+            placeholder="Nhập lý do gửi đến khách..."
+            value={confirmModal.reason || ""}
+            onChange={(e) =>
+              setConfirmModal((prev) => ({ ...prev, reason: e.target.value }))
+            }
+            className="w-full bg-slate-50 dark:bg-dark-bg border border-slate-200 dark:border-dark-border rounded-xl p-2.5 text-xs text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-primary/20"
+          />
+        </div>
+      </ConfirmModal>
+
+      <ConfirmModal
+        isOpen={confirmModal.show && confirmModal.type === "admin_cancel"}
+        onClose={() =>
+          setConfirmModal({
+            show: false,
+            type: "delete",
+            order: null,
+            orderId: null,
+            orderCode: null,
+            reason: "",
+          })
+        }
+        onConfirm={() => handleConfirmModalAction("admin_cancel")}
+        title={`Admin hủy đơn #${confirmModal.orderCode}`}
+        message="Hành động này sẽ hủy đơn hàng và hoàn lại tồn kho. Vui lòng nhập lý do hủy đơn hàng:"
+        confirmText="Xác nhận hủy đơn"
+        variant="danger"
+        icon={FiSlash}
+        loading={isDeleting}
+      >
+        <div className="w-full text-left space-y-1.5 mb-2">
+          <label className="text-[10px] font-black uppercase text-rose-500 tracking-wider block">
+            Lý do hủy đơn hàng (bắt buộc):
+          </label>
+          <textarea
+            rows={2}
+            placeholder="Ví dụ: Hết hàng, Khách gọi điện yêu cầu hủy, Sai thông tin giá..."
+            value={confirmModal.reason || ""}
+            onChange={(e) =>
+              setConfirmModal((prev) => ({ ...prev, reason: e.target.value }))
+            }
+            className="w-full bg-slate-50 dark:bg-dark-bg border border-slate-200 dark:border-dark-border rounded-xl p-2.5 text-xs text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-rose-500/20"
+          />
+        </div>
+      </ConfirmModal>
+
+      {/* Return Request Process Modal */}
+      {confirmModal.show && confirmModal.type === "process_return" && (
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs">
+          <div className="bg-white dark:bg-dark-surface rounded-3xl border border-slate-200 dark:border-dark-border w-full max-w-lg p-5 sm:p-6 shadow-2xl flex flex-col animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-dark-border">
+              <div className="flex items-center gap-2.5">
+                <div className="size-9 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 flex items-center justify-center text-lg">
+                  <FiRotateCcw />
+                </div>
+                <div>
+                  <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-tight">
+                    Xử lý trả hàng #{confirmModal.orderCode}
+                  </h3>
+                  <p className="text-[11px] text-slate-400 font-medium">
+                    Duyệt nhập kho và hoàn tiền cho khách
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() =>
+                  setConfirmModal({
+                    show: false,
+                    type: "delete",
+                    order: null,
+                    orderId: null,
+                    orderCode: null,
+                    reason: "",
+                  })
+                }
+                className="size-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-dark-bg transition-colors cursor-pointer"
+              >
+                <FiX size={18} />
+              </button>
+            </div>
+
+            <div className="py-4 space-y-2.5 max-h-[40vh] overflow-y-auto custom-scrollbar">
+              {confirmModal.order?.orderItems
+                ?.filter((item) => item.returnStatus === "requested")
+                ?.map((item) => (
+                  <div
+                    key={item.id}
+                    className="p-3 bg-slate-50 dark:bg-dark-bg/60 rounded-2xl border border-slate-100 dark:border-dark-border flex items-start gap-3"
+                  >
+                    <div className="size-11 bg-white dark:bg-dark-surface rounded-xl p-1 border border-slate-100 dark:border-dark-border shrink-0 overflow-hidden">
+                      <img
+                        src={item.image}
+                        alt=""
+                        className="w-full h-full object-contain"
+                      />
+                    </div>
+                    <div className="min-w-0 flex-1 text-left">
+                      <p className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                        {item.productName}
+                      </p>
+                      <p className="text-[10px] text-slate-400 font-semibold mt-0.5">
+                        SL: <span className="text-primary font-black">x{item.quantity}</span> • {formatCurrency(item.price)}
+                      </p>
+                      <p className="text-[10px] text-amber-700 dark:text-amber-300 font-medium italic mt-1.5 bg-amber-50 dark:bg-amber-950/40 p-2 rounded-lg border border-amber-200/60 dark:border-amber-900/30">
+                        Lý do: "{item.returnReason || "Khách hàng không nêu lý do"}"
+                      </p>
+                    </div>
+                  </div>
+                ))}
+            </div>
+
+            <div className="flex gap-2.5 pt-3 border-t border-slate-100 dark:border-dark-border">
+              <button
+                type="button"
+                disabled={isDeleting}
+                onClick={() => handleConfirmModalAction("reject_return")}
+                className="flex-1 h-11 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-900/40 hover:bg-rose-600 hover:text-white transition-all text-xs font-black uppercase tracking-wider flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+              >
+                <FiXCircle size={15} /> Từ chối trả
+              </button>
+              <button
+                type="button"
+                disabled={isDeleting}
+                onClick={() => handleConfirmModalAction("approve_return")}
+                className="flex-1 h-11 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white transition-all text-xs font-black uppercase tracking-wider flex items-center justify-center gap-1.5 cursor-pointer shadow-md shadow-emerald-600/20 disabled:opacity-50"
+              >
+                <FiCheckCircle size={15} /> Duyệt trả (Nhập kho)
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Admin Order Detail Modal */}
       <AdminOrderDetailModal

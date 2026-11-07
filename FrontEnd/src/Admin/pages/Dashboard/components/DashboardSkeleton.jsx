@@ -1,7 +1,9 @@
 import React from "react";
 
 const Shimmer = ({ className = "" }) => (
-  <div className={`relative overflow-hidden bg-slate-100 dark:bg-slate-800/70 rounded-2xl ${className}`}>
+  <div
+    className={`relative overflow-hidden bg-slate-100 dark:bg-dark-card rounded-2xl ${className}`}
+  >
     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 dark:via-white/10 to-transparent -translate-x-full animate-[shimmer_2s_infinite]" />
   </div>
 );
@@ -58,7 +60,10 @@ const DashboardSkeleton = () => {
         </div>
         <div className="space-y-3">
           {Array.from({ length: 5 }).map((_, idx) => (
-            <div key={idx} className="flex items-center justify-between p-3 rounded-xl bg-slate-50/60 dark:bg-slate-800/40">
+            <div
+              key={idx}
+              className="flex items-center justify-between p-3 rounded-xl bg-slate-50/60 dark:bg-dark-bg/40"
+            >
               <div className="flex items-center gap-3">
                 <Shimmer className="size-9 rounded-full" />
                 <div className="space-y-1">

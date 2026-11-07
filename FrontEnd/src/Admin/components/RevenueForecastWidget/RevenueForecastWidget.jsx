@@ -85,7 +85,7 @@ const RevenueForecastWidget = () => {
       >
         <div className="flex items-center gap-4">
           <div
-            className={`size-10 rounded-xl flex items-center justify-center shadow-lg transition-all ${isExpanded ? "bg-emerald-600 text-white scale-110 shadow-emerald-600/20" : "bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-dark-text-secondary"}`}
+            className={`size-10 rounded-xl flex items-center justify-center shadow-lg transition-all ${isExpanded ? "bg-emerald-600 text-white scale-110 shadow-emerald-600/20" : "bg-slate-200 dark:bg-dark-card border border-transparent dark:border-dark-border text-slate-500 dark:text-dark-text-secondary"}`}
           >
             <FiActivity className={isExpanded ? "animate-pulse" : ""} />
           </div>

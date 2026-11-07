@@ -104,8 +104,8 @@ const AdminLogin = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 dark:bg-slate-950 flex items-center justify-center p-4">
-      <div className="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-12 bg-white dark:bg-slate-900 rounded-[40px] shadow-2xl overflow-hidden border border-slate-200/60 dark:border-slate-800">
+    <div className="min-h-screen bg-slate-100 dark:bg-dark-bg flex items-center justify-center p-4">
+      <div className="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-12 bg-white dark:bg-dark-surface rounded-[40px] shadow-2xl overflow-hidden border border-slate-200/60 dark:border-dark-border">
         {/* Left Side: Branding Banner */}
         <div className="hidden lg:flex lg:col-span-5 relative bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 items-center justify-center p-10 overflow-hidden">
           <div className="absolute top-[-10%] left-[-10%] w-[70%] h-[70%] bg-blue-600/20 rounded-full blur-[90px]"></div>
@@ -123,7 +123,7 @@ const AdminLogin = () => {
         </div>
 
         {/* Right Side: Form */}
-        <div className="col-span-1 lg:col-span-7 flex flex-col items-center justify-center p-8 md:p-12 lg:p-14 bg-white dark:bg-slate-900">
+        <div className="col-span-1 lg:col-span-7 flex flex-col items-center justify-center p-8 md:p-12 lg:p-14 bg-white dark:bg-dark-surface">
           <div className="w-full max-w-md">
             <div className="mb-8">
               <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 rounded-lg text-xs font-bold uppercase tracking-wider mb-3">
@@ -156,7 +156,7 @@ const AdminLogin = () => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    className="w-full h-13 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-2xl pl-11 pr-4 text-sm font-bold text-slate-900 dark:text-white placeholder-slate-400 focus:bg-white dark:focus:bg-slate-900 focus:border-blue-600 dark:focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none"
+                    className="w-full h-13 bg-slate-50 dark:bg-dark-bg border border-slate-200 dark:border-dark-border rounded-2xl pl-11 pr-4 text-sm font-bold text-slate-900 dark:text-white placeholder-slate-400 focus:bg-white dark:focus:bg-dark-card focus:border-blue-600 dark:focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none"
                   />
                 </div>
               </div>
@@ -179,7 +179,7 @@ const AdminLogin = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
-                    className="w-full h-13 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-2xl pl-11 pr-12 text-sm font-bold text-slate-900 dark:text-white placeholder-slate-400 focus:bg-white dark:focus:bg-slate-900 focus:border-blue-600 dark:focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none"
+                    className="w-full h-13 bg-slate-50 dark:bg-dark-bg border border-slate-200 dark:border-dark-border rounded-2xl pl-11 pr-12 text-sm font-bold text-slate-900 dark:text-white placeholder-slate-400 focus:bg-white dark:focus:bg-dark-card focus:border-blue-600 dark:focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none"
                   />
                   <button
                     type="button"
@@ -238,10 +238,10 @@ const AdminLogin = () => {
 
                 <div className="relative my-4">
                   <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-slate-200 dark:border-slate-800"></div>
+                    <div className="w-full border-t border-slate-200 dark:border-dark-border"></div>
                   </div>
                   <div className="relative flex justify-center text-[10px]">
-                    <span className="px-3 bg-white dark:bg-slate-900 text-slate-400 font-extrabold uppercase tracking-wider">
+                    <span className="px-3 bg-white dark:bg-dark-surface text-slate-400 font-extrabold uppercase tracking-wider">
                       Hoặc tiếp tục với
                     </span>
                   </div>
@@ -252,7 +252,7 @@ const AdminLogin = () => {
                   onClick={() => {
                     window.location.href = `${appConfig.apiUrl}/user/auth/google?from=admin`;
                   }}
-                  className="w-full h-12 bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white font-bold rounded-2xl flex items-center justify-center gap-2 text-xs transition-all hover:bg-slate-50 dark:hover:bg-slate-800 active:scale-[0.98] cursor-pointer"
+                  className="w-full h-12 bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border text-slate-800 dark:text-white font-bold rounded-2xl flex items-center justify-center gap-2 text-xs transition-all hover:bg-slate-50 dark:hover:bg-dark-surface active:scale-[0.98] cursor-pointer"
                 >
                   <FcGoogle size={18} />
                   <span>Đăng nhập với Google</span>
@@ -261,7 +261,7 @@ const AdminLogin = () => {
                 <button
                   type="button"
                   onClick={() => navigate("/")}
-                  className="w-full h-12 bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white rounded-2xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer"
+                  className="w-full h-12 bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white rounded-2xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer"
                 >
                   <FiArrowLeft /> Về Cổng Mua Sắm
                 </button>

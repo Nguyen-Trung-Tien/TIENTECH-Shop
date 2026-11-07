@@ -53,7 +53,7 @@ const STATUS_LABELS = {
   refunded: {
     text: "Đã hoàn tiền",
     class:
-      "bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700",
+      "bg-slate-100 text-slate-600 border-slate-200 dark:bg-dark-card dark:text-dark-text-secondary dark:border-dark-border",
   },
 };
 
@@ -300,7 +300,7 @@ const PaymentPage = () => {
             </div>
           </div>
           <div className="bg-white dark:bg-dark-surface p-6 rounded-[32px] border border-slate-100 dark:border-dark-border shadow-soft flex items-center gap-5">
-            <div className="size-14 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-400">
+            <div className="size-14 rounded-2xl bg-slate-100 dark:bg-dark-card border border-transparent dark:border-dark-border flex items-center justify-center text-slate-600 dark:text-slate-400">
               <FiCornerDownLeft size={24} />
             </div>
             <div>
@@ -490,14 +490,14 @@ const PaymentPage = () => {
                     </td>
                     <td className="px-6 py-5 text-center">
                       <span
-                        className={`inline-flex px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border ${METHOD_BADGE[p.method] || "bg-slate-100 dark:bg-slate-800"}`}
+                        className={`inline-flex px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border ${METHOD_BADGE[p.method] || "bg-slate-100 dark:bg-dark-card dark:text-dark-text-secondary"}`}
                       >
                         {p.method}
                       </span>
                     </td>
                     <td className="px-6 py-5 text-center">
                       <span
-                        className={`inline-flex px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border ${STATUS_LABELS[p.status]?.class || "bg-slate-100 dark:bg-slate-800"}`}
+                        className={`inline-flex px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border ${STATUS_LABELS[p.status]?.class || "bg-slate-100 dark:bg-dark-card dark:text-dark-text-secondary"}`}
                       >
                         {STATUS_LABELS[p.status]?.text || p.status}
                       </span>
@@ -596,8 +596,8 @@ const PaymentPage = () => {
               className="relative w-full max-w-2xl max-h-[92vh] sm:max-h-[85vh] bg-white dark:bg-dark-surface rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col border border-slate-200/80 dark:border-dark-border print:shadow-none print:border-none print:w-full"
             >
               {/* Mobile Drag Indicator Pill */}
-              <div className="flex justify-center pt-3 pb-1 sm:hidden bg-slate-50/80 dark:bg-slate-950/60 print:hidden">
-                <div className="w-12 h-1.5 rounded-full bg-slate-300 dark:bg-slate-700" />
+              <div className="flex justify-center pt-3 pb-1 sm:hidden bg-slate-50/80 dark:bg-dark-bg/60 print:hidden">
+                <div className="w-12 h-1.5 rounded-full bg-slate-300 dark:bg-dark-border" />
               </div>
 
               <div className="p-6 sm:p-8 border-b border-slate-100 dark:border-dark-border flex items-center justify-between">

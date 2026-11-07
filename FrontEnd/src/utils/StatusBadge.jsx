@@ -1,11 +1,13 @@
 import React from "react";
+import { statusMap as defaultStatusMap } from "./StatusMap";
 
 /**
  * Common Status Badge component for Order and Payment statuses
  * Mang phong cách Modern UI: Soft background, high-contrast text, dot indicator.
  */
-export const StatusBadge = ({ map, status, className = "", loading = false }) => {
-  const current = map[status] || { label: status, variant: "secondary" };
+export const StatusBadge = ({ map = defaultStatusMap, status, className = "", loading = false }) => {
+  const safeMap = map || defaultStatusMap || {};
+  const current = (status && safeMap[status]) ? safeMap[status] : { label: status || "N/A", variant: "secondary" };
   
   const getVariantStyles = (variant) => {
     switch (variant) {

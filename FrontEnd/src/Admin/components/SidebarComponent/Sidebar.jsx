@@ -284,7 +284,7 @@ const Sidebar = ({ collapsed, mobileOpen, onCloseMobile }) => {
 
                       {/* Tooltip when collapsed */}
                       {collapsed && !mobileOpen && (
-                        <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2.5 py-1 bg-slate-900 dark:bg-slate-800 text-white text-xs font-mono font-bold rounded shadow-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-all z-50 whitespace-nowrap">
+                        <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2.5 py-1 bg-slate-900 dark:bg-dark-card border border-transparent dark:border-dark-border text-white text-xs font-mono font-bold rounded shadow-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-all z-50 whitespace-nowrap">
                           {item.label}
                         </div>
                       )}
@@ -297,7 +297,7 @@ const Sidebar = ({ collapsed, mobileOpen, onCloseMobile }) => {
                               initial={{ opacity: 0, height: 0 }}
                               animate={{ opacity: 1, height: "auto" }}
                               exit={{ opacity: 0, height: 0 }}
-                              className="overflow-hidden ml-3 pl-3 border-l border-slate-200 dark:border-slate-800 space-y-0.5 pt-0.5"
+                              className="overflow-hidden ml-3 pl-3 border-l border-slate-200 dark:border-dark-border space-y-0.5 pt-0.5"
                             >
                               {item.subItems.map((sub) => {
                                 const badgeCount = sub.badgeKey
@@ -364,7 +364,7 @@ const Sidebar = ({ collapsed, mobileOpen, onCloseMobile }) => {
 
                     {/* Tooltip when collapsed */}
                     {collapsed && !mobileOpen && (
-                      <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2.5 py-1 bg-slate-900 dark:bg-slate-800 text-white text-xs font-mono font-bold rounded shadow-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-all z-50 whitespace-nowrap">
+                      <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2.5 py-1 bg-slate-900 dark:bg-dark-card border border-transparent dark:border-dark-border text-white text-xs font-mono font-bold rounded shadow-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-all z-50 whitespace-nowrap">
                         {item.label}
                       </div>
                     )}

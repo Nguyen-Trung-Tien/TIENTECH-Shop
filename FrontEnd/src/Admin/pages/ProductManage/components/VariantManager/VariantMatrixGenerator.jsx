@@ -329,7 +329,7 @@ const VariantMatrixGenerator = ({
                                 [optIndex]: !isExpanded,
                               }))
                             }
-                            className="px-2 py-0.5 rounded-lg text-[10px] font-extrabold bg-slate-200 dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 hover:bg-slate-300 transition-all cursor-pointer"
+                            className="px-2 py-0.5 rounded-lg text-[10px] font-extrabold bg-slate-200 dark:bg-dark-card border border-transparent dark:border-dark-border text-indigo-600 dark:text-indigo-400 hover:bg-slate-300 dark:hover:bg-dark-surface transition-all cursor-pointer"
                           >
                             {isExpanded
                               ? "↩️ Rút gọn"

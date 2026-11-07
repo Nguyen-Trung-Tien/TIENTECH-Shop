@@ -34,25 +34,89 @@ const formatCurrency = (amount) =>
   }).format(amount || 0);
 
 const NAV_ITEMS = [
-  { label: "Bảng điều khiển (Dashboard)", path: "/admin/dashboard", icon: FiHome, section: "Điều hướng" },
-  { label: "Tất cả đơn hàng", path: "/admin/orders", icon: FiShoppingCart, section: "Điều hướng" },
-  { label: "Duyệt yêu cầu hủy đơn", path: "/admin/orders?tab=cancel_requested", icon: FiShoppingCart, section: "Điều hướng" },
-  { label: "Duyệt yêu cầu trả hàng", path: "/admin/orders?tab=return_requested", icon: FiShoppingCart, section: "Điều hướng" },
-  { label: "Danh sách sản phẩm", path: "/admin/products", icon: FiBox, section: "Điều hướng" },
-  { label: "Báo cáo doanh thu & Dòng tiền", path: "/admin/revenue", icon: FiBarChart2, section: "Điều hướng" },
-  { label: "Quản lý khách hàng & Tài khoản", path: "/admin/users", icon: FiUsers, section: "Điều hướng" },
-  { label: "Danh mục sản phẩm", path: "/admin/categories", icon: FiLayers, section: "Điều hướng" },
-  { label: "Thương hiệu đối tác", path: "/admin/brands", icon: FiTag, section: "Điều hướng" },
-  { label: "Mã giảm giá (Vouchers)", path: "/admin/vouchers", icon: FiTag, section: "Điều hướng" },
-  { label: "Giao dịch thanh toán", path: "/admin/payment", icon: FiDollarSign, section: "Điều hướng" },
-  { label: "Cài đặt & Vận hành hệ thống", path: "/admin/settings", icon: FiSettings, section: "Điều hướng" },
+  {
+    label: "Bảng điều khiển (Dashboard)",
+    path: "/admin/dashboard",
+    icon: FiHome,
+    section: "Điều hướng",
+  },
+  {
+    label: "Tất cả đơn hàng",
+    path: "/admin/orders",
+    icon: FiShoppingCart,
+    section: "Điều hướng",
+  },
+  {
+    label: "Duyệt yêu cầu hủy đơn",
+    path: "/admin/orders?tab=cancel_requested",
+    icon: FiShoppingCart,
+    section: "Điều hướng",
+  },
+  {
+    label: "Duyệt yêu cầu trả hàng",
+    path: "/admin/orders?tab=return_requested",
+    icon: FiShoppingCart,
+    section: "Điều hướng",
+  },
+  {
+    label: "Danh sách sản phẩm",
+    path: "/admin/products",
+    icon: FiBox,
+    section: "Điều hướng",
+  },
+  {
+    label: "Báo cáo doanh thu & Dòng tiền",
+    path: "/admin/revenue",
+    icon: FiBarChart2,
+    section: "Điều hướng",
+  },
+  {
+    label: "Quản lý khách hàng & Tài khoản",
+    path: "/admin/users",
+    icon: FiUsers,
+    section: "Điều hướng",
+  },
+  {
+    label: "Danh mục sản phẩm",
+    path: "/admin/categories",
+    icon: FiLayers,
+    section: "Điều hướng",
+  },
+  {
+    label: "Thương hiệu đối tác",
+    path: "/admin/brands",
+    icon: FiTag,
+    section: "Điều hướng",
+  },
+  {
+    label: "Mã giảm giá (Vouchers)",
+    path: "/admin/vouchers",
+    icon: FiTag,
+    section: "Điều hướng",
+  },
+  {
+    label: "Giao dịch thanh toán",
+    path: "/admin/payment",
+    icon: FiDollarSign,
+    section: "Điều hướng",
+  },
+  {
+    label: "Cài đặt & Vận hành hệ thống",
+    path: "/admin/settings",
+    icon: FiSettings,
+    section: "Điều hướng",
+  },
 ];
 
 const CommandPaletteModal = ({ isOpen, onClose, theme, toggleTheme }) => {
   const navigate = useNavigate();
   const inputRef = useRef(null);
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState({ products: [], orders: [], users: [] });
+  const [results, setResults] = useState({
+    products: [],
+    orders: [],
+    users: [],
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
 
@@ -88,7 +152,7 @@ const CommandPaletteModal = ({ isOpen, onClose, theme, toggleTheme }) => {
           setIsLoading(false);
         }
       }, 300),
-    []
+    [],
   );
 
   const handleInputChange = (e) => {
@@ -115,7 +179,10 @@ const CommandPaletteModal = ({ isOpen, onClose, theme, toggleTheme }) => {
       const url = window.URL.createObjectURL(new Blob([blob]));
       const link = document.createElement("a");
       link.href = url;
-      link.setAttribute("download", `Bao-cao-doanh-thu-${new Date().toLocaleDateString("vi-VN")}.xlsx`);
+      link.setAttribute(
+        "download",
+        `Bao-cao-doanh-thu-${new Date().toLocaleDateString("vi-VN")}.xlsx`,
+      );
       document.body.appendChild(link);
       link.click();
       link.parentNode.removeChild(link);
@@ -172,12 +239,12 @@ const CommandPaletteModal = ({ isOpen, onClose, theme, toggleTheme }) => {
                 setQuery("");
                 setResults({ products: [], orders: [], users: [] });
               }}
-              className="size-7 rounded-lg bg-slate-200/60 dark:bg-slate-800 text-slate-500 hover:text-slate-800 dark:hover:text-white flex items-center justify-center text-xs"
+              className="size-7 rounded-lg bg-slate-200/60 dark:bg-dark-card border border-transparent dark:border-dark-border text-slate-500 hover:text-slate-800 dark:hover:text-white flex items-center justify-center text-xs"
             >
               <FiX />
             </button>
           )}
-          <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-200/60 dark:bg-slate-800 text-[10px] font-mono font-bold text-slate-500 uppercase">
+          <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-200/60 dark:bg-dark-card border border-transparent dark:border-dark-border text-[10px] font-mono font-bold text-slate-500 dark:text-dark-text-secondary uppercase">
             ESC
           </span>
         </div>
@@ -187,12 +254,18 @@ const CommandPaletteModal = ({ isOpen, onClose, theme, toggleTheme }) => {
           {isLoading && (
             <div className="py-8 flex flex-col items-center justify-center gap-2">
               <UnifiedSpinner size="sm" variant="primary" />
-              <p className="text-xs text-slate-400 italic">Đang tra cứu dữ liệu...</p>
+              <p className="text-xs text-slate-400 italic">
+                Đang tra cứu dữ liệu...
+              </p>
             </div>
           )}
 
           {/* Quick Actions (when no query or matches query) */}
-          {(!query || query.toLowerCase().includes("thao tác") || query.toLowerCase().includes("sáng") || query.toLowerCase().includes("tối") || query.toLowerCase().includes("xuất")) && (
+          {(!query ||
+            query.toLowerCase().includes("thao tác") ||
+            query.toLowerCase().includes("sáng") ||
+            query.toLowerCase().includes("tối") ||
+            query.toLowerCase().includes("xuất")) && (
             <div>
               <p className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-dark-text-secondary px-3 mb-1.5">
                 Thao tác nhanh
@@ -211,9 +284,12 @@ const CommandPaletteModal = ({ isOpen, onClose, theme, toggleTheme }) => {
                     </div>
                     <div>
                       <p className="text-xs font-bold text-slate-800 dark:text-white">
-                        Chuyển sang giao diện {theme === "dark" ? "Sáng (Light)" : "Tối (Dark)"}
+                        Chuyển sang giao diện{" "}
+                        {theme === "dark" ? "Sáng (Light)" : "Tối (Dark)"}
                       </p>
-                      <p className="text-[10px] text-slate-400">Thay đổi bảng màu hệ thống</p>
+                      <p className="text-[10px] text-slate-400">
+                        Thay đổi bảng màu hệ thống
+                      </p>
                     </div>
                   </div>
                   <span className="text-[10px] font-bold text-slate-400 group-hover:text-primary transition-colors flex items-center gap-1">
@@ -233,7 +309,9 @@ const CommandPaletteModal = ({ isOpen, onClose, theme, toggleTheme }) => {
                       <p className="text-xs font-bold text-slate-800 dark:text-white">
                         Xuất báo cáo doanh thu Excel
                       </p>
-                      <p className="text-[10px] text-slate-400">Tải về file thống kê đơn hàng hoàn tất</p>
+                      <p className="text-[10px] text-slate-400">
+                        Tải về file thống kê đơn hàng hoàn tất
+                      </p>
                     </div>
                   </div>
                   <span className="text-[10px] font-bold text-slate-400 group-hover:text-primary transition-colors flex items-center gap-1">
@@ -251,7 +329,8 @@ const CommandPaletteModal = ({ isOpen, onClose, theme, toggleTheme }) => {
               {results.products?.length > 0 && (
                 <div>
                   <p className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-dark-text-secondary px-3 mb-1.5 flex items-center gap-1.5">
-                    <FiPackage className="text-primary" /> Sản phẩm ({results.products.length})
+                    <FiPackage className="text-primary" /> Sản phẩm (
+                    {results.products.length})
                   </p>
                   <div className="space-y-1">
                     {results.products.map((p) => (
@@ -265,7 +344,9 @@ const CommandPaletteModal = ({ isOpen, onClose, theme, toggleTheme }) => {
                             {p.name}
                           </p>
                           <p className="text-[10px] text-slate-400 mt-0.5">
-                            SKU: {p.sku || "N/A"} • Giá: {formatCurrency(p.basePrice)} • Tồn kho: {p.totalStock}
+                            SKU: {p.sku || "N/A"} • Giá:{" "}
+                            {formatCurrency(p.basePrice)} • Tồn kho:{" "}
+                            {p.totalStock}
                           </p>
                         </div>
                         <FiCornerDownLeft className="text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity ml-2" />
@@ -279,7 +360,8 @@ const CommandPaletteModal = ({ isOpen, onClose, theme, toggleTheme }) => {
               {results.orders?.length > 0 && (
                 <div>
                   <p className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-dark-text-secondary px-3 mb-1.5 flex items-center gap-1.5">
-                    <FiShoppingBag className="text-primary" /> Đơn hàng ({results.orders.length})
+                    <FiShoppingBag className="text-primary" /> Đơn hàng (
+                    {results.orders.length})
                   </p>
                   <div className="space-y-1">
                     {results.orders.map((o) => (
@@ -293,7 +375,8 @@ const CommandPaletteModal = ({ isOpen, onClose, theme, toggleTheme }) => {
                             #{o.orderCode}
                           </p>
                           <p className="text-[10px] text-slate-400 mt-0.5 truncate">
-                            Khách: {o.receiverName || o.user?.username || "N/A"} • {formatCurrency(o.totalPrice)} • TT: {o.status}
+                            Khách: {o.receiverName || o.user?.username || "N/A"}{" "}
+                            • {formatCurrency(o.totalPrice)} • TT: {o.status}
                           </p>
                         </div>
                         <FiCornerDownLeft className="text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity ml-2" />
@@ -307,7 +390,8 @@ const CommandPaletteModal = ({ isOpen, onClose, theme, toggleTheme }) => {
               {results.users?.length > 0 && (
                 <div>
                   <p className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-dark-text-secondary px-3 mb-1.5 flex items-center gap-1.5">
-                    <FiUser className="text-primary" /> Khách hàng & Người dùng ({results.users.length})
+                    <FiUser className="text-primary" /> Khách hàng & Người dùng
+                    ({results.users.length})
                   </p>
                   <div className="space-y-1">
                     {results.users.map((u) => (
@@ -368,8 +452,18 @@ const CommandPaletteModal = ({ isOpen, onClose, theme, toggleTheme }) => {
         {/* Footer */}
         <div className="px-4 py-3 border-t border-slate-100 dark:border-dark-border bg-slate-50/70 dark:bg-dark-bg/60 flex items-center justify-between text-[11px] text-slate-400">
           <div className="flex items-center gap-3">
-            <span><kbd className="px-1.5 py-0.5 bg-white dark:bg-dark-surface border border-slate-200 dark:border-dark-border rounded text-[9px] font-mono">↑↓</kbd> để cuộn</span>
-            <span><kbd className="px-1.5 py-0.5 bg-white dark:bg-dark-surface border border-slate-200 dark:border-dark-border rounded text-[9px] font-mono">↵</kbd> để chọn</span>
+            <span>
+              <kbd className="px-1.5 py-0.5 bg-white dark:bg-dark-surface border border-slate-200 dark:border-dark-border rounded text-[9px] font-mono">
+                ↑↓
+              </kbd>{" "}
+              để cuộn
+            </span>
+            <span>
+              <kbd className="px-1.5 py-0.5 bg-white dark:bg-dark-surface border border-slate-200 dark:border-dark-border rounded text-[9px] font-mono">
+                ↵
+              </kbd>{" "}
+              để chọn
+            </span>
           </div>
           <span className="font-mono text-[10px]">TienTech Spotlight</span>
         </div>
@@ -379,4 +473,3 @@ const CommandPaletteModal = ({ isOpen, onClose, theme, toggleTheme }) => {
 };
 
 export default CommandPaletteModal;
-

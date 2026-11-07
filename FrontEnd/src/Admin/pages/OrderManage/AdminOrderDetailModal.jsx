@@ -16,7 +16,7 @@ import {
   FiFileText,
 } from "react-icons/fi";
 import { StatusBadge } from "../../../utils/StatusBadge";
-import { paymentStatusMap } from "../../../utils/StatusMap";
+import { statusMap, paymentStatusMap } from "../../../utils/StatusMap";
 import { printInvoice } from "../../../pages/OrderDetail/printInvoice";
 import { processReturn } from "../../../api/orderItemApi";
 import { updateOrderStatus } from "../../../api/orderApi";
@@ -40,12 +40,7 @@ const formatDate = (dateString) => {
   });
 };
 
-const AdminOrderDetailModal = ({
-  order,
-  isOpen,
-  onClose,
-  onOrderUpdated,
-}) => {
+const AdminOrderDetailModal = ({ order, isOpen, onClose, onOrderUpdated }) => {
   const [processingAction, setProcessingAction] = useState(false);
   const [rejectReason, setRejectReason] = useState("");
   const [showRejectInput, setShowRejectInput] = useState(false);
@@ -55,7 +50,11 @@ const AdminOrderDetailModal = ({
   const handleApproveCancel = async () => {
     setProcessingAction(true);
     try {
-      const res = await updateOrderStatus(order.id, "cancelled", "Admin duyệt yêu cầu hủy đơn");
+      const res = await updateOrderStatus(
+        order.id,
+        "cancelled",
+        "Admin duyệt yêu cầu hủy đơn",
+      );
       if (res?.errCode === 0) {
         showSuccessToast("Đã chấp nhận hủy đơn và hoàn tồn kho!");
         if (onOrderUpdated) onOrderUpdated();
@@ -73,9 +72,15 @@ const AdminOrderDetailModal = ({
   const handleRejectCancel = async () => {
     setProcessingAction(true);
     try {
-      const res = await updateOrderStatus(order.id, "confirmed", rejectReason || "Admin từ chối yêu cầu hủy đơn");
+      const res = await updateOrderStatus(
+        order.id,
+        "confirmed",
+        rejectReason || "Admin từ chối yêu cầu hủy đơn",
+      );
       if (res?.errCode === 0) {
-        showSuccessToast("Đã từ chối yêu cầu hủy đơn và chuyển về Đã xác nhận!");
+        showSuccessToast(
+          "Đã từ chối yêu cầu hủy đơn và chuyển về Đã xác nhận!",
+        );
         if (onOrderUpdated) onOrderUpdated();
         onClose();
       } else {
@@ -95,7 +100,9 @@ const AdminOrderDetailModal = ({
       const res = await processReturn(itemId, status);
       if (res?.errCode === 0) {
         showSuccessToast(
-          approve ? "Đã duyệt và nhập lại kho sản phẩm!" : "Đã từ chối yêu cầu trả hàng!"
+          approve
+            ? "Đã duyệt và nhập lại kho sản phẩm!"
+            : "Đã từ chối yêu cầu trả hàng!",
         );
         if (onOrderUpdated) onOrderUpdated();
       } else {
@@ -108,10 +115,38 @@ const AdminOrderDetailModal = ({
     }
   };
 
+  const handleBatchReturn = async (approve) => {
+    const requestedItems =
+      order.orderItems?.filter((item) => item.returnStatus === "requested") || [];
+    if (requestedItems.length === 0) return;
+
+    setProcessingAction(true);
+    try {
+      const status = approve ? "completed" : "rejected";
+      for (const item of requestedItems) {
+        await processReturn(item.id, status);
+      }
+      showSuccessToast(
+        approve
+          ? `Đã duyệt trả hàng cho ${requestedItems.length} sản phẩm (Kho đã cập nhật)!`
+          : `Đã từ chối yêu cầu trả hàng của ${requestedItems.length} sản phẩm!`,
+      );
+      if (onOrderUpdated) onOrderUpdated();
+    } catch (err) {
+      showErrorToast(err, "Lỗi kết nối máy chủ");
+    } finally {
+      setProcessingAction(false);
+    }
+  };
+
   const handleDirectStatusChange = async (newStatus) => {
     setProcessingAction(true);
     try {
-      const res = await updateOrderStatus(order.id, newStatus, `Admin chuyển trạng thái sang ${newStatus}`);
+      const res = await updateOrderStatus(
+        order.id,
+        newStatus,
+        `Admin chuyển trạng thái sang ${newStatus}`,
+      );
       if (res?.errCode === 0) {
         showSuccessToast(`Đã chuyển đơn hàng sang trạng thái "${newStatus}"!`);
         if (onOrderUpdated) onOrderUpdated();
@@ -126,7 +161,7 @@ const AdminOrderDetailModal = ({
   };
 
   const hasReturnRequests = order.orderItems?.some(
-    (item) => item.returnStatus === "requested"
+    (item) => item.returnStatus === "requested",
   );
 
   return (
@@ -139,7 +174,7 @@ const AdminOrderDetailModal = ({
               <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">
                 Đơn Hàng #{order.orderCode}
               </h2>
-              <StatusBadge status={order.status} />
+              <StatusBadge map={statusMap} status={order.status} />
               <span
                 className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${
                   order.paymentStatus === "paid"
@@ -147,7 +182,8 @@ const AdminOrderDetailModal = ({
                     : "bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-900/40"
                 }`}
               >
-                {paymentStatusMap[order.paymentStatus]?.text || order.paymentStatus}
+                {paymentStatusMap[order.paymentStatus]?.text ||
+                  order.paymentStatus}
               </span>
             </div>
             <p className="text-[11px] font-medium text-slate-400 dark:text-dark-text-secondary mt-1 flex items-center gap-1.5">
@@ -188,7 +224,8 @@ const AdminOrderDetailModal = ({
                     Khách hàng gửi yêu cầu hủy đơn
                   </h3>
                   <p className="text-xs text-rose-600/90 dark:text-rose-300 mt-1 break-words [overflow-wrap:anywhere]">
-                    <span className="font-bold">Lý do:</span> {order.cancelReason || "Không nêu lý do"}
+                    <span className="font-bold">Lý do:</span>{" "}
+                    {order.cancelReason || "Không nêu lý do"}
                   </p>
 
                   <div className="flex items-center gap-2.5 mt-3 flex-wrap">
@@ -197,7 +234,11 @@ const AdminOrderDetailModal = ({
                       disabled={processingAction}
                       className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition-all shadow-sm flex items-center gap-2 cursor-pointer disabled:opacity-50"
                     >
-                      {processingAction ? <UnifiedSpinner size="xs" /> : <FiCheckCircle />}
+                      {processingAction ? (
+                        <UnifiedSpinner size="xs" />
+                      ) : (
+                        <FiCheckCircle />
+                      )}
                       Duyệt Hủy Đơn (Hoàn Kho)
                     </button>
                     {!showRejectInput ? (
@@ -231,6 +272,59 @@ const AdminOrderDetailModal = ({
             </div>
           )}
 
+          {/* Return Requested Banner */}
+          {hasReturnRequests && (
+            <div className="p-4 sm:p-5 rounded-2xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/40">
+              <div className="flex items-start gap-3.5">
+                <div className="size-9 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-sm mt-0.5">
+                  <FiAlertCircle size={18} />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h3 className="text-sm font-black text-amber-800 dark:text-amber-400 uppercase tracking-wide">
+                    Khách hàng gửi yêu cầu trả hàng
+                  </h3>
+                  <p className="text-xs text-amber-700/90 dark:text-amber-300 mt-1">
+                    Đơn hàng có{" "}
+                    <span className="font-bold">
+                      {
+                        order.orderItems?.filter(
+                          (i) => i.returnStatus === "requested",
+                        ).length
+                      }
+                    </span>{" "}
+                    sản phẩm đang chờ duyệt trả hàng.
+                  </p>
+                  <div className="flex items-center gap-2.5 mt-3 flex-wrap">
+                    <button
+                      onClick={() => handleBatchReturn(true)}
+                      disabled={processingAction}
+                      className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-sm flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                    >
+                      {processingAction ? (
+                        <UnifiedSpinner size="xs" />
+                      ) : (
+                        <FiCheckCircle />
+                      )}
+                      Duyệt Tất Cả Trả Hàng (Nhập Kho)
+                    </button>
+                    <button
+                      onClick={() => handleBatchReturn(false)}
+                      disabled={processingAction}
+                      className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition-all shadow-sm flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                    >
+                      {processingAction ? (
+                        <UnifiedSpinner size="xs" />
+                      ) : (
+                        <FiXCircle />
+                      )}
+                      Từ Chối Tất Cả
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Customer & Delivery Information Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
             <div className="p-4 sm:p-5 rounded-2xl bg-slate-50/60 dark:bg-dark-bg/40 border border-slate-100 dark:border-dark-border space-y-2.5">
@@ -239,10 +333,13 @@ const AdminOrderDetailModal = ({
               </h4>
               <div className="space-y-1.5 text-xs text-slate-700 dark:text-dark-text-primary">
                 <p className="font-bold text-slate-900 dark:text-white">
-                  {order.receiverName || order.user?.username || "Khách vãng lai"}
+                  {order.receiverName ||
+                    order.user?.username ||
+                    "Khách vãng lai"}
                 </p>
                 <p className="flex items-center gap-1.5 text-slate-500 dark:text-dark-text-secondary">
-                  <FiPhone size={13} /> {order.receiverPhone || order.shippingPhone || "Chưa có SĐT"}
+                  <FiPhone size={13} />{" "}
+                  {order.receiverPhone || order.shippingPhone || "Chưa có SĐT"}
                 </p>
                 <p className="text-slate-500 dark:text-dark-text-secondary">
                   Email: {order.user?.email || "N/A"}
@@ -268,7 +365,8 @@ const AdminOrderDetailModal = ({
           {/* Products Table */}
           <div className="space-y-3">
             <h4 className="text-xs font-black uppercase tracking-wider text-slate-400 dark:text-dark-text-secondary flex items-center gap-2">
-              <FiPackage className="text-primary" /> Danh sách sản phẩm ({order.orderItems?.length || 0})
+              <FiPackage className="text-primary" /> Danh sách sản phẩm (
+              {order.orderItems?.length || 0})
             </h4>
 
             <div className="border border-slate-100 dark:border-dark-border rounded-2xl overflow-hidden divide-y divide-slate-100 dark:divide-dark-border">
@@ -290,7 +388,9 @@ const AdminOrderDetailModal = ({
                         {item.productName}
                       </p>
                       <p className="text-[11px] text-slate-400 dark:text-dark-text-secondary mt-0.5">
-                        {item.variantName ? `Phân loại: ${item.variantName} • ` : ""}
+                        {item.variantName
+                          ? `Phân loại: ${item.variantName} • `
+                          : ""}
                         Đơn giá: {formatCurrency(item.price)}
                       </p>
                     </div>
@@ -298,10 +398,15 @@ const AdminOrderDetailModal = ({
 
                   <div className="flex items-center justify-between sm:justify-end gap-4 shrink-0 pl-17 sm:pl-0">
                     <span className="text-xs font-bold text-slate-600 dark:text-dark-text-secondary">
-                      SL: <span className="text-primary font-black">x{item.quantity}</span>
+                      SL:{" "}
+                      <span className="text-primary font-black">
+                        x{item.quantity}
+                      </span>
                     </span>
                     <span className="text-xs sm:text-sm font-black text-slate-900 dark:text-white min-w-[90px] text-right">
-                      {formatCurrency(item.subtotal || item.price * item.quantity)}
+                      {formatCurrency(
+                        item.subtotal || item.price * item.quantity,
+                      )}
                     </span>
                   </div>
 
@@ -309,8 +414,12 @@ const AdminOrderDetailModal = ({
                   {item.returnStatus === "requested" && (
                     <div className="w-full sm:w-auto p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/40 flex items-center justify-between gap-3 text-xs">
                       <div className="min-w-0">
-                        <span className="font-bold text-amber-700 dark:text-amber-400">Yêu cầu trả hàng:</span>
-                        <p className="text-[11px] text-amber-600 truncate">{item.returnReason || "Không nêu lý do"}</p>
+                        <span className="font-bold text-amber-700 dark:text-amber-400">
+                          Yêu cầu trả hàng:
+                        </span>
+                        <p className="text-[11px] text-amber-600 truncate">
+                          {item.returnReason || "Không nêu lý do"}
+                        </p>
                       </div>
                       <div className="flex items-center gap-1.5 shrink-0">
                         <button
@@ -321,7 +430,9 @@ const AdminOrderDetailModal = ({
                           Duyệt
                         </button>
                         <button
-                          onClick={() => handleProcessItemReturn(item.id, false)}
+                          onClick={() =>
+                            handleProcessItemReturn(item.id, false)
+                          }
                           disabled={processingAction}
                           className="px-2.5 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-[10px] font-bold cursor-pointer"
                         >
@@ -339,13 +450,21 @@ const AdminOrderDetailModal = ({
           <div className="p-4 sm:p-5 rounded-2xl bg-slate-50/60 dark:bg-dark-bg/40 border border-slate-100 dark:border-dark-border flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div className="text-xs text-slate-500 dark:text-dark-text-secondary space-y-1">
               <p>
-                <span className="font-bold text-slate-700 dark:text-dark-text-primary">Phương thức:</span>{" "}
-                <span className="uppercase font-black">{order.paymentMethod || "COD"}</span>
+                <span className="font-bold text-slate-700 dark:text-dark-text-primary">
+                  Phương thức:
+                </span>{" "}
+                <span className="uppercase font-black">
+                  {order.paymentMethod || "COD"}
+                </span>
               </p>
               {order.voucherCode && (
                 <p>
-                  <span className="font-bold text-slate-700 dark:text-dark-text-primary">Mã giảm giá:</span>{" "}
-                  <span className="text-primary font-bold">{order.voucherCode}</span>
+                  <span className="font-bold text-slate-700 dark:text-dark-text-primary">
+                    Mã giảm giá:
+                  </span>{" "}
+                  <span className="text-primary font-bold">
+                    {order.voucherCode}
+                  </span>
                 </p>
               )}
             </div>
@@ -366,7 +485,13 @@ const AdminOrderDetailModal = ({
               Chuyển nhanh trạng thái xử lý
             </h4>
             <div className="flex items-center gap-2 flex-wrap">
-              {["confirmed", "processing", "shipped", "delivered", "completed"].map((st) => (
+              {[
+                "confirmed",
+                "processing",
+                "shipped",
+                "delivered",
+                "completed",
+              ].map((st) => (
                 <button
                   key={st}
                   onClick={() => handleDirectStatusChange(st)}
@@ -388,34 +513,39 @@ const AdminOrderDetailModal = ({
           </div>
 
           {/* Audit History Timeline */}
-          {Array.isArray(order.confirmationHistory) && order.confirmationHistory.length > 0 && (
-            <div className="p-4 sm:p-5 rounded-2xl bg-slate-50/60 dark:bg-dark-bg/40 border border-slate-100 dark:border-dark-border space-y-3">
-              <h4 className="text-xs font-black uppercase tracking-wider text-slate-400 dark:text-dark-text-secondary flex items-center gap-2">
-                <FiClock className="text-primary" /> Nhật ký lịch sử đơn hàng
-              </h4>
-              <div className="space-y-2.5 pl-2 border-l-2 border-slate-200 dark:border-dark-border ml-1">
-                {order.confirmationHistory.map((hist, idx) => (
-                  <div key={idx} className="relative pl-4 text-xs">
-                    <span className="absolute -left-[21px] top-1 size-2 rounded-full bg-primary ring-4 ring-white dark:ring-dark-surface" />
-                    <p className="font-bold text-slate-800 dark:text-slate-200">
-                      {hist.status || hist.action || "Cập nhật trạng thái"}
-                      {hist.reason ? ` - ${hist.reason}` : ""}
-                    </p>
-                    <p className="text-[10px] text-slate-400">
-                      {hist.time ? formatDate(hist.time) : hist.by ? `Bởi: ${hist.by}` : ""}
-                    </p>
-                  </div>
-                ))}
+          {Array.isArray(order.confirmationHistory) &&
+            order.confirmationHistory.length > 0 && (
+              <div className="p-4 sm:p-5 rounded-2xl bg-slate-50/60 dark:bg-dark-bg/40 border border-slate-100 dark:border-dark-border space-y-3">
+                <h4 className="text-xs font-black uppercase tracking-wider text-slate-400 dark:text-dark-text-secondary flex items-center gap-2">
+                  <FiClock className="text-primary" /> Nhật ký lịch sử đơn hàng
+                </h4>
+                <div className="space-y-2.5 pl-2 border-l-2 border-slate-200 dark:border-dark-border ml-1">
+                  {order.confirmationHistory.map((hist, idx) => (
+                    <div key={idx} className="relative pl-4 text-xs">
+                      <span className="absolute -left-[21px] top-1 size-2 rounded-full bg-primary ring-4 ring-white dark:ring-dark-surface" />
+                      <p className="font-bold text-slate-800 dark:text-slate-200">
+                        {hist.status || hist.action || "Cập nhật trạng thái"}
+                        {hist.reason ? ` - ${hist.reason}` : ""}
+                      </p>
+                      <p className="text-[10px] text-slate-400">
+                        {hist.time
+                          ? formatDate(hist.time)
+                          : hist.by
+                            ? `Bởi: ${hist.by}`
+                            : ""}
+                      </p>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            )}
         </div>
 
         {/* Footer */}
         <div className="px-5 py-3.5 sm:px-8 sm:py-4 border-t border-slate-100 dark:border-dark-border flex justify-end bg-slate-50/50 dark:bg-dark-bg/40 shrink-0">
           <button
             onClick={onClose}
-            className="px-5 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-dark-text-primary text-xs font-bold hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+            className="px-5 py-2 rounded-xl bg-slate-200 dark:bg-dark-card border border-transparent dark:border-dark-border text-slate-700 dark:text-dark-text-primary text-xs font-bold hover:bg-slate-300 dark:hover:bg-dark-surface transition-colors cursor-pointer"
           >
             Đóng
           </button>

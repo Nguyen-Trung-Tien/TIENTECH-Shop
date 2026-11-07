@@ -102,7 +102,7 @@ const getAllOrders = async (params = {}, ...legacyArgs) => {
 
     const queryHasCancel = Boolean(hasCancel || isCancelRequested);
     if (queryHasCancel) {
-      where.status = { [Op.in]: ["cancel_requested", "cancelled"] };
+      where.status = "cancel_requested";
     }
 
     const { count, rows } = await db.Order.findAndCountAll({
@@ -115,7 +115,7 @@ const getAllOrders = async (params = {}, ...legacyArgs) => {
           model: db.OrderItem,
           as: "orderItems",
           where: Object.keys(orderItemWhere).length > 0 ? orderItemWhere : undefined,
-          required: hasReturn,
+          required: queryHasReturn,
           include: [
             {
               model: db.Product,

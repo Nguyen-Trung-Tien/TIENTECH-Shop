@@ -84,7 +84,7 @@ const GenericAdminTable = ({
               <button
                 type="button"
                 onClick={() => onSearchChange("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 size-5 rounded bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-700 dark:hover:text-white flex items-center justify-center transition-all cursor-pointer"
+                className="absolute right-3 top-1/2 -translate-y-1/2 size-5 rounded bg-slate-100 dark:bg-dark-card border border-transparent dark:border-dark-border text-slate-400 hover:text-slate-700 dark:hover:text-white flex items-center justify-center transition-all cursor-pointer"
                 title="Xóa ô tìm kiếm"
                 aria-label="Xóa từ khóa tìm kiếm"
               >
@@ -107,31 +107,31 @@ const GenericAdminTable = ({
       {bulkActionsBar}
 
       {/* Table Area */}
-      <div className="tt-card bg-white dark:bg-dark-surface border border-slate-200 dark:border-slate-800 shadow-xs overflow-hidden">
+      <div className="tt-card bg-white dark:bg-dark-surface border border-slate-200 dark:border-dark-border shadow-xs overflow-hidden">
         {/* Mobile Swipe Hint */}
-        <div className="sm:hidden px-3.5 py-1.5 bg-slate-50 dark:bg-slate-900/60 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between text-[10px] text-slate-400 dark:text-slate-500 font-mono">
+        <div className="sm:hidden px-3.5 py-1.5 bg-slate-50 dark:bg-dark-surface/60 border-b border-slate-100 dark:border-dark-border flex items-center justify-between text-[10px] text-slate-400 dark:text-slate-500 font-mono">
           <span>&larr; Cuộn ngang xem thêm</span>
-          <span className="font-bold uppercase tracking-wider text-[9px] bg-slate-200/60 dark:bg-slate-800 px-1.5 py-0.5 rounded">Bảng dữ liệu</span>
+          <span className="font-bold uppercase tracking-wider text-[9px] bg-slate-200/60 dark:bg-dark-card px-1.5 py-0.5 rounded">Bảng dữ liệu</span>
         </div>
 
         <div className="overflow-x-auto custom-scrollbar">
           <table className="w-full text-left border-collapse min-w-[580px] md:min-w-full">
             <thead>
-              <tr className="bg-slate-50/80 dark:bg-slate-900/60 border-b border-slate-200/80 dark:border-slate-800">
+              <tr className="bg-slate-50/80 dark:bg-dark-surface/80 border-b border-slate-200/80 dark:border-dark-border">
                 {safeColumns.map((col, idx) => (
                   <th
                     key={idx}
-                    className={`px-3 sm:px-4 py-3 md:px-6 md:py-3.5 text-[10px] font-mono font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 ${col.className || ""}`}
+                    className={`px-3 sm:px-4 py-3 md:px-6 md:py-3.5 text-[10px] font-mono font-bold uppercase tracking-wider text-slate-500 dark:text-dark-text-secondary ${col.className || ""}`}
                   >
                     {col.header}
                   </th>
                 ))}
-                <th className="sticky right-0 bg-slate-50/95 dark:bg-slate-900/95 backdrop-blur-xs px-3 sm:px-4 py-3 md:px-6 md:py-3.5 text-[10px] font-mono font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 text-right border-l border-slate-200/50 dark:border-slate-800/50 shadow-[-4px_0_6px_-2px_rgba(0,0,0,0.03)] z-10">
+                <th className="sticky right-0 bg-slate-50/95 dark:bg-dark-surface/95 backdrop-blur-xs px-3 sm:px-4 py-3 md:px-6 md:py-3.5 text-[10px] font-mono font-bold uppercase tracking-wider text-slate-500 dark:text-dark-text-secondary text-right border-l border-slate-200/50 dark:border-dark-border shadow-[-4px_0_6px_-2px_rgba(0,0,0,0.03)] z-10">
                   Thao tác
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800/80">
+            <tbody className="divide-y divide-slate-100 dark:divide-dark-border">
               {loading ? (
                 <tr>
                   <td
@@ -148,7 +148,7 @@ const GenericAdminTable = ({
                     className="px-4 py-16 md:px-6 text-center"
                   >
                     <div className="max-w-xs mx-auto">
-                      <div className="size-12 bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center text-slate-400 mx-auto mb-3">
+                      <div className="size-12 bg-slate-100 dark:bg-dark-card border border-transparent dark:border-dark-border rounded-lg flex items-center justify-center text-slate-400 mx-auto mb-3">
                         <FiSearch size={22} />
                       </div>
                       <p className="text-slate-900 dark:text-white font-bold text-xs uppercase tracking-wider font-mono">Dữ liệu trống</p>
@@ -160,7 +160,7 @@ const GenericAdminTable = ({
                 safeData.map((item, rowIdx) => (
                   <tr
                     key={item.id || rowIdx}
-                    className="hover:bg-slate-50/60 dark:hover:bg-slate-900/40 transition-colors group"
+                    className="hover:bg-slate-50/60 dark:hover:bg-dark-surface/40 transition-colors group"
                   >
                     {columns.map((col, colIdx) => (
                       <td
@@ -176,7 +176,7 @@ const GenericAdminTable = ({
                         )}
                       </td>
                     ))}
-                    <td className="sticky right-0 bg-white/95 dark:bg-dark-surface/95 backdrop-blur-xs group-hover:bg-slate-50/95 dark:group-hover:bg-slate-900/95 px-3 sm:px-4 py-3 md:px-6 md:py-3 text-right border-l border-slate-100 dark:border-slate-800/50 shadow-[-4px_0_6px_-2px_rgba(0,0,0,0.03)] z-10">
+                    <td className="sticky right-0 bg-white/95 dark:bg-dark-surface/95 backdrop-blur-xs group-hover:bg-slate-50/95 dark:group-hover:bg-dark-surface/95 px-3 sm:px-4 py-3 md:px-6 md:py-3 text-right border-l border-slate-100 dark:border-dark-border shadow-[-4px_0_6px_-2px_rgba(0,0,0,0.03)] z-10">
                       {renderActions ? (
                         renderActions(item)
                       ) : (
@@ -184,7 +184,7 @@ const GenericAdminTable = ({
                           <button
                             type="button"
                             onClick={() => onEditClick(item)}
-                            className="size-8 text-primary dark:text-blue-400 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md hover:border-primary transition-all cursor-pointer flex items-center justify-center active:scale-95"
+                            className="size-8 text-primary dark:text-blue-400 bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-md hover:border-primary transition-all cursor-pointer flex items-center justify-center active:scale-95"
                             title="Chỉnh sửa"
                             aria-label="Chỉnh sửa bản ghi"
                           >
@@ -193,7 +193,7 @@ const GenericAdminTable = ({
                           <button
                             type="button"
                             onClick={() => onDeleteClick(item)}
-                            className="size-8 text-rose-600 dark:text-rose-400 bg-white dark:bg-slate-900 border border-rose-200 dark:border-rose-900/50 rounded-md hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-all cursor-pointer flex items-center justify-center active:scale-95"
+                            className="size-8 text-rose-600 dark:text-rose-400 bg-white dark:bg-dark-card border border-rose-200 dark:border-rose-900/50 rounded-md hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-all cursor-pointer flex items-center justify-center active:scale-95"
                             title="Xóa"
                             aria-label="Xóa bản ghi"
                           >
@@ -211,7 +211,7 @@ const GenericAdminTable = ({
 
         {/* Pagination Area */}
         {totalPages > 1 && (
-          <div className="p-3 sm:p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30 flex justify-center">
+          <div className="p-3 sm:p-4 border-t border-slate-100 dark:border-dark-border bg-slate-50/50 dark:bg-dark-surface/30 flex justify-center">
             <AppPagination
               page={page}
               totalPages={totalPages}

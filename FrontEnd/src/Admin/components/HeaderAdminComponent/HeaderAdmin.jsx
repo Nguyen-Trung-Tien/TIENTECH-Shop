@@ -142,7 +142,7 @@ const HeaderAdmin = ({ toggleSidebar, isCollapsed, theme, toggleTheme }) => {
             <FiSearch className="text-slate-400 group-hover:text-primary transition-colors text-sm shrink-0" />
             <span className="truncate font-medium">Tìm sản phẩm, đơn hàng, khách hàng...</span>
           </div>
-          <span className="px-1.5 py-0.5 text-[9px] font-mono font-black text-slate-400 dark:text-slate-500 bg-white dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700 shadow-xs shrink-0 group-hover:border-primary/40">
+          <span className="px-1.5 py-0.5 text-[9px] font-mono font-black text-slate-400 dark:text-dark-text-secondary bg-white dark:bg-dark-card rounded border border-slate-200 dark:border-dark-border shadow-xs shrink-0 group-hover:border-primary/40">
             Ctrl K
           </span>
         </button>

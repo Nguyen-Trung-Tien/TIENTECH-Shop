@@ -30,46 +30,38 @@ const ReviewPage = () => {
   const [replyInputs, setReplyInputs] = useState({});
 
   const [filters, setFilters] = useState({ rating: "", status: "" });
-  const [pagination, setPagination] = useState({
-    page: 1,
-    totalPages: 1,
-    total: 0,
-    limit: 10,
-  });
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   const fetchReviews = useCallback(async () => {
     setLoading(true);
     try {
       const res = await getAllReviewsApi(
-        pagination.page || 1,
-        pagination.limit || 10,
+        page,
+        10,
         filters.rating,
         filters.status,
       );
 
-      setReviews(res.data || []);
-      if (res.pagination) {
-        setPagination({
-          page: res.pagination.currentPage || res.pagination.page || 1,
-          totalPages: res.pagination.totalPages || 1,
-          total: res.pagination.totalItems || 0,
-          limit: res.pagination.limit || 10,
-        });
+      const items = res?.data || [];
+      setReviews(items);
+      if (res?.pagination) {
+        setTotalPages(res.pagination.totalPages || 1);
       }
 
-      const newReplies = {};
-      for (let r of (res.data || [])) {
-        const rep = await getRepliesByReviewApi(r.id);
-        if (rep.errCode === 0) newReplies[r.id] = rep.data;
-      }
-      setReplies(newReplies);
+      // Map replies directly from the payload without extra sequential HTTP requests
+      const initialReplies = {};
+      items.forEach((r) => {
+        initialReplies[r.id] = Array.isArray(r.replies) ? r.replies : [];
+      });
+      setReplies(initialReplies);
     } catch (e) {
       console.error(e);
       toast.error("Không thể tải bình luận");
     } finally {
       setLoading(false);
     }
-  }, [pagination.page, pagination.limit, filters]);
+  }, [page, filters.rating, filters.status]);
 
   useEffect(() => {
     fetchReviews();
@@ -144,7 +136,7 @@ const ReviewPage = () => {
             value={filters.rating}
             onChange={(e) => {
               setFilters((p) => ({ ...p, rating: e.target.value }));
-              setPagination((p) => ({ ...p, page: 1 }));
+              setPage(1);
             }}
           >
             <option value="" className="dark:bg-dark-surface">
@@ -164,7 +156,7 @@ const ReviewPage = () => {
             value={filters.status}
             onChange={(e) => {
               setFilters((p) => ({ ...p, status: e.target.value }));
-              setPagination((p) => ({ ...p, page: 1 }));
+              setPage(1);
             }}
           >
             <option value="" className="dark:bg-dark-surface">
@@ -182,7 +174,7 @@ const ReviewPage = () => {
         <button
           onClick={() => {
             setFilters({ rating: "", status: "" });
-            setPagination((p) => ({ ...p, page: 1 }));
+            setPage(1);
           }}
           className="h-12 px-6 bg-slate-100 dark:bg-dark-bg text-slate-500 dark:text-dark-text-secondary rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-slate-200 dark:hover:bg-slate-800 transition-all border border-transparent dark:border-dark-border"
         >
@@ -371,10 +363,10 @@ const ReviewPage = () => {
       {/* Pagination */}
       <div className="flex justify-center pt-8">
         <AppPagination
-          page={pagination.page}
-          totalPages={pagination.totalPages}
+          page={page}
+          totalPages={totalPages}
           loading={loading}
-          onPageChange={(p) => setPagination((prev) => ({ ...prev, page: p }))}
+          onPageChange={(p) => setPage(p)}
         />
       </div>
 

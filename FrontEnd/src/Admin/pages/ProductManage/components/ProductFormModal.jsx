@@ -60,8 +60,8 @@ const ProductFormModal = ({
           className="relative w-full max-w-5xl max-h-[92vh] sm:max-h-[88vh] bg-slate-50 dark:bg-dark-surface rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col border border-slate-200/80 dark:border-dark-border transition-colors duration-300"
         >
           {/* Mobile Drag Pill */}
-          <div className="flex justify-center pt-3 pb-1 sm:hidden bg-slate-100 dark:bg-slate-950/60">
-            <div className="w-12 h-1.5 rounded-full bg-slate-300 dark:bg-slate-700" />
+          <div className="flex justify-center pt-3 pb-1 sm:hidden bg-slate-100 dark:bg-dark-bg/60">
+            <div className="w-12 h-1.5 rounded-full bg-slate-300 dark:bg-dark-border" />
           </div>
 
           {/* Modal Header */}

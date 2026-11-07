@@ -284,21 +284,55 @@ const getAllReviewsAdmin = async (
         {
           model: db.User,
           as: "user",
-          attributes: ["id", "username"],
+          attributes: ["id", "username", "avatar"],
         },
         {
           model: db.Product,
           as: "product",
           attributes: ["id", "name"],
         },
+        {
+          model: db.ReviewImage,
+          as: "images",
+          attributes: ["id", "imageUrl"],
+        },
       ],
     });
 
     const pagingData = getPagingData(data, page, l);
 
+    const reviewIds = pagingData.items.map((r) => r.id);
+    let repliesByReviewId = {};
+    if (reviewIds.length > 0) {
+      const replies = await db.ReviewReply.findAll({
+        where: { reviewId: reviewIds },
+        include: [
+          {
+            model: db.User,
+            as: "user",
+            attributes: ["id", "username", "avatar"],
+          },
+        ],
+        order: [["createdAt", "ASC"]],
+      });
+
+      repliesByReviewId = replies.reduce((acc, rep) => {
+        const key = rep.reviewId;
+        if (!acc[key]) acc[key] = [];
+        acc[key].push(rep);
+        return acc;
+      }, {});
+    }
+
     return {
       errCode: 0,
-      data: pagingData.items,
+      data: pagingData.items.map((r) => {
+        const itemObj = r.toJSON ? r.toJSON() : r;
+        return {
+          ...itemObj,
+          replies: repliesByReviewId[itemObj.id] || [],
+        };
+      }),
       pagination: {
         totalItems: pagingData.totalItems,
         currentPage: pagingData.currentPage,

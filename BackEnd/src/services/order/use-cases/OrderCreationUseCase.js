@@ -2,7 +2,7 @@ const db = require("../../../models");
 const VoucherService = require("../../marketing/VoucherService");
 const SystemSettingService = require("../../system/SystemSettingService");
 const { sendOrderCreatedEmail } = require("../../common/EmailService");
-const { acquireLock, releaseLock } = require("../../../config/redis");
+const { acquireLock, releaseLock, deleteCacheByPattern } = require("../../../config/redis");
 
 const createOrder = async (data, actor = null) => {
   // SECURITY: Always enforce effectiveUserId based on caller
@@ -237,6 +237,12 @@ const createOrder = async (data, actor = null) => {
     }
 
     await t.commit();
+
+    try {
+      await deleteCacheByPattern("dashboard_*");
+    } catch (cacheErr) {
+      console.warn("Failed to invalidate dashboard cache:", cacheErr?.message);
+    }
 
     // Async Email Notifications
     setImmediate(async () => {

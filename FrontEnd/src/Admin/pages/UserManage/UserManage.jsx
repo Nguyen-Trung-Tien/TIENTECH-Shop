@@ -422,7 +422,7 @@ const UserManage = () => {
           type="button"
           title="Nhật ký kích hoạt"
           onClick={() => handleOpenAuditModal(item)}
-          className="size-8 text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-primary-light bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md hover:border-primary transition-all cursor-pointer flex items-center justify-center active:scale-95 shadow-xs"
+          className="size-8 text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-primary-light bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-md hover:border-primary transition-all cursor-pointer flex items-center justify-center active:scale-95 shadow-xs"
         >
           <FiClock size={14} />
         </button>
@@ -432,7 +432,7 @@ const UserManage = () => {
           type="button"
           title="Chỉnh sửa thông tin"
           onClick={() => handleShowModal(item)}
-          className="size-8 text-primary dark:text-blue-400 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md hover:border-primary transition-all cursor-pointer flex items-center justify-center active:scale-95 shadow-xs"
+          className="size-8 text-primary dark:text-blue-400 bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-md hover:border-primary transition-all cursor-pointer flex items-center justify-center active:scale-95 shadow-xs"
         >
           <FiEdit2 size={14} />
         </button>
@@ -443,7 +443,7 @@ const UserManage = () => {
           title={isSelf ? "Không thể tự xóa chính mình" : "Xóa tài khoản"}
           disabled={isSelf}
           onClick={() => handleDelete(item)}
-          className="size-8 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md hover:border-rose-300 dark:hover:border-rose-800 transition-all cursor-pointer flex items-center justify-center active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed shadow-xs"
+          className="size-8 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-md hover:border-rose-300 dark:hover:border-rose-800 transition-all cursor-pointer flex items-center justify-center active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed shadow-xs"
         >
           <FiTrash2 size={14} />
         </button>
@@ -489,10 +489,10 @@ const UserManage = () => {
   // Metric Cards Header
   const headerExtra = (
     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 mb-2">
-      <div className="bg-white dark:bg-dark-surface p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs min-w-0">
+      <div className="bg-white dark:bg-dark-surface p-4 rounded-xl border border-slate-200 dark:border-dark-border shadow-xs min-w-0">
         <div className="flex items-center justify-between gap-2">
           <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 font-bold">Tổng user</span>
-          <div className="size-7 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center">
+          <div className="size-7 rounded-lg bg-slate-100 dark:bg-dark-card text-slate-600 dark:text-dark-text-secondary flex items-center justify-center">
             <FiUsers size={14} />
           </div>
         </div>
@@ -554,7 +554,7 @@ const UserManage = () => {
   // Extra filter controls (Status, Role)
   const extraControls = (
     <div className="flex items-center gap-2 flex-wrap">
-      <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800">
+      <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-dark-card px-3 py-1.5 rounded-lg border border-slate-200 dark:border-dark-border">
         <FiFilter className="text-slate-400 text-xs shrink-0" />
         <select
           value={statusFilter}
@@ -562,17 +562,17 @@ const UserManage = () => {
             setStatusFilter(e.target.value);
             setPage(1);
           }}
-          className="bg-transparent text-xs font-bold text-slate-700 dark:text-slate-200 focus:outline-none cursor-pointer dark:[color-scheme:dark] [&>option]:bg-white [&>option]:text-slate-900 dark:[&>option]:bg-slate-900 dark:[&>option]:text-slate-100"
+          className="bg-transparent text-xs font-bold text-slate-700 dark:text-slate-200 focus:outline-none cursor-pointer dark:[color-scheme:dark] [&>option]:bg-white [&>option]:text-slate-900 dark:[&>option]:bg-dark-surface dark:[&>option]:text-slate-100"
           aria-label="Lọc theo trạng thái tài khoản"
         >
-          <option value="all" className="bg-white text-slate-900 dark:bg-slate-900 dark:text-slate-100">Tất cả trạng thái</option>
-          <option value="active" className="bg-white text-slate-900 dark:bg-slate-900 dark:text-slate-100">Đang hoạt động</option>
-          <option value="pending" className="bg-white text-slate-900 dark:bg-slate-900 dark:text-slate-100">Chờ kích hoạt OTP</option>
-          <option value="suspended" className="bg-white text-slate-900 dark:bg-slate-900 dark:text-slate-100">Đã vô hiệu hóa</option>
+          <option value="all" className="bg-white text-slate-900 dark:bg-dark-surface dark:text-slate-100">Tất cả trạng thái</option>
+          <option value="active" className="bg-white text-slate-900 dark:bg-dark-surface dark:text-slate-100">Đang hoạt động</option>
+          <option value="pending" className="bg-white text-slate-900 dark:bg-dark-surface dark:text-slate-100">Chờ kích hoạt OTP</option>
+          <option value="suspended" className="bg-white text-slate-900 dark:bg-dark-surface dark:text-slate-100">Đã vô hiệu hóa</option>
         </select>
       </div>
 
-      <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800">
+      <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-dark-card px-3 py-1.5 rounded-lg border border-slate-200 dark:border-dark-border">
         <FiShield className="text-slate-400 text-xs shrink-0" />
         <select
           value={roleFilter}
@@ -580,12 +580,12 @@ const UserManage = () => {
             setRoleFilter(e.target.value);
             setPage(1);
           }}
-          className="bg-transparent text-xs font-bold text-slate-700 dark:text-slate-200 focus:outline-none cursor-pointer dark:[color-scheme:dark] [&>option]:bg-white [&>option]:text-slate-900 dark:[&>option]:bg-slate-900 dark:[&>option]:text-slate-100"
+          className="bg-transparent text-xs font-bold text-slate-700 dark:text-slate-200 focus:outline-none cursor-pointer dark:[color-scheme:dark] [&>option]:bg-white [&>option]:text-slate-900 dark:[&>option]:bg-dark-surface dark:[&>option]:text-slate-100"
           aria-label="Lọc theo vai trò"
         >
-          <option value="all" className="bg-white text-slate-900 dark:bg-slate-900 dark:text-slate-100">Tất cả vai trò</option>
-          <option value="customer" className="bg-white text-slate-900 dark:bg-slate-900 dark:text-slate-100">Khách hàng</option>
-          <option value="admin" className="bg-white text-slate-900 dark:bg-slate-900 dark:text-slate-100">Quản trị viên</option>
+          <option value="all" className="bg-white text-slate-900 dark:bg-dark-surface dark:text-slate-100">Tất cả vai trò</option>
+          <option value="customer" className="bg-white text-slate-900 dark:bg-dark-surface dark:text-slate-100">Khách hàng</option>
+          <option value="admin" className="bg-white text-slate-900 dark:bg-dark-surface dark:text-slate-100">Quản trị viên</option>
         </select>
       </div>
 
@@ -609,7 +609,7 @@ const UserManage = () => {
       <button
         type="button"
         onClick={() => handleOpenAuditModal(null)}
-        className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-primary rounded-lg transition-all cursor-pointer shadow-xs"
+        className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-slate-700 dark:text-slate-300 bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border hover:border-primary rounded-lg transition-all cursor-pointer shadow-xs"
         title="Xem toàn bộ nhật ký quản trị"
       >
         <FiActivity size={13} className="text-primary" />
@@ -648,7 +648,7 @@ const UserManage = () => {
         <button
           type="button"
           onClick={() => setSelectedIds([])}
-          className="size-8 rounded-lg bg-slate-200/80 dark:bg-slate-800 text-slate-500 hover:text-slate-800 dark:hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+          className="size-8 rounded-lg bg-slate-200/80 dark:bg-dark-card border border-transparent dark:border-dark-border text-slate-500 hover:text-slate-800 dark:hover:text-white flex items-center justify-center transition-colors cursor-pointer"
           title="Bỏ chọn tất cả"
           aria-label="Bỏ chọn tất cả"
         >
@@ -705,7 +705,7 @@ const UserManage = () => {
       {/* Single Account Status Modal */}
       {showStatusModal && targetUserForStatus && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
-          <div className="bg-white dark:bg-dark-surface w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-6 space-y-5 animate-scaleUp">
+          <div className="bg-white dark:bg-dark-surface w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 dark:border-dark-border p-6 space-y-5 animate-scaleUp">
             <div className="flex items-center gap-3">
               <div
                 className={`size-11 rounded-xl flex items-center justify-center text-lg ${
@@ -784,7 +784,7 @@ const UserManage = () => {
       {/* Bulk Status Modal */}
       {showBulkModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
-          <div className="bg-white dark:bg-dark-surface w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-6 space-y-5 animate-scaleUp">
+          <div className="bg-white dark:bg-dark-surface w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 dark:border-dark-border p-6 space-y-5 animate-scaleUp">
             <div className="flex items-center gap-3">
               <div
                 className={`size-11 rounded-xl flex items-center justify-center text-lg ${
@@ -859,8 +859,8 @@ const UserManage = () => {
       {/* Audit Log Modal */}
       {showAuditModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
-          <div className="bg-white dark:bg-dark-surface w-full max-w-2xl rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-6 space-y-4 animate-scaleUp max-h-[85vh] flex flex-col">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+          <div className="bg-white dark:bg-dark-surface w-full max-w-2xl rounded-2xl shadow-2xl border border-slate-200 dark:border-dark-border p-6 space-y-4 animate-scaleUp max-h-[85vh] flex flex-col">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-dark-border">
               <div className="flex items-center gap-2.5">
                 <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
                   <FiClock size={18} />
@@ -879,7 +879,7 @@ const UserManage = () => {
               <button
                 type="button"
                 onClick={() => setShowAuditModal(false)}
-                className="size-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-700 dark:hover:text-white flex items-center justify-center cursor-pointer transition-colors"
+                className="size-8 rounded-lg bg-slate-100 dark:bg-dark-card text-slate-400 hover:text-slate-700 dark:hover:text-white flex items-center justify-center cursor-pointer transition-colors"
                 aria-label="Đóng cửa sổ"
               >
                 <FiX size={16} />
@@ -899,7 +899,7 @@ const UserManage = () => {
                 auditLogs.map((log) => (
                   <div
                     key={log.id}
-                    className="p-3.5 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200/60 dark:border-slate-800/60 space-y-1.5"
+                    className="p-3.5 bg-slate-50 dark:bg-dark-bg/60 rounded-xl border border-slate-200/60 dark:border-dark-border/60 space-y-1.5"
                   >
                     <div className="flex items-center justify-between gap-2 flex-wrap">
                       <div className="flex items-center gap-2">
@@ -925,7 +925,7 @@ const UserManage = () => {
                       <strong>Lý do:</strong> {log.reason || "Không ghi chú"}
                     </p>
 
-                    <div className="flex items-center justify-between text-[10px] text-slate-400 font-mono pt-1 border-t border-slate-200/30 dark:border-slate-800/40">
+                    <div className="flex items-center justify-between text-[10px] text-slate-400 font-mono pt-1 border-t border-slate-200/30 dark:border-dark-border/40">
                       <span>Người thực hiện: <strong>{log.admin?.username || `Admin #${log.adminId}`}</strong></span>
                       {log.ipAddress && <span>IP: {log.ipAddress}</span>}
                     </div>
@@ -934,7 +934,7 @@ const UserManage = () => {
               )}
             </div>
 
-            <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-3 flex-wrap">
+            <div className="pt-3 border-t border-slate-100 dark:border-dark-border flex items-center justify-between gap-3 flex-wrap">
               <div className="flex items-center gap-2">
                 {auditTotalPages > 1 && (
                   <div className="flex items-center gap-1.5">
@@ -942,7 +942,7 @@ const UserManage = () => {
                       type="button"
                       disabled={auditPage <= 1 || auditLoading}
                       onClick={() => handleAuditPageChange(auditPage - 1)}
-                      className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                      className="p-1.5 rounded-lg border border-slate-200 dark:border-dark-border bg-white dark:bg-dark-card text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-dark-surface disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
                       title="Trang trước"
                       aria-label="Trang trước"
                     >
@@ -955,7 +955,7 @@ const UserManage = () => {
                       type="button"
                       disabled={auditPage >= auditTotalPages || auditLoading}
                       onClick={() => handleAuditPageChange(auditPage + 1)}
-                      className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                      className="p-1.5 rounded-lg border border-slate-200 dark:border-dark-border bg-white dark:bg-dark-card text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-dark-surface disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
                       title="Trang sau"
                       aria-label="Trang sau"
                     >

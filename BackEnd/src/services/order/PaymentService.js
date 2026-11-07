@@ -5,7 +5,7 @@ const crypto = require("crypto");
 const { formatDateYYYYMMDDHHmmss, formatDateHHmmss } = require("../../utils/dateFormatter");
 const { getPagination, getPagingData } = require("../../utils/paginationHelper");
 const axios = require("axios");
-const { acquireLock, releaseLock } = require("../../config/redis");
+const { acquireLock, releaseLock, deleteCacheByPattern } = require("../../config/redis");
 
 // Real refund integration via VNPay API
 const executeRefund = async (order, payment, method, amountToRefund = null) => {
@@ -547,6 +547,12 @@ const completePayment = async (id, transactionId) => {
 
     await t.commit();
 
+    try {
+      await deleteCacheByPattern("dashboard_*");
+    } catch (cacheErr) {
+      console.warn("Failed to invalidate dashboard cache:", cacheErr?.message);
+    }
+
     if (shouldSendConfirmedEmail) {
       try {
         const user = await db.User.findByPk(order.userId);
@@ -603,7 +609,14 @@ const refundPayment = async (id, note = "", t_external = null) => {
       await order.save({ transaction: t });
     }
 
-    if (!t_external) await t.commit();
+    if (!t_external) {
+      await t.commit();
+      try {
+        await deleteCacheByPattern("dashboard_*");
+      } catch (cacheErr) {
+        console.warn("Failed to invalidate dashboard cache:", cacheErr?.message);
+      }
+    }
     return { errCode: 0, errMessage: "Payment refunded", data: payment };
   } catch (e) {
     if (!t_external) await t.rollback();

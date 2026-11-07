@@ -72,10 +72,10 @@ const Modal = ({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 30, scale: 0.96 }}
             transition={{ type: "spring", stiffness: 380, damping: 30 }}
-            className={`relative w-full ${sizes[size]} max-h-[92vh] sm:max-h-[85vh] bg-white/98 dark:bg-slate-900/98 backdrop-blur-2xl rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col border border-slate-200/80 dark:border-slate-800 transition-colors duration-300 ${className}`}
+            className={`relative w-full ${sizes[size]} max-h-[92vh] sm:max-h-[85vh] bg-white/98 dark:bg-dark-surface/98 backdrop-blur-2xl rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col border border-slate-200/80 dark:border-dark-border transition-colors duration-300 ${className}`}
           >
             {/* Mobile Drag Indicator Pill */}
-            <div className="flex justify-center pt-2.5 pb-1 sm:hidden bg-slate-50/80 dark:bg-slate-950/60" aria-hidden="true">
+            <div className="flex justify-center pt-2.5 pb-1 sm:hidden bg-slate-50/80 dark:bg-dark-bg/60" aria-hidden="true">
               <div className="w-10 h-1 rounded-full bg-slate-300 dark:bg-slate-700" />
             </div>
 
@@ -86,7 +86,7 @@ const Modal = ({
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="absolute inset-0 z-50 bg-white/75 dark:bg-slate-900/80 backdrop-blur-md flex flex-col items-center justify-center gap-3 p-6 text-center"
+                  className="absolute inset-0 z-50 bg-white/75 dark:bg-dark-surface/80 backdrop-blur-md flex flex-col items-center justify-center gap-3 p-6 text-center"
                 >
                   <UnifiedSpinner size="lg" variant="primary" />
                   <p className="text-xs font-black uppercase tracking-widest text-slate-800 dark:text-slate-100 animate-pulse">
@@ -98,13 +98,13 @@ const Modal = ({
 
             {/* Header */}
             {(title || showClose) && (
-              <div className="flex items-center justify-between p-5 sm:p-6 pb-3.5 border-b border-slate-100 dark:border-slate-800/80">
+              <div className="flex items-center justify-between p-5 sm:p-6 pb-3.5 border-b border-slate-100 dark:border-dark-border">
                 <div>
                   <h3 id="modal-title" className="text-lg sm:text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">
                     {title}
                   </h3>
                   {subtitle && (
-                    <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mt-0.5">
+                    <p className="text-xs font-semibold text-slate-500 dark:text-dark-text-secondary mt-0.5">
                       {subtitle}
                     </p>
                   )}
@@ -114,7 +114,7 @@ const Modal = ({
                     type="button"
                     onClick={onClose}
                     aria-label="Đóng hộp thoại"
-                    className="size-8 sm:size-9 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl flex items-center justify-center text-slate-400 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all cursor-pointer"
+                    className="size-8 sm:size-9 bg-slate-100 dark:bg-dark-card hover:bg-slate-200 dark:hover:bg-dark-border rounded-xl flex items-center justify-center text-slate-400 dark:text-dark-text-secondary hover:text-slate-900 dark:hover:text-white transition-all cursor-pointer border border-transparent dark:border-dark-border"
                   >
                     <FiX size={18} />
                   </button>
@@ -123,13 +123,13 @@ const Modal = ({
             )}
 
             {/* Body Content */}
-            <div className="p-5 sm:p-6 flex-1 overflow-y-auto custom-scrollbar text-slate-700 dark:text-slate-200">
+            <div className="p-5 sm:p-6 flex-1 overflow-y-auto custom-scrollbar text-slate-700 dark:text-dark-text-primary">
               {children}
             </div>
 
             {/* Footer */}
             {footer && (
-              <div className="p-5 sm:p-6 pt-3 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-end gap-3 bg-slate-50/50 dark:bg-slate-950/40">
+              <div className="p-5 sm:p-6 pt-3 border-t border-slate-100 dark:border-dark-border flex items-center justify-end gap-3 bg-slate-50/50 dark:bg-dark-bg/40">
                 {footer}
               </div>
             )}

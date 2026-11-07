@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import { toast } from "react-toastify";
 import { createPortal } from "react-dom";
 import {
   FiBell,
@@ -53,6 +54,12 @@ const NotificationBell = () => {
   const dropdownRef = useRef(null);
   const user = useSelector((state) => state.user.user);
 
+  // Chống lặp thông báo và gộp thông báo khi có bão đơn hàng (Burst / Batch Orders)
+  const recentAlertsRef = useRef(new Map());
+  const batchOrderCountRef = useRef(0);
+  const batchTimerRef = useRef(null);
+  const fetchDebounceRef = useRef(null);
+
   const fetchNotifications = useCallback(async () => {
     if (!user) return;
     try {
@@ -69,6 +76,27 @@ const NotificationBell = () => {
     }
   }, [user, activeFilter]);
 
+  const triggerDebouncedFetch = useCallback(() => {
+    if (fetchDebounceRef.current) clearTimeout(fetchDebounceRef.current);
+    fetchDebounceRef.current = setTimeout(() => {
+      fetchNotifications();
+    }, 400);
+  }, [fetchNotifications]);
+
+  const shouldSuppressDuplicate = useCallback((key) => {
+    if (!key) return false;
+    const now = Date.now();
+    const lastTime = recentAlertsRef.current.get(key);
+    if (recentAlertsRef.current.size > 50) {
+      recentAlertsRef.current.clear();
+    }
+    if (lastTime && now - lastTime < 5000) {
+      return true;
+    }
+    recentAlertsRef.current.set(key, now);
+    return false;
+  }, []);
+
   useEffect(() => {
     fetchNotifications();
 
@@ -77,24 +105,49 @@ const NotificationBell = () => {
     const socket = initUserSocket(user);
 
     const handleNewOrder = (data) => {
-      fetchNotifications();
-      const msg = data?.message || "Bạn có đơn hàng mới từ khách hàng!";
-      showInfoToast(`🔔 ${msg}`);
+      triggerDebouncedFetch();
+      const orderKey = data?.orderCode || data?.orderId || (typeof data?.message === "string" ? data.message : "new_order");
+      if (shouldSuppressDuplicate(orderKey)) return;
+
+      if (batchOrderCountRef.current === 0) {
+        batchOrderCountRef.current = 1;
+        const msg = data?.message || "Có đơn hàng mới từ khách hàng!";
+        showInfoToast(`🔔 ${msg}`, { toastId: "active_order_batch" });
+      } else {
+        batchOrderCountRef.current += 1;
+        toast.info(`🔔 Hệ thống vừa nhận thêm ${batchOrderCountRef.current} đơn hàng mới!`, {
+          toastId: "active_order_batch",
+          autoClose: 3500,
+        });
+      }
+
+      if (batchTimerRef.current) clearTimeout(batchTimerRef.current);
+      batchTimerRef.current = setTimeout(() => {
+        batchOrderCountRef.current = 0;
+      }, 3000);
     };
 
     const handleOrderStatusUpdated = (data) => {
-      fetchNotifications();
-      if (data?.message) {
-        showInfoToast(`🔔 ${data.message}`);
-      }
+      triggerDebouncedFetch();
+      if (!data?.message) return;
+      const key = `status_${data.orderId || data.orderCode}_${data.status}`;
+      if (shouldSuppressDuplicate(key)) return;
+      showInfoToast(`🔔 ${data.message}`, { toastId: key });
     };
 
     const handleNotification = (data) => {
-      fetchNotifications();
-      if (data?.title) {
-        const text = data.message ? `: ${data.message}` : "";
-        showInfoToast(`🔔 ${data.title}${text}`);
+      triggerDebouncedFetch();
+      if (!data?.title) return;
+      const notifKey = data.id ? `notif_${data.id}` : `${data.title}_${data.message || ""}`;
+      if (shouldSuppressDuplicate(notifKey)) return;
+
+      // Nếu là thông báo đơn hàng cho admin và vừa nhận order batch, tránh toast kép
+      if (data.type === "order" && batchOrderCountRef.current > 0) {
+        return;
       }
+
+      const text = data.message ? `: ${data.message}` : "";
+      showInfoToast(`🔔 ${data.title}${text}`, { toastId: `notif_${notifKey}` });
     };
 
     if (user.role === "admin" || user.role === "root") {
@@ -109,8 +162,10 @@ const NotificationBell = () => {
       }
       socket.off("order_status_updated", handleOrderStatusUpdated);
       socket.off("notification", handleNotification);
+      if (batchTimerRef.current) clearTimeout(batchTimerRef.current);
+      if (fetchDebounceRef.current) clearTimeout(fetchDebounceRef.current);
     };
-  }, [user, activeFilter, fetchNotifications]);
+  }, [user, activeFilter, fetchNotifications, triggerDebouncedFetch, shouldSuppressDuplicate]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
