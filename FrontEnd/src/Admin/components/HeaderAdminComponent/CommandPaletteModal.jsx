@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { FiSearch, FiHome, FiBox, FiShoppingCart, FiBarChart2, FiUsers, FiTag, FiLayers, FiSettings, FiDollarSign, FiX, FiArrowRight, FiSun, FiMoon, FiFileText, FiCornerDownLeft, FiPackage, FiUser, FiShoppingBag } from "react-icons/fi";
 import { globalSearchApi, exportRevenue } from "../../../api/adminApi";
@@ -182,7 +183,7 @@ const CommandPaletteModal = ({ isOpen, onClose, theme, toggleTheme }) => {
     return NAV_ITEMS.filter((item) => item.label.toLowerCase().includes(lower));
   }, [query]);
 
-  // Keyboard navigation & Esc handling
+  // Keyboard navigation & Esc handling + Body Scroll Lock
   useEffect(() => {
     if (!isOpen) return;
     const handleKeyDown = (e) => {
@@ -190,15 +191,20 @@ const CommandPaletteModal = ({ isOpen, onClose, theme, toggleTheme }) => {
         onClose();
       }
     };
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
+  if (!isOpen || typeof document === "undefined") return null;
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-[120] flex items-start justify-center pt-16 sm:pt-24 md:pt-28 px-3 sm:px-4 bg-slate-950/60 backdrop-blur-md animate-in fade-in duration-200"
+      className="fixed inset-0 z-[9999] flex items-start justify-center pt-16 sm:pt-24 md:pt-28 px-3 sm:px-4 bg-slate-950/60 backdrop-blur-md animate-in fade-in duration-200"
       onClick={onClose}
     >
       <div
@@ -218,18 +224,27 @@ const CommandPaletteModal = ({ isOpen, onClose, theme, toggleTheme }) => {
           />
           {query && (
             <button
+              type="button"
               onClick={() => {
                 setQuery("");
                 setResults({ products: [], orders: [], users: [] });
               }}
-              className="size-7 rounded-lg bg-slate-200/60 dark:bg-dark-card border border-transparent dark:border-dark-border text-slate-500 hover:text-slate-800 dark:hover:text-white flex items-center justify-center text-xs shrink-0"
+              className="size-7 rounded-lg bg-slate-200/60 dark:bg-dark-card border border-transparent dark:border-dark-border text-slate-500 hover:text-slate-800 dark:hover:text-white flex items-center justify-center text-xs shrink-0 cursor-pointer"
+              title="Xóa nội dung tìm kiếm"
             >
               <FiX />
             </button>
           )}
-          <span className="hidden sm:inline-flex shrink-0 whitespace-nowrap items-center px-2 py-1 rounded-md bg-slate-200/60 dark:bg-dark-card border border-slate-300/60 dark:border-dark-border text-[10px] font-mono font-extrabold text-slate-500 dark:text-dark-text-secondary uppercase">
-            ESC
-          </span>
+          <button
+            type="button"
+            onClick={onClose}
+            className="shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-200/60 hover:bg-slate-300/80 dark:bg-dark-card dark:hover:bg-slate-800 border border-slate-300/60 dark:border-dark-border text-[11px] font-mono font-extrabold text-slate-600 dark:text-dark-text-secondary hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
+            title="Đóng hộp thoại (Esc hoặc Click ra ngoài)"
+          >
+            <FiX className="text-xs sm:hidden" />
+            <span className="hidden sm:inline">ESC</span>
+            <span className="sm:hidden">ĐÓNG</span>
+          </button>
         </div>
 
         {/* Command Body */}
@@ -451,7 +466,8 @@ const CommandPaletteModal = ({ isOpen, onClose, theme, toggleTheme }) => {
           <span className="font-mono text-[10px]">TienTech Spotlight</span>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 
