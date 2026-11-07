@@ -1,5 +1,4 @@
 import axiosClient from "../utils/axiosClient";
-import { createCrudApi } from "./apiFactory";
 
 // Customize endpoints to match existing BackEnd routes
 export const getAllCategoryApi = (page, limit, search) => 

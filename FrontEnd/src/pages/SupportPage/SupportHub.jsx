@@ -71,15 +71,15 @@ const SupportHub = () => {
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 transition-colors duration-300 py-12">
       {/* Search Header Banner */}
       <div className="container-custom mb-14">
-        <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-blue-700 via-indigo-700 to-purple-800 text-white p-8 md:p-16 text-center shadow-2xl">
+        <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-blue-50/90 via-indigo-50/50 to-slate-100/80 dark:from-blue-900/70 dark:via-indigo-950 dark:to-slate-900 border border-blue-100 dark:border-slate-800 text-slate-900 dark:text-white p-8 md:p-16 text-center shadow-sm dark:shadow-2xl transition-colors duration-300">
           <div className="max-w-3xl mx-auto space-y-6 relative z-10">
-            <span className="px-3.5 py-1 bg-white/20 backdrop-blur-md rounded-full text-xs font-black uppercase tracking-widest inline-block">
+            <span className="px-3.5 py-1 bg-primary/10 text-primary border border-primary/20 dark:bg-white/20 dark:text-white dark:border-transparent backdrop-blur-md rounded-full text-xs font-black uppercase tracking-widest inline-block">
               Trung Tâm Hỗ Trợ Khách Hàng TienTech
             </span>
-            <h1 className="text-3xl md:text-5xl font-black tracking-tight">
+            <h1 className="text-3xl md:text-5xl font-black tracking-tight text-slate-900 dark:text-white">
               Chúng tôi có thể giúp gì cho bạn hôm nay?
             </h1>
-            <p className="text-white/80 text-sm md:text-base max-w-xl mx-auto">
+            <p className="text-slate-600 dark:text-white/80 text-sm md:text-base max-w-xl mx-auto leading-relaxed">
               Tìm kiếm câu trả lời nhanh chóng hoặc chọn chủ đề hỗ trợ bên dưới
             </p>
 
@@ -90,7 +90,7 @@ const SupportHub = () => {
                 placeholder="Nhập từ khóa tìm kiếm (vd: bảo hành, đổi trả, đo size, thanh toán...)"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full h-14 pl-12 pr-32 bg-white text-slate-900 rounded-2xl text-sm font-medium focus:outline-none shadow-xl placeholder:text-slate-400"
+                className="w-full h-14 pl-12 pr-32 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-2xl text-sm font-medium focus:outline-none shadow-xl border border-transparent dark:border-slate-700 placeholder:text-slate-400 dark:placeholder:text-slate-500"
               />
               <FiSearch className="absolute left-4 top-6 text-slate-400 text-xl" />
               <button
@@ -175,13 +175,13 @@ const SupportHub = () => {
           </div>
 
           {/* Need Direct Assistance Card */}
-          <div className="lg:col-span-5 bg-gradient-to-br from-slate-900 to-indigo-950 text-white p-8 rounded-3xl border border-slate-800 shadow-xl flex flex-col justify-between">
+          <div className="lg:col-span-5 bg-gradient-to-br from-blue-50/90 via-indigo-50/70 to-slate-100/90 dark:from-slate-900 dark:to-indigo-950 text-slate-900 dark:text-white p-8 rounded-3xl border border-blue-100 dark:border-slate-800 shadow-sm dark:shadow-xl flex flex-col justify-between transition-colors duration-300">
             <div className="space-y-4">
-              <span className="px-3 py-1 bg-blue-500/20 text-blue-400 text-[10px] font-black uppercase tracking-widest rounded-full inline-block">
+              <span className="px-3 py-1 bg-primary/10 text-primary dark:bg-blue-500/20 dark:text-blue-400 text-[10px] font-black uppercase tracking-widest rounded-full inline-block border border-primary/20 dark:border-transparent">
                 Tư vấn trực tiếp
               </span>
-              <h3 className="text-2xl font-black">Cần hỗ trợ đặc biệt?</h3>
-              <p className="text-slate-300 text-sm leading-relaxed">
+              <h3 className="text-2xl font-black text-slate-900 dark:text-white">Cần hỗ trợ đặc biệt?</h3>
+              <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">
                 Đội ngũ chuyên gia đá phong thủy TienTech luôn sẵn sàng tư vấn trực tiếp 1-1 cho bạn theo mệnh và tuổi.
               </p>
             </div>
@@ -195,7 +195,7 @@ const SupportHub = () => {
               </Link>
               <a
                 href="tel:0123456789"
-                className="w-full py-3.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs uppercase tracking-widest rounded-2xl transition-all flex items-center justify-center gap-2 border border-slate-700"
+                className="w-full py-3.5 bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs uppercase tracking-widest rounded-2xl transition-all flex items-center justify-center gap-2 border border-slate-200 dark:border-slate-700 shadow-xs"
               >
                 <FiPhoneCall size={18} /> Hotline: 0123 456 789
               </a>

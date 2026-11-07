@@ -1,30 +1,5 @@
 import React, { useEffect, useState, useCallback, useMemo } from "react";
-import {
-  FiSearch,
-  FiCheckCircle,
-  FiRefreshCcw,
-  FiUser,
-  FiCalendar,
-  FiInfo,
-  FiTrash2,
-  FiPackage,
-  FiRefreshCw,
-  FiShoppingCart,
-  FiTruck,
-  FiClock,
-  FiXCircle,
-  FiX,
-  FiLock,
-  FiCheck,
-  FiEye,
-  FiShoppingBag,
-  FiCreditCard,
-  FiChevronDown,
-  FiRotateCcw,
-  FiSlash,
-  FiAlertTriangle,
-  FiAlertCircle,
-} from "react-icons/fi";
+import { FiSearch, FiCheckCircle, FiRefreshCcw, FiUser, FiCalendar, FiTrash2, FiPackage, FiRefreshCw, FiShoppingCart, FiTruck, FiClock, FiXCircle, FiX, FiLock, FiCheck, FiEye, FiShoppingBag, FiChevronDown, FiRotateCcw, FiSlash } from "react-icons/fi";
 import { motion as Motion, AnimatePresence } from "framer-motion";
 
 import { useNavigate, useLocation } from "react-router-dom";

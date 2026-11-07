@@ -148,13 +148,14 @@
 
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-sans);
-    @apply tracking-tight font-bold text-slate-900 dark:text-white;
+    color: inherit;
+    @apply tracking-tight font-bold;
   }
 
   /* Focus indicator for keyboard navigation (Accessibility AA) */
-  :focus-visible {
-    outline: 2px solid var(--color-primary) !important;
-    outline-offset: 2px !important;
+  :focus-visible:not(input):not(textarea):not(select):not([tabindex="-1"]) {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
   }
 
   /* Custom Scrollbar */

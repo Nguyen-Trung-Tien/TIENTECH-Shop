@@ -1,24 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import {
-  FiMessageSquare,
-  FiX,
-  FiMaximize2,
-  FiMinimize2,
-  FiSend,
-  FiUser,
-  FiCpu,
-  FiChevronRight,
-  FiZap,
-  FiCamera,
-  FiMic,
-  FiMicOff,
-  FiCopy,
-  FiCheck,
-  FiTrash2,
-  FiArrowDown,
-  FiShoppingBag,
-  FiStar,
-} from "react-icons/fi";
+import { FiMessageSquare, FiX, FiMaximize2, FiMinimize2, FiSend, FiUser, FiCpu, FiChevronRight, FiCamera, FiMic, FiMicOff, FiCopy, FiCheck, FiTrash2, FiArrowDown, FiShoppingBag, FiStar } from "react-icons/fi";
 import { useSelector } from "react-redux";
 import { motion as Motion, AnimatePresence } from "framer-motion";
 import { useSystemSettings } from "../../context/useSystemSettings";

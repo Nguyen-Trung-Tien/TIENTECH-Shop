@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { FaBox, FaShoppingCart, FaDollarSign, FaUsers, FaUndo, FaTimesCircle } from "react-icons/fa";
-import { FiPlus, FiDownload, FiCheckCircle } from "react-icons/fi";
+import { FiPlus, FiDownload } from "react-icons/fi";
 import StatsCard from "../../components/StatsCardComponent/StatsCard";
 import ChartCard from "../../components/ChartCardComponent/ChartCard";
 import AIInsightsWidget from "../../components/AIInsightsWidget/AIInsightsWidget";
@@ -149,21 +149,21 @@ const Dashboard = () => {
   return (
     <div className="space-y-6 sm:space-y-8 p-2.5 sm:p-6 md:p-8 max-w-[1600px] mx-auto text-slate-900 dark:text-dark-text-primary transition-colors duration-300">
       {/* Executive Hero Banner */}
-      <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-slate-900 via-[#0e1628] to-slate-900 text-white p-5 sm:p-7 md:p-8 border border-slate-800 shadow-xl">
+      <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-blue-50/90 via-indigo-50/50 to-slate-100/80 dark:from-slate-900 dark:via-[#0e1628] dark:to-slate-900 text-slate-900 dark:text-white p-5 sm:p-7 md:p-8 border border-blue-100/80 dark:border-slate-800 shadow-sm dark:shadow-xl transition-colors duration-300">
         {/* Ambient Glow Orbs */}
-        <div className="absolute -top-16 -right-16 size-64 bg-primary/20 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-16 left-1/3 size-56 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -top-16 -right-16 size-64 bg-primary/10 dark:bg-primary/20 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-16 left-1/3 size-56 bg-emerald-500/10 dark:bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
 
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5 sm:gap-6">
           <div className="space-y-2 max-w-2xl min-w-0">
-            <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/10 text-[10px] font-mono font-bold uppercase tracking-wider text-emerald-400">
-              <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-emerald-500/10 dark:bg-white/10 backdrop-blur-md border border-emerald-500/20 dark:border-white/10 text-[10px] font-mono font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+              <span className="size-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse" />
               <span>HỆ THỐNG VẬN HÀNH TIÊU CHUẨN // LIVE METRICS</span>
             </div>
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-black tracking-tight text-white truncate">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-black tracking-tight text-slate-900 dark:text-white truncate">
               {greeting}, Quản trị viên!
             </h1>
-            <p className="text-xs sm:text-sm text-slate-300 font-medium">
+            <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 font-medium leading-relaxed">
               Chào mừng bạn trở lại hệ thống quản trị TienTech. Dưới đây là phân tích vận hành kinh doanh, hiệu suất đơn hàng và báo cáo tài chính mới nhất.
             </p>
           </div>
@@ -172,11 +172,11 @@ const Dashboard = () => {
             <button
               onClick={handleExport}
               disabled={exporting}
-              className="px-4 sm:px-5 py-2.5 bg-white/10 hover:bg-white/15 active:scale-98 border border-white/15 backdrop-blur-md rounded-xl text-xs font-bold text-white transition-all shadow-sm disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2 min-h-[42px]"
+              className="px-4 sm:px-5 py-2.5 bg-white dark:bg-white/10 hover:bg-slate-50 dark:hover:bg-white/15 active:scale-98 border border-slate-200 dark:border-white/15 backdrop-blur-md rounded-xl text-xs font-bold text-slate-700 dark:text-white transition-all shadow-xs dark:shadow-sm disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2 min-h-[42px]"
             >
               {exporting ? (
                 <>
-                  <UnifiedSpinner size="xs" variant="white" />
+                  <UnifiedSpinner size="xs" />
                   <span>Đang xuất Excel...</span>
                 </>
               ) : (

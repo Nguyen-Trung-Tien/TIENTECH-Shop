@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import { verifyEmailApi, resendVerificationApi } from "../../api/userApi";
 import { showErrorToast, showSuccessToast } from "../../utils/toastHelper";
-import { toast } from "react-toastify";
+
 import { CheckCircle, XCircle, Mail } from "lucide-react";
 import UnifiedSpinner from "../../components/Loading/UnifiedSpinner";
 

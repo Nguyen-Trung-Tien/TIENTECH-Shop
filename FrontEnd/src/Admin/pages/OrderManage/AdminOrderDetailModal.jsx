@@ -1,20 +1,5 @@
 import React, { useState } from "react";
-import {
-  FiX,
-  FiPrinter,
-  FiCheckCircle,
-  FiXCircle,
-  FiAlertCircle,
-  FiCalendar,
-  FiUser,
-  FiPhone,
-  FiMapPin,
-  FiCreditCard,
-  FiPackage,
-  FiClock,
-  FiTruck,
-  FiFileText,
-} from "react-icons/fi";
+import { FiX, FiPrinter, FiCheckCircle, FiXCircle, FiAlertCircle, FiCalendar, FiUser, FiPhone, FiMapPin, FiPackage, FiClock } from "react-icons/fi";
 import { StatusBadge } from "../../../utils/StatusBadge";
 import { statusMap, paymentStatusMap } from "../../../utils/StatusMap";
 import { printInvoice } from "../../../pages/OrderDetail/printInvoice";

@@ -1,18 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { toast } from "react-toastify";
 import { createPortal } from "react-dom";
-import {
-  FiBell,
-  FiPackage,
-  FiInfo,
-  FiTag,
-  FiTrash2,
-  FiCheck,
-  FiExternalLink,
-  FiShield,
-  FiSend,
-  FiX,
-} from "react-icons/fi";
+import { FiBell, FiPackage, FiInfo, FiTag, FiTrash2, FiExternalLink, FiShield, FiSend, FiX } from "react-icons/fi";
 import {
   getNotificationsApi,
   markAsReadApi,
@@ -20,10 +9,10 @@ import {
   deleteNotificationApi,
   sendBroadcastNotificationApi,
 } from "../../api/notificationApi";
-import { getSocket, initUserSocket } from "../../utils/socket";
+import { initUserSocket } from "../../utils/socket";
 import { useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
-import { appConfig } from "../../config/runtimeConfig";
+
 import UnifiedSpinner from "../Loading/UnifiedSpinner";
 import {
   showErrorToast,

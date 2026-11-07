@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+﻿import { Routes, Route } from "react-router-dom";
 import PublicRoute from "./PublicRoute";
 import PrivateRoute from "./PrivateRoute";
 
@@ -39,7 +39,7 @@ const PaymentPage = lazy(() => import("../pages/SupportPage/PaymentPage"));
 
 const UserLoadingFallback = () => (
   <div className="min-h-[60vh] w-full flex items-center justify-center bg-slate-50 dark:bg-slate-900">
-    <UnifiedSpinner size="lg" message="�ang t?i d? li?u..." />
+    <UnifiedSpinner size="lg" message="Đang tải dữ liệu..." />
   </div>
 );
 

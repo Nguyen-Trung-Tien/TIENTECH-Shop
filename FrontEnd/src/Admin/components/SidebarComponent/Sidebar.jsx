@@ -1,24 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import {
-  FiHome,
-  FiShoppingCart,
-  FiBox,
-  FiUsers,
-  FiLayers,
-  FiLogOut,
-  FiBarChart,
-  FiDollarSign,
-  FiMessageSquare,
-  FiTag,
-  FiChevronDown,
-  FiX,
-  FiShield,
-  FiCompass,
-  FiGrid,
-  FiStar,
-  FiSettings,
-} from "react-icons/fi";
+import { FiHome, FiShoppingCart, FiBox, FiUsers, FiLayers, FiLogOut, FiBarChart, FiDollarSign, FiMessageSquare, FiTag, FiChevronDown, FiX, FiSettings } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
 import { logoutUserApi } from "../../../api/userApi";
 import { getAdminCounters } from "../../../api/adminApi";
@@ -84,7 +66,6 @@ const MENU_SECTIONS = [
     ],
   },
 ];
-
 
 const Sidebar = ({ collapsed, mobileOpen, onCloseMobile }) => {
   const location = useLocation();

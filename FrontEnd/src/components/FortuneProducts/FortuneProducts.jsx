@@ -1,21 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { Link } from "react-router-dom";
-import {
-  FiArrowLeft,
-  FiSearch,
-  FiFilter,
-  FiActivity,
-  FiInfo,
-  FiZap,
-  FiCompass,
-  FiLayers,
-  FiRefreshCw,
-  FiSliders,
-  FiAward,
-  FiCheckCircle,
-  FiXCircle,
-} from "react-icons/fi";
-import { motion as Motion, AnimatePresence } from "framer-motion";
+import { FiArrowLeft, FiFilter, FiInfo, FiZap, FiCompass, FiLayers, FiRefreshCw, FiSliders, FiAward, FiCheckCircle, FiXCircle } from "react-icons/fi";
+import { motion as Motion } from "framer-motion";
 import { fetchFortuneProducts } from "../../api/productApi";
 import { getAllBrandApi } from "../../api/brandApi";
 import { getAllCategoryApi } from "../../api/categoryApi";
@@ -204,35 +190,35 @@ const FortuneProducts = () => {
         </div>
 
         {/* HERO SECTION */}
-        <section className="relative mb-10 overflow-hidden rounded-3xl md:rounded-[2.5rem] bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950 text-white p-6 sm:p-10 md:p-14 border border-slate-800 shadow-2xl">
+        <section className="relative mb-10 overflow-hidden rounded-3xl md:rounded-[2.5rem] bg-gradient-to-br from-indigo-50/90 via-sky-50/60 to-amber-50/40 dark:from-slate-900 dark:via-slate-900 dark:to-indigo-950 text-slate-900 dark:text-white p-6 sm:p-10 md:p-14 border border-indigo-100 dark:border-slate-800 shadow-lg dark:shadow-2xl transition-colors duration-300">
           {/* Subtle Cyber-Fengshui Background Patterns */}
-          <div className="absolute top-0 right-0 p-8 opacity-10 select-none pointer-events-none transform translate-x-8 -translate-y-8">
-            <FiCompass size={280} className="text-blue-400 animate-spin-slow" />
+          <div className="absolute top-0 right-0 p-8 opacity-15 dark:opacity-10 select-none pointer-events-none transform translate-x-8 -translate-y-8">
+            <FiCompass size={280} className="text-indigo-500/30 dark:text-blue-400 animate-spin-slow" />
           </div>
-          <div className="absolute -bottom-10 -right-10 w-64 h-64 bg-blue-500/20 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-10 -right-10 w-64 h-64 bg-blue-500/10 dark:bg-blue-500/20 rounded-full blur-3xl pointer-events-none" />
 
           <div className="relative z-10 max-w-3xl min-w-0">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-400/30 text-xs font-black uppercase tracking-widest mb-6 backdrop-blur-md">
-              <FiZap size={14} className="text-amber-400" />
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-primary/10 text-primary border border-primary/20 dark:bg-blue-500/20 dark:text-blue-300 dark:border-blue-400/30 text-xs font-black uppercase tracking-widest mb-6 backdrop-blur-md">
+              <FiZap size={14} className="text-amber-500 dark:text-amber-400" />
               TienTech FengShui Intelligence
             </div>
 
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black tracking-tight leading-[1.15] mb-5 text-white">
-              Khai Vận <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-300 to-amber-300">Công Nghệ</span>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black tracking-tight leading-[1.15] mb-5 text-slate-900 dark:text-white">
+              Khai Vận <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-amber-500 dark:from-blue-400 dark:via-indigo-300 dark:to-amber-300">Công Nghệ</span>
               <br />
-              <span className="font-serif italic font-normal text-slate-300 text-2xl sm:text-3xl md:text-4xl block mt-1">
+              <span className="font-serif italic font-normal text-slate-600 dark:text-slate-300 text-2xl sm:text-3xl md:text-4xl block mt-1">
                 Ngũ Hành Tương Sinh • Vượng Khí Tài Lộc
               </span>
             </h1>
 
-            <p className="text-slate-300 text-sm sm:text-base md:text-lg font-normal leading-relaxed max-w-2xl min-w-0 break-words mb-8">
+            <p className="text-slate-600 dark:text-slate-300 text-sm sm:text-base md:text-lg font-normal leading-relaxed max-w-2xl min-w-0 break-words mb-8">
               Mỗi thiết bị công nghệ bạn đồng hành hằng ngày đều mang trường năng lượng riêng biệt. Thuật toán phân tích Bản Mệnh kết hợp trí tuệ nhân tạo độc quyền từ TienTech giúp bạn chọn đúng sản phẩm có màu sắc và thuộc tính tương sinh đại cát.
             </p>
 
             {/* Elements Quick Visual Badges */}
             {allElements.length > 0 && (
               <div className="flex flex-wrap items-center gap-2 pt-2">
-                <span className="text-xs uppercase font-bold tracking-wider text-slate-400 mr-2">
+                <span className="text-xs uppercase font-bold tracking-wider text-slate-500 dark:text-slate-400 mr-2">
                   Ngũ Hành:
                 </span>
                 {allElements.map((el) => {
@@ -242,8 +228,8 @@ const FortuneProducts = () => {
                       key={el.key}
                       className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
                         isActive
-                          ? "bg-amber-400/20 text-amber-300 border border-amber-400/50 shadow-sm"
-                          : "bg-white/5 text-slate-300 border border-white/10"
+                          ? "bg-amber-400/20 text-amber-700 dark:text-amber-300 border border-amber-400/50 shadow-sm font-bold"
+                          : "bg-white/80 dark:bg-white/5 text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-white/10 shadow-xs"
                       }`}
                     >
                       <span>{el.icon}</span>
@@ -338,48 +324,48 @@ const FortuneProducts = () => {
             ) : fsDetail ? (
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
                 {/* Element Badge Card */}
-                <div className="lg:col-span-5 bg-gradient-to-br from-slate-900 to-indigo-950 text-white p-6 sm:p-7 rounded-2xl relative overflow-hidden flex flex-col justify-between border border-slate-800 shadow-md">
+                <div className="lg:col-span-5 bg-gradient-to-br from-blue-50/90 via-indigo-50/70 to-slate-100/90 dark:from-slate-900 dark:to-indigo-950 text-slate-900 dark:text-white p-6 sm:p-7 rounded-2xl relative overflow-hidden flex flex-col justify-between border border-blue-100 dark:border-slate-800 shadow-sm dark:shadow-md transition-colors duration-300">
                   <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl pointer-events-none" />
 
                   <div>
                     <div className="flex items-center justify-between gap-4 mb-4">
-                      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-amber-300 text-[11px] font-black uppercase tracking-wider border border-white/15">
+                      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 text-amber-700 dark:bg-white/10 dark:text-amber-300 text-[11px] font-black uppercase tracking-wider border border-amber-500/20 dark:border-white/15">
                         <FiAward size={13} />
                         Cung Mệnh Chuẩn Xác
                       </div>
-                      <span className="text-xs text-slate-400 font-medium">
+                      <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
                         Sinh năm {fsDetail.year} ({fsDetail.gender})
                       </span>
                     </div>
 
                     <div className="flex items-baseline gap-3 mb-2">
-                      <h3 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+                      <h3 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
                         Mệnh {fsDetail.element}
                       </h3>
-                      <span className="text-sm font-semibold text-blue-300">
+                      <span className="text-sm font-semibold text-primary dark:text-blue-300">
                         • Cung {fsDetail.cungPhi}
                       </span>
-                      <span className="text-xs text-slate-400">
+                      <span className="text-xs text-slate-500 dark:text-slate-400">
                         (Mệnh Niên: {fsDetail.menhNien})
                       </span>
                     </div>
 
-                    <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-normal mt-2">
+                    <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-normal mt-2">
                       {fsDetail.advice}
                     </p>
                   </div>
 
                   {/* Lucky Numbers & Advice */}
-                  <div className="mt-6 pt-4 border-t border-white/10 flex flex-wrap items-center justify-between gap-4">
+                  <div className="mt-6 pt-4 border-t border-slate-200/80 dark:border-white/10 flex flex-wrap items-center justify-between gap-4">
                     <div>
-                      <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 block mb-1">
+                      <span className="text-[10px] uppercase font-bold tracking-wider text-slate-500 dark:text-slate-400 block mb-1">
                         Con Số Khai Vận:
                       </span>
                       <div className="flex items-center gap-1.5">
                         {fsDetail.luckyNumbers?.map((num) => (
                           <span
                             key={num}
-                            className="w-7 h-7 rounded-lg bg-white/10 text-amber-300 font-black text-xs flex items-center justify-center border border-white/10"
+                            className="w-7 h-7 rounded-lg bg-white dark:bg-white/10 text-amber-600 dark:text-amber-300 font-black text-xs flex items-center justify-center border border-slate-200 dark:border-white/10 shadow-xs"
                           >
                             {num}
                           </span>
@@ -387,10 +373,10 @@ const FortuneProducts = () => {
                       </div>
                     </div>
                     <div className="text-right">
-                      <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 block mb-1">
+                      <span className="text-[10px] uppercase font-bold tracking-wider text-slate-500 dark:text-slate-400 block mb-1">
                         Tỷ Lệ Tương Hợp AI
                       </span>
-                      <span className="text-lg font-black text-emerald-400">
+                      <span className="text-lg font-black text-emerald-600 dark:text-emerald-400">
                         99.2% Đại Cát
                       </span>
                     </div>

@@ -193,7 +193,7 @@ const FAQPage = () => {
 
         {/* Bottom CTA */}
         <div className="max-w-3xl mx-auto mt-14 p-8 rounded-3xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-center shadow-xl space-y-4">
-          <h3 className="text-xl font-black">Vẫn chưa tìm thấy câu trả lời?</h3>
+          <h3 className="text-xl font-black text-white">Vẫn chưa tìm thấy câu trả lời?</h3>
           <p className="text-white/80 text-sm max-w-md mx-auto">
             Hãy liên hệ với đội ngũ hỗ trợ TienTech để nhận tư vấn trực tiếp và nhanh chóng nhất.
           </p>

@@ -1,27 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  FiSearch,
-  FiHome,
-  FiBox,
-  FiShoppingCart,
-  FiBarChart2,
-  FiUsers,
-  FiTag,
-  FiLayers,
-  FiSettings,
-  FiDollarSign,
-  FiX,
-  FiArrowRight,
-  FiSun,
-  FiMoon,
-  FiPlusCircle,
-  FiFileText,
-  FiCornerDownLeft,
-  FiPackage,
-  FiUser,
-  FiShoppingBag,
-} from "react-icons/fi";
+import { FiSearch, FiHome, FiBox, FiShoppingCart, FiBarChart2, FiUsers, FiTag, FiLayers, FiSettings, FiDollarSign, FiX, FiArrowRight, FiSun, FiMoon, FiFileText, FiCornerDownLeft, FiPackage, FiUser, FiShoppingBag } from "react-icons/fi";
 import { globalSearchApi, exportRevenue } from "../../../api/adminApi";
 import { toast } from "react-toastify";
 import debounce from "../../../utils/debounce";
@@ -215,7 +194,7 @@ const CommandPaletteModal = ({ isOpen, onClose, theme, toggleTheme }) => {
 
   return (
     <div
-      className="fixed inset-0 z-[120] flex items-start justify-center pt-12 sm:pt-20 px-3 sm:px-4 bg-slate-950/60 backdrop-blur-md animate-in fade-in duration-200"
+      className="fixed inset-0 z-[120] flex items-start justify-center pt-16 sm:pt-24 md:pt-28 px-3 sm:px-4 bg-slate-950/60 backdrop-blur-md animate-in fade-in duration-200"
       onClick={onClose}
     >
       <div
@@ -231,7 +210,7 @@ const CommandPaletteModal = ({ isOpen, onClose, theme, toggleTheme }) => {
             placeholder="Tìm tính năng, sản phẩm, đơn hàng, khách hàng... (Esc để đóng)"
             value={query}
             onChange={handleInputChange}
-            className="w-full bg-transparent text-sm sm:text-base font-bold text-slate-900 dark:text-white outline-none placeholder:text-slate-400 placeholder:font-normal"
+            className="w-full bg-transparent text-sm sm:text-base font-bold text-slate-900 dark:text-white outline-none border-none shadow-none focus:outline-none focus:ring-0 focus-visible:outline-none placeholder:text-slate-400 placeholder:font-normal"
           />
           {query && (
             <button
@@ -239,12 +218,12 @@ const CommandPaletteModal = ({ isOpen, onClose, theme, toggleTheme }) => {
                 setQuery("");
                 setResults({ products: [], orders: [], users: [] });
               }}
-              className="size-7 rounded-lg bg-slate-200/60 dark:bg-dark-card border border-transparent dark:border-dark-border text-slate-500 hover:text-slate-800 dark:hover:text-white flex items-center justify-center text-xs"
+              className="size-7 rounded-lg bg-slate-200/60 dark:bg-dark-card border border-transparent dark:border-dark-border text-slate-500 hover:text-slate-800 dark:hover:text-white flex items-center justify-center text-xs shrink-0"
             >
               <FiX />
             </button>
           )}
-          <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-200/60 dark:bg-dark-card border border-transparent dark:border-dark-border text-[10px] font-mono font-bold text-slate-500 dark:text-dark-text-secondary uppercase">
+          <span className="hidden sm:inline-flex shrink-0 whitespace-nowrap items-center px-2 py-1 rounded-md bg-slate-200/60 dark:bg-dark-card border border-slate-300/60 dark:border-dark-border text-[10px] font-mono font-extrabold text-slate-500 dark:text-dark-text-secondary uppercase">
             ESC
           </span>
         </div>

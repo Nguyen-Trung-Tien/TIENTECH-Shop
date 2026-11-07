@@ -3,7 +3,7 @@ import { Modal, Button } from "../UI";
 import ReviewForm from "./ReviewForm";
 import { createReviewApi, getPendingReviewsApi } from "../../api/reviewApi";
 import { showErrorToast, showSuccessToast } from "../../utils/toastHelper";
-import { FiCheckCircle, FiPackage } from "react-icons/fi";
+import { FiCheckCircle } from "react-icons/fi";
 import UnifiedSpinner from "../Loading/UnifiedSpinner";
 
 const ReviewModal = ({ isOpen, onClose, order, onReviewSuccess }) => {

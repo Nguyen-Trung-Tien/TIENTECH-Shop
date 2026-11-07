@@ -1,14 +1,10 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import {
   showErrorToast,
   showSuccessToast,
   showWarningToast,
 } from "../../../../utils/toastHelper";
-import {
-  createProductApi,
-  updateProductApi,
-  getOneProductApi,
-} from "../../../../api/productApi";
+import { createProductApi, updateProductApi } from "../../../../api/productApi";
 import { generateProductDescriptionApi } from "../../../../api/adminApi";
 import { getVariantsByProduct } from "../../../../api/variantApi";
 

@@ -1,7 +1,6 @@
 const { formatDateYYYYMMDDHHmmss } = require("../utils/dateFormatter");
 const crypto = require("crypto");
 const OrderService = require("../services/order/OrderService");
-const { acquireLock, releaseLock } = require("../config/redis");
 
 function sortObject(obj) {
   const sorted = {};

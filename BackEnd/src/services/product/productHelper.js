@@ -1,7 +1,6 @@
 const db = require("../../models");
 const { Op } = require("sequelize");
 const { deleteCacheByPattern } = require("../../config/redis");
-const { slugify } = require("../../utils/slugHelper");
 const { generateEmbedding } = require("../../utils/embeddingHelper");
 
 const prepareProductEmbeddingText = (product) => {

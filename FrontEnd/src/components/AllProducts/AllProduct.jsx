@@ -6,15 +6,7 @@ import LoadMoreButton from "../LoadMoreButton/LoadMoreButton";
 import ProductFilter from "./ProductFilter";
 import { getAllCategoryApi } from "../../api/categoryApi";
 import { getAllBrandApi } from "../../api/brandApi";
-import {
-  FiAlertCircle,
-  FiSearch,
-  FiX,
-  FiLayout,
-  FiSidebar,
-  FiRotateCcw,
-  FiSliders,
-} from "react-icons/fi";
+import { FiAlertCircle, FiSearch, FiX, FiLayout, FiSidebar, FiRotateCcw } from "react-icons/fi";
 
 const AllProducts = React.memo(() => {
   const limit = 12;

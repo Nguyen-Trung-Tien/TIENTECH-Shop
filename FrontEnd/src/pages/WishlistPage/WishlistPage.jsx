@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { FiHeart, FiArrowLeft, FiShoppingBag, FiTrash2 } from "react-icons/fi";
+import { FiHeart, FiArrowLeft, FiShoppingBag } from "react-icons/fi";
 import { motion as Motion, AnimatePresence } from "framer-motion";
 import { getWishlistApi } from "../../api/wishlistApi";
 import ProductCard from "../../components/ProductCard/ProductCard";

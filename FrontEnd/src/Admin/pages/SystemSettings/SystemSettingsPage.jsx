@@ -1,27 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { motion as Motion, AnimatePresence } from "framer-motion";
-import {
-  FiSettings,
-  FiShield,
-  FiMail,
-  FiAlertTriangle,
-  FiRefreshCw,
-  FiCpu,
-  FiSun,
-  FiMoon,
-  FiDatabase,
-  FiTrash2,
-  FiCreditCard,
-  FiSave,
-  FiSearch,
-  FiSliders,
-  FiZap,
-  FiGlobe,
-  FiActivity,
-  FiCheckCircle,
-  FiCheck,
-  FiRotateCcw,
-} from "react-icons/fi";
+import { FiShield, FiMail, FiAlertTriangle, FiRefreshCw, FiCpu, FiSun, FiMoon, FiDatabase, FiTrash2, FiCreditCard, FiSave, FiSearch, FiSliders, FiZap, FiGlobe, FiActivity, FiCheck, FiRotateCcw } from "react-icons/fi";
 import { toast } from "react-toastify";
 import {
   getAllSettingsAdminApi,

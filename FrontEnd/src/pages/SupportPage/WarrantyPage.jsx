@@ -160,10 +160,10 @@ const WarrantyPage = () => {
         </div>
 
         {/* CTA Contact */}
-        <div className="text-center p-8 rounded-3xl bg-slate-900 text-white space-y-4">
-          <FiHelpCircle size={32} className="text-emerald-400 mx-auto" />
-          <h3 className="text-xl font-black">Cần hỗ trợ bảo hành sản phẩm ngay?</h3>
-          <p className="text-slate-400 text-sm max-w-md mx-auto">
+        <div className="text-center p-8 rounded-3xl bg-emerald-50/80 dark:bg-slate-900 text-slate-900 dark:text-white border border-emerald-100 dark:border-slate-800 space-y-4 transition-colors duration-300">
+          <FiHelpCircle size={32} className="text-emerald-500 dark:text-emerald-400 mx-auto" />
+          <h3 className="text-xl font-black text-slate-900 dark:text-white">Cần hỗ trợ bảo hành sản phẩm ngay?</h3>
+          <p className="text-slate-600 dark:text-slate-400 text-sm max-w-md mx-auto">
             Liên hệ với bộ phận CSKH để được hướng dẫn gửi sản phẩm bảo hành nhanh nhất.
           </p>
           <Link

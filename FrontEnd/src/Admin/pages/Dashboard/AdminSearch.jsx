@@ -1,9 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { 
-  FiSearch, FiPackage, FiShoppingBag, FiUsers, 
-  FiArrowRight, FiEdit2, FiTrash2, FiEye, FiX
-} from "react-icons/fi";
+import { FiSearch, FiPackage, FiShoppingBag, FiUsers, FiEdit2, FiEye, FiX } from "react-icons/fi";
 import { globalSearchApi } from "../../../api/adminApi";
 import { getProductImage, handleImageError } from "../../../utils/imageHelper";
 import { AdminTableSkeleton } from "../../components/AdminLoading";

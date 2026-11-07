@@ -6,25 +6,7 @@ import { updateUserApi } from "../../api/userApi";
 import { toast } from "react-toastify";
 import { showErrorToast } from "../../utils/toastHelper";
 import ChangePasswordModal from "./ChangePasswordModal";
-import {
-  FiArrowLeft,
-  FiUser,
-  FiMail,
-  FiPhone,
-  FiMapPin,
-  FiCamera,
-  FiEdit3,
-  FiSave,
-  FiX,
-  FiLock,
-  FiShield,
-  FiAward,
-  FiCalendar,
-  FiCheckCircle,
-  FiStar,
-  FiBell,
-  FiCheck,
-} from "react-icons/fi";
+import { FiArrowLeft, FiUser, FiMail, FiPhone, FiMapPin, FiCamera, FiEdit3, FiSave, FiX, FiLock, FiShield, FiAward, FiCalendar, FiCheckCircle, FiStar, FiCheck } from "react-icons/fi";
 import { motion as Motion, AnimatePresence } from "framer-motion";
 import { Button, Modal, Loader } from "../../components/UI";
 import Badge from "../../components/UI/Badge";

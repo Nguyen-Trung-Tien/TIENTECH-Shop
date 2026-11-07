@@ -1,26 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
-import {
-  FiFilter,
-  FiChevronDown,
-  FiChevronUp,
-  FiX,
-  FiZap,
-  FiLayers,
-  FiSmartphone,
-  FiMonitor,
-  FiSettings,
-  FiCpu,
-  FiBattery,
-  FiCheck,
-  FiRotateCcw,
-  FiTag,
-  FiDollarSign,
-  FiSliders,
-  FiLayout,
-  FiSidebar,
-  FiSearch,
-  FiActivity,
-} from "react-icons/fi";
+import { FiFilter, FiChevronDown, FiChevronUp, FiX, FiZap, FiLayers, FiSmartphone, FiMonitor, FiSettings, FiCpu, FiBattery, FiCheck, FiRotateCcw, FiTag, FiDollarSign, FiSliders, FiSearch, FiActivity } from "react-icons/fi";
 import { getAllBrandApi } from "../../api/brandApi";
 import { getAllCategoryApi } from "../../api/categoryApi";
 import { getAllAttributesApi } from "../../api/attributeApi";

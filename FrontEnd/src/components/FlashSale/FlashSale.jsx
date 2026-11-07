@@ -154,8 +154,8 @@ const FlashSale = ({ products: propProducts }) => {
           </div>
 
           {(products.length > 0 || isUpcoming) && (
-            <div className="flex items-center gap-3.5 bg-slate-950 p-3 px-5 rounded-2xl shadow-xl border border-red-500/30 shadow-red-950/20">
-              <span className="text-[11px] font-bold text-slate-300 uppercase tracking-wider hidden sm:block font-mono">
+            <div className="flex items-center gap-3.5 bg-white dark:bg-slate-950 p-3 px-5 rounded-2xl shadow-sm dark:shadow-xl border border-red-200 dark:border-red-500/30 shadow-red-500/5 dark:shadow-red-950/20 transition-colors">
+              <span className="text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider hidden sm:block font-mono">
                 {products.length > 0
                   ? "KẾT THÚC SAU:"
                   : isUpcoming

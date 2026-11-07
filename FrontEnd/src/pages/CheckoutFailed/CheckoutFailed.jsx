@@ -1,16 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import {
-  FiXCircle,
-  FiHome,
-  FiRotateCw,
-  FiAlertCircle,
-  FiCreditCard,
-  FiHelpCircle,
-  FiTruck,
-  FiCheck,
-  FiPackage,
-  FiLoader,
-} from "react-icons/fi";
+import { FiXCircle, FiHome, FiRotateCw, FiCreditCard, FiTruck, FiCheck, FiPackage, FiLoader } from "react-icons/fi";
 import { useNavigate, useParams } from "react-router-dom";
 import { motion as Motion } from "framer-motion";
 import { getOrderById, changePaymentMethod } from "../../api/orderApi";

@@ -1,19 +1,11 @@
 import React, { useState, useEffect } from "react";
-import {
-  FiPlus,
-  FiTrash2,
-  FiCheck,
-  FiBox,
-  FiDollarSign,
-  FiLayers,
-  FiTag,
-} from "react-icons/fi";
+import { FiPlus, FiTrash2, FiCheck, FiLayers } from "react-icons/fi";
 import {
   showErrorToast,
   showSuccessToast,
   showInfoToast,
 } from "../../../utils/toastHelper";
-import { m as Motion, AnimatePresence } from "framer-motion";
+
 import { deleteVariant, updateVariant } from "../../../api/variantApi";
 import { ConfirmModal } from "../../../components/UI/Modal";
 import VariantMatrixGenerator from "./components/VariantManager/VariantMatrixGenerator";

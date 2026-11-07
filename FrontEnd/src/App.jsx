@@ -1,8 +1,8 @@
 import { useEffect } from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import AccountLockedModal from "./components/UI/AccountLockedModal";
-import { initUserSocket, getSocket, disconnectSocket } from "./utils/socket";
+import { initUserSocket, disconnectSocket } from "./utils/socket";
 import UserRoutes from "./routes/UserRoutes";
 import AdminRoutes from "./routes/AdminRoutes";
 import { ToastContainer } from "react-toastify";

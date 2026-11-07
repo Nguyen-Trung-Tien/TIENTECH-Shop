@@ -4,7 +4,7 @@ import Footer from "../FooterComponent/Footer";
 import { useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { useSystemSettings } from "../../context/useSystemSettings";
-import { FiTool, FiShield } from "react-icons/fi";
+import { FiTool } from "react-icons/fi";
 
 const LayoutComponent = ({
   children,

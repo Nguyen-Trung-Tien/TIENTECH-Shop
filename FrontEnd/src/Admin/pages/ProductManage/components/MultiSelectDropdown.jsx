@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { FiChevronDown, FiCheck } from "react-icons/fi";
+import { FiChevronDown } from "react-icons/fi";
 
 const getItemValue = (opt) => {
   if (typeof opt === "object" && opt !== null) {

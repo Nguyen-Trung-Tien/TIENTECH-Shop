@@ -7,7 +7,7 @@ import {
   FiX,
 } from "react-icons/fi";
 import AppPagination from "../../components/Pagination/Pagination";
-import { motion as Motion } from "framer-motion";
+
 import { AdminTableSkeleton, AdminActionLoader } from "./AdminLoading";
 
 /**

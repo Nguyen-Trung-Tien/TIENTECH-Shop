@@ -51,8 +51,8 @@ const ContactPage = () => {
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 transition-colors duration-300 py-12">
       {/* Hero Banner */}
       <div className="container-custom mb-12">
-        <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-blue-600 via-indigo-600 to-sky-600 text-white p-8 md:p-14 shadow-2xl">
-          <div className="absolute -right-10 -bottom-10 opacity-15 pointer-events-none">
+        <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-blue-50/90 via-sky-50/60 to-slate-100/80 dark:from-blue-900/80 dark:via-indigo-950 dark:to-slate-900 text-slate-900 dark:text-white border border-blue-100 dark:border-slate-800 p-8 md:p-14 shadow-sm dark:shadow-2xl transition-colors duration-300">
+          <div className="absolute -right-10 -bottom-10 opacity-10 dark:opacity-15 text-blue-600 dark:text-white pointer-events-none">
             <FiHeadphones className="w-96 h-96" />
           </div>
           
@@ -60,7 +60,7 @@ const ContactPage = () => {
             <motion.span
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="inline-block px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-xs font-black uppercase tracking-widest mb-4"
+              className="inline-block px-3 py-1 bg-primary/10 text-primary border border-primary/20 dark:bg-white/20 dark:text-white dark:border-transparent backdrop-blur-md rounded-full text-xs font-black uppercase tracking-widest mb-4"
             >
               Liên Hệ & Hỗ Trợ Khách Hàng
             </motion.span>
@@ -68,7 +68,7 @@ const ContactPage = () => {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="text-3xl md:text-5xl font-black tracking-tight mb-4"
+              className="text-3xl md:text-5xl font-black tracking-tight mb-4 text-slate-900 dark:text-white"
             >
               Chúng tôi luôn sẵn sàng lắng nghe bạn!
             </motion.h1>
@@ -76,7 +76,7 @@ const ContactPage = () => {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="text-white/90 text-sm md:text-base leading-relaxed"
+              className="text-slate-600 dark:text-white/90 text-sm md:text-base leading-relaxed"
             >
               Bạn cần tư vấn vật phẩm phong thủy, hỗ trợ bảo hành hay có câu hỏi về đơn hàng? 
               Đội ngũ chuyên gia TienTech luôn phục vụ 24/7.

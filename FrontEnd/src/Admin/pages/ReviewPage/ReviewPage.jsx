@@ -11,14 +11,10 @@ import {
 } from "react-icons/fi";
 import { FaStar } from "react-icons/fa";
 import { deleteReviewApi, getAllReviewsApi } from "../../../api/reviewApi";
-import {
-  getRepliesByReviewApi,
-  createReplyApi,
-  deleteReplyApi,
-} from "../../../api/reviewReplyApi";
+import { createReplyApi, deleteReplyApi } from "../../../api/reviewReplyApi";
 import { toast } from "react-toastify";
 import AppPagination from "../../../components/Pagination/Pagination";
-import { motion as Motion, AnimatePresence } from "framer-motion";
+import { motion as Motion } from "framer-motion";
 import { ConfirmModal } from "../../../components/UI/Modal";
 
 const ReviewPage = () => {

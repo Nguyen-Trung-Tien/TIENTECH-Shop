@@ -35,7 +35,7 @@ const AboutPage = () => {
   return (
     <div className="min-h-screen bg-ivory dark:bg-dark-bg transition-colors duration-300">
       {/* HERO SECTION */}
-      <section className="relative py-16 md:py-24 bg-slate-950 text-white overflow-hidden border-b border-slate-900">
+      <section className="relative py-16 md:py-24 bg-gradient-to-b from-blue-50/80 via-slate-50 to-white dark:bg-slate-950 text-slate-900 dark:text-white overflow-hidden border-b border-slate-200/80 dark:border-slate-900 transition-colors duration-300">
         <div className="absolute inset-0 z-0 opacity-15 pointer-events-none bg-[radial-gradient(#3b82f6_1px,transparent_1px)] [background-size:24px_24px]"></div>
 
         <div className="container mx-auto px-4 relative z-10 text-center max-w-4xl">
@@ -45,19 +45,19 @@ const AboutPage = () => {
             transition={{ duration: 0.5 }}
             className="flex flex-col items-center"
           >
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900/90 border border-slate-800 text-blue-400 text-xs font-semibold mb-6">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-50 dark:bg-slate-900/90 border border-blue-200/80 dark:border-slate-800 text-primary dark:text-blue-400 text-xs font-semibold mb-6">
               <span className="size-2 rounded-full bg-blue-500"></span>
               <span>Về chúng tôi &bull; TienTech Shop</span>
             </div>
 
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-white mb-6 leading-[1.15] tracking-tight">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-slate-900 dark:text-white mb-6 leading-[1.15] tracking-tight">
               Đam mê công nghệ, <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-300 to-blue-500">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-500 dark:from-blue-400 dark:via-indigo-300 dark:to-blue-500">
                 tận tâm vì khách hàng
               </span>
             </h1>
 
-            <p className="text-slate-300 text-sm sm:text-base md:text-lg max-w-2xl mb-8 font-normal leading-relaxed">
+            <p className="text-slate-600 dark:text-slate-300 text-sm sm:text-base md:text-lg max-w-2xl mb-8 font-normal leading-relaxed">
               TienTech ra đời với sứ mệnh mang đến cho cộng đồng công nghệ Việt Nam những thiết bị, linh kiện chính hãng chất lượng cao cùng trải nghiệm mua sắm an tâm và dịch vụ bảo hành chu đáo.
             </p>
 
@@ -71,7 +71,7 @@ const AboutPage = () => {
               </button>
               <button
                 type="button"
-                className="inline-flex items-center justify-center gap-2 min-h-[46px] px-7 py-3 rounded-2xl font-bold text-xs sm:text-sm tracking-wide transition-all duration-200 bg-slate-900 border border-slate-800 text-white hover:bg-slate-850 cursor-pointer active:scale-98"
+                className="inline-flex items-center justify-center gap-2 min-h-[46px] px-7 py-3 rounded-2xl font-bold text-xs sm:text-sm tracking-wide transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-white hover:bg-slate-50 dark:hover:bg-slate-850 shadow-xs cursor-pointer active:scale-98"
                 onClick={() => navigate("/contact")}
               >
                 Liên hệ hỗ trợ
@@ -258,7 +258,7 @@ const AboutPage = () => {
       <section className="py-14 md:py-20 bg-white dark:bg-dark-surface transition-colors">
         <div className="container mx-auto px-4 max-w-4xl">
           <div className="p-8 sm:p-12 rounded-3xl bg-gradient-to-r from-blue-600 via-indigo-600 to-primary text-white text-center shadow-xl shadow-blue-500/20">
-            <h2 className="text-2xl sm:text-4xl font-extrabold mb-4 tracking-tight">
+            <h2 className="text-2xl sm:text-4xl font-extrabold mb-4 tracking-tight text-white">
               Sẵn sàng nâng tầm trải nghiệm công nghệ?
             </h2>
             <p className="text-blue-100 text-xs sm:text-sm mb-8 max-w-md mx-auto leading-relaxed">

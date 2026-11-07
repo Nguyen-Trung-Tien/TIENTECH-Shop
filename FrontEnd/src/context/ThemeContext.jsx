@@ -1,10 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
-import { getPublicSettingsApi } from "../api/systemSettingApi";
-import {
-  ThemeContext,
-  SystemSettingsContext,
-  DEFAULT_SYSTEM_SETTINGS,
-} from "./themeContextObjects";
+
+import { ThemeContext } from "./themeContextObjects";
 
 export const ThemeProvider = ({ children }) => {
   const [theme, setThemeState] = useState(() => {
