@@ -61,15 +61,7 @@ const AccountLockedModal = () => {
     if (!isOpen) return;
 
     timerRef.current = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev <= 1) {
-          clearInterval(timerRef.current);
-          timerRef.current = null;
-          handleLogoutAndRedirect();
-          return 0;
-        }
-        return prev - 1;
-      });
+      setCountdown((prev) => (prev > 0 ? prev - 1 : 0));
     }, 1000);
 
     return () => {
@@ -77,7 +69,17 @@ const AccountLockedModal = () => {
         clearInterval(timerRef.current);
       }
     };
-  }, [isOpen, handleLogoutAndRedirect]);
+  }, [isOpen]);
+
+  // Trigger logout when countdown reaches 0
+  useEffect(() => {
+    if (isOpen && countdown === 0) {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+      handleLogoutAndRedirect();
+    }
+  }, [isOpen, countdown, handleLogoutAndRedirect]);
 
   return (
     <AnimatePresence>

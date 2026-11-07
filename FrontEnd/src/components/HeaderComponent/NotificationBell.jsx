@@ -89,68 +89,75 @@ const NotificationBell = () => {
   useEffect(() => {
     fetchNotifications();
 
-    if (!user) return;
+    let socket = null;
+    let handleNewOrder = null;
+    let handleOrderStatusUpdated = null;
+    let handleNotification = null;
 
-    const socket = initUserSocket(user);
+    if (user) {
+      socket = initUserSocket(user);
 
-    const handleNewOrder = (data) => {
-      triggerDebouncedFetch();
-      const orderKey = data?.orderCode || data?.orderId || (typeof data?.message === "string" ? data.message : "new_order");
-      if (shouldSuppressDuplicate(orderKey)) return;
+      handleNewOrder = (data) => {
+        triggerDebouncedFetch();
+        const orderKey = data?.orderCode || data?.orderId || (typeof data?.message === "string" ? data.message : "new_order");
+        if (shouldSuppressDuplicate(orderKey)) return;
 
-      if (batchOrderCountRef.current === 0) {
-        batchOrderCountRef.current = 1;
-        const msg = data?.message || "Có đơn hàng mới từ khách hàng!";
-        showInfoToast(`🔔 ${msg}`, { toastId: "active_order_batch" });
-      } else {
-        batchOrderCountRef.current += 1;
-        toast.info(`🔔 Hệ thống vừa nhận thêm ${batchOrderCountRef.current} đơn hàng mới!`, {
-          toastId: "active_order_batch",
-          autoClose: 3500,
-        });
+        if (batchOrderCountRef.current === 0) {
+          batchOrderCountRef.current = 1;
+          const msg = data?.message || "Có đơn hàng mới từ khách hàng!";
+          showInfoToast(`🔔 ${msg}`, { toastId: "active_order_batch" });
+        } else {
+          batchOrderCountRef.current += 1;
+          toast.info(`🔔 Hệ thống vừa nhận thêm ${batchOrderCountRef.current} đơn hàng mới!`, {
+            toastId: "active_order_batch",
+            autoClose: 3500,
+          });
+        }
+
+        if (batchTimerRef.current) clearTimeout(batchTimerRef.current);
+        batchTimerRef.current = setTimeout(() => {
+          batchOrderCountRef.current = 0;
+        }, 3000);
+      };
+
+      handleOrderStatusUpdated = (data) => {
+        triggerDebouncedFetch();
+        if (!data?.message) return;
+        const key = `status_${data.orderId || data.orderCode}_${data.status}`;
+        if (shouldSuppressDuplicate(key)) return;
+        showInfoToast(`🔔 ${data.message}`, { toastId: key });
+      };
+
+      handleNotification = (data) => {
+        triggerDebouncedFetch();
+        if (!data?.title) return;
+        const notifKey = data.id ? `notif_${data.id}` : `${data.title}_${data.message || ""}`;
+        if (shouldSuppressDuplicate(notifKey)) return;
+
+        // Nếu là thông báo đơn hàng cho admin và vừa nhận order batch, tránh toast kép
+        if (data.type === "order" && batchOrderCountRef.current > 0) {
+          return;
+        }
+
+        const text = data.message ? `: ${data.message}` : "";
+        showInfoToast(`🔔 ${data.title}${text}`, { toastId: `notif_${notifKey}` });
+      };
+
+      if (user.role === "admin" || user.role === "root") {
+        socket.on("new_order", handleNewOrder);
       }
-
-      if (batchTimerRef.current) clearTimeout(batchTimerRef.current);
-      batchTimerRef.current = setTimeout(() => {
-        batchOrderCountRef.current = 0;
-      }, 3000);
-    };
-
-    const handleOrderStatusUpdated = (data) => {
-      triggerDebouncedFetch();
-      if (!data?.message) return;
-      const key = `status_${data.orderId || data.orderCode}_${data.status}`;
-      if (shouldSuppressDuplicate(key)) return;
-      showInfoToast(`🔔 ${data.message}`, { toastId: key });
-    };
-
-    const handleNotification = (data) => {
-      triggerDebouncedFetch();
-      if (!data?.title) return;
-      const notifKey = data.id ? `notif_${data.id}` : `${data.title}_${data.message || ""}`;
-      if (shouldSuppressDuplicate(notifKey)) return;
-
-      // Nếu là thông báo đơn hàng cho admin và vừa nhận order batch, tránh toast kép
-      if (data.type === "order" && batchOrderCountRef.current > 0) {
-        return;
-      }
-
-      const text = data.message ? `: ${data.message}` : "";
-      showInfoToast(`🔔 ${data.title}${text}`, { toastId: `notif_${notifKey}` });
-    };
-
-    if (user.role === "admin" || user.role === "root") {
-      socket.on("new_order", handleNewOrder);
+      socket.on("order_status_updated", handleOrderStatusUpdated);
+      socket.on("notification", handleNotification);
     }
-    socket.on("order_status_updated", handleOrderStatusUpdated);
-    socket.on("notification", handleNotification);
 
     return () => {
-      if (user.role === "admin" || user.role === "root") {
-        socket.off("new_order", handleNewOrder);
+      if (socket) {
+        if (user?.role === "admin" || user?.role === "root") {
+          socket.off("new_order", handleNewOrder);
+        }
+        socket.off("order_status_updated", handleOrderStatusUpdated);
+        socket.off("notification", handleNotification);
       }
-      socket.off("order_status_updated", handleOrderStatusUpdated);
-      socket.off("notification", handleNotification);
       if (batchTimerRef.current) clearTimeout(batchTimerRef.current);
       if (fetchDebounceRef.current) clearTimeout(fetchDebounceRef.current);
     };

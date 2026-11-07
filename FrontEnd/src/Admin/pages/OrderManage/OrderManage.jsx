@@ -244,14 +244,11 @@ const OrderManage = () => {
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const tabFromUrl = params.get("tab") || "all";
-    setActiveTab((prev) => {
-      if (tabFromUrl !== prev) {
-        setPage(1);
-        return tabFromUrl;
-      }
-      return prev;
-    });
-  }, [location.search]);
+    if (tabFromUrl !== activeTab) {
+      setActiveTab(tabFromUrl);
+      setPage(1);
+    }
+  }, [location.search, activeTab]);
 
   const fetchOrders = useCallback(
     async (currentPage = 1, search = "", status = "all") => {

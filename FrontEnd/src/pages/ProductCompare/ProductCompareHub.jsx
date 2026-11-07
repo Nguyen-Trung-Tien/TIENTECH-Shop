@@ -78,14 +78,12 @@ const ProductCompareHub = () => {
 
   // Xóa 1 sản phẩm khỏi bảng
   const handleRemoveProduct = useCallback((id) => {
-    setProducts((prev) => {
-      const removed = prev.find((p) => p.id === id);
-      if (removed) {
-        setCandidates((cand) => [...cand, removed]);
-      }
-      return prev.filter((p) => p.id !== id);
-    });
-  }, []);
+    const removed = products.find((p) => p.id === id);
+    if (removed) {
+      setCandidates((cand) => [...cand, removed]);
+    }
+    setProducts((prev) => prev.filter((p) => p.id !== id));
+  }, [products]);
 
   // Thêm sản phẩm từ Drawer
   const handleSelectProduct = useCallback((product) => {

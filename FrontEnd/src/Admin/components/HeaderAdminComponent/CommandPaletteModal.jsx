@@ -100,12 +100,16 @@ const CommandPaletteModal = ({ isOpen, onClose, theme, toggleTheme }) => {
   const [selectedIndex, setSelectedIndex] = useState(0);
 
   useEffect(() => {
+    let timer;
     if (isOpen) {
       setQuery("");
       setResults({ products: [], orders: [], users: [] });
       setSelectedIndex(0);
-      setTimeout(() => inputRef.current?.focus(), 50);
+      timer = setTimeout(() => inputRef.current?.focus(), 50);
     }
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
   }, [isOpen]);
 
   const debouncedSearch = useMemo(
