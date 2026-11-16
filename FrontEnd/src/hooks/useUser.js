@@ -9,7 +9,7 @@ export const useCurrentUser = () => {
     queryFn: () => getUserApi(userRedux.id),
     enabled: !!userRedux?.id,
     staleTime: Infinity,
-    cacheTime: Infinity,
+    gcTime: Infinity,
     retry: false,
   });
 };

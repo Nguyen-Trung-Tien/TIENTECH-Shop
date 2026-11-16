@@ -7,6 +7,8 @@ const SystemSettingService = require("../services/system/SystemSettingService");
 const handleChat = async (req, res) => {
   try {
     const { message, userId, history = [] } = req.body;
+    const isElevated = req.user && ["admin", "root"].includes(req.user.role);
+    const effectiveUserId = isElevated ? (userId || req.user.id) : (req.user?.id || null);
 
     if (!message) {
       return res.status(400).json({ error: "Thiếu nội dung câu hỏi." });
@@ -51,10 +53,10 @@ Cấu trúc JSON yêu cầu:
     let suggestedProducts = [];
 
     // 2. Thực hiện tìm kiếm kết hợp (Hybrid Search)
-    if (intent.isOrderQuery && userId) {
+    if (intent.isOrderQuery && effectiveUserId) {
       try {
         const order = await Order.findOne({
-          where: { userId },
+          where: { userId: effectiveUserId },
           order: [["createdAt", "DESC"]],
           include: [
             {

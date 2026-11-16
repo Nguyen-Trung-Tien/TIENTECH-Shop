@@ -134,8 +134,8 @@ const ReviewItem = ({ review, user }) => {
             </div>
           </div>
 
-          <div className="relative">
-            <p className="text-sm text-slate-700 dark:text-dark-text-primary leading-relaxed mb-4 font-normal">
+          <div className="relative min-w-0">
+            <p className="text-sm text-slate-700 dark:text-dark-text-primary leading-relaxed mb-4 font-normal break-words [overflow-wrap:anywhere]">
               {review.comment}
             </p>
 

@@ -3,11 +3,12 @@ const { generateContentWithFallback } = require("../../config/gemini");
 
 const analyzeProductWithGemini = async (product) => {
   const currentMonth = new Date().getMonth() + 1;
+  const effectivePrice = Number(product.basePrice || product.price || 0);
   const prompt = `
 Bạn là chuyên gia phân tích thị trường công nghệ. Hãy phân tích sản phẩm:
 Tên: ${product.name}
-Giá hiện tại: ${product.price}đ
-Giảm giá: ${product.discount}%
+Giá hiện tại: ${effectivePrice}đ
+Giảm giá: ${product.discount || 0}%
 Danh mục: ${product.category?.name || "Không có"}
 Tháng hiện tại: ${currentMonth}
 
@@ -39,7 +40,10 @@ Trả về JSON THUẦN với cấu trúc:
     const result = await generateContentWithFallback(prompt, {
       generationConfig: { responseMimeType: "application/json" },
     });
-    return JSON.parse(result.response.text());
+    const rawText = result.response.text();
+    const cleaned = rawText.replace(/```json/gi, "").replace(/```/g, "").trim();
+    const match = cleaned.match(/\{[\s\S]*\}/);
+    return JSON.parse(match ? match[0] : cleaned);
   } catch (err) {
     console.error("Gemini AI Analysis Error:", err);
     return null;
@@ -94,6 +98,28 @@ const getPricePrediction = async (productId) => {
     );
 
     const aiAnalysis = await analyzeProductWithGemini(product);
+    const discountRate = Number(product.discount || 0);
+    const fallbackAiAnalysis = {
+      trend:
+        discountRate >= 10
+          ? "Sản phẩm đang có mức ưu đãi tốt, giá có xu hướng ổn định trong ngắn hạn và giảm nhẹ theo chu kỳ sản phẩm."
+          : "Giá dự kiến giảm dần 4% - 9% trong 30 đến 90 ngày tới theo chu kỳ thị trường công nghệ.",
+      suggestion:
+        discountRate >= 10
+          ? "Mức giảm giá hiện tại khá hấp dẫn, phù hợp để mua ngay nếu bạn đang có nhu cầu sử dụng."
+          : "Có thể cân nhắc chờ các đợt khuyến mãi lớn sắp tới nếu chưa cần gấp, hoặc mua ngay nếu cần phục vụ công việc.",
+      adviceCode: discountRate >= 10 ? "BUY_NOW" : "WAIT",
+      risk: "Biến động nguồn cung linh kiện hoặc đợt ra mắt phiên bản kế nhiệm có thể ảnh hưởng đến giá bán lẻ.",
+      fairPrice: basicPredict.predicted30,
+      reliability: basicPredict.reliability,
+      isFallback: true,
+      chartData: [
+        { name: "Hiện tại", price: basicPredict.currentPrice },
+        { name: "30 ngày", price: basicPredict.predicted30 },
+        { name: "60 ngày", price: basicPredict.predicted60 },
+        { name: "90 ngày", price: basicPredict.predicted90 },
+      ],
+    };
 
     return {
       errCode: 0,
@@ -104,7 +130,7 @@ const getPricePrediction = async (productId) => {
         productName: product.name,
         category: product.category?.name || "Không xác định",
         ...basicPredict,
-        aiAnalysis: aiAnalysis || { error: "AI phân tích thất bại" },
+        aiAnalysis: aiAnalysis || fallbackAiAnalysis,
       }
     };
   } catch (error) {

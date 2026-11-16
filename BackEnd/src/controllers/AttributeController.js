@@ -1,4 +1,5 @@
 const AttributeService = require("../services/catalog/AttributeService");
+const { handleResponse, handleError } = require("../utils/controllerHelper");
 
 /**
  * Controller xử lý các yêu cầu liên quan đến Thuộc tính (Attribute)
@@ -6,13 +7,9 @@ const AttributeService = require("../services/catalog/AttributeService");
 const handleGetAllAttributes = async (req, res) => {
   try {
     const result = await AttributeService.getAllAttributesForAdmin();
-    return res.status(200).json(result);
+    return handleResponse(res, result, 200);
   } catch (error) {
-    console.error("Error in handleGetAllAttributes:", error);
-    return res.status(500).json({
-      errCode: 1,
-      errMessage: "Lỗi Server khi lấy danh sách thuộc tính",
-    });
+    return handleError(res, error, "handleGetAllAttributes");
   }
 };
 
@@ -25,28 +22,10 @@ const handleGetAttributeByCode = async (req, res) => {
         errMessage: "Thiếu tham số code",
       });
     }
-    const attribute = await db.Attribute.findOne({
-      where: { code },
-      include: [{ model: db.AttributeValue, as: "values" }]
-    });
-    
-    if (!attribute) {
-      return res.status(404).json({
-        errCode: 1,
-        errMessage: "Không tìm thấy thuộc tính",
-      });
-    }
-
-    return res.status(200).json({
-      errCode: 0,
-      data: attribute,
-    });
+    const result = await AttributeService.getAttributeByCode(code);
+    return handleResponse(res, result, 200);
   } catch (error) {
-    console.error("Error in handleGetAttributeByCode:", error);
-    return res.status(500).json({
-      errCode: 1,
-      errMessage: "Lỗi Server",
-    });
+    return handleError(res, error, "handleGetAttributeByCode");
   }
 };
 

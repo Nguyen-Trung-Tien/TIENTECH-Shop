@@ -320,7 +320,8 @@ const OrderPage = () => {
                         { key: "completed", label: "Hoàn thành" },
                       ].map((step, idx, arr) => {
                         const stepOrder = ["pending", "confirmed", "processing", "shipped", "delivered", "completed"];
-                        const currentIdx = stepOrder.indexOf(o.status);
+                        const normalizedStatus = o.status === "shipping" ? "shipped" : o.status;
+                        const currentIdx = stepOrder.indexOf(normalizedStatus);
                         const stepIdx = stepOrder.indexOf(step.key);
                         const isDone = currentIdx >= stepIdx;
 
@@ -434,7 +435,7 @@ const OrderPage = () => {
                         <FiEye size={16} /> Chi tiết
                       </button>
 
-                      {["pending", "confirmed"].includes(o.status) && (
+                      {["pending", "confirmed", "processing", "shipped", "shipping"].includes(o.status) && (
                         <button
                           onClick={() => {
                             setOrderToCancel(o);
@@ -442,7 +443,7 @@ const OrderPage = () => {
                           }}
                           className="flex-1 sm:flex-none h-10 px-5 bg-rose-50 dark:bg-rose-900/10 text-rose-600 dark:text-rose-400 rounded-xl text-xs font-bold hover:bg-rose-100 dark:hover:bg-rose-900/20 transition-all flex items-center justify-center gap-2 border border-rose-100 dark:border-rose-900/30"
                         >
-                          <FiXCircle size={16} /> Hủy đơn
+                          <FiXCircle size={16} /> {o.status === "pending" ? "Hủy đơn" : "Yêu cầu hủy"}
                         </button>
                       )}
 
@@ -488,7 +489,7 @@ const OrderPage = () => {
                       <p className="text-[9px] font-black text-rose-600 dark:text-rose-400 uppercase tracking-widest mb-1 flex items-center gap-2">
                         <FiAlertTriangle size={10} /> Lý do hủy đơn
                       </p>
-                      <p className="text-xs text-rose-700 dark:text-rose-300 font-medium italic">
+                      <p className="text-xs text-rose-700 dark:text-rose-300 font-medium italic break-words [overflow-wrap:anywhere]">
                         "{o.cancelReason}"
                       </p>
                     </div>
@@ -645,7 +646,7 @@ const OrderPage = () => {
                       }
                     }}
                   />
-                  <span className="text-xs font-bold text-slate-700 dark:text-white truncate">
+                  <span className="text-xs font-bold text-slate-700 dark:text-white truncate min-w-0 flex-1">
                     {item.productName}
                   </span>
                 </label>

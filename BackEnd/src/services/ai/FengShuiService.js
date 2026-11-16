@@ -48,6 +48,12 @@ const getFengShuiAdvice = async (data) => {
         include: [
           { model: db.Brand, as: "brand" },
           { model: db.Category, as: "category" },
+          {
+            model: db.ProductImage,
+            as: "images",
+            attributes: ["imageUrl", "isPrimary"],
+            required: false,
+          },
         ],
         order: [
           ["sold", "DESC"],
@@ -109,31 +115,72 @@ ${dbContext || "Không có sản phẩm nào phù hợp trực tiếp trong kho.
       { role: "user", parts: [{ text: message }] },
     ];
 
-    const resultGen = await generateContentWithFallback(
-      { contents },
-      { generationConfig: { responseMimeType: "application/json" } }
-    );
-    const responseText = resultGen.response.text();
-    const result = extractJson(responseText);
+    let result = {};
+    try {
+      const resultGen = await generateContentWithFallback(
+        { contents },
+        { generationConfig: { responseMimeType: "application/json" } }
+      );
+      const responseText = resultGen.response.text();
+      result = extractJson(responseText);
+    } catch (aiError) {
+      console.error("FengShuiService AI Error (using deterministic fallback):", aiError.message || aiError);
+      const fallbackReply = [
+        `Kính chào quý khách sinh năm ${birthYear} (${fs.gender}) — Mệnh Niên ${fs.menhNien}, Cung Phi ${fs.cungPhi} (Hành ${fs.element}).`,
+        `Màu Đại Cát (Tương sinh): ${fs.supportColors.join(", ")}.`,
+        `Màu Bình An (Bản mệnh): ${fs.luckyColors.join(", ")}.`,
+        `Nên hạn chế màu: ${fs.badColors.join(", ")}.`,
+        `Con số may mắn: ${fs.luckyNumbers.join(", ")}.`,
+        fs.advice,
+        fs.workspaceTip,
+      ].join(" ");
+      result = {
+        reply: fallbackReply,
+        recommendedProducts: products.slice(0, 3).map((p) => p.id),
+      };
+    }
+
+    const mapProductWithImage = (p) => {
+      const plain = typeof p.toJSON === "function" ? p.toJSON() : { ...p };
+      const primaryImg =
+        plain.images?.find((img) => img.isPrimary)?.imageUrl ||
+        plain.images?.[0]?.imageUrl ||
+        null;
+      return {
+        ...plain,
+        image: primaryImg,
+      };
+    };
 
     let finalRecommended = [];
-    if (result.recommendedProducts && result.recommendedProducts.length > 0) {
+    if (Array.isArray(result.recommendedProducts) && result.recommendedProducts.length > 0) {
       try {
-        finalRecommended = await db.Product.findAll({
+        const dbRecommended = await db.Product.findAll({
           where: { id: { [Op.in]: result.recommendedProducts }, isActive: true },
-          attributes: ["id", "name", "basePrice", "discount", "image"],
+          attributes: ["id", "name", "slug", "basePrice", "discount"],
+          include: [
+            {
+              model: db.ProductImage,
+              as: "images",
+              attributes: ["imageUrl", "isPrimary"],
+              required: false,
+            },
+          ],
         });
+        finalRecommended = dbRecommended.map(mapProductWithImage);
       } catch (dbError2) {
         console.error("Lỗi DB Recommended Products:", dbError2);
       }
     }
+
+    const fallbackProducts = products.slice(0, 3).map(mapProductWithImage);
 
     return {
       errCode: 0,
       errMessage: "OK",
       data: {
         reply: result.reply || "Tôi đã xem quẻ cho bạn nhưng gặp chút khó khăn khi diễn đạt. Bạn hãy thử lại nhé!",
-        recommendedProducts: finalRecommended.length > 0 ? finalRecommended : products.slice(0, 3),
+        recommendedProducts: finalRecommended.length > 0 ? finalRecommended : fallbackProducts,
       },
     };
   } catch (error) {

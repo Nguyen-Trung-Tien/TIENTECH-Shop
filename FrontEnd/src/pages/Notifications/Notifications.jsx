@@ -57,7 +57,7 @@ const Notifications = () => {
   };
 
   const fetchNotifications = useCallback(
-    async (isLoadMore = false) => {
+    async (targetPage = 1, isLoadMore = false) => {
       if (!user) return;
       try {
         if (isLoadMore) {
@@ -65,12 +65,11 @@ const Notifications = () => {
         } else {
           setLoading(true);
         }
-        const nextPage = isLoadMore ? page + 1 : 1;
-        const res = await getNotificationsApi(nextPage, 20, filterTab);
+        const res = await getNotificationsApi(targetPage, 20, filterTab);
         if (res.errCode === 0) {
           if (isLoadMore) {
             setNotifications((prev) => [...prev, ...(res.data || [])]);
-            setPage(nextPage);
+            setPage(targetPage);
           } else {
             setNotifications(res.data || []);
             setPage(1);
@@ -85,12 +84,12 @@ const Notifications = () => {
         setLoadingMore(false);
       }
     },
-    [user, page, filterTab]
+    [user, filterTab]
   );
 
   useEffect(() => {
-    fetchNotifications();
-  }, [user, filterTab, fetchNotifications]);
+    fetchNotifications(1, false);
+  }, [fetchNotifications]);
 
   const handleMarkAsRead = async (id) => {
     try {
@@ -422,7 +421,7 @@ const Notifications = () => {
               {hasMore && (
                 <div className="p-8 text-center bg-slate-50/40 dark:bg-dark-bg/30">
                   <button
-                    onClick={() => fetchNotifications(true)}
+                    onClick={() => fetchNotifications(page + 1, true)}
                     disabled={loading || loadingMore}
                     className="inline-flex items-center gap-3 min-h-[44px] px-10 py-3 bg-white dark:bg-dark-surface border border-slate-200 dark:border-dark-border rounded-2xl text-xs font-black uppercase tracking-widest text-slate-600 dark:text-dark-text-secondary hover:border-primary hover:text-primary transition-all shadow-sm disabled:opacity-50 active:scale-95 cursor-pointer"
                   >

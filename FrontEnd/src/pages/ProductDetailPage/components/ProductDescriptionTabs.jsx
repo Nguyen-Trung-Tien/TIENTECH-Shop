@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { sanitizeHtml } from "../../../utils/sanitizeHtml";
 import {
   FiBookOpen,
   FiCpu,
@@ -15,11 +16,7 @@ import {
 import { motion as Motion, AnimatePresence } from "framer-motion";
 import { getFengShuiDetailApi } from "../../../api/chatApi";
 
-const ProductDescriptionTabs = ({
-  product,
-  mergedSpecs,
-  displayVariant,
-}) => {
+const ProductDescriptionTabs = ({ product, mergedSpecs, displayVariant }) => {
   const [activeTab, setActiveTab] = useState("description");
 
   // Collapse / Expand States for optimal readability
@@ -85,7 +82,9 @@ const ProductDescriptionTabs = ({
   const keySpecs = mergedSpecs.slice(0, 4);
 
   // Determine if description is HTML
-  const isHtmlDescription = typeof product?.description === "string" && /<[a-z][\s\S]*>/i.test(product.description);
+  const isHtmlDescription =
+    typeof product?.description === "string" &&
+    /<[a-z][\s\S]*>/i.test(product.description);
 
   return (
     <div className="bg-white dark:bg-dark-surface border border-slate-200/80 dark:border-dark-border rounded-3xl shadow-sm overflow-hidden">
@@ -106,7 +105,9 @@ const ProductDescriptionTabs = ({
                 }`}
               >
                 {tab.icon}
-                <span className="truncate hidden sm:inline">{tab.fullLabel}</span>
+                <span className="truncate hidden sm:inline">
+                  {tab.fullLabel}
+                </span>
                 <span className="truncate sm:hidden">{tab.label}</span>
                 {tab.badge && (
                   <span
@@ -144,7 +145,8 @@ const ProductDescriptionTabs = ({
                     Đặc Điểm & Đánh Giá Chi Tiết Sản Phẩm
                   </h3>
                   <p className="text-xs text-slate-500 dark:text-dark-text-secondary">
-                    Trải nghiệm đẳng cấp công nghệ tinh xảo từ {product?.brand?.name || "TIENTECH"}
+                    Trải nghiệm đẳng cấp công nghệ tinh xảo từ{" "}
+                    {product?.brand?.name || "TIENTECH"}
                   </p>
                 </div>
                 <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-3 py-1.5 rounded-xl border border-emerald-200 dark:border-emerald-800/60">
@@ -161,8 +163,12 @@ const ProductDescriptionTabs = ({
                         {spec.icon}
                       </span>
                       <div className="min-w-0">
-                        <span className="text-[10px] text-slate-400 block truncate">{spec.name}</span>
-                        <span className="text-xs font-bold text-slate-800 dark:text-white block truncate">{spec.value}</span>
+                        <span className="text-[10px] text-slate-400 block truncate">
+                          {spec.name}
+                        </span>
+                        <span className="text-xs font-bold text-slate-800 dark:text-white block truncate">
+                          {spec.value}
+                        </span>
                       </div>
                     </div>
                   ))}
@@ -173,19 +179,23 @@ const ProductDescriptionTabs = ({
               <div className="relative">
                 <div
                   className={`transition-all duration-300 ${
-                    !isDescriptionExpanded ? "max-h-[380px] overflow-hidden" : "max-h-none"
+                    !isDescriptionExpanded
+                      ? "max-h-[380px] overflow-hidden"
+                      : "max-h-none"
                   }`}
                 >
                   {product?.description ? (
                     isHtmlDescription ? (
                       <div
-                        dangerouslySetInnerHTML={{ __html: product.description }}
-                        className="prose dark:prose-invert max-w-none text-slate-700 dark:text-slate-300 text-sm leading-relaxed space-y-3"
+                        dangerouslySetInnerHTML={{
+                          __html: sanitizeHtml(product.description),
+                        }}
+                        className="prose dark:prose-invert max-w-none text-slate-700 dark:text-slate-300 text-sm leading-relaxed space-y-3 break-words [overflow-wrap:anywhere] min-w-0"
                       />
                     ) : (
-                      <div className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed space-y-3.5">
+                      <div className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed space-y-3.5 min-w-0">
                         {product.description.split("\n\n").map((para, i) => (
-                          <p key={i} className="leading-relaxed">
+                          <p key={i} className="leading-relaxed break-words [overflow-wrap:anywhere]">
                             {para}
                           </p>
                         ))}
@@ -194,23 +204,34 @@ const ProductDescriptionTabs = ({
                   ) : (
                     <div className="space-y-4 text-slate-600 dark:text-slate-300 text-sm leading-relaxed">
                       <p>
-                        <strong className="text-slate-900 dark:text-white">{product?.name}</strong> là kiệt tác công nghệ kết hợp giữa cơ khí chính xác và sức mạnh xử lý vượt trội. Được tối ưu hóa cho cả công việc sáng tạo, đa nhiệm lẫn giải trí đỉnh cao.
+                        <strong className="text-slate-900 dark:text-white">
+                          {product?.name}
+                        </strong>{" "}
+                        là kiệt tác công nghệ kết hợp giữa cơ khí chính xác và
+                        sức mạnh xử lý vượt trội. Được tối ưu hóa cho cả công
+                        việc sáng tạo, đa nhiệm lẫn giải trí đỉnh cao.
                       </p>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-2">
                         <div className="p-4 rounded-2xl bg-slate-50 dark:bg-dark-card border border-slate-100 dark:border-dark-border">
                           <div className="font-bold text-slate-900 dark:text-white text-xs sm:text-sm mb-1 flex items-center gap-2">
-                            <FiStar className="text-amber-500 fill-amber-500" /> Hoàn thiện kim loại cao cấp
+                            <FiStar className="text-amber-500 fill-amber-500" />{" "}
+                            Hoàn thiện kim loại cao cấp
                           </div>
                           <p className="text-xs text-slate-500 dark:text-dark-text-secondary leading-relaxed">
-                            Vật liệu chế tác cao cấp mang tính Kim vững chãi, chống xước, tản nhiệt tối ưu và sang trọng trong mọi góc nhìn.
+                            Vật liệu chế tác cao cấp mang tính Kim vững chãi,
+                            chống xước, tản nhiệt tối ưu và sang trọng trong mọi
+                            góc nhìn.
                           </p>
                         </div>
                         <div className="p-4 rounded-2xl bg-slate-50 dark:bg-dark-card border border-slate-100 dark:border-dark-border">
                           <div className="font-bold text-slate-900 dark:text-white text-xs sm:text-sm mb-1 flex items-center gap-2">
-                            <FiAward className="text-primary" /> Hiệu năng dẫn đầu phân khúc
+                            <FiAward className="text-primary" /> Hiệu năng dẫn
+                            đầu phân khúc
                           </div>
                           <p className="text-xs text-slate-500 dark:text-dark-text-secondary leading-relaxed">
-                            Tốc độ phản hồi tức thì, khả năng đa nhiệm mượt mà giúp luồng công việc thông suốt và đạt năng suất cực đại.
+                            Tốc độ phản hồi tức thì, khả năng đa nhiệm mượt mà
+                            giúp luồng công việc thông suốt và đạt năng suất cực
+                            đại.
                           </p>
                         </div>
                       </div>
@@ -227,11 +248,21 @@ const ProductDescriptionTabs = ({
                 <div className="text-center pt-3 relative z-10">
                   <button
                     type="button"
-                    onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
+                    onClick={() =>
+                      setIsDescriptionExpanded(!isDescriptionExpanded)
+                    }
                     className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-2xl bg-primary/10 hover:bg-primary text-primary hover:text-white font-bold text-xs transition-all shadow-xs cursor-pointer border border-primary/20"
                   >
-                    <span>{isDescriptionExpanded ? "Thu gọn nội dung" : "Xem thêm chi tiết bài viết"}</span>
-                    {isDescriptionExpanded ? <FiChevronUp size={15} /> : <FiChevronDown size={15} />}
+                    <span>
+                      {isDescriptionExpanded
+                        ? "Thu gọn nội dung"
+                        : "Xem thêm chi tiết bài viết"}
+                    </span>
+                    {isDescriptionExpanded ? (
+                      <FiChevronUp size={15} />
+                    ) : (
+                      <FiChevronDown size={15} />
+                    )}
                   </button>
                 </div>
               </div>
@@ -262,7 +293,10 @@ const ProductDescriptionTabs = ({
               {mergedSpecs.length > 0 ? (
                 <div className="space-y-4">
                   <div className="rounded-2xl border border-slate-200/80 dark:border-dark-border overflow-hidden divide-y divide-slate-100 dark:divide-dark-border">
-                    {(isSpecsExpanded ? mergedSpecs : mergedSpecs.slice(0, 8)).map((spec, idx) => (
+                    {(isSpecsExpanded
+                      ? mergedSpecs
+                      : mergedSpecs.slice(0, 8)
+                    ).map((spec, idx) => (
                       <div
                         key={idx}
                         className={`flex flex-col sm:flex-row sm:items-center justify-between py-3.5 px-4 sm:px-6 text-xs sm:text-sm gap-1.5 sm:gap-4 transition-colors ${
@@ -297,7 +331,11 @@ const ProductDescriptionTabs = ({
                             ? "Thu gọn bớt thông số"
                             : `Xem tất cả ${mergedSpecs.length} thông số chi tiết`}
                         </span>
-                        {isSpecsExpanded ? <FiChevronUp size={15} /> : <FiChevronDown size={15} />}
+                        {isSpecsExpanded ? (
+                          <FiChevronUp size={15} />
+                        ) : (
+                          <FiChevronDown size={15} />
+                        )}
                       </button>
                     </div>
                   )}
@@ -328,7 +366,9 @@ const ProductDescriptionTabs = ({
                   Bát Trạch Bàn Làm Việc & Năng Lượng Thiết Bị Số
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-dark-text-secondary mt-1">
-                  Dữ liệu được tính toán tự động từ TienTech FengShui Engine máy chủ để khai mở vượng khí, gia tăng sáng tạo và thu hút tài lộc công danh.
+                  Dữ liệu được tính toán tự động từ TienTech FengShui Engine máy
+                  chủ để khai mở vượng khí, gia tăng sáng tạo và thu hút tài lộc
+                  công danh.
                 </p>
               </div>
 
@@ -336,18 +376,21 @@ const ProductDescriptionTabs = ({
               <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-50/70 via-white to-blue-50/50 dark:from-dark-card dark:to-dark-surface border border-amber-200/80 dark:border-dark-border space-y-3">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <div className="font-extrabold text-xs sm:text-sm text-slate-900 dark:text-white flex items-center gap-2">
-                    <FiCompass className="text-amber-500" /> Tra cứu phong thuỷ từ máy chủ:
+                    <FiCompass className="text-amber-500" /> Tra cứu phong thuỷ
+                    từ máy chủ:
                   </div>
                   <select
                     value={fengShuiYear}
                     onChange={(e) => setFengShuiYear(e.target.value)}
                     className="bg-white dark:bg-dark-surface border border-slate-200 dark:border-dark-border rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800 dark:text-white"
                   >
-                    {Array.from({ length: 45 }, (_, i) => 2012 - i).map((yr) => (
-                      <option key={yr} value={yr}>
-                        Năm sinh: {yr}
-                      </option>
-                    ))}
+                    {Array.from({ length: 45 }, (_, i) => 2012 - i).map(
+                      (yr) => (
+                        <option key={yr} value={yr}>
+                          Năm sinh: {yr}
+                        </option>
+                      ),
+                    )}
                   </select>
                 </div>
 
@@ -360,12 +403,23 @@ const ProductDescriptionTabs = ({
                 {!loadingFs && fsData && (
                   <div className="p-4 rounded-xl border border-amber-300 bg-amber-50/80 dark:bg-amber-950/30 text-amber-900 dark:text-amber-200 text-xs space-y-2">
                     <div className="flex items-center justify-between font-extrabold text-sm border-b border-black/10 dark:border-white/10 pb-1.5">
-                      <span>Cung Phi {fsData.cungPhi} (Hành {fsData.element}) • Năm {fsData.year}</span>
-                      <span className="text-[11px] font-bold">Mệnh Niên: {fsData.menhNien}</span>
+                      <span>
+                        Cung Phi {fsData.cungPhi} (Hành {fsData.element}) • Năm{" "}
+                        {fsData.year}
+                      </span>
+                      <span className="text-[11px] font-bold">
+                        Mệnh Niên: {fsData.menhNien}
+                      </span>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                      <p><strong>🌟 Màu Đại Cát (Tương sinh):</strong> {fsData.supportColors?.join(", ")}</p>
-                      <p><strong>🎨 Màu Bình An (Bản mệnh):</strong> {fsData.luckyColors?.join(", ")}</p>
+                      <p>
+                        <strong>🌟 Màu Đại Cát (Tương sinh):</strong>{" "}
+                        {fsData.supportColors?.join(", ")}
+                      </p>
+                      <p>
+                        <strong>🎨 Màu Bình An (Bản mệnh):</strong>{" "}
+                        {fsData.luckyColors?.join(", ")}
+                      </p>
                     </div>
                     <p className="pt-1 text-[11px] border-t border-black/5 dark:border-white/5">
                       <strong>💡 Lời khuyên thiết bị:</strong> {fsData.advice}
@@ -384,7 +438,9 @@ const ProductDescriptionTabs = ({
                     Vị Trí Đặt Máy Tính Chính
                   </h4>
                   <p className="text-xs text-slate-600 dark:text-dark-text-secondary leading-relaxed">
-                    Đông Nam là cung Tài Bạch. Đặt màn hình chính hoặc laptop ở góc này giúp năng lượng công việc thăng hoa, các hợp đồng và tài chính luân chuyển thông suốt.
+                    Đông Nam là cung Tài Bạch. Đặt màn hình chính hoặc laptop ở
+                    góc này giúp năng lượng công việc thăng hoa, các hợp đồng và
+                    tài chính luân chuyển thông suốt.
                   </p>
                 </div>
 
@@ -396,7 +452,9 @@ const ProductDescriptionTabs = ({
                     Kích Hoạt Trợ Lực Sự Nghiệp
                   </h4>
                   <p className="text-xs text-slate-600 dark:text-dark-text-secondary leading-relaxed">
-                    Tây Bắc thuộc hành Kim, đại diện cho quý nhân và lãnh đạo. Bố trí điện thoại hoặc thiết bị giao tiếp ở góc này giúp dễ gặp đối tác tốt và được nâng đỡ.
+                    Tây Bắc thuộc hành Kim, đại diện cho quý nhân và lãnh đạo.
+                    Bố trí điện thoại hoặc thiết bị giao tiếp ở góc này giúp dễ
+                    gặp đối tác tốt và được nâng đỡ.
                   </p>
                 </div>
 
@@ -408,7 +466,9 @@ const ProductDescriptionTabs = ({
                     Vệ Sinh & Trật Tự Dây Cáp
                   </h4>
                   <p className="text-xs text-slate-600 dark:text-dark-text-secondary leading-relaxed">
-                    Tránh để dây sạc bừa bãi (gây Hỏa sát). Vệ sinh bụi bẩn màn hình và thanh lọc bộ nhớ cache định kỳ vào cuối tuần để giữ trường năng lượng luôn thanh sạch.
+                    Tránh để dây sạc bừa bãi (gây Hỏa sát). Vệ sinh bụi bẩn màn
+                    hình và thanh lọc bộ nhớ cache định kỳ vào cuối tuần để giữ
+                    trường năng lượng luôn thanh sạch.
                   </p>
                 </div>
               </div>
@@ -418,15 +478,26 @@ const ProductDescriptionTabs = ({
                 <div className="rounded-2xl border border-slate-200/80 dark:border-dark-border overflow-hidden">
                   <div className="p-4 bg-slate-50 dark:bg-dark-card flex items-center justify-between">
                     <div className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                      <FiCompass className="text-primary" /> Bảng Ngũ Hành & Màu Sắc Đại Diện (Từ TienTech Engine)
+                      <FiCompass className="text-primary" /> Bảng Ngũ Hành & Màu
+                      Sắc Đại Diện (Từ TienTech Engine)
                     </div>
                     <button
                       type="button"
-                      onClick={() => setIsFengShuiTableExpanded(!isFengShuiTableExpanded)}
+                      onClick={() =>
+                        setIsFengShuiTableExpanded(!isFengShuiTableExpanded)
+                      }
                       className="text-xs font-bold text-primary dark:text-primary-light flex items-center gap-1 cursor-pointer"
                     >
-                      <span>{isFengShuiTableExpanded ? "Thu gọn bảng" : "Xem toàn bộ"}</span>
-                      {isFengShuiTableExpanded ? <FiChevronUp size={14} /> : <FiChevronDown size={14} />}
+                      <span>
+                        {isFengShuiTableExpanded
+                          ? "Thu gọn bảng"
+                          : "Xem toàn bộ"}
+                      </span>
+                      {isFengShuiTableExpanded ? (
+                        <FiChevronUp size={14} />
+                      ) : (
+                        <FiChevronDown size={14} />
+                      )}
                     </button>
                   </div>
 
@@ -438,9 +509,15 @@ const ProductDescriptionTabs = ({
                             key={el.key}
                             className="p-3 rounded-xl bg-slate-50 dark:bg-dark-card border border-slate-200 dark:border-dark-border"
                           >
-                            <span className="text-lg block mb-1">{el.icon}</span>
-                            <strong className="text-slate-800 dark:text-white block mb-0.5">{el.name}</strong>
-                            <span className="text-[11px] text-slate-500 dark:text-slate-400 block">{el.colors}</span>
+                            <span className="text-lg block mb-1">
+                              {el.icon}
+                            </span>
+                            <strong className="text-slate-800 dark:text-white block mb-0.5">
+                              {el.name}
+                            </strong>
+                            <span className="text-[11px] text-slate-500 dark:text-slate-400 block">
+                              {el.colors}
+                            </span>
                           </div>
                         ))}
                       </div>
@@ -466,54 +543,68 @@ const ProductDescriptionTabs = ({
                   Đặc Quyền Khách Hàng TIENTECH Diamond
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-dark-text-secondary mt-1">
-                  An tâm tuyệt đối với tiêu chuẩn bảo hành và dịch vụ hậu mãi chu đáo hàng đầu.
+                  An tâm tuyệt đối với tiêu chuẩn bảo hành và dịch vụ hậu mãi
+                  chu đáo hàng đầu.
                 </p>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="p-4 rounded-2xl bg-slate-50 dark:bg-dark-card border border-slate-100 dark:border-dark-border space-y-1.5">
                   <div className="flex items-center gap-2 text-xs font-bold text-slate-900 dark:text-white">
-                    <FiCheckCircle className="text-emerald-500" /> 1 Đổi 1 Trong 30 Ngày Đầu
+                    <FiCheckCircle className="text-emerald-500" /> 1 Đổi 1 Trong
+                    30 Ngày Đầu
                   </div>
                   <p className="text-xs text-slate-500 dark:text-dark-text-secondary leading-relaxed">
-                    Nếu phát sinh lỗi từ nhà sản xuất, khách hàng được đổi ngay máy mới nguyên hộp mà không mất thêm bất kỳ chi phí nào.
+                    Nếu phát sinh lỗi từ nhà sản xuất, khách hàng được đổi ngay
+                    máy mới nguyên hộp mà không mất thêm bất kỳ chi phí nào.
                   </p>
                 </div>
 
                 <div className="p-4 rounded-2xl bg-slate-50 dark:bg-dark-card border border-slate-100 dark:border-dark-border space-y-1.5">
                   <div className="flex items-center gap-2 text-xs font-bold text-slate-900 dark:text-white">
-                    <FiCheckCircle className="text-emerald-500" /> Bảo Hành Chính Hãng 12-24 Tháng
+                    <FiCheckCircle className="text-emerald-500" /> Bảo Hành
+                    Chính Hãng 12-24 Tháng
                   </div>
                   <p className="text-xs text-slate-500 dark:text-dark-text-secondary leading-relaxed">
-                    Bảo hành điện tử toàn diện theo số Serial/IMEI, tiếp nhận và hỗ trợ tại các trung tâm ủy quyền chính hãng trên toàn quốc.
+                    Bảo hành điện tử toàn diện theo số Serial/IMEI, tiếp nhận và
+                    hỗ trợ tại các trung tâm ủy quyền chính hãng trên toàn quốc.
                   </p>
                 </div>
 
                 <div className="p-4 rounded-2xl bg-slate-50 dark:bg-dark-card border border-slate-100 dark:border-dark-border space-y-1.5">
                   <div className="flex items-center gap-2 text-xs font-bold text-slate-900 dark:text-white">
-                    <FiCheckCircle className="text-emerald-500" /> Hỗ Trợ Kỹ Thuật Trọn Đời
+                    <FiCheckCircle className="text-emerald-500" /> Hỗ Trợ Kỹ
+                    Thuật Trọn Đời
                   </div>
                   <p className="text-xs text-slate-500 dark:text-dark-text-secondary leading-relaxed">
-                    Miễn phí cài đặt phần mềm, vệ sinh máy định kỳ và tư vấn nâng cấp máy trong suốt vòng đời sử dụng sản phẩm.
+                    Miễn phí cài đặt phần mềm, vệ sinh máy định kỳ và tư vấn
+                    nâng cấp máy trong suốt vòng đời sử dụng sản phẩm.
                   </p>
                 </div>
 
                 <div className="p-4 rounded-2xl bg-slate-50 dark:bg-dark-card border border-slate-100 dark:border-dark-border space-y-1.5">
                   <div className="flex items-center gap-2 text-xs font-bold text-slate-900 dark:text-white">
-                    <FiHelpCircle className="text-primary" /> Hotline Tiếp Nhận Nhanh
+                    <FiHelpCircle className="text-primary" /> Hotline Tiếp Nhận
+                    Nhanh
                   </div>
                   <p className="text-xs text-slate-500 dark:text-dark-text-secondary leading-relaxed">
-                    Hỗ trợ qua tổng đài 1800 6868 (miễn phí cước) hoặc hệ thống Live Chat thông minh trên ứng dụng web TIENTECH.
+                    Hỗ trợ qua tổng đài 1800 6868 (miễn phí cước) hoặc hệ thống
+                    Live Chat thông minh trên ứng dụng web TIENTECH.
                   </p>
                 </div>
               </div>
 
               <div className="p-4 rounded-2xl bg-primary/5 border border-primary/15 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
                 <div className="text-slate-700 dark:text-slate-300">
-                  <strong className="text-primary font-bold">Cam kết vàng:</strong> Mọi sản phẩm đều được kích hoạt bảo hành điện tử chính hãng kể từ ngày nhận hàng.
+                  <strong className="text-primary font-bold">
+                    Cam kết vàng:
+                  </strong>{" "}
+                  Mọi sản phẩm đều được kích hoạt bảo hành điện tử chính hãng kể
+                  từ ngày nhận hàng.
                 </div>
                 <div className="text-primary font-bold flex items-center gap-1 shrink-0">
-                  <FiCheckCircle className="text-emerald-500" /> Bảo vệ quyền lợi 100%
+                  <FiCheckCircle className="text-emerald-500" /> Bảo vệ quyền
+                  lợi 100%
                 </div>
               </div>
             </Motion.div>

@@ -241,8 +241,8 @@ const createPayment = async (data, actor = null) => {
       return { errCode: 3, errMessage: "Order not found" };
     }
 
-    if (actor && actor.role !== "admin") {
-      if (order.userId !== actor.id) {
+    if (actor && !["admin", "root"].includes(actor.role)) {
+      if (String(order.userId) !== String(actor.id)) {
         await t.rollback();
         return { errCode: 403, errMessage: "Forbidden", status: 403 };
       }
@@ -425,11 +425,22 @@ const confirmPaymentFromWebhook = async ({ orderId, transactionId, method, note,
 };
 
 const updatePayment = async (orderId, data) => {
+  const t = await db.sequelize.transaction();
   try {
-    const order = await db.Order.findByPk(orderId);
-    if (!order) return { errCode: 2, errMessage: "Order not found" };
+    const order = await db.Order.findByPk(orderId, {
+      transaction: t,
+      lock: t.LOCK.UPDATE,
+    });
+    if (!order) {
+      await t.rollback();
+      return { errCode: 2, errMessage: "Order not found" };
+    }
 
-    let payment = await db.Payment.findOne({ where: { orderId } });
+    let payment = await db.Payment.findOne({
+      where: { orderId },
+      transaction: t,
+      lock: t.LOCK.UPDATE,
+    });
 
     const statusMap = {
       paid: "completed",
@@ -447,6 +458,7 @@ const updatePayment = async (orderId, data) => {
       if (isOnlineMethod) {
         const refundResult = await executeRefund(order, payment, method);
         if (!refundResult.success) {
+          await t.rollback();
           return {
             errCode: 3,
             errMessage: `Refund failed: ${refundResult.message}`,
@@ -456,23 +468,29 @@ const updatePayment = async (orderId, data) => {
     }
 
     if (!payment) {
-      payment = await db.Payment.create({
-        orderId,
-        userId: data.userId || order.userId,
-        amount: data.amount || order.totalPrice,
-        method: data.method || order.paymentMethod || "cod",
-        status: paymentStatus,
-        transactionId: data.transactionId || `DH${Date.now()}${orderId}`,
-        note: data.note || "",
-      });
+      payment = await db.Payment.create(
+        {
+          orderId,
+          userId: data.userId || order.userId,
+          amount: data.amount || order.totalPrice,
+          method: data.method || order.paymentMethod || "cod",
+          status: paymentStatus,
+          transactionId: data.transactionId || `DH${Date.now()}${orderId}`,
+          note: data.note || "",
+        },
+        { transaction: t }
+      );
     } else {
-      await payment.update({
-        amount: data.amount || payment.amount,
-        method: data.method || payment.method,
-        status: paymentStatus,
-        transactionId: data.transactionId || payment.transactionId,
-        note: data.note || payment.note,
-      });
+      await payment.update(
+        {
+          amount: data.amount || payment.amount,
+          method: data.method || payment.method,
+          status: paymentStatus,
+          transactionId: data.transactionId || payment.transactionId,
+          note: data.note || payment.note,
+        },
+        { transaction: t }
+      );
     }
 
     const orderStatusMap = {
@@ -480,9 +498,14 @@ const updatePayment = async (orderId, data) => {
       refunded: "refunded",
       pending: "unpaid",
     };
-    await order.update({
-      paymentStatus: orderStatusMap[paymentStatus] || "unpaid",
-    });
+    await order.update(
+      {
+        paymentStatus: orderStatusMap[paymentStatus] || "unpaid",
+      },
+      { transaction: t }
+    );
+
+    await t.commit();
 
     const updatedOrder = await db.Order.findByPk(orderId, {
       include: [{ model: db.Payment, as: "payment" }],
@@ -494,6 +517,13 @@ const updatePayment = async (orderId, data) => {
       data: updatedOrder.toJSON(),
     };
   } catch (e) {
+    if (t && !t.finished) {
+      try {
+        await t.rollback();
+      } catch (rollbackErr) {
+        console.error("Rollback failed in updatePayment:", rollbackErr);
+      }
+    }
     console.error("Error updatePayment:", e);
     return { errCode: 1, errMessage: e.message || "Lỗi cập nhật thanh toán" };
   }

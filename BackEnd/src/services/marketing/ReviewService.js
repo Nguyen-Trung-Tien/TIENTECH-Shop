@@ -221,7 +221,7 @@ const updateReview = async (reviewId, data, user) => {
 
     if (!review) return { errCode: 2, errMessage: "Review không tồn tại" };
 
-    if (user.role !== "admin" && review.userId !== user.id) {
+    if (!["admin", "root"].includes(user.role) && String(review.userId) !== String(user.id)) {
       return {
         errCode: 3,
         errMessage: "Bạn không có quyền chỉnh sửa review này",
@@ -246,7 +246,7 @@ const deleteReview = async (reviewId, user) => {
 
     if (!review) return { errCode: 2, errMessage: "Review không tồn tại" };
 
-    if (user.role !== "admin" && review.userId !== user.id) {
+    if (!["admin", "root"].includes(user.role) && String(review.userId) !== String(user.id)) {
       return { errCode: 3, errMessage: "Bạn không có quyền xóa review này" };
     }
 

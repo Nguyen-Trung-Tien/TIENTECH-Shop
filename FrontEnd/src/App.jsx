@@ -12,6 +12,7 @@ import { setUser, removeUser, setInitializing } from "./redux/userSlice";
 import { clearCart } from "./redux/cartSlice";
 import { LazyMotion, domAnimation } from "framer-motion";
 import RouteProgressBar from "./components/Loading/RouteProgressBar";
+import ErrorBoundary from "./components/UI/ErrorBoundary";
 import { useTheme } from "./context/useTheme";
 
 const App = () => {
@@ -26,7 +27,7 @@ const App = () => {
         window.dispatchEvent(
           new CustomEvent("tiêntech:account_locked", {
             detail: { reason: data?.reason },
-          })
+          }),
         );
       };
 
@@ -67,10 +68,12 @@ const App = () => {
       <RouteProgressBar />
       <AccountLockedModal />
       <LazyMotion features={domAnimation}>
-        <Routes>
-          <Route path="/admin/*" element={<AdminRoutes />} />
-          <Route path="/*" element={<UserRoutes />} />
-        </Routes>
+        <ErrorBoundary>
+          <Routes>
+            <Route path="/admin/*" element={<AdminRoutes />} />
+            <Route path="/*" element={<UserRoutes />} />
+          </Routes>
+        </ErrorBoundary>
       </LazyMotion>
 
       <ToastContainer

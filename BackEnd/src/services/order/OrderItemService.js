@@ -173,7 +173,7 @@ const requestReturn = async (id, reason, user = null) => {
       return { errCode: 1, errMessage: "OrderItem not found" };
     }
 
-    if (user && user.role !== "admin" && item.order.userId !== user.id) {
+    if (user && !["admin", "root"].includes(user.role) && String(item.order.userId) !== String(user.id)) {
       return { errCode: 403, errMessage: "Bạn chỉ có thể yêu cầu trả hàng cho đơn hàng của chính mình.", status: 403 };
     }
 
@@ -233,7 +233,7 @@ const cancelReturnRequest = async (id, user = null) => {
       return { errCode: 1, errMessage: "OrderItem not found" };
     }
 
-    if (user && user.role !== "admin" && item.order.userId !== user.id) {
+    if (user && !["admin", "root"].includes(user.role) && String(item.order.userId) !== String(user.id)) {
       return { errCode: 403, errMessage: "Forbidden", status: 403 };
     }
 
@@ -261,18 +261,35 @@ const cancelReturnRequest = async (id, user = null) => {
   }
 };
 
-const processReturn = async (id, statusOrAction, adminUser = null) => {
+const processReturn = async (id, statusOrAction, noteOrAdmin = null, maybeAdmin = null) => {
+  const adminUser =
+    typeof noteOrAdmin === "object" && noteOrAdmin !== null
+      ? noteOrAdmin
+      : maybeAdmin;
+  const adminNote = typeof noteOrAdmin === "string" ? noteOrAdmin : "";
   const t = await db.sequelize.transaction();
   try {
     const item = await db.OrderItem.findByPk(id, {
-      include: [{ model: db.Order, as: "order" }],
       transaction: t,
+      lock: t.LOCK.UPDATE,
     });
 
     if (!item) {
       await t.rollback();
       return { errCode: 1, errMessage: "OrderItem not found" };
     }
+
+    const order = await db.Order.findByPk(item.orderId, {
+      transaction: t,
+      lock: t.LOCK.UPDATE,
+    });
+
+    if (!order) {
+      await t.rollback();
+      return { errCode: 1, errMessage: "Order not found" };
+    }
+
+    item.order = order;
 
     // REQUIREMENT: Admin chỉ approve/reject item đang ở trạng thái requested
     if (item.returnStatus !== "requested") {
@@ -293,7 +310,6 @@ const processReturn = async (id, statusOrAction, adminUser = null) => {
     item.returnProcessedAt = new Date();
     await item.save({ transaction: t });
 
-    const order = item.order;
     const NotificationService = require("../notification/NotificationService");
 
     if (isApprove) {
@@ -373,7 +389,7 @@ const processReturn = async (id, statusOrAction, adminUser = null) => {
           status: "cancelled",
           date: new Date().toISOString(),
           actor: adminUser?.username || "Admin",
-          action: "Tất cả sản phẩm đã được trả lại.",
+          action: adminNote || "Tất cả sản phẩm đã được trả lại.",
         });
         order.confirmationHistory = history;
         await order.save({ transaction: t });

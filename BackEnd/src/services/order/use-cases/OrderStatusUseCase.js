@@ -1,5 +1,4 @@
 const db = require("../../../models");
-const NotificationService = require("../../notification/NotificationService");
 const { deleteCacheByPattern } = require("../../../config/redis");
 
 const VALID_ADMIN_TRANSITIONS = {
@@ -9,7 +8,7 @@ const VALID_ADMIN_TRANSITIONS = {
   shipped: ["shipping", "delivered", "cancelled"],
   shipping: ["delivered", "cancelled"],
   delivered: ["completed"],
-  cancel_requested: ["cancelled", "confirmed"],
+  cancel_requested: ["cancelled", "confirmed", "processing"],
   completed: [],
   cancelled: [],
 };
@@ -19,7 +18,9 @@ const validateCustomerStatusTransition = (currentStatus, targetStatus) => {
     if (currentStatus === "pending") {
       return { valid: true, resolvedStatus: "cancelled" };
     }
-    if (["confirmed", "processing", "shipped", "shipping"].includes(currentStatus)) {
+    if (
+      ["confirmed", "processing", "shipped", "shipping"].includes(currentStatus)
+    ) {
       return { valid: true, resolvedStatus: "cancel_requested" };
     }
     return {
@@ -34,7 +35,8 @@ const validateCustomerStatusTransition = (currentStatus, targetStatus) => {
     }
     return {
       valid: false,
-      message: "Khách hàng chỉ có thể xác nhận hoàn thành khi đơn hàng đã giao (delivered).",
+      message:
+        "Khách hàng chỉ có thể xác nhận hoàn thành khi đơn hàng đã giao (delivered).",
     };
   }
 
@@ -51,7 +53,8 @@ const validateAdminStatusTransition = (currentStatus, targetStatus) => {
     }
     return {
       valid: false,
-      message: "Từ trạng thái cancel_requested, Admin chỉ có thể duyệt (cancelled) hoặc từ chối (confirmed/processing).",
+      message:
+        "Từ trạng thái cancel_requested, Admin chỉ có thể duyệt (cancelled) hoặc từ chối (confirmed/processing).",
     };
   }
 
@@ -69,7 +72,7 @@ const syncOrderCancellationSideEffects = async (
   order,
   cancelReason,
   adminUser = null,
-  t_external = null
+  t_external = null,
 ) => {
   const t = t_external || (await db.sequelize.transaction());
   try {
@@ -110,7 +113,7 @@ const syncOrderCancellationSideEffects = async (
       }
       await db.VoucherUsage.update(
         { status: "cancelled" },
-        { where: { orderId: order.id }, transaction: t }
+        { where: { orderId: order.id }, transaction: t },
       );
     }
 
@@ -135,12 +138,18 @@ const syncOrderCancellationSideEffects = async (
         transaction: t,
       });
       if (payment) {
-        const PaymentService = require("./PaymentService");
-        await PaymentService.refundPayment(
+        const PaymentService = require("../PaymentService");
+        const refundRes = await PaymentService.refundPayment(
           payment.id,
           `Order Cancelled: ${cancelReason}`,
-          t
+          t,
         );
+        if (refundRes && refundRes.errCode !== 0) {
+          throw new Error(
+            refundRes.errMessage || "Hoàn tiền đơn hàng thất bại.",
+          );
+        }
+        order.paymentStatus = "refunded";
       }
     }
 
@@ -156,7 +165,7 @@ const updateOrderStatus = async (
   id,
   status,
   currentUser = null,
-  cancelReason = ""
+  cancelReason = "",
 ) => {
   const t = await db.sequelize.transaction();
   try {
@@ -170,11 +179,13 @@ const updateOrderStatus = async (
     }
 
     const currentStatus = order.status;
-    const isCustomer = currentUser && currentUser.role !== "admin";
+    const isElevated =
+      currentUser && ["admin", "root"].includes(currentUser.role);
+    const isCustomer = currentUser && !isElevated;
 
     // 1. CUSTOMER STATE MACHINE
     if (isCustomer) {
-      if (order.userId !== currentUser.id) {
+      if (String(order.userId) !== String(currentUser.id)) {
         await t.rollback();
         return { errCode: 403, errMessage: "Forbidden", status: 403 };
       }
@@ -186,7 +197,7 @@ const updateOrderStatus = async (
             order,
             cancelReason || "Khách hàng hủy đơn.",
             currentUser,
-            t
+            t,
           );
           await t.commit();
           return {
@@ -196,7 +207,7 @@ const updateOrderStatus = async (
           };
         } else if (
           ["confirmed", "processing", "shipped", "shipping"].includes(
-            currentStatus
+            currentStatus,
           )
         ) {
           order.status = "cancel_requested";
@@ -218,22 +229,6 @@ const updateOrderStatus = async (
           order.confirmationHistory = history;
           await order.save({ transaction: t });
           await t.commit();
-
-          await NotificationService.createNotification({
-            userId: order.userId,
-            title: "Yêu cầu hủy đơn hàng đã gửi",
-            message: `Yêu cầu hủy đơn hàng #${order.orderCode} đã được gửi đến Admin để chờ xử lý.`,
-            type: "order",
-            link: `/orders-detail/${order.id}`,
-          });
-
-          await NotificationService.createNotification({
-            userId: null,
-            title: "Yêu cầu hủy đơn hàng mới!",
-            message: `Khách hàng yêu cầu hủy đơn hàng #${order.orderCode}.${cancelReason ? ` Lý do: ${cancelReason}` : ""}`,
-            type: "order",
-            link: "/admin/orders?tab=cancel_requested",
-          });
 
           return {
             errCode: 0,
@@ -289,17 +284,17 @@ const updateOrderStatus = async (
             order,
             cancelReason || "Admin chấp thuận yêu cầu hủy đơn.",
             currentUser,
-            t
+            t,
           );
-        } else if (status === "confirmed") {
-          // Admin rejects cancellation -> revert back to confirmed
-          order.status = "confirmed";
+        } else if (["confirmed", "processing"].includes(status)) {
+          // Admin rejects cancellation -> revert back to confirmed or processing
+          order.status = status;
           order.cancelReason = null;
           const history = Array.isArray(order.confirmationHistory)
             ? order.confirmationHistory
             : [];
           history.push({
-            status: "confirmed",
+            status,
             date: new Date().toISOString(),
             actor: currentUser?.username || "Admin",
             reason: cancelReason || "Admin từ chối yêu cầu hủy đơn hàng",
@@ -310,7 +305,7 @@ const updateOrderStatus = async (
           return {
             errCode: 2,
             errMessage:
-              "Từ trạng thái cancel_requested, Admin chỉ có thể duyệt (cancelled) hoặc từ chối (confirmed).",
+              "Từ trạng thái cancel_requested, Admin chỉ có thể duyệt (cancelled) hoặc từ chối (confirmed/processing).",
           };
         }
       } else {
@@ -328,7 +323,7 @@ const updateOrderStatus = async (
             order,
             cancelReason || "Admin hủy đơn.",
             currentUser,
-            t
+            t,
           );
         }
       }
@@ -352,10 +347,12 @@ const updateOrderStatus = async (
             status: "completed",
             transactionId:
               existingPayment.transactionId ||
-              (order.orderCode ? `DH${order.orderCode.replace(/^#?ORD/i, "")}` : `DH${Date.now()}${order.id}`),
+              (order.orderCode
+                ? `DH${order.orderCode.replace(/^#?ORD/i, "")}`
+                : `DH${Date.now()}${order.id}`),
             paymentDate: existingPayment.paymentDate || new Date(),
           },
-          { transaction: t }
+          { transaction: t },
         );
       } else {
         await db.Payment.create(
@@ -365,10 +362,12 @@ const updateOrderStatus = async (
             amount: order.totalPrice,
             method: order.paymentMethod || "cod",
             status: "completed",
-            transactionId: order.orderCode ? `DH${order.orderCode.replace(/^#?ORD/i, "")}` : `DH${Date.now()}${order.id}`,
+            transactionId: order.orderCode
+              ? `DH${order.orderCode.replace(/^#?ORD/i, "")}`
+              : `DH${Date.now()}${order.id}`,
             paymentDate: new Date(),
           },
-          { transaction: t }
+          { transaction: t },
         );
       }
     }
@@ -476,7 +475,11 @@ const updatePaymentStatus = async (id, paymentStatus) => {
   }
 };
 
-const changePaymentMethod = async (orderId, newPaymentMethod, currentUser = null) => {
+const changePaymentMethod = async (
+  orderId,
+  newPaymentMethod,
+  currentUser = null,
+) => {
   const t = await db.sequelize.transaction();
   try {
     if (!orderId || !newPaymentMethod) {
@@ -520,12 +523,18 @@ const changePaymentMethod = async (orderId, newPaymentMethod, currentUser = null
       };
     }
 
-    // Bảo mật: Người dùng chỉ được sửa đơn của chính mình, trừ Admin
-    if (currentUser && currentUser.role !== "admin" && order.userId !== currentUser.id) {
+    // Bảo mật: Người dùng chỉ được sửa đơn của chính mình, trừ Admin/Root
+    const isElevated = currentUser && ["admin", "root"].includes(currentUser.role);
+    if (
+      currentUser &&
+      !isElevated &&
+      String(order.userId) !== String(currentUser.id)
+    ) {
       await t.rollback();
       return {
         errCode: 4,
-        errMessage: "Bạn không có quyền thay đổi phương thức thanh toán cho đơn hàng này.",
+        errMessage:
+          "Bạn không có quyền thay đổi phương thức thanh toán cho đơn hàng này.",
       };
     }
 
@@ -534,12 +543,19 @@ const changePaymentMethod = async (orderId, newPaymentMethod, currentUser = null
       await t.rollback();
       return {
         errCode: 5,
-        errMessage: "Đơn hàng này đã được thanh toán thành công, không thể đổi phương thức.",
+        errMessage:
+          "Đơn hàng này đã được thanh toán thành công, không thể đổi phương thức.",
       };
     }
 
     // Kiểm tra trạng thái đơn hàng: Chỉ cho phép đổi khi đang pending hoặc confirmed chưa xuất kho
-    const DISALLOWED_ORDER_STATUSES = ["shipped", "shipping", "delivered", "completed", "cancelled"];
+    const DISALLOWED_ORDER_STATUSES = [
+      "shipped",
+      "shipping",
+      "delivered",
+      "completed",
+      "cancelled",
+    ];
     if (DISALLOWED_ORDER_STATUSES.includes(order.status)) {
       await t.rollback();
       return {

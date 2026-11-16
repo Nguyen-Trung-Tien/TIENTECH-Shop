@@ -14,17 +14,24 @@ passport.use(
     async (accessToken, refreshToken, profile, done) => {
       try {
         const { id, emails, displayName, photos } = profile;
-        const email = emails[0].value;
-        const avatar = photos[0].value;
+        const email = emails?.[0]?.value;
+        const avatar = photos?.[0]?.value || null;
+
+        if (!email) {
+          return done(new Error("Google account has no email"), null);
+        }
 
         let user = await db.User.findOne({ where: { email } });
 
         if (user) {
-          // Update googleId and provider if not already set
+          // Update googleId and provider if not already set (never unban admin-suspended accounts)
           if (!user.googleId) {
             user.googleId = id;
             user.provider = "google";
-            user.isActive = true; // Social login users are automatically active
+            if (user.isActive || user.verificationToken !== null) {
+              user.isActive = true;
+              user.verificationToken = null;
+            }
             await user.save();
           }
           return done(null, user);

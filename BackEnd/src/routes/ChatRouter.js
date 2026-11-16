@@ -5,6 +5,7 @@ const PricePredictorController = require("../controllers/pricePredictorControlle
 const FengShuiChatController = require("../controllers/fengShuiChatController");
 const VisualSearchController = require("../controllers/visualSearchController");
 const { aiApiLimiter } = require("../middleware/rateLimiter");
+const { optionalAuthenticateToken } = require("../middleware/authMiddleware");
 
 const validateChatRequest = (req, res, next) => {
   const { message } = req.body;
@@ -29,7 +30,7 @@ const validatePredictRequest = (req, res, next) => {
   next();
 };
 
-router.post("/ask", aiApiLimiter, validateChatRequest, ChatController.handleChat);
+router.post("/ask", optionalAuthenticateToken, aiApiLimiter, validateChatRequest, ChatController.handleChat);
 router.post("/visual-search", aiApiLimiter, VisualSearchController.handleVisualSearch);
 router.post(
   "/predict",

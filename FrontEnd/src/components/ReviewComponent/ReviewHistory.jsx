@@ -183,7 +183,8 @@ const ReviewHistory = () => {
                   key={product.id}
                   className="group bg-white dark:bg-dark-surface p-8 rounded-[32px] border border-slate-100 dark:border-dark-border shadow-sm hover:shadow-md transition-all duration-300"
                 >
-                  {reviewingProductId !== null && String(reviewingProductId) === String(product.id) ? (
+                  {reviewingProductId !== null &&
+                  String(reviewingProductId) === String(product.id) ? (
                     <div className="space-y-8">
                       <div className="flex items-center gap-6 mb-8 pb-8 border-b border-slate-50 dark:border-dark-border">
                         <div className="size-16 rounded-2xl bg-slate-50 dark:bg-dark-bg p-2 border border-slate-100 dark:border-dark-border">
@@ -197,7 +198,9 @@ const ReviewHistory = () => {
                           <h4 className="font-bold text-lg text-slate-900 dark:text-white">
                             {product.name}
                           </h4>
-                          <p className="text-[10px] font-black text-emerald-500 uppercase tracking-widest mt-1">Đang viết đánh giá...</p>
+                          <p className="text-[10px] font-black text-emerald-500 uppercase tracking-widest mt-1">
+                            Đang viết đánh giá...
+                          </p>
                         </div>
                         <button
                           onClick={() => setReviewingProductId(null)}
@@ -232,7 +235,7 @@ const ReviewHistory = () => {
                           </p>
                           <div className="size-1 bg-slate-200 dark:bg-dark-border rounded-full hidden sm:block"></div>
                           <p className="text-[11px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-[0.2em]">
-                            Ngày đặt: {new Date().toLocaleDateString('vi-VN')}
+                            Ngày đặt: {new Date().toLocaleDateString("vi-VN")}
                           </p>
                         </div>
                       </div>
@@ -291,7 +294,7 @@ const ReviewHistory = () => {
                           {review.product?.name}
                         </h4>
                         <Link
-                          to={`/product/${review.product?.id}`}
+                          to={`/product-detail/${review.product?.slug || review.product?.id}`}
                           className="inline-flex items-center gap-2 text-[11px] font-black text-primary dark:text-brand uppercase tracking-[0.2em] hover:underline bg-primary/5 dark:bg-brand/10 px-4 py-2 rounded-xl transition-all"
                         >
                           Chi tiết sản phẩm <FiPackage size={12} />
@@ -316,7 +319,10 @@ const ReviewHistory = () => {
                               ))}
                             </div>
                             <div className="flex items-center gap-2 text-slate-400 dark:text-dark-text-secondary bg-slate-50 dark:bg-dark-bg px-4 py-2 rounded-2xl border border-slate-100 dark:border-dark-border shadow-sm">
-                              <FiCalendar size={14} className="text-primary dark:text-brand" />
+                              <FiCalendar
+                                size={14}
+                                className="text-primary dark:text-brand"
+                              />
                               <span className="text-[11px] font-black uppercase tracking-[0.1em]">
                                 {new Date(review.createdAt).toLocaleDateString(
                                   "vi-VN",
@@ -338,7 +344,9 @@ const ReviewHistory = () => {
                         </div>
 
                         <div className="relative">
-                          <span className="absolute -top-4 -left-2 text-6xl text-slate-50 dark:text-dark-bg font-serif select-none">"</span>
+                          <span className="absolute -top-4 -left-2 text-6xl text-slate-50 dark:text-dark-bg font-serif select-none">
+                            "
+                          </span>
                           <p className="relative text-slate-600 dark:text-dark-text-primary text-lg leading-relaxed font-medium italic">
                             {review.comment}
                           </p>

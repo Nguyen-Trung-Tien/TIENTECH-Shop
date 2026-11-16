@@ -1,8 +1,9 @@
-﻿export const statusMap = {
+export const statusMap = {
   pending: { label: "Chờ xử lý", variant: "warning" },
   confirmed: { label: "Đã xác nhận", variant: "info" },
   processing: { label: "Đang xử lý", variant: "primary" },
   shipped: { label: "Đang giao", variant: "primary" },
+  shipping: { label: "Đang giao hàng", variant: "primary" },
   delivered: { label: "Đã giao", variant: "success" },
   completed: { label: "Đã nhận hàng", variant: "success" },
   cancelled: { label: "Đã hủy", variant: "danger" },

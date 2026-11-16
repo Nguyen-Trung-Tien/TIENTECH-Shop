@@ -2,12 +2,17 @@ const db = require("../../../models");
 const VoucherService = require("../../marketing/VoucherService");
 const SystemSettingService = require("../../system/SystemSettingService");
 const { sendOrderCreatedEmail } = require("../../common/EmailService");
-const { acquireLock, releaseLock, deleteCacheByPattern } = require("../../../config/redis");
+const {
+  acquireLock,
+  releaseLock,
+  deleteCacheByPattern,
+} = require("../../../config/redis");
 
 const createOrder = async (data, actor = null) => {
   // SECURITY: Always enforce effectiveUserId based on caller
+  const isElevated = actor && ["admin", "root"].includes(actor.role);
   let effectiveUserId = data.userId;
-  if (actor && actor.role !== "admin") {
+  if (actor && !isElevated) {
     effectiveUserId = actor.id;
   } else if (!effectiveUserId && actor) {
     effectiveUserId = actor.id;
@@ -25,7 +30,8 @@ const createOrder = async (data, actor = null) => {
   if (!lockToken) {
     return {
       errCode: 429,
-      errMessage: "Hệ thống đang xử lý đơn hàng của bạn, vui lòng không nhấn đặt hàng liên tục.",
+      errMessage:
+        "Hệ thống đang xử lý đơn hàng của bạn, vui lòng không nhấn đặt hàng liên tục.",
     };
   }
 
@@ -98,6 +104,7 @@ const createOrder = async (data, actor = null) => {
           };
         }
         await variant.decrement("stock", { by: quantity, transaction: t });
+        await product.decrement("totalStock", { by: quantity, transaction: t });
       } else {
         if (product.totalStock < quantity) {
           await t.rollback();
@@ -123,12 +130,17 @@ const createOrder = async (data, actor = null) => {
         unitPrice = Math.round(Number(product.flashSalePrice));
       } else if (variant) {
         const originalPrice = Number(variant.price || 0);
-        const discount = Number(variant.discount || 0) || Number(product.discount || 0);
-        unitPrice = Math.round(discount > 0 ? originalPrice * (1 - discount / 100) : originalPrice);
+        const discount =
+          Number(variant.discount || 0) || Number(product.discount || 0);
+        unitPrice = Math.round(
+          discount > 0 ? originalPrice * (1 - discount / 100) : originalPrice,
+        );
       } else {
         const basePrice = Number(product.basePrice || 0);
         const discount = Number(product.discount || 0);
-        unitPrice = Math.round(discount > 0 ? basePrice * (1 - discount / 100) : basePrice);
+        unitPrice = Math.round(
+          discount > 0 ? basePrice * (1 - discount / 100) : basePrice,
+        );
       }
 
       const subtotal = Number((unitPrice * quantity).toFixed(2));
@@ -140,9 +152,11 @@ const createOrder = async (data, actor = null) => {
         where: { productId: product.id },
         transaction: t,
       });
-      const primaryImage = productImages.find((img) => img.isPrimary) || productImages[0];
+      const primaryImage =
+        productImages.find((img) => img.isPrimary) || productImages[0];
       const variantImage = variant
-        ? productImages.find((img) => img.variantId === variant.id) || primaryImage
+        ? productImages.find((img) => img.variantId === variant.id) ||
+          primaryImage
         : primaryImage;
 
       formattedItems.push({
@@ -160,10 +174,30 @@ const createOrder = async (data, actor = null) => {
     let appliedVoucher = null;
 
     if (voucherCode) {
-      // SECURITY: Validate voucher strictly for the effective user
-      const voucherRes = await VoucherService.checkVoucher(voucherCode, calculatedTotal, effectiveUserId);
+      // SECURITY: Validate voucher strictly for the effective user and lock row to prevent race conditions
+      const voucherRes = await VoucherService.checkVoucher(
+        voucherCode,
+        calculatedTotal,
+        effectiveUserId,
+      );
       if (voucherRes.errCode === 0) {
-        appliedVoucher = await db.Voucher.findOne({ where: { code: voucherCode }, transaction: t });
+        appliedVoucher = await db.Voucher.findOne({
+          where: { code: voucherCode },
+          transaction: t,
+          lock: t.LOCK.UPDATE,
+        });
+        if (
+          !appliedVoucher ||
+          !appliedVoucher.isActive ||
+          (appliedVoucher.maxUsage != null &&
+            appliedVoucher.usedCount >= appliedVoucher.maxUsage)
+        ) {
+          await t.rollback();
+          return {
+            errCode: 1,
+            errMessage: "Voucher đã hết lượt sử dụng hoặc không còn hiệu lực.",
+          };
+        }
         discountAmount = voucherRes.data.discountAmount;
         await appliedVoucher.increment("usedCount", { by: 1, transaction: t });
       } else {
@@ -177,7 +211,7 @@ const createOrder = async (data, actor = null) => {
     // Check payment method settings
     const isPaymentEnabled = await SystemSettingService.getSetting(
       `PAYMENT_${selectedPaymentMethod.toUpperCase()}_ENABLED`,
-      true
+      true,
     );
     if (isPaymentEnabled === false || isPaymentEnabled === "false") {
       await t.rollback();
@@ -187,10 +221,20 @@ const createOrder = async (data, actor = null) => {
       };
     }
 
-    const defaultShippingFee = Number(await SystemSettingService.getSetting("DEFAULT_SHIPPING_FEE", 30000)) || 30000;
-    const freeshipThreshold = Number(await SystemSettingService.getSetting("FREESHIP_MIN_ORDER", 500000)) || 500000;
-    const shippingFee = calculatedTotal >= freeshipThreshold ? 0 : defaultShippingFee;
-    const finalTotal = Math.max(0, calculatedTotal + shippingFee - discountAmount);
+    const defaultShippingFee =
+      Number(
+        await SystemSettingService.getSetting("DEFAULT_SHIPPING_FEE", 30000),
+      ) || 30000;
+    const freeshipThreshold =
+      Number(
+        await SystemSettingService.getSetting("FREESHIP_MIN_ORDER", 500000),
+      ) || 500000;
+    const shippingFee =
+      calculatedTotal >= freeshipThreshold ? 0 : defaultShippingFee;
+    const finalTotal = Math.max(
+      0,
+      calculatedTotal + shippingFee - discountAmount,
+    );
 
     const order = await db.Order.create(
       {
@@ -211,7 +255,7 @@ const createOrder = async (data, actor = null) => {
       {
         include: [{ model: db.OrderItem, as: "orderItems" }],
         transaction: t,
-      }
+      },
     );
 
     if (voucherCode && appliedVoucher) {
@@ -223,12 +267,15 @@ const createOrder = async (data, actor = null) => {
           discountAmount,
           status: "used",
         },
-        { transaction: t }
+        { transaction: t },
       );
     }
 
     // SECURITY: Delete cart belonging only to the effective user
-    const cart = await db.Cart.findOne({ where: { userId: effectiveUserId }, transaction: t });
+    const cart = await db.Cart.findOne({
+      where: { userId: effectiveUserId },
+      transaction: t,
+    });
     if (cart) {
       await db.CartItem.destroy({
         where: { cartId: cart.id },
@@ -253,7 +300,7 @@ const createOrder = async (data, actor = null) => {
 
         const notifyUser = await SystemSettingService.getSetting(
           "EMAIL_NOTIFY_USER_ORDER_CREATED",
-          true
+          true,
         );
         if (notifyUser && user?.email) {
           await sendOrderCreatedEmail(user, order);

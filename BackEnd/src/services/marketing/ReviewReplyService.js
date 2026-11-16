@@ -51,7 +51,7 @@ const deleteReply = async (replyId, user) => {
     const reply = await db.ReviewReply.findByPk(replyId);
     if (!reply) return { errCode: 2, errMessage: "Reply không tồn tại" };
 
-    if (user.role !== "admin" && reply.userId !== user.id) {
+    if (!["admin", "root"].includes(user.role) && String(reply.userId) !== String(user.id)) {
       return { errCode: 3, errMessage: "Bạn không có quyền xóa reply này" };
     }
 

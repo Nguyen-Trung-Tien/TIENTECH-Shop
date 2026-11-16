@@ -1,25 +1,11 @@
 const express = require("express");
 const router = express.Router();
 const VoucherController = require("../controllers/VoucherController");
-const { authenticateToken, authorizeRole } = require("../middleware/authMiddleware");
-const { verifyAccessToken } = require("../utils/jwtHelper");
-
-// Middleware to optionally get user info from token
-const optionalAuthenticate = (req, res, next) => {
-  const authHeader = req.headers["authorization"];
-  let token = authHeader && authHeader.split(" ")[1];
-  if (!token) {
-    token = req.cookies?.accessToken;
-  }
-
-  if (token) {
-    const decoded = verifyAccessToken(token);
-    if (decoded) {
-      req.user = decoded;
-    }
-  }
-  next();
-};
+const {
+  authenticateToken,
+  optionalAuthenticateToken,
+  authorizeRole,
+} = require("../middleware/authMiddleware");
 
 const { validate } = require("../middleware/zodMiddleware");
 const { voucherSchema, checkVoucherSchema } = require("../utils/zodSchemas");
@@ -28,7 +14,7 @@ const { voucherSchema, checkVoucherSchema } = require("../utils/zodSchemas");
 router.get("/active", VoucherController.handleGetActiveVouchers);
 router.post(
   "/check", 
-  optionalAuthenticate, 
+  optionalAuthenticateToken, 
   validate(checkVoucherSchema), 
   VoucherController.handleCheckVoucher
 );

@@ -167,6 +167,7 @@ const getDiscountedProducts = async (page = 1, limit = 10) => {
       where: {
         isActive: true,
         [Op.or]: [
+          { discount: { [Op.gt]: 0 } },
           {
             isFlashSale: true,
             flashSaleStart: { [Op.lte]: now },

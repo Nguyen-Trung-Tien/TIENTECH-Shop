@@ -90,7 +90,7 @@ module.exports = (sequelize, DataTypes) => {
       address: { type: DataTypes.STRING, allowNull: true },
       password: { type: DataTypes.STRING, allowNull: true },
       role: {
-        type: DataTypes.ENUM("customer", "admin"),
+        type: DataTypes.ENUM("customer", "admin", "root"),
         defaultValue: "customer",
       },
       avatar: { type: DataTypes.STRING, allowNull: true },

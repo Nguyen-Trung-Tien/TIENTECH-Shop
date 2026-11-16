@@ -26,7 +26,10 @@ export const useProductList = (limit = 12) => {
   // Lấy các filter từ URL
   const filtersFromUrl = useMemo(() => {
     const isFlashSaleVal =
-      searchParams.get("isFlashSale") || searchParams.get("flashSale") || "";
+      searchParams.get("isFlashSale") ||
+      searchParams.get("flashSale") ||
+      searchParams.get("sale") ||
+      "";
 
     const filters = {
       search: searchParams.get("search") || "",
@@ -49,12 +52,16 @@ export const useProductList = (limit = 12) => {
       if (!filters.maxPrice) filters.maxPrice = max;
     }
 
-    // Nếu không có trong SearchParams nhưng có trong URL slug (trang Brand/Category)
-    if (!filters.brandId && isBrand && slug) {
-      filters.brand = slug;
+    // Nếu không có trong SearchParams nhưng có trong URL slug (trang Brand/Category) hoặc ?category= / ?brand=
+    const brandQuery = searchParams.get("brand");
+    const categoryQuery = searchParams.get("category");
+    if (!filters.brandId) {
+      if (isBrand && slug) filters.brand = slug;
+      else if (brandQuery) filters.brand = brandQuery;
     }
-    if (!filters.categoryId && isCategory && slug) {
-      filters.category = slug;
+    if (!filters.categoryId) {
+      if (isCategory && slug) filters.category = slug;
+      else if (categoryQuery) filters.category = categoryQuery;
     }
 
     // Thêm các thuộc tính động

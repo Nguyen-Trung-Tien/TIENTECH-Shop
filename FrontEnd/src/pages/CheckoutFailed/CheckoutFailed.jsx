@@ -1,5 +1,14 @@
-import React, { useEffect, useState, useRef } from "react";
-import { FiXCircle, FiHome, FiRotateCw, FiCreditCard, FiTruck, FiCheck, FiPackage, FiLoader } from "react-icons/fi";
+import React, { useEffect, useState, useRef, useCallback } from "react";
+import {
+  FiXCircle,
+  FiHome,
+  FiRotateCw,
+  FiCreditCard,
+  FiTruck,
+  FiCheck,
+  FiPackage,
+  FiLoader,
+} from "react-icons/fi";
 import { useNavigate, useParams } from "react-router-dom";
 import { motion as Motion } from "framer-motion";
 import { getOrderById, changePaymentMethod } from "../../api/orderApi";
@@ -16,21 +25,16 @@ const CheckoutFailed = () => {
   const [submitting, setSubmitting] = useState(false);
   const isSubmitting = useRef(false);
 
-  useEffect(() => {
-    document.title = "Thanh toán thất bại - TienTech Shop";
-    if (orderId) {
-      fetchOrderInfo(orderId);
-    }
-  }, [orderId]);
-
-  const fetchOrderInfo = async (idOrCode) => {
+  const fetchOrderInfo = useCallback(async (idOrCode) => {
     setFetchingOrder(true);
     try {
       const res = await getOrderById(idOrCode);
       if (res && res.errCode === 0 && res.data) {
         setOrder(res.data);
         // Nếu đơn hàng trước đó là online và thất bại, mặc định gợi ý COD
-        if (res.data.paymentMethod === "vnpay" || res.data.paymentMethod === "paypal") {
+        if (
+          ["vnpay", "paypal"].includes(res.data.paymentMethod?.toLowerCase())
+        ) {
           setSelectedMethod("cod");
         }
       }
@@ -39,7 +43,14 @@ const CheckoutFailed = () => {
     } finally {
       setFetchingOrder(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    document.title = "Thanh toán thất bại - TienTech Shop";
+    if (orderId) {
+      fetchOrderInfo(orderId);
+    }
+  }, [orderId, fetchOrderInfo]);
 
   const handleChangeAndRetry = async () => {
     if (isSubmitting.current || submitting) return;
@@ -63,17 +74,21 @@ const CheckoutFailed = () => {
       if (selectedMethod === "cod") {
         const changeRes = await changePaymentMethod(order.id, "cod");
         if (changeRes && changeRes.errCode === 0) {
-          showSuccessToast("Đã chuyển sang phương thức Thanh toán khi nhận hàng (COD)!");
+          showSuccessToast(
+            "Đã chuyển sang phương thức Thanh toán khi nhận hàng (COD)!",
+          );
           navigate("/checkout-success", { state: { order: changeRes.data } });
           return;
         } else {
-          showErrorToast(changeRes?.errMessage || "Không thể đổi phương thức thanh toán");
+          showErrorToast(
+            changeRes?.errMessage || "Không thể đổi phương thức thanh toán",
+          );
         }
       }
 
       // 2. Trường hợp thử lại bằng VNPAY
       if (selectedMethod === "vnpay") {
-        if (order.paymentMethod !== "vnpay") {
+        if (order.paymentMethod?.toLowerCase() !== "vnpay") {
           await changePaymentMethod(order.id, "vnpay");
         }
         const vnpayRes = await createVnpayPaymentApi({
@@ -85,7 +100,10 @@ const CheckoutFailed = () => {
           window.location.href = vnpayRes.data.paymentUrl;
           return;
         } else {
-          showErrorToast(vnpayRes?.errMessage || "Không thể tạo lại liên kết thanh toán VNPAY");
+          showErrorToast(
+            vnpayRes?.errMessage ||
+              "Không thể tạo lại liên kết thanh toán VNPAY",
+          );
         }
       }
     } catch (err) {
@@ -114,7 +132,12 @@ const CheckoutFailed = () => {
         <Motion.div
           initial={{ scale: 0, rotate: 45 }}
           animate={{ scale: 1, rotate: 0 }}
-          transition={{ type: "spring", stiffness: 220, damping: 15, delay: 0.15 }}
+          transition={{
+            type: "spring",
+            stiffness: 220,
+            damping: 15,
+            delay: 0.15,
+          }}
           className="size-16 bg-gradient-to-tr from-rose-600 to-red-500 rounded-2xl flex items-center justify-center text-white mx-auto mb-4 shadow-lg shadow-red-500/30"
         >
           <FiXCircle size={36} />
@@ -132,7 +155,9 @@ const CheckoutFailed = () => {
 
         {/* DESCRIPTION */}
         <p className="text-slate-600 dark:text-slate-400 text-xs md:text-sm leading-relaxed max-w-md mx-auto mb-5">
-          Giao dịch thanh toán chưa thể hoàn tất do lỗi mạng hoặc hủy bỏ. Đơn hàng của bạn vẫn được lưu giữ an toàn, bạn có thể đổi phương thức hoặc thử lại ngay bên dưới.
+          Giao dịch thanh toán chưa thể hoàn tất do lỗi mạng hoặc hủy bỏ. Đơn
+          hàng của bạn vẫn được lưu giữ an toàn, bạn có thể đổi phương thức hoặc
+          thử lại ngay bên dưới.
         </p>
 
         {/* ORDER INFO BOX */}
@@ -164,7 +189,8 @@ const CheckoutFailed = () => {
         {order && order.paymentStatus === "unpaid" && (
           <div className="mb-6 text-left space-y-3">
             <span className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
-              <FiCreditCard className="text-primary" /> Chọn Phương Thức Thanh Toán Khác:
+              <FiCreditCard className="text-primary" /> Chọn Phương Thức Thanh
+              Toán Khác:
             </span>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -191,7 +217,9 @@ const CheckoutFailed = () => {
                     <h4 className="text-xs font-black text-slate-900 dark:text-white">
                       Khi nhận hàng (COD)
                     </h4>
-                    {selectedMethod === "cod" && <FiCheck className="text-primary" />}
+                    {selectedMethod === "cod" && (
+                      <FiCheck className="text-primary" />
+                    )}
                   </div>
                   <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
                     Thanh toán tiền mặt khi giao
@@ -222,7 +250,9 @@ const CheckoutFailed = () => {
                     <h4 className="text-xs font-black text-slate-900 dark:text-white">
                       Cổng VNPAY (Thử lại)
                     </h4>
-                    {selectedMethod === "vnpay" && <FiCheck className="text-primary" />}
+                    {selectedMethod === "vnpay" && (
+                      <FiCheck className="text-primary" />
+                    )}
                   </div>
                   <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
                     Thẻ ATM / QR / Mobile
@@ -271,7 +301,9 @@ const CheckoutFailed = () => {
 
           <button
             type="button"
-            onClick={() => navigate(order ? `/orders-detail/${order.id}` : "/orders")}
+            onClick={() =>
+              navigate(order ? `/orders-detail/${order.id}` : "/orders")
+            }
             className="w-full sm:flex-1 py-3.5 px-5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-white font-bold text-xs uppercase tracking-wider rounded-xl border border-slate-200 dark:border-slate-700 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
           >
             <FiPackage className="text-base" /> Xem đơn hàng của tôi

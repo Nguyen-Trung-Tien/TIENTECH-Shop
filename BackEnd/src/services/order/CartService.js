@@ -42,7 +42,8 @@ const updateCart = async (id, data, userId) => {
   try {
     const cart = await db.Cart.findOne({ where: { id, userId } });
     if (!cart) throw new Error("Cart not found or not yours");
-    return await cart.update(data);
+    const { id: _id, userId: _userId, ...safeData } = data || {};
+    return await cart.update(safeData);
   } catch (error) {
     throw new Error(error.message || "Error from server");
   }
@@ -61,6 +62,10 @@ const deleteCart = async (id, userId) => {
 
 const validateCart = async (userId, items) => {
   try {
+    if (!Array.isArray(items)) {
+      return { errCode: 1, errMessage: "Danh sách sản phẩm không hợp lệ." };
+    }
+
     const validatedItems = [];
     let hasChanged = false;
     let totalAmount = 0;
@@ -82,7 +87,9 @@ const validateCart = async (userId, items) => {
 
       let variant = null;
       if (item.variantId) {
-        variant = await db.ProductVariant.findByPk(item.variantId);
+        variant = await db.ProductVariant.findOne({
+          where: { id: item.variantId, productId: product.id },
+        });
         if (!variant || !variant.isActive) {
           hasChanged = true;
           validatedItems.push({

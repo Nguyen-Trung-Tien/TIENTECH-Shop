@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { FiX, FiImage, FiEdit3, FiPlusCircle } from "react-icons/fi";
 import { motion as Motion, AnimatePresence } from "framer-motion";
 import UnifiedSpinner from "../../components/Loading/UnifiedSpinner";
@@ -18,14 +18,22 @@ const GenericAdminModal = ({
 }) => {
   const [formData, setFormData] = useState({});
   const [previews, setPreviews] = useState({});
+  const fieldsRef = useRef(fields);
+
+  useEffect(() => {
+    fieldsRef.current = fields;
+  }, [fields]);
 
   useEffect(() => {
     if (show) {
+      const activeFields = fieldsRef.current || [];
       if (editingItem) {
         const initialData = {};
         const initialPreviews = {};
-        fields.forEach((field) => {
-          initialData[field.name] = editingItem[field.name] || "";
+        activeFields.forEach((field) => {
+          initialData[field.name] =
+            editingItem[field.name] ??
+            (field.defaultValue !== undefined ? field.defaultValue : "");
           if (field.type === "image" && editingItem[field.name]) {
             initialPreviews[field.name] = editingItem[field.name];
           }
@@ -34,7 +42,7 @@ const GenericAdminModal = ({
         setPreviews(initialPreviews);
       } else {
         const resetData = {};
-        fields.forEach((field) => {
+        activeFields.forEach((field) => {
           resetData[field.name] =
             field.defaultValue !== undefined ? field.defaultValue : "";
         });
@@ -42,7 +50,7 @@ const GenericAdminModal = ({
         setPreviews({});
       }
     }
-  }, [show, editingItem, fields]);
+  }, [show, editingItem]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;

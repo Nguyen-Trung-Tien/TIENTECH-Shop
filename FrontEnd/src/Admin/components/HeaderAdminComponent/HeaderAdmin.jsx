@@ -45,7 +45,7 @@ const HeaderAdmin = ({ toggleSidebar, isCollapsed, theme, toggleTheme }) => {
 
   const reduxUser = useSelector((state) => state.user.user);
   const { data: resUser } = useCurrentUser();
-  const user = resUser?.data || reduxUser;
+  const user = reduxUser || resUser?.data;
 
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showCommandPalette, setShowCommandPalette] = useState(false);
@@ -104,7 +104,11 @@ const HeaderAdmin = ({ toggleSidebar, isCollapsed, theme, toggleTheme }) => {
           onClick={toggleSidebar}
           aria-label="Menu điều hướng quản trị"
           className="flex size-10 items-center justify-center rounded-xl text-slate-500 dark:text-dark-text-secondary hover:bg-slate-100 dark:hover:bg-dark-bg transition-colors cursor-pointer active:scale-95 border border-transparent hover:border-slate-200 dark:hover:border-dark-border"
-          title={isCollapsed ? "Mở rộng thanh điều hướng" : "Thu gọn thanh điều hướng"}
+          title={
+            isCollapsed
+              ? "Mở rộng thanh điều hướng"
+              : "Thu gọn thanh điều hướng"
+          }
         >
           <FiMenu className="text-xl" />
         </button>
@@ -115,7 +119,10 @@ const HeaderAdmin = ({ toggleSidebar, isCollapsed, theme, toggleTheme }) => {
           className="flex items-center gap-2 cursor-pointer hover:opacity-85 transition-opacity shrink-0"
           title="Về trang chủ TienTech Shop"
         >
-          <Logo size="sm" className="[&>div:last-child]:hidden sm:[&>div:last-child]:flex" />
+          <Logo
+            size="sm"
+            className="[&>div:last-child]:hidden sm:[&>div:last-child]:flex"
+          />
         </Link>
 
         {/* Dynamic Breadcrumbs */}
@@ -140,7 +147,9 @@ const HeaderAdmin = ({ toggleSidebar, isCollapsed, theme, toggleTheme }) => {
         >
           <div className="flex items-center gap-2.5 min-w-0">
             <FiSearch className="text-slate-400 group-hover:text-primary transition-colors text-sm shrink-0" />
-            <span className="truncate font-medium">Tìm sản phẩm, đơn hàng, khách hàng...</span>
+            <span className="truncate font-medium">
+              Tìm sản phẩm, đơn hàng, khách hàng...
+            </span>
           </div>
           <span className="px-1.5 py-0.5 text-[9px] font-mono font-black text-slate-400 dark:text-dark-text-secondary bg-white dark:bg-dark-card rounded border border-slate-200 dark:border-dark-border shadow-xs shrink-0 group-hover:border-primary/40">
             Ctrl K
@@ -176,7 +185,11 @@ const HeaderAdmin = ({ toggleSidebar, isCollapsed, theme, toggleTheme }) => {
           type="button"
           onClick={toggleTheme}
           className="flex size-9 sm:size-10 items-center justify-center rounded-xl bg-slate-100/70 dark:bg-dark-bg/70 text-slate-600 dark:text-dark-text-secondary border border-slate-200/80 dark:border-dark-border hover:text-primary transition-all cursor-pointer active:scale-95"
-          title={theme === "dark" ? "Chuyển sang chế độ sáng" : "Chuyển sang chế độ tối"}
+          title={
+            theme === "dark"
+              ? "Chuyển sang chế độ sáng"
+              : "Chuyển sang chế độ tối"
+          }
           aria-label="Chuyển chế độ màu sắc"
         >
           {theme === "dark" ? (

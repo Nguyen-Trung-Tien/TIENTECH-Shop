@@ -16,14 +16,24 @@ function buildSignData(params) {
   return Object.keys(params)
     .sort()
     .map(
-      (key) => `${key}=${encodeURIComponent(params[key]).replace(/%20/g, "+")}`
+      (key) => `${key}=${encodeURIComponent(params[key]).replace(/%20/g, "+")}`,
     )
     .join("&");
 }
 
+function isValidSignature(secureHash, generatedHash) {
+  if (typeof secureHash !== "string" || typeof generatedHash !== "string") {
+    return false;
+  }
+  const a = Buffer.from(secureHash, "utf8");
+  const b = Buffer.from(generatedHash, "utf8");
+  if (a.length !== b.length) return false;
+  return crypto.timingSafeEqual(a, b);
+}
+
 const handleCreateVnpayPayment = async (req, res) => {
   try {
-    const { amount, orderCode } = req.body;
+    const { orderCode } = req.body;
 
     if (!orderCode) {
       return res.status(400).json({
@@ -43,6 +53,19 @@ const handleCreateVnpayPayment = async (req, res) => {
 
     const order = orderResult.data;
 
+    // SECURITY: Verify order ownership
+    const isElevated = req.user && ["admin", "root"].includes(req.user.role);
+    if (
+      req.user &&
+      !isElevated &&
+      String(order.userId) !== String(req.user.id)
+    ) {
+      return res.status(403).json({
+        errCode: 403,
+        message: "Forbidden: You do not own this order",
+      });
+    }
+
     // Không cho phép thanh toán lại đơn đã trả tiền
     if (order.paymentStatus === "paid") {
       return res.status(400).json({
@@ -51,13 +74,13 @@ const handleCreateVnpayPayment = async (req, res) => {
       });
     }
 
-    // Ưu tiên dùng giá từ DB để bảo mật, nếu không có thì dùng amount từ client gửi lên (ép kiểu)
-    const secureAmount = order.totalPrice || amount;
+    // SECURITY: Luôn lấy giá trị từ Database, tuyệt đối không fallback về amount từ client
+    const secureAmount = Number(order.totalPrice);
 
-    if (!secureAmount) {
+    if (!Number.isFinite(secureAmount) || secureAmount <= 0) {
       return res.status(400).json({
         errCode: 3,
-        message: "Payment amount is missing",
+        message: "Invalid order payment amount",
       });
     }
 
@@ -150,7 +173,7 @@ const handleVnpayReturn = async (req, res) => {
       .digest("hex");
 
     // SAI CHỮ KÝ
-    if (secureHash !== generatedHash) {
+    if (!isValidSignature(secureHash, generatedHash)) {
       return res.status(400).json({
         errCode: 2,
         message: "Invalid VNPay signature",
@@ -160,6 +183,7 @@ const handleVnpayReturn = async (req, res) => {
     // LẤY THÔNG TIN
     const orderCode = vnp_Params.vnp_TxnRef;
     const rspCode = vnp_Params.vnp_ResponseCode;
+    const vnpAmount = Number(vnp_Params.vnp_Amount);
 
     // TÌM ORDER THEO orderCode
     const orderResult = await OrderService.getOrderByCode(orderCode);
@@ -172,6 +196,17 @@ const handleVnpayReturn = async (req, res) => {
 
     const order = orderResult.data;
 
+    // Kiểm tra số tiền khớp với đơn hàng trong DB
+    if (
+      !Number.isFinite(vnpAmount) ||
+      Math.round(Number(order.totalPrice) * 100) !== vnpAmount
+    ) {
+      return res.status(400).json({
+        errCode: 4,
+        message: "Invalid payment amount",
+      });
+    }
+
     // THANH TOÁN THÀNH CÔNG
     if (rspCode === "00") {
       const PaymentService = require("../services/order/PaymentService");
@@ -180,18 +215,21 @@ const handleVnpayReturn = async (req, res) => {
         transactionId: vnp_Params.vnp_TransactionNo,
         method: "vnpay",
         note: "VNPay Return Auto Confirm",
+        amount: vnpAmount,
       });
 
       return res.redirect(
-        `${process.env.FRONTEND_URL}/checkout-success/${orderCode}`
+        `${process.env.FRONTEND_URL}/checkout-success/${orderCode}`,
       );
     }
 
-    // THANH TOÁN THẤT BẠI
-    await OrderService.updatePaymentStatus(order.id, "unpaid");
+    // THANH TOÁN THẤT BẠI (Không ghi đè nếu đơn hàng đã được xác nhận thanh toán qua IPN)
+    if (order.paymentStatus !== "paid") {
+      await OrderService.updatePaymentStatus(order.id, "unpaid");
+    }
 
     return res.redirect(
-      `${process.env.FRONTEND_URL}/checkout-failed/${orderCode}`
+      `${process.env.FRONTEND_URL}/checkout-failed/${orderCode}`,
     );
   } catch (err) {
     console.error("VNPay Return Error:", err);
@@ -219,8 +257,10 @@ const handleVnpayIPN = async (req, res) => {
       .update(signData, "utf-8")
       .digest("hex");
 
-    if (secureHash !== generatedHash) {
-      return res.status(200).json({ RspCode: "97", Message: "Invalid checksum" });
+    if (!isValidSignature(secureHash, generatedHash)) {
+      return res
+        .status(200)
+        .json({ RspCode: "97", Message: "Invalid checksum" });
     }
 
     const orderCode = vnp_Params.vnp_TxnRef;
@@ -229,7 +269,9 @@ const handleVnpayIPN = async (req, res) => {
 
     const orderResult = await OrderService.getOrderByCode(orderCode);
     if (orderResult.errCode !== 0 || !orderResult.data) {
-      return res.status(200).json({ RspCode: "01", Message: "Order not found" });
+      return res
+        .status(200)
+        .json({ RspCode: "01", Message: "Order not found" });
     }
 
     const order = orderResult.data;
@@ -241,7 +283,9 @@ const handleVnpayIPN = async (req, res) => {
 
     // Kiểm tra trạng thái đơn hàng (tránh update lại đơn đã xong)
     if (order.paymentStatus === "paid") {
-      return res.status(200).json({ RspCode: "02", Message: "Order already confirmed" });
+      return res
+        .status(200)
+        .json({ RspCode: "02", Message: "Order already confirmed" });
     }
 
     if (rspCode === "00") {
@@ -255,15 +299,23 @@ const handleVnpayIPN = async (req, res) => {
       });
 
       if (confirmRes.errCode === 0) {
-        return res.status(200).json({ RspCode: "00", Message: "Confirm Success" });
+        return res
+          .status(200)
+          .json({ RspCode: "00", Message: "Confirm Success" });
       } else if (confirmRes.errCode === 4) {
-        return res.status(200).json({ RspCode: "04", Message: "Invalid amount" });
+        return res
+          .status(200)
+          .json({ RspCode: "04", Message: "Invalid amount" });
       } else {
-        return res.status(200).json({ RspCode: "02", Message: "Order already confirmed" });
+        return res
+          .status(200)
+          .json({ RspCode: "02", Message: "Order already confirmed" });
       }
     } else {
       // Thất bại
-      return res.status(200).json({ RspCode: "00", Message: "Confirm Success (Payment Failed)" });
+      return res
+        .status(200)
+        .json({ RspCode: "00", Message: "Confirm Success (Payment Failed)" });
     }
   } catch (err) {
     console.error("VNPay IPN Error:", err);

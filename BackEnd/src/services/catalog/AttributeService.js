@@ -110,9 +110,25 @@ const getAllAttributesForAdmin = async () => {
   }
 };
 
+const getAttributeByCode = async (code) => {
+  try {
+    const attribute = await db.Attribute.findOne({
+      where: { code },
+      include: [{ model: db.AttributeValue, as: "values" }],
+    });
+    if (!attribute) {
+      return { errCode: 1, statusCode: 404, errMessage: "Không tìm thấy thuộc tính" };
+    }
+    return { errCode: 0, data: attribute };
+  } catch (error) {
+    return { errCode: -1, statusCode: 500, errMessage: error.message };
+  }
+};
+
 module.exports = {
   getOrCreateAttributeValue,
   assignAttributesToProduct,
   assignAttributesToVariant,
-  getAllAttributesForAdmin
+  getAllAttributesForAdmin,
+  getAttributeByCode,
 };

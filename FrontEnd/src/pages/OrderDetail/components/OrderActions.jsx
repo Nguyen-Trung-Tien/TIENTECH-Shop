@@ -41,7 +41,7 @@ const OrderActions = ({
 
   return (
     <div className="space-y-3 print:hidden">
-      {["pending", "confirmed"].includes(order.status) && (
+      {["pending", "confirmed", "processing", "shipped", "shipping"].includes(order.status) && (
         <Button
           variant="destructive"
           className="w-full"
@@ -49,7 +49,7 @@ const OrderActions = ({
           icon={FiXCircle}
           onClick={onOpenCancelModal}
         >
-          HỦY ĐƠN HÀNG
+          {order.status === "pending" ? "HỦY ĐƠN HÀNG" : "YÊU CẦU HỦY ĐƠN"}
         </Button>
       )}
       {order.status === "delivered" && (

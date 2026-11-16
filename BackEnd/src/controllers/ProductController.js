@@ -2,6 +2,7 @@ const ProductService = require("../services/product/ProductService");
 const { uploadToCloudinary } = require("../config/cloudinaryConfig");
 const { handleError, handleResponse } = require("../utils/controllerHelper");
 const { sanitizeProductInput } = require("../utils/productInputParser");
+const { validateImageBuffer } = require("../utils/imageValidator");
 
 const handleCreateProduct = async (req, res) => {
   try {
@@ -18,6 +19,9 @@ const handleCreateProduct = async (req, res) => {
     const imageRecords = [];
 
     if (primaryFile) {
+      if (!validateImageBuffer(primaryFile.buffer)) {
+        return res.status(400).json({ errCode: 2, errMessage: "Ảnh sản phẩm không hợp lệ (magic bytes mismatch)." });
+      }
       const uploaded = await uploadToCloudinary(primaryFile.buffer, "products");
       imageRecords.push({ imageUrl: uploaded.secure_url, publicId: uploaded.public_id, isPrimary: true });
     } else if (data.image && typeof data.image === "string" && data.image.trim()) {
@@ -26,6 +30,9 @@ const handleCreateProduct = async (req, res) => {
 
     if (galleryFiles.length > 0) {
       for (const file of galleryFiles) {
+        if (!validateImageBuffer(file.buffer)) {
+          return res.status(400).json({ errCode: 2, errMessage: "Ảnh chi tiết sản phẩm không hợp lệ (magic bytes mismatch)." });
+        }
         const uploaded = await uploadToCloudinary(file.buffer, "products/gallery");
         imageRecords.push({ imageUrl: uploaded.secure_url, publicId: uploaded.public_id, isPrimary: false });
       }
@@ -48,7 +55,7 @@ const handleGetAllProducts = catchAsync(async (req, res, next) => {
   const isFlashSale =
     req.query.isFlashSale === "true" || req.query.isFlashSale === "1";
   
-  const isAdmin = req.user && req.user.role === "admin";
+  const isAdmin = Boolean(req.user && ["admin", "root"].includes(req.user.role));
 
   const result = await ProductService.getAllProducts(
     categoryId,
@@ -87,6 +94,9 @@ const handleUpdateProduct = async (req, res) => {
     const imageRecords = [];
 
     if (primaryFile) {
+      if (!validateImageBuffer(primaryFile.buffer)) {
+        return res.status(400).json({ errCode: 2, errMessage: "Ảnh sản phẩm không hợp lệ (magic bytes mismatch)." });
+      }
       const uploaded = await uploadToCloudinary(primaryFile.buffer);
       data.image = uploaded.secure_url;
       imageRecords.push({
@@ -98,6 +108,9 @@ const handleUpdateProduct = async (req, res) => {
 
     if (galleryFiles.length > 0) {
       for (const file of galleryFiles) {
+        if (!validateImageBuffer(file.buffer)) {
+          return res.status(400).json({ errCode: 2, errMessage: "Ảnh chi tiết sản phẩm không hợp lệ (magic bytes mismatch)." });
+        }
         const uploaded = await uploadToCloudinary(file.buffer, "products/gallery");
         imageRecords.push({
           imageUrl: uploaded.secure_url,
@@ -217,6 +230,10 @@ const handleFilterProducts = async (req, res) => {
     const page = Math.max(1, Number(req.query.page) || 1);
     const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 12));
 
+    const isElevated = Boolean(req.user && ["admin", "root"].includes(req.user.role));
+    const effectiveIsAdmin =
+      isElevated && (isAdmin === "true" || isAdmin === "1" || isAdmin === true);
+
     const filters = {
       brandId,
       categoryId,
@@ -233,7 +250,7 @@ const handleFilterProducts = async (req, res) => {
       os,
       refresh_rate,
       isFlashSale: isFlashSale !== undefined ? isFlashSale : flashSale,
-      isAdmin,
+      isAdmin: effectiveIsAdmin,
       page: Number(page),
       limit: Number(limit),
     };

@@ -259,7 +259,7 @@ const getSmartRecommendations = async (productId, limit = 6) => {
       const productIds = frequentProductData.map((item) => item.productId);
       if (productIds.length > 0) {
         const products = await db.Product.findAll({
-          where: { id: { [Op.in]: productIds } },
+          where: { id: { [Op.in]: productIds }, isActive: true },
           attributes: ["id", "name", "slug", "basePrice", "discount"],
           include: [
             {

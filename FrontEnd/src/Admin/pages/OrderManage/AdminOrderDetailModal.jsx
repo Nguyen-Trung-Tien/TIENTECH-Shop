@@ -167,7 +167,8 @@ const AdminOrderDetailModal = ({ order, isOpen, onClose, onOrderUpdated }) => {
                     : "bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-900/40"
                 }`}
               >
-                {paymentStatusMap[order.paymentStatus]?.text ||
+                {paymentStatusMap[order.paymentStatus]?.label ||
+                  paymentStatusMap[order.paymentStatus]?.text ||
                   order.paymentStatus}
               </span>
             </div>
@@ -316,23 +317,23 @@ const AdminOrderDetailModal = ({ order, isOpen, onClose, onOrderUpdated }) => {
               <h4 className="text-xs font-black uppercase tracking-wider text-slate-400 dark:text-dark-text-secondary flex items-center gap-2">
                 <FiUser className="text-primary" /> Thông tin khách hàng
               </h4>
-              <div className="space-y-1.5 text-xs text-slate-700 dark:text-dark-text-primary">
-                <p className="font-bold text-slate-900 dark:text-white">
+              <div className="space-y-1.5 text-xs text-slate-700 dark:text-dark-text-primary min-w-0">
+                <p className="font-bold text-slate-900 dark:text-white break-words [overflow-wrap:anywhere]">
                   {order.receiverName ||
                     order.user?.username ||
                     "Khách vãng lai"}
                 </p>
-                <p className="flex items-center gap-1.5 text-slate-500 dark:text-dark-text-secondary">
-                  <FiPhone size={13} />{" "}
+                <p className="flex items-center gap-1.5 text-slate-500 dark:text-dark-text-secondary break-words [overflow-wrap:anywhere]">
+                  <FiPhone size={13} className="shrink-0" />{" "}
                   {order.receiverPhone || order.shippingPhone || "Chưa có SĐT"}
                 </p>
-                <p className="text-slate-500 dark:text-dark-text-secondary">
+                <p className="text-slate-500 dark:text-dark-text-secondary break-words [overflow-wrap:anywhere]">
                   Email: {order.user?.email || "N/A"}
                 </p>
               </div>
             </div>
 
-            <div className="p-4 sm:p-5 rounded-2xl bg-slate-50/60 dark:bg-dark-bg/40 border border-slate-100 dark:border-dark-border space-y-2.5">
+            <div className="p-4 sm:p-5 rounded-2xl bg-slate-50/60 dark:bg-dark-bg/40 border border-slate-100 dark:border-dark-border space-y-2.5 min-w-0">
               <h4 className="text-xs font-black uppercase tracking-wider text-slate-400 dark:text-dark-text-secondary flex items-center gap-2">
                 <FiMapPin className="text-primary" /> Địa chỉ giao hàng
               </h4>
@@ -340,7 +341,7 @@ const AdminOrderDetailModal = ({ order, isOpen, onClose, onOrderUpdated }) => {
                 {order.shippingAddress || "Chưa cập nhật địa chỉ"}
               </p>
               {order.note && (
-                <p className="text-[11px] text-amber-600 dark:text-amber-400 italic">
+                <p className="text-[11px] text-amber-600 dark:text-amber-400 italic break-words [overflow-wrap:anywhere]">
                   <span className="font-bold">Ghi chú:</span> {order.note}
                 </p>
               )}
@@ -508,7 +509,7 @@ const AdminOrderDetailModal = ({ order, isOpen, onClose, onOrderUpdated }) => {
                   {order.confirmationHistory.map((hist, idx) => (
                     <div key={idx} className="relative pl-4 text-xs">
                       <span className="absolute -left-[21px] top-1 size-2 rounded-full bg-primary ring-4 ring-white dark:ring-dark-surface" />
-                      <p className="font-bold text-slate-800 dark:text-slate-200">
+                      <p className="font-bold text-slate-800 dark:text-slate-200 break-words [overflow-wrap:anywhere]">
                         {hist.status || hist.action || "Cập nhật trạng thái"}
                         {hist.reason ? ` - ${hist.reason}` : ""}
                       </p>

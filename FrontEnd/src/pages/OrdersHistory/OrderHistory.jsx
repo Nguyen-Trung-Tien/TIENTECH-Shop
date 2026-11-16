@@ -32,6 +32,7 @@ const OrderHistoryPage = () => {
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
   const limit = 10;
 
   const [selectedOrderForReview, setSelectedOrderForReview] = useState(null);
@@ -46,6 +47,7 @@ const OrderHistoryPage = () => {
       if (res?.errCode === 0) {
         setOrders(res.data || []);
         setTotalPages(res.pagination?.totalPages || 1);
+        setTotalItems(res.pagination?.totalItems ?? (res.data?.length || 0));
       }
     } catch (err) {
       console.error(err);
@@ -96,7 +98,7 @@ const OrderHistoryPage = () => {
           <div className="flex items-center gap-2 bg-white dark:bg-dark-surface px-4 py-2 rounded-2xl border border-surface-200 dark:border-dark-border shadow-sm">
             <FiClock className="text-primary dark:text-brand" />
             <span className="text-sm font-bold text-surface-700 dark:text-white">
-              Tổng số: {orders.length} đơn hàng
+              Tổng số: {totalItems} đơn hàng
             </span>
           </div>
         </div>
@@ -149,7 +151,10 @@ const OrderHistoryPage = () => {
                     {o.orderItems?.map((i) => {
                       const p = i.product;
                       return (
-                        <div key={i.id} className="flex flex-col sm:flex-row gap-4 md:gap-6 min-w-0">
+                        <div
+                          key={i.id}
+                          className="flex flex-col sm:flex-row gap-4 md:gap-6 min-w-0"
+                        >
                           <div className="size-20 md:w-24 md:h-24 bg-surface-50 dark:bg-dark-bg rounded-2xl border border-surface-100 dark:border-dark-border p-2 flex-shrink-0 group-hover:border-primary/10 dark:group-hover:border-brand/10 transition-colors flex items-center justify-center overflow-hidden">
                             <img
                               src={getProductImage(i)}
@@ -159,9 +164,9 @@ const OrderHistoryPage = () => {
                               loading="lazy"
                             />
                           </div>
-                          <div className="flex-grow min-w-0 py-1">
+                          <div className="flex-1 min-w-0 py-1">
                             <ClickableText
-                              className="text-base md:text-lg font-bold text-surface-900 dark:text-white line-clamp-2 break-words hover:text-primary dark:hover:text-brand transition-colors cursor-pointer"
+                              className="text-base md:text-lg font-bold text-surface-900 dark:text-white line-clamp-2 break-words [overflow-wrap:anywhere] hover:text-primary dark:hover:text-brand transition-colors cursor-pointer"
                               onClick={() => navigate(`/orders-detail/${o.id}`)}
                             >
                               {p?.name || i.productName}
@@ -242,24 +247,35 @@ const OrderHistoryPage = () => {
                           XÁC NHẬN
                         </Button>
                       )}
-                      {["delivered", "completed", "cancelled"].includes(o.status) && (
+                      {["delivered", "completed", "cancelled"].includes(
+                        o.status,
+                      ) && (
                         <Button
                           variant="secondary"
                           size="md"
                           className="flex-1 sm:flex-none !rounded-2xl text-xs font-bold uppercase tracking-wider px-5 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900/30 hover:bg-emerald-500 hover:text-white transition-all cursor-pointer"
                           icon={FiRotateCcw}
                           onClick={async () => {
-                            const { addCart } = await import("../../api/cartApi");
+                            const { addCart } =
+                              await import("../../api/cartApi");
                             try {
                               for (const item of o.orderItems || []) {
                                 if (item.productId) {
-                                  await addCart({ productId: item.productId, quantity: item.quantity || 1 });
+                                  await addCart({
+                                    productId: item.productId,
+                                    quantity: item.quantity || 1,
+                                  });
                                 }
                               }
-                              showSuccessToast("Đã thêm các sản phẩm vào giỏ hàng!");
+                              showSuccessToast(
+                                "Đã thêm các sản phẩm vào giỏ hàng!",
+                              );
                               navigate("/cart");
                             } catch (err) {
-                              showErrorToast(err, "Một số sản phẩm không thể thêm vào giỏ hàng để mua lại");
+                              showErrorToast(
+                                err,
+                                "Một số sản phẩm không thể thêm vào giỏ hàng để mua lại",
+                              );
                             }
                           }}
                         >
@@ -281,11 +297,12 @@ const OrderHistoryPage = () => {
                   </div>
                   {/* Cancel Reason Display in List */}
                   {o.cancelReason && (
-                    <div className="mt-4 p-4 bg-rose-50 dark:bg-rose-900/10 border border-rose-100 dark:border-rose-900/20 rounded-2xl">
+                    <div className="mt-4 p-4 bg-rose-50 dark:bg-rose-900/10 border border-rose-100 dark:border-rose-900/20 rounded-2xl min-w-0 overflow-hidden">
                       <p className="text-[10px] font-black text-rose-600 dark:text-rose-400 uppercase tracking-widest mb-1 flex items-center gap-2">
-                        <FiAlertTriangle size={12} /> Lý do hủy đơn
+                        <FiAlertTriangle size={12} className="shrink-0" /> Lý do
+                        hủy đơn
                       </p>
-                      <p className="text-sm text-rose-700 dark:text-rose-300 font-medium italic">
+                      <p className="text-sm text-rose-700 dark:text-rose-300 font-medium italic break-words [overflow-wrap:anywhere]">
                         "{o.cancelReason}"
                       </p>
                     </div>

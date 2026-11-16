@@ -13,16 +13,16 @@ const { aiApiLimiter } = require("../middleware/rateLimiter");
 
 router.post(
   "/create-new-product",
+  authenticateToken,
+  authorizeRole(["admin"]),
   upload.fields([
     { name: "image", maxCount: 1 },
     { name: "images", maxCount: 20 },
   ]),
-  authenticateToken,
-  authorizeRole(["admin"]),
   validate(createProductSchema),
   ProductController.handleCreateProduct,
 );
-router.get("/get-all-product", ProductController.handleGetAllProducts);
+router.get("/get-all-product", optionalAuthenticateToken, ProductController.handleGetAllProducts);
 router.get("/home-data", ProductController.handleGetHomePageData);
 router.get("/get-product/:id", ProductController.handleGetProductById);
 router.get("/get-product-by-slug/:slug", ProductController.handleGetProductBySlug);
@@ -31,12 +31,12 @@ router.get("/search-suggest", ProductController.handleSearchSuggestions);
 
 router.put(
   "/update-product/:id",
+  authenticateToken,
+  authorizeRole(["admin"]),
   upload.fields([
     { name: "image", maxCount: 1 },
     { name: "images", maxCount: 20 },
   ]),
-  authenticateToken,
-  authorizeRole(["admin"]),
   validate(updateProductSchema),
   ProductController.handleUpdateProduct,
 );
@@ -49,7 +49,7 @@ router.delete(
 
 router.get("/discounted", ProductController.handleGetDiscountedProducts);
 router.get("/flash-sale", ProductController.handleGetFlashSaleProducts);
-router.get("/filter", ProductController.handleFilterProducts);
+router.get("/filter", optionalAuthenticateToken, ProductController.handleFilterProducts);
 router.get("/recommend/:id", aiApiLimiter, ProductController.handleRecommendProducts);
 router.get("/smart-recommendations/:id", aiApiLimiter, ProductController.handleGetSmartRecommendations);
 router.get("/personalized", optionalAuthenticateToken, ProductController.handleGetPersonalizedRecommendations);

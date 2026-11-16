@@ -35,11 +35,8 @@ const registerSchema = z.object({
     .object({
       email: z.string().email("Email không hợp lệ"),
       password: z
-        .string()
-        .min(6, "Mật khẩu phải ít nhất 6 ký tự")
-        .optional()
-        .or(z.literal(""))
-        .default("123456"),
+        .string({ required_error: "Mật khẩu là bắt buộc" })
+        .min(6, "Mật khẩu phải ít nhất 6 ký tự"),
       username: z
         .string()
         .min(3, "Tên người dùng phải có ít nhất 3 ký tự")

@@ -41,10 +41,10 @@ const OrderItemsList = ({ order, onOpenReturnModal, onCancelReturn }) => {
                   loading="lazy"
                 />
               </div>
-              <div className="flex-grow min-w-0">
+              <div className="flex-1 min-w-0">
                 <Link
-                  to={`/product-detail/${item.product?.slug}`}
-                  className="text-base sm:text-lg font-bold text-slate-900 dark:text-white hover:text-primary transition-colors line-clamp-2 break-words mb-1"
+                  to={`/product-detail/${item.product?.slug || item.product?.id || item.productId}`}
+                  className="text-base sm:text-lg font-bold text-slate-900 dark:text-white hover:text-primary transition-colors line-clamp-2 break-words [overflow-wrap:anywhere] mb-1"
                 >
                   {item.productName}
                 </Link>

@@ -67,7 +67,7 @@ const handleClearAllNotifications = async (req, res) => {
 
 const handleSendBroadcastNotification = async (req, res) => {
   try {
-    if (req.user.role !== "admin") {
+    if (!["admin", "root"].includes(req.user.role)) {
       return res.status(403).json({
         status: "FORBIDDEN",
         statusCode: 403,

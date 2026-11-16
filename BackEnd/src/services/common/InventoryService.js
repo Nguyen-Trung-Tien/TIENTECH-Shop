@@ -31,12 +31,33 @@ Trả về JSON THUẦN:
 }
     `;
 
-    const result = await generateContentWithFallback(context, {
-      generationConfig: { responseMimeType: "application/json" },
-    });
-    const aiResponse = JSON.parse(result.response.text().replace(/```json/gi, "").replace(/```/g, "").trim());
+    let alerts = [];
+    try {
+      const result = await generateContentWithFallback(context, {
+        generationConfig: { responseMimeType: "application/json" },
+      });
+      const rawText = result.response.text().replace(/```json/gi, "").replace(/```/g, "").trim();
+      const match = rawText.match(/\{[\s\S]*\}/);
+      const aiResponse = JSON.parse(match ? match[0] : rawText);
+      if (Array.isArray(aiResponse?.alerts)) {
+        alerts = aiResponse.alerts;
+      }
+    } catch (aiErr) {
+      console.warn("InventoryService AI fallback activated:", aiErr?.message);
+    }
 
-    for (const alert of aiResponse.alerts) {
+    if (alerts.length === 0) {
+      alerts = lowStockProducts.map((p) => ({
+        productId: p.id,
+        priority: p.totalStock <= 3 ? "HIGH" : p.totalStock <= 6 ? "MEDIUM" : "LOW",
+        reason:
+          p.sold >= 20
+            ? `Sản phẩm bán chạy (${p.sold} đã bán) nhưng tồn kho sắp cạn`
+            : "Tồn kho xuống dưới ngưỡng an toàn (10 sản phẩm)",
+      }));
+    }
+
+    for (const alert of alerts) {
       const product = lowStockProducts.find(p => p.id === alert.productId);
       if (product) {
         await NotificationService.createNotification({
@@ -49,7 +70,7 @@ Trả về JSON THUẦN:
       }
     }
 
-    return { errCode: 0, message: "Đã gửi cảnh báo tồn kho.", data: aiResponse.alerts };
+    return { errCode: 0, message: "Đã gửi cảnh báo tồn kho.", data: alerts };
   } catch (error) {
     console.error("InventoryService Error:", error);
     return { errCode: -1, errMessage: "Lỗi kiểm tra tồn kho." };

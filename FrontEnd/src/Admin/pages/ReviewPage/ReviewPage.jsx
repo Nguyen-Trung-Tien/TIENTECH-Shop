@@ -85,8 +85,10 @@ const ReviewPage = () => {
           [reviewId]: [...(prev[reviewId] || []), res.data],
         }));
         setReplyInputs((p) => ({ ...p, [reviewId]: "" }));
+        toast.success("Đã phản hồi");
+      } else {
+        toast.error(res?.errMessage || "Phản hồi thất bại");
       }
-      toast.success("Đã phản hồi");
     } catch {
       toast.error("Phản hồi thất bại");
     }
@@ -246,7 +248,7 @@ const ReviewPage = () => {
                 </div>
 
                 {/* Comment Content */}
-                <div className="mb-6 p-4 bg-slate-50/50 dark:bg-dark-bg/50 rounded-2xl border border-slate-100 dark:border-dark-border text-slate-600 dark:text-slate-300 text-sm leading-relaxed font-medium">
+                <div className="mb-6 p-4 bg-slate-50/50 dark:bg-dark-bg/50 rounded-2xl border border-slate-100 dark:border-dark-border text-slate-600 dark:text-slate-300 text-sm leading-relaxed font-medium break-words [overflow-wrap:anywhere]">
                   {review.comment}
                 </div>
 
@@ -263,8 +265,8 @@ const ReviewPage = () => {
                       className="bg-slate-50/30 dark:bg-dark-bg/20 p-4 rounded-2xl relative group/reply border border-transparent dark:border-dark-border/30"
                     >
                       <FiCornerDownRight className="absolute -left-8 top-5 text-slate-200 dark:text-slate-700" />
-                      <div className="flex justify-between items-start gap-4">
-                        <p className="text-sm text-slate-600 dark:text-slate-300">
+                      <div className="flex justify-between items-start gap-4 min-w-0">
+                        <p className="text-sm text-slate-600 dark:text-slate-300 min-w-0 flex-1 break-words [overflow-wrap:anywhere]">
                           <span className="font-black text-slate-900 dark:text-white mr-2 uppercase text-[10px] tracking-widest bg-slate-100 dark:bg-dark-bg px-2 py-0.5 rounded border border-transparent dark:border-dark-border">
                             Admin
                           </span>

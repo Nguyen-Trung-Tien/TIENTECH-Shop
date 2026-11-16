@@ -97,10 +97,18 @@ io.on("connection", (socket) => {
     if (typeof room === "string") {
       if (room.startsWith("user_")) {
         const targetUserId = room.replace("user_", "");
-        if (!socket.user || String(socket.user.id) === targetUserId || ["admin", "root"].includes(socket.user.role)) {
+        if (
+          socket.user &&
+          (String(socket.user.id) === targetUserId ||
+            ["admin", "root"].includes(socket.user.role))
+        ) {
           socket.join(room);
         }
-      } else if (room === "admin_room" && socket.user && ["admin", "root"].includes(socket.user.role)) {
+      } else if (
+        room === "admin_room" &&
+        socket.user &&
+        ["admin", "root"].includes(socket.user.role)
+      ) {
         socket.join("admin_room");
       }
     }
@@ -110,7 +118,7 @@ io.on("connection", (socket) => {
     if (socket.user && ["admin", "root"].includes(socket.user.role)) {
       socket.join("admin_room");
       console.log(
-        `Socket ${socket.id} (Role: ${socket.user.role}, ID: ${socket.user.id}) joined admin_room`
+        `Socket ${socket.id} (Role: ${socket.user.role}, ID: ${socket.user.id}) joined admin_room`,
       );
     } else {
       console.warn(`Unauthorized join_admin attempt by socket ${socket.id}`);

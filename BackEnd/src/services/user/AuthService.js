@@ -50,7 +50,16 @@ class AuthService {
         refreshTokenExpiresAt,
       });
 
-      const { password: _, ...userData } = user.toJSON();
+      const {
+        password: _pw,
+        refreshTokenHash: _rth,
+        resetToken: _rt,
+        verificationToken: _vt,
+        resetTokenExpiresAt: _rtea,
+        verificationTokenExpiresAt: _vtea,
+        refreshTokenExpiresAt: _rthea,
+        ...userData
+      } = user.toJSON();
 
       // Cache User Profile & Refresh Token State in Redis
       await setCache(getUserProfileKey(user.id), userData, 900); // 15 mins TTL
@@ -267,6 +276,8 @@ class AuthService {
       if (!valid) return { errCode: 2, errMessage: "Mật khẩu cũ không chính xác!" };
 
       user.password = await hashUserPassword(newPassword);
+      user.refreshTokenHash = null;
+      user.refreshTokenExpiresAt = null;
       await user.save();
 
       await deleteCache(getUserProfileKey(userId));
@@ -288,7 +299,7 @@ class AuthService {
         return { errCode: 2, errorType: "account_locked", errMessage: "Tài khoản của bạn đã bị khóa!" };
       }
 
-      if (isAdmin && user.role !== "admin") {
+      if (isAdmin && !["admin", "root"].includes(user.role)) {
         return { errCode: 3, errorType: "not_admin", errMessage: "Tài khoản không có quyền quản trị viên!" };
       }
 
@@ -306,8 +317,17 @@ class AuthService {
         });
       }
 
-      const userData = typeof user.toJSON === "function" ? user.toJSON() : { ...user };
-      delete userData.password;
+      const rawUserData = typeof user.toJSON === "function" ? user.toJSON() : { ...user };
+      const {
+        password: _pw,
+        refreshTokenHash: _rth,
+        resetToken: _rt,
+        verificationToken: _vt,
+        resetTokenExpiresAt: _rtea,
+        verificationTokenExpiresAt: _vtea,
+        refreshTokenExpiresAt: _rthea,
+        ...userData
+      } = rawUserData;
 
       await setCache(getUserProfileKey(user.id), userData, 900);
       await setCache(

@@ -52,7 +52,7 @@ function Header() {
 
   const reduxUser = useSelector((state) => state.user.user);
   const { data: resUser } = useCurrentUser();
-  const user = resUser?.data || reduxUser;
+  const user = reduxUser || resUser?.data;
 
   const cartItemCount = useSelector(
     (state) =>

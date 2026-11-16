@@ -154,6 +154,43 @@ Hãy trả lời chuyên nghiệp, súc tích và hỗ trợ ra quyết định.
   }
 };
 
+const escapeHtmlBasic = (str) =>
+  String(str || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+
+const buildFallbackDescription = (name, keywords = "") => {
+  const safeName = escapeHtmlBasic(name || "Sản phẩm công nghệ");
+  const keywordList = String(keywords || "")
+    .split(/[,;\n]+/)
+    .map((k) => k.trim())
+    .filter(Boolean);
+
+  const bulletItems =
+    keywordList.length > 0
+      ? keywordList
+          .slice(0, 6)
+          .map(
+            (kw) =>
+              `<li><strong>${escapeHtmlBasic(kw)}:</strong> Tối ưu hóa trải nghiệm sử dụng hằng ngày, nâng cao hiệu suất và sự tiện lợi.</li>`
+          )
+          .join("\n  ")
+      : `<li><strong>Thiết kế hiện đại:</strong> Hoàn thiện tỉ mỉ, bền bỉ và phù hợp với nhiều không gian làm việc, học tập.</li>
+  <li><strong>Hiệu năng ổn định:</strong> Đáp ứng mượt mà các tác vụ công việc và giải trí đa phương tiện.</li>
+  <li><strong>Chính hãng tại TIENTECH Shop:</strong> Bảo hành minh bạch, hỗ trợ kỹ thuật tận tâm.</li>`;
+
+  return `<h3>Giới thiệu ${safeName}</h3>
+<p><strong>${safeName}</strong> là lựa chọn đáng tin cậy dành cho người dùng đang tìm kiếm sự cân bằng giữa hiệu năng mạnh mẽ, độ bền bỉ và thiết kế tinh tế.</p>
+<h4>Điểm nổi bật dành cho bạn</h4>
+<ul>
+  ${bulletItems}
+</ul>
+<p>Sản phẩm hiện được phân phối chính hãng tại <strong>TIENTECH Shop</strong> với chính sách bảo hành uy tín và hỗ trợ giao hàng nhanh trên toàn quốc.</p>`;
+};
+
 const generateProductDescription = async (name, keywords = "") => {
   try {
     const context = `
@@ -173,17 +210,29 @@ Yêu cầu định dạng HTML:
 Hãy tập trung vào lợi ích (benefits) mà sản phẩm mang lại cho người dùng, thay vì chỉ liệt kê tính năng (features).
     `;
 
-    const result = await geminiModel.generateContent(context);
+    const result = await generateContentWithFallback(context);
     let description = result.response.text();
     description = description.replace(/```html/gi, "").replace(/```/g, "").trim();
+
+    if (!description) {
+      return {
+        errCode: 0,
+        isFallback: true,
+        data: buildFallbackDescription(name, keywords),
+      };
+    }
 
     return {
       errCode: 0,
       data: description,
     };
   } catch (error) {
-    console.error("AI Description Error:", error);
-    return { errCode: -1, errMessage: "Lỗi khi AI sinh mô tả sản phẩm." };
+    console.error("AI Description Error (using fallback):", error.message || error);
+    return {
+      errCode: 0,
+      isFallback: true,
+      data: buildFallbackDescription(name, keywords),
+    };
   }
 };
 

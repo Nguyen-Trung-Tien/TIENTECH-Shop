@@ -75,7 +75,7 @@ const InputField = React.memo(
         )}
       </div>
     </div>
-  )
+  ),
 );
 
 const CheckoutForm = ({ formData, setFormData, user }) => {
@@ -133,7 +133,8 @@ const CheckoutForm = ({ formData, setFormData, user }) => {
             ...prev,
             shippingAddress: fullAddress,
             phone: defaultAddr.phone || prev.phone || user?.phone || "",
-            fullName: defaultAddr.fullName || prev.fullName || user?.username || "",
+            fullName:
+              defaultAddr.fullName || prev.fullName || user?.username || "",
           }));
         } else if (res.data.length === 0) {
           setShowManual(true);
@@ -221,14 +222,54 @@ const CheckoutForm = ({ formData, setFormData, user }) => {
     }
   };
 
-  const { isCodEnabled, isVnpayEnabled, isPaypalEnabled, isMomoEnabled } = useSystemSettings();
+  const { isCodEnabled, isVnpayEnabled, isPaypalEnabled, isMomoEnabled } =
+    useSystemSettings();
 
-  const paymentOptions = React.useMemo(() => [
-    ...(isCodEnabled ? [{ id: "COD", label: "Thanh toán khi nhận hàng", desc: "Trả tiền mặt khi giao tới nơi", icon: FiDollarSign }] : []),
-    ...(isVnpayEnabled ? [{ id: "VNPAY", label: "Ví VNPAY / Ngân hàng", desc: "Thanh toán online an toàn", icon: FiCreditCard }] : []),
-    ...(isPaypalEnabled ? [{ id: "PAYPAL", label: "PayPal", desc: "Thanh toán quốc tế", icon: FaPaypal }] : []),
-    ...(isMomoEnabled ? [{ id: "MOMO", label: "Ví MoMo", desc: "Thanh toán ví điện tử", icon: FiCreditCard }] : []),
-  ], [isCodEnabled, isVnpayEnabled, isPaypalEnabled, isMomoEnabled]);
+  const paymentOptions = React.useMemo(
+    () => [
+      ...(isCodEnabled
+        ? [
+            {
+              id: "COD",
+              label: "Thanh toán khi nhận hàng",
+              desc: "Trả tiền mặt khi giao tới nơi",
+              icon: FiDollarSign,
+            },
+          ]
+        : []),
+      ...(isVnpayEnabled
+        ? [
+            {
+              id: "VNPAY",
+              label: "Ví VNPAY / Ngân hàng",
+              desc: "Thanh toán online an toàn",
+              icon: FiCreditCard,
+            },
+          ]
+        : []),
+      ...(isPaypalEnabled
+        ? [
+            {
+              id: "PAYPAL",
+              label: "PayPal",
+              desc: "Thanh toán quốc tế",
+              icon: FaPaypal,
+            },
+          ]
+        : []),
+      ...(isMomoEnabled
+        ? [
+            {
+              id: "MOMO",
+              label: "Ví MoMo",
+              desc: "Thanh toán ví điện tử",
+              icon: FiCreditCard,
+            },
+          ]
+        : []),
+    ],
+    [isCodEnabled, isVnpayEnabled, isPaypalEnabled, isMomoEnabled],
+  );
 
   // Auto-switch payment method if current is disabled
   useEffect(() => {
@@ -299,22 +340,22 @@ const CheckoutForm = ({ formData, setFormData, user }) => {
                           Mặc định
                         </span>
                       )}
-                      <div className="flex items-start gap-3">
+                      <div className="flex items-start gap-3 min-w-0">
                         <FiHome
-                          className={`mt-1 ${
+                          className={`mt-1 shrink-0 ${
                             isSelected
                               ? "text-primary"
                               : "text-slate-400 dark:text-dark-text-secondary"
                           }`}
                         />
-                        <div>
-                          <p className="text-xs font-black text-slate-900 dark:text-white uppercase mb-1">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs font-black text-slate-900 dark:text-white uppercase mb-1 break-words [overflow-wrap:anywhere]">
                             {addr.fullName || "Địa chỉ"}
                           </p>
-                          <p className="text-[11px] font-bold text-slate-500 dark:text-dark-text-secondary line-clamp-2 leading-relaxed">
+                          <p className="text-[11px] font-bold text-slate-500 dark:text-dark-text-secondary line-clamp-2 leading-relaxed break-words [overflow-wrap:anywhere]">
                             {fullAddrStr}
                           </p>
-                          <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 mt-1">
+                          <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 mt-1 break-words [overflow-wrap:anywhere]">
                             {addr.phone}
                           </p>
                         </div>
@@ -473,7 +514,10 @@ const CheckoutForm = ({ formData, setFormData, user }) => {
               className="relative w-full max-w-lg bg-white dark:bg-dark-surface rounded-2xl sm:rounded-[32px] p-4 sm:p-6 md:p-8 shadow-2xl z-10 border border-slate-100 dark:border-dark-border max-h-[90vh] overflow-y-auto custom-scrollbar"
             >
               <div className="flex items-center justify-between mb-6 border-b pb-4 border-slate-100 dark:border-dark-border">
-                <h3 id="add-address-title" className="text-base font-black text-slate-900 dark:text-white uppercase tracking-tight">
+                <h3
+                  id="add-address-title"
+                  className="text-base font-black text-slate-900 dark:text-white uppercase tracking-tight"
+                >
                   Thêm Địa Chỉ Giao Hàng Mới
                 </h3>
                 <button

@@ -1,12 +1,15 @@
 const db = require("../../models");
 const BaseService = require("../BaseService");
-const { sendVerificationEmail, sendEmailAsync } = require("../common/EmailService");
+const {
+  sendVerificationEmail,
+  sendEmailAsync,
+} = require("../common/EmailService");
 const SystemSettingService = require("../system/SystemSettingService");
 const NotificationService = require("../notification/NotificationService");
 const { deleteCache, setCache } = require("../../config/redis");
-const { 
-  hashToken, 
-  generateRandomToken, 
+const {
+  hashToken,
+  generateRandomToken,
   hashUserPassword,
   getUserProfileKey,
   getRefreshTokenKey,
@@ -30,7 +33,10 @@ class UserService extends BaseService {
       } else if (filters.status === "pending") {
         where.isActive = false;
         where.verificationToken = { [Op.ne]: null };
-      } else if (filters.status === "suspended" || filters.status === "inactive") {
+      } else if (
+        filters.status === "suspended" ||
+        filters.status === "inactive"
+      ) {
         where.isActive = false;
         where.verificationToken = null;
       }
@@ -60,12 +66,17 @@ class UserService extends BaseService {
         include: [
           [
             db.Sequelize.literal(
-              "CASE WHEN isActive = 1 THEN 'active' WHEN verificationToken IS NOT NULL THEN 'pending' ELSE 'suspended' END"
+              "CASE WHEN isActive = 1 THEN 'active' WHEN verificationToken IS NOT NULL THEN 'pending' ELSE 'suspended' END",
             ),
             "accountStatus",
           ],
         ],
-        exclude: ["password", "refreshTokenHash", "resetToken", "verificationToken"],
+        exclude: [
+          "password",
+          "refreshTokenHash",
+          "resetToken",
+          "verificationToken",
+        ],
       },
       order: [["createdAt", "DESC"]],
     };
@@ -74,7 +85,14 @@ class UserService extends BaseService {
 
   async getUserById(userId) {
     return await this.getById(userId, {
-      attributes: { exclude: ["password", "refreshTokenHash", "resetToken", "verificationToken"] }
+      attributes: {
+        exclude: [
+          "password",
+          "refreshTokenHash",
+          "resetToken",
+          "verificationToken",
+        ],
+      },
     });
   }
 
@@ -86,28 +104,57 @@ class UserService extends BaseService {
 
       const email = String(data.email).trim().toLowerCase();
       const existEmail = await this.model.findOne({ where: { email } });
-      if (existEmail) return { errCode: 1, errMessage: "Email này đã được đăng ký trong hệ thống." };
+      if (existEmail)
+        return {
+          errCode: 1,
+          errMessage: "Email này đã được đăng ký trong hệ thống.",
+        };
 
-      const rawUsername = String(data.username || "").trim() || email.split("@")[0];
+      const rawUsername =
+        String(data.username || "").trim() || email.split("@")[0];
       if (rawUsername.length < 3) {
-        return { errCode: 1, errMessage: "Tên người dùng (username) phải có ít nhất 3 ký tự." };
+        return {
+          errCode: 1,
+          errMessage: "Tên người dùng (username) phải có ít nhất 3 ký tự.",
+        };
       }
       if (rawUsername.length > 50) {
-        return { errCode: 1, errMessage: "Tên người dùng (username) không được vượt quá 50 ký tự." };
+        return {
+          errCode: 1,
+          errMessage: "Tên người dùng (username) không được vượt quá 50 ký tự.",
+        };
       }
 
-      const existUsername = await this.model.findOne({ where: { username: rawUsername } });
+      const existUsername = await this.model.findOne({
+        where: { username: rawUsername },
+      });
       if (existUsername) {
-        return { errCode: 1, errMessage: "Tên người dùng (username) này đã tồn tại. Vui lòng chọn tên khác." };
+        return {
+          errCode: 1,
+          errMessage:
+            "Tên người dùng (username) này đã tồn tại. Vui lòng chọn tên khác.",
+        };
       }
 
-      const hashedPassword = await hashUserPassword(data.password || "123456");
+      const rawPassword =
+        data.password && String(data.password).trim().length >= 6
+          ? data.password
+          : generateRandomToken();
+      const hashedPassword = await hashUserPassword(rawPassword);
 
       // Kiểm tra cấu hình hệ thống: Có bắt buộc xác thực OTP không
-      const requireOtp = await SystemSettingService.getSetting("REQUIRE_OTP_VERIFICATION", true);
-      
-      const isCreatorAdmin = data.creatorRole === "admin" || data.creatorRole === "root";
-      const isExplicitActive = isCreatorAdmin && (data.isActive === true || data.isActive === "true" || data.isActive === "1");
+      const requireOtp = await SystemSettingService.getSetting(
+        "REQUIRE_OTP_VERIFICATION",
+        true,
+      );
+
+      const isCreatorAdmin =
+        data.creatorRole === "admin" || data.creatorRole === "root";
+      const isExplicitActive =
+        isCreatorAdmin &&
+        (data.isActive === true ||
+          data.isActive === "true" ||
+          data.isActive === "1");
       let verificationToken = null;
       let isActive = isExplicitActive;
 
@@ -117,9 +164,9 @@ class UserService extends BaseService {
       } else {
         isActive = true;
       }
-      
+
       // SECURITY: Default role is strictly 'customer'. Only admin/root creators can assign higher roles.
-      const assignedRole = (isCreatorAdmin && data.role) ? data.role : "customer";
+      const assignedRole = isCreatorAdmin && data.role ? data.role : "customer";
 
       const userData = {
         email,
@@ -130,49 +177,92 @@ class UserService extends BaseService {
         password: hashedPassword,
         role: assignedRole,
         isActive,
-        verificationToken: verificationToken ? hashToken(verificationToken) : null,
-        verificationTokenExpiresAt: verificationToken ? new Date(Date.now() + 24 * 60 * 60 * 1000) : null,
+        verificationToken: verificationToken
+          ? hashToken(verificationToken)
+          : null,
+        verificationTokenExpiresAt: verificationToken
+          ? new Date(Date.now() + 24 * 60 * 60 * 1000)
+          : null,
       };
 
       const user = await this.model.create(userData);
-      
+
       if (requireOtp && !isActive && verificationToken) {
         sendEmailAsync(sendVerificationEmail, user, verificationToken);
       }
 
-      const { password, refreshTokenHash, resetToken, verificationToken: _, ...safeUser } = user.toJSON();
+      const {
+        password,
+        refreshTokenHash,
+        resetToken,
+        verificationToken: _,
+        ...safeUser
+      } = user.toJSON();
 
-      return { 
-        errCode: 0, 
+      return {
+        errCode: 0,
         data: safeUser,
         requireOtp: Boolean(requireOtp && !isActive),
-        errMessage: requireOtp && !isActive 
-          ? "Đăng ký thành công! Vui lòng kiểm tra mã OTP trong email."
-          : "Đăng ký thành công! Bạn có thể đăng nhập ngay."
+        errMessage:
+          requireOtp && !isActive
+            ? "Đăng ký thành công! Vui lòng kiểm tra mã OTP trong email."
+            : "Đăng ký thành công! Bạn có thể đăng nhập ngay.",
       };
     } catch (e) {
       console.error("UserService.createNewUser error:", e);
-      if (e.name === "SequelizeValidationError" || e.name === "SequelizeUniqueConstraintError") {
+      if (
+        e.name === "SequelizeValidationError" ||
+        e.name === "SequelizeUniqueConstraintError"
+      ) {
         const firstErr = e.errors && e.errors.length > 0 ? e.errors[0] : null;
         if (firstErr) {
-          if (firstErr.path === "username" && (firstErr.type === "unique violation" || firstErr.validatorKey === "not_unique")) {
-            return { errCode: 1, errMessage: "Tên người dùng (username) này đã tồn tại trên hệ thống. Vui lòng chọn tên khác." };
+          if (
+            firstErr.path === "username" &&
+            (firstErr.type === "unique violation" ||
+              firstErr.validatorKey === "not_unique")
+          ) {
+            return {
+              errCode: 1,
+              errMessage:
+                "Tên người dùng (username) này đã tồn tại trên hệ thống. Vui lòng chọn tên khác.",
+            };
           }
-          if (firstErr.path === "email" && (firstErr.type === "unique violation" || firstErr.validatorKey === "not_unique")) {
-            return { errCode: 1, errMessage: "Email này đã được đăng ký tài khoản." };
+          if (
+            firstErr.path === "email" &&
+            (firstErr.type === "unique violation" ||
+              firstErr.validatorKey === "not_unique")
+          ) {
+            return {
+              errCode: 1,
+              errMessage: "Email này đã được đăng ký tài khoản.",
+            };
           }
           if (firstErr.path === "username" && firstErr.validatorKey === "len") {
-            return { errCode: 1, errMessage: "Tên người dùng (username) phải có độ dài từ 3 đến 50 ký tự." };
+            return {
+              errCode: 1,
+              errMessage:
+                "Tên người dùng (username) phải có độ dài từ 3 đến 50 ký tự.",
+            };
           }
-          return { errCode: 1, errMessage: firstErr.message || "Dữ liệu đăng ký không hợp lệ." };
+          return {
+            errCode: 1,
+            errMessage: firstErr.message || "Dữ liệu đăng ký không hợp lệ.",
+          };
         }
       }
-      return { errCode: 2, errMessage: e.message || "Đã xảy ra lỗi khi tạo người dùng." };
+      return {
+        errCode: 2,
+        errMessage: e.message || "Đã xảy ra lỗi khi tạo người dùng.",
+      };
     }
   }
 
-
-  async updateUser(userId, data, currentUserRole = "customer", currentUserId = null) {
+  async updateUser(
+    userId,
+    data,
+    currentUserRole = "customer",
+    currentUserId = null,
+  ) {
     try {
       const user = await this.model.findByPk(userId);
       if (!user) return { errCode: 1, errMessage: "User not found" };
@@ -181,7 +271,8 @@ class UserService extends BaseService {
         return { errCode: 2, errMessage: "Cannot modify root user" };
       }
 
-      const isElevated = currentUserRole === "admin" || currentUserRole === "root";
+      const isElevated =
+        currentUserRole === "admin" || currentUserRole === "root";
 
       // SECURITY: Whitelist updatable fields to prevent Mass Assignment
       const safeUpdateData = {};
@@ -189,16 +280,23 @@ class UserService extends BaseService {
       if (data.username !== undefined && data.username !== user.username) {
         const rawUsername = String(data.username).trim();
         if (rawUsername.length >= 3 && rawUsername.length <= 50) {
-          const existUsername = await this.model.findOne({ where: { username: rawUsername } });
+          const existUsername = await this.model.findOne({
+            where: { username: rawUsername },
+          });
           if (existUsername && existUsername.id !== user.id) {
-            return { errCode: 1, errMessage: "Tên người dùng (username) này đã tồn tại." };
+            return {
+              errCode: 1,
+              errMessage: "Tên người dùng (username) này đã tồn tại.",
+            };
           }
           safeUpdateData.username = rawUsername;
         }
       }
 
       if (data.email && data.email !== user.email) {
-        const exist = await this.model.findOne({ where: { email: data.email } });
+        const exist = await this.model.findOne({
+          where: { email: data.email },
+        });
         if (exist) return { errCode: 1, errMessage: "Email already exists" };
         safeUpdateData.email = String(data.email).trim().toLowerCase();
       }
@@ -208,11 +306,17 @@ class UserService extends BaseService {
       }
 
       if (data.address !== undefined) {
-        safeUpdateData.address = data.address ? String(data.address).trim() : null;
+        safeUpdateData.address = data.address
+          ? String(data.address).trim()
+          : null;
       }
 
       if (data.receiveEmail !== undefined) {
-        safeUpdateData.receiveEmail = data.receiveEmail === true || data.receiveEmail === "true" || data.receiveEmail === 1 || data.receiveEmail === "1";
+        safeUpdateData.receiveEmail =
+          data.receiveEmail === true ||
+          data.receiveEmail === "true" ||
+          data.receiveEmail === 1 ||
+          data.receiveEmail === "1";
       }
 
       if (isElevated) {
@@ -221,9 +325,21 @@ class UserService extends BaseService {
           safeUpdateData.role = data.role;
         }
         if (data.isActive !== undefined) {
-          const nextActive = data.isActive === true || data.isActive === "true" || data.isActive === 1 || data.isActive === "1";
-          if (!nextActive && currentUserId && String(userId) === String(currentUserId)) {
-            return { errCode: 1, errMessage: "Bạn không thể tự vô hiệu hóa tài khoản của chính mình." };
+          const nextActive =
+            data.isActive === true ||
+            data.isActive === "true" ||
+            data.isActive === 1 ||
+            data.isActive === "1";
+          if (
+            !nextActive &&
+            currentUserId &&
+            String(userId) === String(currentUserId)
+          ) {
+            return {
+              errCode: 1,
+              errMessage:
+                "Bạn không thể tự vô hiệu hóa tài khoản của chính mình.",
+            };
           }
           safeUpdateData.isActive = nextActive;
           if (!nextActive) {
@@ -232,8 +348,12 @@ class UserService extends BaseService {
             try {
               await deleteCache(getRefreshTokenKey(userId));
               await deleteCache(getUserProfileKey(userId));
+              await deleteCache(getUserStatusKey(userId));
             } catch (err) {
-              console.warn("[UserService.updateUser] Redis eviction warning:", err?.message);
+              console.warn(
+                "[UserService.updateUser] Redis eviction warning:",
+                err?.message,
+              );
             }
           }
         }
@@ -243,19 +363,33 @@ class UserService extends BaseService {
       if (data.avatar && typeof data.avatar === "string") {
         if (data.avatar.startsWith("data:image")) {
           try {
-            const { uploadToCloudinary } = require("../../config/cloudinaryConfig");
-            const { validateImageBuffer } = require("../../utils/imageValidator");
+            const {
+              uploadToCloudinary,
+            } = require("../../config/cloudinaryConfig");
+            const {
+              validateImageBuffer,
+            } = require("../../utils/imageValidator");
             const buffer = Buffer.from(data.avatar.split(",")[1], "base64");
             if (!validateImageBuffer(buffer)) {
-              return { errCode: 2, errMessage: "Ảnh đại diện không hợp lệ (magic bytes mismatch)." };
+              return {
+                errCode: 2,
+                errMessage: "Ảnh đại diện không hợp lệ (magic bytes mismatch).",
+              };
             }
             const uploadRes = await uploadToCloudinary(buffer, "avatars");
             safeUpdateData.avatar = uploadRes.secure_url;
           } catch (uploadErr) {
             console.error("Cloudinary avatar upload error:", uploadErr);
-            return { errCode: 2, errMessage: "Lỗi upload ảnh đại diện lên Cloudinary: " + uploadErr.message };
+            return {
+              errCode: 2,
+              errMessage:
+                "Lỗi upload ảnh đại diện lên Cloudinary: " + uploadErr.message,
+            };
           }
-        } else if (data.avatar.startsWith("http://") || data.avatar.startsWith("https://")) {
+        } else if (
+          data.avatar.startsWith("http://") ||
+          data.avatar.startsWith("https://")
+        ) {
           safeUpdateData.avatar = data.avatar;
         }
       }
@@ -275,23 +409,43 @@ class UserService extends BaseService {
     }
   }
 
-  async updateUserStatus({ adminId, targetUserId, status, reason = "", req = null }) {
+  async updateUserStatus({
+    adminId,
+    targetUserId,
+    status,
+    reason = "",
+    req = null,
+  }) {
     try {
       if (!adminId || !targetUserId) {
-        return { errCode: 1, errMessage: "Thiếu thông tin người thực hiện hoặc người dùng mục tiêu." };
+        return {
+          errCode: 1,
+          errMessage:
+            "Thiếu thông tin người thực hiện hoặc người dùng mục tiêu.",
+        };
       }
 
       if (String(adminId) === String(targetUserId)) {
-        return { errCode: 1, errMessage: "Bạn không thể tự thay đổi trạng thái của chính mình." };
+        return {
+          errCode: 1,
+          errMessage: "Bạn không thể tự thay đổi trạng thái của chính mình.",
+        };
       }
 
       const user = await this.model.findByPk(targetUserId);
       if (!user) {
-        return { errCode: 1, errMessage: "Người dùng không tồn tại trên hệ thống." };
+        return {
+          errCode: 1,
+          errMessage: "Người dùng không tồn tại trên hệ thống.",
+        };
       }
 
       if (user.role === "root") {
-        return { errCode: 2, errMessage: "Không có quyền thay đổi trạng thái tài khoản cấp cao nhất." };
+        return {
+          errCode: 2,
+          errMessage:
+            "Không có quyền thay đổi trạng thái tài khoản cấp cao nhất.",
+        };
       }
 
       const shouldActivate = status === "active";
@@ -306,18 +460,32 @@ class UserService extends BaseService {
         return {
           errCode: 0,
           errMessage: "Tài khoản đã ở trạng thái hoạt động.",
-          data: { id: user.id, username: user.username, email: user.email, isActive: true, accountStatus: "active" },
+          data: {
+            id: user.id,
+            username: user.username,
+            email: user.email,
+            isActive: true,
+            accountStatus: "active",
+          },
         };
       }
       if (!shouldActivate && !user.isActive && !user.verificationToken) {
         return {
           errCode: 0,
           errMessage: "Tài khoản đã ở trạng thái vô hiệu hóa.",
-          data: { id: user.id, username: user.username, email: user.email, isActive: false, accountStatus: "suspended" },
+          data: {
+            id: user.id,
+            username: user.username,
+            email: user.email,
+            isActive: false,
+            accountStatus: "suspended",
+          },
         };
       }
 
-      const action = shouldActivate ? "ACCOUNT_ACTIVATED" : "ACCOUNT_DEACTIVATED";
+      const action = shouldActivate
+        ? "ACCOUNT_ACTIVATED"
+        : "ACCOUNT_DEACTIVATED";
       const defaultReason = shouldActivate
         ? "Quản trị viên kích hoạt tài khoản"
         : "Quản trị viên tạm khóa tài khoản";
@@ -354,7 +522,7 @@ class UserService extends BaseService {
               ipAddress: req?.ip || req?.headers?.["x-forwarded-for"] || null,
               userAgent: req?.headers?.["user-agent"] || null,
             },
-            { transaction: t }
+            { transaction: t },
           );
         }
 
@@ -362,10 +530,17 @@ class UserService extends BaseService {
       } catch (dbErr) {
         await t.rollback();
         console.error("UserService.updateUserStatus transaction error:", dbErr);
-        if (dbErr.message && dbErr.message.includes("AuditLogs' doesn't exist") && db.AuditLog) {
+        if (
+          dbErr.message &&
+          dbErr.message.includes("AuditLogs' doesn't exist") &&
+          db.AuditLog
+        ) {
           await db.AuditLog.sync({ alter: false }).catch(() => {});
         }
-        return { errCode: 2, errMessage: "Lỗi cơ sở dữ liệu: " + dbErr.message };
+        return {
+          errCode: 2,
+          errMessage: "Lỗi cơ sở dữ liệu: " + dbErr.message,
+        };
       }
 
       // Evict & update Redis caches
@@ -373,14 +548,17 @@ class UserService extends BaseService {
         await setCache(
           getUserStatusKey(targetUserId),
           { isActive: shouldActivate, role: user.role },
-          86400
+          86400,
         );
         await deleteCache(getUserProfileKey(targetUserId));
         if (!shouldActivate) {
           await deleteCache(getRefreshTokenKey(targetUserId));
         }
       } catch (cacheErr) {
-        console.warn("[UserService] Cache eviction warning:", cacheErr?.message);
+        console.warn(
+          "[UserService] Cache eviction warning:",
+          cacheErr?.message,
+        );
       }
 
       // Realtime notification & account lock event via Socket.IO
@@ -390,7 +568,8 @@ class UserService extends BaseService {
           if (!shouldActivate) {
             io.to(`user_${targetUserId}`).emit("account_locked", {
               userId: targetUserId,
-              reason: reason?.trim() || "Tài khoản của bạn đã bị quản trị viên khóa.",
+              reason:
+                reason?.trim() || "Tài khoản của bạn đã bị quản trị viên khóa.",
               lockedAt: new Date().toISOString(),
             });
           } else {
@@ -401,26 +580,36 @@ class UserService extends BaseService {
           }
         }
       } catch (socketErr) {
-        console.warn("[UserService] Socket dispatch warning:", socketErr?.message);
+        console.warn(
+          "[UserService] Socket dispatch warning:",
+          socketErr?.message,
+        );
       }
 
       // Isolated in-app notification
       try {
         await NotificationService.createNotification({
           userId: targetUserId,
-          title: shouldActivate ? "Tài khoản đã được kích hoạt" : "Tài khoản đã bị tạm khóa",
+          title: shouldActivate
+            ? "Tài khoản đã được kích hoạt"
+            : "Tài khoản đã bị tạm khóa",
           message: shouldActivate
             ? "Tài khoản của bạn đã được quản trị viên kích hoạt. Bạn hiện có thể đăng nhập và sử dụng dịch vụ bình thường."
             : `Tài khoản của bạn đã bị quản trị viên tạm khóa.${reason ? ` Lý do: ${reason}` : ""}`,
           type: "system",
         });
       } catch (notifErr) {
-        console.warn("[UserService] Notification dispatch warning:", notifErr?.message);
+        console.warn(
+          "[UserService] Notification dispatch warning:",
+          notifErr?.message,
+        );
       }
 
       return {
         errCode: 0,
-        errMessage: shouldActivate ? "Kích hoạt tài khoản thành công!" : "Vô hiệu hóa tài khoản thành công!",
+        errMessage: shouldActivate
+          ? "Kích hoạt tài khoản thành công!"
+          : "Vô hiệu hóa tài khoản thành công!",
         data: {
           id: user.id,
           username: user.username,
@@ -431,17 +620,33 @@ class UserService extends BaseService {
       };
     } catch (e) {
       console.error("UserService.updateUserStatus error:", e);
-      return { errCode: 2, errMessage: e.message || "Đã xảy ra lỗi khi cập nhật trạng thái tài khoản." };
+      return {
+        errCode: 2,
+        errMessage:
+          e.message || "Đã xảy ra lỗi khi cập nhật trạng thái tài khoản.",
+      };
     }
   }
 
-  async bulkUpdateUserStatus({ adminId, userIds, status, reason = "", req = null }) {
+  async bulkUpdateUserStatus({
+    adminId,
+    userIds,
+    status,
+    reason = "",
+    req = null,
+  }) {
     try {
       if (!Array.isArray(userIds) || userIds.length === 0) {
-        return { errCode: 1, errMessage: "Danh sách tài khoản không được để trống." };
+        return {
+          errCode: 1,
+          errMessage: "Danh sách tài khoản không được để trống.",
+        };
       }
       if (userIds.length > 50) {
-        return { errCode: 1, errMessage: "Tối đa chỉ xử lý 50 tài khoản mỗi lần." };
+        return {
+          errCode: 1,
+          errMessage: "Tối đa chỉ xử lý 50 tài khoản mỗi lần.",
+        };
       }
 
       const results = [];
@@ -451,13 +656,21 @@ class UserService extends BaseService {
       for (const rawId of userIds) {
         const targetUserId = Number(rawId);
         if (isNaN(targetUserId)) {
-          results.push({ id: rawId, success: false, message: "ID không hợp lệ." });
+          results.push({
+            id: rawId,
+            success: false,
+            message: "ID không hợp lệ.",
+          });
           failureCount++;
           continue;
         }
 
         if (String(adminId) === String(targetUserId)) {
-          results.push({ id: targetUserId, success: false, message: "Không thể tự thao tác trên chính mình." });
+          results.push({
+            id: targetUserId,
+            success: false,
+            message: "Không thể tự thao tác trên chính mình.",
+          });
           failureCount++;
           continue;
         }
@@ -471,10 +684,18 @@ class UserService extends BaseService {
         });
 
         if (res.errCode === 0) {
-          results.push({ id: targetUserId, success: true, message: res.errMessage });
+          results.push({
+            id: targetUserId,
+            success: true,
+            message: res.errMessage,
+          });
           successCount++;
         } else {
-          results.push({ id: targetUserId, success: false, message: res.errMessage });
+          results.push({
+            id: targetUserId,
+            success: false,
+            message: res.errMessage,
+          });
           failureCount++;
         }
       }
@@ -498,11 +719,32 @@ class UserService extends BaseService {
   async getUserMetrics() {
     const { Op } = require("sequelize");
     try {
-      const [totalUsers, activeUsers, pendingUsers, suspendedUsers, adminUsers, customerUsers] = await Promise.all([
+      const [
+        totalUsers,
+        activeUsers,
+        pendingUsers,
+        suspendedUsers,
+        adminUsers,
+        customerUsers,
+      ] = await Promise.all([
         this.model.count({ where: { role: { [Op.ne]: "root" } } }),
-        this.model.count({ where: { isActive: true, role: { [Op.ne]: "root" } } }),
-        this.model.count({ where: { isActive: false, verificationToken: { [Op.ne]: null }, role: { [Op.ne]: "root" } } }),
-        this.model.count({ where: { isActive: false, verificationToken: null, role: { [Op.ne]: "root" } } }),
+        this.model.count({
+          where: { isActive: true, role: { [Op.ne]: "root" } },
+        }),
+        this.model.count({
+          where: {
+            isActive: false,
+            verificationToken: { [Op.ne]: null },
+            role: { [Op.ne]: "root" },
+          },
+        }),
+        this.model.count({
+          where: {
+            isActive: false,
+            verificationToken: null,
+            role: { [Op.ne]: "root" },
+          },
+        }),
         this.model.count({ where: { role: "admin" } }),
         this.model.count({ where: { role: "customer" } }),
       ]);
@@ -520,14 +762,26 @@ class UserService extends BaseService {
       };
     } catch (e) {
       console.error("UserService.getUserMetrics error:", e);
-      return { errCode: 2, errMessage: "Lỗi tải thống kê người dùng: " + e.message };
+      return {
+        errCode: 2,
+        errMessage: "Lỗi tải thống kê người dùng: " + e.message,
+      };
     }
   }
 
-  async getUserAuditLogs(page = 1, limit = 10, targetUserId = null, action = null) {
+  async getUserAuditLogs(
+    page = 1,
+    limit = 10,
+    targetUserId = null,
+    action = null,
+  ) {
     try {
       if (!db.AuditLog) {
-        return { errCode: 0, data: [], pagination: { totalItems: 0, currentPage: 1, totalPages: 1, limit } };
+        return {
+          errCode: 0,
+          data: [],
+          pagination: { totalItems: 0, currentPage: 1, totalPages: 1, limit },
+        };
       }
 
       const p = Math.max(1, +page || 1);
@@ -580,10 +834,18 @@ class UserService extends BaseService {
         return {
           errCode: 0,
           data: [],
-          pagination: { totalItems: 0, currentPage: 1, totalPages: 1, limit: +limit || 10 },
+          pagination: {
+            totalItems: 0,
+            currentPage: 1,
+            totalPages: 1,
+            limit: +limit || 10,
+          },
         };
       }
-      return { errCode: 2, errMessage: "Lỗi tải nhật ký quản trị: " + e.message };
+      return {
+        errCode: 2,
+        errMessage: "Lỗi tải nhật ký quản trị: " + e.message,
+      };
     }
   }
 
@@ -605,17 +867,37 @@ class UserService extends BaseService {
       if (orderCount > 0) {
         // Soft delete/Deactivate
         user.isActive = false;
+        user.refreshTokenHash = null;
+        user.refreshTokenExpiresAt = null;
         await user.save();
+        try {
+          await deleteCache(getRefreshTokenKey(userId));
+          await deleteCache(getUserProfileKey(userId));
+          await deleteCache(getUserStatusKey(userId));
+        } catch (err) {
+          console.warn("[UserService.deleteUser] Redis eviction warning:", err?.message);
+        }
         return {
           errCode: 0,
-          errMessage: "Người dùng đã có lịch sử mua hàng. Hệ thống đã chuyển trạng thái thành Ngưng hoạt động để bảo toàn dữ liệu đơn hàng.",
+          errMessage:
+            "Người dùng đã có lịch sử mua hàng. Hệ thống đã chuyển trạng thái thành Ngưng hoạt động để bảo toàn dữ liệu đơn hàng.",
         };
       }
 
       // If no orders, we can try to hard delete
       // Sequelize CASCADE (defined in models) will handle Notifications, Wishlist, etc.
       await user.destroy();
-      return { errCode: 0, errMessage: "Người dùng đã được xóa hoàn toàn khỏi hệ thống." };
+      try {
+        await deleteCache(getRefreshTokenKey(userId));
+        await deleteCache(getUserProfileKey(userId));
+        await deleteCache(getUserStatusKey(userId));
+      } catch (err) {
+        console.warn("[UserService.deleteUser] Redis eviction warning:", err?.message);
+      }
+      return {
+        errCode: 0,
+        errMessage: "Người dùng đã được xóa hoàn toàn khỏi hệ thống.",
+      };
     } catch (e) {
       console.error("UserService.deleteUser error:", e);
       return { errCode: 3, errMessage: "Lỗi hệ thống: " + e.message };

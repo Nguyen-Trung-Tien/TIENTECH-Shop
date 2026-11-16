@@ -21,6 +21,7 @@ export const orderStatusMap = {
   [ORDER_STATUS.CONFIRMED]: { label: "Đã xác nhận", variant: "info" },
   [ORDER_STATUS.PROCESSING]: { label: "Đang xử lý", variant: "primary" },
   [ORDER_STATUS.SHIPPING]: { label: "Đang giao hàng", variant: "primary" },
+  shipping: { label: "Đang giao hàng", variant: "primary" },
   [ORDER_STATUS.DELIVERED]: { label: "Đã giao hàng", variant: "success" },
   [ORDER_STATUS.COMPLETED]: { label: "Đã nhận hàng", variant: "success" },
   [ORDER_STATUS.CANCELLED]: { label: "Đã hủy", variant: "danger" },

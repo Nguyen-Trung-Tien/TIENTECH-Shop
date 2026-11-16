@@ -24,13 +24,13 @@ const OrderDetailHeader = ({
       </button>
 
       {/* Page Header */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-10">
-        <div>
-          <div className="flex items-center gap-3 mb-2">
-            <h1 className="text-3xl font-display font-bold text-surface-900 dark:text-white uppercase tracking-tight">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-10 min-w-0">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-3 mb-2">
+            <h1 className="text-2xl sm:text-3xl font-display font-bold text-surface-900 dark:text-white uppercase tracking-tight">
               Chi tiết Đơn hàng
             </h1>
-            <span className="px-4 py-1.5 bg-primary text-white text-sm font-black rounded-xl shadow-lg shadow-primary/20">
+            <span className="px-4 py-1.5 bg-primary text-white text-sm font-black rounded-xl shadow-lg shadow-primary/20 break-all">
               #{orderCode}
             </span>
           </div>

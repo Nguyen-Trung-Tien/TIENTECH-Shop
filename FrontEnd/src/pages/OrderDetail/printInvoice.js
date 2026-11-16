@@ -2,11 +2,23 @@
  * Utility to print a premium, pixel-perfect A4 invoice receipt
  * dynamically inside an isolated iframe.
  */
+const escapeHtml = (value) =>
+  String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+
 export const printInvoice = (order) => {
   if (!order) return;
 
   // Calculate subtotal
-  const subtotal = order.orderItems?.reduce((sum, item) => sum + (item.price * item.quantity), 0) || 0;
+  const subtotal =
+    order.orderItems?.reduce(
+      (sum, item) => sum + item.price * item.quantity,
+      0,
+    ) || 0;
 
   // Create an iframe element
   const iframe = document.createElement("iframe");
@@ -25,7 +37,7 @@ export const printInvoice = (order) => {
     <!DOCTYPE html>
     <html>
       <head>
-        <title>Hóa đơn #${order.orderCode || order.id}</title>
+        <title>Hóa đơn #${escapeHtml(order.orderCode || order.id)}</title>
         <style>
           @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
           
@@ -342,7 +354,7 @@ export const printInvoice = (order) => {
             </div>
             <div class="invoice-meta">
               <div class="invoice-title">HÓA ĐƠN BÁN HÀNG</div>
-              <div class="invoice-code">Số: #${order.orderCode || order.id}</div>
+              <div class="invoice-code">Số: #${escapeHtml(order.orderCode || order.id)}</div>
               <div class="invoice-date">Ngày lập: ${new Date(order.createdAt).toLocaleDateString("vi-VN")} ${new Date(order.createdAt).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })}</div>
             </div>
           </div>
@@ -356,17 +368,17 @@ export const printInvoice = (order) => {
               <table>
                 <tr>
                   <td><strong>Họ tên:</strong></td>
-                  <td>${order.receiverName || order.user?.username || "Khách hàng"}</td>
+                  <td>${escapeHtml(order.receiverName || order.user?.username || "Khách hàng")}</td>
                 </tr>
                 <tr>
                   <td><strong>Điện thoại:</strong></td>
-                  <td>${order.receiverPhone || order.user?.phone || "-"}</td>
+                  <td>${escapeHtml(order.receiverPhone || order.user?.phone || "-")}</td>
                 </tr>
                 <tr>
                   <td><strong>Địa chỉ:</strong></td>
-                  <td>${order.shippingAddress || "-"}</td>
+                  <td>${escapeHtml(order.shippingAddress || "-")}</td>
                 </tr>
-                ${order.note ? `<tr><td><strong>Ghi chú:</strong></td><td>${order.note}</td></tr>` : ""}
+                ${order.note ? `<tr><td><strong>Ghi chú:</strong></td><td>${escapeHtml(order.note)}</td></tr>` : ""}
               </table>
             </div>
             <div class="info-box">
@@ -374,7 +386,7 @@ export const printInvoice = (order) => {
               <table>
                 <tr>
                   <td><strong>Phương thức:</strong></td>
-                  <td>${order.paymentMethod || "Thanh toán COD"}</td>
+                  <td>${escapeHtml(order.paymentMethod || "Thanh toán COD")}</td>
                 </tr>
                 <tr>
                   <td><strong>Trạng thái:</strong></td>
@@ -400,18 +412,22 @@ export const printInvoice = (order) => {
               </tr>
             </thead>
             <tbody>
-              ${order.orderItems?.map((item, index) => `
+              ${order.orderItems
+                ?.map(
+                  (item, index) => `
                 <tr>
                   <td style="text-align: center;">${index + 1}</td>
                   <td>
-                    <strong style="color: #0f172a;">${item.productName}</strong>
-                    <div style="font-size: 10px; color: #64748b; margin-top: 3px;">Phân loại: ${item.product?.category?.name || "Thiết bị điện tử"}</div>
+                    <strong style="color: #0f172a;">${escapeHtml(item.productName)}</strong>
+                    <div style="font-size: 10px; color: #64748b; margin-top: 3px;">Phân loại: ${escapeHtml(item.product?.category?.name || "Thiết bị điện tử")}</div>
                   </td>
-                  <td style="text-align: center;">${item.quantity}</td>
+                  <td style="text-align: center;">${Number(item.quantity) || 0}</td>
                   <td style="text-align: right;">${(item.price || 0).toLocaleString("vi-VN")} ₫</td>
                   <td style="text-align: right; font-weight: bold;">${((item.price || 0) * item.quantity).toLocaleString("vi-VN")} ₫</td>
                 </tr>
-              `).join("")}
+              `,
+                )
+                .join("")}
             </tbody>
           </table>
 
@@ -422,12 +438,16 @@ export const printInvoice = (order) => {
                 <td>Tạm tính:</td>
                 <td>${subtotal.toLocaleString("vi-VN")} ₫</td>
               </tr>
-              ${order.discountAmount > 0 ? `
+              ${
+                order.discountAmount > 0
+                  ? `
               <tr class="discount-row">
                 <td>Voucher giảm giá:</td>
                 <td>-${Number(order.discountAmount).toLocaleString("vi-VN")} ₫</td>
               </tr>
-              ` : ""}
+              `
+                  : ""
+              }
               <tr>
                 <td>Phí vận chuyển:</td>
                 <td>Miễn phí</td>
@@ -460,7 +480,7 @@ export const printInvoice = (order) => {
               <strong style="color: #0f172a;">Người mua hàng</strong><br/>
               <em>(Ký, ghi rõ họ tên)</em>
               <div style="margin-top: 60px; font-weight: bold; font-size: 13px;">
-                ${order.receiverName || order.user?.username || ""}
+                ${escapeHtml(order.receiverName || order.user?.username || "")}
               </div>
             </div>
             <div class="signature-box">

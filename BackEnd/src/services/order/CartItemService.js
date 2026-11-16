@@ -239,17 +239,21 @@ const updateCartItem = async (id, data, userId) => {
   });
   if (!cartItem) throw new Error("CartItem not found");
 
+  const updatePayload = {};
   if (data.quantity !== undefined) {
     const qty = Number(data.quantity);
-    if (qty < 1) throw new Error("Số lượng tối thiểu là 1");
+    if (!Number.isInteger(qty) || qty < 1) throw new Error("Số lượng tối thiểu là 1");
 
     const availableStock = cartItem.variant ? cartItem.variant.stock : cartItem.product?.totalStock;
     if (availableStock !== undefined && qty > availableStock) {
       throw new Error(`Số lượng yêu cầu (${qty}) vượt quá tồn kho hiện có (${availableStock})`);
     }
+    updatePayload.quantity = qty;
   }
 
-  await cartItem.update(data);
+  if (Object.keys(updatePayload).length > 0) {
+    await cartItem.update(updatePayload);
+  }
   return await getCartItemById(id, userId);
 };
 

@@ -170,41 +170,41 @@ const getAllOrders = async (params = {}, ...legacyArgs) => {
 
 const getOrderById = async (id, currentUser = null) => {
   try {
-    const whereClause = isNaN(id) ? { orderCode: id } : { id };
-    const order = await db.Order.findOne({
-      where: whereClause,
-      include: [
-        {
-          model: db.OrderItem,
-          as: "orderItems",
-          include: [
-            {
-              model: db.Product,
-              as: "productInfo",
-              attributes: ["id", "name", "slug"],
-              include: [
-                {
-                  model: db.ProductImage,
-                  as: "images",
-                  attributes: ["imageUrl", "isPrimary"],
-                  required: false,
-                },
-              ],
-            },
-          ],
-        },
-        {
-          model: db.User,
-          as: "user",
-          attributes: ["id", "username", "email", "phone"],
-        },
-        {
-          model: db.Payment,
-          as: "payment",
-          attributes: ["id", "method", "status", "amount", "transactionId", "paymentDate"],
-        },
-      ],
-    });
+    const includeOptions = [
+      {
+        model: db.OrderItem,
+        as: "orderItems",
+        include: [
+          {
+            model: db.Product,
+            as: "productInfo",
+            attributes: ["id", "name", "slug"],
+            include: [
+              {
+                model: db.ProductImage,
+                as: "images",
+                attributes: ["imageUrl", "isPrimary"],
+                required: false,
+              },
+            ],
+          },
+        ],
+      },
+      {
+        model: db.User,
+        as: "user",
+        attributes: ["id", "username", "email", "phone"],
+      },
+      {
+        model: db.Payment,
+        as: "payment",
+        attributes: ["id", "method", "status", "amount", "transactionId", "paymentDate"],
+      },
+    ];
+
+    const order = !isNaN(id)
+      ? await db.Order.findByPk(id, { include: includeOptions })
+      : await db.Order.findOne({ where: { orderCode: id }, include: includeOptions });
 
     if (!order) {
       return { errCode: 1, errMessage: "Order not found", statusCode: 404 };

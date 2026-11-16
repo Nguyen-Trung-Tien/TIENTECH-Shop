@@ -55,7 +55,8 @@ const handleCreateOrder = async (req, res) => {
     const orderData = { ...req.body };
 
     // SECURITY: Customers can never specify another user's userId
-    if (req.user && req.user.role !== "admin") {
+    const isElevated = req.user && ["admin", "root"].includes(req.user.role);
+    if (req.user && !isElevated) {
       orderData.userId = req.user.id;
     } else if (!orderData.userId && req.user) {
       orderData.userId = req.user.id;
@@ -64,7 +65,7 @@ const handleCreateOrder = async (req, res) => {
     const result = await OrderService.createOrder(orderData, req.user);
     if (result.errCode === 0) {
       const io = req.app.get("io");
-      
+
       // 1. Lưu thông báo cho Admin vào DB và gửi socket an toàn
       await NotificationService.createNotification(
         {
@@ -75,7 +76,7 @@ const handleCreateOrder = async (req, res) => {
           link: `/admin/orders`,
         },
         null,
-        io
+        io,
       );
 
       // 2. Gửi real-time tới Admin nếu io tồn tại (chỉ gửi các trường cần thiết, tránh lộ dữ liệu thừa)
@@ -99,8 +100,13 @@ const handleUpdateOrderStatus = async (req, res) => {
   try {
     const { id } = req.params;
     const { status, reason } = req.body;
-    const result = await OrderService.updateOrderStatus(id, status, req.user, reason);
-    
+    const result = await OrderService.updateOrderStatus(
+      id,
+      status,
+      req.user,
+      reason,
+    );
+
     if (result.errCode === 0) {
       const io = req.app.get("io");
       const order = result.data;
@@ -119,7 +125,7 @@ const handleUpdateOrderStatus = async (req, res) => {
           link: `/orders-detail/${id}`,
         },
         null,
-        io
+        io,
       );
 
       // 2. Nếu đơn hàng chuyển sang trạng thái yêu cầu hủy đơn, gửi thông báo trực tiếp cho Admin
@@ -133,7 +139,7 @@ const handleUpdateOrderStatus = async (req, res) => {
             link: "/admin/orders?tab=cancel_requested",
           },
           null,
-          io
+          io,
         );
 
         if (io) {
@@ -155,7 +161,7 @@ const handleUpdateOrderStatus = async (req, res) => {
         });
       }
     }
-    
+
     return handleResponse(res, result, 200);
   } catch (error) {
     return handleError(res, error, "handleUpdateOrderStatus");
@@ -190,7 +196,8 @@ const handleGetOrdersByUserId = async (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
     const status = req.query.status || "all";
 
-    if (req.user.role !== "admin" && String(req.user.id) !== String(userId)) {
+    const isElevated = req.user && ["admin", "root"].includes(req.user.role);
+    if (!isElevated && String(req.user.id) !== String(userId)) {
       return res.status(403).json({
         status: "FORBIDDEN",
         statusCode: 403,
@@ -200,7 +207,12 @@ const handleGetOrdersByUserId = async (req, res) => {
       });
     }
 
-    const result = await OrderService.getOrdersByUserId(userId, page, limit, status);
+    const result = await OrderService.getOrdersByUserId(
+      userId,
+      page,
+      limit,
+      status,
+    );
     return handleResponse(res, result, 200);
   } catch (e) {
     return handleError(res, e, "handleGetOrdersByUserId");
@@ -212,7 +224,8 @@ const getActiveOrdersByUserId = async (req, res) => {
     const userId = req.params.userId;
     const { page = 1, limit = 10 } = req.query;
 
-    if (req.user.role !== "admin" && String(req.user.id) !== String(userId)) {
+    const isElevated = req.user && ["admin", "root"].includes(req.user.role);
+    if (!isElevated && String(req.user.id) !== String(userId)) {
       return res.status(403).json({
         status: "FORBIDDEN",
         statusCode: 403,
@@ -225,7 +238,7 @@ const getActiveOrdersByUserId = async (req, res) => {
     const result = await OrderService.getActiveOrdersByUserId(
       userId,
       +page,
-      +limit
+      +limit,
     );
 
     return handleResponse(res, result, 200);
@@ -238,7 +251,11 @@ const handleRequestReturn = async (req, res) => {
   try {
     const { orderItemId, reason } = req.body;
     const OrderItemService = require("../services/order/OrderItemService");
-    const result = await OrderItemService.requestReturn(orderItemId, reason, req.user);
+    const result = await OrderItemService.requestReturn(
+      orderItemId,
+      reason,
+      req.user,
+    );
     return handleResponse(res, result, 200);
   } catch (e) {
     return handleError(res, e, "handleRequestReturn");
@@ -249,7 +266,11 @@ const handleReturnAction = async (req, res) => {
   try {
     const { orderItemId, action, status } = req.body;
     const OrderItemService = require("../services/order/OrderItemService");
-    const result = await OrderItemService.processReturn(orderItemId, action || status, req.user);
+    const result = await OrderItemService.processReturn(
+      orderItemId,
+      action || status,
+      req.user,
+    );
     return handleResponse(res, result, 200);
   } catch (e) {
     return handleError(res, e, "handleReturnAction");
@@ -260,7 +281,11 @@ const handleChangePaymentMethod = async (req, res) => {
   try {
     const { id } = req.params;
     const { paymentMethod } = req.body;
-    const result = await OrderService.changePaymentMethod(id, paymentMethod, req.user);
+    const result = await OrderService.changePaymentMethod(
+      id,
+      paymentMethod,
+      req.user,
+    );
     if (result.errCode === 0) {
       return handleResponse(res, result, 200);
     }

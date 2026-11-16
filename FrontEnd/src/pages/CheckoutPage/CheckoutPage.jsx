@@ -169,6 +169,9 @@ const CheckoutPage = () => {
       }
     } catch (error) {
       showErrorToast(error, "Lỗi xử lý PayPal");
+    } finally {
+      isSubmitting.current = false;
+      setLoading(false);
     }
   };
 

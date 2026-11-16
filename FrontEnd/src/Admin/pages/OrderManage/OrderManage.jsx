@@ -1,5 +1,26 @@
 import React, { useEffect, useState, useCallback, useMemo } from "react";
-import { FiSearch, FiCheckCircle, FiRefreshCcw, FiUser, FiCalendar, FiTrash2, FiPackage, FiRefreshCw, FiShoppingCart, FiTruck, FiClock, FiXCircle, FiX, FiLock, FiCheck, FiEye, FiShoppingBag, FiChevronDown, FiRotateCcw, FiSlash } from "react-icons/fi";
+import {
+  FiSearch,
+  FiCheckCircle,
+  FiRefreshCcw,
+  FiUser,
+  FiCalendar,
+  FiTrash2,
+  FiPackage,
+  FiRefreshCw,
+  FiShoppingCart,
+  FiTruck,
+  FiClock,
+  FiXCircle,
+  FiX,
+  FiLock,
+  FiCheck,
+  FiEye,
+  FiShoppingBag,
+  FiChevronDown,
+  FiRotateCcw,
+  FiSlash,
+} from "react-icons/fi";
 import { motion as Motion, AnimatePresence } from "framer-motion";
 
 import { useNavigate, useLocation } from "react-router-dom";
@@ -86,7 +107,7 @@ const ALLOWED_TRANSITIONS = {
   delivered: ["completed"],
   completed: [],
   cancelled: [],
-  cancel_requested: ["confirmed", "processing", "shipped", "cancelled"],
+  cancel_requested: ["confirmed", "processing", "cancelled"],
 };
 
 // Component hiển thị danh sách sản phẩm gọn gàng, rõ ràng
@@ -94,7 +115,11 @@ const OrderItemsPreview = ({ items, formatCurrency }) => {
   const [showPopover, setShowPopover] = useState(false);
 
   if (!items || items.length === 0) {
-    return <span className="text-slate-400 text-xs font-medium">Không có sản phẩm</span>;
+    return (
+      <span className="text-slate-400 text-xs font-medium">
+        Không có sản phẩm
+      </span>
+    );
   }
 
   const firstItem = items[0];
@@ -118,7 +143,11 @@ const OrderItemsPreview = ({ items, formatCurrency }) => {
             {firstItem.productName}
           </p>
           <p className="text-[10px] font-medium text-slate-400 dark:text-dark-text-secondary mt-0.5">
-            SL: <span className="font-black text-primary">x{firstItem.quantity}</span> • {formatCurrency(firstItem.price)}
+            SL:{" "}
+            <span className="font-black text-primary">
+              x{firstItem.quantity}
+            </span>{" "}
+            • {formatCurrency(firstItem.price)}
           </p>
         </div>
       </div>
@@ -176,7 +205,11 @@ const OrderItemsPreview = ({ items, formatCurrency }) => {
                         {item.productName}
                       </p>
                       <p className="text-[10px] text-slate-400 font-medium">
-                        SL: <span className="font-bold text-primary">x{item.quantity}</span> • {formatCurrency(item.price)}
+                        SL:{" "}
+                        <span className="font-bold text-primary">
+                          x{item.quantity}
+                        </span>{" "}
+                        • {formatCurrency(item.price)}
                       </p>
                     </div>
                   </div>
@@ -236,7 +269,9 @@ const OrderManage = () => {
         params.set("tab", newTab);
       }
       const newSearch = params.toString();
-      navigate(newSearch ? `/admin/orders?${newSearch}` : "/admin/orders", { replace: true });
+      navigate(newSearch ? `/admin/orders?${newSearch}` : "/admin/orders", {
+        replace: true,
+      });
     },
     [location.search, navigate],
   );
@@ -266,8 +301,14 @@ const OrderManage = () => {
           isCancelRequested,
         );
         if (res?.errCode === 0) {
-          setOrders(res.data || []);
-          setPage(res.pagination?.currentPage || res.pagination?.page || currentPage);
+          const nextOrders = res.data || [];
+          setOrders(nextOrders);
+          setSelectedDetailOrder((prev) =>
+            prev ? nextOrders.find((o) => o.id === prev.id) || prev : null,
+          );
+          setPage(
+            res.pagination?.currentPage || res.pagination?.page || currentPage,
+          );
           setTotalPages(res.pagination?.totalPages || 1);
         } else {
           setOrders([]);
@@ -389,7 +430,10 @@ const OrderManage = () => {
       if (actionType === "delete") {
         const res = await deleteOrder(orderId);
         if (res?.errCode === 0) {
-          showSuccessToast(res?.errMessage, `Đã xóa đơn ${orderCode || `DH${orderId}`}`);
+          showSuccessToast(
+            res?.errMessage,
+            `Đã xóa đơn ${orderCode || `DH${orderId}`}`,
+          );
           fetchOrders(page, searchTerm, activeTab);
         } else {
           showErrorToast(res?.errMessage, "Lỗi khi xóa đơn hàng");
@@ -401,7 +445,9 @@ const OrderManage = () => {
           reason || "Admin duyệt yêu cầu hủy đơn",
         );
         if (res?.errCode === 0) {
-          showSuccessToast(`Đã duyệt hủy đơn #${orderCode} và hoàn tồn kho thành công!`);
+          showSuccessToast(
+            `Đã duyệt hủy đơn #${orderCode} và hoàn tồn kho thành công!`,
+          );
           fetchOrders(page, searchTerm, activeTab);
         } else {
           showErrorToast(res?.errMessage, "Không thể duyệt hủy đơn");
@@ -413,7 +459,9 @@ const OrderManage = () => {
           reason || "Admin từ chối yêu cầu hủy đơn",
         );
         if (res?.errCode === 0) {
-          showSuccessToast(`Đã từ chối yêu cầu hủy đơn #${orderCode}! Đơn chuyển về trạng thái Đã xác nhận.`);
+          showSuccessToast(
+            `Đã từ chối yêu cầu hủy đơn #${orderCode}! Đơn chuyển về trạng thái Đã xác nhận.`,
+          );
           fetchOrders(page, searchTerm, activeTab);
         } else {
           showErrorToast(res?.errMessage, "Không thể từ chối yêu cầu hủy");
@@ -425,16 +473,24 @@ const OrderManage = () => {
           setLoadingId(null);
           return;
         }
-        const res = await updateOrderStatus(orderId, "cancelled", reason.trim());
+        const res = await updateOrderStatus(
+          orderId,
+          "cancelled",
+          reason.trim(),
+        );
         if (res?.errCode === 0) {
           showSuccessToast(`Đã hủy đơn hàng #${orderCode} thành công!`);
           fetchOrders(page, searchTerm, activeTab);
         } else {
           showErrorToast(res?.errMessage, "Không thể hủy đơn hàng");
         }
-      } else if (actionType === "approve_return" || actionType === "reject_return") {
+      } else if (
+        actionType === "approve_return" ||
+        actionType === "reject_return"
+      ) {
         const requestedItems =
-          order?.orderItems?.filter((i) => i.returnStatus === "requested") || [];
+          order?.orderItems?.filter((i) => i.returnStatus === "requested") ||
+          [];
         if (requestedItems.length === 0) {
           showInfoToast("Không tìm thấy sản phẩm nào đang yêu cầu trả hàng.");
         } else {
@@ -518,7 +574,9 @@ const OrderManage = () => {
             title="Làm mới dữ liệu"
             className="size-10 bg-white dark:bg-dark-surface border border-slate-200 dark:border-dark-border text-slate-600 dark:text-dark-text-secondary rounded-xl flex items-center justify-center hover:text-primary hover:border-primary/50 transition-all cursor-pointer shrink-0 shadow-2xs"
           >
-            <FiRefreshCw className={`text-sm ${loading ? "animate-spin" : ""}`} />
+            <FiRefreshCw
+              className={`text-sm ${loading ? "animate-spin" : ""}`}
+            />
           </button>
         </div>
       </div>
@@ -534,7 +592,10 @@ const OrderManage = () => {
               Tổng số trang
             </p>
             <p className="text-sm sm:text-lg font-black text-slate-900 dark:text-white mt-0.5 truncate">
-              {summaryStats.total} <span className="text-[10px] sm:text-xs font-semibold text-slate-400">đơn</span>
+              {summaryStats.total}{" "}
+              <span className="text-[10px] sm:text-xs font-semibold text-slate-400">
+                đơn
+              </span>
             </p>
           </div>
         </div>
@@ -548,7 +609,10 @@ const OrderManage = () => {
               Chờ xử lý
             </p>
             <p className="text-sm sm:text-lg font-black text-amber-600 dark:text-amber-400 mt-0.5 truncate">
-              {summaryStats.pending} <span className="text-[10px] sm:text-xs font-semibold text-slate-400">đơn</span>
+              {summaryStats.pending}{" "}
+              <span className="text-[10px] sm:text-xs font-semibold text-slate-400">
+                đơn
+              </span>
             </p>
           </div>
         </div>
@@ -562,7 +626,10 @@ const OrderManage = () => {
               Đang xử lý/Giao
             </p>
             <p className="text-sm sm:text-lg font-black text-indigo-600 dark:text-indigo-400 mt-0.5 truncate">
-              {summaryStats.shipping} <span className="text-[10px] sm:text-xs font-semibold text-slate-400">đơn</span>
+              {summaryStats.shipping}{" "}
+              <span className="text-[10px] sm:text-xs font-semibold text-slate-400">
+                đơn
+              </span>
             </p>
           </div>
         </div>
@@ -576,7 +643,10 @@ const OrderManage = () => {
               Đã giao / Hoàn tất
             </p>
             <p className="text-sm sm:text-lg font-black text-emerald-600 dark:text-emerald-400 mt-0.5 truncate">
-              {summaryStats.completed} <span className="text-[10px] sm:text-xs font-semibold text-slate-400">đơn</span>
+              {summaryStats.completed}{" "}
+              <span className="text-[10px] sm:text-xs font-semibold text-slate-400">
+                đơn
+              </span>
             </p>
           </div>
         </div>
@@ -646,7 +716,8 @@ const OrderManage = () => {
                           #{order.orderCode}
                         </span>
                         <span className="text-[10px] font-medium text-slate-400 dark:text-dark-text-secondary mt-0.5 flex items-center gap-1">
-                          <FiCalendar className="text-slate-400" /> {formatDate(order.createdAt)}
+                          <FiCalendar className="text-slate-400" />{" "}
+                          {formatDate(order.createdAt)}
                         </span>
                       </div>
                     </td>
@@ -655,7 +726,11 @@ const OrderManage = () => {
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-2.5">
                         <div className="size-8 rounded-full bg-slate-100 dark:bg-dark-bg flex items-center justify-center text-slate-500 font-bold text-xs shrink-0">
-                          {order.user?.username ? order.user.username.charAt(0).toUpperCase() : <FiUser />}
+                          {order.user?.username ? (
+                            order.user.username.charAt(0).toUpperCase()
+                          ) : (
+                            <FiUser />
+                          )}
                         </div>
                         <div className="min-w-0">
                           <p className="font-bold text-slate-900 dark:text-white truncate max-w-[140px]">
@@ -709,9 +784,17 @@ const OrderManage = () => {
                             Lý do: {order.cancelReason}
                           </span>
                         )}
-                        {order.orderItems?.some((i) => i.returnStatus === "requested") && (
+                        {order.orderItems?.some(
+                          (i) => i.returnStatus === "requested",
+                        ) && (
                           <span className="text-[9px] font-black text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 rounded border border-amber-200 dark:border-amber-900/40 flex items-center gap-1">
-                            <FiRotateCcw size={10} /> Y/c trả ({order.orderItems.filter((i) => i.returnStatus === "requested").length})
+                            <FiRotateCcw size={10} /> Y/c trả (
+                            {
+                              order.orderItems.filter(
+                                (i) => i.returnStatus === "requested",
+                              ).length
+                            }
+                            )
                           </span>
                         )}
                       </div>
@@ -741,7 +824,9 @@ const OrderManage = () => {
                         )}
 
                         {/* 2. Nút Duyệt / Từ Chối Trả Hàng */}
-                        {order.orderItems?.some((i) => i.returnStatus === "requested") && (
+                        {order.orderItems?.some(
+                          (i) => i.returnStatus === "requested",
+                        ) && (
                           <button
                             onClick={() => handleProcessReturnModal(order)}
                             title="Xử lý yêu cầu trả hàng từ khách"
@@ -768,12 +853,19 @@ const OrderManage = () => {
                         >
                           <FiRefreshCcw
                             size={14}
-                            className={loadingId === order.id ? "animate-spin" : ""}
+                            className={
+                              loadingId === order.id ? "animate-spin" : ""
+                            }
                           />
                         </button>
 
                         {/* 5. Nút Hủy đơn chủ động của Admin */}
-                        {["pending", "confirmed", "processing", "shipped"].includes(order.status) && (
+                        {[
+                          "pending",
+                          "confirmed",
+                          "processing",
+                          "shipped",
+                        ].includes(order.status) && (
                           <button
                             onClick={() => handleAdminCancelOrder(order)}
                             title="Admin hủy đơn hàng"
@@ -806,7 +898,10 @@ const OrderManage = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="6" className="px-5 py-20 text-center text-slate-400 font-semibold">
+                  <td
+                    colSpan="6"
+                    className="px-5 py-20 text-center text-slate-400 font-semibold"
+                  >
                     Không tìm thấy đơn hàng nào
                   </td>
                 </tr>
@@ -843,9 +938,17 @@ const OrderManage = () => {
                         Lý do hủy: {order.cancelReason}
                       </p>
                     )}
-                    {order.orderItems?.some((i) => i.returnStatus === "requested") && (
+                    {order.orderItems?.some(
+                      (i) => i.returnStatus === "requested",
+                    ) && (
                       <p className="mt-1 text-[10px] text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 rounded-md border border-amber-200 dark:border-amber-900/30 flex items-center gap-1">
-                        <FiRotateCcw size={10} /> Yêu cầu trả ({order.orderItems.filter((i) => i.returnStatus === "requested").length} SP)
+                        <FiRotateCcw size={10} /> Yêu cầu trả (
+                        {
+                          order.orderItems.filter(
+                            (i) => i.returnStatus === "requested",
+                          ).length
+                        }{" "}
+                        SP)
                       </p>
                     )}
                   </div>
@@ -860,7 +963,11 @@ const OrderManage = () => {
                 <div className="bg-slate-50 dark:bg-dark-bg/60 p-3 rounded-xl flex items-center justify-between text-xs">
                   <div className="flex items-center gap-2 min-w-0">
                     <div className="size-7 rounded-full bg-slate-200 dark:bg-dark-surface flex items-center justify-center text-slate-600 font-bold text-[10px] shrink-0">
-                      {order.user?.username ? order.user.username.charAt(0).toUpperCase() : <FiUser />}
+                      {order.user?.username ? (
+                        order.user.username.charAt(0).toUpperCase()
+                      ) : (
+                        <FiUser />
+                      )}
                     </div>
                     <div className="min-w-0">
                       <p className="font-bold text-slate-800 dark:text-slate-200 truncate">
@@ -900,7 +1007,11 @@ const OrderManage = () => {
                           {item.productName}
                         </p>
                         <p className="text-[10px] text-slate-400 font-semibold">
-                          SL: <span className="text-primary font-black">x{item.quantity}</span> • {formatCurrency(item.price)}
+                          SL:{" "}
+                          <span className="text-primary font-black">
+                            x{item.quantity}
+                          </span>{" "}
+                          • {formatCurrency(item.price)}
                         </p>
                       </div>
                     </div>
@@ -930,7 +1041,9 @@ const OrderManage = () => {
                       </button>
                     </>
                   )}
-                  {order.orderItems?.some((i) => i.returnStatus === "requested") && (
+                  {order.orderItems?.some(
+                    (i) => i.returnStatus === "requested",
+                  ) && (
                     <button
                       onClick={() => handleProcessReturnModal(order)}
                       className="px-2.5 py-1.5 bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-900/30 rounded-lg text-[10px] font-black flex items-center gap-1 cursor-pointer"
@@ -950,7 +1063,9 @@ const OrderManage = () => {
                   >
                     <FiRefreshCcw size={12} /> Cập nhật TT
                   </button>
-                  {["pending", "confirmed", "processing", "shipped"].includes(order.status) && (
+                  {["pending", "confirmed", "processing", "shipped"].includes(
+                    order.status,
+                  ) && (
                     <button
                       onClick={() => handleAdminCancelOrder(order)}
                       className="px-2.5 py-1.5 bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 rounded-lg text-[10px] font-bold flex items-center gap-1 cursor-pointer"
@@ -1101,11 +1216,11 @@ const OrderManage = () => {
                   <div className="grid grid-cols-1 gap-2.5">
                     {STATUS_FLOW.map((item) => {
                       const isCurrent = statusModal.order.status === item.key;
-                      const isValid =
-                        ALLOWED_TRANSITIONS[statusModal.order.status]?.includes(
-                          item.key,
-                        );
-                      const isSelected = statusModal.selectedStatus === item.key;
+                      const isValid = ALLOWED_TRANSITIONS[
+                        statusModal.order.status
+                      ]?.includes(item.key);
+                      const isSelected =
+                        statusModal.selectedStatus === item.key;
                       const Icon = item.icon;
 
                       return (
@@ -1123,10 +1238,10 @@ const OrderManage = () => {
                             isCurrent
                               ? "bg-primary/10 border-primary/30 opacity-90 cursor-default"
                               : isSelected
-                              ? "bg-primary text-white border-primary shadow-lg shadow-primary/20 scale-[1.01] cursor-pointer"
-                              : isValid
-                              ? "bg-white dark:bg-dark-surface border-slate-200 dark:border-dark-border hover:border-primary/50 text-slate-700 dark:text-dark-text-secondary cursor-pointer"
-                              : "bg-slate-50 dark:bg-dark-bg/30 border-slate-100 dark:border-dark-border/40 text-slate-300 dark:text-slate-600 opacity-50 cursor-not-allowed"
+                                ? "bg-primary text-white border-primary shadow-lg shadow-primary/20 scale-[1.01] cursor-pointer"
+                                : isValid
+                                  ? "bg-white dark:bg-dark-surface border-slate-200 dark:border-dark-border hover:border-primary/50 text-slate-700 dark:text-dark-text-secondary cursor-pointer"
+                                  : "bg-slate-50 dark:bg-dark-bg/30 border-slate-100 dark:border-dark-border/40 text-slate-300 dark:text-slate-600 opacity-50 cursor-not-allowed"
                           }`}
                         >
                           <div className="flex items-center gap-3 min-w-0">
@@ -1135,10 +1250,10 @@ const OrderManage = () => {
                                 isSelected
                                   ? "bg-white/20 text-white"
                                   : isCurrent
-                                  ? "bg-primary text-white"
-                                  : isValid
-                                  ? "bg-slate-100 dark:bg-dark-bg text-slate-500 dark:text-dark-text-secondary"
-                                  : "bg-slate-100 dark:bg-dark-bg/50 text-slate-300 dark:text-slate-600"
+                                    ? "bg-primary text-white"
+                                    : isValid
+                                      ? "bg-slate-100 dark:bg-dark-bg text-slate-500 dark:text-dark-text-secondary"
+                                      : "bg-slate-100 dark:bg-dark-bg/50 text-slate-300 dark:text-slate-600"
                               }`}
                             >
                               <Icon />
@@ -1170,8 +1285,8 @@ const OrderManage = () => {
                                 {isCurrent
                                   ? "Đơn hàng đang ở trạng thái này"
                                   : isValid
-                                  ? item.desc
-                                  : "Không thể chuyển sang trạng thái này"}
+                                    ? item.desc
+                                    : "Không thể chuyển sang trạng thái này"}
                               </p>
                             </div>
                           </div>
@@ -1240,8 +1355,8 @@ const OrderManage = () => {
                     statusModal.selectedStatus === statusModal.order.status
                       ? "bg-slate-300 dark:bg-slate-700 cursor-not-allowed shadow-none"
                       : statusModal.selectedStatus === "cancelled"
-                      ? "bg-rose-500 hover:bg-rose-600 shadow-rose-500/20 cursor-pointer active:scale-95"
-                      : "bg-primary hover:bg-primary-hover shadow-primary/20 cursor-pointer active:scale-95"
+                        ? "bg-rose-500 hover:bg-rose-600 shadow-rose-500/20 cursor-pointer active:scale-95"
+                        : "bg-primary hover:bg-primary-hover shadow-primary/20 cursor-pointer active:scale-95"
                   }`}
                 >
                   {isUpdating ? (
@@ -1305,7 +1420,7 @@ const OrderManage = () => {
           <p className="text-[10px] font-black uppercase text-slate-400 dark:text-dark-text-secondary tracking-wider mb-1">
             Lý do từ khách hàng:
           </p>
-          <p className="text-xs text-rose-600 dark:text-rose-400 font-semibold italic">
+          <p className="text-xs text-rose-600 dark:text-rose-400 font-semibold italic break-words [overflow-wrap:anywhere]">
             "{confirmModal.order?.cancelReason || "Khách không để lại lý do"}"
           </p>
         </div>
@@ -1438,10 +1553,15 @@ const OrderManage = () => {
                         {item.productName}
                       </p>
                       <p className="text-[10px] text-slate-400 font-semibold mt-0.5">
-                        SL: <span className="text-primary font-black">x{item.quantity}</span> • {formatCurrency(item.price)}
+                        SL:{" "}
+                        <span className="text-primary font-black">
+                          x{item.quantity}
+                        </span>{" "}
+                        • {formatCurrency(item.price)}
                       </p>
-                      <p className="text-[10px] text-amber-700 dark:text-amber-300 font-medium italic mt-1.5 bg-amber-50 dark:bg-amber-950/40 p-2 rounded-lg border border-amber-200/60 dark:border-amber-900/30">
-                        Lý do: "{item.returnReason || "Khách hàng không nêu lý do"}"
+                      <p className="text-[10px] text-amber-700 dark:text-amber-300 font-medium italic mt-1.5 bg-amber-50 dark:bg-amber-950/40 p-2 rounded-lg border border-amber-200/60 dark:border-amber-900/30 break-words [overflow-wrap:anywhere]">
+                        Lý do: "
+                        {item.returnReason || "Khách hàng không nêu lý do"}"
                       </p>
                     </div>
                   </div>

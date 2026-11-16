@@ -115,12 +115,12 @@ const UserManage = () => {
 
   // Selection handlers
   const handleToggleSelectAll = useCallback(() => {
-    if (selectedIds.length === users.length) {
+    const selectable = users
+      .filter((u) => u.id !== currentUser?.id)
+      .map((u) => u.id);
+    if (selectable.length > 0 && selectedIds.length === selectable.length) {
       setSelectedIds([]);
     } else {
-      const selectable = users
-        .filter((u) => u.id !== currentUser?.id)
-        .map((u) => u.id);
       setSelectedIds(selectable);
     }
   }, [users, selectedIds, currentUser]);
@@ -270,7 +270,10 @@ const UserManage = () => {
         <div className="flex items-center justify-center">
           <input
             type="checkbox"
-            checked={users.length > 0 && selectedIds.length === users.length}
+            checked={(() => {
+              const selectableCount = users.filter((u) => u.id !== currentUser?.id).length;
+              return selectableCount > 0 && selectedIds.length === selectableCount;
+            })()}
             onChange={handleToggleSelectAll}
             className="rounded text-primary focus:ring-primary size-4 cursor-pointer"
             title="Chọn tất cả trang này"
@@ -860,13 +863,13 @@ const UserManage = () => {
       {showAuditModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
           <div className="bg-white dark:bg-dark-surface w-full max-w-2xl rounded-2xl shadow-2xl border border-slate-200 dark:border-dark-border p-6 space-y-4 animate-scaleUp max-h-[85vh] flex flex-col">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-dark-border">
-              <div className="flex items-center gap-2.5">
-                <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+            <div className="flex items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-dark-border min-w-0">
+              <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
                   <FiClock size={18} />
                 </div>
-                <div>
-                  <h3 className="text-base font-black text-slate-900 dark:text-white">
+                <div className="min-w-0 flex-1">
+                  <h3 className="text-base font-black text-slate-900 dark:text-white break-words [overflow-wrap:anywhere]">
                     {selectedUserForAudit
                       ? `Lịch sử thao tác: ${selectedUserForAudit.username}`
                       : "Nhật ký quản trị tài khoản hệ thống"}
@@ -921,7 +924,7 @@ const UserManage = () => {
                       </span>
                     </div>
 
-                    <p className="text-xs text-slate-600 dark:text-slate-300">
+                    <p className="text-xs text-slate-600 dark:text-slate-300 break-words [overflow-wrap:anywhere]">
                       <strong>Lý do:</strong> {log.reason || "Không ghi chú"}
                     </p>
 

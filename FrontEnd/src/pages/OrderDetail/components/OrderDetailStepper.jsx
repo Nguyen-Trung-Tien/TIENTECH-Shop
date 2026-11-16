@@ -11,8 +11,13 @@ const steps = [
 ];
 
 const OrderDetailStepper = ({ orderStatus }) => {
-  const currentStepIndex = steps.findIndex((s) => s.key === orderStatus);
-  const isCancelled = orderStatus === "cancelled" || orderStatus === "cancel_requested";
+  const effectiveStatus = orderStatus === "shipping" ? "shipped" : orderStatus;
+  const currentStepIndex = Math.max(
+    0,
+    steps.findIndex((s) => s.key === effectiveStatus),
+  );
+  const isCancelled =
+    orderStatus === "cancelled" || orderStatus === "cancel_requested";
 
   if (isCancelled) return null;
 
@@ -25,7 +30,9 @@ const OrderDetailStepper = ({ orderStatus }) => {
             {(() => {
               const currentStep = steps[currentStepIndex] || steps[0];
               const Icon = currentStep.icon;
-              return Icon && (typeof Icon === "function" ? <Icon size={18} /> : Icon);
+              return (
+                Icon && (typeof Icon === "function" ? <Icon size={18} /> : Icon)
+              );
             })()}
           </div>
           <div className="min-w-0">
@@ -40,7 +47,9 @@ const OrderDetailStepper = ({ orderStatus }) => {
         <div className="w-20 bg-slate-100 dark:bg-dark-bg h-2 rounded-full overflow-hidden shrink-0">
           <div
             className="bg-primary h-full rounded-full transition-all duration-500"
-            style={{ width: `${((currentStepIndex + 1) / steps.length) * 100}%` }}
+            style={{
+              width: `${((currentStepIndex + 1) / steps.length) * 100}%`,
+            }}
           />
         </div>
       </div>
@@ -71,11 +80,14 @@ const OrderDetailStepper = ({ orderStatus }) => {
                       : "bg-slate-100 dark:bg-dark-bg text-slate-400 dark:text-dark-text-secondary"
                   }`}
                 >
-                  {Icon && (typeof Icon === "function" ? <Icon size={20} /> : Icon)}
+                  {Icon &&
+                    (typeof Icon === "function" ? <Icon size={20} /> : Icon)}
                 </div>
                 <span
                   className={`absolute top-16 text-[10px] font-black uppercase tracking-widest whitespace-nowrap ${
-                    isActive ? "text-primary" : "text-slate-400 dark:text-dark-text-secondary"
+                    isActive
+                      ? "text-primary"
+                      : "text-slate-400 dark:text-dark-text-secondary"
                   }`}
                 >
                   {step.label}

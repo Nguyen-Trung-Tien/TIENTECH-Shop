@@ -110,7 +110,9 @@ const CartItem = ({
           className="size-20 sm:size-28 shrink-0 bg-slate-50 dark:bg-dark-bg rounded-2xl border border-slate-100 dark:border-dark-border p-2 sm:p-4 overflow-hidden group cursor-pointer shadow-xs hover:shadow-md transition-all"
           onClick={() =>
             navigate(
-              `/product-detail/${item.product?.id}?variant=${item.variant?.id}`,
+              `/product-detail/${item.product?.slug || item.product?.id}${
+                item.variant?.id ? `?variant=${item.variant.id}` : ""
+              }`,
             )
           }
         >
@@ -146,7 +148,9 @@ const CartItem = ({
             className="text-base md:text-lg font-black text-slate-900 dark:text-white hover:text-primary transition-colors cursor-pointer line-clamp-1 leading-tight"
             onClick={() =>
               navigate(
-                `/product-detail/${item.product?.id}?variant=${item.variant?.id}`,
+                `/product-detail/${item.product?.slug || item.product?.id}${
+                  item.variant?.id ? `?variant=${item.variant.id}` : ""
+                }`,
               )
             }
           >

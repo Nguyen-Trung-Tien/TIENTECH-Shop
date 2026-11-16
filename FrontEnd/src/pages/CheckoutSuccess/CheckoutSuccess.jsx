@@ -21,7 +21,7 @@ const CheckoutSuccess = () => {
 
   const order = location.state?.order;
   const displayOrderCode = order?.orderCode || orderId || "CHECKOUT";
-  const totalAmount = order?.totalAmount || order?.finalAmount;
+  const totalAmount = order?.totalPrice ?? order?.totalAmount ?? order?.finalAmount;
 
   useEffect(() => {
     if (countdown <= 0) {
@@ -97,13 +97,13 @@ const CheckoutSuccess = () => {
             </button>
           </div>
 
-          <div className="flex items-baseline justify-between pt-1">
-            <strong className="text-lg md:text-xl font-black text-slate-900 dark:text-white font-mono tracking-wide">
+          <div className="flex items-baseline justify-between gap-2 min-w-0 pt-1">
+            <strong className="text-lg md:text-xl font-black text-slate-900 dark:text-white font-mono tracking-wide break-all min-w-0">
               {displayOrderCode.startsWith("#") ? displayOrderCode : `#${displayOrderCode}`}
             </strong>
 
             {totalAmount > 0 && (
-              <span className="text-base font-black text-emerald-600 dark:text-emerald-400">
+              <span className="text-base font-black text-emerald-600 dark:text-emerald-400 shrink-0">
                 {Number(totalAmount).toLocaleString("vi-VN")}₫
               </span>
             )}

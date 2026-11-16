@@ -36,7 +36,7 @@ const SpecificationSection = ({ mergedSpecs, displayVariant }) => {
                   </span>
                   <span className="truncate">{spec.name}</span>
                 </div>
-                <div className="text-slate-900 dark:text-white font-semibold text-right ml-4 break-words">
+                <div className="text-slate-900 dark:text-white font-semibold text-right ml-4 min-w-0 flex-1 break-words [overflow-wrap:anywhere]">
                   {spec.value}
                 </div>
               </div>

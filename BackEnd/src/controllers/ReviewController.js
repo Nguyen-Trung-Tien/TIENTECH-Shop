@@ -1,6 +1,7 @@
 const ReviewService = require("../services/marketing/ReviewService");
 const { uploadToCloudinary } = require("../config/cloudinaryConfig");
 const { handleResponse, handleError } = require("../utils/controllerHelper");
+const { validateImageBuffer } = require("../utils/imageValidator");
 
 const handleGetReviewsByProduct = async (req, res) => {
   try {
@@ -63,6 +64,14 @@ const handleCreateReview = async (req, res) => {
           const parts = img.split(",");
           if (parts[1]) {
             const buffer = Buffer.from(parts[1], "base64");
+            if (!validateImageBuffer(buffer)) {
+              return res.status(400).json({
+                status: "BAD_REQUEST",
+                statusCode: 400,
+                errCode: 2,
+                errMessage: "Hình ảnh đánh giá không hợp lệ (magic bytes mismatch).",
+              });
+            }
             const uploadRes = await uploadToCloudinary(buffer, "reviews");
             imageUrls.push(uploadRes.secure_url);
           }
