@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
   FiBell,
   FiPackage,
@@ -21,6 +21,7 @@ import {
   deleteNotificationApi,
   clearAllNotificationsApi,
 } from "../../api/notificationApi";
+import { initUserSocket } from "../../utils/socket";
 import { useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { motion as Motion, AnimatePresence } from "framer-motion";
@@ -46,6 +47,7 @@ const Notifications = () => {
   const [showClearModal, setShowClearModal] = useState(false);
   const [selectedNotification, setSelectedNotification] = useState(null);
   const [expandedIds, setExpandedIds] = useState(new Set());
+  const fetchDebounceRef = useRef(null);
 
   const toggleExpand = (id) => {
     setExpandedIds((prev) => {
@@ -87,17 +89,100 @@ const Notifications = () => {
     [user, filterTab]
   );
 
+  const notifySync = useCallback(() => {
+    window.dispatchEvent(
+      new CustomEvent("tientech:notifications_sync", { detail: { source: "page" } }),
+    );
+  }, []);
+
   useEffect(() => {
     fetchNotifications(1, false);
-  }, [fetchNotifications]);
+
+    const triggerDebouncedRefresh = () => {
+      if (fetchDebounceRef.current) clearTimeout(fetchDebounceRef.current);
+      fetchDebounceRef.current = setTimeout(() => {
+        fetchNotifications(1, false);
+      }, 450);
+    };
+
+    const handleSync = (event) => {
+      if (event?.detail?.source !== "page") {
+        triggerDebouncedRefresh();
+      }
+    };
+    window.addEventListener("tientech:notifications_sync", handleSync);
+
+    let socket = null;
+    let handleIncomingNotification = null;
+    let handleSocketRefresh = null;
+
+    if (user) {
+      socket = initUserSocket(user);
+
+      handleIncomingNotification = (data) => {
+        if (data?.title) {
+          const matchesFilter =
+            filterTab === "all" ||
+            filterTab === "unread" ||
+            filterTab === (data.type || "system");
+          if (matchesFilter) {
+            const incomingItem = {
+              id:
+                data.id ||
+                `temp_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+              userId: data.userId ?? user.id,
+              title: data.title,
+              message: data.message || "",
+              type: data.type || "system",
+              link: data.link || null,
+              metadata: data.metadata || null,
+              isRead: false,
+              createdAt: data.createdAt || new Date().toISOString(),
+            };
+            setNotifications((prev) => {
+              if (data.id && prev.some((item) => item.id === data.id)) {
+                return prev;
+              }
+              return [incomingItem, ...prev];
+            });
+          }
+        }
+        triggerDebouncedRefresh();
+      };
+
+      handleSocketRefresh = () => {
+        triggerDebouncedRefresh();
+      };
+
+      socket.on("notification", handleIncomingNotification);
+      socket.on("order_status_updated", handleSocketRefresh);
+      if (user.role === "admin" || user.role === "root") {
+        socket.on("new_order", handleSocketRefresh);
+      }
+    }
+
+    return () => {
+      window.removeEventListener("tientech:notifications_sync", handleSync);
+      if (socket) {
+        socket.off("notification", handleIncomingNotification);
+        socket.off("order_status_updated", handleSocketRefresh);
+        if (user?.role === "admin" || user?.role === "root") {
+          socket.off("new_order", handleSocketRefresh);
+        }
+      }
+      if (fetchDebounceRef.current) clearTimeout(fetchDebounceRef.current);
+    };
+  }, [fetchNotifications, user, filterTab]);
 
   const handleMarkAsRead = async (id) => {
     try {
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === id ? { ...n, isRead: true } : n))
+      );
+      if (String(id).startsWith("temp_")) return;
       const res = await markAsReadApi(id);
       if (res.errCode === 0) {
-        setNotifications((prev) =>
-          prev.map((n) => (n.id === id ? { ...n, isRead: true } : n))
-        );
+        notifySync();
       }
     } catch (err) {
       console.error(err);
@@ -108,9 +193,11 @@ const Notifications = () => {
     e.stopPropagation();
     try {
       setNotifications((prev) => prev.filter((n) => n.id !== id));
+      if (String(id).startsWith("temp_")) return;
       const res = await deleteNotificationApi(id);
       if (res?.errCode === 0) {
         toast.success("Đã xóa thông báo!");
+        notifySync();
       }
     } catch (err) {
       console.error(err);
@@ -125,6 +212,7 @@ const Notifications = () => {
       const res = await clearAllNotificationsApi();
       if (res?.errCode === 0) {
         toast.success("Đã xóa toàn bộ thông báo!");
+        notifySync();
       }
     } catch (err) {
       console.error(err);
@@ -138,6 +226,7 @@ const Notifications = () => {
       const res = await markAllReadApi();
       if (res?.errCode === 0) {
         toast.success("Đã đánh dấu tất cả là đã đọc");
+        notifySync();
       }
     } catch (err) {
       console.error(err);

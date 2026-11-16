@@ -120,6 +120,13 @@ const NotificationBell = () => {
   useEffect(() => {
     fetchNotifications();
 
+    const handleSync = (event) => {
+      if (event?.detail?.source !== "bell") {
+        triggerDebouncedFetch();
+      }
+    };
+    window.addEventListener("tientech:notifications_sync", handleSync);
+
     let socket = null;
     let handleNewOrder = null;
     let handleOrderStatusUpdated = null;
@@ -130,20 +137,43 @@ const NotificationBell = () => {
 
       handleNewOrder = (data) => {
         triggerDebouncedFetch();
-        playNotificationChime();
-        const orderKey = data?.orderCode || data?.orderId || (typeof data?.message === "string" ? data.message : "new_order");
-        if (shouldSuppressDuplicate(orderKey)) return;
+        const orderKey =
+          data?.orderCode ||
+          data?.orderId ||
+          (typeof data?.message === "string" ? data.message : "new_order");
+        if (shouldSuppressDuplicate(`order_${orderKey}`)) return;
 
-        if (batchOrderCountRef.current === 0) {
+        playNotificationChime();
+
+        // If a single order notification toast was already shown in handleNotification, skip duplicate toast
+        const recentOrderNotifKey = data?.orderCode
+          ? `order_notif_${data.orderCode}`
+          : null;
+        if (
+          recentOrderNotifKey &&
+          recentAlertsRef.current.has(recentOrderNotifKey) &&
+          Date.now() - recentAlertsRef.current.get(recentOrderNotifKey) < 2000 &&
+          batchOrderCountRef.current === 0
+        ) {
+          batchOrderCountRef.current = 1;
+        } else if (batchOrderCountRef.current === 0) {
           batchOrderCountRef.current = 1;
           const msg = data?.message || "Có đơn hàng mới từ khách hàng!";
           showInfoToast(`🔔 ${msg}`, { toastId: "active_order_batch" });
         } else {
           batchOrderCountRef.current += 1;
-          toast.info(`🔔 Hệ thống vừa nhận thêm ${batchOrderCountRef.current} đơn hàng mới!`, {
-            toastId: "active_order_batch",
-            autoClose: 3500,
-          });
+          const batchMsg = `🔔 Hệ thống vừa nhận thêm ${batchOrderCountRef.current} đơn hàng mới!`;
+          if (toast.isActive("active_order_batch")) {
+            toast.update("active_order_batch", {
+              render: batchMsg,
+              autoClose: 3500,
+            });
+          } else {
+            toast.info(batchMsg, {
+              toastId: "active_order_batch",
+              autoClose: 3500,
+            });
+          }
         }
 
         if (batchTimerRef.current) clearTimeout(batchTimerRef.current);
@@ -154,8 +184,11 @@ const NotificationBell = () => {
 
       handleOrderStatusUpdated = (data) => {
         triggerDebouncedFetch();
-        playNotificationChime();
         if (!data?.message) return;
+        const msgKey = `msg_${data.message}`;
+        if (shouldSuppressDuplicate(msgKey)) return;
+
+        playNotificationChime();
         const key = `status_${data.orderId || data.orderCode}_${data.status}`;
         if (shouldSuppressDuplicate(key)) return;
         showInfoToast(`🔔 ${data.message}`, { toastId: key });
@@ -163,10 +196,54 @@ const NotificationBell = () => {
 
       handleNotification = (data) => {
         triggerDebouncedFetch();
-        playNotificationChime();
         if (!data?.title) return;
-        const notifKey = data.id ? `notif_${data.id}` : `${data.title}_${data.message || ""}`;
+
+        const notifKey = data.id
+          ? `notif_${data.id}`
+          : `${data.title}_${data.message || ""}`;
         if (shouldSuppressDuplicate(notifKey)) return;
+
+        // Record message key so order_status_updated doesn't show a duplicate toast
+        if (data.message) {
+          recentAlertsRef.current.set(`msg_${data.message}`, Date.now());
+          const orderCodeMatch = data.message.match(/#([A-Za-z0-9_-]+)/);
+          if (orderCodeMatch?.[1]) {
+            recentAlertsRef.current.set(
+              `order_notif_${orderCodeMatch[1]}`,
+              Date.now(),
+            );
+          }
+        }
+
+        // Optimistically update badge & dropdown list immediately on arrival
+        setUnreadCount((prev) => prev + 1);
+        const matchesFilter =
+          activeFilter === "all" ||
+          activeFilter === "unread" ||
+          activeFilter === (data.type || "system");
+        if (matchesFilter) {
+          const incomingItem = {
+            id:
+              data.id ||
+              `temp_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+            userId: data.userId ?? user.id,
+            title: data.title,
+            message: data.message || "",
+            type: data.type || "system",
+            link: data.link || null,
+            metadata: data.metadata || null,
+            isRead: false,
+            createdAt: data.createdAt || new Date().toISOString(),
+          };
+          setNotifications((prev) => {
+            if (data.id && prev.some((item) => item.id === data.id)) {
+              return prev;
+            }
+            return [incomingItem, ...prev].slice(0, 15);
+          });
+        }
+
+        playNotificationChime();
 
         // Nếu là thông báo đơn hàng cho admin và vừa nhận order batch, tránh toast kép
         if (data.type === "order" && batchOrderCountRef.current > 0) {
@@ -185,6 +262,7 @@ const NotificationBell = () => {
     }
 
     return () => {
+      window.removeEventListener("tientech:notifications_sync", handleSync);
       if (socket) {
         if (user?.role === "admin" || user?.role === "root") {
           socket.off("new_order", handleNewOrder);
@@ -207,6 +285,12 @@ const NotificationBell = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const notifySync = useCallback(() => {
+    window.dispatchEvent(
+      new CustomEvent("tientech:notifications_sync", { detail: { source: "bell" } }),
+    );
+  }, []);
+
   const handleNotificationClick = async (n) => {
     if (!n.isRead) {
       try {
@@ -214,7 +298,10 @@ const NotificationBell = () => {
           prev.map((item) => (item.id === n.id ? { ...item, isRead: true } : item))
         );
         setUnreadCount((prev) => Math.max(0, prev - 1));
-        await markAsReadApi(n.id);
+        if (!String(n.id).startsWith("temp_")) {
+          await markAsReadApi(n.id);
+          notifySync();
+        }
         fetchNotifications();
       } catch (err) {
         console.error("Error marking as read:", err);
@@ -227,10 +314,17 @@ const NotificationBell = () => {
   const handleDeleteNotification = async (e, id) => {
     e.stopPropagation();
     try {
+      const target = notifications.find((item) => item.id === id);
       setNotifications((prev) => prev.filter((item) => item.id !== id));
-      const res = await deleteNotificationApi(id);
-      if (res?.errCode === 0) {
-        fetchNotifications();
+      if (target && !target.isRead) {
+        setUnreadCount((prev) => Math.max(0, prev - 1));
+      }
+      if (!String(id).startsWith("temp_")) {
+        const res = await deleteNotificationApi(id);
+        if (res?.errCode === 0) {
+          notifySync();
+          fetchNotifications();
+        }
       }
     } catch (err) {
       console.error(err);
@@ -244,6 +338,7 @@ const NotificationBell = () => {
       const res = await markAllReadApi();
       if (res?.errCode === 0) {
         showSuccessToast("Đã đánh dấu tất cả là đã đọc!");
+        notifySync();
       }
       fetchNotifications();
     } catch (err) {
@@ -366,7 +461,7 @@ const NotificationBell = () => {
                     )}
                   </button>
 
-                  {user.role === "admin" && (
+                  {["admin", "root"].includes(user.role) && (
                     <button
                       onClick={() => {
                         setShowDropdown(false);
@@ -494,8 +589,17 @@ const NotificationBell = () => {
                               onClick={(e) => {
                                 e.stopPropagation();
                                 if (!n.isRead) {
-                                  markAsReadApi(n.id).catch(() => {});
+                                  setNotifications((prev) =>
+                                    prev.map((item) =>
+                                      item.id === n.id ? { ...item, isRead: true } : item
+                                    )
+                                  );
                                   setUnreadCount((prev) => Math.max(0, prev - 1));
+                                  if (!String(n.id).startsWith("temp_")) {
+                                    markAsReadApi(n.id)
+                                      .then(() => notifySync())
+                                      .catch(() => {});
+                                  }
                                 }
                                 setShowDropdown(false);
                                 navigate(n.link);
@@ -523,8 +627,17 @@ const NotificationBell = () => {
                               onClick={(e) => {
                                 e.stopPropagation();
                                 if (!n.isRead) {
-                                  markAsReadApi(n.id).catch(() => {});
+                                  setNotifications((prev) =>
+                                    prev.map((item) =>
+                                      item.id === n.id ? { ...item, isRead: true } : item
+                                    )
+                                  );
                                   setUnreadCount((prev) => Math.max(0, prev - 1));
+                                  if (!String(n.id).startsWith("temp_")) {
+                                    markAsReadApi(n.id)
+                                      .then(() => notifySync())
+                                      .catch(() => {});
+                                  }
                                 }
                                 setShowDropdown(false);
                                 navigate(n.link);
@@ -740,7 +853,9 @@ const NotificationBell = () => {
                         {getTypeStyle(selectedNotification.type).badge}
                       </span>
                       <p className="text-[10px] font-bold text-slate-400 mt-1">
-                        {new Date(selectedNotification.createdAt).toLocaleString("vi-VN")}
+                        {selectedNotification.createdAt
+                          ? new Date(selectedNotification.createdAt).toLocaleString("vi-VN")
+                          : "Vừa xong"}
                       </p>
                     </div>
                   </div>
