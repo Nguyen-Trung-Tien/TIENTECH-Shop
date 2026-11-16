@@ -164,5 +164,47 @@ describe("NotificationService Unit Tests", () => {
       expect(mockNotifOther.destroy).not.toHaveBeenCalled();
     });
   });
+
+  describe("metadata column fallback (production schema safety)", () => {
+    test("getNotifications tự động fallback khi bảng Notifications chưa có cột metadata", async () => {
+      const dbErr = new Error("Unknown column 'metadata' in 'field list'");
+      dbErr.original = { code: "ER_BAD_FIELD_ERROR", message: dbErr.message };
+
+      const findSpy = jest
+        .spyOn(db.Notification, "findAndCountAll")
+        .mockRejectedValueOnce(dbErr)
+        .mockResolvedValueOnce({ count: 1, rows: [{ id: 1, title: "Order", type: "order" }] });
+      jest.spyOn(db.Notification, "count").mockResolvedValue(1);
+
+      const res = await NotificationService.getNotifications(10, "customer", 1, 15, "order");
+
+      expect(res.errCode).toBe(0);
+      expect(res.data).toHaveLength(1);
+      expect(findSpy).toHaveBeenCalledTimes(2);
+      expect(findSpy.mock.calls[1][0].attributes).not.toContain("metadata");
+    });
+
+    test("createNotification tự động fallback khi bảng Notifications chưa có cột metadata", async () => {
+      const dbErr = new Error("Unknown column 'metadata' in 'field list'");
+      dbErr.original = { code: "ER_BAD_FIELD_ERROR", message: dbErr.message };
+
+      const createSpy = jest
+        .spyOn(db.Notification, "create")
+        .mockRejectedValueOnce(dbErr)
+        .mockResolvedValueOnce({ id: 5, userId: 10, title: "Test", message: "Msg", type: "order" });
+
+      const res = await NotificationService.createNotification({
+        userId: 10,
+        title: "Test",
+        message: "Msg",
+        type: "order",
+        metadata: { orderCode: "ORD1" },
+      });
+
+      expect(res.errCode).toBe(0);
+      expect(createSpy).toHaveBeenCalledTimes(2);
+      expect(createSpy.mock.calls[1][0]).not.toHaveProperty("metadata");
+    });
+  });
 });
 

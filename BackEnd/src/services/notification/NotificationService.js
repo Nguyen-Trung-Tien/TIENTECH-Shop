@@ -9,6 +9,14 @@ const normalizeType = (type) => {
   return "system";
 };
 
+const isMissingMetadataColumnError = (error) => {
+  const msg = String(error?.original?.message || error?.message || "").toLowerCase();
+  return (
+    (error?.original?.code === "ER_BAD_FIELD_ERROR" || msg.includes("unknown column")) &&
+    msg.includes("metadata")
+  );
+};
+
 const createNotification = async (data, t = null, io = null) => {
   try {
     const payload = {
@@ -20,7 +28,17 @@ const createNotification = async (data, t = null, io = null) => {
       metadata: data.metadata || null,
       isRead: false,
     };
-    const notification = await db.Notification.create(payload, { transaction: t });
+    let notification;
+    try {
+      notification = await db.Notification.create(payload, { transaction: t });
+    } catch (createErr) {
+      if (isMissingMetadataColumnError(createErr)) {
+        const { metadata: _ignored, ...fallbackPayload } = payload;
+        notification = await db.Notification.create(fallbackPayload, { transaction: t });
+      } else {
+        throw createErr;
+      }
+    }
     
     // Controlled real-time dispatch preventing excess data exposure
     if (io) {
@@ -53,7 +71,9 @@ const createNotification = async (data, t = null, io = null) => {
 
 const getNotifications = async (userId, role, page = 1, limit = 10, type = null) => {
   try {
-    const offset = (page - 1) * limit;
+    const safePage = Math.max(1, parseInt(page, 10) || 1);
+    const safeLimit = Math.min(100, Math.max(1, parseInt(limit, 10) || 10));
+    const offset = (safePage - 1) * safeLimit;
     const where = {};
     const isAdmin = role === "admin" || role === "root";
 
@@ -71,23 +91,41 @@ const getNotifications = async (userId, role, page = 1, limit = 10, type = null)
       }
     }
 
-    const { count, rows } = await db.Notification.findAndCountAll({
-      where,
-      limit,
-      offset,
-      order: [["createdAt", "DESC"]],
-      attributes: [
-        "id",
-        "userId",
-        "title",
-        "message",
-        "type",
-        "isRead",
-        "link",
-        "metadata",
-        "createdAt",
-      ],
-    });
+    const baseAttributes = [
+      "id",
+      "userId",
+      "title",
+      "message",
+      "type",
+      "isRead",
+      "link",
+      "createdAt",
+    ];
+
+    let queryResult;
+    try {
+      queryResult = await db.Notification.findAndCountAll({
+        where,
+        limit: safeLimit,
+        offset,
+        order: [["createdAt", "DESC"]],
+        attributes: [...baseAttributes, "metadata"],
+      });
+    } catch (queryErr) {
+      if (isMissingMetadataColumnError(queryErr)) {
+        queryResult = await db.Notification.findAndCountAll({
+          where,
+          limit: safeLimit,
+          offset,
+          order: [["createdAt", "DESC"]],
+          attributes: baseAttributes,
+        });
+      } else {
+        throw queryErr;
+      }
+    }
+
+    const { count, rows } = queryResult;
 
     const unreadCount = await db.Notification.count({
       where: {
@@ -104,7 +142,7 @@ const getNotifications = async (userId, role, page = 1, limit = 10, type = null)
       data: rows,
       total: count,
       unreadCount,
-      totalPages: Math.ceil(count / limit),
+      totalPages: Math.ceil(count / safeLimit),
     };
   } catch (error) {
     console.error("Error getting notifications:", error);

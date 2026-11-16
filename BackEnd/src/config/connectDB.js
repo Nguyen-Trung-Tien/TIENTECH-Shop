@@ -15,6 +15,23 @@ let connectDB = async () => {
         console.warn("[connectDB] AuditLog auto-sync notice:", err.message);
       });
     }
+
+    // Ensure Notifications.metadata column exists in production DBs where migrations weren't run
+    if (db.Notification) {
+      try {
+        const queryInterface = db.sequelize.getQueryInterface();
+        const tableInfo = await queryInterface.describeTable("Notifications");
+        if (!tableInfo.metadata) {
+          await queryInterface.addColumn("Notifications", "metadata", {
+            type: db.Sequelize.JSON,
+            allowNull: true,
+          });
+          console.log("[connectDB] Added missing metadata column to Notifications table.");
+        }
+      } catch (err) {
+        console.warn("[connectDB] Notification metadata column check notice:", err.message);
+      }
+    }
   } catch (error) {
     console.error("Unable to connect to database:", error);
   }
