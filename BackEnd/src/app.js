@@ -68,11 +68,12 @@ app.use(
       "Authorization",
       "X-Requested-With",
       "X-XSRF-TOKEN",
+      "X-Idempotency-Key",
       "Accept",
       "Cache-Control",
       "Pragma",
     ],
-    exposedHeaders: ["X-XSRF-TOKEN"],
+    exposedHeaders: ["X-XSRF-TOKEN", "X-Idempotency-Replayed"],
   })
 );
 
