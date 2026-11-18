@@ -136,14 +136,21 @@ function Header() {
                 <Link
                   key={link.path}
                   to={link.path}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all duration-150 flex items-center gap-1.5 whitespace-nowrap shrink-0 ${
+                  className={`relative px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors duration-150 flex items-center gap-1.5 whitespace-nowrap shrink-0 ${
                     isActive
-                      ? "text-blue-600 dark:text-blue-400 bg-white dark:bg-[#131926] shadow-xs"
-                      : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/60 dark:hover:bg-[#131926]/60"
+                      ? "text-blue-600 dark:text-blue-400"
+                      : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                   }`}
                 >
-                  <span className="text-xs shrink-0">{link.icon}</span>
-                  <span className="whitespace-nowrap">{link.name}</span>
+                  {isActive && (
+                    <Motion.span
+                      layoutId="desktop-nav-active"
+                      transition={{ type: "spring", stiffness: 420, damping: 34 }}
+                      className="absolute inset-0 rounded-lg bg-white dark:bg-[#131926] shadow-xs -z-10"
+                    />
+                  )}
+                  <span className="text-xs shrink-0 relative z-10">{link.icon}</span>
+                  <span className="whitespace-nowrap relative z-10">{link.name}</span>
                 </Link>
               );
             })}

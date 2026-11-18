@@ -1,6 +1,7 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
+import { motion as Motion } from "framer-motion";
 import { FiHome, FiGrid, FiShoppingCart, FiPackage, FiUser } from "react-icons/fi";
 
 const HIDE_BOTTOM_NAV_PREFIXES = ["/product-detail", "/checkout", "/cart"];
@@ -56,16 +57,23 @@ const MobileBottomNav = () => {
           const Icon = item.icon;
           const isActive = item.match(location.pathname);
           return (
-            <Link
-              key={item.label}
-              to={item.to}
-              aria-current={isActive ? "page" : undefined}
-              className={`flex flex-col items-center justify-center gap-0.5 min-w-0 px-1 transition-colors ${
-                isActive
-                  ? "text-primary dark:text-primary-light font-semibold"
-                  : "text-surface-500 dark:text-dark-text-secondary hover:text-surface-900 dark:hover:text-white"
-              }`}
-            >
+              <Link
+                key={item.label}
+                to={item.to}
+                aria-current={isActive ? "page" : undefined}
+                className={`relative flex flex-col items-center justify-center gap-0.5 min-w-0 px-1 transition-colors ${
+                  isActive
+                    ? "text-primary dark:text-primary-light font-semibold"
+                    : "text-surface-500 dark:text-dark-text-secondary hover:text-surface-900 dark:hover:text-white"
+                }`}
+              >
+                {isActive && (
+                  <Motion.span
+                    layoutId="mobile-nav-indicator"
+                    transition={{ type: "spring", stiffness: 420, damping: 32 }}
+                    className="absolute top-0 inset-x-3 h-0.5 rounded-full bg-primary dark:bg-primary-light"
+                  />
+                )}
               <div className="relative">
                 <Icon className="w-5 h-5" aria-hidden="true" />
                 {item.badge > 0 && (

@@ -1,4 +1,5 @@
 import React from "react";
+import { motion as Motion } from "framer-motion";
 import Header from "../HeaderComponent/Header";
 import Footer from "../FooterComponent/Footer";
 import MobileBottomNav from "./MobileBottomNav";
@@ -69,9 +70,14 @@ const LayoutComponent = ({
       {isShowHeader && <Header />}
       
       <main id="main-content" className="flex-grow pb-20">
-        <div className="animate-in fade-in duration-700">
+        <Motion.div
+          key={location.pathname}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.22, ease: "easeOut" }}
+        >
           {children}
-        </div>
+        </Motion.div>
       </main>
 
       {isShowFooter && !shouldHideFooter && <Footer />}

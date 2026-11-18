@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { Link } from "react-router-dom";
+import { motion as Motion } from "framer-motion";
 import {
   FaBox,
   FaShoppingCart,
@@ -236,7 +237,12 @@ const Dashboard = () => {
           </div>
 
           {/* Action Queue Strip: Urgent Operations */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.25, ease: "easeOut" }}
+            className="grid grid-cols-1 md:grid-cols-3 gap-4"
+          >
             <Link
               to="/admin/orders?tab=cancel_requested"
               className="flex items-center justify-between gap-4 p-4 rounded-2xl bg-white dark:bg-dark-surface border border-rose-200/80 dark:border-rose-900/40 hover:border-rose-400 transition-all shadow-xs min-w-0"
@@ -302,7 +308,7 @@ const Dashboard = () => {
                 Nhập kho <FiArrowRight />
               </span>
             </Link>
-          </div>
+          </Motion.div>
 
           {/* Low Stock Detail Strip */}
           {lowStock.count > 0 && lowStock.products.length > 0 && (

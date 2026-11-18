@@ -20,7 +20,7 @@ const ProductListPage = () => {
   }, [isCategory, isBrand, slug]);
 
   return (
-    <main className="min-h-screen bg-white dark:bg-black transition-colors duration-300">
+    <main className="min-h-screen bg-surface-50 dark:bg-dark-bg transition-colors duration-300">
       <Suspense fallback={null}>
         <ChatBot />
       </Suspense>

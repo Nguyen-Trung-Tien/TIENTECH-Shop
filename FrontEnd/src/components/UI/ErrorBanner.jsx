@@ -1,4 +1,5 @@
 import React from "react";
+import { motion as Motion } from "framer-motion";
 import { FiAlertCircle, FiRefreshCw } from "react-icons/fi";
 
 /**
@@ -13,8 +14,11 @@ const ErrorBanner = ({
   if (!message) return null;
 
   return (
-    <div
+    <Motion.div
       role="alert"
+      initial={{ opacity: 0, y: -8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.2, ease: "easeOut" }}
       className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-danger/10 border border-danger/20 text-danger dark:text-danger-light ${className}`}
     >
       <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -33,7 +37,7 @@ const ErrorBanner = ({
           <span>{retryLabel}</span>
         </button>
       )}
-    </div>
+    </Motion.div>
   );
 };
 

@@ -7,7 +7,7 @@ const NotFound = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-black p-6 relative overflow-hidden transition-colors duration-300">
+    <div className="min-h-screen flex items-center justify-center bg-surface-50 dark:bg-dark-bg p-6 relative overflow-hidden transition-colors duration-300">
       {/* Background Decorative Blur Orbs */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-blue-500/10 dark:bg-blue-600/15 rounded-full blur-[140px]" />

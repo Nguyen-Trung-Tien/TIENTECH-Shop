@@ -128,7 +128,7 @@ const ProductCompareHub = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300 pb-20">
+    <div className="min-h-screen bg-surface-50 dark:bg-dark-bg text-surface-900 dark:text-dark-text-primary transition-colors duration-300 pb-20">
       {/* 1. TOP SYSTEM BANNER (Toàn Trang) */}
       <div className="bg-gradient-to-r from-blue-700 via-indigo-700 to-purple-800 text-white px-4 py-2.5 text-xs text-center font-medium shadow-sm">
         <span>🎉 Khách hàng mua Laptop Gaming tại TienTech: <strong>Miễn phí vệ sinh trọn đời + Tặng Balo ROG Ranger trị giá 1.890.000 ₫</strong>.</span>
