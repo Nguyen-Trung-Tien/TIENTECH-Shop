@@ -17,6 +17,7 @@ import { FaPaypal } from "react-icons/fa";
 import { showErrorToast, showInfoToast, showSuccessToast } from "../../utils/toastHelper";
 import { motion as Motion, AnimatePresence } from "framer-motion";
 import { useSystemSettings } from "../../context/useSystemSettings";
+import { Modal, Button } from "../../components/UI";
 
 const InputField = React.memo(
   ({
@@ -491,189 +492,153 @@ const CheckoutForm = ({ formData, setFormData, user }) => {
         </div>
       </section>
 
-      {/* Modal Thêm Địa Chỉ Mới */}
-      <AnimatePresence>
-        {showAddAddressModal && (
-          <div className="fixed inset-0 z-[999] flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-            <Motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setShowAddAddressModal(false)}
-              className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm"
-            />
-
-            <Motion.div
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="add-address-title"
-              initial={{ scale: 0.95, opacity: 0, y: 20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.95, opacity: 0, y: 20 }}
-              className="relative w-full max-w-lg bg-white dark:bg-dark-surface rounded-2xl sm:rounded-[32px] p-4 sm:p-6 md:p-8 shadow-2xl z-10 border border-slate-100 dark:border-dark-border max-h-[90vh] overflow-y-auto custom-scrollbar"
-            >
-              <div className="flex items-center justify-between mb-6 border-b pb-4 border-slate-100 dark:border-dark-border">
-                <h3
-                  id="add-address-title"
-                  className="text-base font-black text-slate-900 dark:text-white uppercase tracking-tight"
-                >
-                  Thêm Địa Chỉ Giao Hàng Mới
-                </h3>
-                <button
-                  type="button"
-                  onClick={() => setShowAddAddressModal(false)}
-                  aria-label="Đóng modal thêm địa chỉ"
-                  className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-xl transition-colors cursor-pointer"
-                >
-                  <FiX size={20} />
-                </button>
-              </div>
-
-              <form onSubmit={handleSaveNewAddress} className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-1 block">
-                      Họ và tên *
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="Nguyễn Văn A"
-                      value={newAddressData.fullName}
-                      onChange={(e) =>
-                        setNewAddressData({
-                          ...newAddressData,
-                          fullName: e.target.value,
-                        })
-                      }
-                      className="w-full h-11 px-4 bg-slate-50 dark:bg-dark-bg border border-slate-200 dark:border-dark-border rounded-xl text-sm font-medium outline-none focus:border-primary text-slate-900 dark:text-white"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-1 block">
-                      Số điện thoại *
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="0901234567"
-                      value={newAddressData.phone}
-                      onChange={(e) =>
-                        setNewAddressData({
-                          ...newAddressData,
-                          phone: e.target.value,
-                        })
-                      }
-                      className="w-full h-11 px-4 bg-slate-50 dark:bg-dark-bg border border-slate-200 dark:border-dark-border rounded-xl text-sm font-medium outline-none focus:border-primary text-slate-900 dark:text-white"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-1 block">
-                      Tỉnh / Thành phố *
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="TP. Hồ Chí Minh / Hà Nội..."
-                      value={newAddressData.province}
-                      onChange={(e) =>
-                        setNewAddressData({
-                          ...newAddressData,
-                          province: e.target.value,
-                        })
-                      }
-                      className="w-full h-11 px-4 bg-slate-50 dark:bg-dark-bg border border-slate-200 dark:border-dark-border rounded-xl text-sm font-medium outline-none focus:border-primary text-slate-900 dark:text-white"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-1 block">
-                      Quận / Huyện / Phường / Xã
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="Phường Tân Định, Quận 1..."
-                      value={newAddressData.ward}
-                      onChange={(e) =>
-                        setNewAddressData({
-                          ...newAddressData,
-                          ward: e.target.value,
-                        })
-                      }
-                      className="w-full h-11 px-4 bg-slate-50 dark:bg-dark-bg border border-slate-200 dark:border-dark-border rounded-xl text-sm font-medium outline-none focus:border-primary text-slate-900 dark:text-white"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-1 block">
-                    Địa chỉ chi tiết (Số nhà, Tên đường) *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="VD: 123 Nguyễn Thị Minh Khai"
-                    value={newAddressData.detailAddress}
-                    onChange={(e) =>
-                      setNewAddressData({
-                        ...newAddressData,
-                        detailAddress: e.target.value,
-                      })
-                    }
-                    className="w-full h-11 px-4 bg-slate-50 dark:bg-dark-bg border border-slate-200 dark:border-dark-border rounded-xl text-sm font-medium outline-none focus:border-primary text-slate-900 dark:text-white"
-                  />
-                </div>
-
-                <div className="flex items-center gap-2 pt-2">
-                  <input
-                    type="checkbox"
-                    id="isDefaultNew"
-                    checked={newAddressData.isDefault}
-                    onChange={(e) =>
-                      setNewAddressData({
-                        ...newAddressData,
-                        isDefault: e.target.checked,
-                      })
-                    }
-                    className="size-4 rounded text-primary border-slate-300 focus:ring-primary"
-                  />
-                  <label
-                    htmlFor="isDefaultNew"
-                    className="text-xs font-bold text-slate-700 dark:text-slate-300"
-                  >
-                    Đặt làm địa chỉ mặc định
-                  </label>
-                </div>
-
-                <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-dark-border">
-                  <button
-                    type="button"
-                    onClick={() => setShowAddAddressModal(false)}
-                    className="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-dark-border text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-dark-bg transition-colors"
-                  >
-                    Hủy
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={savingAddress}
-                    className="px-6 py-2.5 rounded-xl bg-primary text-white text-xs font-black uppercase tracking-wider shadow-lg shadow-primary/20 hover:bg-primary/90 active:scale-95 disabled:opacity-50 transition-all flex items-center gap-2"
-                  >
-                    {savingAddress ? (
-                      "Đang lưu..."
-                    ) : (
-                      <>
-                        <FiCheck size={16} /> Lưu Địa Chỉ
-                      </>
-                    )}
-                  </button>
-                </div>
-              </form>
-            </Motion.div>
+      {/* Modal Thêm Địa Chỉ Mới (Unified UI Modal & Button) */}
+      <Modal
+        isOpen={showAddAddressModal}
+        onClose={() => setShowAddAddressModal(false)}
+        title="Thêm Địa Chỉ Giao Hàng Mới"
+        size="lg"
+        loading={savingAddress}
+      >
+        <form onSubmit={handleSaveNewAddress} className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-1 block">
+                Họ và tên *
+              </label>
+              <input
+                type="text"
+                required
+                placeholder="Nguyễn Văn A"
+                value={newAddressData.fullName}
+                onChange={(e) =>
+                  setNewAddressData({
+                    ...newAddressData,
+                    fullName: e.target.value,
+                  })
+                }
+                className="w-full h-11 px-4 bg-slate-50 dark:bg-dark-bg border border-slate-200 dark:border-dark-border rounded-xl text-sm font-medium outline-none focus:border-primary text-slate-900 dark:text-white"
+              />
+            </div>
+            <div>
+              <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-1 block">
+                Số điện thoại *
+              </label>
+              <input
+                type="text"
+                required
+                placeholder="0901234567"
+                value={newAddressData.phone}
+                onChange={(e) =>
+                  setNewAddressData({
+                    ...newAddressData,
+                    phone: e.target.value,
+                  })
+                }
+                className="w-full h-11 px-4 bg-slate-50 dark:bg-dark-bg border border-slate-200 dark:border-dark-border rounded-xl text-sm font-medium outline-none focus:border-primary text-slate-900 dark:text-white"
+              />
+            </div>
           </div>
-        )}
-      </AnimatePresence>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-1 block">
+                Tỉnh / Thành phố *
+              </label>
+              <input
+                type="text"
+                required
+                placeholder="TP. Hồ Chí Minh / Hà Nội..."
+                value={newAddressData.province}
+                onChange={(e) =>
+                  setNewAddressData({
+                    ...newAddressData,
+                    province: e.target.value,
+                  })
+                }
+                className="w-full h-11 px-4 bg-slate-50 dark:bg-dark-bg border border-slate-200 dark:border-dark-border rounded-xl text-sm font-medium outline-none focus:border-primary text-slate-900 dark:text-white"
+              />
+            </div>
+            <div>
+              <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-1 block">
+                Quận / Huyện / Phường / Xã
+              </label>
+              <input
+                type="text"
+                placeholder="Phường Tân Định, Quận 1..."
+                value={newAddressData.ward}
+                onChange={(e) =>
+                  setNewAddressData({
+                    ...newAddressData,
+                    ward: e.target.value,
+                  })
+                }
+                className="w-full h-11 px-4 bg-slate-50 dark:bg-dark-bg border border-slate-200 dark:border-dark-border rounded-xl text-sm font-medium outline-none focus:border-primary text-slate-900 dark:text-white"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-1 block">
+              Địa chỉ chi tiết (Số nhà, Tên đường) *
+            </label>
+            <input
+              type="text"
+              required
+              placeholder="VD: 123 Nguyễn Thị Minh Khai"
+              value={newAddressData.detailAddress}
+              onChange={(e) =>
+                setNewAddressData({
+                  ...newAddressData,
+                  detailAddress: e.target.value,
+                })
+              }
+              className="w-full h-11 px-4 bg-slate-50 dark:bg-dark-bg border border-slate-200 dark:border-dark-border rounded-xl text-sm font-medium outline-none focus:border-primary text-slate-900 dark:text-white"
+            />
+          </div>
+
+          <div className="flex items-center gap-2 pt-2">
+            <input
+              type="checkbox"
+              id="isDefaultNew"
+              checked={newAddressData.isDefault}
+              onChange={(e) =>
+                setNewAddressData({
+                  ...newAddressData,
+                  isDefault: e.target.checked,
+                })
+              }
+              className="size-4 rounded text-primary border-slate-300 focus:ring-primary"
+            />
+            <label
+              htmlFor="isDefaultNew"
+              className="text-xs font-bold text-slate-700 dark:text-slate-300"
+            >
+              Đặt làm địa chỉ mặc định
+            </label>
+          </div>
+
+          <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-dark-border">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => setShowAddAddressModal(false)}
+              disabled={savingAddress}
+            >
+              Hủy
+            </Button>
+            <Button
+              type="submit"
+              variant="primary"
+              loading={savingAddress}
+              loadingText="Đang lưu..."
+              icon={FiCheck}
+            >
+              Lưu Địa Chỉ
+            </Button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 };

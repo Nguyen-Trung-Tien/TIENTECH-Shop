@@ -1,10 +1,10 @@
-import React from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { cva } from "class-variance-authority";
 import { cn } from "../../utils/cn";
 import Loader from "./Loader";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap rounded-xl text-xs font-bold transition-all duration-200 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50 gap-2 select-none cursor-pointer",
+  "inline-flex items-center justify-center whitespace-nowrap rounded-xl text-xs font-bold transition-all duration-200 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-dark-bg disabled:pointer-events-none disabled:opacity-50 gap-2 select-none cursor-pointer",
   {
     variants: {
       variant: {
@@ -38,18 +38,52 @@ const buttonVariants = cva(
   }
 );
 
-const Button = ({ className, variant, size, loading = false, loadingText, asChild = false, type = "button", ref, children, icon: Icon, ...props }) => {
+const Button = ({ className, variant, size, loading = false, loadingText, asChild = false, type = "button", ref, children, icon: Icon, onClick, disabled, ...props }) => {
+  const [internalLoading, setInternalLoading] = useState(false);
+  const isMountedRef = useRef(true);
+  const inFlightRef = useRef(false);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
+  const isLoading = Boolean(loading || internalLoading);
+
+  const handleClick = (e) => {
+    if (isLoading || disabled || inFlightRef.current) {
+      e?.preventDefault?.();
+      return;
+    }
+    if (!onClick) return;
+
+    const result = onClick(e);
+    if (result && typeof result.then === "function") {
+      inFlightRef.current = true;
+      setInternalLoading(true);
+      Promise.resolve(result).finally(() => {
+        inFlightRef.current = false;
+        if (isMountedRef.current) {
+          setInternalLoading(false);
+        }
+      });
+    }
+  };
+
   const Comp = asChild ? "span" : "button";
   return (
     <Comp
       type={asChild ? undefined : type}
-      aria-busy={loading || undefined}
-      className={cn(buttonVariants({ variant, size, className }), loading && "opacity-75 pointer-events-none")}
+      aria-busy={isLoading || undefined}
+      className={cn(buttonVariants({ variant, size, className }), isLoading && "opacity-75 pointer-events-none")}
       ref={ref}
-      disabled={loading || props.disabled}
+      disabled={isLoading || disabled}
+      onClick={onClick ? handleClick : undefined}
       {...props}
     >
-      {loading && (
+      {isLoading && (
         <Loader
           size={size === "sm" || size === "xs" ? "xs" : "sm"}
           variant={
@@ -59,8 +93,8 @@ const Button = ({ className, variant, size, loading = false, loadingText, asChil
           }
         />
       )}
-      {!loading && Icon && (typeof Icon === "function" ? <Icon className="size-4 shrink-0" /> : Icon)}
-      {loading && loadingText ? loadingText : children}
+      {!isLoading && Icon && (typeof Icon === "function" ? <Icon className="size-4 shrink-0" /> : Icon)}
+      {isLoading && loadingText ? loadingText : children}
     </Comp>
   );
 };

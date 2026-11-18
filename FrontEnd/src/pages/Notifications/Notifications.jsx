@@ -10,10 +10,8 @@ import {
   FiTag,
   FiShield,
   FiExternalLink,
-  FiX,
   FiCopy,
 } from "react-icons/fi";
-import { createPortal } from "react-dom";
 import {
   getNotificationsApi,
   markAsReadApi,
@@ -27,7 +25,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion as Motion, AnimatePresence } from "framer-motion";
 import { showErrorToast, showSuccessToast } from "../../utils/toastHelper";
 import UnifiedSpinner from "../../components/Loading/UnifiedSpinner";
-import { ConfirmModal, PageShell, Button } from "../../components/UI";
+import { ConfirmModal, Modal, PageShell, Button } from "../../components/UI";
 import {
   extractVoucherCode,
   formatRelativeTimeVi,
@@ -539,113 +537,75 @@ const Notifications = () => {
         iconClassName="bg-rose-50 dark:bg-rose-950/40 text-rose-500 border-rose-100 dark:border-rose-900/40"
       />
 
-      {/* Notification Detail Modal (Zero Screen Overflow) */}
-      {selectedNotification &&
-        createPortal(
-          <AnimatePresence>
-            <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 sm:p-6 overflow-y-auto bg-slate-950/60 backdrop-blur-md">
-              <Motion.div
-                initial={{ opacity: 0, scale: 0.95, y: 15 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95, y: 15 }}
-                transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                className="relative w-full max-w-lg bg-white dark:bg-dark-surface rounded-3xl p-6 sm:p-8 shadow-2xl border border-slate-200 dark:border-dark-border my-auto overflow-hidden"
+      {/* Notification Detail Modal (Unified UI Modal & Button) */}
+      <Modal
+        isOpen={Boolean(selectedNotification)}
+        onClose={() => setSelectedNotification(null)}
+        title={selectedNotification?.title}
+        subtitle={
+          selectedNotification
+            ? `${getTypeBadge(selectedNotification.type).label} • ${new Date(selectedNotification.createdAt).toLocaleString("vi-VN")}`
+            : undefined
+        }
+        size="lg"
+        footer={
+          selectedNotification && (
+            <>
+              {extractVoucherCode(
+                selectedNotification.title + " " + selectedNotification.message
+              ) && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  icon={FiCopy}
+                  onClick={() => {
+                    const code = extractVoucherCode(
+                      selectedNotification.title +
+                        " " +
+                        selectedNotification.message
+                    );
+                    navigator.clipboard.writeText(code);
+                    setCopiedCode(code);
+                    showSuccessToast(`Đã sao chép mã ưu đãi: ${code}`);
+                    setTimeout(() => setCopiedCode(null), 2500);
+                  }}
+                >
+                  {copiedCode ? "Đã sao chép mã" : "Sao chép mã"}
+                </Button>
+              )}
+              {selectedNotification.link && (
+                <Button
+                  variant="primary"
+                  size="sm"
+                  icon={FiExternalLink}
+                  onClick={() => {
+                    const link = selectedNotification.link;
+                    setSelectedNotification(null);
+                    navigate(link);
+                  }}
+                >
+                  Đi đến trang liên quan
+                </Button>
+              )}
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => setSelectedNotification(null)}
               >
-                {/* Header */}
-                <div className="flex items-start justify-between pb-4 mb-5 border-b border-slate-100 dark:border-dark-border gap-4 min-w-0">
-                  <div className="flex items-center gap-3 min-w-0 flex-1">
-                    <div
-                      className={`size-12 rounded-2xl border flex items-center justify-center shrink-0 text-xl shadow-xs ${
-                        getTypeBadge(selectedNotification.type).color
-                      }`}
-                    >
-                      {getTypeBadge(selectedNotification.type).icon}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <span
-                        className={`text-[10px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded-lg border ${
-                          getTypeBadge(selectedNotification.type).color
-                        }`}
-                      >
-                        {getTypeBadge(selectedNotification.type).label}
-                      </span>
-                      <p className="text-[11px] font-bold text-slate-400 mt-1">
-                        {new Date(selectedNotification.createdAt).toLocaleString("vi-VN")}
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setSelectedNotification(null)}
-                    className="size-9 rounded-xl bg-slate-100 dark:bg-dark-bg text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center justify-center transition-colors cursor-pointer shrink-0"
-                    title="Đóng"
-                  >
-                    <FiX size={18} />
-                  </button>
-                </div>
-
-                {/* Title */}
-                <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white mb-3 break-words [overflow-wrap:anywhere] min-w-0">
-                  {selectedNotification.title}
-                </h3>
-
-                {/* Detailed Message Container (Zero Overflow) */}
-                <div className="bg-slate-50 dark:bg-dark-bg p-4 sm:p-5 rounded-2xl border border-slate-100 dark:border-dark-border max-h-72 overflow-y-auto custom-scrollbar mb-6">
-                  <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-200 leading-relaxed break-words [overflow-wrap:anywhere] whitespace-pre-wrap min-w-0 flex-1 select-text">
-                    {selectedNotification.message}
-                  </p>
-                </div>
-
-                {/* Actions */}
-                <div className="flex flex-wrap items-center justify-end gap-3 pt-2">
-                  {extractVoucherCode(
-                    selectedNotification.title + " " + selectedNotification.message
-                  ) && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const code = extractVoucherCode(
-                          selectedNotification.title +
-                            " " +
-                            selectedNotification.message
-                        );
-                        navigator.clipboard.writeText(code);
-                        setCopiedCode(code);
-                        showSuccessToast(`Đã sao chép mã ưu đãi: ${code}`);
-                        setTimeout(() => setCopiedCode(null), 2500);
-                      }}
-                      className="px-4 py-2.5 bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-200/60 dark:border-rose-900/40 rounded-xl text-xs font-black uppercase tracking-wider hover:bg-rose-100 dark:hover:bg-rose-900/40 transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
-                    >
-                      <FiCopy size={13} />
-                      {copiedCode ? "Đã sao chép mã" : "Sao chép mã"}
-                    </button>
-                  )}
-                  {selectedNotification.link && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const link = selectedNotification.link;
-                        setSelectedNotification(null);
-                        navigate(link);
-                      }}
-                      className="px-5 py-2.5 bg-primary text-white rounded-xl text-xs font-black uppercase tracking-wider hover:opacity-90 transition-all flex items-center gap-2 cursor-pointer shadow-md shadow-primary/20"
-                    >
-                      Đi đến trang liên quan <FiExternalLink size={14} />
-                    </button>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => setSelectedNotification(null)}
-                    className="px-5 py-2.5 bg-slate-100 dark:bg-dark-bg text-slate-700 dark:text-slate-200 rounded-xl text-xs font-black uppercase tracking-wider hover:bg-slate-200 dark:hover:bg-slate-800 transition-all cursor-pointer"
-                  >
-                    Đóng
-                  </button>
-                </div>
-              </Motion.div>
-            </div>
-          </AnimatePresence>,
-          document.body
+                Đóng
+              </Button>
+            </>
+          )
+        }
+      >
+        {selectedNotification && (
+          <div className="bg-slate-50 dark:bg-dark-bg p-4 sm:p-5 rounded-2xl border border-slate-100 dark:border-dark-border max-h-72 overflow-y-auto custom-scrollbar">
+            <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-200 leading-relaxed break-words [overflow-wrap:anywhere] whitespace-pre-wrap min-w-0 flex-1 select-text">
+              {selectedNotification.message}
+            </p>
+          </div>
         )}
+      </Modal>
     </PageShell>
   );
 };

@@ -1,8 +1,8 @@
-import { render, screen } from "@testing-library/react";
-import { describe, it, expect } from "vitest";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { describe, it, expect, vi } from "vitest";
 import React from "react";
 import { MemoryRouter } from "react-router-dom";
-import { Select, Textarea, PageShell, PageTitle, SectionTitle, Text, Tabs, StatCard, FilterBar, AlertBanner } from "../components/UI";
+import { Button, Modal, Select, Textarea, PageShell, PageTitle, SectionTitle, Text, Tabs, StatCard, FilterBar, AlertBanner } from "../components/UI";
 
 describe("Unified UI Primitives", () => {
   it("renders Select with label, options, and error state", () => {
@@ -64,5 +64,41 @@ describe("Unified UI Primitives", () => {
     expect(screen.getByText("120")).toBeInTheDocument();
     expect(screen.getByPlaceholderText("Tìm...")).toBeInTheDocument();
     expect(screen.getByRole("status")).toHaveTextContent("Cảnh báo 402");
+  });
+
+  it("prevents double-click on async Button onClick", async () => {
+    let resolveFn;
+    const asyncHandler = vi.fn(
+      () =>
+        new Promise((resolve) => {
+          resolveFn = resolve;
+        })
+    );
+
+    render(<Button onClick={asyncHandler}>Xác nhận</Button>);
+    const btn = screen.getByRole("button", { name: "Xác nhận" });
+
+    fireEvent.click(btn);
+    fireEvent.click(btn);
+
+    expect(asyncHandler).toHaveBeenCalledTimes(1);
+    expect(btn).toBeDisabled();
+
+    resolveFn();
+    await waitFor(() => expect(btn).not.toBeDisabled());
+  });
+
+  it("stops click propagation from Modal to parent container", () => {
+    const parentClick = vi.fn();
+    render(
+      <div onClick={parentClick}>
+        <Modal isOpen onClose={() => {}} title="Chi tiết">
+          <p>Nội dung modal</p>
+        </Modal>
+      </div>
+    );
+
+    fireEvent.click(screen.getByText("Nội dung modal"));
+    expect(parentClick).not.toHaveBeenCalled();
   });
 });

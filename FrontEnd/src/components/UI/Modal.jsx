@@ -24,12 +24,18 @@ const Modal = ({
 }) => {
   const isModalOpen = Boolean(isOpen || show);
   const modalRef = useRef(null);
+  const previousFocusRef = useRef(null);
 
-  // Keyboard accessibility: Close on Escape key (blocked while loading) & lock body scroll
+  // Keyboard accessibility: Close on Escape key (blocked while loading), lock body scroll, and manage focus
   useEffect(() => {
     if (!isModalOpen) return;
+    previousFocusRef.current = document.activeElement;
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
+
+    const focusTimer = setTimeout(() => {
+      modalRef.current?.focus?.({ preventScroll: true });
+    }, 0);
 
     const handleKeyDown = (e) => {
       if (e.key === "Escape" && closeOnEscape && !loading) {
@@ -39,8 +45,12 @@ const Modal = ({
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => {
+      clearTimeout(focusTimer);
       document.body.style.overflow = prevOverflow;
       window.removeEventListener("keydown", handleKeyDown);
+      if (previousFocusRef.current && typeof previousFocusRef.current.focus === "function") {
+        previousFocusRef.current.focus({ preventScroll: true });
+      }
     };
   }, [isModalOpen, loading, closeOnEscape, onClose]);
 
@@ -64,6 +74,8 @@ const Modal = ({
           role="dialog"
           aria-modal="true"
           aria-labelledby={title ? "modal-title" : undefined}
+          aria-describedby={subtitle ? "modal-subtitle" : undefined}
+          onClick={(e) => e.stopPropagation()}
           className="fixed inset-0 z-[1000] flex items-end sm:items-center justify-center p-0 sm:p-4"
         >
           {/* Overlay */}
@@ -71,7 +83,12 @@ const Modal = ({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={closeOnOverlayClick && !loading ? onClose : undefined}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (closeOnOverlayClick && !loading && onClose) {
+                onClose(e);
+              }
+            }}
             className="absolute inset-0 bg-slate-950/60 backdrop-blur-md transition-opacity"
             aria-hidden="true"
           />
@@ -79,11 +96,13 @@ const Modal = ({
           {/* Modal Window Container */}
           <Motion.div
             ref={modalRef}
+            tabIndex={-1}
+            onClick={(e) => e.stopPropagation()}
             initial={{ opacity: 0, y: 30, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 30, scale: 0.96 }}
             transition={{ type: "spring", stiffness: 380, damping: 30 }}
-            className={`relative w-full ${sizes[size]} max-h-[92vh] sm:max-h-[85vh] overscroll-contain bg-white/98 dark:bg-dark-surface/98 backdrop-blur-2xl rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col border border-slate-200/80 dark:border-dark-border transition-colors duration-300 ${className}`}
+            className={`relative w-full ${sizes[size]} max-h-[92vh] sm:max-h-[85vh] overscroll-contain bg-white/98 dark:bg-dark-surface/98 backdrop-blur-2xl rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col border border-slate-200/80 dark:border-dark-border transition-colors duration-300 focus:outline-none ${className}`}
           >
             {/* Mobile Drag Indicator Pill */}
             <div className="flex justify-center pt-2.5 pb-1 sm:hidden bg-slate-50/80 dark:bg-dark-bg/60" aria-hidden="true">
@@ -115,7 +134,7 @@ const Modal = ({
                     {title}
                   </h3>
                   {subtitle && (
-                    <p className="text-xs font-semibold text-slate-500 dark:text-dark-text-secondary mt-0.5 break-words [overflow-wrap:anywhere]">
+                    <p id="modal-subtitle" className="text-xs font-semibold text-slate-500 dark:text-dark-text-secondary mt-0.5 break-words [overflow-wrap:anywhere]">
                       {subtitle}
                     </p>
                   )}
