@@ -22,6 +22,7 @@ import { getDashboard, exportRevenue } from "../../../api/adminApi";
 import { toast } from "react-toastify";
 import UnifiedSpinner from "../../../components/Loading/UnifiedSpinner";
 import DashboardSkeleton from "./components/DashboardSkeleton";
+import { ErrorBanner } from "../../../components/UI";
 
 const Dashboard = () => {
   const [loading, setLoading] = useState(true);
@@ -222,24 +223,7 @@ const Dashboard = () => {
       {loading ? (
         <DashboardSkeleton />
       ) : error ? (
-        <div
-          role="alert"
-          className="p-4 sm:p-6 bg-rose-50 dark:bg-rose-900/10 border border-rose-200 dark:border-rose-900/30 rounded-2xl sm:rounded-3xl text-rose-600 dark:text-rose-400 text-sm font-bold flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm"
-        >
-          <div className="flex items-center gap-4 min-w-0">
-            <div className="size-10 sm:size-12 bg-rose-500 text-white rounded-2xl flex items-center justify-center text-xl shadow-lg shadow-rose-500/20 shrink-0">
-              !
-            </div>
-            <p className="min-w-0 break-words">{error}</p>
-          </div>
-          <button
-            type="button"
-            onClick={fetchDashboard}
-            className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition-colors shrink-0 cursor-pointer"
-          >
-            Thử lại
-          </button>
-        </div>
+        <ErrorBanner message={error} onRetry={fetchDashboard} />
       ) : (
         <div className="space-y-6 sm:space-y-10">
           {/* Primary Business KPIs (4 spacious columns) */}

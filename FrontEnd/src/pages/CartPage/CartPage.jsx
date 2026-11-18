@@ -12,6 +12,7 @@ import { validateCart } from "../../api/cartApi";
 import { toast } from "react-toastify";
 import { showErrorToast } from "../../utils/toastHelper";
 import { useSystemSettings } from "../../context/useSystemSettings";
+import { ErrorBanner } from "../../components/UI";
 
 const CartPage = () => {
   const navigate = useNavigate();
@@ -28,20 +29,25 @@ const CartPage = () => {
 
   const [selectedItems, setSelectedItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [cartError, setCartError] = useState(null);
   const [isValidating, setIsValidating] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
 
-  useEffect(() => {
-    const loadCart = async () => {
-      setLoading(true);
-      try {
-        await fetchCart();
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadCart();
+  const loadCart = React.useCallback(async () => {
+    setLoading(true);
+    setCartError(null);
+    try {
+      await fetchCart();
+    } catch {
+      setCartError("Không thể tải giỏ hàng. Vui lòng thử lại.");
+    } finally {
+      setLoading(false);
+    }
   }, [fetchCart]);
+
+  useEffect(() => {
+    loadCart();
+  }, [loadCart]);
 
   // Sync selected items when cart first loads
   useEffect(() => {
@@ -55,14 +61,6 @@ const CartPage = () => {
     () => calculateSubtotal(selectedItems),
     [selectedItems, calculateSubtotal],
   );
-
-  // Tự động kiểm tra điều kiện voucher khi subtotal thay đổi
-  useEffect(() => {
-    if (appliedVoucher) {
-      // Giả sử chúng ta không fetch lại từ server ở đây mà chỉ check đơn giản minOrderValue
-      // Thực tế nên gọi API check lại để an toàn hơn
-    }
-  }, [subtotal, appliedVoucher]);
 
   const toggleSelect = (id) => {
     setSelectedItems((prev) =>
@@ -143,6 +141,8 @@ const CartPage = () => {
             </p>
           </div>
         </div>
+
+        <ErrorBanner message={cartError} onRetry={loadCart} className="mb-6" />
 
         {cartItems.length === 0 ? (
           <div className="rounded-3xl p-12 sm:p-20 text-center bg-white dark:bg-dark-surface border border-slate-100 dark:border-slate-800 shadow-xs">

@@ -19,6 +19,7 @@ import { StatusBadge } from "../../utils/StatusBadge";
 import ClickableText from "../../components/ClickableText/ClickableText";
 import Button from "../../components/UI/Button";
 import Badge from "../../components/UI/Badge";
+import { ErrorBanner } from "../../components/UI";
 import ReviewModal from "../../components/ReviewComponent/ReviewModal";
 import UnifiedSpinner from "../../components/Loading/UnifiedSpinner";
 import OrderHistorySkeleton from "./components/OrderHistorySkeleton";
@@ -30,6 +31,7 @@ const OrderHistoryPage = () => {
   const user = useSelector((state) => state.user.user);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
@@ -43,14 +45,18 @@ const OrderHistoryPage = () => {
     if (!user?.id) return;
     try {
       setLoading(true);
+      setError(null);
       const res = await getOrdersByUserId(user.id, page, limit);
       if (res?.errCode === 0) {
         setOrders(res.data || []);
         setTotalPages(res.pagination?.totalPages || 1);
         setTotalItems(res.pagination?.totalItems ?? (res.data?.length || 0));
+      } else {
+        setError(res?.errMessage || "Không thể tải danh sách đơn hàng.");
       }
     } catch (err) {
       console.error(err);
+      setError("Lỗi kết nối máy chủ. Vui lòng thử lại.");
     } finally {
       setLoading(false);
     }
@@ -85,6 +91,7 @@ const OrderHistoryPage = () => {
   return (
     <div className="min-h-screen bg-surface-50 dark:bg-dark-bg py-12 transition-colors duration-300">
       <div className="container-custom">
+        <ErrorBanner message={error} onRetry={fetchOrders} className="mb-6" />
         {/* Header Section */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10">
           <div>

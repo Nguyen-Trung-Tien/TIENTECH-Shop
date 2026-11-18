@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { FiHeart, FiArrowLeft, FiShoppingBag } from "react-icons/fi";
+import { FiHeart, FiShoppingBag } from "react-icons/fi";
 import { motion as Motion, AnimatePresence } from "framer-motion";
+import { ErrorBanner, PageShell } from "../../components/UI";
 import { getWishlistApi } from "../../api/wishlistApi";
 import ProductCard from "../../components/ProductCard/ProductCard";
 import SkeletonCard from "../../components/SkeletonCard/SkeletonCard";
@@ -11,6 +12,8 @@ import { showErrorToast } from "../../utils/toastHelper";
 const WishlistPage = () => {
   const [wishlist, setWishlist] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [addingAll, setAddingAll] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     fetchWishlist();
@@ -18,76 +21,77 @@ const WishlistPage = () => {
 
   const fetchWishlist = async () => {
     try {
+      setLoading(true);
+      setError(null);
       const res = await getWishlistApi();
       if (res.errCode === 0) {
-        const formattedData = res.data.map(item => ({
-          ...item.product,
-          image: item.product.images?.find(img => img.isPrimary)?.imageUrl || item.product.images?.[0]?.imageUrl,
-          wishlists: [{ userId: item.userId }] 
-        }));
+        const formattedData = (res.data || [])
+          .filter((item) => item?.product)
+          .map((item) => ({
+            ...item.product,
+            image:
+              item.product.images?.find((img) => img.isPrimary)?.imageUrl ||
+              item.product.images?.[0]?.imageUrl,
+            wishlists: [{ userId: item.userId }],
+          }));
         setWishlist(formattedData);
+      } else {
+        setError(res?.errMessage || "Không thể tải danh sách yêu thích.");
       }
     } catch (error) {
       console.error("Fetch wishlist error:", error);
+      setError("Không thể kết nối máy chủ. Vui lòng thử lại.");
     } finally {
       setLoading(false);
     }
   };
 
+  const wishlistActions = wishlist.length > 0 ? (
+    <>
+      <button
+        type="button"
+        disabled={addingAll}
+        onClick={async () => {
+          if (addingAll) return;
+          setAddingAll(true);
+          const { addCart } = await import("../../api/cartApi");
+          try {
+            const inStockItems = wishlist.filter((item) => (item.totalStock ?? item.stock ?? 1) > 0);
+            if (inStockItems.length === 0) {
+              toast.warning("Các sản phẩm yêu thích hiện đã tạm hết hàng.");
+              return;
+            }
+            for (const item of inStockItems) {
+              await addCart({ productId: item.id, quantity: 1 });
+            }
+            toast.success(`Đã thêm ${inStockItems.length} sản phẩm vào giỏ hàng!`);
+          } catch (err) {
+            showErrorToast(err, "Một số sản phẩm không thể thêm vào giỏ hàng");
+          } finally {
+            setAddingAll(false);
+          }
+        }}
+        className="flex items-center gap-2 px-5 py-2.5 bg-primary text-white text-xs font-black uppercase tracking-widest rounded-2xl hover:bg-primary-hover shadow-lg shadow-primary/20 transition-all active:scale-95 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+      >
+        <FiShoppingBag size={14} /> {addingAll ? "Đang thêm..." : "Thêm tất cả vào giỏ hàng"}
+      </button>
+      <div className="flex items-center gap-2 px-4 py-2.5 bg-primary/10 border border-primary/20 rounded-2xl">
+        <span className="text-primary dark:text-primary-light font-black text-sm">{wishlist.length}</span>
+        <span className="text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-widest leading-none">Món đồ</span>
+      </div>
+    </>
+  ) : null;
+
   return (
-    <div className="min-h-screen bg-white dark:bg-black transition-colors duration-300 pb-20">
-      
-      {/* HEADER SECTION - MODERN CARD */}
-      <section className="bg-gray-50 dark:bg-gray-950 py-10 md:py-16 border-b border-slate-100 dark:border-gray-900 mb-8 md:mb-12">
-        <div className="container-custom">
-            <Motion.div 
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="flex flex-col md:flex-row md:items-center justify-between gap-6"
-            >
-                <div className="flex items-center gap-5">
-                    <Link to="/" className="size-12 bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-slate-100 dark:border-gray-800 flex items-center justify-center text-slate-400 hover:text-primary dark:hover:text-primary-light transition-all active:scale-95">
-                        <FiArrowLeft size={20} />
-                    </Link>
-                    <div>
-                        <div className="flex items-center gap-2 text-primary dark:text-primary-light mb-1">
-                            <FiHeart className="fill-current" size={14} />
-                            <span className="text-[10px] font-black uppercase tracking-[0.3em]">Bộ sưu tập cá nhân</span>
-                        </div>
-                        <h1 className="text-3xl md:text-4xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Sản phẩm yêu thích</h1>
-                    </div>
-                </div>
-
-                {wishlist.length > 0 && (
-                  <div className="flex items-center gap-3">
-                    <button
-                      onClick={async () => {
-                        const { addCart } = await import("../../api/cartApi");
-                        try {
-                          for (const item of wishlist) {
-                            await addCart({ productId: item.id, quantity: 1 });
-                          }
-                          toast.success("Đã thêm tất cả sản phẩm yêu thích vào giỏ hàng!");
-                        } catch (err) {
-                          showErrorToast(err, "Một số sản phẩm không thể thêm vào giỏ hàng");
-                        }
-                      }}
-                      className="flex items-center gap-2 px-5 py-2.5 bg-primary text-white text-xs font-black uppercase tracking-widest rounded-2xl hover:bg-primary-hover shadow-lg shadow-primary/20 transition-all active:scale-95 cursor-pointer"
-                    >
-                      <FiShoppingBag size={14} /> Thêm tất cả vào giỏ hàng
-                    </button>
-                    <div className="flex items-center gap-2 px-4 py-2.5 bg-primary/10 border border-primary/20 rounded-2xl">
-                      <span className="text-primary dark:text-primary-light font-black text-sm">{wishlist.length}</span>
-                      <span className="text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-widest leading-none">Món đồ</span>
-                    </div>
-                  </div>
-                )}
-            </Motion.div>
-        </div>
-      </section>
-
-      <div className="container-custom">
-        <AnimatePresence mode="wait">
+    <PageShell
+      eyebrow="Bộ sưu tập cá nhân"
+      title="Sản phẩm yêu thích"
+      backTo="/"
+      backLabel="Quay lại trang chủ"
+      actions={wishlistActions}
+    >
+      <ErrorBanner message={error} onRetry={fetchWishlist} className="mb-6" />
+      <AnimatePresence mode="wait">
           {loading ? (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5 md:gap-6 lg:gap-8">
               {Array.from({ length: 5 }).map((_, i) => (
@@ -145,8 +149,7 @@ const WishlistPage = () => {
             </Motion.div>
             )}
         </AnimatePresence>
-      </div>
-    </div>
+    </PageShell>
   );
 };
 

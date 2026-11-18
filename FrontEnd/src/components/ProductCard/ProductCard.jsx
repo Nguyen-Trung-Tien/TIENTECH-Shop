@@ -283,9 +283,9 @@ const ProductCard = ({ product }) => {
             <button
               type="button"
               onClick={handleAddToCartClick}
-              disabled={loadingCart}
-              aria-label="Thêm vào giỏ hàng"
-              className="size-8.5 rounded-xl bg-primary text-white flex items-center justify-center shadow-md shadow-blue-500/25 active:scale-95 transition-all cursor-pointer"
+              disabled={loadingCart || effectiveStock <= 0}
+              aria-label={effectiveStock <= 0 ? "Sản phẩm tạm hết hàng" : "Thêm vào giỏ hàng"}
+              className="size-8.5 rounded-xl bg-primary text-white flex items-center justify-center shadow-md shadow-blue-500/25 active:scale-95 transition-all cursor-pointer disabled:bg-surface-400 disabled:shadow-none disabled:cursor-not-allowed"
             >
               <FiShoppingCart size={15} />
             </button>
@@ -295,12 +295,16 @@ const ProductCard = ({ product }) => {
           <div className="absolute inset-x-0 bottom-0 p-3 translate-y-full group-hover:translate-y-0 transition-all duration-200 z-20 bg-white/95 dark:bg-dark-surface/95 backdrop-blur-md border-t border-slate-100 dark:border-slate-800 hidden lg:block">
             <button
               type="button"
-              className="w-full py-2 bg-primary hover:bg-primary-hover text-white text-xs font-bold rounded-xl transition-all shadow-sm shadow-blue-500/20 active:scale-98 cursor-pointer flex items-center justify-center gap-1.5"
+              className="w-full py-2 bg-primary hover:bg-primary-hover text-white text-xs font-bold rounded-xl transition-all shadow-sm shadow-blue-500/20 active:scale-98 cursor-pointer flex items-center justify-center gap-1.5 disabled:bg-surface-400 disabled:shadow-none disabled:cursor-not-allowed"
               onClick={handleAddToCartClick}
-              disabled={loadingCart}
+              disabled={loadingCart || effectiveStock <= 0}
             >
               <FiShoppingCart size={14} />
-              {loadingCart ? "Đang xử lý..." : "Thêm vào giỏ"}
+              {effectiveStock <= 0
+                ? "Tạm hết hàng"
+                : loadingCart
+                ? "Đang xử lý..."
+                : "Thêm vào giỏ"}
             </button>
           </div>
         </div>
@@ -374,13 +378,13 @@ const ProductCard = ({ product }) => {
             )}
           </div>
 
-          <div className="mt-auto pt-2 border-t border-slate-100 dark:border-slate-800 flex items-baseline justify-between gap-1">
-            <div className="min-w-0">
-              <p className="text-sm sm:text-base font-black text-slate-900 dark:text-white leading-none font-mono">
+          <div className="mt-auto pt-2 border-t border-slate-100 dark:border-slate-800 flex items-baseline justify-between gap-1 min-w-0">
+            <div className="min-w-0 flex-1">
+              <p className="text-sm sm:text-base font-black text-slate-900 dark:text-white leading-none font-mono truncate">
                 {formatCurrency(finalPrice)}
               </p>
               {effectiveDiscountPct > 0 && productOriginalPrice > finalPrice && (
-                <p className="text-[10px] text-slate-400 dark:text-slate-500 line-through font-mono leading-none mt-1">
+                <p className="text-[10px] text-slate-400 dark:text-slate-500 line-through font-mono leading-none mt-1 truncate">
                   {formatCurrency(productOriginalPrice)}
                 </p>
               )}

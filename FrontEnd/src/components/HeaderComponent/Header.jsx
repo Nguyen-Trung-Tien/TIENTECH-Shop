@@ -19,6 +19,7 @@ import {
   FiCamera,
   FiHelpCircle,
   FiPhoneCall,
+  FiSliders,
 } from "react-icons/fi";
 
 import { motion as Motion, AnimatePresence } from "framer-motion";
@@ -105,10 +106,8 @@ function Header() {
   const navLinks = [
     { name: "Trang chủ", path: "/", icon: <FiCompass /> },
     { name: "Sản phẩm", path: "/product-list", icon: <FiPackage /> },
-    { name: "Phong thủy", path: "/fortune-products", icon: <FiBox /> },
-    { name: "Giới thiệu", path: "/about", icon: <FiShoppingBag /> },
+    { name: "So sánh", path: "/compare", icon: <FiSliders /> },
     { name: "Hỗ trợ", path: "/support", icon: <FiHelpCircle /> },
-    { name: "Liên hệ", path: "/contact", icon: <FiPhoneCall /> },
   ];
 
   return (

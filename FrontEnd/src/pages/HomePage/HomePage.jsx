@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback, lazy, Suspense } from "react";
 import { Link } from "react-router-dom";
 import { FiArrowRight, FiGrid, FiSliders, FiCpu } from "react-icons/fi";
+import { ErrorBanner } from "../../components/UI";
 import HeroSection from "../../components/HomePageComponent/HeroSection";
 import CategorySection from "../../components/HomePageComponent/CategorySection";
 import ProductSection from "../../components/HomePageComponent/ProductSection";
@@ -61,21 +62,7 @@ const HomePage = () => {
       <main className="min-w-0">
         {homeError && (
           <div className="container-custom pt-4">
-            <div
-              role="alert"
-              className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-danger/10 border border-danger/20 text-danger dark:text-danger-light"
-            >
-              <p className="text-sm font-medium min-w-0 flex-1 break-words">
-                {homeError}
-              </p>
-              <button
-                type="button"
-                onClick={fetchHomeData}
-                className="px-4 py-1.5 rounded-xl bg-danger text-white text-xs font-bold hover:bg-danger/90 transition-colors shrink-0 cursor-pointer"
-              >
-                Thử lại
-              </button>
-            </div>
+            <ErrorBanner message={homeError} onRetry={fetchHomeData} />
           </div>
         )}
 
