@@ -6,8 +6,8 @@ const ProductService = require("./services/product/ProductService");
 const { initOrderCron } = require("./cron/orderCron");
 const { initInventoryCron } = require("./cron/inventoryCron");
 const { verifyAccessToken } = require("./utils/jwtHelper");
-const { getCache } = require("./config/redis");
-const { getTokenBlacklistKey } = require("./services/user/AuthHelper");
+const { getCache, setCache } = require("./config/redis");
+const { getTokenBlacklistKey, getUserStatusKey } = require("./services/user/AuthHelper");
 
 const server = http.createServer(app);
 
@@ -76,7 +76,32 @@ io.use(async (socket, next) => {
       const isBlacklisted = await getCache(getTokenBlacklistKey(token));
       if (!isBlacklisted) {
         const decoded = verifyAccessToken(token);
-        if (decoded) {
+        if (decoded?.id) {
+          const statusKey = getUserStatusKey(decoded.id);
+          let userStatus = await getCache(statusKey);
+          if (!userStatus) {
+            const db = require("./models");
+            const dbUser = await db.User.findByPk(decoded.id, {
+              attributes: ["id", "isActive", "role", "tokenVersion"],
+            });
+            if (dbUser) {
+              userStatus = {
+                isActive: Boolean(dbUser.isActive),
+                role: dbUser.role,
+                tokenVersion: typeof dbUser.tokenVersion === "number" ? dbUser.tokenVersion : 0,
+              };
+              await setCache(statusKey, userStatus, 300);
+            }
+          }
+          const isVersionValid =
+            typeof userStatus?.tokenVersion !== "number" ||
+            typeof decoded.ver !== "number" ||
+            decoded.ver === userStatus.tokenVersion;
+
+          if (userStatus?.isActive && isVersionValid) {
+            socket.user = { ...decoded, role: userStatus.role || decoded.role };
+          }
+        } else if (decoded) {
           socket.user = decoded;
         }
       }

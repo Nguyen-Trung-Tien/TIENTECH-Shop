@@ -61,11 +61,24 @@ const otpVerificationLimiter = rateLimit({
   },
 });
 
+// Refresh Token Limiter
+const refreshTokenLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 phút
+  max: isProduction ? 30 : 300,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    errCode: 429,
+    errMessage: "Quá nhiều yêu cầu làm mới phiên đăng nhập. Vui lòng thử lại sau ít phút.",
+  },
+});
+
 module.exports = {
   generalLimiter,
   loginAuthLimiter,
   sensitiveActionLimiter,
   aiApiLimiter,
   otpVerificationLimiter,
+  refreshTokenLimiter,
 };
 

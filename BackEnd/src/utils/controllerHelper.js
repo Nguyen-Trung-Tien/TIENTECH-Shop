@@ -44,6 +44,11 @@ const SENSITIVE_KEYS = new Set([
   "refreshTokenHash",
   "resetToken",
   "verificationToken",
+  "tokenVersion",
+  "resetTokenExpiresAt",
+  "verificationTokenExpiresAt",
+  "refreshTokenExpiresAt",
+  "embedding",
   "_previousDataValues",
   "isNewRecord",
 ]);
@@ -81,21 +86,25 @@ const sanitizeOutputData = (data, depth = 0) => {
 };
 
 const handleError = (res, e, method = "API") => {
-  console.error(`[Controller Error] in ${method}:`, e);
+  const requestId = res.req?.requestId || res.locals?.requestId;
+  console.error(`[Controller Error]${requestId ? ` [${requestId}]` : ""} in ${method}:`, e);
   return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
     status: HTTP_STATUS_TEXT[500],
     statusCode: HTTP_STATUS.INTERNAL_SERVER_ERROR,
     errCode: -1,
     errMessage: "Lỗi máy chủ nội bộ. Vui lòng thử lại sau.",
     message: process.env.NODE_ENV === "production" ? "Internal server error" : (e.message || "Internal server error"),
+    ...(requestId ? { requestId } : {}),
     details: process.env.NODE_ENV === "development" ? e.stack : undefined,
   });
 };
 
 const handleResponse = (res, result, successStatus = HTTP_STATUS.OK) => {
   const sanitizedResult = { ...result };
-  if (sanitizedResult.data !== undefined) {
-    sanitizedResult.data = sanitizeOutputData(sanitizedResult.data);
+  for (const key of ["data", "products", "user", "order", "items"]) {
+    if (sanitizedResult[key] !== undefined) {
+      sanitizedResult[key] = sanitizeOutputData(sanitizedResult[key]);
+    }
   }
 
   if (sanitizedResult.errCode === 0) {
@@ -196,14 +205,17 @@ const handleResponse = (res, result, successStatus = HTTP_STATUS.OK) => {
     finalErrMessage = VIETNAMESE_FALLBACK_MESSAGES[status] || "Đã xảy ra lỗi trong quá trình xử lý.";
   }
 
+  const requestId = res.req?.requestId || res.locals?.requestId;
   const errorPayload = {
     status: HTTP_STATUS_TEXT[status] || "ERROR",
     statusCode: status,
     errCode: result.errCode || 1,
+    ...(result.code ? { code: result.code } : {}),
     errMessage: finalErrMessage,
     message: result.message || HTTP_STATUS_TEXT[status] || "Error",
     errors: result.errors || null,
     data: result.data || null,
+    ...(requestId ? { requestId } : {}),
   };
 
   return res.status(status).json(errorPayload);

@@ -9,6 +9,35 @@ const axiosClient = axios.create({
   withCredentials: true,
 });
 
+const authChannel =
+  typeof window !== "undefined" && typeof BroadcastChannel !== "undefined"
+    ? new BroadcastChannel("tientech_auth_channel")
+    : null;
+
+if (authChannel) {
+  authChannel.onmessage = (event) => {
+    if (event.data?.type === "LOGOUT" || event.data?.type === "ACCOUNT_LOCKED") {
+      store.dispatch(removeUser());
+      store.dispatch(clearCart());
+      if (event.data?.type === "ACCOUNT_LOCKED" && typeof window !== "undefined") {
+        window.dispatchEvent(
+          new CustomEvent("tiêntech:account_locked", {
+            detail: { reason: event.data.reason },
+          })
+        );
+      }
+    }
+  };
+}
+
+const broadcastAuthEvent = (type, payload = {}) => {
+  try {
+    authChannel?.postMessage({ type, ...payload });
+  } catch (e) {
+    // Ignore BroadcastChannel errors
+  }
+};
+
 let isRefreshing = false;
 let failedQueue = [];
 
@@ -56,6 +85,7 @@ axiosClient.interceptors.response.use(
       }
       store.dispatch(removeUser());
       store.dispatch(clearCart());
+      broadcastAuthEvent("ACCOUNT_LOCKED", { reason });
       if (errData?.errMessage) {
         error.errMessage = errData.errMessage;
       }
@@ -106,6 +136,7 @@ axiosClient.interceptors.response.use(
         ) {
           store.dispatch(removeUser());
           store.dispatch(clearCart());
+          broadcastAuthEvent("LOGOUT");
         }
 
         return Promise.reject(refreshError);

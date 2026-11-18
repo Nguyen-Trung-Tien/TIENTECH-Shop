@@ -1,4 +1,5 @@
 const express = require("express");
+const crypto = require("crypto");
 const router = express.Router();
 const UserController = require("../controllers/UserController");
 const {
@@ -16,27 +17,57 @@ const {
   adminUpdateUserStatusSchema,
   adminBulkUserStatusSchema,
 } = require("../utils/zodSchemas");
-const { loginAuthLimiter, sensitiveActionLimiter, otpVerificationLimiter } = require("../middleware/rateLimiter");
+const { loginAuthLimiter, sensitiveActionLimiter, otpVerificationLimiter, refreshTokenLimiter } = require("../middleware/rateLimiter");
+
+const parseOAuthState = (rawState) => {
+  if (!rawState || typeof rawState !== "string") return { nonce: null, from: "" };
+  try {
+    const decoded = JSON.parse(Buffer.from(rawState, "base64url").toString("utf8"));
+    return { nonce: decoded?.n || null, from: String(decoded?.from || "") };
+  } catch (e) {
+    return { nonce: null, from: rawState };
+  }
+};
 
 router.post("/login", loginAuthLimiter, validate(loginSchema), UserController.handleLogin);
 router.get("/auth/google", (req, res, next) => {
-  const state = req.query.from || req.query.state || "";
+  const from = String(req.query.from || req.query.state || "");
+  const nonce = crypto.randomBytes(16).toString("hex");
+  const isProduction = process.env.NODE_ENV === "production";
+
+  res.cookie("oauth_state", nonce, {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: "Lax",
+    maxAge: 10 * 60 * 1000,
+  });
+
+  const encodedState = Buffer.from(JSON.stringify({ n: nonce, from })).toString("base64url");
   passport.authenticate("google", {
     scope: ["profile", "email"],
     session: false,
-    state: state ? String(state) : undefined,
+    state: encodedState,
   })(req, res, next);
 });
 
 router.get(
   "/auth/google/callback",
   (req, res, next) => {
-    const state = req.query.state;
-    const isAdmin = state === "admin" || (typeof state === "string" && state.includes("admin"));
+    const { nonce, from } = parseOAuthState(req.query.state);
+    const cookieNonce = req.cookies?.oauth_state;
+    const isProduction = process.env.NODE_ENV === "production";
+    res.clearCookie("oauth_state", { httpOnly: true, secure: isProduction, sameSite: "Lax" });
+
+    const isAdmin = from === "admin" || from.includes("admin");
     const failureRedirect = isAdmin
       ? `${process.env.FRONTEND_URL}/admin/login?error=auth_failed`
       : `${process.env.FRONTEND_URL}/login?error=auth_failed`;
 
+    if (!nonce || !cookieNonce || nonce !== cookieNonce) {
+      return res.redirect(failureRedirect);
+    }
+
+    req.oauthFrom = from;
     passport.authenticate("google", { failureRedirect, session: false })(req, res, next);
   },
   UserController.handleGoogleAuthCallback
@@ -45,7 +76,7 @@ router.get(
 // Thêm upload.none() để xử lý multipart/form-data không có file, hoặc upload.single("avatar") nếu cần
 router.post("/create", sensitiveActionLimiter, upload.single("avatar"), validate(registerSchema), UserController.handleCreateNewUser);
 
-router.post("/refresh-token", UserController.handleRefreshToken);
+router.post("/refresh-token", refreshTokenLimiter, UserController.handleRefreshToken);
 router.get("/get-me", authenticateToken, UserController.handleGetMe);
 router.get(
   "/get-all",
@@ -114,7 +145,7 @@ router.put(
 );
 
 router.post("/forgot-password", sensitiveActionLimiter, UserController.handleForgotPassword);
-router.post("/verify-reset-token", UserController.handleVerifyResetToken);
+router.post("/verify-reset-token", otpVerificationLimiter, UserController.handleVerifyResetToken);
 router.post("/reset-password", sensitiveActionLimiter, UserController.handleResetPassword);
 router.post("/verify-email", otpVerificationLimiter, UserController.handleVerifyEmail);
 router.post("/resend-verification", sensitiveActionLimiter, UserController.handleResendVerification);

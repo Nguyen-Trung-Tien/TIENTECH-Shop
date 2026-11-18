@@ -1,5 +1,14 @@
 const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
 require("dotenv").config();
+
+const JWT_ISSUER = process.env.JWT_ISSUER || "tientech-shop-api";
+const JWT_AUDIENCE = process.env.JWT_AUDIENCE || "tientech-shop-client";
+const JWT_VERIFY_OPTIONS = {
+  algorithms: ["HS256"],
+  issuer: JWT_ISSUER,
+  audience: JWT_AUDIENCE,
+};
 
 const getAccessSecret = () => {
   const secret = process.env.JWT_ACCESS_SECRET || process.env.JWT_SECRET;
@@ -26,6 +35,10 @@ const getRefreshSecret = () => {
 // Tạo Access Token
 const generateAccessToken = (payload) => {
   return jwt.sign(payload, getAccessSecret(), {
+    algorithm: "HS256",
+    issuer: JWT_ISSUER,
+    audience: JWT_AUDIENCE,
+    jwtid: crypto.randomUUID(),
     expiresIn: process.env.JWT_ACCESS_EXPIRES || "15m",
   });
 };
@@ -33,6 +46,10 @@ const generateAccessToken = (payload) => {
 // Tạo Refresh Token
 const generateRefreshToken = (payload) => {
   return jwt.sign(payload, getRefreshSecret(), {
+    algorithm: "HS256",
+    issuer: JWT_ISSUER,
+    audience: JWT_AUDIENCE,
+    jwtid: crypto.randomUUID(),
     expiresIn: process.env.JWT_REFRESH_EXPIRES || "7d",
   });
 };
@@ -40,7 +57,7 @@ const generateRefreshToken = (payload) => {
 // Verify Access Token (Basic)
 const verifyAccessToken = (token) => {
   try {
-    return jwt.verify(token, getAccessSecret());
+    return jwt.verify(token, getAccessSecret(), JWT_VERIFY_OPTIONS);
   } catch (e) {
     return null;
   }
@@ -49,7 +66,7 @@ const verifyAccessToken = (token) => {
 // Verify Access Token (Detailed with expiration & error check)
 const verifyAccessTokenDetailed = (token) => {
   try {
-    const decoded = jwt.verify(token, getAccessSecret());
+    const decoded = jwt.verify(token, getAccessSecret(), JWT_VERIFY_OPTIONS);
     return { valid: true, expired: false, decoded };
   } catch (e) {
     if (e.name === "TokenExpiredError") {
@@ -61,7 +78,7 @@ const verifyAccessTokenDetailed = (token) => {
 
 const verifyRefreshToken = (token) => {
   try {
-    return jwt.verify(token, getRefreshSecret());
+    return jwt.verify(token, getRefreshSecret(), JWT_VERIFY_OPTIONS);
   } catch (e) {
     return null;
   }
@@ -69,7 +86,7 @@ const verifyRefreshToken = (token) => {
 
 const verifyRefreshTokenDetailed = (token) => {
   try {
-    const decoded = jwt.verify(token, getRefreshSecret());
+    const decoded = jwt.verify(token, getRefreshSecret(), JWT_VERIFY_OPTIONS);
     return { valid: true, expired: false, decoded };
   } catch (e) {
     if (e.name === "TokenExpiredError") {

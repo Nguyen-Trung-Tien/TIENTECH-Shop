@@ -2,6 +2,42 @@ const { verifyAccessTokenDetailed } = require("../utils/jwtHelper");
 const { getCache, setCache } = require("../config/redis");
 const { getTokenBlacklistKey, getUserStatusKey } = require("../services/user/AuthHelper");
 
+const resolveUserStatus = async (userId) => {
+  const statusKey = getUserStatusKey(userId);
+  let userStatus = await getCache(statusKey);
+
+  if (!userStatus) {
+    try {
+      const db = require("../models");
+      const dbUser = await db.User.findByPk(userId, {
+        attributes: ["id", "isActive", "role", "tokenVersion"],
+      });
+      if (!dbUser) {
+        return { notFound: true };
+      }
+      userStatus = {
+        isActive: Boolean(dbUser.isActive),
+        role: dbUser.role,
+        ...(typeof dbUser.tokenVersion === "number"
+          ? { tokenVersion: dbUser.tokenVersion }
+          : {}),
+      };
+      await setCache(statusKey, userStatus, 300);
+    } catch (dbErr) {
+      console.error("AuthMiddleware status check error:", dbErr?.message);
+    }
+  }
+  return { userStatus };
+};
+
+const isTokenVersionStale = (decoded, userStatus) => {
+  return (
+    typeof userStatus?.tokenVersion === "number" &&
+    typeof decoded?.ver === "number" &&
+    decoded.ver !== userStatus.tokenVersion
+  );
+};
+
 const authenticateToken = async (req, res, next) => {
   const authHeader = req.headers["authorization"];
   let token = authHeader && authHeader.split(" ")[1];
@@ -39,27 +75,13 @@ const authenticateToken = async (req, res, next) => {
 
   const userId = result.decoded?.id;
   if (userId) {
-    const statusKey = getUserStatusKey(userId);
-    let userStatus = await getCache(statusKey);
-
-    if (!userStatus) {
-      try {
-        const db = require("../models");
-        const dbUser = await db.User.findByPk(userId, {
-          attributes: ["id", "isActive", "role"],
-        });
-        if (!dbUser) {
-          return res.status(401).json({
-            errCode: 2,
-            code: "USER_NOT_FOUND",
-            errMessage: "Người dùng không tồn tại",
-          });
-        }
-        userStatus = { isActive: Boolean(dbUser.isActive), role: dbUser.role };
-        await setCache(statusKey, userStatus, 300);
-      } catch (dbErr) {
-        console.error("AuthMiddleware status check error:", dbErr?.message);
-      }
+    const { notFound, userStatus } = await resolveUserStatus(userId);
+    if (notFound) {
+      return res.status(401).json({
+        errCode: 2,
+        code: "USER_NOT_FOUND",
+        errMessage: "Người dùng không tồn tại",
+      });
     }
 
     if (userStatus && !userStatus.isActive) {
@@ -67,6 +89,14 @@ const authenticateToken = async (req, res, next) => {
         errCode: 3,
         code: "ACCOUNT_LOCKED",
         errMessage: "Tài khoản của bạn đã bị khóa hoặc tạm ngưng hoạt động. Vui lòng liên hệ quản trị viên.",
+      });
+    }
+
+    if (isTokenVersionStale(result.decoded, userStatus)) {
+      return res.status(401).json({
+        errCode: 2,
+        code: "TOKEN_REVOKED",
+        errMessage: "Phiên đăng nhập đã hết hiệu lực. Vui lòng đăng nhập lại.",
       });
     }
 
@@ -95,23 +125,8 @@ const optionalAuthenticateToken = async (req, res, next) => {
       if (result.valid) {
         const userId = result.decoded?.id;
         if (userId) {
-          const statusKey = getUserStatusKey(userId);
-          let userStatus = await getCache(statusKey);
-          if (!userStatus) {
-            try {
-              const db = require("../models");
-              const dbUser = await db.User.findByPk(userId, {
-                attributes: ["id", "isActive", "role"],
-              });
-              if (dbUser) {
-                userStatus = { isActive: Boolean(dbUser.isActive), role: dbUser.role };
-                await setCache(statusKey, userStatus, 300);
-              }
-            } catch (e) {
-              // ignore
-            }
-          }
-          if (userStatus && userStatus.isActive) {
+          const { userStatus } = await resolveUserStatus(userId);
+          if (userStatus && userStatus.isActive && !isTokenVersionStale(result.decoded, userStatus)) {
             req.user = { ...result.decoded, role: userStatus.role || result.decoded.role };
           }
         } else {

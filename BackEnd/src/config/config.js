@@ -20,7 +20,9 @@ module.exports = {
       process.env.DB_SSL === "true" ||
       (process.env.DB_HOST && process.env.DB_HOST.includes("tidbcloud.com"))
         ? {
+            connectTimeout: 20000,
             ssl: {
+              minVersion: "TLSv1.2",
               require: true,
               rejectUnauthorized: false,
             },
@@ -48,12 +50,14 @@ module.exports = {
     password: process.env.DB_PASSWORD,
     database: process.env.DB_DATABASE_NAME,
     host: process.env.DB_HOST,
-    port: process.env.DB_PORT,
+    port: Number(process.env.DB_PORT) || 4000,
     dialect: "mysql",
     dialectModule: mysql2,
 
     dialectOptions: {
+      connectTimeout: 20000,
       ssl: {
+        minVersion: "TLSv1.2",
         require: true,
         rejectUnauthorized: false,
       },

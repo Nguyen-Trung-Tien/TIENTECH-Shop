@@ -438,6 +438,7 @@ const getProductBySlug = async (slug) => {
 
     const product = await ProductRepository.findOne({
       where: whereCondition,
+      attributes: { exclude: ["embedding"] },
       include: [
         { model: db.Category, as: "category", attributes: ["id", "name", "slug"] },
         { model: db.Brand, as: "brand", attributes: ["id", "name"] },

@@ -1,7 +1,7 @@
 const db = require("../../models");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const { v4: uuidv4 } = require("uuid");
+const crypto = require("crypto");
 const {
   generateAccessToken,
   generateRefreshToken,
@@ -18,27 +18,66 @@ const {
   performDummyBcryptCompare,
   getUserProfileKey,
   getRefreshTokenKey,
+  getUserStatusKey,
   getTokenBlacklistKey,
+  getLoginFailKey,
 } = require("./AuthHelper");
+
+const LOGIN_MAX_ATTEMPTS_SOFT = 5;
+const LOGIN_MAX_ATTEMPTS_HARD = 10;
+const LOCK_DURATION_SOFT_MS = 5 * 60 * 1000;
+const LOCK_DURATION_HARD_MS = 15 * 60 * 1000;
+
+const recordFailedLoginAttempt = async (loginFailKey) => {
+  try {
+    const current = (await getCache(loginFailKey)) || { count: 0, lockedUntil: 0 };
+    const nextCount = (current.count || 0) + 1;
+    let lockedUntil = current.lockedUntil || 0;
+    if (nextCount >= LOGIN_MAX_ATTEMPTS_HARD) {
+      lockedUntil = Date.now() + LOCK_DURATION_HARD_MS;
+    } else if (nextCount >= LOGIN_MAX_ATTEMPTS_SOFT) {
+      lockedUntil = Date.now() + LOCK_DURATION_SOFT_MS;
+    }
+    await setCache(loginFailKey, { count: nextCount, lockedUntil }, 15 * 60);
+  } catch (e) {
+    // Non-blocking if Redis unavailable
+  }
+};
 
 class AuthService {
   async login(email, password) {
     try {
+      const loginFailKey = getLoginFailKey(email);
+      const failState = await getCache(loginFailKey);
+      if (failState?.lockedUntil && failState.lockedUntil > Date.now()) {
+        const waitMinutes = Math.max(1, Math.ceil((failState.lockedUntil - Date.now()) / 60000));
+        return {
+          errCode: 429,
+          statusCode: 429,
+          errMessage: `Tài khoản tạm thời bị khóa do đăng nhập sai nhiều lần. Vui lòng thử lại sau ${waitMinutes} phút.`,
+        };
+      }
+
       const user = await db.User.findOne({ where: { email } });
-      if (!user) {
+      if (!user || !user.password) {
         await performDummyBcryptCompare(password);
+        await recordFailedLoginAttempt(loginFailKey);
         return { errCode: 2, errMessage: "Email hoặc mật khẩu không chính xác!", statusCode: 401 };
       }
       if (!user.isActive) {
-        return { errCode: 3, errMessage: "Tài khoản chưa được kích hoạt!", statusCode: 401 };
+        return { errCode: 3, errMessage: "Tài khoản chưa được kích hoạt hoặc đã bị khóa!", statusCode: 401 };
       }
 
       const isPasswordValid = await bcrypt.compare(password, user.password);
       if (!isPasswordValid) {
+        await recordFailedLoginAttempt(loginFailKey);
         return { errCode: 2, errMessage: "Email hoặc mật khẩu không chính xác!", statusCode: 401 };
       }
 
-      const payload = { id: user.id, email: user.email, role: user.role };
+      await deleteCache(loginFailKey);
+
+      const tokenVersion = typeof user.tokenVersion === "number" ? user.tokenVersion : 0;
+      const payload = { id: user.id, email: user.email, role: user.role, ver: tokenVersion };
       const accessToken = generateAccessToken(payload);
       const refreshToken = generateRefreshToken(payload);
 
@@ -65,7 +104,7 @@ class AuthService {
       await setCache(getUserProfileKey(user.id), userData, 900); // 15 mins TTL
       await setCache(
         getRefreshTokenKey(user.id),
-        { hash: refreshTokenHash, expiresAt: refreshTokenExpiresAt, email: user.email, role: user.role },
+        { hash: refreshTokenHash, expiresAt: refreshTokenExpiresAt, email: user.email, role: user.role, ver: tokenVersion },
         7 * 24 * 3600
       );
 
@@ -88,37 +127,51 @@ class AuthService {
       let cachedSession = await getCache(redisKey);
       let userRole = decoded.role;
       let userEmail = decoded.email;
+      let tokenVersion = typeof decoded.ver === "number" ? decoded.ver : 0;
 
       if (cachedSession) {
         if (cachedSession.hash !== providedTokenHash) {
-          return { errCode: 3, errMessage: "Refresh token không khớp", statusCode: 401 };
+          // Reuse detection: revoke active session immediately
+          await deleteCache(redisKey);
+          await db.User.update(
+            { refreshTokenHash: null, refreshTokenExpiresAt: null },
+            { where: { id: decoded.id } }
+          );
+          return { errCode: 3, errMessage: "Phiên đăng nhập không hợp lệ hoặc đã bị thu hồi", statusCode: 401 };
         }
         if (cachedSession.expiresAt && new Date(cachedSession.expiresAt) < new Date()) {
           return { errCode: 4, errMessage: "Refresh token đã hết hạn", statusCode: 401 };
         }
         userRole = cachedSession.role || decoded.role;
         userEmail = cachedSession.email || decoded.email;
+        if (typeof cachedSession.ver === "number") tokenVersion = cachedSession.ver;
       } else {
         // Fallback to MySQL DB with Projection (only necessary attributes)
         const user = await db.User.findByPk(decoded.id, {
-          attributes: ["id", "email", "role", "isActive", "refreshTokenHash", "refreshTokenExpiresAt"],
+          attributes: ["id", "email", "role", "isActive", "refreshTokenHash", "refreshTokenExpiresAt", "tokenVersion"],
         });
 
         if (!user || !user.isActive || !user.refreshTokenHash) {
           return { errCode: 2, errMessage: "Refresh token đã bị thu hồi hoặc tài khoản chưa kích hoạt", statusCode: 401 };
         }
         if (user.refreshTokenHash !== providedTokenHash) {
-          return { errCode: 3, errMessage: "Refresh token không khớp", statusCode: 401 };
+          // Reuse detection: revoke DB refresh token
+          await db.User.update(
+            { refreshTokenHash: null, refreshTokenExpiresAt: null },
+            { where: { id: decoded.id } }
+          );
+          return { errCode: 3, errMessage: "Phiên đăng nhập không hợp lệ hoặc đã bị thu hồi", statusCode: 401 };
         }
         if (user.refreshTokenExpiresAt && user.refreshTokenExpiresAt < new Date()) {
           return { errCode: 4, errMessage: "Refresh token đã hết hạn", statusCode: 401 };
         }
         userRole = user.role;
         userEmail = user.email;
+        tokenVersion = typeof user.tokenVersion === "number" ? user.tokenVersion : 0;
       }
 
       // Generate New Tokens (Rotation)
-      const payload = { id: decoded.id, email: userEmail, role: userRole };
+      const payload = { id: decoded.id, email: userEmail, role: userRole, ver: tokenVersion };
       const newAccessToken = generateAccessToken(payload);
       const newRefreshToken = generateRefreshToken(payload);
 
@@ -132,7 +185,7 @@ class AuthService {
       );
       await setCache(
         redisKey,
-        { hash: newHash, expiresAt: newExpiresAt, email: userEmail, role: userRole },
+        { hash: newHash, expiresAt: newExpiresAt, email: userEmail, role: userRole, ver: tokenVersion },
         7 * 24 * 3600
       );
 
@@ -173,16 +226,17 @@ class AuthService {
 
   async forgotPassword(email) {
     try {
+      const genericMsg = "Nếu email tồn tại trong hệ thống, mã xác nhận đã được gửi đến hộp thư của bạn!";
       const user = await db.User.findOne({ where: { email } });
-      if (!user) return { errCode: 1, errMessage: "Email không tồn tại" };
+      if (!user) return { errCode: 0, errMessage: genericMsg };
 
-      const resetToken = uuidv4();
+      const resetToken = crypto.randomUUID();
       user.resetToken = hashToken(resetToken);
       user.resetTokenExpiresAt = new Date(Date.now() + 15 * 60 * 1000);
       await user.save();
 
       sendEmailAsync(sendForgotPasswordEmail, user, resetToken);
-      return { errCode: 0, errMessage: "Mã xác nhận đã được gửi đến email của bạn!" };
+      return { errCode: 0, errMessage: genericMsg };
     } catch (error) {
       console.error("AuthService.forgotPassword error:", error);
       return { errCode: -1, errMessage: error.message };
@@ -216,10 +270,12 @@ class AuthService {
       user.resetTokenExpiresAt = null;
       user.refreshTokenHash = null;
       user.refreshTokenExpiresAt = null;
+      user.tokenVersion = (user.tokenVersion || 0) + 1;
       await user.save();
 
       await deleteCache(getUserProfileKey(user.id));
       await deleteCache(getRefreshTokenKey(user.id));
+      await deleteCache(getUserStatusKey(user.id));
 
       return { errCode: 0, errMessage: "Đổi mật khẩu thành công!" };
     } catch (error) {
@@ -248,8 +304,9 @@ class AuthService {
 
   async resendVerificationEmail(email) {
     try {
+      const genericMsg = "Nếu email hợp lệ và chưa kích hoạt, mã xác nhận mới đã được gửi.";
       const user = await db.User.findOne({ where: { email } });
-      if (!user || user.isActive) return { errCode: 1, errMessage: "Không hợp lệ" };
+      if (!user || user.isActive) return { errCode: 0, errMessage: genericMsg };
 
       const token = generateRandomToken();
       user.verificationToken = hashToken(token);
@@ -258,7 +315,7 @@ class AuthService {
 
       // Non-blocking async email execution
       sendEmailAsync(sendVerificationEmail, user, token);
-      return { errCode: 0, errMessage: "Đã gửi lại email" };
+      return { errCode: 0, errMessage: genericMsg };
     } catch (error) {
       return { errCode: -1, errMessage: error.message };
     }
@@ -272,16 +329,22 @@ class AuthService {
       const user = await db.User.findByPk(userId);
       if (!user) return { errCode: 1, errMessage: "User not found" };
 
+      if (!user.password) {
+        return { errCode: 2, errMessage: "Tài khoản đăng nhập bằng Google chưa có mật khẩu cũ!" };
+      }
+
       const valid = await bcrypt.compare(oldPassword, user.password);
       if (!valid) return { errCode: 2, errMessage: "Mật khẩu cũ không chính xác!" };
 
       user.password = await hashUserPassword(newPassword);
       user.refreshTokenHash = null;
       user.refreshTokenExpiresAt = null;
+      user.tokenVersion = (user.tokenVersion || 0) + 1;
       await user.save();
 
       await deleteCache(getUserProfileKey(userId));
       await deleteCache(getRefreshTokenKey(userId));
+      await deleteCache(getUserStatusKey(userId));
 
       return { errCode: 0, errMessage: "Đổi mật khẩu thành công!" };
     } catch (error) {
@@ -303,7 +366,8 @@ class AuthService {
         return { errCode: 3, errorType: "not_admin", errMessage: "Tài khoản không có quyền quản trị viên!" };
       }
 
-      const payload = { id: user.id, email: user.email, role: user.role };
+      const tokenVersion = typeof user.tokenVersion === "number" ? user.tokenVersion : 0;
+      const payload = { id: user.id, email: user.email, role: user.role, ver: tokenVersion };
       const accessToken = generateAccessToken(payload);
       const refreshToken = generateRefreshToken(payload);
 
@@ -332,7 +396,7 @@ class AuthService {
       await setCache(getUserProfileKey(user.id), userData, 900);
       await setCache(
         getRefreshTokenKey(user.id),
-        { hash: refreshTokenHash, expiresAt: refreshTokenExpiresAt, email: user.email, role: user.role },
+        { hash: refreshTokenHash, expiresAt: refreshTokenExpiresAt, email: user.email, role: user.role, ver: tokenVersion },
         7 * 24 * 3600
       );
 

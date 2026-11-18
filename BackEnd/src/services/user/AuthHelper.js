@@ -6,7 +6,7 @@ const hashToken = (token) =>
   crypto.createHash("sha256").update(token).digest("hex");
 
 const generateRandomToken = () => {
-  return Math.floor(100000 + Math.random() * 900000).toString(); // 6 digit OTP
+  return crypto.randomInt(100000, 1000000).toString(); // CSPRNG 6-digit OTP
 };
 
 const getTokenExpiryDate = (token) => {
@@ -16,7 +16,7 @@ const getTokenExpiryDate = (token) => {
 };
 
 const hashUserPassword = async (password) => {
-  const salt = await bcrypt.genSalt(10);
+  const salt = await bcrypt.genSalt(12);
   return await bcrypt.hash(password, salt);
 };
 
@@ -50,6 +50,8 @@ const getUserProfileKey = (userId) => `user:profile:${userId}`;
 const getRefreshTokenKey = (userId) => `user:refreshtoken:${userId}`;
 const getUserStatusKey = (userId) => `user:status:${userId}`;
 const getTokenBlacklistKey = (token) => `blacklist:token:${hashToken(token)}`;
+const getLoginFailKey = (email) =>
+  `login:fail:${String(email || "").trim().toLowerCase()}`;
 
 module.exports = {
   hashToken,
@@ -62,5 +64,6 @@ module.exports = {
   getRefreshTokenKey,
   getUserStatusKey,
   getTokenBlacklistKey,
+  getLoginFailKey,
 };
 

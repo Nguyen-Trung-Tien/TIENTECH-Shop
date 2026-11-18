@@ -1,4 +1,4 @@
-const { sanitizeOutputData, handleResponse } = require("../../src/utils/controllerHelper");
+const { sanitizeOutputData, handleResponse, handleError } = require("../../src/utils/controllerHelper");
 
 describe("Data Sanitization & Leakage Prevention Unit Tests", () => {
   test("Loại bỏ trường nhạy cảm password, refreshTokenHash, resetToken, verificationToken khỏi dữ liệu trả về", () => {
@@ -85,6 +85,45 @@ describe("Data Sanitization & Leakage Prevention Unit Tests", () => {
     expect(sentJson.data.email).toBe("test@domain.com");
     expect(sentJson.data.password).toBeUndefined();
     expect(sentJson.data.refreshTokenHash).toBeUndefined();
+  });
+
+  test("Loại bỏ tokenVersion, *ExpiresAt và embedding khỏi data và products; handleError gắn requestId", () => {
+    const mockRes = {
+      req: { requestId: "req-trace-123" },
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn().mockReturnThis(),
+    };
+
+    handleResponse(mockRes, {
+      errCode: 0,
+      data: {
+        id: 1,
+        tokenVersion: 3,
+        resetTokenExpiresAt: new Date(),
+        verificationTokenExpiresAt: new Date(),
+        refreshTokenExpiresAt: new Date(),
+      },
+      products: [{ id: 10, name: "Phone", embedding: "[0.1,0.2,0.3]" }],
+    });
+
+    const sentJson = mockRes.json.mock.calls[0][0];
+    expect(sentJson.data.tokenVersion).toBeUndefined();
+    expect(sentJson.data.resetTokenExpiresAt).toBeUndefined();
+    expect(sentJson.data.verificationTokenExpiresAt).toBeUndefined();
+    expect(sentJson.data.refreshTokenExpiresAt).toBeUndefined();
+    expect(sentJson.products[0].embedding).toBeUndefined();
+
+    const errRes = {
+      req: { requestId: "req-err-456" },
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn().mockReturnThis(),
+    };
+    jest.spyOn(console, "error").mockImplementation(() => {});
+    handleError(errRes, new Error("DB timeout"), "testMethod");
+    expect(errRes.status).toHaveBeenCalledWith(500);
+    expect(errRes.json).toHaveBeenCalledWith(
+      expect.objectContaining({ requestId: "req-err-456", errCode: -1 })
+    );
   });
 });
 

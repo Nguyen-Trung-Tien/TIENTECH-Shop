@@ -302,7 +302,7 @@ const handleResendVerification = async (req, res) => {
 };
 
 const handleGoogleAuthCallback = async (req, res) => {
-  const state = req.query.state;
+  const state = req.oauthFrom ?? req.query.state;
   const isAdmin = state === "admin" || (typeof state === "string" && state.includes("admin"));
   const failureBase = isAdmin
     ? `${process.env.FRONTEND_URL}/admin/login`
