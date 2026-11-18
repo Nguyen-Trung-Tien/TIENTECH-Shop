@@ -38,12 +38,13 @@ const buttonVariants = cva(
   }
 );
 
-const Button = ({ className, variant, size, loading = false, asChild = false, type = "button", ref, children, icon: Icon, ...props }) => {
+const Button = ({ className, variant, size, loading = false, loadingText, asChild = false, type = "button", ref, children, icon: Icon, ...props }) => {
   const Comp = asChild ? "span" : "button";
   return (
     <Comp
       type={asChild ? undefined : type}
-      className={cn(buttonVariants({ variant, size, className }), loading && "opacity-70 pointer-events-none")}
+      aria-busy={loading || undefined}
+      className={cn(buttonVariants({ variant, size, className }), loading && "opacity-75 pointer-events-none")}
       ref={ref}
       disabled={loading || props.disabled}
       {...props}
@@ -59,7 +60,7 @@ const Button = ({ className, variant, size, loading = false, asChild = false, ty
         />
       )}
       {!loading && Icon && (typeof Icon === "function" ? <Icon className="size-4 shrink-0" /> : Icon)}
-      {children}
+      {loading && loadingText ? loadingText : children}
     </Comp>
   );
 };

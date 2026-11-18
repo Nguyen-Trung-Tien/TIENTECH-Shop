@@ -22,18 +22,24 @@ const Modal = ({
   const isModalOpen = Boolean(isOpen || show);
   const modalRef = useRef(null);
 
-  // Keyboard accessibility: Close on Escape key
+  // Keyboard accessibility: Close on Escape key (blocked while loading) & lock body scroll
   useEffect(() => {
     if (!isModalOpen) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
     const handleKeyDown = (e) => {
-      if (e.key === "Escape") {
+      if (e.key === "Escape" && !loading) {
         e.preventDefault();
         if (onClose) onClose();
       }
     };
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isModalOpen, onClose]);
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isModalOpen, loading, onClose]);
 
   const sizes = {
     xs: "max-w-xs",
@@ -60,7 +66,7 @@ const Modal = ({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={closeOnOverlayClick ? onClose : undefined}
+            onClick={closeOnOverlayClick && !loading ? onClose : undefined}
             className="absolute inset-0 bg-slate-950/60 backdrop-blur-md transition-opacity"
             aria-hidden="true"
           />
@@ -113,8 +119,9 @@ const Modal = ({
                   <button
                     type="button"
                     onClick={onClose}
+                    disabled={loading}
                     aria-label="Đóng hộp thoại"
-                    className="size-8 sm:size-9 bg-slate-100 dark:bg-dark-card hover:bg-slate-200 dark:hover:bg-dark-border rounded-xl flex items-center justify-center text-slate-400 dark:text-dark-text-secondary hover:text-slate-900 dark:hover:text-white transition-all cursor-pointer border border-transparent dark:border-dark-border"
+                    className="size-8 sm:size-9 bg-slate-100 dark:bg-dark-card hover:bg-slate-200 dark:hover:bg-dark-border rounded-xl flex items-center justify-center text-slate-400 dark:text-dark-text-secondary hover:text-slate-900 dark:hover:text-white transition-all cursor-pointer border border-transparent dark:border-dark-border disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     <FiX size={18} />
                   </button>
@@ -182,9 +189,14 @@ export const ConfirmModal = ({
       loading={loading}
     >
       <div className="flex flex-col items-center py-1">
-        <div className={`size-14 sm:size-16 rounded-2xl flex items-center justify-center text-2xl sm:text-3xl mb-4 border shadow-inner ${style}`}>
+        <Motion.div
+          initial={{ scale: 0.55, rotate: -8, opacity: 0 }}
+          animate={{ scale: 1, rotate: 0, opacity: 1 }}
+          transition={{ type: "spring", stiffness: 450, damping: 20, delay: 0.06 }}
+          className={`size-14 sm:size-16 rounded-2xl flex items-center justify-center text-2xl sm:text-3xl mb-4 border shadow-inner ${style}`}
+        >
           {Icon && (typeof Icon === "function" ? <Icon /> : Icon)}
-        </div>
+        </Motion.div>
 
         <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white tracking-tight uppercase mb-1.5">
           {title}
