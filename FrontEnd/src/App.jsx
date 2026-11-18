@@ -10,7 +10,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { getMeApi } from "./api/userApi";
 import { setUser, removeUser, setInitializing } from "./redux/userSlice";
 import { clearCart } from "./redux/cartSlice";
-import { LazyMotion, domAnimation } from "framer-motion";
+import { LazyMotion, domAnimation, MotionConfig } from "framer-motion";
 import RouteProgressBar from "./components/Loading/RouteProgressBar";
 import ErrorBoundary from "./components/UI/ErrorBoundary";
 import { useTheme } from "./context/useTheme";
@@ -64,17 +64,25 @@ const App = () => {
   }, [dispatch]);
 
   return (
-    <div className="min-h-screen bg-white dark:bg-dark-bg text-gray-900 dark:text-dark-text-primary transition-colors duration-300">
+    <div className="min-h-screen bg-surface-50 dark:bg-dark-bg text-surface-900 dark:text-dark-text-primary transition-colors duration-300">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:px-4 focus:py-2 focus:rounded-lg focus:bg-primary focus:text-white focus:font-semibold focus:shadow-lg"
+      >
+        Chuyển đến nội dung chính
+      </a>
       <RouteProgressBar />
       <AccountLockedModal />
-      <LazyMotion features={domAnimation}>
-        <ErrorBoundary>
-          <Routes>
-            <Route path="/admin/*" element={<AdminRoutes />} />
-            <Route path="/*" element={<UserRoutes />} />
-          </Routes>
-        </ErrorBoundary>
-      </LazyMotion>
+      <MotionConfig reducedMotion="user">
+        <LazyMotion features={domAnimation}>
+          <ErrorBoundary>
+            <Routes>
+              <Route path="/admin/*" element={<AdminRoutes />} />
+              <Route path="/*" element={<UserRoutes />} />
+            </Routes>
+          </ErrorBoundary>
+        </LazyMotion>
+      </MotionConfig>
 
       <ToastContainer
         position="top-right"

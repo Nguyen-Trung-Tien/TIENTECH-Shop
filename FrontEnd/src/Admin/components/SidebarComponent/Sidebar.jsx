@@ -105,7 +105,7 @@ const Sidebar = ({ collapsed, mobileOpen, onCloseMobile }) => {
       }
     };
 
-    if (user && user.role === "admin") {
+    if (user && ["admin", "root"].includes(user.role)) {
       fetchCounters();
       const interval = setInterval(fetchCounters, 40000);
       const handleVisibilityChange = () => {

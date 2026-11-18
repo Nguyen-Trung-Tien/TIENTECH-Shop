@@ -1,7 +1,20 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { Link } from "react-router-dom";
-import { FaBox, FaShoppingCart, FaDollarSign, FaUsers, FaUndo, FaTimesCircle } from "react-icons/fa";
-import { FiPlus, FiDownload } from "react-icons/fi";
+import {
+  FaBox,
+  FaShoppingCart,
+  FaDollarSign,
+  FaUsers,
+  FaUndo,
+  FaTimesCircle,
+} from "react-icons/fa";
+import {
+  FiPlus,
+  FiDownload,
+  FiRefreshCw,
+  FiAlertTriangle,
+  FiArrowRight,
+} from "react-icons/fi";
 import StatsCard from "../../components/StatsCardComponent/StatsCard";
 import ChartCard from "../../components/ChartCardComponent/ChartCard";
 import AIInsightsWidget from "../../components/AIInsightsWidget/AIInsightsWidget";
@@ -14,6 +27,10 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
   const [stats, setStats] = useState([]);
+  const [actionQueue, setActionQueue] = useState({
+    cancelRequestedCount: 0,
+    returnRequestedCount: 0,
+  });
   const [lowStock, setLowStock] = useState({ count: 0, products: [] });
   const [error, setError] = useState(null);
 
@@ -39,105 +56,95 @@ const Dashboard = () => {
     }
   };
 
-  useEffect(() => {
-    const fetchDashboard = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const res = await getDashboard();
-        if (res?.errCode === 0 && res?.data) {
-          let data = res.data;
-          if (Array.isArray(data)) data = data[0] || {};
+  const fetchDashboard = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await getDashboard();
+      if (res?.errCode === 0 && res?.data) {
+        let data = res.data;
+        if (Array.isArray(data)) data = data[0] || {};
 
-          const {
-            totalProducts = 0,
-            todayOrders = 0,
-            totalRevenue = 0,
-            totalUsers = 0,
-            cancelRequestedCount = 0,
-            returnRequestedCount = 0,
-            lowStockCount = 0,
-            lowStockProducts = [],
-            change = {},
-          } = data;
+        const {
+          totalProducts = 0,
+          todayOrders = 0,
+          totalRevenue = 0,
+          totalUsers = 0,
+          cancelRequestedCount = 0,
+          returnRequestedCount = 0,
+          lowStockCount = 0,
+          lowStockProducts = [],
+          change = {},
+        } = data;
 
-          setLowStock({
-            count: lowStockCount,
-            products: lowStockProducts,
-          });
+        setActionQueue({
+          cancelRequestedCount: Number(cancelRequestedCount) || 0,
+          returnRequestedCount: Number(returnRequestedCount) || 0,
+        });
 
-          const {
-            products: changeProducts = 0,
-            orders: changeOrders = 0,
-            revenue: changeRevenue = 0,
-            users: changeUsers = 0,
-          } = change;
+        setLowStock({
+          count: lowStockCount,
+          products: lowStockProducts,
+        });
 
-          const formatCurrency = (value) =>
-            Number(value).toLocaleString("vi-VN") + " ₫";
+        const {
+          products: changeProducts = 0,
+          orders: changeOrders = 0,
+          revenue: changeRevenue = 0,
+          users: changeUsers = 0,
+        } = change;
 
-          setStats([
-            {
-              title: "Tổng sản phẩm",
-              value: Number(totalProducts).toLocaleString(),
-              icon: <FaBox />,
-              change: `${changeProducts > 0 ? "+" : ""}${changeProducts}%`,
-              isIncrease: changeProducts >= 0,
-              link: "/admin/products",
-            },
-            {
-              title: "Đơn hàng hôm nay",
-              value: Number(todayOrders).toLocaleString(),
-              icon: <FaShoppingCart />,
-              change: `${changeOrders > 0 ? "+" : ""}${changeOrders}%`,
-              isIncrease: changeOrders >= 0,
-              link: "/admin/orders",
-            },
-            {
-              title: "Doanh thu",
-              value: formatCurrency(totalRevenue),
-              icon: <FaDollarSign />,
-              change: `${changeRevenue > 0 ? "+" : ""}${changeRevenue}%`,
-              isIncrease: changeRevenue >= 0,
-              link: "/admin/revenue",
-            },
-            {
-              title: "Người dùng",
-              value: Number(totalUsers).toLocaleString(),
-              icon: <FaUsers />,
-              change: `${changeUsers > 0 ? "+" : ""}${changeUsers}%`,
-              isIncrease: changeUsers >= 0,
-              link: "/admin/users",
-            },
-            {
-              title: "Yêu cầu hủy",
-              value: Number(cancelRequestedCount).toLocaleString(),
-              icon: <FaTimesCircle className="text-rose-500" />,
-              change: "Cần xử lý",
-              isIncrease: false,
-              link: "/admin/orders?tab=cancel_requested",
-            },
-            {
-              title: "Yêu cầu trả hàng",
-              value: Number(returnRequestedCount).toLocaleString(),
-              icon: <FaUndo className="text-amber-500" />,
-              change: "Cần duyệt",
-              isIncrease: false,
-              link: "/admin/orders?tab=return_requested",
-            },
-          ]);
-        } else {
-          setError("Không thể tải dữ liệu dashboard.");
-        }
-      } catch (err) {
-        console.error("Dashboard error:", err);
-        setError("Lỗi kết nối server. Vui lòng thử lại.");
-      } finally {
-        setLoading(false);
+        const formatCurrency = (value) =>
+          Number(value).toLocaleString("vi-VN") + " ₫";
+
+        setStats([
+          {
+            title: "Tổng sản phẩm",
+            value: Number(totalProducts).toLocaleString(),
+            icon: <FaBox />,
+            change: `${changeProducts > 0 ? "+" : ""}${changeProducts}%`,
+            isIncrease: changeProducts >= 0,
+            link: "/admin/products",
+          },
+          {
+            title: "Đơn hàng hôm nay",
+            value: Number(todayOrders).toLocaleString(),
+            icon: <FaShoppingCart />,
+            change: `${changeOrders > 0 ? "+" : ""}${changeOrders}%`,
+            isIncrease: changeOrders >= 0,
+            link: "/admin/orders",
+          },
+          {
+            title: "Doanh thu",
+            value: formatCurrency(totalRevenue),
+            icon: <FaDollarSign />,
+            change: `${changeRevenue > 0 ? "+" : ""}${changeRevenue}%`,
+            isIncrease: changeRevenue >= 0,
+            link: "/admin/revenue",
+          },
+          {
+            title: "Người dùng",
+            value: Number(totalUsers).toLocaleString(),
+            icon: <FaUsers />,
+            change: `${changeUsers > 0 ? "+" : ""}${changeUsers}%`,
+            isIncrease: changeUsers >= 0,
+            link: "/admin/users",
+          },
+        ]);
+      } else {
+        setError("Không thể tải dữ liệu dashboard.");
       }
-    };
-    fetchDashboard();
+    } catch (err) {
+      console.error("Dashboard error:", err);
+      setError("Lỗi kết nối server. Vui lòng thử lại.");
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    fetchDashboard();
+  }, [fetchDashboard]);
 
   const greeting = useMemo(() => {
     const hour = new Date().getHours();
@@ -147,7 +154,7 @@ const Dashboard = () => {
   }, []);
 
   return (
-    <div className="space-y-6 sm:space-y-8 p-2.5 sm:p-6 md:p-8 max-w-[1600px] mx-auto text-slate-900 dark:text-dark-text-primary transition-colors duration-300">
+    <div className="space-y-6 sm:space-y-8 text-slate-900 dark:text-dark-text-primary transition-colors duration-300">
       {/* Executive Hero Banner */}
       <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-blue-50/90 via-indigo-50/50 to-slate-100/80 dark:from-slate-900 dark:via-[#0e1628] dark:to-slate-900 text-slate-900 dark:text-white p-5 sm:p-7 md:p-8 border border-blue-100/80 dark:border-slate-800 shadow-sm dark:shadow-xl transition-colors duration-300">
         {/* Ambient Glow Orbs */}
@@ -164,12 +171,27 @@ const Dashboard = () => {
               {greeting}, Quản trị viên!
             </h1>
             <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 font-medium leading-relaxed">
-              Chào mừng bạn trở lại hệ thống quản trị TienTech. Dưới đây là phân tích vận hành kinh doanh, hiệu suất đơn hàng và báo cáo tài chính mới nhất.
+              Chào mừng bạn trở lại hệ thống quản trị TienTech. Dưới đây là phân
+              tích vận hành kinh doanh, hiệu suất đơn hàng và báo cáo tài chính
+              mới nhất.
             </p>
           </div>
 
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 shrink-0">
             <button
+              type="button"
+              onClick={fetchDashboard}
+              disabled={loading}
+              aria-label="Làm mới số liệu dashboard"
+              className="px-3.5 py-2.5 bg-white dark:bg-white/10 hover:bg-slate-50 dark:hover:bg-white/15 active:scale-98 border border-slate-200 dark:border-white/15 backdrop-blur-md rounded-xl text-xs font-bold text-slate-700 dark:text-white transition-all shadow-xs disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2 min-h-[42px]"
+            >
+              <FiRefreshCw
+                className={`text-sm ${loading ? "animate-spin" : ""}`}
+              />
+              <span>Làm mới</span>
+            </button>
+            <button
+              type="button"
               onClick={handleExport}
               disabled={exporting}
               className="px-4 sm:px-5 py-2.5 bg-white dark:bg-white/10 hover:bg-slate-50 dark:hover:bg-white/15 active:scale-98 border border-slate-200 dark:border-white/15 backdrop-blur-md rounded-xl text-xs font-bold text-slate-700 dark:text-white transition-all shadow-xs dark:shadow-sm disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2 min-h-[42px]"
@@ -200,45 +222,113 @@ const Dashboard = () => {
       {loading ? (
         <DashboardSkeleton />
       ) : error ? (
-        <div className="p-4 sm:p-8 bg-rose-50 dark:bg-rose-900/10 border border-rose-100 dark:border-rose-900/20 rounded-2xl sm:rounded-3xl text-rose-600 dark:text-rose-400 text-sm font-bold flex items-center gap-4 shadow-sm">
-          <div className="size-10 sm:size-12 bg-rose-500 text-white rounded-2xl flex items-center justify-center text-xl shadow-lg shadow-rose-500/20 shrink-0">
-            !
+        <div
+          role="alert"
+          className="p-4 sm:p-6 bg-rose-50 dark:bg-rose-900/10 border border-rose-200 dark:border-rose-900/30 rounded-2xl sm:rounded-3xl text-rose-600 dark:text-rose-400 text-sm font-bold flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm"
+        >
+          <div className="flex items-center gap-4 min-w-0">
+            <div className="size-10 sm:size-12 bg-rose-500 text-white rounded-2xl flex items-center justify-center text-xl shadow-lg shadow-rose-500/20 shrink-0">
+              !
+            </div>
+            <p className="min-w-0 break-words">{error}</p>
           </div>
-          <p>{error}</p>
+          <button
+            type="button"
+            onClick={fetchDashboard}
+            className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition-colors shrink-0 cursor-pointer"
+          >
+            Thử lại
+          </button>
         </div>
       ) : (
-        <div className="space-y-6 sm:space-y-12">
-          {/* Stats Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3.5 sm:gap-6">
+        <div className="space-y-6 sm:space-y-10">
+          {/* Primary Business KPIs (4 spacious columns) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6">
             {stats.map((item, i) => (
-              <Link key={i} to={item.link} className="block group">
+              <Link key={i} to={item.link} className="block group min-w-0">
                 <StatsCard {...item} />
               </Link>
             ))}
           </div>
 
-          {/* Low Stock Alert Banner */}
-          {lowStock.count > 0 && (
-            <div className="p-4 sm:p-5 bg-amber-50/90 dark:bg-amber-950/20 border border-amber-200/90 dark:border-amber-900/40 rounded-2xl sm:rounded-3xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm animate-in fade-in">
-              <div className="flex items-center gap-3.5 min-w-0">
-                <div className="size-10 rounded-2xl bg-amber-500 text-white flex items-center justify-center font-black text-base shrink-0 shadow-sm shadow-amber-500/20">
-                  !
+          {/* Action Queue Strip: Urgent Operations */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Link
+              to="/admin/orders?tab=cancel_requested"
+              className="flex items-center justify-between gap-4 p-4 rounded-2xl bg-white dark:bg-dark-surface border border-rose-200/80 dark:border-rose-900/40 hover:border-rose-400 transition-all shadow-xs min-w-0"
+            >
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="size-10 rounded-xl bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0">
+                  <FaTimesCircle className="text-lg" />
                 </div>
-                <div className="min-w-0 flex-1">
-                  <h4 className="text-xs sm:text-sm font-black text-amber-900 dark:text-amber-300 uppercase tracking-tight">
-                    Cảnh Báo Tồn Kho ({lowStock.count} sản phẩm sắp hết hàng)
-                  </h4>
-                  <p className="text-[11px] sm:text-xs text-amber-700/90 dark:text-amber-400 mt-0.5 truncate">
-                    {lowStock.products.map((p) => `${p.name} (còn ${p.totalStock})`).join(", ")}
+                <div className="min-w-0">
+                  <p className="text-xs font-bold text-slate-500 dark:text-dark-text-secondary truncate">
+                    Yêu cầu hủy đơn
+                  </p>
+                  <p className="text-lg font-black text-slate-900 dark:text-white">
+                    {actionQueue.cancelRequestedCount}
                   </p>
                 </div>
               </div>
-              <Link
-                to="/admin/products"
-                className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-xl transition-colors shrink-0 text-center"
-              >
-                Quản lý kho hàng
-              </Link>
+              <span className="inline-flex items-center gap-1 text-xs font-bold text-rose-600 dark:text-rose-400 shrink-0">
+                Duyệt ngay <FiArrowRight />
+              </span>
+            </Link>
+
+            <Link
+              to="/admin/orders?tab=return_requested"
+              className="flex items-center justify-between gap-4 p-4 rounded-2xl bg-white dark:bg-dark-surface border border-amber-200/80 dark:border-amber-900/40 hover:border-amber-400 transition-all shadow-xs min-w-0"
+            >
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="size-10 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                  <FaUndo className="text-base" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-bold text-slate-500 dark:text-dark-text-secondary truncate">
+                    Yêu cầu trả hàng
+                  </p>
+                  <p className="text-lg font-black text-slate-900 dark:text-white">
+                    {actionQueue.returnRequestedCount}
+                  </p>
+                </div>
+              </div>
+              <span className="inline-flex items-center gap-1 text-xs font-bold text-amber-600 dark:text-amber-400 shrink-0">
+                Kiểm tra <FiArrowRight />
+              </span>
+            </Link>
+
+            <Link
+              to="/admin/products"
+              className="flex items-center justify-between gap-4 p-4 rounded-2xl bg-white dark:bg-dark-surface border border-orange-200/80 dark:border-orange-900/40 hover:border-orange-400 transition-all shadow-xs min-w-0"
+            >
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="size-10 rounded-xl bg-orange-500/10 text-orange-600 dark:text-orange-400 flex items-center justify-center shrink-0">
+                  <FiAlertTriangle className="text-lg" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-bold text-slate-500 dark:text-dark-text-secondary truncate">
+                    Sắp hết tồn kho
+                  </p>
+                  <p className="text-lg font-black text-slate-900 dark:text-white">
+                    {lowStock.count} SP
+                  </p>
+                </div>
+              </div>
+              <span className="inline-flex items-center gap-1 text-xs font-bold text-orange-600 dark:text-orange-400 shrink-0">
+                Nhập kho <FiArrowRight />
+              </span>
+            </Link>
+          </div>
+
+          {/* Low Stock Detail Strip */}
+          {lowStock.count > 0 && lowStock.products.length > 0 && (
+            <div className="px-4 py-3 bg-amber-50/80 dark:bg-amber-950/20 border border-amber-200/80 dark:border-amber-900/40 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+              <p className="text-amber-800 dark:text-amber-300 font-medium min-w-0 flex-1 break-words [overflow-wrap:anywhere]">
+                <span className="font-bold">Cần bổ sung gấp:</span>{" "}
+                {lowStock.products
+                  .map((p) => `${p.name} (còn ${p.totalStock})`)
+                  .join(" • ")}
+              </p>
             </div>
           )}
 

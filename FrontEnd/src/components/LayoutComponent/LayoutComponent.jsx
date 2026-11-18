@@ -1,6 +1,7 @@
 import React from "react";
 import Header from "../HeaderComponent/Header";
 import Footer from "../FooterComponent/Footer";
+import MobileBottomNav from "./MobileBottomNav";
 import { useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { useSystemSettings } from "../../context/useSystemSettings";
@@ -67,13 +68,14 @@ const LayoutComponent = ({
     <div className="flex flex-col min-h-screen bg-[var(--bg-main)] transition-colors duration-300 selection:bg-primary/10 selection:text-primary">
       {isShowHeader && <Header />}
       
-      <main className="flex-grow pb-20">
+      <main id="main-content" className="flex-grow pb-20">
         <div className="animate-in fade-in duration-700">
           {children}
         </div>
       </main>
 
       {isShowFooter && !shouldHideFooter && <Footer />}
+      {isShowHeader && <MobileBottomNav />}
     </div>
   );
 };
