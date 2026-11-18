@@ -12,6 +12,7 @@ const VoucherManage = () => {
     data: vouchers,
     loading,
     saving,
+    deleting,
     showModal,
     editingItem: editingVoucher,
     searchTerm,
@@ -260,6 +261,8 @@ const VoucherManage = () => {
         onClose={() => setShowDeleteModal(false)}
         onConfirm={confirmDelete}
         title="Xác nhận xóa"
+        variant="danger"
+        loading={deleting}
         message={`Xóa voucher "${deletingItem?.code}"? Người dùng sẽ không thể sử dụng mã này nữa.`}
       />
     </>

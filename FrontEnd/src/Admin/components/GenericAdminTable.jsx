@@ -42,7 +42,7 @@ const GenericAdminTable = ({
   const safeColumns = Array.isArray(columns) ? columns : [];
 
   return (
-    <div className="space-y-4 sm:space-y-8 p-2.5 sm:p-6 md:p-8 max-w-[1600px] mx-auto">
+    <div className="space-y-4 sm:space-y-8">
       {/* Action Loader Overlay */}
       {actionLoading && <AdminActionLoader message={actionMessage} />}
 

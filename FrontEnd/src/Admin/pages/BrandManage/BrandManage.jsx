@@ -12,6 +12,7 @@ const BrandManage = () => {
     data: brands,
     loading,
     saving,
+    deleting,
     showModal,
     editingItem: editingBrand,
     searchTerm,
@@ -126,6 +127,8 @@ const BrandManage = () => {
         onClose={() => setShowDeleteModal(false)}
         onConfirm={confirmDelete}
         title="Xác nhận xóa"
+        variant="danger"
+        loading={deleting}
         message={`Bạn có chắc chắn muốn xóa thương hiệu "${deletingItem?.name}"? Hành động này không thể hoàn tác.`}
       />
     </>

@@ -326,8 +326,8 @@ const Dashboard = () => {
           <AIInsightsWidget />
 
           {/* Charts Area */}
-          <div className="bg-white dark:bg-dark-surface rounded-2xl sm:rounded-[40px] border border-slate-100 dark:border-dark-border shadow-soft overflow-hidden p-4 sm:p-8 md:p-10">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 sm:mb-10 pb-4 sm:pb-6 border-b border-slate-50 dark:border-dark-border">
+          <div className="bg-white dark:bg-dark-surface rounded-2xl border border-slate-200/80 dark:border-dark-border shadow-xs overflow-hidden p-4 sm:p-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5 pb-4 border-b border-slate-100 dark:border-dark-border">
               <div>
                 <h3 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white tracking-tight mb-0.5 sm:mb-1">
                   Dòng tiền & Hiệu suất

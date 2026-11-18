@@ -45,6 +45,7 @@ const UserManage = () => {
     data: users,
     loading,
     saving,
+    deleting,
     showModal,
     editingItem: editUser,
     searchTerm,
@@ -702,13 +703,29 @@ const UserManage = () => {
         onClose={() => setShowDeleteModal(false)}
         onConfirm={confirmDelete}
         title="Xác nhận xóa tài khoản"
+        variant="danger"
+        loading={deleting}
         message={`Bạn có chắc chắn muốn xóa tài khoản "${deletingItem?.username}"? Mọi dữ liệu liên quan sẽ bị mất.`}
       />
 
       {/* Single Account Status Modal */}
-      {showStatusModal && targetUserForStatus && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
-          <div className="bg-white dark:bg-dark-surface w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 dark:border-dark-border p-6 space-y-5 animate-scaleUp">
+      <AnimatePresence>
+        {showStatusModal && targetUserForStatus && (
+          <Motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => !statusProcessing && setShowStatusModal(false)}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs"
+          >
+            <Motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 12 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 12 }}
+              transition={{ type: "spring", stiffness: 380, damping: 28 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white dark:bg-dark-surface w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 dark:border-dark-border p-5 sm:p-6 space-y-4"
+            >
             <div className="flex items-center gap-3">
               <div
                 className={`size-11 rounded-xl flex items-center justify-center text-lg ${
@@ -780,9 +797,10 @@ const UserManage = () => {
                 )}
               </button>
             </div>
-          </div>
-        </div>
-      )}
+            </Motion.div>
+          </Motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Bulk Status Modal */}
       {showBulkModal && (

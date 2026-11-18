@@ -90,12 +90,12 @@ const Revenue = () => {
   ];
 
   return (
-    <div className="space-y-6 sm:space-y-8 max-w-[1600px] mx-auto p-2.5 sm:p-6 md:p-8 transition-colors duration-300">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6">
+    <div className="space-y-6 transition-colors duration-300">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-4xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-3 sm:gap-4">
-            <div className="size-10 sm:size-14 rounded-2xl bg-primary flex items-center justify-center text-white shadow-lg shadow-primary/20 shrink-0">
-              <FiBarChart2 className="text-xl sm:text-2xl" />
+          <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-3">
+            <div className="size-10 rounded-xl bg-primary flex items-center justify-center text-white shadow-md shadow-primary/20 shrink-0">
+              <FiBarChart2 className="text-lg" />
             </div>
             Phân tích Doanh thu
           </h1>

@@ -2,10 +2,8 @@ import React, { useState, useEffect } from "react";
 import {
   FiEye,
   FiEyeOff,
-  FiArrowLeft,
   FiLock,
   FiMail,
-  FiShield,
   FiCheckCircle,
 } from "react-icons/fi";
 import { FcGoogle } from "react-icons/fc";
@@ -14,7 +12,7 @@ import { useDispatch } from "react-redux";
 import { showErrorToast, showSuccessToast } from "../../../utils/toastHelper";
 import { loginUser } from "../../../api/userApi";
 import { setUser } from "../../../redux/userSlice";
-import Logo from "../../../components/UI/Logo";
+import { AuthShell } from "../../../components/UI";
 import ForgotPasswordModal from "../../../components/ForgotPasswordModal/ForgotPasswordModal";
 import UnifiedSpinner from "../../../components/Loading/UnifiedSpinner";
 import { appConfig } from "../../../config/runtimeConfig";
@@ -104,40 +102,21 @@ const AdminLogin = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 dark:bg-dark-bg flex items-center justify-center p-4">
-      <div className="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-12 bg-white dark:bg-dark-surface rounded-[40px] shadow-2xl overflow-hidden border border-slate-200/60 dark:border-dark-border">
-        {/* Left Side: Branding Banner */}
-        <div className="hidden lg:flex lg:col-span-5 relative bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 items-center justify-center p-10 overflow-hidden">
-          <div className="absolute top-[-10%] left-[-10%] w-[70%] h-[70%] bg-blue-600/20 rounded-full blur-[90px]"></div>
-          <div className="absolute bottom-[-10%] right-[-10%] w-[70%] h-[70%] bg-indigo-600/20 rounded-full blur-[90px]"></div>
-
-          <div className="relative z-10 text-center flex flex-col items-center">
-            <Logo size="xl" variant="light" className="justify-center mb-8" />
-            <h2 className="text-2xl font-black text-white mb-3 tracking-tight leading-tight">
-              Quản Trị Hệ Thống
-            </h2>
-            <p className="text-slate-400 text-xs md:text-sm font-medium leading-relaxed max-w-[260px] mx-auto">
-              Cổng điều khiển trung tâm và phân tích dữ liệu TienTech Admin.
-            </p>
-          </div>
-        </div>
-
-        {/* Right Side: Form */}
-        <div className="col-span-1 lg:col-span-7 flex flex-col items-center justify-center p-8 md:p-12 lg:p-14 bg-white dark:bg-dark-surface">
-          <div className="w-full max-w-md">
-            <div className="mb-8">
-              <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 rounded-lg text-xs font-bold uppercase tracking-wider mb-3">
-                <FiShield /> Admin Portal
-              </div>
-              <h1 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white tracking-tight mb-1">
-                Chào mừng trở lại!
-              </h1>
-              <p className="text-slate-500 dark:text-slate-400 text-xs md:text-sm font-medium">
-                Nhập thông tin quản trị viên để truy cập Dashboard.
-              </p>
-            </div>
-
-            <form onSubmit={handleSubmit} className="space-y-5">
+    <>
+      <AuthShell
+        variant="admin"
+        badge="Admin Portal"
+        bannerTitle="Quản Trị"
+        bannerHighlight="Hệ Thống"
+        bannerSubtitle="Cổng điều khiển trung tâm và phân tích dữ liệu TienTech Admin."
+        title="Chào mừng trở lại!"
+        subtitle="Nhập thông tin quản trị viên để truy cập Dashboard."
+        formMaxWidth="max-w-md"
+        maxWidth="max-w-5xl"
+        backTo="/"
+        backLabel="Về Cổng Mua Sắm"
+      >
+        <form onSubmit={handleSubmit} className="space-y-5">
               <div className="space-y-2">
                 <label
                   htmlFor="email"
@@ -257,24 +236,14 @@ const AdminLogin = () => {
                   <FcGoogle size={18} />
                   <span>Đăng nhập với Google</span>
                 </button>
-
-                <button
-                  type="button"
-                  onClick={() => navigate("/")}
-                  className="w-full h-12 bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white rounded-2xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer"
-                >
-                  <FiArrowLeft /> Về Cổng Mua Sắm
-                </button>
               </div>
             </form>
-          </div>
-        </div>
-      </div>
+      </AuthShell>
       <ForgotPasswordModal
         show={showForgotModal}
         onClose={() => setShowForgotModal(false)}
       />
-    </div>
+    </>
   );
 };
 

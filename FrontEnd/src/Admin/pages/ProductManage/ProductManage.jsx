@@ -67,6 +67,7 @@ const ProductManage = () => {
   const [isSyncingAI, setIsSyncingAI] = useState(false);
 
   // Delete confirm modal state
+  const [isDeleting, setIsDeleting] = useState(false);
   const [confirmModal, setConfirmModal] = useState({
     show: false,
     productId: null,
@@ -247,6 +248,8 @@ const ProductManage = () => {
 
   // Delete product action
   const handleConfirmDelete = async () => {
+    if (isDeleting) return;
+    setIsDeleting(true);
     try {
       const res = await deleteProductApi(confirmModal.productId);
       if (res?.errCode === 0) {
@@ -259,6 +262,7 @@ const ProductManage = () => {
       console.error(err);
       showErrorToast(err, "Lỗi kết nối máy chủ khi xóa");
     } finally {
+      setIsDeleting(false);
       setConfirmModal({ show: false, productId: null, name: "" });
     }
   };
@@ -410,6 +414,7 @@ const ProductManage = () => {
           confirmText="Xóa sản phẩm"
           variant="danger"
           icon={FiTrash2}
+          loading={isDeleting}
           iconClassName="bg-rose-50 text-rose-500"
         />
       </div>

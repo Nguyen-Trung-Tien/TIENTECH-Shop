@@ -12,6 +12,7 @@ const Categories = () => {
     data: categories,
     loading,
     saving,
+    deleting,
     showModal,
     editingItem: editingCategory,
     searchTerm,
@@ -138,6 +139,8 @@ const Categories = () => {
         onClose={() => setShowDeleteModal(false)}
         onConfirm={confirmDelete}
         title="Xác nhận xóa"
+        variant="danger"
+        loading={deleting}
         message={`Xóa danh mục "${deletingItem?.name}" sẽ ảnh hưởng đến các sản phẩm thuộc danh mục này. Bạn có chắc chắn?`}
       />
     </>

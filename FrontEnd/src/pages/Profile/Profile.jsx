@@ -197,7 +197,7 @@ const Profile = () => {
   const rankConfig = getRankConfig(user?.rank);
 
   return (
-    <div className="min-h-screen bg-slate-50/60 dark:bg-dark-bg py-6 sm:py-12 transition-colors duration-300">
+    <div className="min-h-screen bg-surface-50 dark:bg-dark-bg py-6 sm:py-10 transition-colors duration-300">
       <div className="max-w-6xl mx-auto px-3 sm:px-6 space-y-6 sm:space-y-8">
         {/* Back Link */}
         <Link
@@ -360,7 +360,7 @@ const Profile = () => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.2 }}
-              className="bg-white dark:bg-dark-surface rounded-2xl sm:rounded-[32px] p-4 sm:p-8 md:p-10 border border-slate-200/80 dark:border-dark-border shadow-soft"
+              className="bg-white dark:bg-dark-surface rounded-2xl p-5 sm:p-6 md:p-8 border border-slate-200/80 dark:border-dark-border shadow-soft"
             >
               <div className="flex items-center justify-between mb-6 sm:mb-8 pb-4 sm:pb-6 border-b border-slate-100 dark:border-dark-border">
                 <div>
@@ -521,7 +521,7 @@ const Profile = () => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.2 }}
-              className="bg-white dark:bg-dark-surface rounded-2xl sm:rounded-[32px] p-4 sm:p-8 md:p-10 border border-slate-200/80 dark:border-dark-border shadow-soft"
+              className="bg-white dark:bg-dark-surface rounded-2xl p-5 sm:p-6 md:p-8 border border-slate-200/80 dark:border-dark-border shadow-soft"
             >
               <AddressManager />
             </Motion.div>
@@ -532,7 +532,7 @@ const Profile = () => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.2 }}
-              className="bg-white dark:bg-dark-surface rounded-2xl sm:rounded-[32px] p-4 sm:p-8 md:p-10 border border-slate-200/80 dark:border-dark-border shadow-soft space-y-6"
+              className="bg-white dark:bg-dark-surface rounded-2xl p-5 sm:p-6 md:p-8 border border-slate-200/80 dark:border-dark-border shadow-soft space-y-6"
             >
               <div className="flex items-center justify-between pb-6 border-b border-slate-100 dark:border-dark-border">
                 <div>

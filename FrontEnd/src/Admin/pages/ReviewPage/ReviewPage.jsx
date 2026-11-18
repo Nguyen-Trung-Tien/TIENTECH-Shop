@@ -126,7 +126,7 @@ const ReviewPage = () => {
       </div>
 
       {/* Filter Bar */}
-      <div className="bg-white dark:bg-dark-surface p-4 rounded-[32px] border border-slate-100 dark:border-dark-border shadow-soft flex flex-wrap items-center gap-4">
+      <div className="bg-white dark:bg-dark-surface p-4 rounded-2xl border border-slate-200/80 dark:border-dark-border shadow-xs flex flex-wrap items-center gap-4">
         <div className="flex items-center gap-2 px-4 h-12 bg-slate-50 dark:bg-dark-bg border border-slate-100 dark:border-dark-border rounded-2xl">
           <FiFilter className="text-slate-400 dark:text-dark-text-secondary" />
           <select
@@ -190,7 +190,7 @@ const ReviewPage = () => {
             </p>
           </div>
         ) : reviews.length === 0 ? (
-          <div className="bg-white dark:bg-dark-surface rounded-[40px] border border-slate-100 dark:border-dark-border p-20 text-center shadow-soft">
+          <div className="bg-white dark:bg-dark-surface rounded-2xl border border-slate-200/80 dark:border-dark-border p-12 text-center shadow-xs">
             <p className="text-slate-400 dark:text-dark-text-secondary font-bold">
               Chưa có đánh giá nào phù hợp với bộ lọc.
             </p>
@@ -202,9 +202,9 @@ const ReviewPage = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               key={review.id}
-              className="bg-white dark:bg-dark-surface rounded-[32px] border border-slate-100 dark:border-dark-border shadow-soft overflow-hidden group"
+              className="bg-white dark:bg-dark-surface rounded-2xl border border-slate-200/80 dark:border-dark-border shadow-xs overflow-hidden group"
             >
-              <div className="p-4 sm:p-6 md:p-8">
+              <div className="p-4 sm:p-6">
                 {/* Header Info */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
                   <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">

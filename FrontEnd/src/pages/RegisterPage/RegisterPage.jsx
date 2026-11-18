@@ -7,17 +7,15 @@ import {
   FiMail,
   FiPhone,
   FiLock,
-  FiArrowLeft,
   FiUserPlus,
 } from "react-icons/fi";
 import { toast } from "react-toastify";
-import { motion as Motion } from "framer-motion";
 import { FcGoogle } from "react-icons/fc";
 
 import { registerUser } from "../../api/userApi";
 import Loading from "../../components/Loading/Loading";
 import UnifiedSpinner from "../../components/Loading/UnifiedSpinner";
-import Logo from "../../components/UI/Logo";
+import { AuthShell } from "../../components/UI";
 import { appConfig } from "../../config/runtimeConfig";
 import { showErrorToast, showSuccessToast } from "../../utils/toastHelper";
 
@@ -147,53 +145,18 @@ const RegisterPage = () => {
   };
 
   return (
-    <div className="min-h-screen w-screen bg-slate-100 dark:bg-slate-950 flex items-center justify-center p-3 sm:p-4 md:p-6 overflow-y-auto fixed inset-0">
+    <>
       {loading && <Loading />}
-
-      <div className="w-full max-w-4xl h-fit max-h-[96vh] grid grid-cols-1 lg:grid-cols-12 bg-white dark:bg-slate-900 rounded-3xl sm:rounded-[2.5rem] shadow-2xl border border-slate-200/60 dark:border-slate-800 overflow-hidden">
-        {/* Left Side - Visual Banner */}
-        <div className="hidden lg:flex lg:col-span-5 relative bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 items-center justify-center p-8 overflow-hidden">
-          <div className="absolute top-[-10%] left-[-10%] w-[70%] h-[70%] bg-blue-600/20 rounded-full blur-[90px]"></div>
-          <div className="absolute bottom-[-10%] right-[-10%] w-[70%] h-[70%] bg-indigo-600/20 rounded-full blur-[90px]"></div>
-
-          <div className="relative z-10 text-center flex flex-col items-center">
-            <Logo size="xl" variant="light" className="justify-center mb-6" />
-            <Motion.h2
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="text-2xl font-black text-white mb-3 tracking-tight"
-            >
-              Trải nghiệm công nghệ <span className="text-blue-400">đỉnh cao</span>
-            </Motion.h2>
-            <Motion.p
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="text-slate-400 text-xs md:text-sm font-medium leading-relaxed px-4 max-w-xs"
-            >
-              Tham gia cộng đồng hàng nghìn khách hàng tin dùng TienTech Shop mỗi ngày.
-            </Motion.p>
-          </div>
-        </div>
-
-        {/* Right Side - Form */}
-        <div className="col-span-1 lg:col-span-7 flex flex-col items-center justify-center p-6 md:p-8 lg:p-10 bg-white dark:bg-slate-900 overflow-y-auto max-h-[95vh] custom-scrollbar">
-          <div className="w-full max-w-[440px]">
-            <div className="lg:hidden text-center mb-6 flex justify-center">
-              <Logo size="lg" />
-            </div>
-
-            <div className="mb-6">
-              <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight mb-1">
-                Tạo Tài Khoản
-              </h1>
-              <p className="text-slate-500 dark:text-slate-400 text-xs md:text-sm font-medium">
-                Bắt đầu hành trình mua sắm thiết bị đỉnh cao ngay hôm nay.
-              </p>
-            </div>
-
-            <form onSubmit={handleRegister} className="space-y-3">
+      <AuthShell
+        variant="user"
+        bannerTitle="Trải nghiệm công nghệ"
+        bannerHighlight="đỉnh cao"
+        bannerSubtitle="Tham gia cộng đồng hàng nghìn khách hàng tin dùng TienTech Shop mỗi ngày."
+        title="Tạo Tài Khoản"
+        subtitle="Bắt đầu hành trình mua sắm thiết bị đỉnh cao ngay hôm nay."
+        formMaxWidth="max-w-[440px]"
+      >
+        <form onSubmit={handleRegister} className="space-y-3">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <FloatingInput
                   id="username"
@@ -305,20 +268,8 @@ const RegisterPage = () => {
                 Đăng nhập
               </Link>
             </p>
-
-            <div className="mt-6 pt-5 border-t border-slate-100 dark:border-slate-800 text-center">
-              <button
-                type="button"
-                onClick={() => navigate("/")}
-                className="inline-flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition-colors cursor-pointer"
-              >
-                <FiArrowLeft /> Quay lại trang chủ
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+      </AuthShell>
+    </>
   );
 };
 

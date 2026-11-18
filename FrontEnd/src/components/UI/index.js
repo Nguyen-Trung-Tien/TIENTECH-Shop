@@ -5,3 +5,4 @@ export { default as Logo } from "./Logo";
 export { EmptyState, ErrorState, default as DefaultEmptyState } from "./EmptyState";
 export { default as ErrorBanner } from "./ErrorBanner";
 export { default as PageShell } from "./PageShell";
+export { default as AuthShell } from "./AuthShell";

@@ -18,6 +18,7 @@ export const useAdminCrud = (api, options = {}) => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -136,7 +137,8 @@ export const useAdminCrud = (api, options = {}) => {
   };
 
   const confirmDelete = async () => {
-    if (!deletingItem) return;
+    if (!deletingItem || deleting) return;
+    setDeleting(true);
     try {
       const res = await api.delete(deletingItem.id);
       if (res.errCode === 0) {
@@ -151,6 +153,7 @@ export const useAdminCrud = (api, options = {}) => {
       console.error(`Error deleting ${itemName}:`, err);
       showErrorToast(err, "Lỗi khi xóa");
     } finally {
+      setDeleting(false);
       setShowDeleteModal(false);
       setDeletingItem(null);
     }
@@ -160,6 +163,7 @@ export const useAdminCrud = (api, options = {}) => {
     data,
     loading,
     saving,
+    deleting,
     showModal,
     editingItem,
     searchTerm,

@@ -4,15 +4,15 @@ import { motion as Motion } from "framer-motion";
 const StatsCard = ({ title, value, icon, change, isIncrease }) => {
   return (
     <Motion.div
-      whileHover={{ y: -4, transition: { duration: 0.2 } }}
-      className="bg-white dark:bg-dark-surface p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200/80 dark:border-dark-border/80 shadow-2xs hover:shadow-lg hover:shadow-primary/5 hover:border-primary/40 dark:hover:border-primary/40 group cursor-pointer h-full flex flex-col justify-between relative overflow-hidden transition-all duration-200 min-w-0"
+      whileHover={{ y: -2, transition: { duration: 0.18 } }}
+      className="bg-white dark:bg-dark-surface p-4 rounded-2xl border border-slate-200/80 dark:border-dark-border/80 shadow-2xs hover:shadow-md hover:shadow-primary/5 hover:border-primary/40 dark:hover:border-primary/40 group cursor-pointer h-full flex flex-col justify-between relative overflow-hidden transition-all duration-200 min-w-0"
     >
       {/* Background subtle radial glow */}
-      <div className="absolute -right-6 -top-6 size-24 bg-primary/5 dark:bg-primary/10 rounded-full blur-2xl group-hover:bg-primary/15 transition-colors pointer-events-none" />
+      <div className="absolute -right-6 -top-6 size-20 bg-primary/5 dark:bg-primary/10 rounded-full blur-2xl group-hover:bg-primary/15 transition-colors pointer-events-none" />
 
       <div className="relative z-10 min-w-0">
-        <div className="flex items-center justify-between mb-3 sm:mb-4 gap-2">
-          <div className="size-10 sm:size-12 rounded-xl sm:rounded-2xl bg-slate-50 dark:bg-dark-bg flex items-center justify-center text-primary dark:text-blue-400 text-lg sm:text-xl group-hover:bg-primary group-hover:text-white transition-all duration-300 shadow-2xs border border-slate-100 dark:border-dark-border shrink-0">
+        <div className="flex items-center justify-between mb-3 gap-2">
+          <div className="size-10 rounded-xl bg-slate-50 dark:bg-dark-bg flex items-center justify-center text-primary dark:text-blue-400 text-lg group-hover:bg-primary group-hover:text-white transition-all duration-300 shadow-2xs border border-slate-100 dark:border-dark-border shrink-0">
             {icon}
           </div>
 

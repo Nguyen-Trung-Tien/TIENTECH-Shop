@@ -51,9 +51,9 @@ export const AdminTableSkeleton = ({ rows = 5, cols = 5 }) => {
  */
 export const AdminPageLoader = () => {
   return (
-    <div className="flex min-h-[400px] w-full flex-col items-center justify-center space-y-4 rounded-3xl bg-white/60 dark:bg-dark-surface/60 border border-slate-100 dark:border-dark-border backdrop-blur-md p-8">
+    <div className="flex min-h-[360px] w-full flex-col items-center justify-center space-y-4 rounded-2xl bg-white/70 dark:bg-dark-surface/70 border border-slate-200/80 dark:border-dark-border backdrop-blur-md p-6">
       <Logo size="md" />
-      <div className="w-36 h-1 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden relative">
+      <div className="w-32 h-1 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden relative">
         <Motion.div
           className="h-full bg-gradient-to-r from-blue-600 via-indigo-500 to-cyan-400 rounded-full"
           initial={{ x: "-100%" }}
@@ -61,7 +61,7 @@ export const AdminPageLoader = () => {
           transition={{ repeat: Infinity, duration: 1.4, ease: "easeInOut" }}
         />
       </div>
-      <p className="text-xs font-black uppercase tracking-widest text-slate-500 dark:text-dark-text-secondary">
+      <p className="text-[11px] font-bold uppercase tracking-widest text-slate-500 dark:text-dark-text-secondary">
         Đang tải phân hệ quản trị...
       </p>
     </div>
@@ -74,15 +74,18 @@ export const AdminPageLoader = () => {
  */
 export const AdminActionLoader = ({ message = "Đang xử lý..." }) => {
   return (
-    <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-slate-950/30 dark:bg-dark-bg/70 backdrop-blur-[4px] p-4">
+    <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-slate-950/35 dark:bg-dark-bg/70 backdrop-blur-xs p-4">
       <Motion.div
-        initial={{ opacity: 0, scale: 0.92, y: 10 }}
+        initial={{ opacity: 0, scale: 0.94, y: 8 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.92, y: 10 }}
-        className="flex flex-col items-center gap-4 rounded-3xl bg-white dark:bg-dark-surface p-7 shadow-2xl border border-slate-200/80 dark:border-dark-border min-w-[200px]"
+        exit={{ opacity: 0, scale: 0.94, y: 8 }}
+        transition={{ duration: 0.18 }}
+        className="flex flex-col items-center gap-3 rounded-2xl bg-white dark:bg-dark-surface px-6 py-5 shadow-xl border border-slate-200/80 dark:border-dark-border min-w-[180px]"
       >
-        <UnifiedSpinner size="lg" variant="primary" />
-        <span className="text-xs font-black uppercase tracking-wider text-slate-700 dark:text-dark-text-primary">{message}</span>
+        <UnifiedSpinner size="md" variant="primary" />
+        <span className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-dark-text-primary">
+          {message}
+        </span>
       </Motion.div>
     </div>
   );
@@ -91,13 +94,13 @@ export const AdminActionLoader = ({ message = "Đang xử lý..." }) => {
 /**
  * AdminStatSkeleton - Giữ chỗ cho lưới thẻ số liệu thống kê
  */
-export const AdminStatSkeleton = ({ count = 6 }) => {
+export const AdminStatSkeleton = ({ count = 4 }) => {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3.5 sm:gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6">
       {Array.from({ length: count }).map((_, i) => (
         <div
           key={i}
-          className="p-5 rounded-2xl sm:rounded-3xl bg-white dark:bg-dark-surface border border-slate-100 dark:border-dark-border shadow-xs space-y-3"
+          className="p-4 rounded-2xl bg-white dark:bg-dark-surface border border-slate-200/80 dark:border-dark-border shadow-xs space-y-3"
         >
           <div className="flex items-center justify-between">
             <div className="size-10 rounded-2xl bg-slate-100 dark:bg-dark-bg animate-pulse" />

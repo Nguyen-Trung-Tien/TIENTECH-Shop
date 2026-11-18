@@ -53,24 +53,24 @@ const ProductFormModal = ({
 
         {/* Dialog Container */}
         <Motion.div
-          initial={{ opacity: 0, y: 60, scale: 0.96 }}
+          initial={{ opacity: 0, y: 40, scale: 0.97 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: 60, scale: 0.96 }}
-          transition={{ type: "spring", stiffness: 320, damping: 28 }}
-          className="relative w-full max-w-5xl max-h-[92vh] sm:max-h-[88vh] bg-slate-50 dark:bg-dark-surface rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col border border-slate-200/80 dark:border-dark-border transition-colors duration-300"
+          exit={{ opacity: 0, y: 40, scale: 0.97 }}
+          transition={{ type: "spring", stiffness: 360, damping: 30 }}
+          className="relative w-full max-w-5xl max-h-[92vh] sm:max-h-[88vh] bg-slate-50 dark:bg-dark-surface rounded-t-2xl sm:rounded-2xl shadow-2xl overflow-hidden flex flex-col border border-slate-200/80 dark:border-dark-border transition-colors duration-300"
         >
           {/* Mobile Drag Pill */}
-          <div className="flex justify-center pt-3 pb-1 sm:hidden bg-slate-100 dark:bg-dark-bg/60">
-            <div className="w-12 h-1.5 rounded-full bg-slate-300 dark:bg-dark-border" />
+          <div className="flex justify-center pt-2.5 pb-1 sm:hidden bg-slate-100 dark:bg-dark-bg/60">
+            <div className="w-10 h-1 rounded-full bg-slate-300 dark:bg-dark-border" />
           </div>
 
           {/* Modal Header */}
-          <div className="px-6 sm:px-10 py-5 sm:py-6 border-b border-slate-200 dark:border-dark-border flex items-center justify-between bg-white dark:bg-dark-bg/60">
-            <div>
-              <h3 className="text-lg sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-3">
+          <div className="px-5 sm:px-6 py-4 border-b border-slate-200 dark:border-dark-border flex items-center justify-between bg-white dark:bg-dark-bg/60">
+            <div className="min-w-0">
+              <h3 className="text-base sm:text-xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2.5 flex-wrap">
                 <span>{editProduct ? "Chỉnh sửa sản phẩm" : "Đăng bán sản phẩm mới"}</span>
                 {isBasicValid && (
-                  <span className="px-3 py-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-1">
+                  <span className="px-2.5 py-0.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-1">
                     <FiCheck /> Sẵn sàng đăng
                   </span>
                 )}
@@ -82,7 +82,8 @@ const ProductFormModal = ({
             <button
               type="button"
               onClick={handleCloseModal}
-              className="size-10 sm:size-12 rounded-2xl flex items-center justify-center text-slate-400 hover:bg-slate-100 dark:hover:bg-dark-bg hover:text-slate-900 dark:hover:text-white transition-all cursor-pointer border border-slate-200/60 dark:border-dark-border shrink-0 active:scale-95"
+              aria-label="Đóng hộp thoại"
+              className="size-9 rounded-xl flex items-center justify-center text-slate-400 hover:bg-slate-100 dark:hover:bg-dark-bg hover:text-slate-900 dark:hover:text-white transition-all cursor-pointer border border-slate-200/60 dark:border-dark-border shrink-0 active:scale-95"
             >
               <FiX className="text-xl sm:text-2xl" />
             </button>

@@ -76,44 +76,81 @@ const GenericAdminModal = ({
     onSave(formData);
   };
 
-  if (!show) return null;
+  useEffect(() => {
+    if (!show) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape" && !saving) {
+        e.preventDefault();
+        if (onClose) onClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [show, saving, onClose]);
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-[999] flex items-end sm:items-center justify-center p-0 sm:p-4">
-        {/* Backdrop */}
-        <Motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          onClick={onClose}
-          className="absolute inset-0 bg-slate-950/60 backdrop-blur-md transition-opacity"
-        />
+      {show && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 z-[999] flex items-end sm:items-center justify-center p-0 sm:p-4"
+        >
+          {/* Backdrop */}
+          <Motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={!saving ? onClose : undefined}
+            className="absolute inset-0 bg-slate-950/60 backdrop-blur-md transition-opacity"
+          />
 
         {/* Modal Window / Mobile Bottom-Sheet */}
         <Motion.div
-          initial={{ opacity: 0, y: 60, scale: 0.96 }}
+          initial={{ opacity: 0, y: 40, scale: 0.97 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: 60, scale: 0.96 }}
-          transition={{ type: "spring", stiffness: 320, damping: 28 }}
-          className="relative w-full max-w-2xl bg-white dark:bg-dark-surface rounded-t-[32px] sm:rounded-[32px] shadow-2xl overflow-hidden flex flex-col border border-slate-200/80 dark:border-dark-border max-h-[92vh] sm:max-h-[85vh]"
+          exit={{ opacity: 0, y: 40, scale: 0.97 }}
+          transition={{ type: "spring", stiffness: 360, damping: 30 }}
+          className="relative w-full max-w-2xl bg-white dark:bg-dark-surface rounded-t-2xl sm:rounded-2xl shadow-2xl overflow-hidden flex flex-col border border-slate-200/80 dark:border-dark-border max-h-[92vh] sm:max-h-[85vh]"
         >
+          {/* Saving Loading Overlay */}
+          <AnimatePresence>
+            {saving && (
+              <Motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="absolute inset-0 z-50 bg-white/75 dark:bg-dark-surface/80 backdrop-blur-xs flex flex-col items-center justify-center gap-3 p-6 text-center"
+              >
+                <UnifiedSpinner size="md" variant="primary" />
+                <p className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200">
+                  Đang lưu dữ liệu...
+                </p>
+              </Motion.div>
+            )}
+          </AnimatePresence>
+
           {/* Mobile Drag Indicator Pill */}
-          <div className="flex justify-center pt-3 pb-1 sm:hidden bg-slate-50/80 dark:bg-dark-bg/60">
-            <div className="w-12 h-1.5 rounded-full bg-slate-300 dark:bg-slate-700" />
+          <div className="flex justify-center pt-2.5 pb-1 sm:hidden bg-slate-50/80 dark:bg-dark-bg/60">
+            <div className="w-10 h-1 rounded-full bg-slate-300 dark:bg-slate-700" />
           </div>
 
           {/* Header */}
-          <div className="p-4 sm:p-6 md:p-8 border-b border-slate-100 dark:border-dark-border flex items-center justify-between bg-slate-50/60 dark:bg-dark-bg/40">
-            <div className="flex items-center gap-3">
-              <div className="size-10 bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 rounded-2xl flex items-center justify-center text-xl shrink-0">
+          <div className="p-4 sm:p-5 border-b border-slate-100 dark:border-dark-border flex items-center justify-between bg-slate-50/60 dark:bg-dark-bg/40">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="size-9 bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 rounded-xl flex items-center justify-center text-lg shrink-0">
                 {editingItem ? <FiEdit3 /> : <FiPlusCircle />}
               </div>
               <div className="min-w-0">
-                <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white tracking-tight truncate">
+                <h2 className="text-base sm:text-lg font-black text-slate-900 dark:text-white tracking-tight truncate">
                   {editingItem ? `Chỉnh sửa ${title}` : `Thêm mới ${title}`}
                 </h2>
-                <p className="text-[10px] sm:text-[11px] font-bold text-slate-400 dark:text-dark-text-secondary uppercase tracking-wider mt-0.5">
+                <p className="text-[10px] font-bold text-slate-400 dark:text-dark-text-secondary uppercase tracking-wider mt-0.5">
                   Quản trị hệ thống TienTech
                 </p>
               </div>
@@ -122,15 +159,17 @@ const GenericAdminModal = ({
             <button
               type="button"
               onClick={onClose}
-              className="size-10 rounded-2xl bg-white dark:bg-dark-card text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center justify-center transition-all cursor-pointer border border-slate-200/60 dark:border-dark-border shrink-0 active:scale-95"
+              disabled={saving}
+              aria-label="Đóng hộp thoại"
+              className="size-9 rounded-xl bg-white dark:bg-dark-card text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center justify-center transition-all cursor-pointer border border-slate-200/60 dark:border-dark-border shrink-0 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
             >
-              <FiX size={18} />
+              <FiX size={16} />
             </button>
           </div>
 
           {/* Form Content */}
           <form onSubmit={handleSubmit} className="flex-1 flex flex-col overflow-hidden">
-            <div className="p-4 sm:p-6 md:p-8 flex-1 overflow-y-auto custom-scrollbar space-y-5">
+            <div className="p-4 sm:p-5 flex-1 overflow-y-auto custom-scrollbar space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
                 {fields.map((field) => (
                   <div
@@ -240,7 +279,8 @@ const GenericAdminModal = ({
             </div>
           </form>
         </Motion.div>
-      </div>
+        </div>
+      )}
     </AnimatePresence>
   );
 };

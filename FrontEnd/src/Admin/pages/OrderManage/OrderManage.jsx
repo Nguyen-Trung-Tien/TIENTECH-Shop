@@ -542,7 +542,7 @@ const OrderManage = () => {
   }, [orders]);
 
   return (
-    <div className="space-y-6 p-3 sm:p-6 md:p-8 max-w-[1600px] mx-auto text-slate-800 dark:text-dark-text-primary">
+    <div className="space-y-6 text-slate-800 dark:text-dark-text-primary">
       {/* Top Header Section */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>

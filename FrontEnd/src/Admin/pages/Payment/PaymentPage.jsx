@@ -246,7 +246,7 @@ const PaymentPage = () => {
   };
 
   return (
-    <div className="space-y-8 p-4 md:p-8 max-w-[1600px] mx-auto print:p-0">
+    <div className="space-y-6 print:p-0">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 print:hidden">
         <div>
           <h1 className="text-3xl font-black text-slate-900 dark:text-dark-text-primary tracking-tight flex items-center gap-3">
@@ -272,55 +272,55 @@ const PaymentPage = () => {
 
       {/* Summary Cards */}
       {summary && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 print:hidden">
-          <div className="bg-white dark:bg-dark-surface p-6 rounded-[32px] border border-slate-100 dark:border-dark-border shadow-soft flex items-center gap-5">
-            <div className="size-14 rounded-2xl bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
-              <FiTrendingUp size={24} />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 print:hidden">
+          <div className="bg-white dark:bg-dark-surface p-4 sm:p-5 rounded-2xl border border-slate-200/80 dark:border-dark-border shadow-xs flex items-center gap-4 min-w-0">
+            <div className="size-11 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0">
+              <FiTrendingUp size={20} />
             </div>
-            <div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary mb-1">
+            <div className="min-w-0">
+              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary mb-0.5 truncate">
                 Tổng Doanh Thu
               </p>
-              <h3 className="text-2xl font-black text-slate-900 dark:text-dark-text-primary tracking-tight">
+              <h3 className="text-xl font-black text-slate-900 dark:text-dark-text-primary tracking-tight truncate">
                 {Number(summary.totalRevenue).toLocaleString("vi-VN")} ₫
               </h3>
             </div>
           </div>
-          <div className="bg-white dark:bg-dark-surface p-6 rounded-[32px] border border-slate-100 dark:border-dark-border shadow-soft flex items-center gap-5">
-            <div className="size-14 rounded-2xl bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center text-amber-600 dark:text-amber-400">
-              <FiClock size={24} />
+          <div className="bg-white dark:bg-dark-surface p-4 sm:p-5 rounded-2xl border border-slate-200/80 dark:border-dark-border shadow-xs flex items-center gap-4 min-w-0">
+            <div className="size-11 rounded-xl bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center text-amber-600 dark:text-amber-400 shrink-0">
+              <FiClock size={20} />
             </div>
-            <div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary mb-1">
+            <div className="min-w-0">
+              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary mb-0.5 truncate">
                 Chờ Xử Lý
               </p>
-              <h3 className="text-2xl font-black text-slate-900 dark:text-dark-text-primary tracking-tight">
+              <h3 className="text-xl font-black text-slate-900 dark:text-dark-text-primary tracking-tight truncate">
                 {Number(summary.pendingAmount).toLocaleString("vi-VN")} ₫
               </h3>
             </div>
           </div>
-          <div className="bg-white dark:bg-dark-surface p-6 rounded-[32px] border border-slate-100 dark:border-dark-border shadow-soft flex items-center gap-5">
-            <div className="size-14 rounded-2xl bg-slate-100 dark:bg-dark-card border border-transparent dark:border-dark-border flex items-center justify-center text-slate-600 dark:text-slate-400">
-              <FiCornerDownLeft size={24} />
+          <div className="bg-white dark:bg-dark-surface p-4 sm:p-5 rounded-2xl border border-slate-200/80 dark:border-dark-border shadow-xs flex items-center gap-4 min-w-0">
+            <div className="size-11 rounded-xl bg-slate-100 dark:bg-dark-card border border-transparent dark:border-dark-border flex items-center justify-center text-slate-600 dark:text-slate-400 shrink-0">
+              <FiCornerDownLeft size={20} />
             </div>
-            <div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary mb-1">
+            <div className="min-w-0">
+              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary mb-0.5 truncate">
                 Đã Hoàn Tiền
               </p>
-              <h3 className="text-2xl font-black text-slate-900 dark:text-dark-text-primary tracking-tight">
+              <h3 className="text-xl font-black text-slate-900 dark:text-dark-text-primary tracking-tight truncate">
                 {Number(summary.refundedAmount).toLocaleString("vi-VN")} ₫
               </h3>
             </div>
           </div>
-          <div className="bg-white dark:bg-dark-surface p-6 rounded-[32px] border border-slate-100 dark:border-dark-border shadow-soft flex items-center gap-5">
-            <div className="size-14 rounded-2xl bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
-              <FiPieChart size={24} />
+          <div className="bg-white dark:bg-dark-surface p-4 sm:p-5 rounded-2xl border border-slate-200/80 dark:border-dark-border shadow-xs flex items-center gap-4 min-w-0">
+            <div className="size-11 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0">
+              <FiPieChart size={20} />
             </div>
-            <div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary mb-1">
+            <div className="min-w-0">
+              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary mb-0.5 truncate">
                 Giao dịch Online / COD
               </p>
-              <h3 className="text-2xl font-black text-slate-900 dark:text-dark-text-primary tracking-tight">
+              <h3 className="text-xl font-black text-slate-900 dark:text-dark-text-primary tracking-tight truncate">
                 {summary.onlineCount} / {summary.codCount}
               </h3>
             </div>
@@ -329,7 +329,7 @@ const PaymentPage = () => {
       )}
 
       {/* Filter Bar */}
-      <div className="bg-white dark:bg-dark-surface p-4 rounded-[32px] border border-slate-100 dark:border-dark-border shadow-soft flex flex-wrap items-center gap-4 print:hidden">
+      <div className="bg-white dark:bg-dark-surface p-4 rounded-2xl border border-slate-200/80 dark:border-dark-border shadow-xs flex flex-wrap items-center gap-4 print:hidden">
         <div className="flex items-center gap-2">
           <input
             type="date"
