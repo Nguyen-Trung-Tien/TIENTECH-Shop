@@ -3,7 +3,7 @@ import { FiX, FiCamera, FiUploadCloud } from "react-icons/fi";
 import { motion as Motion, AnimatePresence } from "framer-motion";
 import { visualSearch } from "../../api/chatApi";
 import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
+import { showSuccessToast, showErrorToast } from "../../utils/toastHelper";
 import UnifiedSpinner from "../Loading/UnifiedSpinner";
 
 export default function VisualSearchModal({ isOpen, onClose }) {
@@ -29,18 +29,18 @@ export default function VisualSearchModal({ isOpen, onClose }) {
         try {
           const res = await visualSearch(base64data);
           const keyword = res.keyword || res.extractedText || "smart";
-          toast.success("Đã tìm thấy kết quả phù hợp!");
+          showSuccessToast("Đã tìm thấy kết quả phù hợp!");
           navigate(`/product-list?search=${encodeURIComponent(keyword)}`);
           onClose();
         } catch (error) {
-          toast.error("Lỗi khi phân tích hình ảnh.");
+          showErrorToast(error, "Lỗi khi phân tích hình ảnh.");
         } finally {
           setIsSearching(false);
         }
       };
     } catch (err) {
       setIsSearching(false);
-      toast.error("Có lỗi xảy ra, vui lòng thử lại!");
+      showErrorToast(err, "Có lỗi xảy ra, vui lòng thử lại!");
     }
   };
 

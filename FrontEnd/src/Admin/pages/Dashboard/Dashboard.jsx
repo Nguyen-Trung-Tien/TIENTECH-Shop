@@ -24,6 +24,7 @@ import { showErrorToast, showSuccessToast } from "../../../utils/toastHelper";
 import UnifiedSpinner from "../../../components/Loading/UnifiedSpinner";
 import DashboardSkeleton from "./components/DashboardSkeleton";
 import { ErrorBanner } from "../../../components/UI";
+import AdminPageShell from "../../components/AdminPageShell";
 
 const Dashboard = () => {
   const [loading, setLoading] = useState(true);
@@ -156,7 +157,7 @@ const Dashboard = () => {
   }, []);
 
   return (
-    <div className="space-y-6 sm:space-y-8 text-slate-900 dark:text-dark-text-primary transition-colors duration-300">
+    <AdminPageShell className="space-y-6 sm:space-y-8 text-slate-900 dark:text-dark-text-primary transition-colors duration-300">
       {/* Executive Hero Banner */}
       <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-blue-50/90 via-indigo-50/50 to-slate-100/80 dark:from-slate-900 dark:via-[#0e1628] dark:to-slate-900 text-slate-900 dark:text-white p-5 sm:p-7 md:p-8 border border-blue-100/80 dark:border-slate-800 shadow-sm dark:shadow-xl transition-colors duration-300">
         {/* Ambient Glow Orbs */}
@@ -347,7 +348,7 @@ const Dashboard = () => {
           </div>
         </div>
       )}
-    </div>
+    </AdminPageShell>
   );
 };
 

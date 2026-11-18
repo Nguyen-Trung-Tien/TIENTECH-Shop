@@ -13,3 +13,7 @@ export { default as ErrorBanner } from "./ErrorBanner";
 export { default as PageShell } from "./PageShell";
 export { default as AuthShell } from "./AuthShell";
 export { PageTitle, SectionTitle, CardTitle, Text } from "./Typography";
+export { default as Tabs } from "./Tabs";
+export { default as StatCard } from "./StatCard";
+export { default as FilterBar } from "./FilterBar";
+export { default as AlertBanner } from "./AlertBanner";

@@ -14,8 +14,7 @@ import {
 } from "react-icons/fi";
 import { getAddressesApi, createAddressApi } from "../../api/addressApi";
 import { FaPaypal } from "react-icons/fa";
-import { toast } from "react-toastify";
-import { showErrorToast } from "../../utils/toastHelper";
+import { showErrorToast, showInfoToast, showSuccessToast } from "../../utils/toastHelper";
 import { motion as Motion, AnimatePresence } from "framer-motion";
 import { useSystemSettings } from "../../context/useSystemSettings";
 
@@ -161,7 +160,7 @@ const CheckoutForm = ({ formData, setFormData, user }) => {
       fullName: addr.fullName || prev.fullName || user?.username || "",
     }));
     setShowManual(false);
-    toast.info("Đã chọn địa chỉ giao hàng");
+    showInfoToast("Đã chọn địa chỉ giao hàng");
   };
 
   const handleChange = (e) => {
@@ -184,14 +183,14 @@ const CheckoutForm = ({ formData, setFormData, user }) => {
   const handleSaveNewAddress = async (e) => {
     e.preventDefault();
     if (!newAddressData.detailAddress || !newAddressData.province) {
-      return toast.error("Vui lòng điền đầy đủ Tỉnh/Thành và Địa chỉ chi tiết");
+      return showErrorToast("Vui lòng điền đầy đủ Tỉnh/Thành và Địa chỉ chi tiết");
     }
 
     setSavingAddress(true);
     try {
       const res = await createAddressApi(newAddressData);
       if (res.errCode === 0) {
-        toast.success("Thêm địa chỉ mới thành công!");
+        showSuccessToast("Thêm địa chỉ mới thành công!");
         setShowAddAddressModal(false);
         await fetchAddresses();
 

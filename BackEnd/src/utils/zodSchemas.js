@@ -280,6 +280,52 @@ const updateProductSchema = z.object({
   body: createProductSchema.shape.body.partial(),
 });
 
+const updateSystemSettingSchema = z.object({
+  body: z.object({
+    key: z.string().trim().min(1, "Key cấu hình không được để trống").max(100),
+    value: z.union([z.string(), z.number(), z.boolean(), z.null()]),
+    description: z.string().max(500).optional(),
+  }),
+});
+
+const bulkSystemSettingSchema = z.object({
+  body: z.object({
+    settings: z
+      .array(
+        z.object({
+          key: z.string().trim().min(1, "Key cấu hình không được để trống").max(100),
+          value: z.union([z.string(), z.number(), z.boolean(), z.null()]),
+          description: z.string().max(500).optional(),
+        })
+      )
+      .min(1, "Danh sách cấu hình không được để trống"),
+  }),
+});
+
+const toggleOtpSchema = z.object({
+  body: z.object({
+    enabled: z.boolean().optional(),
+    requireOtp: z.boolean().optional(),
+  }),
+});
+
+const updateReviewSchema = z.object({
+  body: z.object({
+    rating: z.coerce.number().int().min(1, "Đánh giá tối thiểu 1 sao").max(5, "Đánh giá tối đa 5 sao").optional(),
+    comment: z.string().trim().min(1, "Nội dung đánh giá không được để trống").max(2000).optional(),
+  }),
+});
+
+const createPaymentSchema = z.object({
+  body: z.object({
+    orderId: z.union([z.string(), z.number()]).refine((val) => String(val).trim().length > 0, {
+      message: "Mã đơn hàng (orderId) là bắt buộc",
+    }),
+    paymentMethod: z.string().trim().min(1, "Phương thức thanh toán là bắt buộc").max(50),
+    amount: z.coerce.number().positive("Số tiền thanh toán phải lớn hơn 0").optional(),
+  }),
+});
+
 module.exports = {
   voucherSchema,
   checkVoucherSchema,
@@ -306,4 +352,9 @@ module.exports = {
   broadcastNotificationSchema,
   createProductSchema,
   updateProductSchema,
+  updateSystemSettingSchema,
+  bulkSystemSettingSchema,
+  toggleOtpSchema,
+  updateReviewSchema,
+  createPaymentSchema,
 };

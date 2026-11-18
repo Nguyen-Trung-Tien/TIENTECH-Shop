@@ -1,12 +1,12 @@
 import React, { useCallback, useEffect, useReducer } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
+// Unified notifications via toastHelper
 import { FiXCircle } from "react-icons/fi";
-import { Button } from "../../components/UI";
+import { Button, PageShell, EmptyState } from "../../components/UI";
 import { getOrderById, updateOrderStatus, changePaymentMethod } from "../../api/orderApi";
 import { requestReturn, cancelReturnRequest } from "../../api/orderItemApi";
 import { createVnpayPaymentApi } from "../../api/paymentApi";
-import { showErrorToast, showSuccessToast } from "../../utils/toastHelper";
+import { showErrorToast, showSuccessToast, showWarningToast } from "../../utils/toastHelper";
 import ReviewModal from "../../components/ReviewComponent/ReviewModal";
 import UnifiedSpinner from "../../components/Loading/UnifiedSpinner";
 import { printInvoice } from "./printInvoice";
@@ -109,7 +109,7 @@ const OrderDetail = () => {
 
   const handleCancelOrder = async () => {
     if (!cancelReason.trim()) {
-      return toast.warning("Vui lòng nhập lý do hủy đơn");
+      return showWarningToast("Vui lòng nhập lý do hủy đơn");
     }
     try {
       dispatch({ type: "SET_SUBMITTING", payload: true });
@@ -169,7 +169,7 @@ const OrderDetail = () => {
 
   const handleRepay = async () => {
     if (!order?.orderCode || !order?.totalPrice) {
-      toast.error("Thông tin đơn hàng không hợp lệ để thanh toán lại!");
+      showErrorToast("Thông tin đơn hàng không hợp lệ để thanh toán lại!");
       return;
     }
 
@@ -209,9 +209,9 @@ const OrderDetail = () => {
   const handleSubmitReturn = async () => {
     if (submitting) return;
     if (!returnReason.trim())
-      return toast.warning("Vui lòng nhập lý do trả hàng");
+      return showWarningToast("Vui lòng nhập lý do trả hàng");
     if (!selectedItems.length)
-      return toast.warning("Vui lòng chọn ít nhất một sản phẩm");
+      return showWarningToast("Vui lòng chọn ít nhất một sản phẩm");
 
     dispatch({ type: "SET_SUBMITTING", payload: true });
     try {

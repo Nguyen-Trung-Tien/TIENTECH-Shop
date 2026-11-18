@@ -72,6 +72,7 @@ app.use(
       "Cache-Control",
       "Pragma",
     ],
+    exposedHeaders: ["X-XSRF-TOKEN"],
   })
 );
 
@@ -81,6 +82,16 @@ BODY PARSER & COOKIE PARSER
 app.use(express.json({ limit: "1mb" }));
 app.use(express.urlencoded({ limit: "1mb", extended: true }));
 app.use(cookieParser());
+
+/*
+EXPOSE XSRF-TOKEN HEADER FOR CROSS-ORIGIN FRONTENDS (CORS-RESTRICTED)
+*/
+app.use((req, res, next) => {
+  if (req.cookies && req.cookies["XSRF-TOKEN"]) {
+    res.setHeader("X-XSRF-TOKEN", req.cookies["XSRF-TOKEN"]);
+  }
+  next();
+});
 
 /*
 CSRF PROTECTION FOR COOKIE-AUTHENTICATED MUTATIONS
@@ -140,7 +151,9 @@ app.use((req, res, next) => {
           status: "FORBIDDEN",
           statusCode: 403,
           errCode: 403,
+          code: "CSRF_ERROR",
           errMessage: "Forbidden: CSRF Origin/Referer check failed",
+          message: "Forbidden: CSRF Origin/Referer check failed",
         });
       }
     } else if (process.env.NODE_ENV !== "test") {
@@ -148,7 +161,9 @@ app.use((req, res, next) => {
         status: "FORBIDDEN",
         statusCode: 403,
         errCode: 403,
+        code: "CSRF_ERROR",
         errMessage: "Forbidden: CSRF verification missing required Origin header",
+        message: "Forbidden: CSRF verification missing required Origin header",
       });
     }
 
@@ -162,7 +177,9 @@ app.use((req, res, next) => {
           status: "FORBIDDEN",
           statusCode: 403,
           errCode: 403,
+          code: "CSRF_ERROR",
           errMessage: "Forbidden: Invalid CSRF token",
+          message: "Forbidden: Invalid CSRF token",
         });
       }
     }

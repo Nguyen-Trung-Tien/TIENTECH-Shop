@@ -1,6 +1,5 @@
 import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
 import { useSelector, useDispatch } from "react-redux";
 import { motion as Motion } from "framer-motion";
 import { addCart, getAllCarts, createCart } from "../../api/cartApi";
@@ -10,7 +9,7 @@ import { FiShoppingCart, FiHeart } from "react-icons/fi";
 import { FaStar, FaHeart } from "react-icons/fa";
 import { addToWishlistApi, removeFromWishlistApi } from "../../api/wishlistApi";
 import { formatCurrency } from "../../utils/format";
-import { showErrorToast, showSuccessToast } from "../../utils/toastHelper";
+import { showErrorToast, showSuccessToast, showWarningToast, showInfoToast } from "../../utils/toastHelper";
 import { Button } from "../UI/Button";
 import { Badge } from "../UI/Badge";
 import QuickVariantModal from "./QuickVariantModal";
@@ -71,17 +70,17 @@ const ProductCard = ({ product }) => {
 
   const handleWishlist = async (e) => {
     e.stopPropagation();
-    if (!userId) return toast.warn("Vui lòng đăng nhập để lưu sản phẩm!");
+    if (!userId) return showWarningToast("Vui lòng đăng nhập để lưu sản phẩm!");
 
     try {
       if (isWishlisted) {
         await removeFromWishlistApi(id);
         setIsWishlisted(false);
-        toast.info("Đã xóa khỏi danh sách yêu thích");
+        showInfoToast("Đã xóa khỏi danh sách yêu thích");
       } else {
         await addToWishlistApi(id);
         setIsWishlisted(true);
-        toast.success("Đã thêm vào danh sách yêu thích");
+        showSuccessToast("Đã thêm vào danh sách yêu thích");
       }
     } catch (error) {
       showErrorToast(error, "Không thể cập nhật danh sách yêu thích");
@@ -120,8 +119,8 @@ const ProductCard = ({ product }) => {
 
   const handleAddToCartClick = async (e) => {
     e.stopPropagation();
-    if (!userId) return toast.warn("Vui lòng đăng nhập!");
-    if (!isActive) return toast.error("Sản phẩm đã ngưng kinh doanh!");
+    if (!userId) return showWarningToast("Vui lòng đăng nhập!");
+    if (!isActive) return showErrorToast("Sản phẩm đã ngưng kinh doanh!");
 
     setLoadingCart(true);
     try {
@@ -151,7 +150,7 @@ const ProductCard = ({ product }) => {
         : effectiveStock;
 
       if (currentStock < 1) {
-        return toast.error("Sản phẩm tạm hết hàng!");
+        return showErrorToast("Sản phẩm tạm hết hàng!");
       }
 
       await executeAddToCart(id);

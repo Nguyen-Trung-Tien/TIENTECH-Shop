@@ -3,7 +3,7 @@ import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { FiSearch, FiHome, FiBox, FiShoppingCart, FiBarChart2, FiUsers, FiTag, FiLayers, FiSettings, FiDollarSign, FiX, FiArrowRight, FiSun, FiMoon, FiFileText, FiCornerDownLeft, FiPackage, FiUser, FiShoppingBag } from "react-icons/fi";
 import { globalSearchApi, exportRevenue } from "../../../api/adminApi";
-import { toast } from "react-toastify";
+import { showInfoToast, showSuccessToast, showErrorToast } from "../../../utils/toastHelper";
 import debounce from "../../../utils/debounce";
 import UnifiedSpinner from "../../../components/Loading/UnifiedSpinner";
 
@@ -158,7 +158,7 @@ const CommandPaletteModal = ({ isOpen, onClose, theme, toggleTheme }) => {
 
   const handleExportExcel = async () => {
     try {
-      toast.info("Đang tạo file báo cáo doanh thu...");
+      showInfoToast("Đang tạo file báo cáo doanh thu...");
       const blob = await exportRevenue();
       const url = window.URL.createObjectURL(new Blob([blob]));
       const link = document.createElement("a");
@@ -170,10 +170,10 @@ const CommandPaletteModal = ({ isOpen, onClose, theme, toggleTheme }) => {
       document.body.appendChild(link);
       link.click();
       link.parentNode.removeChild(link);
-      toast.success("Xuất file báo cáo thành công!");
+      showSuccessToast("Xuất file báo cáo thành công!");
       onClose();
-    } catch {
-      toast.error("Lỗi xuất file Excel");
+    } catch (err) {
+      showErrorToast(err, "Lỗi xuất file Excel");
     }
   };
 

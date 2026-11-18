@@ -36,6 +36,7 @@ if (authChannel) {
       processQueue(new Error("Session terminated"));
       store.dispatch(removeUser());
       store.dispatch(clearCart());
+      clearXsrfToken();
       if (type === "ACCOUNT_LOCKED" && typeof window !== "undefined") {
         window.dispatchEvent(
           new CustomEvent("tiêntech:account_locked", {
@@ -70,12 +71,49 @@ const broadcastAuthEvent = (type, payload = {}) => {
   }
 };
 
+const XSRF_STORAGE_KEY = "tientech_xsrf_token";
+let inMemoryXsrfToken =
+  typeof sessionStorage !== "undefined"
+    ? sessionStorage.getItem(XSRF_STORAGE_KEY)
+    : null;
+
+const syncXsrfTokenFromResponse = (resOrErr) => {
+  const headerToken =
+    resOrErr?.headers?.["x-xsrf-token"] ||
+    resOrErr?.response?.headers?.["x-xsrf-token"];
+  if (headerToken) {
+    inMemoryXsrfToken = headerToken;
+    try {
+      if (typeof sessionStorage !== "undefined") {
+        sessionStorage.setItem(XSRF_STORAGE_KEY, headerToken);
+      }
+    } catch {
+      // Ignore storage errors
+    }
+  }
+};
+
+const clearXsrfToken = () => {
+  inMemoryXsrfToken = null;
+  try {
+    if (typeof sessionStorage !== "undefined") {
+      sessionStorage.removeItem(XSRF_STORAGE_KEY);
+    }
+  } catch {
+    // Ignore storage errors
+  }
+};
+
 const getXsrfToken = () => {
-  if (typeof document === "undefined") return null;
-  const match = document.cookie
-    .split("; ")
-    .find((row) => row.startsWith("XSRF-TOKEN="));
-  return match ? decodeURIComponent(match.split("=")[1]) : null;
+  if (typeof document !== "undefined") {
+    const match = document.cookie
+      .split("; ")
+      .find((row) => row.startsWith("XSRF-TOKEN="));
+    if (match) {
+      return decodeURIComponent(match.split("=")[1]);
+    }
+  }
+  return inMemoryXsrfToken;
 };
 
 axiosClient.interceptors.request.use(
@@ -96,13 +134,43 @@ axiosClient.interceptors.request.use(
 );
 
 axiosClient.interceptors.response.use(
-  (response) => response.data,
+  (response) => {
+    syncXsrfTokenFromResponse(response);
+    return response.data;
+  },
   async (error) => {
+    syncXsrfTokenFromResponse(error);
     const originalRequest = error.config;
     const isRefreshRequest = originalRequest?.url?.includes("/user/refresh-token");
 
-    // Intercept Account Locked error (403 with code ACCOUNT_LOCKED or lock message)
+    // Self-heal cross-origin XSRF token mismatch once if backend exposed fresh token
     const errData = error.response?.data;
+    const isCsrfError =
+      error.response?.status === 403 &&
+      (errData?.code === "CSRF_ERROR" ||
+        (typeof errData?.errMessage === "string" &&
+          errData.errMessage.includes("CSRF")));
+
+    if (
+      isCsrfError &&
+      originalRequest &&
+      !originalRequest._csrfRetry
+    ) {
+      originalRequest._csrfRetry = true;
+      if (!inMemoryXsrfToken) {
+        try {
+          await axios.get(`${appConfig.apiUrl}/user/get-me`, { withCredentials: true }).then(syncXsrfTokenFromResponse).catch(syncXsrfTokenFromResponse);
+        } catch {
+          // Ignore prefetch error
+        }
+      }
+      if (inMemoryXsrfToken) {
+        originalRequest.headers = originalRequest.headers || {};
+        originalRequest.headers["X-XSRF-TOKEN"] = inMemoryXsrfToken;
+        return axiosClient(originalRequest);
+      }
+    }
+    // Intercept Account Locked error (403 with code ACCOUNT_LOCKED or lock message)
     const isLockedError =
       error.response?.status === 403 &&
       (errData?.code === "ACCOUNT_LOCKED" ||
@@ -121,6 +189,7 @@ axiosClient.interceptors.response.use(
       }
       store.dispatch(removeUser());
       store.dispatch(clearCart());
+      clearXsrfToken();
       broadcastAuthEvent("ACCOUNT_LOCKED", { reason });
       if (errData?.errMessage) {
         error.errMessage = errData.errMessage;
@@ -130,7 +199,8 @@ axiosClient.interceptors.response.use(
 
     if (
       error.response?.status === 401 &&
-      !originalRequest._retry &&
+      !originalRequest?._retry &&
+      !originalRequest?.skipAuthRefresh &&
       !isRefreshRequest
     ) {
       if (isRefreshing || isCrossTabRefreshing) {
@@ -186,6 +256,15 @@ axiosClient.interceptors.response.use(
       }
     }
 
+    if (error.response?.status) {
+      error.statusCode = error.response.status;
+    }
+    if (error.response?.data?.errCode !== undefined) {
+      error.errCode = error.response.data.errCode;
+    }
+    if (error.response?.data?.code) {
+      error.code = error.response.data.code;
+    }
     if (error.response?.data?.errMessage) {
       error.errMessage = error.response.data.errMessage;
     }

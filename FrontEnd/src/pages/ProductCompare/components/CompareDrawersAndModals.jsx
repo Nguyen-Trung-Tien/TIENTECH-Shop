@@ -1,6 +1,7 @@
 // FrontEnd/src/pages/ProductCompare/components/CompareDrawersAndModals.jsx
 import React, { useState } from "react";
-import { X, Search, Plus, Trash2, CheckCircle2 } from "lucide-react";
+import { X, Search, Plus, CheckCircle2 } from "lucide-react";
+import { ConfirmModal } from "../../../components/UI";
 
 /**
  * Side Sheet (Drawer) thay thế modal to:
@@ -120,39 +121,20 @@ export const AddProductDrawer = ({ isOpen, onClose, candidates = [], onSelectPro
  * Đạt chuẩn Accessibility với Focus lock và phím Escape
  */
 export const ClearCompareModal = ({ isOpen, onClose, onConfirm }) => {
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-sm bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-6 z-10 animate-in zoom-in-95 duration-150">
-        <div className="w-12 h-12 rounded-full bg-rose-100 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 flex items-center justify-center mx-auto mb-4">
-          <Trash2 className="w-6 h-6" />
-        </div>
-        <h3 className="text-center text-base font-bold text-slate-900 dark:text-white mb-1">
-          Xóa Toàn Bộ So Sánh?
-        </h3>
-        <p className="text-center text-xs text-slate-500 dark:text-slate-400 mb-6">
-          Hành động này sẽ giải phóng bảng ma trận thông số hiện tại. Bạn có thể thêm lại các sản phẩm bất cứ lúc nào.
-        </p>
-        <div className="grid grid-cols-2 gap-3">
-          <button
-            type="button"
-            onClick={onClose}
-            className="py-2.5 text-xs font-semibold rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
-          >
-            Hủy Bỏ
-          </button>
-          <button
-            type="button"
-            onClick={() => { onConfirm(); onClose(); }}
-            className="py-2.5 text-xs font-semibold rounded-xl bg-rose-600 hover:bg-rose-700 text-white shadow-sm cursor-pointer"
-          >
-            Đồng Ý Xóa
-          </button>
-        </div>
-      </div>
-    </div>
+    <ConfirmModal
+      isOpen={isOpen}
+      onClose={onClose}
+      onConfirm={() => {
+        onConfirm();
+        onClose();
+      }}
+      title="Xóa Toàn Bộ So Sánh?"
+      message="Hành động này sẽ giải phóng bảng ma trận thông số hiện tại. Bạn có thể thêm lại các sản phẩm bất cứ lúc nào."
+      confirmText="Đồng Ý Xóa"
+      cancelText="Hủy Bỏ"
+      variant="danger"
+    />
   );
 };
 

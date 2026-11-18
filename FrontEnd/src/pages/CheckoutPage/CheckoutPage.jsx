@@ -14,6 +14,8 @@ import { removePurchasedItems, applyVoucher, removeVoucher } from "../../redux/c
 import CheckoutForm from "./CheckoutForm";
 import OrderSummary from "./OrderSummary";
 import VoucherSelector from "../../components/Cart/VoucherSelector";
+import { PageShell } from "../../components/UI";
+import { useUnsavedChangesGuard } from "../../hooks/useUnsavedChangesGuard";
 
 const CheckoutPage = () => {
   const location = useLocation();
@@ -27,6 +29,11 @@ const CheckoutPage = () => {
 
   const [loading, setLoading] = useState(false);
   const isSubmitting = useRef(false);
+  const idempotencyKeyRef = useRef(
+    typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+      ? crypto.randomUUID()
+      : `checkout_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`
+  );
   const [formData, setCheckoutData] = useState({
     shippingAddress: "",
     paymentMethod: "COD",
@@ -34,6 +41,10 @@ const CheckoutPage = () => {
     fullName: user?.username || user?.fullName || "",
     phone: user?.phone || "",
   });
+
+  useUnsavedChangesGuard(
+    !loading && Boolean(formData.shippingAddress?.trim() || formData.note?.trim())
+  );
 
   // Redirect if no items
   useEffect(() => {
@@ -99,7 +110,9 @@ const CheckoutPage = () => {
         })),
       };
 
-      const res = await createOrder(orderData);
+      const res = await createOrder(orderData, {
+        headers: { "X-Idempotency-Key": idempotencyKeyRef.current },
+      });
       if (res && res.errCode === 0) {
         dispatch(removePurchasedItems(selectedItems));
 
@@ -158,7 +171,9 @@ const CheckoutPage = () => {
         paypalDetails: details,
       };
 
-      const res = await createOrder(orderData);
+      const res = await createOrder(orderData, {
+        headers: { "X-Idempotency-Key": idempotencyKeyRef.current },
+      });
       if (res && res.errCode === 0) {
         dispatch(removePurchasedItems(selectedItems));
         showSuccessToast("Thanh toán PayPal thành công!");
@@ -175,31 +190,22 @@ const CheckoutPage = () => {
   };
 
   return (
-    <main className="min-h-screen bg-slate-50 dark:bg-dark-bg py-12 transition-colors duration-300">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-10">
-          <div className="flex items-center gap-4">
-            <Link
-              to="/cart"
-              className="p-3 bg-white dark:bg-dark-surface rounded-2xl shadow-sm text-slate-400 dark:text-dark-text-secondary hover:text-primary transition-all border border-transparent dark:border-dark-border"
-            >
-              <FiArrowLeft size={20} />
-            </Link>
-            <div>
-              <h1 className="text-3xl font-black text-slate-900 dark:text-white uppercase tracking-tight">
-                Thanh toán
-              </h1>
-              <div className="flex items-center gap-2 text-slate-400 dark:text-dark-text-secondary text-xs font-bold uppercase tracking-widest mt-1">
-                <span>Giỏ hàng</span>
-                <FiChevronRight />
-                <span className="text-primary">Thanh toán</span>
-                <FiChevronRight />
-                <span>Hoàn tất</span>
-              </div>
-            </div>
-          </div>
-        </div>
+    <PageShell
+      eyebrow="CHECKOUT // SECURE PAYMENT"
+      title="Thanh toán"
+      subtitle={
+        <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest">
+          <span>Giỏ hàng</span>
+          <FiChevronRight />
+          <span className="text-primary">Thanh toán</span>
+          <FiChevronRight />
+          <span>Hoàn tất</span>
+        </span>
+      }
+      backTo="/cart"
+      backLabel="Quay lại giỏ hàng"
+      maxWidthClass="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
+    >
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
           {/* Left: Info */}
@@ -295,8 +301,7 @@ const CheckoutPage = () => {
             </div>
           </aside>
         </div>
-      </div>
-    </main>
+    </PageShell>
   );
 };
 

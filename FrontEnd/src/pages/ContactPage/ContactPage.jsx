@@ -10,9 +10,9 @@ import {
   FiShield,
   FiHeadphones,
 } from "react-icons/fi";
-import { toast } from "react-toastify";
+import { showErrorToast, showSuccessToast } from "../../utils/toastHelper";
 import { motion } from "framer-motion";
-import { Button, Input, Select, Textarea } from "../../components/UI";
+import { Button, Input, Select, Textarea, PageShell } from "../../components/UI";
 
 const ContactPage = () => {
   const [formData, setFormData] = useState({
@@ -35,7 +35,7 @@ const ContactPage = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!formData.name || !formData.email || !formData.message) {
-      toast.error("Vui lòng điền đầy đủ các thông tin bắt buộc!");
+      showErrorToast("Vui lòng điền đầy đủ các thông tin bắt buộc!");
       return;
     }
 
@@ -44,14 +44,20 @@ const ContactPage = () => {
     setTimeout(() => {
       setIsSubmitting(false);
       setSubmitted(true);
-      toast.success("Gửi yêu cầu thành công! Chúng tôi sẽ phản hồi trong 24h.");
+      showSuccessToast("Gửi yêu cầu thành công! Chúng tôi sẽ phản hồi trong 24h.");
     }, 1000);
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 transition-colors duration-300 py-12">
+    <PageShell
+      eyebrow="CUSTOMER CARE // CONTACT"
+      title="Liên hệ & Hỗ trợ"
+      subtitle="Đội ngũ tư vấn kỹ thuật TienTech luôn sẵn sàng hỗ trợ bạn 24/7."
+      backTo="/"
+      backLabel="Quay lại trang chủ"
+    >
       {/* Hero Banner */}
-      <div className="container-custom mb-12">
+      <div className="mb-12">
         <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-blue-50/90 via-sky-50/60 to-slate-100/80 dark:from-blue-900/80 dark:via-indigo-950 dark:to-slate-900 text-slate-900 dark:text-white border border-blue-100 dark:border-slate-800 p-8 md:p-14 shadow-sm dark:shadow-2xl transition-colors duration-300">
           <div className="absolute -right-10 -bottom-10 opacity-10 dark:opacity-15 text-blue-600 dark:text-white pointer-events-none">
             <FiHeadphones className="w-96 h-96" />
@@ -320,7 +326,7 @@ const ContactPage = () => {
           </div>
         </div>
       </div>
-    </div>
+    </PageShell>
   );
 };
 

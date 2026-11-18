@@ -26,7 +26,7 @@ import { useAdminCrud } from "../../../hooks/useAdminCrud";
 import GenericAdminTable from "../../components/GenericAdminTable";
 import GenericAdminModal from "../../components/GenericAdminModal";
 import { Button } from "../../../components/UI";
-import { ConfirmModal } from "../../../components/UI/Modal";
+import Modal, { ConfirmModal } from "../../../components/UI/Modal";
 import { showSuccessToast, showErrorToast } from "../../../utils/toastHelper";
 import UnifiedSpinner from "../../../components/Loading/UnifiedSpinner";
 
@@ -710,280 +710,271 @@ const UserManage = () => {
       />
 
       {/* Single Account Status Modal */}
-      <AnimatePresence>
-        {showStatusModal && targetUserForStatus && (
-          <Motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => !statusProcessing && setShowStatusModal(false)}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs"
-          >
-            <Motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 12 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 12 }}
-              transition={{ type: "spring", stiffness: 380, damping: 28 }}
-              onClick={(e) => e.stopPropagation()}
-              className="bg-white dark:bg-dark-surface w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 dark:border-dark-border p-5 sm:p-6 space-y-4"
+      <Modal
+        isOpen={Boolean(showStatusModal && targetUserForStatus)}
+        onClose={() => !statusProcessing && setShowStatusModal(false)}
+        size="md"
+        loading={statusProcessing}
+        loadingMessage="Đang cập nhật trạng thái..."
+        title={
+          <span className="flex items-center gap-3 min-w-0">
+            <span
+              className={`size-10 rounded-xl flex items-center justify-center shrink-0 ${
+                targetNextStatus === "active"
+                  ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400"
+                  : "bg-rose-50 text-rose-600 dark:bg-rose-950/40 dark:text-rose-400"
+              }`}
             >
-            <div className="flex items-center gap-3">
-              <div
-                className={`size-11 rounded-xl flex items-center justify-center text-lg ${
-                  targetNextStatus === "active"
-                    ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400"
-                    : "bg-rose-50 text-rose-600 dark:bg-rose-950/40 dark:text-rose-400"
-                }`}
-              >
-                {targetNextStatus === "active" ? <FiCheckCircle size={22} /> : <FiSlash size={22} />}
-              </div>
-              <div className="min-w-0 flex-1">
-                <h3 className="text-base font-black text-slate-900 dark:text-white truncate">
-                  {targetNextStatus === "active" ? "Xác nhận kích hoạt tài khoản" : "Xác nhận vô hiệu hóa tài khoản"}
-                </h3>
-                <p className="text-xs text-slate-500 dark:text-dark-text-secondary truncate">
-                  {targetUserForStatus.username} ({targetUserForStatus.email})
-                </p>
-              </div>
-            </div>
-
-            <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+              {targetNextStatus === "active" ? <FiCheckCircle size={20} /> : <FiSlash size={20} />}
+            </span>
+            <span className="min-w-0 flex-1 truncate">
               {targetNextStatus === "active"
-                ? "Tài khoản sẽ được mở khóa hoặc kích hoạt ngay lập tức. Người dùng sẽ nhận được thông báo trong hệ thống."
-                : "Tài khoản sẽ bị tạm ngừng hoạt động. Phiên đăng nhập hiện tại sẽ bị thu hồi ngay lập tức."}
-            </p>
+                ? "Xác nhận kích hoạt tài khoản"
+                : "Xác nhận vô hiệu hóa tài khoản"}
+            </span>
+          </span>
+        }
+        subtitle={
+          targetUserForStatus
+            ? `${targetUserForStatus.username} (${targetUserForStatus.email})`
+            : ""
+        }
+        footer={
+          <div className="flex items-center justify-end gap-2.5">
+            <Button
+              type="button"
+              variant="ghost"
+              disabled={statusProcessing}
+              onClick={() => setShowStatusModal(false)}
+            >
+              Hủy bỏ
+            </Button>
+            <Button
+              type="button"
+              variant={targetNextStatus === "active" ? "success" : "danger"}
+              loading={statusProcessing}
+              loadingText="Đang xử lý..."
+              onClick={handleConfirmStatusChange}
+              className="uppercase tracking-wider"
+            >
+              {targetNextStatus === "active" ? "Kích hoạt ngay" : "Vô hiệu hóa"}
+            </Button>
+          </div>
+        }
+      >
+        <div className="space-y-4">
+          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+            {targetNextStatus === "active"
+              ? "Tài khoản sẽ được mở khóa hoặc kích hoạt ngay lập tức. Người dùng sẽ nhận được thông báo trong hệ thống."
+              : "Tài khoản sẽ bị tạm ngừng hoạt động. Phiên đăng nhập hiện tại sẽ bị thu hồi ngay lập tức."}
+          </p>
 
-            <div>
-              <label htmlFor="status-reason-input" className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                Lý do thực hiện (tùy chọn, lưu vào Audit Log):
-              </label>
-              <textarea
-                id="status-reason-input"
-                aria-label="Lý do kích hoạt hoặc khóa tài khoản"
-                rows={2}
-                value={statusReason}
-                onChange={(e) => setStatusReason(e.target.value)}
-                placeholder="Nhập lý do kích hoạt hoặc khóa tài khoản..."
-                className="tt-input w-full text-xs font-medium resize-none"
-              />
-            </div>
-
-            <div className="flex items-center justify-end gap-2.5 pt-2">
-              <Button
-                type="button"
-                variant="ghost"
-                disabled={statusProcessing}
-                onClick={() => setShowStatusModal(false)}
-              >
-                Hủy bỏ
-              </Button>
-              <Button
-                type="button"
-                variant={targetNextStatus === "active" ? "success" : "danger"}
-                loading={statusProcessing}
-                loadingText="Đang xử lý..."
-                onClick={handleConfirmStatusChange}
-                className="uppercase tracking-wider"
-              >
-                {targetNextStatus === "active" ? "Kích hoạt ngay" : "Vô hiệu hóa"}
-              </Button>
-            </div>
-            </Motion.div>
-          </Motion.div>
-        )}
-      </AnimatePresence>
+          <div>
+            <label
+              htmlFor="status-reason-input"
+              className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5"
+            >
+              Lý do thực hiện (tùy chọn, lưu vào Audit Log):
+            </label>
+            <textarea
+              id="status-reason-input"
+              aria-label="Lý do kích hoạt hoặc khóa tài khoản"
+              rows={2}
+              value={statusReason}
+              onChange={(e) => setStatusReason(e.target.value)}
+              placeholder="Nhập lý do kích hoạt hoặc khóa tài khoản..."
+              className="tt-input w-full text-xs sm:text-sm font-medium resize-none"
+            />
+          </div>
+        </div>
+      </Modal>
 
       {/* Bulk Status Modal */}
-      {showBulkModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
-          <div className="bg-white dark:bg-dark-surface w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 dark:border-dark-border p-6 space-y-5 animate-scaleUp">
-            <div className="flex items-center gap-3">
-              <div
-                className={`size-11 rounded-xl flex items-center justify-center text-lg ${
-                  bulkAction === "active"
-                    ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400"
-                    : "bg-rose-50 text-rose-600 dark:bg-rose-950/40 dark:text-rose-400"
-                }`}
-              >
-                {bulkAction === "active" ? <FiCheckCircle size={22} /> : <FiSlash size={22} />}
-              </div>
-              <div className="min-w-0 flex-1">
-                <h3 className="text-base font-black text-slate-900 dark:text-white">
-                  Thao tác hàng loạt trên {selectedIds.length} tài khoản
-                </h3>
-                <p className="text-xs text-slate-500 dark:text-dark-text-secondary">
-                  Hành động: {bulkAction === "active" ? "Kích hoạt" : "Vô hiệu hóa"}
-                </p>
-              </div>
-            </div>
+      <Modal
+        isOpen={showBulkModal}
+        onClose={() => !bulkProcessing && setShowBulkModal(false)}
+        size="md"
+        loading={bulkProcessing}
+        loadingMessage="Đang xử lý hàng loạt..."
+        title={
+          <span className="flex items-center gap-3 min-w-0">
+            <span
+              className={`size-10 rounded-xl flex items-center justify-center shrink-0 ${
+                bulkAction === "active"
+                  ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400"
+                  : "bg-rose-50 text-rose-600 dark:bg-rose-950/40 dark:text-rose-400"
+              }`}
+            >
+              {bulkAction === "active" ? <FiCheckCircle size={20} /> : <FiSlash size={20} />}
+            </span>
+            <span className="min-w-0 flex-1 truncate">
+              Thao tác hàng loạt ({selectedIds.length} tài khoản)
+            </span>
+          </span>
+        }
+        subtitle={`Hành động: ${bulkAction === "active" ? "Kích hoạt" : "Vô hiệu hóa"}`}
+        footer={
+          <div className="flex items-center justify-end gap-2.5">
+            <Button
+              type="button"
+              variant="ghost"
+              disabled={bulkProcessing}
+              onClick={() => setShowBulkModal(false)}
+            >
+              Hủy bỏ
+            </Button>
+            <Button
+              type="button"
+              variant={bulkAction === "active" ? "success" : "danger"}
+              loading={bulkProcessing}
+              loadingText="Đang xử lý..."
+              onClick={handleConfirmBulkAction}
+              className="uppercase tracking-wider"
+            >
+              Xác nhận xử lý
+            </Button>
+          </div>
+        }
+      >
+        <div className="space-y-4">
+          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+            Thao tác sẽ được áp dụng tuần tự cho từng tài khoản đã chọn. Hệ thống tự động bỏ qua tài khoản của chính bạn để bảo đảm an toàn.
+          </p>
 
-            <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-              Thao tác sẽ được áp dụng tuần tự cho từng tài khoản đã chọn. Hệ thống tự động bỏ qua tài khoản của chính bạn để bảo đảm an toàn.
-            </p>
-
-            <div>
-              <label htmlFor="bulk-reason-input" className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                Lý do thao tác hàng loạt (ghi vào Audit Log):
-              </label>
-              <textarea
-                id="bulk-reason-input"
-                aria-label="Lý do thao tác hàng loạt"
-                rows={2}
-                value={bulkReason}
-                onChange={(e) => setBulkReason(e.target.value)}
-                placeholder="Nhập lý do thao tác hàng loạt..."
-                className="tt-input w-full text-xs font-medium resize-none"
-              />
-            </div>
-
-            <div className="flex items-center justify-end gap-2.5 pt-2">
-              <Button
-                type="button"
-                variant="ghost"
-                disabled={bulkProcessing}
-                onClick={() => setShowBulkModal(false)}
-              >
-                Hủy bỏ
-              </Button>
-              <Button
-                type="button"
-                variant={bulkAction === "active" ? "success" : "danger"}
-                loading={bulkProcessing}
-                loadingText="Đang xử lý..."
-                onClick={handleConfirmBulkAction}
-                className="uppercase tracking-wider"
-              >
-                Xác nhận xử lý
-              </Button>
-            </div>
+          <div>
+            <label
+              htmlFor="bulk-reason-input"
+              className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5"
+            >
+              Lý do thao tác hàng loạt (ghi vào Audit Log):
+            </label>
+            <textarea
+              id="bulk-reason-input"
+              aria-label="Lý do thao tác hàng loạt"
+              rows={2}
+              value={bulkReason}
+              onChange={(e) => setBulkReason(e.target.value)}
+              placeholder="Nhập lý do thao tác hàng loạt..."
+              className="tt-input w-full text-xs sm:text-sm font-medium resize-none"
+            />
           </div>
         </div>
-      )}
+      </Modal>
 
       {/* Audit Log Modal */}
-      {showAuditModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
-          <div className="bg-white dark:bg-dark-surface w-full max-w-2xl rounded-2xl shadow-2xl border border-slate-200 dark:border-dark-border p-6 space-y-4 animate-scaleUp max-h-[85vh] flex flex-col">
-            <div className="flex items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-dark-border min-w-0">
-              <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                  <FiClock size={18} />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <h3 className="text-base font-black text-slate-900 dark:text-white break-words [overflow-wrap:anywhere]">
-                    {selectedUserForAudit
-                      ? `Lịch sử thao tác: ${selectedUserForAudit.username}`
-                      : "Nhật ký quản trị tài khoản hệ thống"}
-                  </h3>
-                  <p className="text-[11px] font-mono text-slate-400">
-                    Bảo đảm tính toàn vẹn và minh bạch dữ liệu
-                  </p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowAuditModal(false)}
-                className="size-8 rounded-lg bg-slate-100 dark:bg-dark-card text-slate-400 hover:text-slate-700 dark:hover:text-white flex items-center justify-center cursor-pointer transition-colors"
-                aria-label="Đóng cửa sổ"
-              >
-                <FiX size={16} />
-              </button>
-            </div>
-
-            <div className="flex-1 overflow-y-auto space-y-3 custom-scrollbar pr-1">
-              {auditLoading ? (
-                <div className="py-12 flex justify-center">
-                  <UnifiedSpinner size="md" message="Đang tải lịch sử thao tác..." />
-                </div>
-              ) : auditLogs.length === 0 ? (
-                <div className="py-12 text-center text-slate-400 font-medium text-xs">
-                  Chưa có bản ghi nhật ký nào cho mục tiêu này.
-                </div>
-              ) : (
-                auditLogs.map((log) => (
-                  <div
-                    key={log.id}
-                    className="p-3.5 bg-slate-50 dark:bg-dark-bg/60 rounded-xl border border-slate-200/60 dark:border-dark-border/60 space-y-1.5"
+      <Modal
+        isOpen={showAuditModal}
+        onClose={() => setShowAuditModal(false)}
+        size="2xl"
+        title={
+          <span className="flex items-center gap-2.5 min-w-0">
+            <span className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+              <FiClock size={18} />
+            </span>
+            <span className="min-w-0 flex-1 break-words [overflow-wrap:anywhere]">
+              {selectedUserForAudit
+                ? `Lịch sử thao tác: ${selectedUserForAudit.username}`
+                : "Nhật ký quản trị tài khoản hệ thống"}
+            </span>
+          </span>
+        }
+        subtitle="Bảo đảm tính toàn vẹn và minh bạch dữ liệu"
+        footer={
+          <div className="flex items-center justify-between gap-3 flex-wrap w-full">
+            <div className="flex items-center gap-2">
+              {auditTotalPages > 1 && (
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    disabled={auditPage <= 1 || auditLoading}
+                    onClick={() => handleAuditPageChange(auditPage - 1)}
+                    className="p-1.5 rounded-lg border border-slate-200 dark:border-dark-border bg-white dark:bg-dark-card text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-dark-surface disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                    title="Trang trước"
+                    aria-label="Trang trước"
                   >
-                    <div className="flex items-center justify-between gap-2 flex-wrap">
-                      <div className="flex items-center gap-2">
-                        <span
-                          className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider ${
-                            log.action === "ACCOUNT_ACTIVATED"
-                              ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400"
-                              : "bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-400"
-                          }`}
-                        >
-                          {log.action === "ACCOUNT_ACTIVATED" ? "Kích hoạt" : "Vô hiệu hóa"}
-                        </span>
-                        <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                          Mục tiêu: {log.targetUser?.username || `ID ${log.targetUserId}`}
-                        </span>
-                      </div>
-                      <span className="text-[10px] font-mono text-slate-400">
-                        {new Date(log.createdAt).toLocaleString("vi-VN")}
-                      </span>
-                    </div>
-
-                    <p className="text-xs text-slate-600 dark:text-slate-300 break-words [overflow-wrap:anywhere]">
-                      <strong>Lý do:</strong> {log.reason || "Không ghi chú"}
-                    </p>
-
-                    <div className="flex items-center justify-between text-[10px] text-slate-400 font-mono pt-1 border-t border-slate-200/30 dark:border-dark-border/40">
-                      <span>Người thực hiện: <strong>{log.admin?.username || `Admin #${log.adminId}`}</strong></span>
-                      {log.ipAddress && <span>IP: {log.ipAddress}</span>}
-                    </div>
-                  </div>
-                ))
+                    <FiChevronLeft size={14} />
+                  </button>
+                  <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">
+                    Trang <strong className="text-slate-900 dark:text-white">{auditPage}</strong> / {auditTotalPages}
+                  </span>
+                  <button
+                    type="button"
+                    disabled={auditPage >= auditTotalPages || auditLoading}
+                    onClick={() => handleAuditPageChange(auditPage + 1)}
+                    className="p-1.5 rounded-lg border border-slate-200 dark:border-dark-border bg-white dark:bg-dark-card text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-dark-surface disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                    title="Trang sau"
+                    aria-label="Trang sau"
+                  >
+                    <FiChevronRight size={14} />
+                  </button>
+                </div>
+              )}
+              {auditTotalItems > 0 && (
+                <span className="text-[11px] text-slate-400 hidden sm:inline">
+                  (Tổng {auditTotalItems} bản ghi)
+                </span>
               )}
             </div>
-
-            <div className="pt-3 border-t border-slate-100 dark:border-dark-border flex items-center justify-between gap-3 flex-wrap">
-              <div className="flex items-center gap-2">
-                {auditTotalPages > 1 && (
-                  <div className="flex items-center gap-1.5">
-                    <button
-                      type="button"
-                      disabled={auditPage <= 1 || auditLoading}
-                      onClick={() => handleAuditPageChange(auditPage - 1)}
-                      className="p-1.5 rounded-lg border border-slate-200 dark:border-dark-border bg-white dark:bg-dark-card text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-dark-surface disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
-                      title="Trang trước"
-                      aria-label="Trang trước"
-                    >
-                      <FiChevronLeft size={14} />
-                    </button>
-                    <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">
-                      Trang <strong className="text-slate-900 dark:text-white">{auditPage}</strong> / {auditTotalPages}
-                    </span>
-                    <button
-                      type="button"
-                      disabled={auditPage >= auditTotalPages || auditLoading}
-                      onClick={() => handleAuditPageChange(auditPage + 1)}
-                      className="p-1.5 rounded-lg border border-slate-200 dark:border-dark-border bg-white dark:bg-dark-card text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-dark-surface disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
-                      title="Trang sau"
-                      aria-label="Trang sau"
-                    >
-                      <FiChevronRight size={14} />
-                    </button>
-                  </div>
-                )}
-                {auditTotalItems > 0 && (
-                  <span className="text-[11px] text-slate-400 hidden sm:inline">
-                    (Tổng {auditTotalItems} bản ghi)
-                  </span>
-                )}
-              </div>
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={() => setShowAuditModal(false)}
-              >
-                Đóng
-              </Button>
-            </div>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => setShowAuditModal(false)}
+            >
+              Đóng
+            </Button>
           </div>
+        }
+      >
+        <div className="space-y-3">
+          {auditLoading ? (
+            <div className="py-12 flex justify-center">
+              <UnifiedSpinner size="md" message="Đang tải lịch sử thao tác..." />
+            </div>
+          ) : auditLogs.length === 0 ? (
+            <div className="py-12 text-center text-slate-400 font-medium text-xs">
+              Chưa có bản ghi nhật ký nào cho mục tiêu này.
+            </div>
+          ) : (
+            auditLogs.map((log) => (
+              <div
+                key={log.id}
+                className="p-3.5 bg-slate-50 dark:bg-dark-bg/60 rounded-xl border border-slate-200/60 dark:border-dark-border/60 space-y-1.5"
+              >
+                <div className="flex items-center justify-between gap-2 flex-wrap">
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider ${
+                        log.action === "ACCOUNT_ACTIVATED"
+                          ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400"
+                          : "bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-400"
+                      }`}
+                    >
+                      {log.action === "ACCOUNT_ACTIVATED" ? "Kích hoạt" : "Vô hiệu hóa"}
+                    </span>
+                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                      Mục tiêu: {log.targetUser?.username || `ID ${log.targetUserId}`}
+                    </span>
+                  </div>
+                  <span className="text-[10px] font-mono text-slate-400">
+                    {new Date(log.createdAt).toLocaleString("vi-VN")}
+                  </span>
+                </div>
+
+                <p className="text-xs text-slate-600 dark:text-slate-300 break-words [overflow-wrap:anywhere]">
+                  <strong>Lý do:</strong> {log.reason || "Không ghi chú"}
+                </p>
+
+                <div className="flex items-center justify-between text-[10px] text-slate-400 font-mono pt-1 border-t border-slate-200/30 dark:border-dark-border/40">
+                  <span>
+                    Người thực hiện: <strong>{log.admin?.username || `Admin #${log.adminId}`}</strong>
+                  </span>
+                  {log.ipAddress && <span>IP: {log.ipAddress}</span>}
+                </div>
+              </div>
+            ))
+          )}
         </div>
-      )}
+      </Modal>
     </>
   );
 };

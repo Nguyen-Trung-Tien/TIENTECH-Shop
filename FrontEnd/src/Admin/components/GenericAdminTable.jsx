@@ -108,7 +108,12 @@ const GenericAdminTable = ({
           <span className="font-bold uppercase tracking-wider text-[9px] bg-slate-200/60 dark:bg-dark-card px-1.5 py-0.5 rounded">Bảng dữ liệu</span>
         </div>
 
-        <div className="overflow-x-auto custom-scrollbar">
+        <div
+          role="region"
+          tabIndex={0}
+          aria-label={typeof title === "string" ? title : "Bảng dữ liệu quản trị"}
+          className="overflow-x-auto custom-scrollbar focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+        >
           <table className="w-full text-left border-collapse min-w-[580px] md:min-w-full">
             <thead>
               <tr className="bg-slate-50/80 dark:bg-dark-surface/80 border-b border-slate-200/80 dark:border-dark-border">

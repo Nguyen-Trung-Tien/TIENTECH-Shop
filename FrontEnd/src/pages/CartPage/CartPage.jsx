@@ -9,10 +9,9 @@ import { CartSkeleton } from "../../components/Loading";
 import VoucherSelector from "../../components/Cart/VoucherSelector";
 import { applyVoucher, removeVoucher } from "../../redux/cartSlice";
 import { validateCart } from "../../api/cartApi";
-import { toast } from "react-toastify";
-import { showErrorToast } from "../../utils/toastHelper";
+import { showErrorToast, showWarningToast, showInfoToast } from "../../utils/toastHelper";
 import { useSystemSettings } from "../../context/useSystemSettings";
-import { ErrorBanner } from "../../components/UI";
+import { ErrorBanner, PageShell, EmptyState } from "../../components/UI";
 
 const CartPage = () => {
   const navigate = useNavigate();
@@ -82,7 +81,7 @@ const CartPage = () => {
       selectedItems.includes(i.id),
     );
     if (itemsToCheckout.length === 0) {
-      return toast.warning("Vui lòng chọn ít nhất một sản phẩm để thanh toán!");
+      return showWarningToast("Vui lòng chọn ít nhất một sản phẩm để thanh toán!");
     }
 
     setIsValidating(true);
@@ -92,7 +91,7 @@ const CartPage = () => {
         const { items, hasChanged, totalAmount } = response.data;
 
         if (hasChanged) {
-          toast.info(
+          showInfoToast(
             "Một số thông tin sản phẩm (giá hoặc tồn kho) đã thay đổi. Vui lòng kiểm tra lại!",
           );
           await fetchCart();
@@ -122,47 +121,33 @@ const CartPage = () => {
   if (loading) return <CartSkeleton />;
 
   return (
-    <main className="min-h-screen bg-ivory dark:bg-dark-bg py-8 sm:py-12 transition-colors duration-300">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center gap-3 sm:gap-4 mb-8">
-          <Link
-            to="/"
-            aria-label="Quay lại trang chủ"
-            className="size-10 bg-white dark:bg-dark-surface rounded-xl shadow-xs flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-primary transition-all border border-slate-200/80 dark:border-slate-800"
-          >
-            <FiArrowLeft size={18} />
-          </Link>
-          <div className="min-w-0">
-            <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white tracking-tight truncate">
-              Giỏ hàng của bạn
-            </h1>
-            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5">
-              Bạn đang có <span className="font-semibold text-primary dark:text-blue-400">{cartItems.length}</span> sản phẩm trong giỏ hàng
-            </p>
-          </div>
-        </div>
+    <PageShell
+      eyebrow="SHOPPING BAG // CHECKOUT READY"
+      title="Giỏ hàng của bạn"
+      subtitle={
+        <span>
+          Bạn đang có{" "}
+          <span className="font-semibold text-primary dark:text-blue-400">
+            {cartItems.length}
+          </span>{" "}
+          sản phẩm trong giỏ hàng
+        </span>
+      }
+      backTo="/"
+      backLabel="Quay lại trang chủ"
+      maxWidthClass="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
+    >
+      <ErrorBanner message={cartError} onRetry={loadCart} className="mb-6" />
 
-        <ErrorBanner message={cartError} onRetry={loadCart} className="mb-6" />
-
-        {cartItems.length === 0 ? (
-          <div className="rounded-3xl p-12 sm:p-20 text-center bg-white dark:bg-dark-surface border border-slate-100 dark:border-slate-800 shadow-xs">
-            <div className="size-20 bg-blue-50 dark:bg-blue-950/40 rounded-3xl flex items-center justify-center mx-auto mb-5 text-primary dark:text-blue-400">
-              <FiShoppingBag size={36} />
-            </div>
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
-              Giỏ hàng đang trống
-            </h2>
-            <p className="text-slate-500 dark:text-slate-400 mb-8 max-w-sm mx-auto text-xs sm:text-sm leading-relaxed">
-              Bạn chưa thêm sản phẩm nào vào giỏ hàng. Hãy khám phá ngay hàng ngàn sản phẩm công nghệ chính hãng tại TienTech!
-            </p>
-            <Link
-              to="/products"
-              className="inline-flex items-center justify-center gap-2 min-h-[44px] px-8 py-3 bg-primary hover:bg-primary-hover text-white rounded-2xl font-bold text-xs sm:text-sm tracking-wide shadow-md shadow-blue-500/20 transition-all active:scale-98"
-            >
-              Tiếp tục mua sắm <FiChevronRight />
-            </Link>
-          </div>
-        ) : (
+      {cartItems.length === 0 ? (
+        <EmptyState
+          icon={FiShoppingBag}
+          title="Giỏ hàng đang trống"
+          description="Bạn chưa thêm sản phẩm nào vào giỏ hàng. Hãy khám phá ngay hàng ngàn sản phẩm công nghệ chính hãng tại TienTech!"
+          actionLabel="Tiếp tục mua sắm"
+          onAction={() => navigate("/products")}
+        />
+      ) : (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
             <div className="lg:col-span-8 space-y-5 min-w-0">
               {/* Free Shipping Progress Widget */}
@@ -261,8 +246,7 @@ const CartPage = () => {
             </aside>
           </div>
         )}
-      </div>
-    </main>
+    </PageShell>
   );
 };
 

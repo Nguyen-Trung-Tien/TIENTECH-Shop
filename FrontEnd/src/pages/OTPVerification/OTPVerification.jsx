@@ -6,7 +6,6 @@ import {
   showSuccessToast,
   showWarningToast,
 } from "../../utils/toastHelper";
-import { toast } from "react-toastify";
 import { Mail } from "lucide-react";
 import { AuthShell, Button } from "../../components/UI";
 
@@ -23,7 +22,7 @@ const OTPVerification = () => {
 
   useEffect(() => {
     if (!email) {
-      toast.error("Thiếu thông tin email!");
+      showErrorToast("Thiếu thông tin email!");
       navigate("/register");
     }
   }, [email, navigate]);

@@ -146,10 +146,7 @@ const handleVnpayReturn = async (req, res) => {
     const secureHash = vnp_Params.vnp_SecureHash;
 
     if (!secureHash) {
-      return res.status(400).json({
-        errCode: 1,
-        message: "Missing secure hash",
-      });
+      return sendVnpayJson(res, 400, 1, "Thiếu chữ ký xác thực (Missing secure hash).");
     }
 
     // XÓA HASH TRƯỚC KHI VERIFY
@@ -167,10 +164,7 @@ const handleVnpayReturn = async (req, res) => {
 
     // SAI CHỮ KÝ
     if (!isValidSignature(secureHash, generatedHash)) {
-      return res.status(400).json({
-        errCode: 2,
-        message: "Invalid VNPay signature",
-      });
+      return sendVnpayJson(res, 400, 2, "Chữ ký VNPay không hợp lệ.");
     }
 
     // LẤY THÔNG TIN
@@ -181,10 +175,7 @@ const handleVnpayReturn = async (req, res) => {
     // TÌM ORDER THEO orderCode
     const orderResult = await OrderService.getOrderByCode(orderCode);
     if (orderResult.errCode !== 0 || !orderResult.data) {
-      return res.status(404).json({
-        errCode: 3,
-        message: "Order not found",
-      });
+      return sendVnpayJson(res, 404, 3, "Không tìm thấy đơn hàng.");
     }
 
     const order = orderResult.data;
@@ -194,10 +185,7 @@ const handleVnpayReturn = async (req, res) => {
       !Number.isFinite(vnpAmount) ||
       Math.round(Number(order.totalPrice) * 100) !== vnpAmount
     ) {
-      return res.status(400).json({
-        errCode: 4,
-        message: "Invalid payment amount",
-      });
+      return sendVnpayJson(res, 400, 4, "Số tiền thanh toán không khớp với đơn hàng.");
     }
 
     // THANH TOÁN THÀNH CÔNG

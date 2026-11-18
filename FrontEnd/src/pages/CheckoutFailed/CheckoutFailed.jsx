@@ -7,13 +7,13 @@ import {
   FiTruck,
   FiCheck,
   FiPackage,
-  FiLoader,
 } from "react-icons/fi";
 import { useNavigate, useParams } from "react-router-dom";
 import { motion as Motion } from "framer-motion";
 import { getOrderById, changePaymentMethod } from "../../api/orderApi";
 import { createVnpayPaymentApi } from "../../api/paymentApi";
 import { showErrorToast, showSuccessToast } from "../../utils/toastHelper";
+import { Button } from "../../components/UI";
 
 const CheckoutFailed = () => {
   const navigate = useNavigate();
@@ -266,58 +266,54 @@ const CheckoutFailed = () => {
         {/* ACTION BUTTONS */}
         <div className="flex flex-col sm:flex-row items-center gap-3">
           {order && order.paymentStatus === "unpaid" ? (
-            <button
+            <Button
               type="button"
-              disabled={submitting}
+              variant="primary"
+              loading={submitting}
               onClick={handleChangeAndRetry}
-              className={`w-full sm:flex-1 py-3.5 px-5 bg-gradient-to-r from-primary to-rose-600 hover:from-primary/90 hover:to-rose-700 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-lg shadow-primary/25 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98 ${
-                submitting ? "opacity-60 pointer-events-none" : ""
-              }`}
+              icon={selectedMethod === "cod" ? FiTruck : FiRotateCw}
+              className="w-full sm:flex-1 py-3.5"
             >
-              {submitting ? (
-                <>
-                  <FiLoader className="animate-spin text-base" /> Đang xử lý...
-                </>
-              ) : selectedMethod === "cod" ? (
-                <>
-                  <FiTruck className="text-base" /> Đổi sang COD & Xác nhận
-                </>
-              ) : (
-                <>
-                  <FiRotateCw className="text-base" /> Thử lại qua VNPAY
-                </>
-              )}
-            </button>
+              {selectedMethod === "cod"
+                ? "Đổi sang COD & Xác nhận"
+                : "Thử lại qua VNPAY"}
+            </Button>
           ) : (
-            <button
+            <Button
               type="button"
+              variant="danger"
               disabled={submitting}
               onClick={() => navigate("/cart")}
-              className="w-full sm:flex-1 py-3.5 px-5 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-lg shadow-red-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
+              icon={FiCreditCard}
+              className="w-full sm:flex-1 py-3.5"
             >
-              <FiCreditCard className="text-base" /> Quay lại giỏ hàng
-            </button>
+              Quay lại giỏ hàng
+            </Button>
           )}
 
-          <button
+          <Button
             type="button"
+            variant="secondary"
             onClick={() =>
               navigate(order ? `/orders-detail/${order.id}` : "/orders")
             }
-            className="w-full sm:flex-1 py-3.5 px-5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-white font-bold text-xs uppercase tracking-wider rounded-xl border border-slate-200 dark:border-slate-700 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
+            icon={FiPackage}
+            className="w-full sm:flex-1 py-3.5"
           >
-            <FiPackage className="text-base" /> Xem đơn hàng của tôi
-          </button>
+            Xem đơn hàng của tôi
+          </Button>
         </div>
 
-        <div className="mt-5 pt-3 border-t border-slate-100 dark:border-slate-800">
-          <button
+        <div className="mt-5 pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-center">
+          <Button
             type="button"
+            variant="ghost"
+            size="sm"
             onClick={() => navigate("/")}
-            className="text-xs font-bold text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors uppercase tracking-wider flex items-center justify-center gap-1.5 mx-auto cursor-pointer"
+            icon={FiHome}
           >
-            <FiHome size={14} /> Quay về Trang chủ
-          </button>
+            Quay về Trang chủ
+          </Button>
         </div>
       </Motion.div>
     </div>

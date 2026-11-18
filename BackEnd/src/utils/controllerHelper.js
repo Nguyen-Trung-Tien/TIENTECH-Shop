@@ -5,6 +5,7 @@ const HTTP_STATUS = {
   CREATED: 201,
   BAD_REQUEST: 400,
   UNAUTHORIZED: 401,
+  PAYMENT_REQUIRED: 402,
   FORBIDDEN: 403,
   NOT_FOUND: 404,
   CONFLICT: 409,
@@ -18,6 +19,7 @@ const HTTP_STATUS_TEXT = {
   201: "CREATED",
   400: "BAD_REQUEST",
   401: "UNAUTHORIZED",
+  402: "PAYMENT_REQUIRED",
   403: "FORBIDDEN",
   404: "NOT_FOUND",
   409: "CONFLICT",
@@ -31,6 +33,7 @@ const VIETNAMESE_FALLBACK_MESSAGES = {
   201: "Tạo mới thành công!",
   400: "Dữ liệu yêu cầu không hợp lệ hoặc thiếu thông tin.",
   401: "Phiên đăng nhập đã hết hạn hoặc thông tin xác thực không đúng.",
+  402: "Giao dịch thanh toán chưa hoàn tất hoặc yêu cầu thanh toán trước khi tiếp tục.",
   403: "Bạn không có quyền thực hiện thao tác này.",
   404: "Không tìm thấy dữ liệu yêu cầu.",
   409: "Dữ liệu đã tồn tại trên hệ thống hoặc xảy ra xung đột.",
@@ -139,6 +142,14 @@ const handleResponse = (res, result, successStatus = HTTP_STATUS.OK) => {
       rawMsg.includes("no token")
     ) {
       status = HTTP_STATUS.UNAUTHORIZED; // 401
+    } else if (
+      result.errCode === 402 ||
+      result.errCode === "PAYMENT_REQUIRED" ||
+      rawMsg.includes("payment required") ||
+      rawMsg.includes("chưa thanh toán") ||
+      rawMsg.includes("yêu cầu thanh toán")
+    ) {
+      status = HTTP_STATUS.PAYMENT_REQUIRED; // 402
     } else if (
       result.errCode === 403 ||
       result.errCode === "FORBIDDEN" ||

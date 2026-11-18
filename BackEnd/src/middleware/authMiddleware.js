@@ -13,29 +13,49 @@ const authenticateToken = async (req, res, next) => {
   }
 
   if (!token) {
-    return res
-      .status(401)
-      .json({ errCode: 1, code: "NO_TOKEN", errMessage: "No token provided" });
+    return res.status(401).json({
+      status: "UNAUTHORIZED",
+      statusCode: 401,
+      errCode: 1,
+      code: "NO_TOKEN",
+      errMessage: "Vui lòng đăng nhập để tiếp tục.",
+      message: "No token provided",
+    });
   }
 
   // Check Redis Token Blacklist (Revoked tokens on logout)
   const isBlacklisted = await getCache(getTokenBlacklistKey(token));
   if (isBlacklisted) {
-    return res
-      .status(401)
-      .json({ errCode: 2, code: "TOKEN_REVOKED", errMessage: "Token has been revoked" });
+    return res.status(401).json({
+      status: "UNAUTHORIZED",
+      statusCode: 401,
+      errCode: 2,
+      code: "TOKEN_REVOKED",
+      errMessage: "Phiên đăng nhập đã bị hủy. Vui lòng đăng nhập lại.",
+      message: "Token has been revoked",
+    });
   }
 
   const result = verifyAccessTokenDetailed(token);
   if (!result.valid) {
     if (result.expired) {
-      return res
-        .status(401)
-        .json({ errCode: 2, code: "TOKEN_EXPIRED", errMessage: "Access token has expired" });
+      return res.status(401).json({
+        status: "UNAUTHORIZED",
+        statusCode: 401,
+        errCode: 2,
+        code: "TOKEN_EXPIRED",
+        errMessage: "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.",
+        message: "Access token has expired",
+      });
     }
-    return res
-      .status(401)
-      .json({ errCode: 2, code: "INVALID_TOKEN", errMessage: "Invalid token" });
+    return res.status(401).json({
+      status: "UNAUTHORIZED",
+      statusCode: 401,
+      errCode: 2,
+      code: "INVALID_TOKEN",
+      errMessage: "Mã xác thực không hợp lệ.",
+      message: "Invalid token",
+    });
   }
 
   const userId = result.decoded?.id;
@@ -51,17 +71,23 @@ const authenticateToken = async (req, res, next) => {
 
     if (userStatus && !userStatus.isActive) {
       return res.status(403).json({
+        status: "FORBIDDEN",
+        statusCode: 403,
         errCode: 3,
         code: "ACCOUNT_LOCKED",
         errMessage: "Tài khoản của bạn đã bị khóa hoặc tạm ngưng hoạt động. Vui lòng liên hệ quản trị viên.",
+        message: "Account locked",
       });
     }
 
     if (isTokenVersionStale(result.decoded, userStatus)) {
       return res.status(401).json({
+        status: "UNAUTHORIZED",
+        statusCode: 401,
         errCode: 2,
         code: "TOKEN_REVOKED",
         errMessage: "Phiên đăng nhập đã hết hiệu lực. Vui lòng đăng nhập lại.",
+        message: "Token has been revoked",
       });
     }
 
@@ -107,9 +133,12 @@ const authorizeRole = (roles) => {
   return (req, res, next) => {
     if (!req.user) {
       return res.status(401).json({
+        status: "UNAUTHORIZED",
+        statusCode: 401,
         errCode: 1,
         code: "UNAUTHORIZED",
-        errMessage: "Unauthorized",
+        errMessage: "Phiên đăng nhập đã hết hạn hoặc chưa được xác thực.",
+        message: "Unauthorized",
       });
     }
     const userRole = req.user.role;
@@ -119,9 +148,12 @@ const authorizeRole = (roles) => {
 
     if (!roles || !hasRole) {
       return res.status(403).json({
+        status: "FORBIDDEN",
+        statusCode: 403,
         errCode: 3,
         code: "FORBIDDEN",
-        errMessage: "You are not allowed to access this resource",
+        errMessage: "Bạn không có quyền truy cập tài nguyên này.",
+        message: "You are not allowed to access this resource",
       });
     }
     next();

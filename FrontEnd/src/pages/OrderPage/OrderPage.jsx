@@ -15,12 +15,11 @@ import {
 } from "react-icons/fi";
 import { useNavigate, Link } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { toast } from "react-toastify";
 import { motion as Motion } from "framer-motion";
 
-import { ConfirmModal } from "../../components/UI";
+import { Button, ConfirmModal, EmptyState, PageShell, Tabs } from "../../components/UI";
 import { getOrdersByUserId, updateOrderStatus } from "../../api/orderApi";
-import { showErrorToast, showSuccessToast } from "../../utils/toastHelper";
+import { showErrorToast, showSuccessToast, showWarningToast } from "../../utils/toastHelper";
 import AppPagination from "../../components/Pagination/Pagination";
 import { statusMap, paymentStatusMap } from "../../utils/StatusMap";
 import { getProductImage, handleImageError } from "../../utils/imageHelper";
@@ -134,7 +133,7 @@ const OrderPage = () => {
   const handleCancelOrder = async () => {
     if (!orderToCancel) return;
     if (!cancelReason.trim()) {
-      return toast.warning("Vui lòng nhập lý do hủy đơn");
+      return showWarningToast("Vui lòng nhập lý do hủy đơn");
     }
     setCancelling(true);
     try {
@@ -165,9 +164,9 @@ const OrderPage = () => {
   const handleReturnOrder = async () => {
     if (!orderToReturn) return;
     if (!returnReason.trim())
-      return toast.warning("Vui lòng nhập lý do trả hàng");
+      return showWarningToast("Vui lòng nhập lý do trả hàng");
     if (!selectedReturnItems.length)
-      return toast.warning("Vui lòng chọn sản phẩm");
+      return showWarningToast("Vui lòng chọn sản phẩm");
 
     setReturning(true);
     try {
@@ -197,63 +196,45 @@ const OrderPage = () => {
   const formatCurrency = (v) => (Number(v) || 0).toLocaleString("vi-VN") + " ₫";
 
   return (
-    <div className="min-h-screen bg-slate-50/50 dark:bg-dark-bg py-8 transition-colors duration-300">
-      <div className="max-w-5xl mx-auto px-4">
-        {/* Header Section */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
-              Đơn hàng của tôi
-            </h1>
-            <p className="text-slate-500 dark:text-dark-text-secondary text-sm mt-1">
-              Theo dõi và quản lý lịch sử mua hàng của bạn.
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            <Link
-              to="/order-history"
-              className="flex items-center justify-center gap-2 px-4 py-2 bg-primary/5 dark:bg-brand/10 border border-primary/10 dark:border-brand/20 rounded-xl text-xs font-bold text-primary dark:text-brand hover:bg-primary/10 transition-all shadow-sm"
-            >
-              <FiCheckCircle size={14} /> Lịch sử đơn hàng
-            </Link>
-            <button
-              onClick={() => fetchOrders(page, activeTab)}
-              disabled={loading}
-              className="flex items-center justify-center gap-2 min-h-[38px] px-4 py-2 bg-white dark:bg-dark-surface border border-slate-200 dark:border-dark-border rounded-xl text-xs font-semibold text-slate-600 dark:text-dark-text-secondary hover:text-primary dark:hover:text-brand hover:border-primary/30 dark:hover:border-brand/30 transition-all shadow-sm group active:scale-95 cursor-pointer"
-            >
-              {loading ? (
-                <UnifiedSpinner size="xs" variant="primary" />
-              ) : (
-                <FiRefreshCw className="group-hover:rotate-180 transition-transform duration-500" />
-              )}
-              <span>Làm mới</span>
-            </button>
-          </div>
+    <PageShell
+      eyebrow="MY ORDERS // TRACKING"
+      title="Đơn hàng của tôi"
+      subtitle="Theo dõi và quản lý lịch sử mua hàng của bạn."
+      backTo="/"
+      backLabel="Quay lại trang chủ"
+      maxWidthClass="max-w-5xl mx-auto px-4"
+      actions={
+        <div className="flex items-center gap-3">
+          <Link
+            to="/order-history"
+            className="flex items-center justify-center gap-2 px-4 py-2 bg-primary/5 dark:bg-brand/10 border border-primary/10 dark:border-brand/20 rounded-xl text-xs font-bold text-primary dark:text-brand hover:bg-primary/10 transition-all shadow-sm"
+          >
+            <FiCheckCircle size={14} /> Lịch sử đơn hàng
+          </Link>
+          <button
+            type="button"
+            onClick={() => fetchOrders(page, activeTab)}
+            disabled={loading}
+            className="flex items-center justify-center gap-2 min-h-[38px] px-4 py-2 bg-white dark:bg-dark-surface border border-slate-200 dark:border-dark-border rounded-xl text-xs font-semibold text-slate-600 dark:text-dark-text-secondary hover:text-primary dark:hover:text-brand hover:border-primary/30 dark:hover:border-brand/30 transition-all shadow-sm group active:scale-95 cursor-pointer"
+          >
+            {loading ? (
+              <UnifiedSpinner size="xs" variant="primary" />
+            ) : (
+              <FiRefreshCw className="group-hover:rotate-180 transition-transform duration-500" />
+            )}
+            <span>Làm mới</span>
+          </button>
         </div>
+      }
+    >
 
         {/* Compact Tabs */}
-        <div className="bg-white dark:bg-dark-surface p-1.5 rounded-2xl border border-slate-200/60 dark:border-dark-border shadow-sm mb-6 overflow-x-auto scrollbar-hide transition-colors">
-          <div className="flex items-center gap-1 min-w-max">
-            {STATUS_TABS.map((tab) => {
-              const isActive = activeTab === tab.key;
-              const Icon = tab.icon;
-              return (
-                <button
-                  key={tab.key}
-                  onClick={() => handleTabSelect(tab.key)}
-                  className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition-all duration-300 cursor-pointer ${
-                    isActive
-                      ? "bg-primary dark:bg-brand text-white shadow-md shadow-primary/20 dark:shadow-none"
-                      : "text-slate-500 dark:text-dark-text-secondary hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-dark-bg"
-                  }`}
-                >
-                  {Icon && (typeof Icon === "function" ? <Icon size={14} /> : Icon)}
-                  {tab.label}
-                </button>
-              );
-            })}
-          </div>
-        </div>
+        <Tabs
+          items={STATUS_TABS}
+          activeKey={activeTab}
+          onChange={handleTabSelect}
+          className="mb-6"
+        />
 
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20 bg-white dark:bg-dark-surface rounded-3xl border border-slate-100 dark:border-dark-border gap-4 shadow-sm">
@@ -263,17 +244,13 @@ const OrderPage = () => {
             </p>
           </div>
         ) : orders.length === 0 ? (
-          <div className="bg-white dark:bg-dark-surface rounded-2xl border border-slate-200/60 dark:border-dark-border p-16 text-center shadow-sm">
-            <div className="size-16 bg-slate-50 dark:bg-dark-bg rounded-2xl flex items-center justify-center mx-auto mb-4 text-slate-300 dark:text-dark-border">
-              <FiBox className="text-3xl" />
-            </div>
-            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-1">
-              Không có đơn hàng
-            </h3>
-            <p className="text-slate-400 dark:text-dark-text-secondary text-sm">
-              Danh sách hiện đang trống ở trạng thái này.
-            </p>
-          </div>
+          <EmptyState
+            icon={FiBox}
+            title="Không có đơn hàng"
+            description="Danh sách hiện đang trống ở trạng thái này."
+            actionLabel="Tiếp tục mua sắm"
+            onAction={() => navigate("/products")}
+          />
         ) : (
           <div className="space-y-4">
             {orders.map((o) => (
@@ -510,7 +487,6 @@ const OrderPage = () => {
             />
           </div>
         )}
-      </div>
 
       <ReviewModal
         isOpen={isReviewModalOpen}
@@ -683,7 +659,7 @@ const OrderPage = () => {
           </div>
         </div>
       </ConfirmModal>
-    </div>
+    </PageShell>
   );
 };
 

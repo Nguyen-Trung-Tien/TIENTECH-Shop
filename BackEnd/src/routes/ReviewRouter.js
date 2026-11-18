@@ -8,13 +8,15 @@ const {
 } = require("../middleware/authMiddleware");
 
 const { validate } = require("../middleware/zodMiddleware");
-const { reviewSchema } = require("../utils/zodSchemas");
+const { reviewSchema, updateReviewSchema } = require("../utils/zodSchemas");
+const { reviewMutationLimiter } = require("../middleware/rateLimiter");
 
 router.get("/product/:productId", optionalAuthenticateToken, ReviewController.handleGetReviewsByProduct);
 router.post(
   "/create",
   authenticateToken,
   authorizeRole(["admin", "customer"]),
+  reviewMutationLimiter,
   validate(reviewSchema),
   ReviewController.handleCreateReview
 );
@@ -22,6 +24,8 @@ router.put(
   "/update/:id",
   authenticateToken,
   authorizeRole(["admin", "customer"]),
+  reviewMutationLimiter,
+  validate(updateReviewSchema),
   ReviewController.handleUpdateReview
 );
 
@@ -29,6 +33,7 @@ router.delete(
   "/delete/:id",
   authenticateToken,
   authorizeRole(["admin", "customer"]),
+  reviewMutationLimiter,
   ReviewController.handleDeleteReview
 );
 router.get(

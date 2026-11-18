@@ -41,6 +41,7 @@ import { ConfirmModal } from "../../../components/UI/Modal";
 import AdminOrderDetailModal from "./AdminOrderDetailModal";
 import { TABS, STATUS_FLOW, ALLOWED_TRANSITIONS } from "./orderConstants";
 import OrderItemsPreview from "./components/OrderItemsPreview";
+import AdminPageShell from "../../components/AdminPageShell";
 
 const OrderManage = () => {
   const navigate = useNavigate();
@@ -361,24 +362,20 @@ const OrderManage = () => {
   }, [orders]);
 
   return (
-    <div className="space-y-6 text-slate-800 dark:text-dark-text-primary">
-      {/* Top Header Section */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2.5">
-            <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center text-lg">
-              <FiShoppingCart />
-            </div>
-            Quản lý Đơn hàng
-          </h1>
-          <p className="text-slate-500 dark:text-dark-text-secondary font-medium text-xs mt-1">
-            Theo dõi, xử lý và cập nhật trạng thái đơn hàng của hệ thống
-          </p>
-        </div>
-
-        {/* Search Bar & Action Buttons */}
-        <div className="flex items-center gap-2.5 w-full lg:w-auto">
-          <div className="relative flex-1 lg:w-72">
+    <AdminPageShell
+      eyebrow="ORDER FULFILLMENT // LOGISTICS"
+      title={
+        <span className="flex items-center gap-2.5">
+          <span className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+            <FiShoppingCart />
+          </span>
+          <span>Quản lý Đơn hàng</span>
+        </span>
+      }
+      subtitle="Theo dõi, xử lý và cập nhật trạng thái đơn hàng của hệ thống"
+      actions={
+        <div className="flex items-center gap-2.5 w-full sm:w-auto">
+          <div className="relative flex-1 sm:w-64 lg:w-72">
             <FiSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm" />
             <input
               type="text"
@@ -389,16 +386,18 @@ const OrderManage = () => {
             />
           </div>
           <button
+            type="button"
             onClick={() => fetchOrders(1, searchTerm, activeTab)}
             title="Làm mới dữ liệu"
+            aria-label="Làm mới dữ liệu đơn hàng"
             className="size-10 bg-white dark:bg-dark-surface border border-slate-200 dark:border-dark-border text-slate-600 dark:text-dark-text-secondary rounded-xl flex items-center justify-center hover:text-primary hover:border-primary/50 transition-all cursor-pointer shrink-0 shadow-2xs"
           >
-            <FiRefreshCw
-              className={`text-sm ${loading ? "animate-spin" : ""}`}
-            />
+            <FiRefreshCw className={`text-sm ${loading ? "animate-spin" : ""}`} />
           </button>
         </div>
-      </div>
+      }
+      className="text-slate-800 dark:text-dark-text-primary"
+    >
 
       {/* Overview Stat Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3">
@@ -1416,7 +1415,7 @@ const OrderManage = () => {
         onClose={() => setSelectedDetailOrder(null)}
         onOrderUpdated={() => fetchOrders(page, searchTerm, activeTab)}
       />
-    </div>
+    </AdminPageShell>
   );
 };
 

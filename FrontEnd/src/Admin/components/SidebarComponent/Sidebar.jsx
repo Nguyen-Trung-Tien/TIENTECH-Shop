@@ -6,7 +6,7 @@ import { logoutUserApi } from "../../../api/userApi";
 import { getAdminCounters } from "../../../api/adminApi";
 import { removeUser } from "../../../redux/userSlice";
 import { clearCart } from "../../../redux/cartSlice";
-import { toast } from "react-toastify";
+import { showSuccessToast } from "../../../utils/toastHelper";
 import { motion as Motion, AnimatePresence } from "framer-motion";
 
 import Logo from "../../../components/UI/Logo";
@@ -138,7 +138,7 @@ const Sidebar = ({ collapsed, mobileOpen, onCloseMobile }) => {
       dispatch(removeUser());
       dispatch(clearCart());
       navigate("/admin/login", { replace: true });
-      toast.success("Đăng xuất thành công!");
+      showSuccessToast("Đăng xuất thành công!");
       setLoggingOut(false);
     }
   };

@@ -1,8 +1,19 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { toast } from "react-toastify";
 import {
   sanitizeSuccessMessage,
   extractErrorMessage,
+  handleApiResponseToast,
 } from "../utils/toastHelper";
+
+vi.mock("react-toastify", () => ({
+  toast: {
+    success: vi.fn(),
+    error: vi.fn(),
+    warning: vi.fn(),
+    info: vi.fn(),
+  },
+}));
 
 describe("FrontEnd Utils - toastHelper.jsx Unit Tests", () => {
   describe("sanitizeSuccessMessage", () => {
@@ -84,14 +95,51 @@ describe("FrontEnd Utils - toastHelper.jsx Unit Tests", () => {
     });
 
     it("should map HTTP status codes when no message is present", () => {
+      expect(extractErrorMessage({ response: { status: 400 } })).toBe(
+        "Dữ liệu yêu cầu không hợp lệ hoặc thiếu thông tin.",
+      );
       expect(extractErrorMessage({ response: { status: 401 } })).toBe(
         "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.",
+      );
+      expect(extractErrorMessage({ response: { status: 402 } })).toBe(
+        "Giao dịch thanh toán chưa hoàn tất hoặc yêu cầu thanh toán trước khi tiếp tục.",
       );
       expect(extractErrorMessage({ response: { status: 403 } })).toBe(
         "Bạn không có quyền thực hiện thao tác này.",
       );
       expect(extractErrorMessage({ response: { status: 404 } })).toBe(
         "Không tìm thấy dữ liệu hoặc tài nguyên yêu cầu.",
+      );
+    });
+  });
+
+  describe("handleApiResponseToast", () => {
+    beforeEach(() => {
+      vi.clearAllMocks();
+    });
+
+    it("returns true and triggers success toast when errCode === 0", () => {
+      const ok = handleApiResponseToast(
+        { errCode: 0, message: "OK" },
+        "Lưu thành công!",
+      );
+      expect(ok).toBe(true);
+      expect(toast.success).toHaveBeenCalledWith(
+        "Lưu thành công!",
+        expect.objectContaining({ toastId: expect.any(String) }),
+      );
+    });
+
+    it("returns false and triggers error toast when errCode !== 0", () => {
+      const ok = handleApiResponseToast(
+        { errCode: 1, errMessage: "Product not found" },
+        "Lưu thành công!",
+        "Lỗi mặc định",
+      );
+      expect(ok).toBe(false);
+      expect(toast.error).toHaveBeenCalledWith(
+        "Không tìm thấy thông tin sản phẩm yêu cầu.",
+        expect.objectContaining({ toastId: expect.any(String) }),
       );
     });
   });

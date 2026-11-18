@@ -33,6 +33,7 @@ import {
 } from "../../../utils/toastHelper";
 import AppPagination from "../../../components/Pagination/Pagination";
 import { motion as Motion, AnimatePresence } from "framer-motion";
+import AdminPageShell from "../../components/AdminPageShell";
 
 const STATUS_LABELS = {
   pending: {
@@ -246,29 +247,29 @@ const PaymentPage = () => {
   };
 
   return (
-    <div className="space-y-6 print:p-0">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 print:hidden">
-        <div>
-          <h1 className="text-3xl font-black text-slate-900 dark:text-dark-text-primary tracking-tight flex items-center gap-3">
-            <div className="size-12 bg-indigo-600/10 dark:bg-indigo-500/10 rounded-2xl flex items-center justify-center text-indigo-600 dark:text-indigo-400 shadow-sm">
-              <FiDollarSign />
-            </div>
-            Quản lý thanh toán
-          </h1>
-          <p className="text-slate-500 dark:text-dark-text-secondary font-bold text-xs uppercase tracking-widest mt-2 ml-15">
-            Theo dõi dòng tiền & Trạng thái giao dịch
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          <button
-            onClick={handleExportCSV}
-            className="flex items-center gap-2 h-12 px-6 bg-white dark:bg-dark-surface border border-slate-200 dark:border-dark-border text-slate-600 dark:text-dark-text-secondary rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-slate-50 dark:hover:bg-dark-bg transition-all shadow-sm"
-          >
-            <FiDownload size={16} />
-            Xuất CSV
-          </button>
-        </div>
-      </div>
+    <AdminPageShell
+      eyebrow="FINANCIAL TRANSACTIONS // LEDGER"
+      title={
+        <span className="flex items-center gap-2.5">
+          <span className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+            <FiDollarSign />
+          </span>
+          <span>Quản lý thanh toán</span>
+        </span>
+      }
+      subtitle="Theo dõi dòng tiền & Trạng thái giao dịch"
+      actions={
+        <button
+          type="button"
+          onClick={handleExportCSV}
+          className="flex items-center gap-2 h-10 px-5 bg-white dark:bg-dark-surface border border-slate-200 dark:border-dark-border text-slate-600 dark:text-dark-text-secondary rounded-xl text-xs font-black uppercase tracking-wider hover:bg-slate-50 dark:hover:bg-dark-bg transition-all shadow-xs print:hidden cursor-pointer"
+        >
+          <FiDownload size={15} />
+          <span>Xuất CSV</span>
+        </button>
+      }
+      className="print:p-0"
+    >
 
       {/* Summary Cards */}
       {summary && (
@@ -799,7 +800,7 @@ const PaymentPage = () => {
           </div>
         )}
       </AnimatePresence>
-    </div>
+    </AdminPageShell>
   );
 };
 

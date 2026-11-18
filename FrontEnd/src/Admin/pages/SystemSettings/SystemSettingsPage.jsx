@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { motion as Motion, AnimatePresence } from "framer-motion";
 import { FiShield, FiMail, FiAlertTriangle, FiRefreshCw, FiCpu, FiSun, FiMoon, FiDatabase, FiTrash2, FiCreditCard, FiSave, FiSearch, FiSliders, FiZap, FiGlobe, FiActivity, FiCheck, FiRotateCcw } from "react-icons/fi";
-import { toast } from "react-toastify";
 import {
   getAllSettingsAdminApi,
   updateSettingAdminApi,
@@ -13,7 +12,10 @@ import {
 import UnifiedSpinner from "../../../components/Loading/UnifiedSpinner";
 import { useTheme } from "../../../context/useTheme";
 import { useSystemSettings } from "../../../context/useSystemSettings";
-import { showErrorToast, showSuccessToast } from "../../../utils/toastHelper";
+import { showErrorToast, showSuccessToast, showInfoToast } from "../../../utils/toastHelper";
+import AdminPageShell from "../../components/AdminPageShell";
+import { ConfirmModal } from "../../../components/UI";
+import { useUnsavedChangesGuard } from "../../../hooks/useUnsavedChangesGuard";
 
 const CATEGORY_TABS = [
   { id: "all", label: "Tất Cả Cấu Hình", icon: FiSliders },
@@ -34,11 +36,18 @@ const SystemSettingsPage = () => {
   const [activeTab, setActiveTab] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [showFlushModal, setShowFlushModal] = useState(false);
+  const [pendingMaintenanceItem, setPendingMaintenanceItem] = useState(null);
 
   const [rawSettings, setRawSettings] = useState([]);
   const [formValues, setFormValues] = useState({});
   const [initialValues, setInitialValues] = useState({});
   const [healthData, setHealthData] = useState(null);
+
+  const isDirty = useMemo(
+    () => Object.keys(formValues).some((k) => formValues[k] !== initialValues[k]),
+    [formValues, initialValues]
+  );
+  useUnsavedChangesGuard(isDirty);
 
   const { theme, setTheme, isDark } = useTheme();
   const { refetchSettings } = useSystemSettings();
@@ -69,7 +78,7 @@ const SystemSettingsPage = () => {
       }
     } catch (error) {
       console.error("Failed to load system settings:", error);
-      toast.error("Không thể tải cấu hình hệ thống");
+      showErrorToast(error, "Không thể tải cấu hình hệ thống");
     } finally {
       setLoading(false);
     }
@@ -81,7 +90,7 @@ const SystemSettingsPage = () => {
       const res = await getSystemHealthAdminApi();
       if (res.errCode === 0) {
         setHealthData(res.data);
-        toast.success("Đã làm mới thông số hệ thống!");
+        showSuccessToast("Đã làm mới thông số hệ thống!");
       }
     } catch (err) {
       console.error("Health refresh error:", err);
@@ -117,7 +126,7 @@ const SystemSettingsPage = () => {
     );
   };
 
-  const handleToggleSetting = async (item) => {
+  const executeToggleSetting = async (item) => {
     const currentState = Boolean(formValues[item.key]);
     const nextState = !currentState;
     setSavingKey(item.key);
@@ -165,6 +174,16 @@ const SystemSettingsPage = () => {
     }
   };
 
+  const handleToggleSetting = async (item) => {
+    const currentState = Boolean(formValues[item.key]);
+    // Require explicit confirmation before enabling MAINTENANCE_MODE
+    if (item.key === "MAINTENANCE_MODE" && !currentState) {
+      setPendingMaintenanceItem(item);
+      return;
+    }
+    await executeToggleSetting(item);
+  };
+
   const handleSaveSingle = async (item) => {
     const val = formValues[item.key];
     setSavingKey(item.key);
@@ -199,7 +218,7 @@ const SystemSettingsPage = () => {
 
   const handleSaveAll = async () => {
     if (!hasChanges) {
-      toast.info("Không có thay đổi nào cần lưu.");
+      showInfoToast("Không có thay đổi nào cần lưu.");
       return;
     }
     try {
@@ -268,21 +287,18 @@ const SystemSettingsPage = () => {
   }, [rawSettings, activeTab, searchQuery]);
 
   return (
-    <div className="space-y-6 w-full">
-      {/* Top Header Section (Standard Admin Layout) */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2.5">
-            <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center text-lg shrink-0">
-              <FiSliders />
-            </div>
-            Cài Đặt Hệ Thống & Vận Hành
-          </h1>
-          <p className="text-slate-500 dark:text-dark-text-secondary font-medium text-xs mt-1">
-            Quản lý các thông số vận hành, bảo mật, cổng thanh toán, SEO và bộ nhớ đệm Redis
-          </p>
-        </div>
-
+    <AdminPageShell
+      eyebrow="SYSTEM CONFIGURATION // OPERATIONS"
+      title={
+        <span className="flex items-center gap-2.5">
+          <span className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+            <FiSliders />
+          </span>
+          <span>Cài Đặt Hệ Thống & Vận Hành</span>
+        </span>
+      }
+      subtitle="Quản lý các thông số vận hành, bảo mật, cổng thanh toán, SEO và bộ nhớ đệm Redis"
+      actions={
         <div className="flex items-center gap-2.5">
           <button
             type="button"
@@ -313,7 +329,8 @@ const SystemSettingsPage = () => {
             <span>{saving ? "Đang lưu..." : hasChanges ? "Lưu Thay Đổi *" : "Đã Lưu"}</span>
           </button>
         </div>
-      </div>
+      }
+    >
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
         <div className="bg-white dark:bg-dark-surface p-4 rounded-2xl border border-slate-200/80 dark:border-dark-border shadow-2xs flex items-center gap-3.5">
@@ -657,34 +674,33 @@ const SystemSettingsPage = () => {
         </div>
       )}
 
-      <AnimatePresence>
-        {showFlushModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm">
-            <Motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white dark:bg-dark-surface border border-slate-200 dark:border-dark-border rounded-2xl p-6 md:p-8 max-w-md w-full shadow-2xl space-y-5"
-            >
-              <div className="size-14 rounded-2xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 flex items-center justify-center mx-auto">
-                <FiAlertTriangle className="size-7" />
-              </div>
-              <div className="text-center space-y-2">
-                <h3 className="text-lg font-black text-slate-900 dark:text-white">Xác Nhận Xóa Bộ Nhớ Cache?</h3>
-                <p className="text-xs font-medium text-slate-500 dark:text-dark-text-secondary leading-relaxed">Thao tác này sẽ xóa sạch dữ liệu đệm trong Redis. Các truy vấn tiếp theo từ người dùng sẽ trực tiếp đọc từ Database MySQL.</p>
-              </div>
-              <div className="flex items-center gap-3 pt-2">
-                <button type="button" onClick={() => setShowFlushModal(false)} disabled={flushingCache} className="flex-1 h-10 rounded-xl bg-slate-100 dark:bg-dark-bg hover:bg-slate-200 dark:hover:bg-dark-border text-slate-700 dark:text-slate-200 text-xs font-black transition-all cursor-pointer">Hủy Bỏ</button>
-                <button type="button" onClick={handleFlushCache} disabled={flushingCache} className="flex-1 h-10 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-black transition-all shadow-md shadow-amber-500/20 cursor-pointer flex items-center justify-center gap-2">
-                  {flushingCache ? <UnifiedSpinner size="xs" variant="white" /> : <FiTrash2 className="size-3.5" />}
-                  <span>{flushingCache ? "Đang xóa..." : "Xác Nhận Xóa"}</span>
-                </button>
-              </div>
-            </Motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-    </div>
+      <ConfirmModal
+        isOpen={showFlushModal}
+        onClose={() => !flushingCache && setShowFlushModal(false)}
+        onConfirm={handleFlushCache}
+        title="Xác Nhận Xóa Bộ Nhớ Cache?"
+        message="Thao tác này sẽ xóa sạch dữ liệu đệm trong Redis. Các truy vấn tiếp theo từ người dùng sẽ trực tiếp đọc từ Database MySQL."
+        confirmText="Xác Nhận Xóa"
+        cancelText="Hủy Bỏ"
+        variant="warning"
+        loading={flushingCache}
+      />
+
+      <ConfirmModal
+        isOpen={Boolean(pendingMaintenanceItem)}
+        onClose={() => setPendingMaintenanceItem(null)}
+        onConfirm={async () => {
+          const target = pendingMaintenanceItem;
+          setPendingMaintenanceItem(null);
+          if (target) await executeToggleSetting(target);
+        }}
+        title="Kích Hoạt Chế Độ Bảo Trì?"
+        message="Khi bật chế độ bảo trì, toàn bộ khách hàng sẽ tạm thời không thể truy cập hoặc đặt hàng trên website cho đến khi bạn tắt lại."
+        confirmText="Kích Hoạt Bảo Trì"
+        cancelText="Hủy Bỏ"
+        variant="danger"
+      />
+    </AdminPageShell>
   );
 };
 

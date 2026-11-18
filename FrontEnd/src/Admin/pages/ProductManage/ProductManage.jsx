@@ -11,7 +11,6 @@ import {
   FiTag,
   FiTrash2,
 } from "react-icons/fi";
-import { LazyMotion, domAnimation } from "framer-motion";
 import { useParams, useNavigate } from "react-router-dom";
 import { showErrorToast, showSuccessToast } from "../../../utils/toastHelper";
 
@@ -32,6 +31,7 @@ import { useProductForm } from "./hooks/useProductForm";
 import ProductFilterBar from "./components/ProductFilterBar";
 import ProductTable from "./components/ProductTable";
 import ProductFormModal from "./components/ProductFormModal";
+import AdminPageShell from "../../components/AdminPageShell";
 
 const ProductManage = () => {
   const { id: editId } = useParams();
@@ -311,45 +311,41 @@ const ProductManage = () => {
   };
 
   return (
-    <LazyMotion features={domAnimation}>
-      <div className="space-y-4 sm:space-y-6 max-w-7xl mx-auto p-2 sm:p-4 md:p-6 pb-20">
-        {/* Top Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6">
-          <div>
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-slate-900 dark:text-dark-text-primary tracking-tight flex items-center gap-2.5 sm:gap-3">
-              <div className="size-10 sm:size-12 rounded-2xl bg-primary flex items-center justify-center text-white shadow-lg shadow-primary/20 dark:shadow-none shrink-0">
-                <FiBox className="text-xl sm:text-2xl" />
-              </div>
-              <span className="truncate">Quản lý Sản phẩm Kho hàng</span>
-            </h1>
-            <p className="text-xs sm:text-sm text-slate-500 dark:text-dark-text-secondary font-medium mt-1">
-              Hệ thống tạo & phân loại sản phẩm siêu tốc tích hợp Trợ lý AI.
-            </p>
-          </div>
+    <AdminPageShell
+      eyebrow="INVENTORY CATALOG // AI-ASSISTED"
+      title={
+        <span className="flex items-center gap-2.5">
+          <span className="size-9 rounded-lg bg-primary text-white flex items-center justify-center shadow-xs shrink-0">
+            <FiBox />
+          </span>
+          <span>Quản lý Sản phẩm Kho hàng</span>
+        </span>
+      }
+      subtitle="Hệ thống tạo & phân loại sản phẩm siêu tốc tích hợp Trợ lý AI."
+      actions={
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full sm:w-auto">
+          <button
+            type="button"
+            onClick={handleSyncAI}
+            disabled={isSyncingAI}
+            className="flex items-center justify-center gap-2 px-4 h-11 rounded-xl bg-white dark:bg-dark-surface hover:bg-slate-50 dark:hover:bg-dark-bg border border-slate-200 dark:border-dark-border text-slate-600 dark:text-dark-text-secondary hover:text-primary font-black uppercase tracking-wider text-[11px] transition-all disabled:opacity-50 cursor-pointer shadow-xs"
+          >
+            <FiCpu className={isSyncingAI ? "animate-spin text-primary" : ""} />
+            <span>{isSyncingAI ? "Đang đồng bộ..." : "Đồng bộ AI Vector"}</span>
+          </button>
 
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 w-full sm:w-auto">
-            <button
-              type="button"
-              onClick={handleSyncAI}
-              disabled={isSyncingAI}
-              className="flex items-center justify-center gap-2 px-5 h-12 rounded-2xl bg-white dark:bg-dark-surface hover:bg-slate-50 dark:hover:bg-dark-bg border border-slate-200 dark:border-dark-border text-slate-600 dark:text-dark-text-secondary hover:text-primary font-black uppercase tracking-wider text-[11px] transition-all disabled:opacity-50 cursor-pointer shadow-sm"
-            >
-              <FiCpu
-                className={isSyncingAI ? "animate-spin text-primary" : ""}
-              />
-              {isSyncingAI ? "Đang đồng bộ..." : "Đồng bộ AI Vector"}
-            </button>
-
-            <button
-              type="button"
-              onClick={() => handleShowModal()}
-              className="flex items-center justify-center gap-2 px-6 h-12 rounded-2xl bg-primary hover:bg-primary-hover text-white font-black uppercase tracking-wider text-xs shadow-lg shadow-primary/20 dark:shadow-none active:scale-95 transition-all cursor-pointer group"
-            >
-              <FiPlus className="text-xl group-hover:rotate-90 transition-transform duration-300" />
-              <span>Đăng sản phẩm mới</span>
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={() => handleShowModal()}
+            className="flex items-center justify-center gap-2 px-5 h-11 rounded-xl bg-primary hover:bg-primary-hover text-white font-black uppercase tracking-wider text-xs shadow-md shadow-primary/20 active:scale-95 transition-all cursor-pointer group"
+          >
+            <FiPlus className="text-base group-hover:rotate-90 transition-transform duration-300" />
+            <span>Đăng sản phẩm mới</span>
+          </button>
         </div>
+      }
+      className="pb-16"
+    >
 
         {/* Filter Toolbar */}
         <ProductFilterBar
@@ -417,8 +413,7 @@ const ProductManage = () => {
           loading={isDeleting}
           iconClassName="bg-rose-50 text-rose-500"
         />
-      </div>
-    </LazyMotion>
+      </AdminPageShell>
   );
 };
 

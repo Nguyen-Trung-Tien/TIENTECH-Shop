@@ -3,12 +3,11 @@ import { Link } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { updateUser } from "../../redux/userSlice";
 import { updateUserApi } from "../../api/userApi";
-import { toast } from "react-toastify";
-import { showErrorToast } from "../../utils/toastHelper";
+import { showErrorToast, showSuccessToast } from "../../utils/toastHelper";
 import ChangePasswordModal from "./ChangePasswordModal";
 import { FiArrowLeft, FiUser, FiMail, FiPhone, FiMapPin, FiCamera, FiEdit3, FiSave, FiX, FiLock, FiShield, FiAward, FiCalendar, FiCheckCircle, FiStar, FiCheck } from "react-icons/fi";
 import { motion as Motion, AnimatePresence } from "framer-motion";
-import { Button, Modal, Loader } from "../../components/UI";
+import { Button, Modal, Loader, PageShell } from "../../components/UI";
 import Badge from "../../components/UI/Badge";
 import AddressManager from "./AddressManager";
 
@@ -63,7 +62,7 @@ const Profile = () => {
       if (res.errCode === 0) {
         setReceiveEmail(nextVal);
         dispatch(updateUser({ ...user, receiveEmail: nextVal }));
-        toast.success(
+        showSuccessToast(
           nextVal
             ? "Đã bật nhận thông báo & khuyến mãi qua Email!"
             : "Đã tắt nhận thông báo qua Email thành công!"
@@ -101,7 +100,7 @@ const Profile = () => {
       }
 
       if (res.errCode === 0) {
-        toast.success("Cập nhật thông tin thành công!");
+        showSuccessToast("Cập nhật thông tin thành công!");
         dispatch(updateUser(res.data));
         setIsEditing(false);
       } else {
@@ -124,7 +123,7 @@ const Profile = () => {
   };
 
   const handleAvatarUpload = async () => {
-    if (!selectedFile) return toast.error("Chưa chọn ảnh!");
+    if (!selectedFile) return showErrorToast("Chưa chọn ảnh!");
     setAvatarLoading(true);
 
     const reader = new FileReader();
@@ -133,7 +132,7 @@ const Profile = () => {
       try {
         const res = await updateUserApi({ id: user.id, avatar: base64 });
         if (res.errCode === 0) {
-          toast.success("Cập nhật ảnh đại diện thành công!");
+          showSuccessToast("Cập nhật ảnh đại diện thành công!");
           setFormData((prev) => ({ ...prev, avatar: res.data.avatar }));
           setPreview(res.data.avatar);
           dispatch(updateUser({ ...user, avatar: res.data.avatar }));
@@ -197,15 +196,14 @@ const Profile = () => {
   const rankConfig = getRankConfig(user?.rank);
 
   return (
-    <div className="min-h-screen bg-surface-50 dark:bg-dark-bg py-6 sm:py-10 transition-colors duration-300">
-      <div className="max-w-6xl mx-auto px-3 sm:px-6 space-y-6 sm:space-y-8">
-        {/* Back Link */}
-        <Link
-          to="/"
-          className="inline-flex items-center gap-2 text-slate-500 dark:text-dark-text-secondary hover:text-primary transition-colors font-bold text-xs sm:text-sm uppercase tracking-widest active:scale-95"
-        >
-          <FiArrowLeft size={16} /> Quay lại trang chủ
-        </Link>
+    <PageShell
+      eyebrow="ACCOUNT PROFILE // SETTINGS"
+      title="Hồ sơ cá nhân"
+      subtitle="Quản lý thông tin tài khoản, địa chỉ giao hàng và bảo mật."
+      backTo="/"
+      backLabel="Quay lại trang chủ"
+      maxWidthClass="max-w-6xl mx-auto px-3 sm:px-6 space-y-6 sm:space-y-8"
+    >
 
         {/* Hero Cover Header Card */}
         <div className="bg-white dark:bg-dark-surface rounded-2xl sm:rounded-[32px] border border-slate-200/80 dark:border-dark-border shadow-xl overflow-hidden relative">
@@ -647,7 +645,6 @@ const Profile = () => {
             </Motion.div>
           )}
         </AnimatePresence>
-      </div>
 
       {/* Avatar Upload Modal with Backdrop Blur Loading Spinner */}
       <Modal
@@ -707,7 +704,7 @@ const Profile = () => {
         onHide={() => setShowPasswordModal(false)}
         userId={user?.id}
       />
-    </div>
+    </PageShell>
   );
 };
 

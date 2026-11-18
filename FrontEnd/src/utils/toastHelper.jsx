@@ -69,6 +69,7 @@ const ERROR_TRANSLATIONS = {
   "CONFLICT": "Dữ liệu đã tồn tại trên hệ thống hoặc xảy ra xung đột.",
   "Request failed with status code 400": "Dữ liệu yêu cầu không hợp lệ hoặc thiếu thông tin.",
   "Request failed with status code 401": "Phiên đăng nhập đã hết hạn hoặc thông tin xác thực không đúng.",
+  "Request failed with status code 402": "Giao dịch thanh toán chưa hoàn tất hoặc yêu cầu thanh toán trước khi tiếp tục.",
   "Request failed with status code 403": "Bạn không có quyền thực hiện thao tác này.",
   "Request failed with status code 404": "Không tìm thấy dữ liệu hoặc tài nguyên yêu cầu.",
   "Request failed with status code 409": "Dữ liệu đã tồn tại trên hệ thống hoặc xảy ra xung đột.",
@@ -212,6 +213,7 @@ export const extractErrorMessage = (error, defaultFallback = "Đã có lỗi x�
   const status = error.response?.status || error.statusCode;
   if (status === 400) return "Dữ liệu yêu cầu không hợp lệ hoặc thiếu thông tin.";
   if (status === 401) return "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.";
+  if (status === 402) return "Giao dịch thanh toán chưa hoàn tất hoặc yêu cầu thanh toán trước khi tiếp tục.";
   if (status === 403) return "Bạn không có quyền thực hiện thao tác này.";
   if (status === 404) return "Không tìm thấy dữ liệu hoặc tài nguyên yêu cầu.";
   if (status === 409) return "Dữ liệu đã tồn tại trên hệ thống hoặc xảy ra xung đột.";
@@ -280,6 +282,26 @@ export const showInfoToast = (
   toast.info(message, { toastId, ...options });
 };
 
+/**
+ * Xử lý đồng nhất kết quả trả về từ API ServiceResult ({ errCode, errMessage, message })
+ * Trả về true nếu thành công (errCode === 0), ngược lại hiển thị lỗi và trả về false.
+ */
+export const handleApiResponseToast = (
+  res,
+  successFallback = "Thao tác thành công!",
+  errorFallback = "Đã có lỗi xảy ra. Vui lòng thử lại!",
+  options = {}
+) => {
+  if (res && res.errCode === 0) {
+    if (!options.silentSuccess) {
+      showSuccessToast(res.errMessage || res.message, successFallback, options);
+    }
+    return true;
+  }
+  showErrorToast(res, errorFallback, options);
+  return false;
+};
+
 export default {
   extractErrorMessage,
   sanitizeSuccessMessage,
@@ -287,4 +309,5 @@ export default {
   showSuccessToast,
   showWarningToast,
   showInfoToast,
+  handleApiResponseToast,
 };

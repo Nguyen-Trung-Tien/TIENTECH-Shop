@@ -16,7 +16,7 @@ import {
 } from "react-icons/fi";
 import { searchSuggestionsApi } from "../../api/productApi";
 import debounce from "../../utils/debounce";
-import { toast } from "react-toastify";
+import { showWarningToast, showErrorToast, showSuccessToast } from "../../utils/toastHelper";
 import UnifiedSpinner from "../Loading/UnifiedSpinner";
 
 const TRENDING_KEYWORDS = [
@@ -168,7 +168,7 @@ export default function OmniSearchModal({
       window.SpeechRecognition || window.webkitSpeechRecognition;
 
     if (!SpeechRecognition) {
-      toast.warning("Trình duyệt của bạn chưa hỗ trợ nhận diện giọng nói.");
+      showWarningToast("Trình duyệt của bạn chưa hỗ trợ nhận diện giọng nói.");
       return;
     }
 
@@ -187,14 +187,14 @@ export default function OmniSearchModal({
       recognition.onend = () => setIsListening(false);
       recognition.onerror = () => {
         setIsListening(false);
-        toast.error("Không thể nhận diện giọng nói. Vui lòng thử lại!");
+        showErrorToast("Không thể nhận diện giọng nói. Vui lòng thử lại!");
       };
 
       recognition.onresult = (event) => {
         const transcript = event.results[0][0].transcript;
         setQuery(transcript);
         fetchSuggestions(transcript);
-        toast.success(`Đã nhận diện: "${transcript}"`);
+        showSuccessToast(`Đã nhận diện: "${transcript}"`);
       };
 
       recognition.start();

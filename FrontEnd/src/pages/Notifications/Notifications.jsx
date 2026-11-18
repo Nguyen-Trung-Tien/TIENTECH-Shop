@@ -25,7 +25,6 @@ import { initUserSocket } from "../../utils/socket";
 import { useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { motion as Motion, AnimatePresence } from "framer-motion";
-import { toast } from "react-toastify";
 import { showErrorToast, showSuccessToast } from "../../utils/toastHelper";
 import UnifiedSpinner from "../../components/Loading/UnifiedSpinner";
 import { ConfirmModal, PageShell, Button } from "../../components/UI";
@@ -196,7 +195,7 @@ const Notifications = () => {
       if (String(id).startsWith("temp_")) return;
       const res = await deleteNotificationApi(id);
       if (res?.errCode === 0) {
-        toast.success("Đã xóa thông báo!");
+        showSuccessToast("Đã xóa thông báo!");
         notifySync();
       }
     } catch (err) {
@@ -211,7 +210,7 @@ const Notifications = () => {
       setShowClearModal(false);
       const res = await clearAllNotificationsApi();
       if (res?.errCode === 0) {
-        toast.success("Đã xóa toàn bộ thông báo!");
+        showSuccessToast("Đã xóa toàn bộ thông báo!");
         notifySync();
       }
     } catch (err) {
@@ -225,7 +224,7 @@ const Notifications = () => {
       setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
       const res = await markAllReadApi();
       if (res?.errCode === 0) {
-        toast.success("Đã đánh dấu tất cả là đã đọc");
+        showSuccessToast("Đã đánh dấu tất cả là đã đọc");
         notifySync();
       }
     } catch (err) {

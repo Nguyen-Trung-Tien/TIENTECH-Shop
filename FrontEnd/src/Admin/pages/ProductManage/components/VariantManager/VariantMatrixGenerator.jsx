@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { FiPlus, FiTrash2, FiLayers, FiZap } from "react-icons/fi";
-import { toast } from "react-toastify";
+import { showInfoToast, showWarningToast, showSuccessToast } from "../../../../../utils/toastHelper";
 
 // Quick Preset Options for common products
 const PRESETS = [
@@ -114,7 +114,7 @@ const VariantMatrixGenerator = ({
         { name: preset.name, code: preset.code, values: [...preset.values] },
       ]);
     }
-    toast.info(`Đã thêm mẫu phân loại: ${preset.name}`);
+    showInfoToast(`Đã thêm mẫu phân loại: ${preset.name}`);
   };
 
   // Generate Matrix Combinations
@@ -123,7 +123,7 @@ const VariantMatrixGenerator = ({
       (opt) => (opt.name || opt.code) && opt.values.some((v) => v.trim())
     );
     if (validOptions.length === 0) {
-      toast.warning("Vui lòng thêm ít nhất 1 thuộc tính phân loại!");
+      showWarningToast("Vui lòng thêm ít nhất 1 thuộc tính phân loại!");
       return;
     }
 
@@ -159,8 +159,8 @@ const VariantMatrixGenerator = ({
       variants: newVariants,
       hasVariants: true,
     }));
-    toast.success(
-      `🎉 Đã tự động tạo ${newVariants.length} phiên bản biến thể! Vui lòng chỉnh giá & kho bên dưới nếu cần.`
+    showSuccessToast(
+      `Đã tự động tạo ${newVariants.length} phiên bản biến thể! Vui lòng chỉnh giá & kho bên dưới nếu cần.`
     );
   };
 

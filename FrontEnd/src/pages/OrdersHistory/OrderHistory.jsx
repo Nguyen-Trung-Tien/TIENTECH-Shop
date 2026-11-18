@@ -18,7 +18,7 @@ import { formatCurrency, formatDate } from "../../utils/format";
 import { StatusBadge } from "../../utils/StatusBadge";
 import Button from "../../components/UI/Button";
 import Badge from "../../components/UI/Badge";
-import { ErrorBanner } from "../../components/UI";
+import { ErrorBanner, PageShell } from "../../components/UI";
 import ReviewModal from "../../components/ReviewComponent/ReviewModal";
 import UnifiedSpinner from "../../components/Loading/UnifiedSpinner";
 import OrderHistorySkeleton from "./components/OrderHistorySkeleton";
@@ -88,26 +88,22 @@ const OrderHistoryPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-surface-50 dark:bg-dark-bg py-12 transition-colors duration-300">
-      <div className="container-custom">
-        <ErrorBanner message={error} onRetry={fetchOrders} className="mb-6" />
-        {/* Header Section */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10">
-          <div>
-            <h1 className="text-3xl font-display font-bold text-surface-900 dark:text-white mb-2">
-              Lịch sử đơn hàng
-            </h1>
-            <p className="text-surface-500 dark:text-dark-text-secondary font-medium">
-              Quản lý và theo dõi trạng thái các đơn hàng của bạn.
-            </p>
-          </div>
-          <div className="flex items-center gap-2 bg-white dark:bg-dark-surface px-4 py-2 rounded-2xl border border-surface-200 dark:border-dark-border shadow-sm">
-            <FiClock className="text-primary dark:text-brand" />
-            <span className="text-sm font-bold text-surface-700 dark:text-white">
-              Tổng số: {totalItems} đơn hàng
-            </span>
-          </div>
+    <PageShell
+      eyebrow="ORDER ARCHIVE // HISTORY"
+      title="Lịch sử đơn hàng"
+      subtitle="Quản lý và theo dõi trạng thái các đơn hàng của bạn."
+      backTo="/orders"
+      backLabel="Quay lại đơn hàng"
+      actions={
+        <div className="flex items-center gap-2 bg-white dark:bg-dark-surface px-4 py-2 rounded-2xl border border-surface-200 dark:border-dark-border shadow-sm">
+          <FiClock className="text-primary dark:text-brand" />
+          <span className="text-sm font-bold text-surface-700 dark:text-white">
+            Tổng số: {totalItems} đơn hàng
+          </span>
         </div>
+      }
+    >
+      <ErrorBanner message={error} onRetry={fetchOrders} className="mb-6" />
 
         {loading ? (
           <OrderHistorySkeleton count={3} />
@@ -330,15 +326,13 @@ const OrderHistoryPage = () => {
             />
           </div>
         )}
-      </div>
-
       <ReviewModal
         isOpen={isReviewModalOpen}
         onClose={() => setIsReviewModalOpen(false)}
         order={selectedOrderForReview}
         onReviewSuccess={fetchOrders}
       />
-    </div>
+    </PageShell>
   );
 };
 

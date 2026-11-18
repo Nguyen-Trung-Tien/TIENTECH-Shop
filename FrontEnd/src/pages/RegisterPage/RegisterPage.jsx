@@ -9,7 +9,6 @@ import {
   FiLock,
   FiUserPlus,
 } from "react-icons/fi";
-import { toast } from "react-toastify";
 import { FcGoogle } from "react-icons/fc";
 
 import { registerUser } from "../../api/userApi";
@@ -17,7 +16,7 @@ import Loading from "../../components/Loading/Loading";
 import UnifiedSpinner from "../../components/Loading/UnifiedSpinner";
 import { AuthShell } from "../../components/UI";
 import { appConfig } from "../../config/runtimeConfig";
-import { showErrorToast, showSuccessToast } from "../../utils/toastHelper";
+import { showErrorToast, showSuccessToast, showWarningToast } from "../../utils/toastHelper";
 
 const FloatingInput = ({
   id,
@@ -91,29 +90,29 @@ const RegisterPage = () => {
     e.preventDefault();
 
     if (!formData.username || formData.username.trim().length < 3) {
-      toast.warning("Tên người dùng phải có ít nhất 3 ký tự!");
+      showWarningToast("Tên người dùng phải có ít nhất 3 ký tự!");
       return;
     }
 
     if (formData.password.length < 8) {
-      toast.warning("Mật khẩu phải có ít nhất 8 ký tự!");
+      showWarningToast("Mật khẩu phải có ít nhất 8 ký tự!");
       return;
     }
     if (!/[A-Z]/.test(formData.password)) {
-      toast.warning("Mật khẩu phải có ít nhất 1 chữ cái in hoa (A-Z)!");
+      showWarningToast("Mật khẩu phải có ít nhất 1 chữ cái in hoa (A-Z)!");
       return;
     }
     if (!/[0-9]/.test(formData.password)) {
-      toast.warning("Mật khẩu phải có ít nhất 1 chữ số (0-9)!");
+      showWarningToast("Mật khẩu phải có ít nhất 1 chữ số (0-9)!");
       return;
     }
     if (!/[!@#$%^&*(),.?":{}|<>]/.test(formData.password)) {
-      toast.warning("Mật khẩu phải có ít nhất 1 ký tự đặc biệt (!@#$%^&*...)!");
+      showWarningToast("Mật khẩu phải có ít nhất 1 ký tự đặc biệt (!@#$%^&*...)!");
       return;
     }
 
     if (formData.password !== formData.confirmPassword) {
-      toast.error("Mật khẩu xác nhận không khớp!");
+      showErrorToast("Mật khẩu xác nhận không khớp!");
       return;
     }
 

@@ -16,14 +16,16 @@ const setAuthCookies = (res, accessToken, refreshToken) => {
     sameSite,
   };
 
+  const xsrfToken = crypto.randomBytes(24).toString("hex");
   res.cookie("accessToken", accessToken, { ...cookieOptions, maxAge: 15 * 60 * 1000 });
   res.cookie("refreshToken", refreshToken, { ...cookieOptions, maxAge: 7 * 24 * 60 * 60 * 1000 });
-  res.cookie("XSRF-TOKEN", crypto.randomBytes(24).toString("hex"), {
+  res.cookie("XSRF-TOKEN", xsrfToken, {
     httpOnly: false,
     secure: isProduction,
     sameSite,
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
+  res.setHeader("X-XSRF-TOKEN", xsrfToken);
 };
 
 const handleCreateNewUser = async (req, res) => {
@@ -95,7 +97,12 @@ const handleUpdateUser = async (req, res) => {
 
     const isElevated = ["admin", "root"].includes(req.user.role);
     if (!isElevated && String(req.user.id) !== String(id)) {
-      return res.status(403).json({ errCode: 403, errMessage: "Forbidden" });
+      return handleResponse(res, {
+        errCode: 403,
+        statusCode: 403,
+        code: "FORBIDDEN",
+        errMessage: "Bạn không có quyền cập nhật thông tin người dùng khác.",
+      });
     }
 
     const updateData = { ...req.body };
@@ -186,7 +193,12 @@ const handleGetUserById = async (req, res) => {
     const userId = req.params.id;
     const isElevated = ["admin", "root"].includes(req.user.role);
     if (!isElevated && String(req.user.id) !== String(userId)) {
-      return res.status(403).json({ errCode: 403, errMessage: "Forbidden" });
+      return handleResponse(res, {
+        errCode: 403,
+        statusCode: 403,
+        code: "FORBIDDEN",
+        errMessage: "Bạn không có quyền xem thông tin người dùng khác.",
+      });
     }
     const result = await UserService.getUserById(userId);
     return handleResponse(res, result);
@@ -200,7 +212,12 @@ const handleDeleteUser = async (req, res) => {
     const { id } = req.params;
     const isElevated = ["admin", "root"].includes(req.user.role);
     if (!isElevated && String(req.user.id) !== String(id)) {
-      return res.status(403).json({ errCode: 403, errMessage: "Forbidden" });
+      return handleResponse(res, {
+        errCode: 403,
+        statusCode: 403,
+        code: "FORBIDDEN",
+        errMessage: "Bạn không có quyền cập nhật thông tin người dùng khác.",
+      });
     }
     const result = await UserService.deleteUser(id, req.user.id);
     return handleResponse(res, result);

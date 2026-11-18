@@ -30,7 +30,7 @@ import { clearCart } from "../../redux/cartSlice";
 import { logoutUserApi } from "../../api/userApi";
 import { useCurrentUser } from "../../hooks/useUser";
 import Logo from "../UI/Logo";
-import { toast } from "react-toastify";
+import { showSuccessToast } from "../../utils/toastHelper";
 import NotificationBell from "./NotificationBell";
 import VisualSearchModal from "./VisualSearchModal";
 import OmniSearchModal from "./OmniSearchModal";
@@ -98,7 +98,7 @@ function Header() {
       dispatch(removeUser());
       dispatch(clearCart());
       navigate("/login");
-      toast.success("Đăng xuất thành công!");
+      showSuccessToast("Đăng xuất thành công!");
       setIsLoggingOut(false);
     }
   };

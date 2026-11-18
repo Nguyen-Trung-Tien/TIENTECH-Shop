@@ -44,7 +44,7 @@ const App = () => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const res = await getMeApi();
+        const res = await getMeApi({ skipAuthRefresh: !user?.id });
         if (res.errCode === 0) {
           dispatch(setUser(res.data));
         } else {
@@ -52,7 +52,6 @@ const App = () => {
           dispatch(clearCart());
         }
       } catch {
-        console.error("Initial auth check failed:");
         dispatch(removeUser());
         dispatch(clearCart());
       } finally {
@@ -61,6 +60,7 @@ const App = () => {
     };
 
     checkAuth();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dispatch]);
 
   return (

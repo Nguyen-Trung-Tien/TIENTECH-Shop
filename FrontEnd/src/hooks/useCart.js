@@ -1,7 +1,6 @@
 import { useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { toast } from "react-toastify";
-import { showErrorToast } from "../utils/toastHelper";
+import { showErrorToast, showSuccessToast } from "../utils/toastHelper";
 import {
   setCartItems,
   appendCartItems,
@@ -61,7 +60,7 @@ export const useCart = () => {
         return;
       }
       dispatch(removeCartItemAction(id));
-      toast.success("Đã xóa sản phẩm khỏi giỏ hàng!");
+      showSuccessToast("Đã xóa sản phẩm khỏi giỏ hàng!");
     } catch (err) {
       showErrorToast(err, "Xóa sản phẩm thất bại!");
       throw err;

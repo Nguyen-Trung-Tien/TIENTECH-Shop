@@ -9,12 +9,14 @@ const {
 
 const { validate } = require("../middleware/zodMiddleware");
 const { voucherSchema, checkVoucherSchema } = require("../utils/zodSchemas");
+const { voucherCheckLimiter } = require("../middleware/rateLimiter");
 
 // PUBLIC
 router.get("/active", VoucherController.handleGetActiveVouchers);
 router.post(
   "/check", 
   optionalAuthenticateToken, 
+  voucherCheckLimiter,
   validate(checkVoucherSchema), 
   VoucherController.handleCheckVoucher
 );

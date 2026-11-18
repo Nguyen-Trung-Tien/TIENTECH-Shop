@@ -170,7 +170,7 @@ const NotificationBell = () => {
               autoClose: 3500,
             });
           } else {
-            toast.info(batchMsg, {
+            showInfoToast(batchMsg, {
               toastId: "active_order_batch",
               autoClose: 3500,
             });

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { useProductDetail } from "../../hooks/useProductDetail";
 import { useProductVariants } from "../../hooks/useProductVariants";
-import { toast } from "react-toastify";
+import { showErrorToast, showSuccessToast, showWarningToast, showInfoToast } from "../../utils/toastHelper";
 import { motion as Motion, AnimatePresence } from "framer-motion";
 import {
   FiZap,
@@ -287,29 +287,29 @@ const ProductDetailPage = () => {
     );
 
   const handleWishlist = async () => {
-    if (!user) return toast.warn("Vui lòng đăng nhập để lưu sản phẩm!");
+    if (!user) return showWarningToast("Vui lòng đăng nhập để lưu sản phẩm!");
     setLoadingWishlist(true);
     try {
       if (isWishlisted) {
         await removeFromWishlistApi(product.id);
         setIsWishlisted(false);
-        toast.info("Đã xóa khỏi danh sách yêu thích");
+        showInfoToast("Đã xóa khỏi danh sách yêu thích");
       } else {
         await addToWishlistApi(product.id);
         setIsWishlisted(true);
-        toast.success("Đã thêm vào danh sách yêu thích");
+        showSuccessToast("Đã thêm vào danh sách yêu thích");
       }
-    } catch {
-      toast.error("Không thể cập nhật danh sách yêu thích");
+    } catch (err) {
+      showErrorToast(err, "Không thể cập nhật danh sách yêu thích");
     } finally {
       setLoadingWishlist(false);
     }
   };
 
   const handleBuyNow = async () => {
-    if (!user) return toast.warn("Vui lòng đăng nhập để mua hàng!");
+    if (!user) return showWarningToast("Vui lòng đăng nhập để mua hàng!");
     if (product?.variants?.length > 0 && !selectedVariant) {
-      toast.error("Vui lòng chọn loại sản phẩm (Màu sắc, kích thước...)");
+      showErrorToast("Vui lòng chọn loại sản phẩm (Màu sắc, kích thước...)");
       return;
     }
     const itemId = product?.variants?.length > 0 ? selectedVariant?.id : null;
@@ -321,7 +321,7 @@ const ProductDetailPage = () => {
   const onAddToCart = (e) => {
     e.preventDefault();
     if (product?.variants?.length > 0 && !selectedVariant) {
-      toast.error("Vui lòng chọn loại sản phẩm (Màu sắc, kích thước...)");
+      showErrorToast("Vui lòng chọn loại sản phẩm (Màu sắc, kích thước...)");
       return;
     }
     const itemId = product?.variants?.length > 0 ? selectedVariant?.id : null;

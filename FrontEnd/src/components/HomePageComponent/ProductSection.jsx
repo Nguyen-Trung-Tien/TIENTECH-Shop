@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react";
-import { toast } from "react-toastify";
+import { showErrorToast } from "../../utils/toastHelper";
 import { motion as Motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import {
@@ -94,11 +94,11 @@ const ProductSection = ({
             ?.slice(0, 36);
           setAllProducts(featured || []);
         } else {
-          toast.error("Không thể tải sản phẩm!");
+          showErrorToast(res, "Không thể tải sản phẩm!");
         }
       } catch (error) {
         console.error("Lỗi tải sản phẩm:", error);
-        toast.error("Không thể tải sản phẩm!");
+        showErrorToast(error, "Không thể tải sản phẩm!");
       } finally {
         setLoading(false);
       }

@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { FiEye, FiEyeOff, FiCheckCircle } from "react-icons/fi";
-import { toast } from "react-toastify";
-import { showErrorToast } from "../../utils/toastHelper";
+import { showErrorToast, showSuccessToast, showWarningToast } from "../../utils/toastHelper";
 import Button from "../../components/UI/Button";
 import Modal from "../../components/UI/Modal";
 import { updatePasswordApi } from "../../api/userApi";
@@ -31,15 +30,15 @@ const ChangePasswordModal = ({ show, onHide, userId: _userId }) => {
     const { oldPassword, newPassword, confirmPassword } = passwordData;
 
     if (!oldPassword || !newPassword || !confirmPassword) {
-      return toast.warning("Vui lòng nhập đầy đủ thông tin");
+      return showWarningToast("Vui lòng nhập đầy đủ thông tin");
     }
 
     if (newPassword.length < 6) {
-      return toast.warning("Mật khẩu mới phải có ít nhất 6 ký tự");
+      return showWarningToast("Mật khẩu mới phải có ít nhất 6 ký tự");
     }
 
     if (newPassword !== confirmPassword) {
-      return toast.error("Mật khẩu xác nhận không khớp!");
+      return showErrorToast("Mật khẩu xác nhận không khớp!");
     }
 
     try {
@@ -48,7 +47,7 @@ const ChangePasswordModal = ({ show, onHide, userId: _userId }) => {
       // authenticateToken middleware provides userId
       const res = await updatePasswordApi({ oldPassword, newPassword });
       if (res.errCode === 0) {
-        toast.success("Đổi mật khẩu thành công!");
+        showSuccessToast("Đổi mật khẩu thành công!");
         setPasswordData({
           oldPassword: "",
           newPassword: "",

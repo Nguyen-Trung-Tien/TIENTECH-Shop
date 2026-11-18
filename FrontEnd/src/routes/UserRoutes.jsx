@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import PublicRoute from "./PublicRoute";
 import PrivateRoute from "./PrivateRoute";
 
@@ -25,7 +25,6 @@ const ProductDetailPage = lazy(() => import("../pages/ProductDetailPage/ProductD
 const ProductListPage = lazy(() => import("../pages/ProductListPage/ProductListPage"));
 const AllProducts = lazy(() => import("../components/AllProducts/AllProduct"));
 const FortuneProducts = lazy(() => import("../components/FortuneProducts/FortuneProducts"));
-const OrderHistory = lazy(() => import("../pages/OrdersHistory/OrderHistory"));
 const OrderPage = lazy(() => import("../pages/OrderPage/OrderPage"));
 const OrderDetail = lazy(() => import("../pages/OrderDetail/OrderDetail"));
 const AboutPage = lazy(() => import("../pages/AboutPage/AboutPage"));
@@ -118,11 +117,7 @@ const UserRoutes = () => {
         />
         <Route
           path="order-history"
-          element={
-            <LayoutComponent isShowHeader={true} isShowFooter={true}>
-              <OrderHistory />
-            </LayoutComponent>
-          }
+          element={<Navigate to="/orders" replace />}
         />
         <Route
           path="orders"

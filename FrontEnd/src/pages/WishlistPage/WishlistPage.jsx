@@ -6,8 +6,7 @@ import { ErrorBanner, PageShell } from "../../components/UI";
 import { getWishlistApi } from "../../api/wishlistApi";
 import ProductCard from "../../components/ProductCard/ProductCard";
 import { ProductCardSkeleton as SkeletonCard } from "../../components/Loading";
-import { toast } from "react-toastify";
-import { showErrorToast } from "../../utils/toastHelper";
+import { showErrorToast, showSuccessToast, showWarningToast } from "../../utils/toastHelper";
 
 const WishlistPage = () => {
   const [wishlist, setWishlist] = useState([]);
@@ -58,13 +57,13 @@ const WishlistPage = () => {
           try {
             const inStockItems = wishlist.filter((item) => (item.totalStock ?? item.stock ?? 1) > 0);
             if (inStockItems.length === 0) {
-              toast.warning("Các sản phẩm yêu thích hiện đã tạm hết hàng.");
+              showWarningToast("Các sản phẩm yêu thích hiện đã tạm hết hàng.");
               return;
             }
             for (const item of inStockItems) {
               await addCart({ productId: item.id, quantity: 1 });
             }
-            toast.success(`Đã thêm ${inStockItems.length} sản phẩm vào giỏ hàng!`);
+            showSuccessToast(`Đã thêm ${inStockItems.length} sản phẩm vào giỏ hàng!`);
           } catch (err) {
             showErrorToast(err, "Một số sản phẩm không thể thêm vào giỏ hàng");
           } finally {

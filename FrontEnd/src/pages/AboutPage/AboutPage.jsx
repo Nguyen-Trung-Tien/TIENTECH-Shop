@@ -7,6 +7,7 @@ import imgPro2 from "../../assets/about-pro1.webp";
 import imgPro3 from "../../assets/about-pro2.webp";
 import Logo from "../../components/UI/Logo";
 import Button from "../../components/UI/Button";
+import { PageShell } from "../../components/UI";
 
 const teamMembers = [
   {
@@ -33,7 +34,7 @@ const AboutPage = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-ivory dark:bg-dark-bg transition-colors duration-300">
+    <PageShell maxWidthClass="w-full" className="pb-0">
       {/* HERO SECTION */}
       <section className="relative py-16 md:py-24 bg-gradient-to-b from-blue-50/80 via-slate-50 to-white dark:bg-slate-950 text-slate-900 dark:text-white overflow-hidden border-b border-slate-200/80 dark:border-slate-900 transition-colors duration-300">
         <div className="absolute inset-0 z-0 opacity-15 pointer-events-none bg-[radial-gradient(#3b82f6_1px,transparent_1px)] [background-size:24px_24px]"></div>
@@ -283,7 +284,7 @@ const AboutPage = () => {
           </div>
         </div>
       </section>
-    </div>
+    </PageShell>
   );
 };
 

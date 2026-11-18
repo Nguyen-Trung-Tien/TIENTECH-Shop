@@ -40,8 +40,8 @@ export const loginUser = (emailOrData, password) => {
   return axiosClient.post(`/user/login`, data);
 };
 
-export const getMeApi = () => 
-  axiosClient.get(`/user/get-me`);
+export const getMeApi = (config = {}) =>
+  axiosClient.get(`/user/get-me`, config);
 
 export const logoutUserApi = () =>
   axiosClient.post(`/user/logout`);

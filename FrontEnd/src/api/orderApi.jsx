@@ -29,9 +29,9 @@ export const getOrderById = async (orderId) => {
   }
 };
 
-export const createOrder = async (data) => {
+export const createOrder = async (data, config = {}) => {
   try {
-    const res = await axiosClient.post("/order/create-new-order", data);
+    const res = await axiosClient.post("/order/create-new-order", data, config);
     return res;
   } catch (error) {
     console.error("Error creating order:", error);

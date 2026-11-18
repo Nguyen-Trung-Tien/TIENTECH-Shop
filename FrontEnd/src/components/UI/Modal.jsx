@@ -83,7 +83,7 @@ const Modal = ({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 30, scale: 0.96 }}
             transition={{ type: "spring", stiffness: 380, damping: 30 }}
-            className={`relative w-full ${sizes[size]} max-h-[92vh] sm:max-h-[85vh] bg-white/98 dark:bg-dark-surface/98 backdrop-blur-2xl rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col border border-slate-200/80 dark:border-dark-border transition-colors duration-300 ${className}`}
+            className={`relative w-full ${sizes[size]} max-h-[92vh] sm:max-h-[85vh] overscroll-contain bg-white/98 dark:bg-dark-surface/98 backdrop-blur-2xl rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col border border-slate-200/80 dark:border-dark-border transition-colors duration-300 ${className}`}
           >
             {/* Mobile Drag Indicator Pill */}
             <div className="flex justify-center pt-2.5 pb-1 sm:hidden bg-slate-50/80 dark:bg-dark-bg/60" aria-hidden="true">
@@ -220,6 +220,7 @@ export const ConfirmModal = ({
           <Button
             type="button"
             variant="secondary"
+            autoFocus={variant === "danger" || variant === "destructive"}
             className="flex-1 h-11 rounded-xl text-[11px] font-black uppercase tracking-wider"
             onClick={(e) => {
               if (e && e.preventDefault) e.preventDefault();

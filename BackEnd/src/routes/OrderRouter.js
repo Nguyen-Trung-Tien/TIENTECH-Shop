@@ -5,6 +5,8 @@ const {
   authenticateToken,
   authorizeRole,
 } = require("../middleware/authMiddleware");
+const { orderActionLimiter } = require("../middleware/rateLimiter");
+const { idempotencyGuard } = require("../middleware/idempotencyMiddleware");
 
 const { validate } = require("../middleware/zodMiddleware");
 const {
@@ -37,6 +39,8 @@ router.post(
   "/create-new-order",
   authenticateToken,
   authorizeRole(["admin", "customer"]),
+  orderActionLimiter,
+  idempotencyGuard(),
   validate(orderSchema),
   OrderController.handleCreateOrder
 );
@@ -70,6 +74,7 @@ router.post(
   "/return-request",
   authenticateToken,
   authorizeRole(["customer", "admin"]),
+  orderActionLimiter,
   validate(returnRequestSchema),
   OrderController.handleRequestReturn
 );
@@ -86,6 +91,7 @@ router.put(
   ["/change-payment-method/:id", "/update-payment-method/:id"],
   authenticateToken,
   authorizeRole(["admin", "customer"]),
+  orderActionLimiter,
   validate(changePaymentMethodSchema),
   OrderController.handleChangePaymentMethod
 );

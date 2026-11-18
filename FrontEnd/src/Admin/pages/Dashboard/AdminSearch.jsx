@@ -5,6 +5,8 @@ import { globalSearchApi } from "../../../api/adminApi";
 import { getProductImage, handleImageError } from "../../../utils/imageHelper";
 import { AdminTableSkeleton } from "../../components/AdminLoading";
 import { motion as Motion } from "framer-motion";
+import AdminPageShell from "../../components/AdminPageShell";
+import { EmptyState } from "../../../components/UI";
 
 const priceFormatter = new Intl.NumberFormat("vi-VN", {
   style: "currency",
@@ -75,27 +77,32 @@ const AdminSearch = () => {
                      (results?.users?.length || 0);
 
   return (
-    <div className="space-y-6 sm:space-y-10 pb-20 p-2.5 sm:p-4 md:p-0">
-      {/* Header Info */}
-      <div className="bg-white dark:bg-dark-surface rounded-2xl sm:rounded-[2.5rem] p-4 sm:p-8 md:p-12 border border-slate-100 dark:border-dark-border shadow-xl shadow-slate-200/50 dark:shadow-none flex flex-col md:flex-row items-start md:items-center justify-between gap-4 sm:gap-8 transition-colors">
-        <div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-3 sm:gap-4">
-            <FiSearch className="text-indigo-600 dark:text-indigo-400 animate-pulse shrink-0" />
-            <span className="truncate">Kết quả tìm kiếm</span>
-          </h1>
-          <p className="text-slate-500 dark:text-dark-text-secondary font-bold text-xs sm:text-sm mt-1 sm:mt-2 ml-1 break-words [overflow-wrap:anywhere]">
-            Đang hiển thị kết quả cho từ khóa: <span className="text-indigo-600 dark:text-indigo-400 italic">"{query}"</span>
-          </p>
+    <AdminPageShell
+      eyebrow="GLOBAL SEARCH // ADMIN INDEX"
+      title={
+        <span className="flex items-center gap-3">
+          <FiSearch className="text-primary shrink-0" />
+          <span>Kết quả tìm kiếm</span>
+        </span>
+      }
+      subtitle={
+        <span>
+          Đang hiển thị kết quả cho từ khóa:{" "}
+          <span className="text-primary dark:text-primary-light font-bold italic">"{query}"</span>
+        </span>
+      }
+      actions={
+        <div className="px-5 py-2 bg-white dark:bg-dark-surface rounded-xl border border-slate-200 dark:border-dark-border shadow-xs text-center">
+          <span className="text-[10px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest block">
+            Tổng cộng
+          </span>
+          <span className="text-lg font-black text-slate-900 dark:text-white">
+            {totalCount}
+          </span>
         </div>
-        <div className="flex items-center gap-3 bg-slate-50 dark:bg-dark-bg p-2 rounded-2xl border border-slate-200/50 dark:border-dark-border self-stretch sm:self-auto justify-center">
-           <div className="px-6 py-2 sm:py-3 bg-white dark:bg-dark-surface rounded-xl shadow-sm text-center border border-transparent dark:border-dark-border w-full sm:w-auto">
-              <span className="text-[10px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest block mb-0.5 sm:mb-1">Tổng cộng</span>
-              <span className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
-                {totalCount}
-              </span>
-           </div>
-        </div>
-      </div>
+      }
+      className="pb-16"
+    >
 
       {loading ? (
         <div className="space-y-12">
@@ -272,21 +279,15 @@ const AdminSearch = () => {
 
       {/* Empty State */}
       {!loading && totalCount === 0 && (
-        <div className="py-20 text-center bg-white dark:bg-dark-surface rounded-[3rem] border border-slate-100 dark:border-dark-border shadow-xl transition-colors">
-           <div className="size-24 bg-slate-50 dark:bg-dark-bg rounded-full flex items-center justify-center mx-auto mb-6 transition-colors">
-              <FiX className="text-slate-200 dark:text-dark-border text-5xl" />
-           </div>
-           <h2 className="text-2xl font-black text-slate-900 dark:text-white">Rất tiếc, không có kết quả nào!</h2>
-           <p className="text-slate-400 dark:text-dark-text-secondary font-bold mt-2">Vui lòng thử tìm kiếm với từ khóa khác hoặc kiểm tra lại chính tả.</p>
-           <button 
-            onClick={() => navigate('/admin/dashboard')}
-            className="mt-10 px-8 py-4 bg-slate-900 dark:bg-indigo-600 text-white rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-indigo-600 dark:hover:bg-indigo-700 transition-all shadow-lg"
-           >
-             Quay lại Dashboard
-           </button>
-        </div>
+        <EmptyState
+          icon={FiX}
+          title="Rất tiếc, không có kết quả nào!"
+          description="Vui lòng thử tìm kiếm với từ khóa khác hoặc kiểm tra lại chính tả."
+          actionLabel="Quay lại Dashboard"
+          onAction={() => navigate("/admin/dashboard")}
+        />
       )}
-    </div>
+    </AdminPageShell>
   );
 };
 

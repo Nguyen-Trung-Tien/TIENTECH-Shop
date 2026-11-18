@@ -1,6 +1,6 @@
 import React from "react";
 import { FiGift, FiPercent, FiCalendar, FiUsers, FiCopy } from "react-icons/fi";
-import { toast } from "react-toastify";
+import { showSuccessToast } from "../../../utils/toastHelper";
 import { voucherApi } from "../../../api/voucherApi";
 import { useAdminCrud } from "../../../hooks/useAdminCrud";
 import GenericAdminTable from "../../components/GenericAdminTable";
@@ -42,7 +42,7 @@ const VoucherManage = () => {
             <button
               onClick={() => {
                 navigator.clipboard.writeText(item.code);
-                toast.success(`Đã sao chép mã ${item.code}!`);
+                showSuccessToast(`Đã sao chép mã ${item.code}!`);
               }}
               className="text-slate-400 hover:text-primary transition-colors cursor-pointer"
               title="Sao chép mã"

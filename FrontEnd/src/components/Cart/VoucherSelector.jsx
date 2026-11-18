@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { motion as Motion, AnimatePresence } from "framer-motion";
 import { FiTag, FiX, FiCheck, FiInfo, FiChevronRight } from "react-icons/fi";
 import { getActiveVouchersApi } from "../../api/voucherApi";
-import { toast } from "react-toastify";
+import { showErrorToast } from "../../utils/toastHelper";
 import { Loader } from "../UI";
 
 const VoucherSelector = ({ subtotal, onApply, appliedVoucher, onRemove }) => {
@@ -33,7 +33,7 @@ const VoucherSelector = ({ subtotal, onApply, appliedVoucher, onRemove }) => {
   const handleSelect = (v) => {
     const minOrder = Number(v.minOrderValue || 0);
     if (subtotal < minOrder) {
-      toast.error(
+      showErrorToast(
         `Đơn hàng tối thiểu ${minOrder.toLocaleString()}₫ để dùng mã này`,
       );
       return;

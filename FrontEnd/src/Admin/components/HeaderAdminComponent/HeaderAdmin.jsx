@@ -15,7 +15,7 @@ import { logoutUserApi } from "../../../api/userApi";
 import { removeUser } from "../../../redux/userSlice";
 import { clearCart } from "../../../redux/cartSlice";
 import { useDispatch, useSelector } from "react-redux";
-import { toast } from "react-toastify";
+import { showSuccessToast } from "../../../utils/toastHelper";
 import { useCurrentUser } from "../../../hooks/useUser";
 import Logo from "../../../components/UI/Logo";
 import NotificationBell from "../../../components/HeaderComponent/NotificationBell";
@@ -81,7 +81,7 @@ const HeaderAdmin = ({ toggleSidebar, isCollapsed, theme, toggleTheme }) => {
       dispatch(removeUser());
       dispatch(clearCart());
       navigate("/admin/login", { replace: true });
-      toast.success("Đăng xuất thành công!");
+      showSuccessToast("Đăng xuất thành công!");
       setLoggingOut(false);
       setShowProfileMenu(false);
     }

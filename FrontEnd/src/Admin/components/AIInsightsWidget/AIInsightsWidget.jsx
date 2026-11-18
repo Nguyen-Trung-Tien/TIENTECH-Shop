@@ -9,7 +9,7 @@ import {
 } from "react-icons/fi";
 import { getAIInsights } from "../../../api/adminApi";
 import { motion as Motion, AnimatePresence } from "framer-motion";
-import { toast } from "react-toastify";
+import { showSuccessToast } from "../../../utils/toastHelper";
 import UnifiedSpinner from "../../../components/Loading/UnifiedSpinner";
 
 const AIInsightsWidget = () => {
@@ -160,7 +160,7 @@ const AIInsightsWidget = () => {
 
                     <Link
                       to="/admin/vouchers"
-                      onClick={() => toast.success("AI đã đề xuất cấu hình Flash Sale 15% cho bạn tại trang Vouchers!")}
+                      onClick={() => showSuccessToast("AI đã đề xuất cấu hình Flash Sale 15% cho bạn tại trang Vouchers!")}
                       className="w-full md:w-auto text-center justify-center px-5 py-2.5 text-xs font-black uppercase tracking-wider text-white bg-gradient-to-r from-primary to-blue-600 hover:from-primary-hover hover:to-blue-700 rounded-xl shadow-md shrink-0 flex items-center gap-2 transition cursor-pointer"
                     >
                       <FiCpu className="w-4 h-4 animate-spin" /> 1-Click Tạo Flash Sale AI

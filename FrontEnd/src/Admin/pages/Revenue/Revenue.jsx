@@ -15,6 +15,7 @@ import { showErrorToast, showSuccessToast } from "../../../utils/toastHelper";
 import ChartCard from "../../components/ChartCardComponent/ChartCard";
 import { Link } from "react-router-dom";
 import RevenueForecastWidget from "../../components/RevenueForecastWidget/RevenueForecastWidget";
+import AdminPageShell from "../../components/AdminPageShell";
 
 const Revenue = () => {
   const [stats, setStats] = useState(null);
@@ -90,21 +91,19 @@ const Revenue = () => {
   ];
 
   return (
-    <div className="space-y-6 transition-colors duration-300">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-3">
-            <div className="size-10 rounded-xl bg-primary flex items-center justify-center text-white shadow-md shadow-primary/20 shrink-0">
-              <FiBarChart2 className="text-lg" />
-            </div>
-            Phân tích Doanh thu
-          </h1>
-          <p className="text-slate-500 dark:text-dark-text-secondary font-medium text-[11px] sm:text-sm mt-1 sm:mt-2 ml-1">
-            Theo dõi dòng tiền và hiệu suất kinh doanh của cửa hàng trong thời gian thực.
-          </p>
-        </div>
-
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-4 w-full sm:w-auto">
+    <AdminPageShell
+      eyebrow="FINANCIAL ANALYTICS // REVENUE"
+      title={
+        <span className="flex items-center gap-3">
+          <span className="size-10 rounded-xl bg-primary flex items-center justify-center text-white shadow-md shadow-primary/20 shrink-0">
+            <FiBarChart2 className="text-lg" />
+          </span>
+          <span>Phân tích Doanh thu</span>
+        </span>
+      }
+      subtitle="Theo dõi dòng tiền và hiệu suất kinh doanh của cửa hàng trong thời gian thực."
+      actions={
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 w-full sm:w-auto">
           <div className="bg-white dark:bg-dark-surface border border-slate-100 dark:border-dark-border p-1 sm:p-1.5 rounded-2xl flex items-center justify-between sm:justify-start shadow-sm overflow-x-auto touch-pan-x">
             {["today", "week", "month", "year"].map((p) => (
               <button
@@ -124,7 +123,8 @@ const Revenue = () => {
             <span>Xuất Excel</span>
           </button>
         </div>
-      </div>
+      }
+    >
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-6">
         {statCards.map((card, i) => (
@@ -245,7 +245,7 @@ const Revenue = () => {
         </div>
       </div>
       <RevenueForecastWidget />
-    </div>
+    </AdminPageShell>
   );
 };
 

@@ -5,6 +5,10 @@ const {
   authenticateToken,
   authorizeRole,
 } = require("../middleware/authMiddleware");
+const { paymentActionLimiter } = require("../middleware/rateLimiter");
+const { idempotencyGuard } = require("../middleware/idempotencyMiddleware");
+const { validate } = require("../middleware/zodMiddleware");
+const { createPaymentSchema } = require("../utils/zodSchemas");
 
 router.get(
   "/get-all-payment",
@@ -28,6 +32,9 @@ router.post(
   "/create-payment/",
   authenticateToken,
   authorizeRole(["admin", "customer"]),
+  paymentActionLimiter,
+  idempotencyGuard(),
+  validate(createPaymentSchema),
   PaymentController.handleCreatePayment
 );
 router.delete(

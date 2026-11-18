@@ -13,6 +13,7 @@ import {
   FiMessageCircle,
   FiCheckCircle,
 } from "react-icons/fi";
+import { PageShell } from "../../components/UI";
 
 const SupportHub = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -68,9 +69,9 @@ const SupportHub = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 transition-colors duration-300 py-12">
+    <PageShell className="pt-8 sm:pt-12">
       {/* Search Header Banner */}
-      <div className="container-custom mb-14">
+      <div className="mb-14">
         <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-blue-50/90 via-indigo-50/50 to-slate-100/80 dark:from-blue-900/70 dark:via-indigo-950 dark:to-slate-900 border border-blue-100 dark:border-slate-800 text-slate-900 dark:text-white p-8 md:p-16 text-center shadow-sm dark:shadow-2xl transition-colors duration-300">
           <div className="max-w-3xl mx-auto space-y-6 relative z-10">
             <span className="px-3.5 py-1 bg-primary/10 text-primary border border-primary/20 dark:bg-white/20 dark:text-white dark:border-transparent backdrop-blur-md rounded-full text-xs font-black uppercase tracking-widest inline-block">
@@ -203,7 +204,7 @@ const SupportHub = () => {
           </div>
         </div>
       </div>
-    </div>
+    </PageShell>
   );
 };
 

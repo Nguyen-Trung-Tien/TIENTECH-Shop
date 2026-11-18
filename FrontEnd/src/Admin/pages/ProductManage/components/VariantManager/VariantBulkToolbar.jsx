@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { FiDollarSign, FiBox, FiPercent, FiCheckCircle } from "react-icons/fi";
-import { toast } from "react-toastify";
+import { showWarningToast, showSuccessToast } from "../../../../../utils/toastHelper";
 
 const VariantBulkToolbar = ({ variantsCount, onApplyBulk }) => {
   const [bulkPrice, setBulkPrice] = useState("");
@@ -9,7 +9,7 @@ const VariantBulkToolbar = ({ variantsCount, onApplyBulk }) => {
 
   const handleApply = () => {
     if (bulkPrice === "" && bulkDiscount === "" && bulkStock === "") {
-      toast.warning("Vui lòng nhập Giá, Giảm giá hoặc Tồn kho chung để áp dụng!");
+      showWarningToast("Vui lòng nhập Giá, Giảm giá hoặc Tồn kho chung để áp dụng!");
       return;
     }
 
@@ -19,7 +19,7 @@ const VariantBulkToolbar = ({ variantsCount, onApplyBulk }) => {
       stock: bulkStock !== "" ? Number(bulkStock) : undefined,
     });
 
-    toast.success(`Đã áp dụng Giá, Giảm giá & Kho cho tất cả ${variantsCount} biến thể! 🎉`);
+    showSuccessToast(`Đã áp dụng Giá, Giảm giá & Kho cho tất cả ${variantsCount} biến thể!`);
   };
 
   return (
