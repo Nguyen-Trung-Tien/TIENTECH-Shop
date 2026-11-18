@@ -8,7 +8,7 @@ const {
   verifyRefreshToken,
 } = require("../../utils/jwtHelper");
 const { sendForgotPasswordEmail, sendVerificationEmail, sendEmailAsync } = require("../common/EmailService");
-const { getCache, setCache, deleteCache } = require("../../config/redis");
+const { getCache, setCache, deleteCache, isRedisConnected } = require("../../config/redis");
 const {
   hashToken,
   generateRandomToken,
@@ -30,11 +30,26 @@ const LOCK_DURATION_SOFT_MS = 5 * 60 * 1000;
 const LOCK_DURATION_HARD_MS = 15 * 60 * 1000;
 const OTP_MAX_ATTEMPTS = 5;
 
+const otpFailMemoryStore = new Map();
+
 const recordOtpFailure = async (type, email) => {
   try {
     const key = `otp:fail:${type}:${String(email).toLowerCase().trim()}`;
-    const count = ((await getCache(key)) || 0) + 1;
+    const cachedCount = await getCache(key);
+    let current = cachedCount;
+    if (current === null || current === undefined) {
+      const mem = otpFailMemoryStore.get(key);
+      current = mem && mem.expiresAt > Date.now() ? mem.count : 0;
+    }
+    const count = Number(current || 0) + 1;
     await setCache(key, count, 15 * 60);
+    if (!isRedisConnected()) {
+      if (otpFailMemoryStore.size >= 1000) {
+        const oldestKey = otpFailMemoryStore.keys().next().value;
+        if (oldestKey !== undefined) otpFailMemoryStore.delete(oldestKey);
+      }
+      otpFailMemoryStore.set(key, { count, expiresAt: Date.now() + 15 * 60 * 1000 });
+    }
     return count;
   } catch {
     return 0;
@@ -43,7 +58,9 @@ const recordOtpFailure = async (type, email) => {
 
 const clearOtpFailure = async (type, email) => {
   try {
-    await deleteCache(`otp:fail:${type}:${String(email).toLowerCase().trim()}`);
+    const key = `otp:fail:${type}:${String(email).toLowerCase().trim()}`;
+    otpFailMemoryStore.delete(key);
+    await deleteCache(key);
   } catch {
     // Non-blocking
   }
@@ -298,10 +315,21 @@ class AuthService {
       if (!passCheck.valid) return { errCode: 4, errMessage: passCheck.message };
 
       const user = await db.User.findOne({ where: { email } });
-      if (!user || user.resetToken !== hashToken(token)) return { errCode: 1, errMessage: "Token không hợp lệ" };
+      if (!user || !user.resetToken || user.resetToken !== hashToken(token)) {
+        const failCount = await recordOtpFailure("reset", email);
+        if (user && user.resetToken && failCount >= OTP_MAX_ATTEMPTS) {
+          user.resetToken = null;
+          user.resetTokenExpiresAt = null;
+          await user.save();
+          await clearOtpFailure("reset", email);
+          return { errCode: 2, errMessage: "Bạn đã nhập sai quá số lần quy định. Vui lòng yêu cầu mã mới." };
+        }
+        return { errCode: 1, errMessage: "Token không hợp lệ" };
+      }
       if (user.resetTokenExpiresAt && new Date(user.resetTokenExpiresAt) < new Date()) {
         return { errCode: 2, errMessage: "Token đặt lại mật khẩu đã hết hạn!" };
       }
+      await clearOtpFailure("reset", email);
       
       user.password = await hashUserPassword(newPassword);
       user.resetToken = null;

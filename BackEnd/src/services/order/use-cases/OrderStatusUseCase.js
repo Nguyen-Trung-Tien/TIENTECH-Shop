@@ -1,5 +1,94 @@
 const db = require("../../../models");
-const { deleteCacheByPattern } = require("../../../config/redis");
+const { deleteCache, deleteCacheByPattern } = require("../../../config/redis");
+const SystemSettingService = require("../../system/SystemSettingService");
+const EmailService = require("../../common/EmailService");
+const { getUserProfileKey } = require("../../user/AuthHelper");
+const {
+  calculateRankFromPoints,
+  getHigherRank,
+  calculatePointsEarned,
+} = require("../../../utils/loyaltyHelper");
+
+const dispatchOrderStatusSideEffects = async (order, targetStatus, cancelReason = "") => {
+  try {
+    const cacheTasks = [deleteCacheByPattern("dashboard_*")];
+    if (targetStatus === "cancelled") {
+      cacheTasks.push(
+        deleteCacheByPattern("products_*"),
+        deleteCacheByPattern("home_page_*"),
+        deleteCacheByPattern("flash_sale_*")
+      );
+    }
+    if (order?.userId && ["delivered", "completed", "cancelled"].includes(targetStatus)) {
+      cacheTasks.push(deleteCache(getUserProfileKey(order.userId)));
+    }
+    await Promise.all(cacheTasks);
+  } catch (cacheErr) {
+    console.warn("Failed to invalidate caches after status update:", cacheErr?.message);
+  }
+
+  setImmediate(async () => {
+    try {
+      const user = order?.userId && db.User?.findByPk
+        ? await db.User.findByPk(order.userId, {
+            attributes: ["id", "username", "email", "phone", "receiveEmail"],
+          })
+        : null;
+
+      if (targetStatus === "shipping" || targetStatus === "shipped") {
+        const notifyShipping = await SystemSettingService.getSetting(
+          "EMAIL_NOTIFY_USER_ORDER_SHIPPING",
+          true
+        );
+        if (notifyShipping && notifyShipping !== "false" && user?.email) {
+          await EmailService.sendOrderShippingEmail(user, order);
+        }
+      } else if (targetStatus === "delivered") {
+        const notifyDelivered = await SystemSettingService.getSetting(
+          "EMAIL_NOTIFY_USER_ORDER_DELIVERED",
+          true
+        );
+        if (notifyDelivered && notifyDelivered !== "false" && user?.email) {
+          await EmailService.sendOrderDeliveredEmail(user, order);
+        }
+      } else if (targetStatus === "cancelled" || targetStatus === "cancel_requested") {
+        if (targetStatus === "cancelled") {
+          const notifyUserCancel = await SystemSettingService.getSetting(
+            "EMAIL_NOTIFY_USER_ORDER_CANCELLED",
+            true
+          );
+          if (notifyUserCancel && notifyUserCancel !== "false" && user?.email) {
+            await EmailService.sendOrderCancelledEmail(user, order, cancelReason);
+          }
+        }
+
+        const notifyAdminCancel = await SystemSettingService.getSetting(
+          "EMAIL_NOTIFY_ADMIN_ORDER_CANCELLED",
+          true
+        );
+        if (notifyAdminCancel && notifyAdminCancel !== "false") {
+          const adminEmail =
+            (await SystemSettingService.getSetting("ADMIN_NOTIFICATION_EMAIL", "")) ||
+            (await SystemSettingService.getSetting("STORE_EMAIL", "")) ||
+            process.env.EMAIL_USER ||
+            "";
+          if (adminEmail) {
+            await EmailService.sendAdminOrderCancelledEmail(
+              adminEmail,
+              order,
+              user,
+              cancelReason || "Khách hàng yêu cầu hủy đơn"
+            );
+          }
+        }
+      }
+    } catch (mailErr) {
+      if (!String(mailErr?.message || "").includes("connection manager was closed")) {
+        console.error("Order status email error:", mailErr?.message || mailErr);
+      }
+    }
+  });
+};
 
 const VALID_ADMIN_TRANSITIONS = {
   pending: ["confirmed", "cancelled"],
@@ -84,6 +173,7 @@ const syncOrderCancellationSideEffects = async (
     for (const item of orderItems) {
       const product = await db.Product.findByPk(item.productId, {
         transaction: t,
+        lock: t.LOCK.UPDATE,
       });
       if (product) {
         product.totalStock = (product.totalStock || 0) + item.quantity;
@@ -94,6 +184,7 @@ const syncOrderCancellationSideEffects = async (
       if (item.variantId) {
         const variant = await db.ProductVariant.findByPk(item.variantId, {
           transaction: t,
+          lock: t.LOCK.UPDATE,
         });
         if (variant) {
           variant.stock = (variant.stock || 0) + item.quantity;
@@ -106,6 +197,7 @@ const syncOrderCancellationSideEffects = async (
       const voucher = await db.Voucher.findOne({
         where: { code: order.voucherCode },
         transaction: t,
+        lock: t.LOCK.UPDATE,
       });
       if (voucher) {
         voucher.usedCount = Math.max(0, (voucher.usedCount || 0) - 1);
@@ -118,8 +210,37 @@ const syncOrderCancellationSideEffects = async (
     }
 
     const history = Array.isArray(order.confirmationHistory)
-      ? order.confirmationHistory
+      ? [...order.confirmationHistory]
       : [];
+
+    const alreadyRefundedPoints = history.some(
+      (entry) => entry && entry.action === "loyalty_points_refunded",
+    );
+    if (order.userId && Number(order.pointsUsed || 0) > 0 && !alreadyRefundedPoints) {
+      const userToRefund = await db.User.findByPk(order.userId, {
+        transaction: t,
+        lock: t.LOCK.UPDATE,
+      });
+      if (userToRefund) {
+        const refundedPts = Number(order.pointsUsed || 0);
+        const nextPts = Number(userToRefund.points || 0) + refundedPts;
+        const nextRank = getHigherRank(
+          userToRefund.rank,
+          calculateRankFromPoints(nextPts),
+        );
+        await userToRefund.update(
+          { points: nextPts, rank: nextRank },
+          { transaction: t },
+        );
+        history.push({
+          action: "loyalty_points_refunded",
+          pointsRefunded: refundedPts,
+          date: new Date().toISOString(),
+          actor: "system",
+        });
+      }
+    }
+
     history.push({
       status: "cancelled",
       date: new Date().toISOString(),
@@ -172,6 +293,7 @@ const updateOrderStatus = async (
     const order = await db.Order.findByPk(id, {
       include: [{ model: db.OrderItem, as: "orderItems" }],
       transaction: t,
+      lock: t.LOCK.UPDATE,
     });
     if (!order) {
       await t.rollback();
@@ -193,13 +315,15 @@ const updateOrderStatus = async (
       if (status === "cancelled" || status === "cancel_requested") {
         if (currentStatus === "pending") {
           order.status = "cancelled";
+          const effectiveReason = cancelReason || "Khách hàng hủy đơn.";
           await syncOrderCancellationSideEffects(
             order,
-            cancelReason || "Khách hàng hủy đơn.",
+            effectiveReason,
             currentUser,
             t,
           );
           await t.commit();
+          await dispatchOrderStatusSideEffects(order, "cancelled", effectiveReason);
           return {
             errCode: 0,
             errMessage: "Đã hủy đơn hàng thành công.",
@@ -211,10 +335,11 @@ const updateOrderStatus = async (
           )
         ) {
           order.status = "cancel_requested";
-          order.cancelReason =
+          const effectiveReason =
             cancelReason || "Khách hàng gửi yêu cầu hủy đơn.";
+          order.cancelReason = effectiveReason;
           const history = Array.isArray(order.confirmationHistory)
-            ? order.confirmationHistory
+            ? [...order.confirmationHistory]
             : [];
           history.push({
             status: "cancel_requested",
@@ -224,11 +349,16 @@ const updateOrderStatus = async (
               currentUser?.username ||
               currentUser?.email ||
               "Khách hàng",
-            reason: cancelReason,
+            reason: effectiveReason,
           });
           order.confirmationHistory = history;
           await order.save({ transaction: t });
           await t.commit();
+          await dispatchOrderStatusSideEffects(
+            order,
+            "cancel_requested",
+            effectiveReason,
+          );
 
           return {
             errCode: 0,
@@ -329,7 +459,11 @@ const updateOrderStatus = async (
       }
     }
 
-    // When order is delivered or completed, ensure payment status is paid
+    const history = Array.isArray(order.confirmationHistory)
+      ? [...order.confirmationHistory]
+      : [];
+
+    // When order is delivered or completed, ensure payment status is paid & award loyalty points once
     if (["delivered", "completed"].includes(status)) {
       order.paymentStatus = "paid";
       if (!order.deliveredAt) {
@@ -370,27 +504,54 @@ const updateOrderStatus = async (
           { transaction: t },
         );
       }
+
+      const alreadyAwardedLoyalty = history.some(
+        (entry) => entry && entry.action === "loyalty_points_awarded",
+      );
+      if (order.userId && !alreadyAwardedLoyalty) {
+        const earnedPoints = calculatePointsEarned(order.totalPrice);
+        const loyaltyUser = await db.User.findByPk(order.userId, {
+          transaction: t,
+          lock: t.LOCK.UPDATE,
+        });
+        if (loyaltyUser) {
+          const nextPoints = Math.max(
+            0,
+            Number(loyaltyUser.points || 0) + earnedPoints,
+          );
+          const nextRank = getHigherRank(
+            loyaltyUser.rank,
+            calculateRankFromPoints(nextPoints),
+          );
+          await loyaltyUser.update(
+            { points: nextPoints, rank: nextRank },
+            { transaction: t },
+          );
+          history.push({
+            action: "loyalty_points_awarded",
+            pointsAwarded: earnedPoints,
+            newRank: nextRank,
+            date: new Date().toISOString(),
+            actor: "system",
+          });
+        }
+      }
     }
 
-    const history = Array.isArray(order.confirmationHistory)
-      ? order.confirmationHistory
-      : [];
-    history.push({
-      status,
-      date: new Date().toISOString(),
-      actor: currentUser ? currentUser.username || currentUser.email : "system",
-      reason: cancelReason || "",
-    });
+    if (status !== "cancelled") {
+      history.push({
+        status,
+        date: new Date().toISOString(),
+        actor: currentUser ? currentUser.username || currentUser.email : "system",
+        reason: cancelReason || "",
+      });
+    }
     order.confirmationHistory = history;
 
     await order.save({ transaction: t });
     await t.commit();
 
-    try {
-      await deleteCacheByPattern("dashboard_*");
-    } catch (cacheErr) {
-      console.warn("Failed to invalidate dashboard cache:", cacheErr?.message);
-    }
+    await dispatchOrderStatusSideEffects(order, status, cancelReason);
 
     return {
       errCode: 0,
@@ -421,7 +582,10 @@ const deleteOrder = async (id) => {
 const updatePaymentStatus = async (id, paymentStatus) => {
   const t = await db.sequelize.transaction();
   try {
-    const order = await db.Order.findByPk(id, { transaction: t });
+    const order = await db.Order.findByPk(id, {
+      transaction: t,
+      lock: t.LOCK.UPDATE,
+    });
     if (!order) {
       await t.rollback();
       return { errCode: 1, errMessage: "Order not found" };

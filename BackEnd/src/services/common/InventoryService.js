@@ -16,11 +16,12 @@ const checkInventoryAndAlert = async () => {
       attributes: ["id", "name", "totalStock", "sold", "basePrice"],
     });
 
-    if (lowStockProducts.length === 0) return { errCode: 0, message: "Tồn kho ổn định." };
+    if (lowStockProducts.length === 0)
+      return { errCode: 0, message: "Tồn kho ổn định." };
 
     const context = `
 Bạn là chuyên gia quản lý kho. Dưới đây là danh sách sản phẩm sắp hết hàng:
-${lowStockProducts.map(p => `- ${p.name}: Còn ${p.totalStock}, Đã bán ${p.sold}`).join("\n")}
+${lowStockProducts.map((p) => `- [ID: ${p.id}] ${p.name}: Còn ${p.totalStock}, Đã bán ${p.sold}`).join("\n")}
 
 Hãy phân tích và trả về danh sách các sản phẩm CẦN NHẬP GẤP (ưu tiên sản phẩm bán chạy).
 Trả về JSON THUẦN:
@@ -36,7 +37,11 @@ Trả về JSON THUẦN:
       const result = await generateContentWithFallback(context, {
         generationConfig: { responseMimeType: "application/json" },
       });
-      const rawText = result.response.text().replace(/```json/gi, "").replace(/```/g, "").trim();
+      const rawText = result.response
+        .text()
+        .replace(/```json/gi, "")
+        .replace(/```/g, "")
+        .trim();
       const match = rawText.match(/\{[\s\S]*\}/);
       const aiResponse = JSON.parse(match ? match[0] : rawText);
       if (Array.isArray(aiResponse?.alerts)) {
@@ -49,7 +54,8 @@ Trả về JSON THUẦN:
     if (alerts.length === 0) {
       alerts = lowStockProducts.map((p) => ({
         productId: p.id,
-        priority: p.totalStock <= 3 ? "HIGH" : p.totalStock <= 6 ? "MEDIUM" : "LOW",
+        priority:
+          p.totalStock <= 3 ? "HIGH" : p.totalStock <= 6 ? "MEDIUM" : "LOW",
         reason:
           p.sold >= 20
             ? `Sản phẩm bán chạy (${p.sold} đã bán) nhưng tồn kho sắp cạn`
@@ -58,7 +64,7 @@ Trả về JSON THUẦN:
     }
 
     for (const alert of alerts) {
-      const product = lowStockProducts.find(p => p.id === alert.productId);
+      const product = lowStockProducts.find((p) => p.id === alert.productId);
       if (product) {
         await NotificationService.createNotification({
           userId: null,

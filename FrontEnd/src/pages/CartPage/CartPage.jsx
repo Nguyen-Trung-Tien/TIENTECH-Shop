@@ -8,6 +8,7 @@ import OrderSummary from "../../components/Cart/OrderSummary";
 import { CartSkeleton } from "../../components/Loading";
 import VoucherSelector from "../../components/Cart/VoucherSelector";
 import { applyVoucher, removeVoucher } from "../../redux/cartSlice";
+import { setCartCheckout } from "../../redux/checkoutSlice";
 import { validateCart } from "../../api/cartApi";
 import { showErrorToast, showWarningToast, showInfoToast } from "../../utils/toastHelper";
 import { useSystemSettings } from "../../context/useSystemSettings";
@@ -25,6 +26,8 @@ const CartPage = () => {
     calculateSubtotal,
   } = useCart();
   const appliedVoucher = useSelector((state) => state.cart.appliedVoucher);
+  const user = useSelector((state) => state.user.user);
+  const isInitializing = useSelector((state) => state.user.isInitializing);
 
   const [selectedItems, setSelectedItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -33,6 +36,7 @@ const CartPage = () => {
   const [isInitialized, setIsInitialized] = useState(false);
 
   const loadCart = React.useCallback(async () => {
+    if (isInitializing) return;
     setLoading(true);
     setCartError(null);
     try {
@@ -42,19 +46,31 @@ const CartPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [fetchCart]);
+  }, [fetchCart, isInitializing]);
 
   useEffect(() => {
     loadCart();
   }, [loadCart]);
 
-  // Sync selected items when cart first loads
+  // Sync selected items when cart first loads or transitions from guest to synced server IDs
   useEffect(() => {
     if (cartItems.length > 0 && !isInitialized) {
       setSelectedItems(cartItems.map((i) => i.id));
       setIsInitialized(true);
+      return;
     }
-  }, [cartItems, isInitialized]);
+    if (cartItems.length > 0 && user?.id) {
+      const hasStaleGuestSelection = selectedItems.some((id) =>
+        String(id).startsWith("guest_"),
+      );
+      const hasServerItems = cartItems.some(
+        (i) => !String(i.id).startsWith("guest_"),
+      );
+      if (hasStaleGuestSelection && hasServerItems) {
+        setSelectedItems(cartItems.map((i) => i.id));
+      }
+    }
+  }, [cartItems, isInitialized, user?.id, selectedItems]);
 
   const subtotal = useMemo(
     () => calculateSubtotal(selectedItems),
@@ -84,6 +100,14 @@ const CartPage = () => {
       return showWarningToast("Vui lòng chọn ít nhất một sản phẩm để thanh toán!");
     }
 
+    // Khách vãng lai: lưu chọn lựa vào checkoutSlice (sessionStorage) và điều hướng đăng nhập -> checkout
+    if (!user?.id) {
+      dispatch(setCartCheckout(itemsToCheckout));
+      showInfoToast("Vui lòng đăng nhập để hoàn tất đơn hàng. Giỏ hàng của bạn sẽ được tự động đồng bộ!");
+      navigate("/login?redirect=/checkout");
+      return;
+    }
+
     setIsValidating(true);
     try {
       const response = await validateCart(itemsToCheckout);
@@ -98,11 +122,13 @@ const CartPage = () => {
           return;
         }
 
+        dispatch(setCartCheckout(items));
         navigate("/checkout", {
           state: {
             selectedItems: items,
             subtotal: totalAmount,
             appliedVoucher: appliedVoucher,
+            mode: "cart",
           },
         });
       } else {
@@ -139,6 +165,20 @@ const CartPage = () => {
     >
       <ErrorBanner message={cartError} onRetry={loadCart} className="mb-6" />
 
+      {!user?.id && cartItems.length > 0 && (
+        <div className="mb-6 rounded-2xl border border-blue-200/80 dark:border-blue-900/40 bg-blue-50/70 dark:bg-blue-950/30 px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-slate-700 dark:text-slate-200">
+          <span>
+            Bạn đang xem <strong>Giỏ hàng Khách</strong>. Sản phẩm được lưu an toàn trên trình duyệt và sẽ tự động đồng bộ khi bạn đăng nhập.
+          </span>
+          <Link
+            to="/login?redirect=/cart"
+            className="font-black text-primary hover:underline shrink-0"
+          >
+            Đăng nhập ngay →
+          </Link>
+        </div>
+      )}
+
       {cartItems.length === 0 ? (
         <EmptyState
           icon={FiShoppingBag}
@@ -153,7 +193,7 @@ const CartPage = () => {
               {/* Free Shipping Progress Widget */}
               <div className="rounded-2xl p-4 sm:p-5 bg-white dark:bg-dark-surface border border-slate-100 dark:border-slate-800 shadow-xs">
                 {(() => {
-                  const freeShipThreshold = Number(freeshipMinOrder) || 5000000;
+                  const freeShipThreshold = Number(freeshipMinOrder) || 500000;
                   const percent = Math.min(100, Math.round((subtotal / freeShipThreshold) * 100));
                   const remaining = freeShipThreshold - subtotal;
                   return (

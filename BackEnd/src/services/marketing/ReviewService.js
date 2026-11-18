@@ -1,5 +1,8 @@
 const db = require("../../models");
-const { getPagination, getPagingData } = require("../../utils/paginationHelper");
+const {
+  getPagination,
+  getPagingData,
+} = require("../../utils/paginationHelper");
 
 const getReviewsByProduct = async (
   productId,
@@ -148,48 +151,63 @@ const getReviewsByProduct = async (
   }
 };
 
+const checkReviewEligibility = async (userId, rawProductId) => {
+  const productId = Number(rawProductId);
+  if (!productId || isNaN(productId)) {
+    return { errCode: 1, errMessage: "productId không hợp lệ" };
+  }
+
+  const deliveredOrders = await db.Order.findAll({
+    where: {
+      userId,
+      status: { [db.Sequelize.Op.in]: ["delivered", "completed"] },
+    },
+    include: [
+      {
+        model: db.OrderItem,
+        as: "orderItems",
+        where: { productId },
+      },
+    ],
+  });
+
+  let purchaseCount = 0;
+  deliveredOrders.forEach((order) => {
+    order.orderItems.forEach((item) => {
+      if (Number(item.productId) === productId) {
+        purchaseCount += 1;
+      }
+    });
+  });
+
+  if (purchaseCount === 0) {
+    return {
+      errCode: 2,
+      errMessage: "Bạn chỉ có thể đánh giá sản phẩm sau khi đã nhận hàng",
+    };
+  }
+
+  const reviewCount = await db.Review.count({
+    where: { userId, productId },
+  });
+
+  if (reviewCount >= purchaseCount) {
+    return {
+      errCode: 3,
+      errMessage:
+        "Bạn đã đánh giá sản phẩm này rồi (đã đánh giá đủ số lần mua hàng)",
+    };
+  }
+
+  return { errCode: 0 };
+};
+
 const createReview = async (data) => {
   try {
     const productId = Number(data.productId);
-    const deliveredOrders = await db.Order.findAll({
-      where: {
-        userId: data.userId,
-        status: { [db.Sequelize.Op.in]: ["delivered", "completed"] },
-      },
-      include: [
-        {
-          model: db.OrderItem,
-          as: "orderItems",
-          where: { productId },
-        },
-      ],
-    });
-
-    let purchaseCount = 0;
-    deliveredOrders.forEach((order) => {
-      order.orderItems.forEach((item) => {
-        if (Number(item.productId) === productId) {
-          purchaseCount += 1;
-        }
-      });
-    });
-
-    if (purchaseCount === 0) {
-      return {
-        errCode: 2,
-        errMessage: "Bạn chỉ có thể đánh giá sản phẩm sau khi đã nhận hàng",
-      };
-    }
-
-    const reviewCount = await db.Review.count({
-      where: { userId: data.userId, productId },
-    });
-
-    if (reviewCount >= purchaseCount) {
-      return {
-        errCode: 3,
-        errMessage: "Bạn đã đánh giá sản phẩm này rồi (đã đánh giá đủ số lần mua hàng)",
-      };
+    const eligibility = await checkReviewEligibility(data.userId, productId);
+    if (eligibility.errCode !== 0) {
+      return eligibility;
     }
 
     const newReview = await db.Review.create({
@@ -221,7 +239,10 @@ const updateReview = async (reviewId, data, user) => {
 
     if (!review) return { errCode: 2, errMessage: "Review không tồn tại" };
 
-    if (!["admin", "root"].includes(user.role) && String(review.userId) !== String(user.id)) {
+    if (
+      !["admin", "root"].includes(user.role) &&
+      String(review.userId) !== String(user.id)
+    ) {
       return {
         errCode: 3,
         errMessage: "Bạn không có quyền chỉnh sửa review này",
@@ -230,6 +251,12 @@ const updateReview = async (reviewId, data, user) => {
 
     review.rating = data.rating ?? review.rating;
     review.comment = data.comment ?? review.comment;
+    if (
+      ["admin", "root"].includes(user.role) &&
+      data.isApproved !== undefined
+    ) {
+      review.isApproved = Boolean(data.isApproved);
+    }
 
     await review.save();
 
@@ -246,7 +273,10 @@ const deleteReview = async (reviewId, user) => {
 
     if (!review) return { errCode: 2, errMessage: "Review không tồn tại" };
 
-    if (!["admin", "root"].includes(user.role) && String(review.userId) !== String(user.id)) {
+    if (
+      !["admin", "root"].includes(user.role) &&
+      String(review.userId) !== String(user.id)
+    ) {
       return { errCode: 3, errMessage: "Bạn không có quyền xóa review này" };
     }
 
@@ -280,6 +310,7 @@ const getAllReviewsAdmin = async (
       limit: l,
       offset,
       order: [["createdAt", "DESC"]],
+      distinct: true,
       include: [
         {
           model: db.User,
@@ -352,6 +383,7 @@ const getReviewsByUser = async (userId, page = 1, limit = 10) => {
 
     const data = await db.Review.findAndCountAll({
       where: { userId },
+      distinct: true,
       include: [
         {
           model: db.Product,
@@ -511,27 +543,34 @@ const toggleLikeReview = async (reviewId, userId) => {
 
     if (existingLike) {
       await existingLike.destroy();
-      
+
       const newLikesCount = Math.max(0, (review.likes || 0) - 1);
       await db.Review.update({ likes: newLikesCount }, { where: { id: rId } });
-      
+
       const updatedReview = await db.Review.findByPk(rId);
-      return { errCode: 0, data: { ...updatedReview.toJSON(), isLiked: false } };
+      return {
+        errCode: 0,
+        data: { ...updatedReview.toJSON(), isLiked: false },
+      };
     } else {
       await db.ReviewLike.create({ reviewId: rId, userId: uId });
-      
+
       await db.Review.increment("likes", { by: 1, where: { id: rId } });
-      
+
       const updatedReview = await db.Review.findByPk(rId);
       return { errCode: 0, data: { ...updatedReview.toJSON(), isLiked: true } };
     }
   } catch (error) {
     console.error("Error toggleLikeReview:", error);
-    return { errCode: 1, errMessage: "Lỗi khi like đánh giá: " + error.message };
+    return {
+      errCode: 1,
+      errMessage: "Lỗi khi like đánh giá: " + error.message,
+    };
   }
 };
 
 module.exports = {
+  checkReviewEligibility,
   createReview,
   getReviewsByProduct,
   deleteReview,

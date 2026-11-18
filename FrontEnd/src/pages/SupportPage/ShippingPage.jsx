@@ -110,7 +110,7 @@ const ShippingPage = () => {
               <div className="flex items-start gap-3 p-3 rounded-2xl bg-amber-50/60 dark:bg-amber-950/30 border border-amber-100 dark:border-amber-900/30">
                 <FiCheckCircle className="text-amber-600 mt-1 shrink-0" />
                 <p>
-                  Miễn phí đổi size tay hoặc đổi sang mẫu mới có giá trị tương đương hoặc cao hơn.
+                  Miễn phí đổi màu sắc/cấu hình hoặc nâng cấp sang mẫu mới có giá trị tương đương hoặc cao hơn.
                 </p>
               </div>
             </div>
@@ -123,7 +123,7 @@ const ShippingPage = () => {
 
             <div className="space-y-4 text-xs md:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
               <p>
-                Khi shiper giao hàng đến, quý khách được quyền mở niêm phong hộp carton bên ngoài để kiểm tra số lượng sản phẩm, mẫu mã đá phong thủy và giấy tờ đi kèm.
+                Khi shipper giao hàng đến, quý khách được quyền mở niêm phong hộp carton bên ngoài để kiểm tra đúng model, màu sắc thiết bị, phụ kiện tiêu chuẩn và phiếu bảo hành đi kèm.
               </p>
               <p className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/30 border border-rose-100 dark:border-rose-900/40 font-medium text-rose-900 dark:text-rose-300">
                 Lưu ý: Nếu phát hiện móp vỡ hộp hoặc thiếu hàng, quý khách vui lòng từ chối nhận hàng và gọi ngay Hotline 0123 456 789 để được hỗ trợ xử lý đổi mới trong 5 phút.

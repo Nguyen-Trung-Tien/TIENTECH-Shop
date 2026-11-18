@@ -9,7 +9,7 @@ import {
   FiEdit3,
 } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { getOrdersByUserId, updateOrderStatus } from "../../api/orderApi";
 import AppPagination from "../../components/Pagination/Pagination";
 import { orderStatusMap, paymentStatusMap } from "../../utils/constants";
@@ -27,6 +27,7 @@ import { getProductImage, handleImageError } from "../../utils/imageHelper";
 
 const OrderHistoryPage = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const user = useSelector((state) => state.user.user);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -261,13 +262,19 @@ const OrderHistoryPage = () => {
                           onClick={async () => {
                             const { addCart } =
                               await import("../../api/cartApi");
+                            const { addCartItem } =
+                              await import("../../redux/cartSlice");
                             try {
                               for (const item of o.orderItems || []) {
                                 if (item.productId) {
-                                  await addCart({
+                                  const res = await addCart({
                                     productId: item.productId,
+                                    variantId: item.variantId || null,
                                     quantity: item.quantity || 1,
                                   });
+                                  if (res?.errCode === 0 && res?.data) {
+                                    dispatch(addCartItem(res.data));
+                                  }
                                 }
                               }
                               showSuccessToast(

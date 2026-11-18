@@ -18,6 +18,7 @@ const initOrderCron = () => {
         where: {
           status: "pending",
           paymentStatus: "unpaid",
+          paymentMethod: { [Op.in]: ["vnpay", "paypal", "momo"] },
           createdAt: { [Op.lt]: expirationTime },
         },
       });

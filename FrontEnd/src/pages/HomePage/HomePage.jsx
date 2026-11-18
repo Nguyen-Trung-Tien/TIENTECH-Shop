@@ -48,6 +48,8 @@ const HomePage = () => {
     fetchRecs();
   }, [fetchHomeData, fetchRecs]);
 
+  const homeLoading = !homeData && !homeError;
+
   return (
     <div className="bg-slate-50 dark:bg-dark-bg transition-colors duration-300 min-h-screen">
       <Suspense fallback={null}>
@@ -65,13 +67,16 @@ const HomePage = () => {
         )}
 
         {/* Brand Showcase Carousel */}
-        <BrandSection brands={homeData?.brands} />
+        <BrandSection brands={homeData?.brands} parentLoading={homeLoading} />
 
         {/* High-energy Flash Sale Countdown */}
-        <FlashSale products={homeData?.flashSale} />
+        <FlashSale products={homeData?.flashSale} parentLoading={homeLoading} />
 
         {/* Interactive Categories */}
-        <CategorySection categories={homeData?.categories} />
+        <CategorySection
+          categories={homeData?.categories}
+          parentLoading={homeLoading}
+        />
 
         {/* AI Smart Recommendations */}
         {personalizedRecs.length > 0 && (
@@ -92,6 +97,7 @@ const HomePage = () => {
         <ProductSection
           products={homeData?.products}
           categories={homeData?.categories}
+          parentLoading={homeLoading}
         />
 
         {/* Redesigned Catalog & Tools Gateway (Replaces heavy inline AllProducts) */}

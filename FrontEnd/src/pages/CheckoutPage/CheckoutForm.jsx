@@ -27,12 +27,13 @@ const InputField = React.memo(
     icon: Icon,
     placeholder,
     type = "text",
+    autoComplete,
     required = false,
     readOnly = false,
     isTextarea = false,
     onChange,
   }) => (
-    <div className="space-y-1.5 flex-1">
+    <div className="space-y-1.5 flex-1 min-w-0">
       <label
         className="text-[11px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest ml-1"
         htmlFor={name}
@@ -49,6 +50,7 @@ const InputField = React.memo(
           <textarea
             id={name}
             name={name}
+            autoComplete={autoComplete}
             value={value ?? ""}
             onChange={onChange}
             required={required}
@@ -63,6 +65,7 @@ const InputField = React.memo(
             type={type}
             id={name}
             name={name}
+            autoComplete={autoComplete}
             value={value ?? ""}
             onChange={onChange}
             required={required}
@@ -387,6 +390,7 @@ const CheckoutForm = ({ formData, setFormData, user }) => {
             <InputField
               label="Họ và tên người nhận"
               name="fullName"
+              autoComplete="name"
               icon={FiUser}
               placeholder="Nhập họ và tên..."
               value={formData.fullName}
@@ -396,6 +400,8 @@ const CheckoutForm = ({ formData, setFormData, user }) => {
             <InputField
               label="Số điện thoại nhận hàng"
               name="phone"
+              type="tel"
+              autoComplete="tel"
               icon={FiPhone}
               placeholder="Nhập số điện thoại (VD: 090...)"
               value={formData.phone}
@@ -420,8 +426,10 @@ const CheckoutForm = ({ formData, setFormData, user }) => {
                 <textarea
                   id="shippingAddress"
                   name="shippingAddress"
+                  autoComplete="street-address"
                   value={formData.shippingAddress || ""}
                   onChange={handleChange}
+                  required
                   placeholder="Số nhà, tên đường, phường/xã, tỉnh/thành phố..."
                   className="w-full h-28 pl-11 pr-4 py-3 bg-slate-50 dark:bg-dark-bg border-2 border-transparent rounded-2xl text-sm font-medium focus:bg-white dark:focus:bg-dark-surface focus:border-primary/20 outline-none transition-all resize-none placeholder:text-slate-300 dark:placeholder:text-slate-700 text-slate-900 dark:text-white"
                 />

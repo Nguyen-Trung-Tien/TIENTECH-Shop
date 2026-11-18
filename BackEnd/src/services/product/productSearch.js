@@ -22,6 +22,7 @@ const searchProducts = async (query, page = 1, limit = 10) => {
 
   const data = await db.Product.findAndCountAll({
     where: whereCondition,
+    attributes: { exclude: ["embedding"] },
     include: [
       { model: db.Category, as: "category" },
       { model: db.Brand, as: "brand" },
@@ -40,6 +41,7 @@ const searchProducts = async (query, page = 1, limit = 10) => {
     limit: l,
     offset,
     order: [["id", "DESC"]],
+    distinct: true,
   });
 
   const pagingData = getPagingData(data, page, l);
@@ -209,7 +211,7 @@ const filterProducts = async ({
         ? brand
         : String(brand).split(",").map(s => s.trim());
       const brandData = await db.Brand.findAll({ where: { slug: { [Op.in]: brandSlugs } } });
-      if (brandData.length > 0) conditions.brandId = { [Op.in]: brandData.map(b => b.id) };
+      conditions.brandId = brandData.length > 0 ? { [Op.in]: brandData.map(b => b.id) } : -1;
     }
 
     if (categoryId && categoryId !== "") {
@@ -222,7 +224,7 @@ const filterProducts = async ({
         ? category
         : String(category).split(",").map(s => s.trim());
       const categoryData = await db.Category.findAll({ where: { slug: { [Op.in]: categorySlugs } } });
-      if (categoryData.length > 0) conditions.categoryId = { [Op.in]: categoryData.map(c => c.id) };
+      conditions.categoryId = categoryData.length > 0 ? { [Op.in]: categoryData.map(c => c.id) } : -1;
     }
 
     if (search && search !== "") {
@@ -279,6 +281,13 @@ const filterProducts = async ({
                 JOIN AttributeValues AS av ON pav.attributeValueId = av.id
                 JOIN Attributes AS a ON av.attributeId = a.id
                 WHERE a.code = ${safeKey} AND av.value IN (${safeValues})
+                UNION
+                SELECT pv.productId
+                FROM VariantAttributeValues AS vav
+                JOIN ProductVariants AS pv ON vav.variantId = pv.id
+                JOIN AttributeValues AS av2 ON vav.attributeValueId = av2.id
+                JOIN Attributes AS a2 ON av2.attributeId = a2.id
+                WHERE a2.code = ${safeKey} AND av2.value IN (${safeValues})
               )`),
             },
           });
@@ -291,7 +300,7 @@ const filterProducts = async ({
     }
 
     const attributes = [
-      "id", "name", "slug", "sku", "basePrice", "discount", "totalStock",
+      "id", "name", "slug", "sku", "basePrice", "discount", "totalStock", "sold",
       "hasVariants", "isFlashSale", "flashSaleStart", "flashSaleEnd", "flashSalePrice",
       "isActive", "categoryId", "brandId", "createdAt",
       [
@@ -336,9 +345,19 @@ const filterProducts = async ({
     ];
 
     let order = [];
-    if (sort === "price_asc") order = [["basePrice", "ASC"]];
-    if (sort === "price_desc") order = [["basePrice", "DESC"]];
-    if (sort === "newest") order = [["createdAt", "DESC"]];
+    if (sort === "price_asc" || sort === "price-asc") {
+      order = [["basePrice", "ASC"]];
+    } else if (sort === "price_desc" || sort === "price-desc") {
+      order = [["basePrice", "DESC"]];
+    } else if (sort === "best-seller" || sort === "bestseller" || sort === "best_seller") {
+      order = [["sold", "DESC"], ["id", "DESC"]];
+    } else if (sort === "rating") {
+      order = [[db.sequelize.literal("avgRating"), "DESC"], [db.sequelize.literal("reviewCount"), "DESC"], ["id", "DESC"]];
+    } else if (sort === "discount") {
+      order = [["discount", "DESC"], ["id", "DESC"]];
+    } else if (sort === "newest") {
+      order = [["createdAt", "DESC"]];
+    }
     if (!order.length) order = [["id", "DESC"]];
 
     const { offset, limit: l } = getPagination(page, limit);

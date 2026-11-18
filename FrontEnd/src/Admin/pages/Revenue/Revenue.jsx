@@ -55,38 +55,52 @@ const Revenue = () => {
     }
   };
 
+  const formatTrend = (changeVal) => {
+    const num = Number(changeVal ?? 0);
+    const safe = Number.isFinite(num) ? num : 0;
+    return {
+      trend: `${safe >= 0 ? "+" : ""}${safe}%`,
+      isUp: safe >= 0,
+    };
+  };
+
+  const revenueTrend = formatTrend(stats?.change?.revenue);
+  const profitTrend = formatTrend(stats?.change?.profit);
+  const ordersTrend = formatTrend(stats?.change?.orders);
+  const usersTrend = formatTrend(stats?.change?.users);
+
   const statCards = [
     {
       title: "Tổng doanh thu",
       value: stats?.totalRevenue || 0,
       icon: <FiDollarSign />,
       color: "bg-primary",
-      trend: "+12.5%",
-      isUp: true,
+      trend: revenueTrend.trend,
+      isUp: revenueTrend.isUp,
     },
     {
       title: "Lợi nhuận ước tính",
       value: stats?.totalProfit || 0,
       icon: <FiTrendingUp />,
       color: "bg-emerald-500",
-      trend: "+8.2%",
-      isUp: true,
+      trend: profitTrend.trend,
+      isUp: profitTrend.isUp,
     },
     {
       title: "Tổng đơn hàng",
       value: stats?.totalOrders || 0,
       icon: <FiShoppingBag />,
       color: "bg-orange-500",
-      trend: "+5.1%",
-      isUp: true,
+      trend: ordersTrend.trend,
+      isUp: ordersTrend.isUp,
     },
     {
       title: "Khách hàng mới",
       value: stats?.newUsers || 0,
       icon: <FiUsers />,
       color: "bg-violet-500",
-      trend: "-2.4%",
-      isUp: false,
+      trend: usersTrend.trend,
+      isUp: usersTrend.isUp,
     },
   ];
 

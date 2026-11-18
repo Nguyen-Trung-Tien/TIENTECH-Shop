@@ -23,6 +23,13 @@ function sortObject(obj) {
   return sorted;
 }
 
+const extractOrderCodeFromTxnRef = (txnRef) => {
+  const raw = String(txnRef || "").trim();
+  if (!raw) return "";
+  const match = raw.match(/^(.+)_(\d{10,})$/);
+  return match ? match[1] : raw;
+};
+
 function buildSignData(params) {
   return Object.keys(params)
     .sort()
@@ -100,13 +107,15 @@ const handleCreateVnpayPayment = async (req, res) => {
     // SỬ DỤNG GIÁ TRỊ TỪ DATABASE (secureAmount) THAY VÌ CLIENT SUBMIT (amount) ĐỂ TRÁNH MUA HÀNG 0 ĐỒNG
     const vnpAmount = Math.round(Number(secureAmount) * 100);
 
+    const vnp_TxnRef = `${orderCode}_${Date.now()}`;
+
     let vnp_Params = {
       vnp_Version: "2.1.0",
       vnp_Command: "pay",
       vnp_TmnCode: tmnCode,
       vnp_Locale: "vn",
       vnp_CurrCode: "VND",
-      vnp_TxnRef: orderCode,
+      vnp_TxnRef,
       vnp_OrderInfo: `Thanh toan don hang ${orderCode}`,
       vnp_OrderType: "billpayment",
       vnp_Amount: vnpAmount,
@@ -167,8 +176,8 @@ const handleVnpayReturn = async (req, res) => {
       return sendVnpayJson(res, 400, 2, "Chữ ký VNPay không hợp lệ.");
     }
 
-    // LẤY THÔNG TIN
-    const orderCode = vnp_Params.vnp_TxnRef;
+    // LẤY THÔNG TIN (hỗ trợ cả orderCode gốc và orderCode_timestamp khi retry payment)
+    const orderCode = extractOrderCodeFromTxnRef(vnp_Params.vnp_TxnRef);
     const rspCode = vnp_Params.vnp_ResponseCode;
     const vnpAmount = Number(vnp_Params.vnp_Amount);
 
@@ -241,7 +250,7 @@ const handleVnpayIPN = async (req, res) => {
         .json({ RspCode: "97", Message: "Invalid checksum" });
     }
 
-    const orderCode = vnp_Params.vnp_TxnRef;
+    const orderCode = extractOrderCodeFromTxnRef(vnp_Params.vnp_TxnRef);
     const rspCode = vnp_Params.vnp_ResponseCode;
     const vnp_Amount = vnp_Params.vnp_Amount; // VNPay amount là * 100
 
@@ -305,4 +314,5 @@ module.exports = {
   handleCreateVnpayPayment,
   handleVnpayReturn,
   handleVnpayIPN,
+  extractOrderCodeFromTxnRef,
 };

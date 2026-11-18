@@ -121,8 +121,8 @@ const Footer = () => {
             <ul className="space-y-2.5">
               {[
                 { name: "Trang chủ", path: "/" },
-                { name: "Danh sách sản phẩm", path: "/product-list" },
-                { name: "Sản phẩm Phong Thủy", path: "/fortune-products" },
+                { name: "Danh sách sản phẩm", path: "/products" },
+                { name: "AI Color & Setup", path: "/fortune-products" },
                 { name: "Về TienTech", path: "/about" },
                 { name: "Liên hệ tư vấn", path: "/contact" },
               ].map((link) => (

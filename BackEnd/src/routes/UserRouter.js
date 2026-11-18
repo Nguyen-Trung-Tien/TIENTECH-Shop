@@ -4,6 +4,7 @@ const router = express.Router();
 const UserController = require("../controllers/UserController");
 const {
   authenticateToken,
+  optionalAuthenticateToken,
   authorizeRole,
 } = require("../middleware/authMiddleware");
 const upload = require("./multer");
@@ -20,6 +21,7 @@ const {
   verifyEmailSchema,
   resendVerificationSchema,
   updateUserSchema,
+  adminUpdateUserSchema,
   adminUpdateUserStatusSchema,
   adminBulkUserStatusSchema,
 } = require("../utils/zodSchemas");
@@ -82,7 +84,7 @@ router.get(
 );
 
 // Thêm upload.none() để xử lý multipart/form-data không có file, hoặc upload.single("avatar") nếu cần
-router.post("/create", sensitiveActionLimiter, upload.single("avatar"), validate(registerSchema), UserController.handleCreateNewUser);
+router.post("/create", optionalAuthenticateToken, sensitiveActionLimiter, upload.single("avatar"), validate(registerSchema), UserController.handleCreateNewUser);
 
 router.post("/refresh-token", refreshTokenLimiter, UserController.handleRefreshToken);
 router.get("/get-me", authenticateToken, UserController.handleGetMe);
@@ -135,6 +137,15 @@ router.put(
   authorizeRole(["admin", "customer"]),
   upload.single("avatar"),
   validate(updateUserSchema),
+  UserController.handleUpdateUser
+);
+
+router.put(
+  "/admin/update",
+  authenticateToken,
+  authorizeRole(["admin"]),
+  upload.single("avatar"),
+  validate(adminUpdateUserSchema),
   UserController.handleUpdateUser
 );
 

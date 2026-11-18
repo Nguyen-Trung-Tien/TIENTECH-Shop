@@ -45,6 +45,7 @@ const getFengShuiAdvice = async (data) => {
           ...(minPrice && { basePrice: { [Op.gte]: minPrice } }),
           ...(maxPrice && { basePrice: { [Op.lte]: maxPrice } }),
         },
+        attributes: { exclude: ["embedding"] },
         include: [
           { model: db.Brand, as: "brand" },
           { model: db.Category, as: "category" },
@@ -85,19 +86,19 @@ THÔNG TIN KHÁCH HÀNG:
     }
 
     const systemPrompt = `
-Bạn là "TienTech FengShui Master" - Bậc thầy phong thủy công nghệ.
-Nhiệm vụ: Tư vấn chọn sản phẩm (Laptop, iPhone, Tablet...) dựa trên bản mệnh chuyên sâu.
+Bạn là "TienTech AI Tech Color & Setup Advisor" - Chuyên gia tư vấn màu sắc thiết bị công nghệ và thiết kế góc Setup hợp mệnh/cá tính.
+Nhiệm vụ: Tư vấn chọn sản phẩm công nghệ (Laptop, Smartphone, Tablet, Phụ kiện...) dựa trên bảng màu ngũ hành và phong cách cá nhân.
 
 NGUYÊN TẮC TƯ VẤN:
-1. Chào hỏi theo phong cách chuyên gia (VD: "Kính thưa quý khách sinh năm ${birthYear}...").
-2. Phân tích sự kết hợp giữa cung phi ${fs.cungPhi} và sản phẩm người dùng đang quan tâm.
-3. Ưu tiên gợi ý màu sắc Đại Cát trước, sau đó mới đến màu Bình An. Tuyệt đối khuyên tránh màu Đại Kỵ.
-4. Nhắc đến các con số may mắn (${fs.luckyNumbers.join(", ")}) có thể xuất hiện trong giá tiền hoặc mã máy.
-5. Tư vấn thêm về hướng đặt thiết bị trên bàn làm việc để kích tài lộc (Ví dụ: Mệnh ${fs.element} đặt hướng nào).
-6. Dưới đây là danh sách sản phẩm hợp mệnh trong kho. Hãy phân tích và đề xuất ID tương ứng trong recommendedProducts.
+1. Chào hỏi chuyên nghiệp, hiện đại (VD: "Chào bạn sinh năm ${birthYear}...").
+2. Phân tích sự hòa hợp giữa bản mệnh (${fs.cungPhi} - Hành ${fs.element}) với màu sắc thiết bị và phong cách bàn làm việc (Setup).
+3. Ưu tiên gợi ý bảng màu Tương sinh (${fs.supportColors.join(", ")}) trước, sau đó đến màu Bản mệnh (${fs.luckyColors.join(", ")}). Khuyên tránh bảng màu tương khắc (${fs.badColors.join(", ")}).
+4. Gợi ý các con số phù hợp (${fs.luckyNumbers.join(", ")}) cho cấu hình hoặc mã sản phẩm.
+5. Tư vấn thêm về hướng bố trí góc Setup / thiết bị trên bàn làm việc để tối ưu cảm hứng và năng suất.
+6. Dựa vào danh sách sản phẩm trong kho bên dưới, hãy đề xuất ID tương ứng trong recommendedProducts.
 7. Trả về JSON THUẦN:
 {
-  "reply": "Lời tư vấn tâm huyết và chi tiết",
+  "reply": "Lời tư vấn chi tiết, súc tích và hiện đại",
   "recommendedProducts": [id1, id2, id3],
   "fsData": ${JSON.stringify(fs)}
 }
@@ -110,7 +111,14 @@ ${dbContext || "Không có sản phẩm nào phù hợp trực tiếp trong kho.
       { role: "user", parts: [{ text: systemPrompt }] },
       ...history.slice(-6).map((msg) => ({
         role: msg.role === "user" ? "user" : "model",
-        parts: [{ text: typeof msg.content === "string" ? msg.content : JSON.stringify(msg.content) }],
+        parts: [
+          {
+            text:
+              typeof msg.content === "string"
+                ? msg.content
+                : JSON.stringify(msg.content),
+          },
+        ],
       })),
       { role: "user", parts: [{ text: message }] },
     ];
@@ -119,12 +127,15 @@ ${dbContext || "Không có sản phẩm nào phù hợp trực tiếp trong kho.
     try {
       const resultGen = await generateContentWithFallback(
         { contents },
-        { generationConfig: { responseMimeType: "application/json" } }
+        { generationConfig: { responseMimeType: "application/json" } },
       );
       const responseText = resultGen.response.text();
       result = extractJson(responseText);
     } catch (aiError) {
-      console.error("FengShuiService AI Error (using deterministic fallback):", aiError.message || aiError);
+      console.error(
+        "FengShuiService AI Error (using deterministic fallback):",
+        aiError.message || aiError,
+      );
       const fallbackReply = [
         `Kính chào quý khách sinh năm ${birthYear} (${fs.gender}) — Mệnh Niên ${fs.menhNien}, Cung Phi ${fs.cungPhi} (Hành ${fs.element}).`,
         `Màu Đại Cát (Tương sinh): ${fs.supportColors.join(", ")}.`,
@@ -153,10 +164,16 @@ ${dbContext || "Không có sản phẩm nào phù hợp trực tiếp trong kho.
     };
 
     let finalRecommended = [];
-    if (Array.isArray(result.recommendedProducts) && result.recommendedProducts.length > 0) {
+    if (
+      Array.isArray(result.recommendedProducts) &&
+      result.recommendedProducts.length > 0
+    ) {
       try {
         const dbRecommended = await db.Product.findAll({
-          where: { id: { [Op.in]: result.recommendedProducts }, isActive: true },
+          where: {
+            id: { [Op.in]: result.recommendedProducts },
+            isActive: true,
+          },
           attributes: ["id", "name", "slug", "basePrice", "discount"],
           include: [
             {
@@ -179,8 +196,11 @@ ${dbContext || "Không có sản phẩm nào phù hợp trực tiếp trong kho.
       errCode: 0,
       errMessage: "OK",
       data: {
-        reply: result.reply || "Tôi đã xem quẻ cho bạn nhưng gặp chút khó khăn khi diễn đạt. Bạn hãy thử lại nhé!",
-        recommendedProducts: finalRecommended.length > 0 ? finalRecommended : fallbackProducts,
+        reply:
+          result.reply ||
+          "Tôi đã xem quẻ cho bạn nhưng gặp chút khó khăn khi diễn đạt. Bạn hãy thử lại nhé!",
+        recommendedProducts:
+          finalRecommended.length > 0 ? finalRecommended : fallbackProducts,
       },
     };
   } catch (error) {

@@ -29,43 +29,75 @@ const SupportHub = () => {
   const supportCategories = [
     {
       title: "Câu Hỏi Thường Gặp (FAQ)",
-      desc: "Giải đáp nhanh các thắc mắc phổ biến về đơn hàng, chọn đá phong thủy & tài khoản.",
-      icon: <FiHelpCircle className="text-blue-600 dark:text-blue-400" size={32} />,
+      desc: "Giải đáp nhanh các thắc mắc phổ biến về đơn hàng, cấu hình sản phẩm & tài khoản.",
+      icon: (
+        <FiHelpCircle className="text-blue-600 dark:text-blue-400" size={32} />
+      ),
       link: "/support/faq",
       badge: "Phổ biến nhất",
-      color: "bg-blue-50 dark:bg-blue-950/40 border-blue-100 dark:border-blue-900/40",
+      color:
+        "bg-blue-50 dark:bg-blue-950/40 border-blue-100 dark:border-blue-900/40",
     },
     {
       title: "Chính Sách Bảo Hành",
-      desc: "Cam kết chất lượng đá tự nhiên 100%, bảo hành & đánh bóng miễn phí trọn đời.",
-      icon: <FiShield className="text-emerald-600 dark:text-emerald-400" size={32} />,
+      desc: "Cam kết chính hãng nguyên seal 100%, bảo hành điện tử & vệ sinh phần cứng định kỳ.",
+      icon: (
+        <FiShield
+          className="text-emerald-600 dark:text-emerald-400"
+          size={32}
+        />
+      ),
       link: "/support/warranty",
       badge: "Cam kết 100%",
-      color: "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-100 dark:border-emerald-900/40",
+      color:
+        "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-100 dark:border-emerald-900/40",
     },
     {
       title: "Vận Chuyển & Đổi Trả",
-      desc: "Miễn phí giao hàng toàn quốc, chính sách 1 đổi 1 trong 7 ngày nếu không vừa ý.",
-      icon: <FiTruck className="text-amber-600 dark:text-amber-400" size={32} />,
+      desc: "Miễn phí giao hàng toàn quốc, chính sách 1 đổi 1 trong 7 ngày nếu lỗi nhà sản xuất.",
+      icon: (
+        <FiTruck className="text-amber-600 dark:text-amber-400" size={32} />
+      ),
       link: "/support/shipping-returns",
       badge: "7 Ngày đổi trả",
-      color: "bg-amber-50 dark:bg-amber-950/40 border-amber-100 dark:border-amber-900/40",
+      color:
+        "bg-amber-50 dark:bg-amber-950/40 border-amber-100 dark:border-amber-900/40",
     },
     {
       title: "Thanh Toán Trực Tuyến",
       desc: "Hướng dẫn thanh toán qua VNPay, PayPal, Chuyển khoản QR code & COD an toàn.",
-      icon: <FiCreditCard className="text-purple-600 dark:text-purple-400" size={32} />,
+      icon: (
+        <FiCreditCard
+          className="text-purple-600 dark:text-purple-400"
+          size={32}
+        />
+      ),
       link: "/support/payment",
       badge: "Bảo mật SSL",
-      color: "bg-purple-50 dark:bg-purple-950/40 border-purple-100 dark:border-purple-900/40",
+      color:
+        "bg-purple-50 dark:bg-purple-950/40 border-purple-100 dark:border-purple-900/40",
     },
   ];
 
   const quickArticles = [
-    { title: "Cách đo size tay chuẩn xác để chọn vòng đá phong thủy", link: "/support/faq" },
-    { title: "Cách phân biệt đá tự nhiên và đá nhân tạo thật hay giả", link: "/support/warranty" },
-    { title: "Quy trình yêu cầu đổi trả hoặc hoàn tiền đơn hàng", link: "/support/shipping-returns" },
-    { title: "Hướng dẫn quét mã QR thanh toán nhận chiết khấu 5%", link: "/support/payment" },
+    {
+      title:
+        "Cách chọn màu sắc thiết bị & góc setup chuẩn cùng AI Tech Advisor",
+      link: "/fortune-products",
+    },
+    {
+      title:
+        "Hướng dẫn tra cứu serial và kích hoạt bảo hành điện tử chính hãng",
+      link: "/support/warranty",
+    },
+    {
+      title: "Quy trình yêu cầu đổi trả hoặc hoàn tiền đơn hàng",
+      link: "/support/shipping-returns",
+    },
+    {
+      title: "Hướng dẫn thanh toán VNPay, PayPal & đổi điểm thành viên",
+      link: "/support/payment",
+    },
   ];
 
   return (
@@ -85,10 +117,13 @@ const SupportHub = () => {
             </p>
 
             {/* Search Input */}
-            <form onSubmit={handleSearchSubmit} className="relative max-w-xl mx-auto pt-2">
+            <form
+              onSubmit={handleSearchSubmit}
+              className="relative max-w-xl mx-auto pt-2"
+            >
               <input
                 type="text"
-                placeholder="Nhập từ khóa tìm kiếm (vd: bảo hành, đổi trả, đo size, thanh toán...)"
+                placeholder="Nhập từ khóa tìm kiếm (vd: bảo hành, đổi trả, vận chuyển, thanh toán...)"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full h-14 pl-12 pr-32 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-2xl text-sm font-medium focus:outline-none shadow-xl border border-transparent dark:border-slate-700 placeholder:text-slate-400 dark:placeholder:text-slate-500"
@@ -155,7 +190,8 @@ const SupportHub = () => {
           {/* Quick Helpful Articles */}
           <div className="lg:col-span-7 bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm">
             <h3 className="text-lg font-black text-slate-900 dark:text-white mb-6 flex items-center gap-2">
-              <FiFileText className="text-blue-600" /> Bài Viết Hướng Dẫn Hữu Ích
+              <FiFileText className="text-blue-600" /> Bài Viết Hướng Dẫn Hữu
+              Ích
             </h3>
 
             <div className="space-y-3">
@@ -181,9 +217,13 @@ const SupportHub = () => {
               <span className="px-3 py-1 bg-primary/10 text-primary dark:bg-blue-500/20 dark:text-blue-400 text-[10px] font-black uppercase tracking-widest rounded-full inline-block border border-primary/20 dark:border-transparent">
                 Tư vấn trực tiếp
               </span>
-              <h3 className="text-2xl font-black text-slate-900 dark:text-white">Cần hỗ trợ đặc biệt?</h3>
+              <h3 className="text-2xl font-black text-slate-900 dark:text-white">
+                Cần hỗ trợ đặc biệt?
+              </h3>
               <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">
-                Đội ngũ chuyên gia đá phong thủy TienTech luôn sẵn sàng tư vấn trực tiếp 1-1 cho bạn theo mệnh và tuổi.
+                Đội ngũ chuyên gia công nghệ &amp; setup TienTech luôn sẵn sàng
+                tư vấn trực tiếp 1-1 cho bạn về cấu hình và thẩm mỹ không gian
+                làm việc.
               </p>
             </div>
 

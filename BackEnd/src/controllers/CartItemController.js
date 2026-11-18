@@ -65,7 +65,10 @@ const createCartItem = async (req, res) => {
       err.message.includes("not found") ||
       err.message.includes("must be at least") ||
       err.message.includes("hết hàng") ||
-      err.message.includes("không đủ");
+      err.message.includes("không đủ") ||
+      err.message.includes("phiên bản") ||
+      err.message.includes("ngừng kinh doanh") ||
+      err.message.includes("vượt quá");
     const statusCode = isClientError ? 400 : 500;
     return res.status(statusCode).json({
       status: statusCode === 400 ? "BAD_REQUEST" : "INTERNAL_SERVER_ERROR",

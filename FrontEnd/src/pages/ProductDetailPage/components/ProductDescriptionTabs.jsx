@@ -44,8 +44,9 @@ const ProductDescriptionTabs = ({ product, mergedSpecs, displayVariant }) => {
   }, []);
 
   useEffect(() => {
+    if (activeTab !== "fengshui") return;
     fetchTabFengShui(fengShuiYear);
-  }, [fengShuiYear, fetchTabFengShui]);
+  }, [activeTab, fengShuiYear, fetchTabFengShui]);
 
   const tabs = [
     {
@@ -64,10 +65,10 @@ const ProductDescriptionTabs = ({ product, mergedSpecs, displayVariant }) => {
     },
     {
       id: "fengshui",
-      label: "Phong Thuỷ",
-      fullLabel: "Phong Thuỷ Số",
+      label: "AI Color & Setup",
+      fullLabel: "AI Tech Color & Setup Advisor",
       icon: <FiCompass className="size-4 shrink-0" />,
-      badge: "Vượng khí",
+      badge: "Setup 4.0",
     },
     {
       id: "warranty",
@@ -360,24 +361,23 @@ const ProductDescriptionTabs = ({ product, mergedSpecs, displayVariant }) => {
               {/* Header */}
               <div className="border-b border-slate-100 dark:border-dark-border pb-4">
                 <div className="flex items-center gap-2 text-primary font-black text-xs uppercase tracking-wider mb-1">
-                  ☯️ Phong Thuỷ Công Nghệ & Khai Vận Số
+                  🎨 AI Tech Color &amp; Setup Advisor
                 </div>
                 <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white">
-                  Bát Trạch Bàn Làm Việc & Năng Lượng Thiết Bị Số
+                  Gợi Ý Phối Màu Thiết Bị &amp; Bố Trí Góc Setup Công Nghệ
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-dark-text-secondary mt-1">
-                  Dữ liệu được tính toán tự động từ TienTech FengShui Engine máy
-                  chủ để khai mở vượng khí, gia tăng sáng tạo và thu hút tài lộc
-                  công danh.
+                  Dữ liệu được tính toán từ AI Tech Color &amp; Setup Engine
+                  giúp tối ưu thẩm mỹ màu sắc, công thái học và cảm hứng làm việc.
                 </p>
               </div>
 
-              {/* Tra Cứu Nhanh Năm Sinh Bản Mệnh (API Động) */}
+              {/* Tra Cứu Nhanh Năm Sinh Phối Màu (API Động) */}
               <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-50/70 via-white to-blue-50/50 dark:from-dark-card dark:to-dark-surface border border-amber-200/80 dark:border-dark-border space-y-3">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <div className="font-extrabold text-xs sm:text-sm text-slate-900 dark:text-white flex items-center gap-2">
-                    <FiCompass className="text-amber-500" /> Tra cứu phong thuỷ
-                    từ máy chủ:
+                    <FiCompass className="text-amber-500" /> Tra cứu bảng màu
+                    hợp cá tính từ AI Advisor:
                   </div>
                   <select
                     value={fengShuiYear}
@@ -396,7 +396,7 @@ const ProductDescriptionTabs = ({ product, mergedSpecs, displayVariant }) => {
 
                 {loadingFs && (
                   <div className="p-4 text-center text-xs text-slate-400">
-                    Đang tra cứu phong thủy từ TienTech Engine...
+                    Đang tải gợi ý phối màu &amp; setup từ TienTech AI...
                   </div>
                 )}
 
@@ -411,75 +411,73 @@ const ProductDescriptionTabs = ({ product, mergedSpecs, displayVariant }) => {
                         Mệnh Niên: {fsData.menhNien}
                       </span>
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                       <p>
-                        <strong>🌟 Màu Đại Cát (Tương sinh):</strong>{" "}
+                        <strong>🌟 Bảng màu tương hợp:</strong>{" "}
                         {fsData.supportColors?.join(", ")}
                       </p>
                       <p>
-                        <strong>🎨 Màu Bình An (Bản mệnh):</strong>{" "}
+                        <strong>🎨 Màu chủ đạo gợi ý:</strong>{" "}
                         {fsData.luckyColors?.join(", ")}
                       </p>
                     </div>
                     <p className="pt-1 text-[11px] border-t border-black/5 dark:border-white/5">
-                      <strong>💡 Lời khuyên thiết bị:</strong> {fsData.advice}
+                      <strong>💡 Gợi ý góc setup:</strong> {fsData.advice}
                     </p>
                   </div>
                 )}
               </div>
 
-              {/* 3 Trụ Cột Bát Trạch Bàn Làm Việc */}
+              {/* 3 Trụ Cột Bố Trí Góc Setup Công Nghệ */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="p-4.5 rounded-2xl bg-gradient-to-b from-amber-50/60 to-white dark:from-dark-card dark:to-dark-surface border border-amber-200/60 dark:border-amber-900/40 space-y-2">
                   <div className="text-xs font-black text-amber-700 dark:text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
-                    🪙 Hướng Đông Nam: Tụ Khí Tài Lộc
+                    🖥️ Ánh Sáng &amp; Góc Nhìn Chính
                   </div>
                   <h4 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">
-                    Vị Trí Đặt Máy Tính Chính
+                    Vị Trí Đặt Màn Hình &amp; Máy Chính
                   </h4>
                   <p className="text-xs text-slate-600 dark:text-dark-text-secondary leading-relaxed">
-                    Đông Nam là cung Tài Bạch. Đặt màn hình chính hoặc laptop ở
-                    góc này giúp năng lượng công việc thăng hoa, các hợp đồng và
-                    tài chính luân chuyển thông suốt.
+                    Đặt màn hình ngang tầm mắt, vuông góc nguồn sáng cửa sổ để
+                    giảm chói, duy trì sự tập trung và hiệu suất làm việc tối ưu.
                   </p>
                 </div>
 
                 <div className="p-4.5 rounded-2xl bg-gradient-to-b from-blue-50/60 to-white dark:from-dark-card dark:to-dark-surface border border-blue-200/60 dark:border-blue-900/40 space-y-2">
                   <div className="text-xs font-black text-primary dark:text-primary-light uppercase tracking-wider flex items-center gap-1.5">
-                    🧭 Hướng Tây Bắc: Cung Quý Nhân
+                    🎨 Đồng Bộ Tone Màu Phụ Kiện
                   </div>
                   <h4 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">
-                    Kích Hoạt Trợ Lực Sự Nghiệp
+                    Cân Bằng Thẩm Mỹ &amp; Công Thái Học
                   </h4>
                   <p className="text-xs text-slate-600 dark:text-dark-text-secondary leading-relaxed">
-                    Tây Bắc thuộc hành Kim, đại diện cho quý nhân và lãnh đạo.
-                    Bố trí điện thoại hoặc thiết bị giao tiếp ở góc này giúp dễ
-                    gặp đối tác tốt và được nâng đỡ.
+                    Phối bàn phím, chuột và deskmat theo bảng màu tương hợp tạo
+                    không gian gọn mắt, truyền cảm hứng cho những giờ làm việc dài.
                   </p>
                 </div>
 
                 <div className="p-4.5 rounded-2xl bg-gradient-to-b from-emerald-50/60 to-white dark:from-dark-card dark:to-dark-surface border border-emerald-200/60 dark:border-emerald-900/40 space-y-2">
                   <div className="text-xs font-black text-emerald-700 dark:text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
-                    🌿 Thanh Tẩy Khí Trường Thiết Bị
+                    🌿 Tối Ưu Không Gian &amp; Góc Setup
                   </div>
                   <h4 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">
-                    Vệ Sinh & Trật Tự Dây Cáp
+                    Vệ Sinh &amp; Trật Tự Dây Cáp
                   </h4>
                   <p className="text-xs text-slate-600 dark:text-dark-text-secondary leading-relaxed">
-                    Tránh để dây sạc bừa bãi (gây Hỏa sát). Vệ sinh bụi bẩn màn
-                    hình và thanh lọc bộ nhớ cache định kỳ vào cuối tuần để giữ
-                    trường năng lượng luôn thanh sạch.
+                    Sắp xếp gọn gàng dây sạc và dock hub giúp góc làm việc tối giản,
+                    giảm nhiễu thị giác. Vệ sinh màn hình và tối ưu lưu trữ định kỳ
+                    để thiết bị vận hành mượt mà, bền bỉ.
                   </p>
                 </div>
               </div>
 
-              {/* Bảng Các Bản Mệnh Ngũ Hành từ Máy Chủ */}
+              {/* Bảng Màu Chủ Đạo & Phong Cách Setup từ AI Advisor */}
               {fsData?.elements && fsData.elements.length > 0 && (
                 <div className="rounded-2xl border border-slate-200/80 dark:border-dark-border overflow-hidden">
                   <div className="p-4 bg-slate-50 dark:bg-dark-card flex items-center justify-between">
                     <div className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                      <FiCompass className="text-primary" /> Bảng Ngũ Hành & Màu
-                      Sắc Đại Diện (Từ TienTech Engine)
+                      <FiCompass className="text-primary" /> Bảng Màu Đại Diện
+                      Theo Phong Cách (AI Tech Color Advisor)
                     </div>
                     <button
                       type="button"

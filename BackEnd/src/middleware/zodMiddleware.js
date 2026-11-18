@@ -1,14 +1,18 @@
 const validate = (schema) => (req, res, next) => {
   try {
-    schema.parse({
+    const parsed = schema.parse({
       body: req.body,
       query: req.query,
       params: req.params,
     });
+    if (parsed && parsed.body !== undefined) {
+      req.body = parsed.body;
+    }
     next();
   } catch (error) {
     if (error.name === "ZodError") {
-      const firstError = error.errors[0];
+      const issues = error.issues || error.errors || [];
+      const firstError = issues[0];
       const customMessage = firstError ? firstError.message : "Dữ liệu không hợp lệ.";
       
       return res.status(400).json({
@@ -19,8 +23,8 @@ const validate = (schema) => (req, res, next) => {
         errMessage: customMessage,
         message: customMessage,
         data: null,
-        errors: error.errors.map((err) => ({
-          path: err.path.join("."),
+        errors: issues.map((err) => ({
+          path: (err.path || []).join("."),
           message: err.message,
         })),
       });

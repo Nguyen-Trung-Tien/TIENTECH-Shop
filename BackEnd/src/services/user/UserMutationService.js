@@ -308,6 +308,7 @@ class UserMutationService {
       }
 
       const updatedUser = await user.update(safeUpdateData);
+      await evictUserCaches(userId, "UserMutationService.updateUser");
       const {
         password: _pw,
         refreshTokenHash: _rth,

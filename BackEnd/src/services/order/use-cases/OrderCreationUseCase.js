@@ -1,13 +1,24 @@
 const crypto = require("crypto");
+const { Op } = require("sequelize");
 const db = require("../../../models");
 const VoucherService = require("../../marketing/VoucherService");
 const SystemSettingService = require("../../system/SystemSettingService");
-const { sendOrderCreatedEmail } = require("../../common/EmailService");
+const {
+  sendOrderCreatedEmail,
+  sendAdminNewOrderEmail,
+} = require("../../common/EmailService");
 const {
   acquireLock,
   releaseLock,
+  deleteCache,
   deleteCacheByPattern,
 } = require("../../../config/redis");
+const { calculateFinalPrice } = require("../../../utils/priceHelper");
+const {
+  POINT_VALUE_VND,
+  calculateMaxUsablePoints,
+} = require("../../../utils/loyaltyHelper");
+const { getUserProfileKey } = require("../../user/AuthHelper");
 
 const createOrder = async (data, actor = null) => {
   // SECURITY: Always enforce effectiveUserId based on caller
@@ -74,6 +85,14 @@ const createOrder = async (data, actor = null) => {
         };
       }
 
+      if (product.hasVariants && !item.variantId) {
+        await t.rollback();
+        return {
+          errCode: 4,
+          errMessage: `Vui lòng chọn phiên bản cho sản phẩm ${product.name}.`,
+        };
+      }
+
       let variant = null;
       if (item.variantId) {
         variant = await db.ProductVariant.findOne({
@@ -117,32 +136,7 @@ const createOrder = async (data, actor = null) => {
         await product.decrement("totalStock", { by: quantity, transaction: t });
       }
 
-      const now = new Date();
-      let unitPrice = 0;
-
-      const isFlashSale =
-        product.isFlashSale &&
-        product.flashSaleStart &&
-        product.flashSaleEnd &&
-        now >= new Date(product.flashSaleStart) &&
-        now <= new Date(product.flashSaleEnd);
-
-      if (isFlashSale && product.flashSalePrice) {
-        unitPrice = Math.round(Number(product.flashSalePrice));
-      } else if (variant) {
-        const originalPrice = Number(variant.price || 0);
-        const discount =
-          Number(variant.discount || 0) || Number(product.discount || 0);
-        unitPrice = Math.round(
-          discount > 0 ? originalPrice * (1 - discount / 100) : originalPrice,
-        );
-      } else {
-        const basePrice = Number(product.basePrice || 0);
-        const discount = Number(product.discount || 0);
-        unitPrice = Math.round(
-          discount > 0 ? basePrice * (1 - discount / 100) : basePrice,
-        );
-      }
+      const unitPrice = calculateFinalPrice(product, variant);
 
       const subtotal = Number((unitPrice * quantity).toFixed(2));
       calculatedTotal += subtotal;
@@ -201,7 +195,11 @@ const createOrder = async (data, actor = null) => {
         }
         if (appliedVoucher.perUserUsage != null) {
           const userUsedCount = await db.VoucherUsage.count({
-            where: { voucherId: appliedVoucher.id, userId: effectiveUserId },
+            where: {
+              voucherId: appliedVoucher.id,
+              userId: effectiveUserId,
+              status: { [Op.ne]: "cancelled" },
+            },
             transaction: t,
           });
           if (userUsedCount >= appliedVoucher.perUserUsage) {
@@ -212,11 +210,50 @@ const createOrder = async (data, actor = null) => {
             };
           }
         }
-        discountAmount = voucherRes.data.discountAmount;
+        discountAmount = Math.min(
+          calculatedTotal,
+          Number(voucherRes.data.discountAmount || 0),
+        );
         await appliedVoucher.increment("usedCount", { by: 1, transaction: t });
       } else {
         await t.rollback();
         return voucherRes;
+      }
+    }
+
+    const subtotalAfterVoucher = Math.max(0, calculatedTotal - discountAmount);
+    const requestedPoints = Math.max(0, Math.floor(Number(data.pointsUsed) || 0));
+    let actualPointsUsed = 0;
+    let pointsDiscount = 0;
+
+    if (requestedPoints > 0) {
+      const loyaltyUser = await db.User.findByPk(effectiveUserId, {
+        transaction: t,
+        lock: t.LOCK.UPDATE,
+      });
+      if (!loyaltyUser) {
+        await t.rollback();
+        return { errCode: 1, errMessage: "Người dùng không tồn tại." };
+      }
+
+      const availablePoints = Math.max(0, Number(loyaltyUser.points || 0));
+      if (requestedPoints > availablePoints) {
+        await t.rollback();
+        return {
+          errCode: 1,
+          errMessage: `Số điểm tích lũy không đủ (hiện có ${availablePoints} điểm).`,
+        };
+      }
+
+      const maxUsablePoints = calculateMaxUsablePoints(subtotalAfterVoucher);
+      actualPointsUsed = Math.min(requestedPoints, maxUsablePoints);
+      pointsDiscount = actualPointsUsed * POINT_VALUE_VND;
+
+      if (actualPointsUsed > 0) {
+        await loyaltyUser.decrement("points", {
+          by: actualPointsUsed,
+          transaction: t,
+        });
       }
     }
 
@@ -247,13 +284,26 @@ const createOrder = async (data, actor = null) => {
       calculatedTotal >= freeshipThreshold ? 0 : defaultShippingFee;
     const finalTotal = Math.max(
       0,
-      calculatedTotal + shippingFee - discountAmount,
+      subtotalAfterVoucher + shippingFee - pointsDiscount,
     );
 
     const isPaypalPaid =
       selectedPaymentMethod === "paypal" &&
       data.paymentStatus === "paid" &&
-      Boolean(data.paypalDetails?.id);
+      Boolean(data.paypalDetails?.id) &&
+      String(data.paypalDetails?.status || "").toUpperCase() === "COMPLETED";
+
+    if (
+      selectedPaymentMethod === "paypal" &&
+      data.paymentStatus === "paid" &&
+      !isPaypalPaid
+    ) {
+      await t.rollback();
+      return {
+        errCode: 1,
+        errMessage: "Xác thực thanh toán PayPal không hợp lệ hoặc chưa hoàn tất.",
+      };
+    }
 
     const order = await db.Order.create(
       {
@@ -261,6 +311,8 @@ const createOrder = async (data, actor = null) => {
         userId: effectiveUserId,
         totalPrice: finalTotal,
         discountAmount,
+        pointsUsed: actualPointsUsed,
+        pointsDiscount,
         voucherCode: voucherCode || null,
         shippingAddress,
         receiverName: receiverName || null,
@@ -307,31 +359,40 @@ const createOrder = async (data, actor = null) => {
     }
 
     // SECURITY: Remove only purchased items from the effective user's cart
-    const cart = await db.Cart.findOne({
-      where: { userId: effectiveUserId },
-      transaction: t,
-    });
-    if (cart) {
-      const { Op } = require("sequelize");
-      const itemPairs = formattedItems.map((it) => ({
-        productId: it.productId,
-        variantId: it.variantId || null,
-      }));
-      await db.CartItem.destroy({
-        where: {
-          cartId: cart.id,
-          [Op.or]: itemPairs,
-        },
+    // (skip when checkoutMode === "buy_now" so "Mua ngay" remains independent from cart)
+    if (data.checkoutMode !== "buy_now") {
+      const cart = await db.Cart.findOne({
+        where: { userId: effectiveUserId },
         transaction: t,
       });
+      if (cart) {
+        const { Op } = require("sequelize");
+        const itemPairs = formattedItems.map((it) => ({
+          productId: it.productId,
+          variantId: it.variantId || null,
+        }));
+        await db.CartItem.destroy({
+          where: {
+            cartId: cart.id,
+            [Op.or]: itemPairs,
+          },
+          transaction: t,
+        });
+      }
     }
 
     await t.commit();
 
     try {
-      await deleteCacheByPattern("dashboard_*");
+      await Promise.all([
+        deleteCacheByPattern("dashboard_*"),
+        deleteCacheByPattern("products_*"),
+        deleteCacheByPattern("home_page_*"),
+        deleteCacheByPattern("flash_sale_*"),
+        ...(actualPointsUsed > 0 ? [deleteCache(getUserProfileKey(effectiveUserId))] : []),
+      ]);
     } catch (cacheErr) {
-      console.warn("Failed to invalidate dashboard cache:", cacheErr?.message);
+      console.warn("Failed to invalidate caches after order creation:", cacheErr?.message);
     }
 
     // Async Email Notifications
@@ -341,15 +402,29 @@ const createOrder = async (data, actor = null) => {
           attributes: ["id", "username", "email", "phone", "receiveEmail"],
         });
 
-        const notifyUser = await SystemSettingService.getSetting(
-          "EMAIL_NOTIFY_USER_ORDER_CREATED",
-          true,
-        );
-        if (notifyUser && user?.email) {
+        const [notifyUser, notifyAdmin] = await Promise.all([
+          SystemSettingService.getSetting("EMAIL_NOTIFY_USER_ORDER_CREATED", true),
+          SystemSettingService.getSetting("EMAIL_NOTIFY_ADMIN_NEW_ORDER", true),
+        ]);
+
+        if (notifyUser && notifyUser !== "false" && user?.email) {
           await sendOrderCreatedEmail(user, order);
         }
+
+        if (notifyAdmin && notifyAdmin !== "false") {
+          const adminEmail =
+            (await SystemSettingService.getSetting("ADMIN_NOTIFICATION_EMAIL", "")) ||
+            (await SystemSettingService.getSetting("STORE_EMAIL", "")) ||
+            process.env.EMAIL_USER ||
+            "";
+          if (adminEmail) {
+            await sendAdminNewOrderEmail(adminEmail, order, user);
+          }
+        }
       } catch (mailErr) {
-        console.error("Order creation email error:", mailErr.message);
+        if (!String(mailErr?.message || "").includes("connection manager was closed")) {
+          console.error("Order creation email error:", mailErr.message);
+        }
       }
     });
 

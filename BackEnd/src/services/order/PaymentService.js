@@ -204,7 +204,7 @@ const getPaymentById = async (id) => {
           as: "order",
           attributes: ["id", "orderCode", "status", "totalPrice"],
         },
-        { model: db.User, as: "user", attributes: ["id", "name", "email"] },
+        { model: db.User, as: "user", attributes: ["id", "username", "email", "phone"] },
       ],
     });
 
@@ -231,7 +231,8 @@ const getPaymentById = async (id) => {
 const createPayment = async (data, actor = null) => {
   const t = await db.sequelize.transaction();
   try {
-    const { orderId, method, note } = data;
+    const { orderId, note } = data;
+    const method = data.method || data.paymentMethod;
 
     if (!orderId) {
       await t.rollback();

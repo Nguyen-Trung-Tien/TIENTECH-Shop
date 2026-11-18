@@ -1,18 +1,27 @@
 const db = require("../../models");
-const { getCache, setCache, deleteCache, flushAllCache, getRedisStats, isRedisConnected } = require("../../config/redis");
+const {
+  getCache,
+  setCache,
+  deleteCache,
+  flushAllCache,
+  getRedisStats,
+  isRedisConnected,
+} = require("../../config/redis");
 const os = require("os");
 
 const DEFAULT_SETTINGS = {
   // --- AUTH & SECURITY ---
   REQUIRE_OTP_VERIFICATION: {
     value: "true",
-    description: "Yêu cầu người dùng xác thực mã OTP qua Email khi đăng ký tài khoản mới",
+    description:
+      "Yêu cầu người dùng xác thực mã OTP qua Email khi đăng ký tài khoản mới",
     category: "auth",
     isPublic: true,
   },
   MAX_LOGIN_ATTEMPTS: {
     value: "5",
-    description: "Số lần đăng nhập sai tối đa trước khi tạm khóa đăng nhập 15 phút",
+    description:
+      "Số lần đăng nhập sai tối đa trước khi tạm khóa đăng nhập 15 phút",
     category: "auth",
     isPublic: false,
   },
@@ -26,7 +35,8 @@ const DEFAULT_SETTINGS = {
   // --- STORE BRANDING ---
   STORE_NAME: {
     value: "TIENTECH Store",
-    description: "Tên thương hiệu cửa hàng hiển thị trên Header, Footer & Hóa đơn",
+    description:
+      "Tên thương hiệu cửa hàng hiển thị trên Header, Footer & Hóa đơn",
     category: "store",
     isPublic: true,
   },
@@ -70,18 +80,21 @@ const DEFAULT_SETTINGS = {
   // --- SEO & META ---
   SEO_META_TITLE: {
     value: "TIENTECH - Thiên Đường Thiết Bị & Phụ Kiện Công Nghệ Chính Hãng",
-    description: "Tiêu đề trang chủ phục vụ SEO và chia sẻ liên kết mạng xã hội",
+    description:
+      "Tiêu đề trang chủ phục vụ SEO và chia sẻ liên kết mạng xã hội",
     category: "seo",
     isPublic: true,
   },
   SEO_META_DESCRIPTION: {
-    value: "Mua sắm Smartphone, Laptop, Tablet và Phụ kiện công nghệ chính hãng giá tốt nhất tại TIENTECH. Bảo hành 1 đổi 1, giao hàng hỏa tốc toàn quốc.",
+    value:
+      "Mua sắm Smartphone, Laptop, Tablet và Phụ kiện công nghệ chính hãng giá tốt nhất tại TIENTECH. Bảo hành 1 đổi 1, giao hàng hỏa tốc toàn quốc.",
     description: "Đoạn mô tả ngắn hiển thị trên kết quả tìm kiếm Google",
     category: "seo",
     isPublic: true,
   },
   SEO_META_KEYWORDS: {
-    value: "công nghệ, smartphone, laptop, tai nghe, pin dự phòng, tientech shop",
+    value:
+      "công nghệ, smartphone, laptop, tai nghe, pin dự phòng, tientech shop",
     description: "Từ khóa SEO chính của website",
     category: "seo",
     isPublic: true,
@@ -128,12 +141,14 @@ const DEFAULT_SETTINGS = {
   // --- MAINTENANCE & SYSTEM ---
   MAINTENANCE_MODE: {
     value: "false",
-    description: "Chế độ bảo trì hệ thống toàn sàn (Chỉ Admin mới có thể truy cập)",
+    description:
+      "Chế độ bảo trì hệ thống toàn sàn (Chỉ Admin mới có thể truy cập)",
     category: "maintenance",
     isPublic: true,
   },
   MAINTENANCE_MESSAGE: {
-    value: "TIENTECH đang tiến hành bảo trì & nâng cấp hệ thống định kỳ. Quý khách vui lòng quay lại sau ít phút!",
+    value:
+      "TIENTECH đang tiến hành bảo trì & nâng cấp hệ thống định kỳ. Quý khách vui lòng quay lại sau ít phút!",
     description: "Nội dung hiển thị trên trang bảo trì",
     category: "maintenance",
     isPublic: true,
@@ -148,13 +163,15 @@ const DEFAULT_SETTINGS = {
   },
   EMAIL_NOTIFY_USER_ORDER_SHIPPING: {
     value: "true",
-    description: "Gửi email thông báo cho Khách hàng khi đơn hàng bắt đầu giao (Shipping)",
+    description:
+      "Gửi email thông báo cho Khách hàng khi đơn hàng bắt đầu giao (Shipping)",
     category: "email",
     isPublic: true,
   },
   EMAIL_NOTIFY_USER_ORDER_DELIVERED: {
     value: "true",
-    description: "Gửi email chúc mừng cho Khách hàng khi đơn hàng giao thành công",
+    description:
+      "Gửi email chúc mừng cho Khách hàng khi đơn hàng giao thành công",
     category: "email",
     isPublic: true,
   },
@@ -166,19 +183,22 @@ const DEFAULT_SETTINGS = {
   },
   EMAIL_NOTIFY_ADMIN_NEW_ORDER: {
     value: "true",
-    description: "Gửi email thông báo cho Quản trị viên/Chủ shop khi có đơn hàng mới",
+    description:
+      "Gửi email thông báo cho Quản trị viên/Chủ shop khi có đơn hàng mới",
     category: "email",
     isPublic: false,
   },
   EMAIL_NOTIFY_ADMIN_ORDER_CANCELLED: {
     value: "true",
-    description: "Gửi email thông báo cho Quản trị viên khi có đơn hàng bị hủy hoặc yêu cầu hủy",
+    description:
+      "Gửi email thông báo cho Quản trị viên khi có đơn hàng bị hủy hoặc yêu cầu hủy",
     category: "email",
     isPublic: false,
   },
   ADMIN_NOTIFICATION_EMAIL: {
     value: "",
-    description: "Địa chỉ email Admin nhận thông báo đơn hàng (để trống sẽ dùng email cửa hàng)",
+    description:
+      "Địa chỉ email Admin nhận thông báo đơn hàng (để trống sẽ dùng email cửa hàng)",
     category: "email",
     isPublic: false,
   },
@@ -191,13 +211,14 @@ const DEFAULT_SETTINGS = {
     isPublic: true,
   },
   AI_MODEL_NAME: {
-    value: "gemini-3.6-flash",
+    value: "gemini-2.5-flash",
     description: "Mô hình AI đang vận hành tư vấn",
     category: "ai",
     isPublic: false,
   },
   AI_SYSTEM_PROMPT: {
-    value: "Bạn là trợ lý AI chuyên nghiệp của TIENTECH Shop. Luôn tư vấn lịch sự, tận tâm, đề xuất sản phẩm phù hợp với nhu cầu và ngân sách của khách hàng.",
+    value:
+      "Bạn là trợ lý AI chuyên nghiệp của TIENTECH Shop. Luôn tư vấn lịch sự, tận tâm, đề xuất sản phẩm phù hợp với nhu cầu và ngân sách của khách hàng.",
     description: "Chỉ thị hành vi (System Prompt) cho AI Chatbot",
     category: "ai",
     isPublic: false,
@@ -228,7 +249,11 @@ class SystemSettingService {
           // Repair existing setting if category or isPublic was corrupted
           let needsUpdate = false;
           const updates = {};
-          if ((!existing.category || existing.category === "general") && config.category && config.category !== "general") {
+          if (
+            (!existing.category || existing.category === "general") &&
+            config.category &&
+            config.category !== "general"
+          ) {
             updates.category = config.category;
             needsUpdate = true;
           }
@@ -240,13 +265,23 @@ class SystemSettingService {
             updates.isPublic = true;
             needsUpdate = true;
           }
+          if (
+            key === "AI_MODEL_NAME" &&
+            existing.value === "gemini-3.6-flash"
+          ) {
+            updates.value = "gemini-2.5-flash";
+            needsUpdate = true;
+          }
           if (needsUpdate) {
             await existing.update(updates);
           }
         }
       }
     } catch (error) {
-      console.warn("[SystemSettingService] Init settings notice:", error.message);
+      console.warn(
+        "[SystemSettingService] Init settings notice:",
+        error.message,
+      );
     }
   }
 
@@ -266,8 +301,8 @@ class SystemSettingService {
           return DEFAULT_SETTINGS[key].value === "true"
             ? true
             : DEFAULT_SETTINGS[key].value === "false"
-            ? false
-            : DEFAULT_SETTINGS[key].value;
+              ? false
+              : DEFAULT_SETTINGS[key].value;
         }
         return defaultValue;
       }
@@ -286,23 +321,47 @@ class SystemSettingService {
       await setCache(cacheKey, parsedValue, 3600); // 1 hour TTL
       return parsedValue;
     } catch (error) {
-      console.error(`[SystemSettingService] getSetting error for key ${key}:`, error);
+      console.error(
+        `[SystemSettingService] getSetting error for key ${key}:`,
+        error,
+      );
       return defaultValue;
     }
   }
 
-  async setSetting(key, value, description = null, category = null, isPublic = null) {
+  async setSetting(
+    key,
+    value,
+    description = null,
+    category = null,
+    isPublic = null,
+  ) {
     try {
-      const stringValue = typeof value === "object" ? JSON.stringify(value) : String(value);
+      const stringValue =
+        typeof value === "object" ? JSON.stringify(value) : String(value);
       const defaultConf = DEFAULT_SETTINGS[key] || {};
 
       let setting = await db.SystemSetting.findOne({ where: { key } });
 
-      const finalCategory = category || (setting && setting.category && setting.category !== "general" ? setting.category : defaultConf.category) || "general";
-      const finalDescription = description || (setting && setting.description) || defaultConf.description || "";
-      const finalIsPublic = isPublic !== null && isPublic !== undefined
-        ? Boolean(isPublic)
-        : (setting && setting.isPublic !== undefined && setting.isPublic !== null ? Boolean(setting.isPublic) : (defaultConf.isPublic ?? false));
+      const finalCategory =
+        category ||
+        (setting && setting.category && setting.category !== "general"
+          ? setting.category
+          : defaultConf.category) ||
+        "general";
+      const finalDescription =
+        description ||
+        (setting && setting.description) ||
+        defaultConf.description ||
+        "";
+      const finalIsPublic =
+        isPublic !== null && isPublic !== undefined
+          ? Boolean(isPublic)
+          : setting &&
+              setting.isPublic !== undefined &&
+              setting.isPublic !== null
+            ? Boolean(setting.isPublic)
+            : (defaultConf.isPublic ?? false);
 
       if (setting) {
         await setting.update({
@@ -321,13 +380,25 @@ class SystemSettingService {
         });
       }
 
-      const parsedValue = value === "true" || value === true ? true : value === "false" || value === false ? false : value;
+      const parsedValue =
+        value === "true" || value === true
+          ? true
+          : value === "false" || value === false
+            ? false
+            : value;
       await setCache(this.getCacheKey(key), parsedValue, 3600);
       await deleteCache("system:settings:public");
 
-      return { errCode: 0, data: setting, errMessage: "Cập nhật cấu hình thành công!" };
+      return {
+        errCode: 0,
+        data: setting,
+        errMessage: "Cập nhật cấu hình thành công!",
+      };
     } catch (error) {
-      console.error(`[SystemSettingService] setSetting error for key ${key}:`, error);
+      console.error(
+        `[SystemSettingService] setSetting error for key ${key}:`,
+        error,
+      );
       return { errCode: 1, errMessage: error.message };
     }
   }
@@ -342,7 +413,13 @@ class SystemSettingService {
       for (const item of settingsArray) {
         const { key, value, description, category, isPublic } = item;
         if (!key) continue;
-        const res = await this.setSetting(key, value, description, category, isPublic);
+        const res = await this.setSetting(
+          key,
+          value,
+          description,
+          category,
+          isPublic,
+        );
         if (res.errCode === 0) {
           results.push(res.data);
         }
@@ -362,7 +439,10 @@ class SystemSettingService {
   async getAllSettings() {
     try {
       const settings = await db.SystemSetting.findAll({
-        order: [["category", "ASC"], ["createdAt", "ASC"]],
+        order: [
+          ["category", "ASC"],
+          ["createdAt", "ASC"],
+        ],
       });
       return { errCode: 0, data: settings };
     } catch (error) {
@@ -380,7 +460,8 @@ class SystemSettingService {
 
       const formatted = {};
       settings.forEach((s) => {
-        formatted[s.key] = s.value === "true" ? true : s.value === "false" ? false : s.value;
+        formatted[s.key] =
+          s.value === "true" ? true : s.value === "false" ? false : s.value;
       });
 
       return { errCode: 0, data: formatted };
@@ -424,7 +505,10 @@ class SystemSettingService {
       const totalMem = (os.totalmem() / (1024 * 1024 * 1024)).toFixed(2);
       const freeMem = (os.freemem() / (1024 * 1024 * 1024)).toFixed(2);
       const usedMem = (totalMem - freeMem).toFixed(2);
-      const processMem = (process.memoryUsage().heapUsed / (1024 * 1024)).toFixed(2);
+      const processMem = (
+        process.memoryUsage().heapUsed /
+        (1024 * 1024)
+      ).toFixed(2);
 
       return {
         errCode: 0,

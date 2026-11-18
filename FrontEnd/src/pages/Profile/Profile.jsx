@@ -4,6 +4,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { updateUser } from "../../redux/userSlice";
 import { updateUserApi } from "../../api/userApi";
 import { showErrorToast, showSuccessToast } from "../../utils/toastHelper";
+import { getTierProgress, LOYALTY_TIERS } from "../../utils/loyaltyHelper";
 import ChangePasswordModal from "./ChangePasswordModal";
 import { FiArrowLeft, FiUser, FiMail, FiPhone, FiMapPin, FiCamera, FiEdit3, FiSave, FiX, FiLock, FiShield, FiAward, FiCalendar, FiCheckCircle, FiStar, FiCheck } from "react-icons/fi";
 import { motion as Motion, AnimatePresence } from "framer-motion";
@@ -313,6 +314,49 @@ const Profile = () => {
                 </div>
               </div>
             </div>
+
+            {(() => {
+              const tierInfo = getTierProgress(user?.points, user?.rank);
+              return (
+                <div className="mt-5 p-4 rounded-2xl bg-gradient-to-r from-amber-50/80 via-white to-blue-50/60 dark:from-amber-950/20 dark:via-dark-bg/80 dark:to-blue-950/20 border border-amber-200/70 dark:border-dark-border space-y-2.5">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="font-black text-slate-900 dark:text-white uppercase tracking-wider truncate">
+                        Tiến trình hạng {tierInfo.currentTier.label}
+                      </span>
+                      <span className="px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-700 dark:text-amber-300 text-[10px] font-black shrink-0">
+                        {tierInfo.points.toLocaleString()} PTS
+                      </span>
+                    </div>
+                    <span className="text-[11px] font-bold text-slate-500 dark:text-dark-text-secondary">
+                      {tierInfo.nextTier
+                        ? `Cần thêm ${tierInfo.pointsToNext.toLocaleString()} điểm để lên ${tierInfo.nextTier.label}`
+                        : "Bạn đang ở hạng thành viên cao nhất!"}
+                    </span>
+                  </div>
+                  <div className="w-full h-2.5 bg-slate-200/70 dark:bg-slate-800 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-amber-500 via-orange-500 to-primary rounded-full transition-all duration-500"
+                      style={{ width: `${tierInfo.progressPercent}%` }}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between text-[10px] font-bold text-slate-400 dark:text-slate-500 flex-wrap gap-2">
+                    {LOYALTY_TIERS.map((tier) => (
+                      <span
+                        key={tier.name}
+                        className={
+                          tier.name === tierInfo.currentTier.name
+                            ? "text-primary font-black"
+                            : ""
+                        }
+                      >
+                        {tier.name} ({tier.minPoints.toLocaleString()})
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         </div>
 

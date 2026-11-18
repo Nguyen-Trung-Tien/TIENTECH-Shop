@@ -42,8 +42,26 @@ const LoginSuccess = () => {
             return;
           }
 
+          let postLoginRedirect = "/";
+          try {
+            const stored = sessionStorage.getItem(
+              "tientech_post_login_redirect",
+            );
+            sessionStorage.removeItem("tientech_post_login_redirect");
+            if (
+              stored &&
+              stored.startsWith("/") &&
+              !stored.startsWith("//") &&
+              !stored.startsWith("/admin")
+            ) {
+              postLoginRedirect = stored;
+            }
+          } catch {
+            // Ignore storage errors
+          }
+
           showSuccessToast("Đăng nhập Google thành công!");
-          navigate("/");
+          navigate(postLoginRedirect, { replace: true });
         } else {
           showErrorToast(res?.errMessage || "Không thể lấy thông tin người dùng!");
           navigate(target === "admin" ? "/admin/login" : "/login");

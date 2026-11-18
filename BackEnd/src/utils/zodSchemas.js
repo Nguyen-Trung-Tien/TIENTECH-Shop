@@ -31,7 +31,12 @@ const loginSchema = z.object({
 });
 
 const strongPasswordSchema = z
-  .string({ required_error: "Mật khẩu là bắt buộc" })
+  .string({
+    error: (issue) =>
+      issue.input === undefined
+        ? "Mật khẩu là bắt buộc"
+        : "Mật khẩu phải là chuỗi ký tự",
+  })
   .min(8, "Mật khẩu phải có ít nhất 8 ký tự")
   .regex(/[A-Z]/, "Mật khẩu phải chứa ít nhất 1 chữ cái viết hoa")
   .regex(/[a-z]/, "Mật khẩu phải chứa ít nhất 1 chữ cái viết thường")
@@ -51,6 +56,8 @@ const registerSchema = z.object({
       address: z.union([z.string(), z.literal(""), z.null()]).optional(),
       avatar: z.any().optional(),
       confirmPassword: z.string().optional(),
+      role: z.enum(["customer", "admin"]).optional(),
+      isActive: z.union([z.boolean(), z.string(), z.number()]).optional(),
     })
     .refine((data) => !data.confirmPassword || data.password === data.confirmPassword, {
       message: "Mật khẩu xác nhận không khớp",
@@ -117,9 +124,29 @@ const updateUserSchema = z.object({
     .strict(),
 });
 
+const adminUpdateUserSchema = z.object({
+  body: z
+    .object({
+      id: z.union([z.string(), z.number()]).optional(),
+      username: z
+        .string()
+        .min(3, "Tên người dùng phải có ít nhất 3 ký tự")
+        .max(50, "Tên người dùng không được vượt quá 50 ký tự")
+        .optional(),
+      email: z.string().email("Email không hợp lệ").optional(),
+      phone: z.union([z.string(), z.literal(""), z.null()]).optional(),
+      address: z.union([z.string(), z.literal(""), z.null()]).optional(),
+      avatar: z.any().optional(),
+      receiveEmail: z.union([z.boolean(), z.string(), z.number()]).optional(),
+      role: z.enum(["customer", "admin"]).optional(),
+      isActive: z.union([z.boolean(), z.string(), z.number()]).optional(),
+    })
+    .strict(),
+});
+
 const orderSchema = z.object({
   body: z.object({
-    userId: z.union([z.string(), z.number()]),
+    userId: z.union([z.string(), z.number()]).optional(),
     shippingAddress: z.string().min(1, "Địa chỉ giao hàng không được để trống"),
     receiverName: z.string().min(1, "Tên người nhận không được để trống"),
     receiverPhone: z.string().min(1, "Số điện thoại người nhận không được để trống"),
@@ -127,13 +154,17 @@ const orderSchema = z.object({
       (val) => (typeof val === "string" ? val.toLowerCase() : val),
       z.enum(["cod", "bank", "paypal", "momo", "vnpay"])
     ).default("cod"),
-    note: z.string().optional(),
+    note: z.string().nullable().optional(),
     voucherCode: z.string().nullable().optional(),
+    pointsUsed: z.coerce.number().int().min(0, "Số điểm sử dụng không hợp lệ").optional().default(0),
+    checkoutMode: z.enum(["cart", "buy_now"]).optional(),
+    paymentStatus: z.string().optional(),
+    paypalDetails: z.any().optional(),
     orderItems: z.array(z.object({
       productId: z.union([z.string(), z.number()]),
       variantId: z.union([z.string(), z.number()]).nullable().optional(),
-      quantity: z.number().int().positive("Số lượng phải lớn hơn 0"),
-      cartItemId: z.union([z.string(), z.number()]).optional(),
+      quantity: z.coerce.number().int().positive("Số lượng phải lớn hơn 0"),
+      cartItemId: z.union([z.string(), z.number()]).nullable().optional(),
     })).min(1, "Đơn hàng phải có ít nhất một sản phẩm"),
   }),
 });
@@ -251,6 +282,9 @@ const broadcastNotificationSchema = z.object({
     title: z.string().min(1, "Tiêu đề không được để trống").max(200),
     message: z.string().min(1, "Nội dung không được để trống").max(2000),
     type: z.string().max(50).optional(),
+    link: z.string().max(500).optional(),
+    target: z.enum(["all", "user"]).optional().default("all"),
+    targetUserId: z.union([z.string(), z.number(), z.null()]).optional(),
     targetUrl: z.string().max(500).optional(),
   }),
 });
@@ -258,21 +292,35 @@ const broadcastNotificationSchema = z.object({
 const createProductSchema = z.object({
   body: z.object({
     name: z
-      .string({ required_error: "Tên sản phẩm không được để trống" })
+      .string({
+        error: (issue) =>
+          issue.input === undefined
+            ? "Tên sản phẩm không được để trống"
+            : "Tên sản phẩm phải là chuỗi ký tự",
+      })
       .min(1, "Tên sản phẩm không được để trống"),
-    brandId: z.union([z.string(), z.number()]).optional(),
-    categoryId: z.union([z.string(), z.number()]).optional(),
+    sku: z.string().optional(),
+    slug: z.string().optional(),
+    brandId: z.union([z.string(), z.number(), z.null()]).optional(),
+    categoryId: z.union([z.string(), z.number(), z.null()]).optional(),
     basePrice: z.union([z.string(), z.number()]).optional(),
     price: z.union([z.string(), z.number()]).optional(),
+    discount: z.union([z.string(), z.number()]).optional(),
     stock: z.union([z.string(), z.number()]).optional(),
     totalStock: z.union([z.string(), z.number()]).optional(),
-    description: z.string().optional(),
-    isActive: z.union([z.boolean(), z.string()]).optional(),
-    hasVariants: z.union([z.boolean(), z.string()]).optional(),
-    isFlashSale: z.union([z.boolean(), z.string()]).optional(),
-    flashSalePrice: z.union([z.string(), z.number()]).optional(),
-    flashSaleStart: z.string().optional(),
-    flashSaleEnd: z.string().optional(),
+    description: z.string().nullable().optional(),
+    specifications: z.any().optional(),
+    variants: z.any().optional(),
+    attributes: z.any().optional(),
+    options: z.any().optional(),
+    image: z.any().optional(),
+    deletedImages: z.any().optional(),
+    isActive: z.union([z.boolean(), z.string(), z.number()]).optional(),
+    hasVariants: z.union([z.boolean(), z.string(), z.number()]).optional(),
+    isFlashSale: z.union([z.boolean(), z.string(), z.number()]).optional(),
+    flashSalePrice: z.union([z.string(), z.number(), z.null()]).optional(),
+    flashSaleStart: z.union([z.string(), z.null()]).optional(),
+    flashSaleEnd: z.union([z.string(), z.null()]).optional(),
   }),
 });
 
@@ -313,16 +361,39 @@ const updateReviewSchema = z.object({
   body: z.object({
     rating: z.coerce.number().int().min(1, "Đánh giá tối thiểu 1 sao").max(5, "Đánh giá tối đa 5 sao").optional(),
     comment: z.string().trim().min(1, "Nội dung đánh giá không được để trống").max(2000).optional(),
+    isApproved: z.boolean().optional(),
   }),
 });
 
 const createPaymentSchema = z.object({
-  body: z.object({
-    orderId: z.union([z.string(), z.number()]).refine((val) => String(val).trim().length > 0, {
-      message: "Mã đơn hàng (orderId) là bắt buộc",
+  body: z
+    .object({
+      orderId: z.union([z.string(), z.number()]).refine((val) => String(val).trim().length > 0, {
+        message: "Mã đơn hàng (orderId) là bắt buộc",
+      }),
+      method: z.string().trim().min(1, "Phương thức thanh toán là bắt buộc").max(50).optional(),
+      paymentMethod: z.string().trim().min(1, "Phương thức thanh toán là bắt buộc").max(50).optional(),
+      amount: z.coerce.number().positive("Số tiền thanh toán phải lớn hơn 0").optional(),
+      note: z.string().max(1000).optional(),
+      transactionId: z.string().max(200).optional(),
+    })
+    .refine((data) => Boolean(data.method || data.paymentMethod), {
+      message: "Phương thức thanh toán là bắt buộc",
+      path: ["method"],
     }),
-    paymentMethod: z.string().trim().min(1, "Phương thức thanh toán là bắt buộc").max(50),
-    amount: z.coerce.number().positive("Số tiền thanh toán phải lớn hơn 0").optional(),
+});
+
+const contactSchema = z.object({
+  body: z.object({
+    name: z.string().trim().min(2, "Vui lòng nhập họ tên hợp lệ").max(120),
+    email: z.string().trim().email("Email không hợp lệ").max(160),
+    phone: z.string().trim().max(30).optional().default(""),
+    subject: z.string().trim().max(120).optional().default("tuvansanpham"),
+    message: z
+      .string()
+      .trim()
+      .min(5, "Nội dung cần hỗ trợ phải có ít nhất 5 ký tự")
+      .max(3000, "Nội dung tối đa 3000 ký tự"),
   }),
 });
 
@@ -338,12 +409,14 @@ module.exports = {
   verifyEmailSchema,
   resendVerificationSchema,
   orderSchema,
+  createOrderSchema: orderSchema,
   changePaymentMethodSchema,
   addressSchema,
   cartItemSchema,
   updateCartItemSchema,
   reviewSchema,
   updateUserSchema,
+  adminUpdateUserSchema,
   adminUpdateUserStatusSchema,
   adminBulkUserStatusSchema,
   updateOrderStatusSchema,
@@ -357,4 +430,5 @@ module.exports = {
   toggleOtpSchema,
   updateReviewSchema,
   createPaymentSchema,
+  contactSchema,
 };

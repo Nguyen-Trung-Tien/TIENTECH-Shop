@@ -22,3 +22,10 @@ if (typeof globalThis.localStorage === "undefined" || !globalThis.localStorage.g
     writable: true,
   });
 }
+
+if (typeof globalThis.sessionStorage === "undefined" || !globalThis.sessionStorage.getItem) {
+  Object.defineProperty(globalThis, "sessionStorage", {
+    value: createLocalStorageMock(),
+    writable: true,
+  });
+}

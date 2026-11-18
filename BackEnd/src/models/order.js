@@ -98,6 +98,16 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.DECIMAL(15, 2),
         defaultValue: 0,
       },
+      pointsUsed: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 0,
+      },
+      pointsDiscount: {
+        type: DataTypes.DECIMAL(15, 2),
+        allowNull: false,
+        defaultValue: 0,
+      },
       note: {
         type: DataTypes.TEXT,
         allowNull: true,

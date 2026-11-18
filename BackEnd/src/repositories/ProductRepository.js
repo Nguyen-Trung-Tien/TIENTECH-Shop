@@ -38,7 +38,7 @@ class ProductRepository {
     return await db.Product.findAndCountAll({
       where: whereCondition,
       attributes: [
-        "id", "name", "slug", "sku", "basePrice", "discount", "totalStock", 
+        "id", "name", "slug", "sku", "basePrice", "discount", "totalStock", "sold",
         "hasVariants", "isFlashSale", "flashSaleStart", "flashSaleEnd", "flashSalePrice", 
         "isActive", "categoryId", "brandId", "createdAt",
         [
@@ -68,6 +68,7 @@ class ProductRepository {
 
   async getByIdOptimized(id, include) {
     return await db.Product.findByPk(id, {
+      attributes: { exclude: ["embedding"] },
       include,
     });
   }

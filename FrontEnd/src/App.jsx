@@ -8,8 +8,14 @@ import AdminRoutes from "./routes/AdminRoutes";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { getMeApi } from "./api/userApi";
+import { addCart, getAllCartItems } from "./api/cartApi";
 import { setUser, removeUser, setInitializing } from "./redux/userSlice";
-import { clearCart } from "./redux/cartSlice";
+import { hydrateGuestCart, setCartItems } from "./redux/cartSlice";
+import {
+  clearGuestCart,
+  loadGuestCart,
+  runGuestCartSync,
+} from "./utils/guestCart";
 import { LazyMotion, domAnimation, MotionConfig } from "framer-motion";
 import RouteProgressBar from "./components/Loading/RouteProgressBar";
 import ErrorBoundary from "./components/UI/ErrorBoundary";
@@ -49,11 +55,11 @@ const App = () => {
           dispatch(setUser(res.data));
         } else {
           dispatch(removeUser());
-          dispatch(clearCart());
+          dispatch(hydrateGuestCart());
         }
       } catch {
         dispatch(removeUser());
-        dispatch(clearCart());
+        dispatch(hydrateGuestCart());
       } finally {
         dispatch(setInitializing(false));
       }
@@ -62,6 +68,51 @@ const App = () => {
     checkAuth();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dispatch]);
+
+  const isInitializing = useSelector((state) => state.user.isInitializing);
+
+  useEffect(() => {
+    if (isInitializing || !user?.id) return;
+    let isCancelled = false;
+
+    const syncCartAfterLogin = async () => {
+      await runGuestCartSync(user.id, async () => {
+        const guestItems = loadGuestCart();
+        if (guestItems.length > 0) {
+          for (const item of guestItems) {
+            try {
+              await addCart({
+                productId: item.productId,
+                variantId: item.variantId || null,
+                quantity: item.quantity,
+              });
+            } catch {
+              // Skip unavailable or out-of-stock items gracefully
+            }
+          }
+          clearGuestCart();
+        }
+
+        try {
+          const cartRes = await getAllCartItems(1, 100);
+          if (
+            !isCancelled &&
+            cartRes?.errCode === 0 &&
+            Array.isArray(cartRes.data)
+          ) {
+            dispatch(setCartItems(cartRes.data));
+          }
+        } catch {
+          // Ignore silent fetch errors
+        }
+      });
+    };
+
+    syncCartAfterLogin();
+    return () => {
+      isCancelled = true;
+    };
+  }, [user?.id, isInitializing, dispatch]);
 
   return (
     <div className="min-h-screen bg-surface-50 dark:bg-dark-bg text-surface-900 dark:text-dark-text-primary transition-colors duration-300">

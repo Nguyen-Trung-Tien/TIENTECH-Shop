@@ -6,13 +6,13 @@ import { ProductCardSkeleton as SkeletonCard } from "../Loading";
 import LoadMoreButton from "../LoadMoreButton/LoadMoreButton";
 import { FiZap, FiClock } from "react-icons/fi";
 
-const FlashSale = ({ products: propProducts }) => {
+const FlashSale = ({ products: propProducts, parentLoading = false }) => {
   const [timeLeft, setTimeLeft] = useState(0);
   const [products, setProducts] = useState(propProducts || []);
   const [upcomingProducts, setUpcomingProducts] = useState([]);
   const [nextFlashSaleStart, setNextFlashSaleStart] = useState(null);
   const [isUpcoming, setIsUpcoming] = useState(false);
-  const [loading, setLoading] = useState(!propProducts);
+  const [loading, setLoading] = useState(parentLoading || !propProducts);
   const [loadingMore, setLoadingMore] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -98,7 +98,11 @@ const FlashSale = ({ products: propProducts }) => {
   };
 
   useEffect(() => {
-    if (propProducts && propProducts.length > 0) {
+    if (parentLoading) {
+      setLoading(true);
+      return;
+    }
+    if (Array.isArray(propProducts)) {
       setProducts(propProducts);
       setLoading(false);
       if (propProducts[0]?.flashSaleEnd) {
@@ -111,7 +115,7 @@ const FlashSale = ({ products: propProducts }) => {
     } else {
       fetchFlashSale(1);
     }
-  }, [propProducts]);
+  }, [propProducts, parentLoading]);
 
   const handleLoadMore = () => {
     if (currentPage < totalPages) {

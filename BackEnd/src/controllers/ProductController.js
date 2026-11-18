@@ -281,7 +281,8 @@ const handleRecommendProducts = async (req, res) => {
 
 const handleRecommendFortuneProducts = async (req, res) => {
   try {
-    const { birthYear, brandId, minPrice, maxPrice, categoryId } = req.query;
+    const { birthYear, brandId, minPrice, maxPrice, categoryId, sortBy } =
+      req.query;
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 6;
 
@@ -291,6 +292,7 @@ const handleRecommendFortuneProducts = async (req, res) => {
       minPrice: minPrice ? Number(minPrice) : undefined,
       maxPrice: maxPrice ? Number(maxPrice) : undefined,
       categoryId,
+      sortBy,
       page,
       limit,
     });

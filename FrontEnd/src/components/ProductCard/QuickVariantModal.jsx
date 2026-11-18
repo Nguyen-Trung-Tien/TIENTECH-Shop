@@ -1,8 +1,21 @@
 import React from "react";
 import { motion as Motion, AnimatePresence } from "framer-motion";
-import { FiX, FiCheck, FiShoppingCart, FiCreditCard, FiAlertCircle, FiZap } from "react-icons/fi";
+import {
+  FiX,
+  FiCheck,
+  FiShoppingCart,
+  FiCreditCard,
+  FiAlertCircle,
+  FiZap,
+} from "react-icons/fi";
 import { useProductVariants } from "../../hooks/useProductVariants";
 import { Button } from "../UI/Button";
+import {
+  calculateDiscountPercent,
+  calculateFinalPrice,
+  calculateOriginalPrice,
+  isFlashSaleActive,
+} from "../../utils/priceHelper";
 
 const QuickVariantModal = ({ product, isOpen, onClose, onAdd, onBuyNow }) => {
   const {
@@ -19,7 +32,7 @@ const QuickVariantModal = ({ product, isOpen, onClose, onAdd, onBuyNow }) => {
 
     if (displayVariant && product.images) {
       const variantImg = product.images.find(
-        (img) => img.variantId === displayVariant.id
+        (img) => img.variantId === displayVariant.id,
       );
       if (variantImg) return variantImg.imageUrl;
     }
@@ -37,49 +50,43 @@ const QuickVariantModal = ({ product, isOpen, onClose, onAdd, onBuyNow }) => {
 
   if (!isOpen) return null;
 
-  const isFlashSale = Boolean(
-    product?.flashSale?.isActive ?? product?.flashSaleActive ?? product?.isFlashSale
+  const flashNormalizedProduct = {
+    ...product,
+    isFlashSale: Boolean(
+      product?.flashSale?.isActive ??
+      product?.flashSaleActive ??
+      product?.isFlashSale,
+    ),
+    flashSalePrice: Number(
+      product?.flashSale?.price ?? product?.flashSalePrice ?? 0,
+    ),
+    basePrice: Number(
+      product?.originalPrice || product?.basePrice || product?.price || 0,
+    ),
+  };
+
+  const isFlashSale = isFlashSaleActive(flashNormalizedProduct);
+  const originalPrice = calculateOriginalPrice(
+    flashNormalizedProduct,
+    displayVariant,
   );
-  const flashSalePrice = Number(
-    product?.flashSale?.price ?? product?.flashSalePrice ?? 0
-  );
-
-  const originalPrice = displayVariant
-    ? Number(displayVariant.price || 0)
-    : Number(product.originalPrice || product.basePrice || product.price || 0);
-
-  let currentPrice = originalPrice;
-  let variantDiscountPct = 0;
-
-  if (isFlashSale && flashSalePrice > 0) {
-    currentPrice = flashSalePrice;
-    variantDiscountPct = originalPrice > 0
+  const currentPrice =
+    displayVariant &&
+    !isFlashSale &&
+    Number(displayVariant.salePrice) > 0 &&
+    Number(displayVariant.salePrice) < originalPrice
+      ? Number(displayVariant.salePrice)
+      : calculateFinalPrice(flashNormalizedProduct, displayVariant);
+  const variantDiscountPct =
+    originalPrice > currentPrice
       ? Math.round(((originalPrice - currentPrice) / originalPrice) * 100)
-      : 0;
-  } else {
-    variantDiscountPct = Number(
-      displayVariant?.discount != null && Number(displayVariant.discount) > 0
-        ? displayVariant.discount
-        : (product.discountPercent || product.discount || 0)
-    );
-
-    if (
-      displayVariant &&
-      Number(displayVariant.salePrice) > 0 &&
-      Number(displayVariant.salePrice) < originalPrice
-    ) {
-      currentPrice = Number(displayVariant.salePrice);
-      variantDiscountPct = Math.round(((originalPrice - currentPrice) / originalPrice) * 100);
-    } else if (variantDiscountPct > 0) {
-      currentPrice = Math.round(originalPrice * (1 - variantDiscountPct / 100));
-    } else {
-      currentPrice = Number(product.displayPrice || product.basePrice || product.price || 0);
-    }
-  }
+      : calculateDiscountPercent(flashNormalizedProduct, displayVariant);
 
   // Format label string for currently selected variant combination
   const selectedVariantLabel = selectedVariant
-    ? Object.entries(selectedVariant.attributes || selectedVariant.attributeValues || {})
+    ? Object.entries(
+        selectedVariant.attributes || selectedVariant.attributeValues || {},
+      )
         .map(([k, v]) => (typeof v === "object" ? v.value : v))
         .join(" / ")
     : Object.values(selectedAttributes).filter(Boolean).join(" / ");
@@ -178,7 +185,10 @@ const QuickVariantModal = ({ product, isOpen, onClose, onAdd, onBuyNow }) => {
                   <div className="flex flex-wrap gap-2">
                     {values.map((val) => {
                       const isSelected = selectedAttributes[attrName] === val;
-                      const isAvailable = checkAttributeAvailability(attrName, val);
+                      const isAvailable = checkAttributeAvailability(
+                        attrName,
+                        val,
+                      );
                       return (
                         <button
                           key={val}
@@ -189,8 +199,8 @@ const QuickVariantModal = ({ product, isOpen, onClose, onAdd, onBuyNow }) => {
                             isSelected
                               ? "bg-indigo-600 border-indigo-600 text-white shadow-md shadow-indigo-200 dark:shadow-none"
                               : isAvailable
-                              ? "bg-white dark:bg-dark-bg border-slate-200 dark:border-dark-border hover:border-indigo-400 text-slate-700 dark:text-dark-text-primary"
-                              : "bg-slate-100 dark:bg-dark-bg border-slate-200 dark:border-dark-border text-slate-300 dark:text-dark-text-secondary/40 cursor-not-allowed opacity-50"
+                                ? "bg-white dark:bg-dark-bg border-slate-200 dark:border-dark-border hover:border-indigo-400 text-slate-700 dark:text-dark-text-primary"
+                                : "bg-slate-100 dark:bg-dark-bg border-slate-200 dark:border-dark-border text-slate-300 dark:text-dark-text-secondary/40 cursor-not-allowed opacity-50"
                           }`}
                         >
                           {val}
@@ -211,7 +221,10 @@ const QuickVariantModal = ({ product, isOpen, onClose, onAdd, onBuyNow }) => {
                     ✓
                   </span>
                   <span className="truncate">
-                    Đã chọn: <strong className="text-slate-900 dark:text-white font-black">{selectedVariantLabel}</strong>
+                    Đã chọn:{" "}
+                    <strong className="text-slate-900 dark:text-white font-black">
+                      {selectedVariantLabel}
+                    </strong>
                   </span>
                 </div>
                 <span className="px-2 py-0.5 bg-emerald-100 dark:bg-emerald-900/40 rounded-md text-[10px] uppercase font-black shrink-0">
@@ -236,7 +249,9 @@ const QuickVariantModal = ({ product, isOpen, onClose, onAdd, onBuyNow }) => {
                   variant="outline"
                   className="flex-1 h-12 rounded-2xl font-black text-xs tracking-wider border-2 dark:border-dark-border dark:text-dark-text-primary cursor-pointer"
                   disabled={product.variants?.length > 0 && !selectedVariant}
-                  onClick={() => onAdd(selectedVariant?.id || product.id, true)}
+                  onClick={() =>
+                    onAdd(selectedVariant?.id || null, Boolean(selectedVariant))
+                  }
                 >
                   <FiShoppingCart className="mr-2" />
                   THÊM GIỎ HÀNG
@@ -245,7 +260,12 @@ const QuickVariantModal = ({ product, isOpen, onClose, onAdd, onBuyNow }) => {
                   variant="default"
                   className="flex-[1.5] h-12 rounded-2xl font-black text-xs tracking-wider bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-200 dark:shadow-none cursor-pointer"
                   disabled={product.variants?.length > 0 && !selectedVariant}
-                  onClick={() => onBuyNow(selectedVariant?.id || product.id, true)}
+                  onClick={() =>
+                    onBuyNow(
+                      selectedVariant?.id || null,
+                      Boolean(selectedVariant),
+                    )
+                  }
                 >
                   <FiCreditCard className="mr-2" />
                   MUA NGAY

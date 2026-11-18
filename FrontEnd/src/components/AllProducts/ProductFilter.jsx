@@ -3,26 +3,8 @@ import { FiFilter, FiChevronDown, FiChevronUp, FiX, FiZap, FiLayers, FiSmartphon
 import { getAllBrandApi } from "../../api/brandApi";
 import { getAllCategoryApi } from "../../api/categoryApi";
 import { getAllAttributesApi } from "../../api/attributeApi";
-
-const PRICE_PRESETS = [
-  { label: "Dưới 5 triệu", min: "", max: "5000000" },
-  { label: "5 - 15 triệu", min: "5000000", max: "15000000" },
-  { label: "15 - 30 triệu", min: "15000000", max: "30000000" },
-  { label: "Trên 30 triệu", min: "30000000", max: "" },
-];
-
-const HISTOGRAM_BARS = [
-  { height: "20%", activeRange: [0, 5000000] },
-  { height: "35%", activeRange: [0, 5000000] },
-  { height: "55%", activeRange: [5000000, 15000000] },
-  { height: "85%", activeRange: [5000000, 15000000] },
-  { height: "100%", activeRange: [15000000, 30000000] },
-  { height: "90%", activeRange: [15000000, 30000000] },
-  { height: "70%", activeRange: [15000000, 30000000] },
-  { height: "50%", activeRange: [30000000, 100000000] },
-  { height: "30%", activeRange: [30000000, 100000000] },
-  { height: "15%", activeRange: [30000000, 100000000] },
-];
+import PriceFilterPanel from "./PriceFilterPanel";
+import FilterSlideDrawer from "./FilterSlideDrawer";
 
 const getAttrIcon = (code) => {
   switch (code) {
@@ -503,104 +485,17 @@ const ProductFilter = ({
                     </span>
                   </div>
 
-                  {/* Histogram Wave Visualization */}
-                  <div className="h-10 flex items-end gap-1 px-1.5 bg-slate-100 dark:bg-[#080b12] rounded-xl p-1.5 border border-slate-200 dark:border-slate-800">
-                    {HISTOGRAM_BARS.map((bar, i) => {
-                      const inRange =
-                        isPriceActive &&
-                        (!filters.minPrice || bar.activeRange[1] >= Number(filters.minPrice)) &&
-                        (!filters.maxPrice || bar.activeRange[0] <= Number(filters.maxPrice));
-                      return (
-                        <div
-                          key={i}
-                          style={{ height: bar.height }}
-                          className={`w-full rounded-xs transition-all duration-300 ${
-                            inRange
-                              ? "bg-gradient-to-t from-emerald-500 to-cyan-400 shadow-[0_0_6px_rgba(16,185,129,0.5)]"
-                              : "bg-slate-300 dark:bg-slate-800/80 hover:bg-slate-400"
-                          }`}
-                        />
-                      );
-                    })}
-                  </div>
-
-                  {/* Price Presets */}
-                  <div className="grid grid-cols-2 gap-1.5">
-                    {PRICE_PRESETS.map((preset, idx) => {
-                      const isPresetActive =
-                        filters.minPrice === preset.min &&
-                        filters.maxPrice === preset.max;
-                      return (
-                        <button
-                          key={idx}
-                          type="button"
-                          onClick={() => {
-                            if (isPresetActive) {
-                              onFilterChange("minPrice", "");
-                              onFilterChange("maxPrice", "");
-                            } else {
-                              onFilterChange("minPrice", preset.min);
-                              onFilterChange("maxPrice", preset.max);
-                            }
-                            setActiveDropdown(null);
-                          }}
-                          className={`px-2.5 py-1.5 rounded-xl border text-[11px] font-semibold transition-all cursor-pointer truncate ${
-                            isPresetActive
-                              ? "bg-emerald-600 border-emerald-600 text-white shadow-xs font-bold"
-                              : "bg-slate-50 dark:bg-slate-900/60 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-emerald-500/50"
-                          }`}
-                        >
-                          {preset.label}
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  {/* Custom Price Inputs */}
-                  <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-2">
-                    <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider font-mono">
-                      Khoảng giá tùy chỉnh (₫)
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="number"
-                        value={customMin}
-                        onChange={(e) => setCustomMin(e.target.value)}
-                        placeholder="Từ (₫)"
-                        className="w-full px-2.5 py-1.5 rounded-xl text-xs bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white outline-none focus:border-emerald-500 font-mono"
-                      />
-                      <span className="text-slate-400 text-xs font-mono">-</span>
-                      <input
-                        type="number"
-                        value={customMax}
-                        onChange={(e) => setCustomMax(e.target.value)}
-                        placeholder="Đến (₫)"
-                        className="w-full px-2.5 py-1.5 rounded-xl text-xs bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white outline-none focus:border-emerald-500 font-mono"
-                      />
-                    </div>
-                    <div className="flex justify-between items-center pt-1">
-                      {isPriceActive && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            onFilterChange("minPrice", "");
-                            onFilterChange("maxPrice", "");
-                            setActiveDropdown(null);
-                          }}
-                          className="text-[11px] font-bold text-rose-500 hover:underline cursor-pointer"
-                        >
-                          Xóa giá
-                        </button>
-                      )}
-                      <button
-                        type="button"
-                        onClick={handleApplyCustomPrice}
-                        className="ml-auto px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold cursor-pointer transition-colors shadow-xs"
-                      >
-                        Áp dụng
-                      </button>
-                    </div>
-                  </div>
+                  <PriceFilterPanel
+                    filters={filters}
+                    onFilterChange={onFilterChange}
+                    variant="popover"
+                    customMin={customMin}
+                    setCustomMin={setCustomMin}
+                    customMax={customMax}
+                    setCustomMax={setCustomMax}
+                    onApplyCustomPrice={handleApplyCustomPrice}
+                    onClosePopover={() => setActiveDropdown(null)}
+                  />
                 </div>
               )}
             </div>
@@ -757,23 +652,21 @@ const ProductFilter = ({
         </div>
 
         {/* Slide-over Filter Drawer */}
-        {renderSlideDrawer({
-          isDrawerOpen,
-          setIsDrawerOpen,
-          activeCount,
-          filters,
-          onFilterChange,
-          onClearFilters,
-          categories,
-          brands,
-          attributes,
-          expandedSections,
-          toggleSection,
-          handleMultiSelect,
-          isSelected,
-          isFlashSaleActive,
-          PRICE_PRESETS,
-        })}
+        <FilterSlideDrawer
+          isDrawerOpen={isDrawerOpen}
+          setIsDrawerOpen={setIsDrawerOpen}
+          activeCount={activeCount}
+          filters={filters}
+          onFilterChange={onFilterChange}
+          onClearFilters={onClearFilters}
+          categories={categories}
+          brands={brands}
+          attributes={attributes}
+          handleMultiSelect={handleMultiSelect}
+          isSelected={isSelected}
+          isFlashSaleActive={isFlashSaleActive}
+          getAttrIcon={getAttrIcon}
+        />
       </div>
     );
   }
@@ -1001,74 +894,12 @@ const ProductFilter = ({
               )}
             </button>
             {expandedSections.price && (
-              <div className="space-y-2.5 mt-2">
-                {/* Histogram Wave in Sidebar */}
-                <div className="h-8 flex items-end gap-1 px-1 bg-slate-100 dark:bg-[#080b12] rounded-lg p-1 border border-slate-200 dark:border-slate-800">
-                  {HISTOGRAM_BARS.map((bar, i) => {
-                    const inRange =
-                      isPriceActive &&
-                      (!filters.minPrice || bar.activeRange[1] >= Number(filters.minPrice)) &&
-                      (!filters.maxPrice || bar.activeRange[0] <= Number(filters.maxPrice));
-                    return (
-                      <div
-                        key={i}
-                        style={{ height: bar.height }}
-                        className={`w-full rounded-xs transition-all ${
-                          inRange
-                            ? "bg-gradient-to-t from-emerald-500 to-cyan-400 shadow-[0_0_4px_rgba(16,185,129,0.5)]"
-                            : "bg-slate-300 dark:bg-slate-800/70"
-                        }`}
-                      />
-                    );
-                  })}
-                </div>
-
-                <div className="grid grid-cols-2 gap-1.5">
-                  {PRICE_PRESETS.map((preset, idx) => {
-                    const isPresetActive =
-                      filters.minPrice === preset.min &&
-                      filters.maxPrice === preset.max;
-                    return (
-                      <button
-                        key={idx}
-                        type="button"
-                        onClick={() => {
-                          if (isPresetActive) {
-                            onFilterChange("minPrice", "");
-                            onFilterChange("maxPrice", "");
-                          } else {
-                            onFilterChange("minPrice", preset.min);
-                            onFilterChange("maxPrice", preset.max);
-                          }
-                        }}
-                        className={`px-2 py-1.5 rounded-xl border text-[10px] font-semibold transition-all cursor-pointer truncate ${
-                          isPresetActive
-                            ? "bg-emerald-600 border-emerald-600 text-white font-bold shadow-xs"
-                            : "bg-slate-50 dark:bg-slate-900/60 border-slate-200/80 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-emerald-400"
-                        }`}
-                      >
-                        {preset.label}
-                      </button>
-                    );
-                  })}
-                </div>
-
-                <div className="grid grid-cols-2 gap-1.5 font-mono">
-                  <input
-                    type="number"
-                    value={filters.minPrice || ""}
-                    onChange={(e) => onFilterChange("minPrice", e.target.value)}
-                    placeholder="Từ (₫)"
-                    className="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl text-xs outline-none focus:border-emerald-500 text-slate-900 dark:text-white"
-                  />
-                  <input
-                    type="number"
-                    value={filters.maxPrice || ""}
-                    onChange={(e) => onFilterChange("maxPrice", e.target.value)}
-                    placeholder="Đến (₫)"
-                    className="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl text-xs outline-none focus:border-emerald-500 text-slate-900 dark:text-white"
-                  />
-                </div>
+              <div className="mt-2">
+                <PriceFilterPanel
+                  filters={filters}
+                  onFilterChange={onFilterChange}
+                  variant="sidebar"
+                />
               </div>
             )}
           </div>
@@ -1122,308 +953,22 @@ const ProductFilter = ({
       </div>
 
       {/* Slide-over Filter Drawer (Mobile & Responsive) */}
-      {renderSlideDrawer({
-        isDrawerOpen,
-        setIsDrawerOpen,
-        activeCount,
-        filters,
-        onFilterChange,
-        onClearFilters,
-        categories,
-        brands,
-        attributes,
-        expandedSections,
-        toggleSection,
-        handleMultiSelect,
-        isSelected,
-        isFlashSaleActive,
-        PRICE_PRESETS,
-      })}
-    </>
-  );
-};
-
-// ==========================================
-// SHARED SLIDE-OVER DRAWER COMPONENT (Obsidian Cyberflux)
-// ==========================================
-const renderSlideDrawer = ({
-  isDrawerOpen,
-  setIsDrawerOpen,
-  activeCount,
-  filters,
-  onFilterChange,
-  onClearFilters,
-  categories,
-  brands,
-  attributes,
-  handleMultiSelect,
-  isSelected,
-  isFlashSaleActive,
-  PRICE_PRESETS,
-}) => {
-  if (!isDrawerOpen) return null;
-
-  return (
-    <div className="fixed inset-0 z-[1000] flex justify-end">
-      {/* Backdrop */}
-      <div
-        className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm transition-opacity"
-        onClick={() => setIsDrawerOpen(false)}
+      <FilterSlideDrawer
+        isDrawerOpen={isDrawerOpen}
+        setIsDrawerOpen={setIsDrawerOpen}
+        activeCount={activeCount}
+        filters={filters}
+        onFilterChange={onFilterChange}
+        onClearFilters={onClearFilters}
+        categories={categories}
+        brands={brands}
+        attributes={attributes}
+        handleMultiSelect={handleMultiSelect}
+        isSelected={isSelected}
+        isFlashSaleActive={isFlashSaleActive}
+        getAttrIcon={getAttrIcon}
       />
-
-      {/* Drawer Panel */}
-      <div className="relative w-96 max-w-[92vw] bg-white dark:bg-[#0c101a] shadow-2xl h-full flex flex-col z-10 border-l border-slate-200 dark:border-cyan-900/40 animate-in slide-in-from-right duration-200">
-        {/* Drawer Header */}
-        <div className="p-5 border-b border-slate-100 dark:border-slate-800/80 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="size-9 bg-cyan-500/10 dark:bg-cyan-500/20 text-cyan-500 dark:text-cyan-400 rounded-xl flex items-center justify-center font-bold shadow-[0_0_10px_rgba(6,182,212,0.2)]">
-              <FiSliders />
-            </div>
-            <div>
-              <h3 className="font-black text-sm text-slate-900 dark:text-white uppercase tracking-tight font-mono">
-                BỘ LỌC CHUYÊN SÂU
-              </h3>
-              {activeCount > 0 && (
-                <span className="text-[10px] text-cyan-600 dark:text-cyan-400 font-mono font-bold">
-                  {activeCount} tiêu chí đang áp dụng
-                </span>
-              )}
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            {activeCount > 0 && (
-              <button
-                type="button"
-                onClick={onClearFilters}
-                className="text-xs font-bold text-rose-500 hover:underline cursor-pointer font-mono"
-              >
-                Đặt lại
-              </button>
-            )}
-            <button
-              type="button"
-              onClick={() => setIsDrawerOpen(false)}
-              className="size-8 rounded-xl bg-slate-100 dark:bg-slate-900 text-slate-500 hover:text-slate-800 dark:hover:text-white flex items-center justify-center cursor-pointer transition-colors border border-slate-200 dark:border-slate-800"
-            >
-              <FiX className="text-sm" />
-            </button>
-          </div>
-        </div>
-
-        {/* Drawer Body */}
-        <div className="p-5 overflow-y-auto flex-1 space-y-5 scrollbar-thin">
-          {/* Flash Sale Card */}
-          <div
-            onClick={() => {
-              const next = isFlashSaleActive ? "" : "true";
-              onFilterChange("isFlashSale", next);
-              onFilterChange("flashSale", next);
-            }}
-            className={`p-3.5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between ${
-              isFlashSaleActive
-                ? "bg-amber-500/15 border-amber-500/50 text-amber-600 dark:text-amber-400 font-bold shadow-[0_0_12px_rgba(245,158,11,0.2)]"
-                : "bg-slate-50 dark:bg-slate-900/60 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300"
-            }`}
-          >
-            <span className="flex items-center gap-2 text-xs font-bold font-mono">
-              <FiZap
-                className={
-                  isFlashSaleActive
-                    ? "fill-current text-amber-500 animate-pulse"
-                    : "text-slate-400"
-                }
-              />
-              SĂN DEAL FLASH SALE ⚡
-            </span>
-            <div
-              className={`w-9 h-5 rounded-full p-0.5 transition-colors ${
-                isFlashSaleActive ? "bg-amber-500" : "bg-slate-200 dark:bg-slate-700"
-              }`}
-            >
-              <div
-                className={`size-4 rounded-full bg-white transition-transform ${
-                  isFlashSaleActive ? "translate-x-4 shadow-xs" : ""
-                }`}
-              />
-            </div>
-          </div>
-
-          {/* Categories */}
-          <div className="space-y-2">
-            <div className="text-xs font-bold uppercase tracking-wider text-slate-400 font-mono flex items-center gap-1.5">
-              <FiTag className="text-cyan-400" /> Danh mục sản phẩm
-            </div>
-            <div className="grid grid-cols-2 gap-1.5">
-              {categories.map((cat) => {
-                const checked = isSelected("categoryId", cat.id, cat.slug);
-                return (
-                  <button
-                    key={cat.id}
-                    type="button"
-                    onClick={() =>
-                      handleMultiSelect("categoryId", cat.id.toString())
-                    }
-                    className={`px-3 py-2 rounded-xl border text-xs font-semibold transition-all cursor-pointer flex items-center justify-between ${
-                      checked
-                        ? "bg-cyan-500 border-cyan-500 text-slate-950 font-bold shadow-[0_0_8px_rgba(6,182,212,0.3)]"
-                        : "bg-slate-50 dark:bg-slate-900/60 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300"
-                    }`}
-                  >
-                    <span className="truncate">{cat.name}</span>
-                    {checked && <FiCheck className="text-xs shrink-0" />}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Brands */}
-          <div className="space-y-2">
-            <div className="text-xs font-bold uppercase tracking-wider text-slate-400 font-mono flex items-center gap-1.5">
-              <FiLayers className="text-indigo-400" /> Hãng sản xuất
-            </div>
-            <div className="grid grid-cols-2 gap-1.5">
-              {brands.map((brand) => {
-                const checked = isSelected("brandId", brand.id, brand.slug);
-                return (
-                  <button
-                    key={brand.id}
-                    type="button"
-                    onClick={() =>
-                      handleMultiSelect("brandId", brand.id.toString())
-                    }
-                    className={`px-3 py-2 rounded-xl border text-xs font-semibold transition-all cursor-pointer flex items-center justify-between ${
-                      checked
-                        ? "bg-indigo-600 border-indigo-600 text-white font-bold shadow-[0_0_8px_rgba(99,102,241,0.3)]"
-                        : "bg-slate-50 dark:bg-slate-900/60 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300"
-                    }`}
-                  >
-                    <span className="truncate">{brand.name}</span>
-                    {checked && <FiCheck className="text-xs shrink-0" />}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Price Range */}
-          <div className="space-y-2">
-            <div className="text-xs font-bold uppercase tracking-wider text-slate-400 font-mono flex items-center gap-1.5">
-              <FiDollarSign className="text-emerald-400" /> Phổ giá & Ngân sách
-            </div>
-
-            {/* Histogram bars in drawer */}
-            <div className="h-8 flex items-end gap-1 px-1 bg-slate-100 dark:bg-[#080b12] rounded-lg p-1 border border-slate-200 dark:border-slate-800">
-              {HISTOGRAM_BARS.map((bar, i) => {
-                const inRange =
-                  (filters.minPrice || filters.maxPrice) &&
-                  (!filters.minPrice || bar.activeRange[1] >= Number(filters.minPrice)) &&
-                  (!filters.maxPrice || bar.activeRange[0] <= Number(filters.maxPrice));
-                return (
-                  <div
-                    key={i}
-                    style={{ height: bar.height }}
-                    className={`w-full rounded-xs transition-all ${
-                      inRange
-                        ? "bg-gradient-to-t from-emerald-500 to-cyan-400 shadow-[0_0_4px_rgba(16,185,129,0.5)]"
-                        : "bg-slate-300 dark:bg-slate-800/70"
-                    }`}
-                  />
-                );
-              })}
-            </div>
-
-            <div className="grid grid-cols-2 gap-1.5">
-              {PRICE_PRESETS.map((preset, idx) => {
-                const isPresetActive =
-                  filters.minPrice === preset.min &&
-                  filters.maxPrice === preset.max;
-                return (
-                  <button
-                    key={idx}
-                    type="button"
-                    onClick={() => {
-                      if (isPresetActive) {
-                        onFilterChange("minPrice", "");
-                        onFilterChange("maxPrice", "");
-                      } else {
-                        onFilterChange("minPrice", preset.min);
-                        onFilterChange("maxPrice", preset.max);
-                      }
-                    }}
-                    className={`px-2.5 py-2 rounded-xl border text-[11px] font-semibold transition-all cursor-pointer truncate ${
-                      isPresetActive
-                        ? "bg-emerald-600 border-emerald-600 text-white font-bold shadow-xs"
-                        : "bg-slate-50 dark:bg-slate-900/60 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300"
-                    }`}
-                  >
-                    {preset.label}
-                  </button>
-                );
-              })}
-            </div>
-            <div className="grid grid-cols-2 gap-2 pt-1 font-mono">
-              <input
-                type="number"
-                value={filters.minPrice || ""}
-                onChange={(e) => onFilterChange("minPrice", e.target.value)}
-                placeholder="Từ (₫)"
-                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl text-xs outline-none focus:border-emerald-500 text-slate-900 dark:text-white"
-              />
-              <input
-                type="number"
-                value={filters.maxPrice || ""}
-                onChange={(e) => onFilterChange("maxPrice", e.target.value)}
-                placeholder="Đến (₫)"
-                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl text-xs outline-none focus:border-emerald-500 text-slate-900 dark:text-white"
-              />
-            </div>
-          </div>
-
-          {/* Technical Specs */}
-          {attributes.map((attr) => (
-            <div key={attr.id} className="space-y-2">
-              <div className="text-xs font-bold uppercase tracking-wider text-slate-400 font-mono flex items-center gap-1.5">
-                {getAttrIcon(attr.code)} {attr.name}
-              </div>
-              <div className="flex flex-wrap gap-1.5">
-                {attr.values?.map((v) => {
-                  const selected = filters[attr.code]
-                    ? filters[attr.code].split(",").includes(v.value)
-                    : false;
-                  return (
-                    <button
-                      key={v.id}
-                      type="button"
-                      onClick={() => handleMultiSelect(attr.code, v.value)}
-                      className={`px-3 py-1.5 rounded-xl border text-xs font-mono font-semibold transition-all cursor-pointer ${
-                        selected
-                          ? "bg-cyan-500 border-cyan-500 text-slate-950 font-bold shadow-[0_0_8px_rgba(6,182,212,0.4)]"
-                          : "bg-slate-50 dark:bg-slate-900/60 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-cyan-400"
-                      }`}
-                    >
-                      {v.value}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Drawer Footer */}
-        <div className="p-4 border-t border-slate-100 dark:border-slate-800/80 bg-slate-50/70 dark:bg-[#080b12]/70 flex gap-2">
-          <button
-            type="button"
-            onClick={() => setIsDrawerOpen(false)}
-            className="flex-1 py-3 bg-gradient-to-r from-cyan-500 via-indigo-600 to-purple-600 hover:from-cyan-600 hover:to-purple-700 text-white rounded-xl text-xs font-bold uppercase tracking-wider shadow-[0_0_16px_rgba(6,182,212,0.3)] cursor-pointer font-mono"
-          >
-            ÁP DỤNG BỘ LỌC
-          </button>
-        </div>
-      </div>
-    </div>
+    </>
   );
 };
 

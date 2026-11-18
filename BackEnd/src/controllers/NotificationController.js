@@ -76,7 +76,7 @@ const handleSendBroadcastNotification = async (req, res) => {
       });
     }
 
-    const { title, message, type, link, target, targetUserId } = req.body;
+    const { title, message, type, link, targetUrl, target, targetUserId } = req.body;
     if (!title || !message) {
       return res.status(400).json({
         status: "BAD_REQUEST",
@@ -88,7 +88,7 @@ const handleSendBroadcastNotification = async (req, res) => {
 
     const io = req.app.get("io");
     const result = await NotificationService.sendBroadcastNotification(
-      { title, message, type, link, target, targetUserId },
+      { title, message, type, link: link || targetUrl || "", target, targetUserId },
       io
     );
     return handleResponse(res, result, 200);

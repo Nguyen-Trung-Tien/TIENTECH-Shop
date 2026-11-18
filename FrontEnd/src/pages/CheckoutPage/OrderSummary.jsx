@@ -9,11 +9,14 @@ import {
 import { PayPalButtons } from "@paypal/react-paypal-js";
 import { Button } from "../../components/UI/Button";
 import { useSystemSettings } from "../../context/useSystemSettings";
+import { calculatePointsEarned } from "../../utils/loyaltyHelper";
 
 const OrderSummary = ({
   selectedItems = [],
   subtotal = 0,
   appliedVoucher = null,
+  pointsUsed = 0,
+  pointsDiscount = 0,
   onPlaceOrder,
   onPayPalApprove,
   paymentMethod = "COD",
@@ -24,7 +27,12 @@ const OrderSummary = ({
   const discountAmount = appliedVoucher
     ? Number(appliedVoucher.discountAmount)
     : 0;
-  const total = Math.max(0, subtotal + shippingFee - discountAmount);
+  const loyaltyDiscount = Math.max(0, Number(pointsDiscount) || 0);
+  const total = Math.max(
+    0,
+    subtotal + shippingFee - discountAmount - loyaltyDiscount,
+  );
+  const expectedEarnedPoints = calculatePointsEarned(total);
 
   return (
     <div className="bg-white dark:bg-dark-surface rounded-[32px] p-8 text-gray-900 dark:text-white shadow-xl border border-gray-200 dark:border-dark-border overflow-hidden relative">
@@ -68,7 +76,18 @@ const OrderSummary = ({
           </div>
         )}
 
-        <div className="pt-6 border-t border-gray-200 dark:border-dark-border flex justify-between items-end">
+        {pointsUsed > 0 && loyaltyDiscount > 0 && (
+          <div className="flex justify-between items-center text-amber-600 dark:text-amber-400">
+            <span className="text-xs font-bold uppercase tracking-wider flex items-center gap-2">
+              Đổi {pointsUsed.toLocaleString()} điểm thưởng
+            </span>
+            <span className="font-black">
+              -{loyaltyDiscount.toLocaleString()}₫
+            </span>
+          </div>
+        )}
+
+        <div className="pt-6 border-t border-gray-200 dark:border-dark-border flex justify-between items-end gap-3 flex-wrap">
           <div>
             <span className="block text-[10px] font-black text-gray-400 dark:text-dark-text-secondary uppercase tracking-[0.2em] mb-1">
               Tổng cộng
@@ -77,6 +96,11 @@ const OrderSummary = ({
               {total.toLocaleString()}₫
             </span>
           </div>
+          {expectedEarnedPoints > 0 && (
+            <span className="px-2.5 py-1 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/50 text-[10px] font-black text-amber-700 dark:text-amber-300 uppercase tracking-wider">
+              +{expectedEarnedPoints.toLocaleString()} điểm khi hoàn tất
+            </span>
+          )}
         </div>
       </div>
 

@@ -6,13 +6,17 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay } from "swiper/modules";
 import "swiper/css";
 
-const BrandSection = ({ brands: propBrands }) => {
+const BrandSection = ({ brands: propBrands, parentLoading = false }) => {
   const [brands, setBrands] = useState(propBrands || []);
-  const [loading, setLoading] = useState(!propBrands);
+  const [loading, setLoading] = useState(parentLoading || !propBrands);
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (propBrands && propBrands.length > 0) {
+    if (parentLoading) {
+      setLoading(true);
+      return;
+    }
+    if (Array.isArray(propBrands)) {
       setBrands(propBrands);
       setLoading(false);
       return;
@@ -33,7 +37,7 @@ const BrandSection = ({ brands: propBrands }) => {
       }
     };
     fetchBrands();
-  }, [propBrands]);
+  }, [propBrands, parentLoading]);
 
   if (loading) return null;
 

@@ -5,13 +5,17 @@ import { ProductCardSkeleton as SkeletonCard } from "../Loading";
 import { getAllCategoryApi } from "../../api/categoryApi";
 import { FiGrid } from "react-icons/fi";
 
-const CategorySection = React.memo(({ categories: propCategories = [], loading: propLoading }) => {
+const CategorySection = React.memo(({ categories: propCategories, loading: propLoading, parentLoading = false }) => {
   const navigate = useNavigate();
-  const [categories, setCategories] = useState(propCategories);
-  const [loading, setLoading] = useState(propLoading ?? false);
+  const [categories, setCategories] = useState(propCategories || []);
+  const [loading, setLoading] = useState(parentLoading || propLoading || !propCategories);
 
   useEffect(() => {
-    if (propCategories && propCategories.length > 0) {
+    if (parentLoading) {
+      setLoading(true);
+      return;
+    }
+    if (Array.isArray(propCategories)) {
       setCategories(propCategories);
       setLoading(false);
       return;
@@ -37,7 +41,7 @@ const CategorySection = React.memo(({ categories: propCategories = [], loading: 
     return () => {
       isMounted = false;
     };
-  }, [propCategories]);
+  }, [propCategories, parentLoading]);
 
   if (loading) {
     return (

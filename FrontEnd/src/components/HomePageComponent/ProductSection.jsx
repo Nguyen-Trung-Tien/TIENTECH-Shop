@@ -65,6 +65,7 @@ const getCategoryIcon = (name = "") => {
 const ProductSection = ({
   products: propProducts,
   categories: propCategories,
+  parentLoading = false,
 }) => {
   const navigate = useNavigate();
   const [allProducts, setAllProducts] = useState(
@@ -75,11 +76,15 @@ const ProductSection = ({
   const [sortBy, setSortBy] = useState("featured");
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(
-    !propProducts || propProducts.length === 0,
+    parentLoading || !Array.isArray(propProducts),
   );
 
   useEffect(() => {
-    if (propProducts && propProducts.length > 0) {
+    if (parentLoading) {
+      setLoading(true);
+      return;
+    }
+    if (Array.isArray(propProducts)) {
       setAllProducts(propProducts.slice(0, 36));
       setLoading(false);
       return;
@@ -105,7 +110,7 @@ const ProductSection = ({
     };
 
     fetchProducts();
-  }, [propProducts]);
+  }, [propProducts, parentLoading]);
 
   // Nhóm danh mục khả dụng kèm đếm số lượng
   const availableCategories = useMemo(() => {

@@ -64,6 +64,7 @@ const ImageGallery = ({
         <img
           src={mainImage || "/images/no-image.png"}
           alt={productName}
+          fetchPriority="high"
           className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105 p-3 mix-blend-multiply dark:mix-blend-normal cursor-pointer z-10"
           onClick={() => setIsLightboxOpen(true)}
         />
@@ -150,7 +151,7 @@ const ImageGallery = ({
           </div>
           <div className="flex items-center gap-1.5 truncate">
             <FiPackage className="size-3.5 text-primary shrink-0" />
-            <span className="truncate">Đóng gói chuẩn phong thủy</span>
+            <span className="truncate">Đóng gói chống sốc chuẩn hãng</span>
           </div>
         </div>
       </div>
@@ -159,10 +160,13 @@ const ImageGallery = ({
       <AnimatePresence>
         {isLightboxOpen && (
           <Motion.div
+            role="dialog"
+            aria-modal="true"
+            aria-label={`Xem ảnh ${productName}`}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[99999] bg-black/94 backdrop-blur-xl flex items-center justify-center p-4 select-none"
+            className="fixed inset-0 z-[99999] bg-black/94 backdrop-blur-xl flex items-center justify-center p-4 select-none overscroll-contain"
             onClick={() => setIsLightboxOpen(false)}
           >
             {/* Close Button */}

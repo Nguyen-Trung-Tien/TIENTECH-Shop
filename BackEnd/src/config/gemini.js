@@ -6,17 +6,16 @@ const genAI = new GoogleGenerativeAI(apiKey);
 
 // Fallback sequence when Google updates/deprecates model versions
 const FALLBACK_MODELS = [
-  "gemini-3.6-flash",
   "gemini-2.5-flash",
+  "gemini-2.0-flash",
   "gemini-1.5-flash",
   "gemini-1.5-pro",
-  "gemini-2.0-flash-exp",
 ];
 
 /**
  * Get generative model with given name and options
  */
-const getGeminiModel = (modelName = "gemini-3.6-flash", options = {}) => {
+const getGeminiModel = (modelName = "gemini-2.5-flash", options = {}) => {
   return genAI.getGenerativeModel({
     model: modelName,
     ...options,
@@ -27,12 +26,15 @@ const getGeminiModel = (modelName = "gemini-3.6-flash", options = {}) => {
  * Generate content with automatic model fallback on 404 or version obsolescence
  */
 const generateContentWithFallback = async (contentsOrPrompt, options = {}) => {
-  let preferredModel = "gemini-3.6-flash";
+  let preferredModel = "gemini-2.5-flash";
   try {
     const SystemSettingService = require("../services/system/SystemSettingService");
-    preferredModel = (await SystemSettingService.getSetting("AI_MODEL_NAME")) || "gemini-3.6-flash";
+    const configuredModel = await SystemSettingService.getSetting("AI_MODEL_NAME");
+    preferredModel = configuredModel && configuredModel !== "gemini-3.6-flash"
+      ? configuredModel
+      : "gemini-2.5-flash";
   } catch {
-    preferredModel = "gemini-3.6-flash";
+    preferredModel = "gemini-2.5-flash";
   }
 
   // Deduplicate candidate models starting with preferred

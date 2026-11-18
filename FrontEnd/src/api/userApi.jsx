@@ -28,6 +28,13 @@ export const updateUserApi = (data) => {
   return axiosClient.put(`/user/update`, data, config);
 };
 
+export const adminUpdateUserApi = (data) => {
+  const config = data instanceof FormData
+    ? { headers: { "Content-Type": "multipart/form-data" } }
+    : {};
+  return axiosClient.put(`/user/admin/update`, data, config);
+};
+
 export const registerUser = (data) => {
   const config = data instanceof FormData 
     ? { headers: { "Content-Type": "multipart/form-data" } }
@@ -82,9 +89,9 @@ export const userApi = {
   update: (id, data) => {
     if (data instanceof FormData) {
       if (!data.has("id")) data.append("id", id);
-      return updateUserApi(data);
+      return adminUpdateUserApi(data);
     }
-    return updateUserApi({ ...data, id });
+    return adminUpdateUserApi({ ...data, id });
   },
   delete: deleteUserApi,
   getMe: getMeApi,

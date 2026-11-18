@@ -1,4 +1,10 @@
 import { createSlice } from "@reduxjs/toolkit";
+import {
+  addOrMergeGuestCartItem,
+  loadGuestCart,
+  removeGuestCartItemById,
+  updateGuestCartItemQty,
+} from "../utils/guestCart";
 
 const initialState = {
   cartItems: [],
@@ -67,6 +73,33 @@ const cartSlice = createSlice({
       state.appliedVoucher = null;
     },
 
+    hydrateGuestCart: (state) => {
+      state.cartItems = loadGuestCart();
+    },
+
+    addGuestCartItem: (state, action) => {
+      state.cartItems = addOrMergeGuestCartItem({
+        ...action.payload,
+        currentItems: state.cartItems,
+      });
+    },
+
+    updateGuestCartQuantity: (state, action) => {
+      const { id, quantity } = action.payload || {};
+      if (id && quantity > 0) {
+        state.cartItems = updateGuestCartItemQty(id, quantity, state.cartItems);
+      }
+    },
+
+    removeGuestCartItem: (state, action) => {
+      state.cartItems = removeGuestCartItemById(action.payload, state.cartItems);
+    },
+
+    removePurchasedGuestItems: (state, action) => {
+      state.cartItems = removeGuestCartItemById(action.payload, state.cartItems);
+      state.appliedVoucher = null;
+    },
+
     applyVoucher: (state, action) => {
       state.appliedVoucher = action.payload;
     },
@@ -85,6 +118,11 @@ export const {
   removeCartItem,
   removePurchasedItems,
   clearCart,
+  hydrateGuestCart,
+  addGuestCartItem,
+  updateGuestCartQuantity,
+  removeGuestCartItem,
+  removePurchasedGuestItems,
   applyVoucher,
   removeVoucher,
 } = cartSlice.actions;

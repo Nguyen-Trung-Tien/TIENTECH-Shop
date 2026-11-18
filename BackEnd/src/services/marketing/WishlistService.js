@@ -48,6 +48,7 @@ const getWishlistByUserId = async (userId) => {
         {
           model: db.Product,
           as: "product",
+          attributes: { exclude: ["embedding"] },
           include: [
             {
               model: db.ProductImage,

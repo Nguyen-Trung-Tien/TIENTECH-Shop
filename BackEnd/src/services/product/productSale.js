@@ -23,6 +23,7 @@ const getFlashSaleProducts = async (page = 1, limit = 10) => {
         flashSaleStart: { [Op.lte]: now },
         flashSaleEnd: { [Op.gte]: now },
       },
+      attributes: { exclude: ["embedding"] },
       include: [
         { model: db.Category, as: "category" },
         { model: db.Brand, as: "brand" },
@@ -53,6 +54,7 @@ const getFlashSaleProducts = async (page = 1, limit = 10) => {
       limit: l,
       offset,
       order: [["flashSaleStart", "ASC"]],
+      distinct: true,
     });
 
     const upcomingData = await db.Product.findAll({
@@ -64,6 +66,7 @@ const getFlashSaleProducts = async (page = 1, limit = 10) => {
           [Op.lte]: new Date(now.getTime() + 24 * 60 * 60 * 1000) 
         },
       },
+      attributes: { exclude: ["embedding"] },
       include: [
         {
           model: db.ProductImage,
@@ -175,6 +178,7 @@ const getDiscountedProducts = async (page = 1, limit = 10) => {
           },
         ],
       },
+      attributes: { exclude: ["embedding"] },
       include: [
         { model: db.Category, as: "category" },
         { model: db.Brand, as: "brand" },
@@ -193,6 +197,7 @@ const getDiscountedProducts = async (page = 1, limit = 10) => {
       limit: l,
       offset,
       order: [["createdAt", "DESC"]],
+      distinct: true,
     });
 
     const pagingData = getPagingData(data, page, l);

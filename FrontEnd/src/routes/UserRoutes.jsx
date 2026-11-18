@@ -23,7 +23,6 @@ const Notifications = lazy(() => import("../pages/Notifications/Notifications"))
 const NotFound = lazy(() => import("../pages/NotFound/NotFound"));
 const ProductDetailPage = lazy(() => import("../pages/ProductDetailPage/ProductDetailPage"));
 const ProductListPage = lazy(() => import("../pages/ProductListPage/ProductListPage"));
-const AllProducts = lazy(() => import("../components/AllProducts/AllProduct"));
 const FortuneProducts = lazy(() => import("../components/FortuneProducts/FortuneProducts"));
 const OrderPage = lazy(() => import("../pages/OrderPage/OrderPage"));
 const OrderDetail = lazy(() => import("../pages/OrderDetail/OrderDetail"));
@@ -78,15 +77,24 @@ const UserRoutes = () => {
 
       <Route path="login-success" element={<LoginSuccess />} />
 
+      <Route
+        path="cart"
+        element={
+          <LayoutComponent isShowHeader={true} isShowFooter={true}>
+            <CartPage />
+          </LayoutComponent>
+        }
+      />
+      <Route
+        path="fortune-products"
+        element={
+          <LayoutComponent isShowHeader={true} isShowFooter={true}>
+            <FortuneProducts />
+          </LayoutComponent>
+        }
+      />
+
       <Route element={<PrivateRoute />}>
-        <Route
-          path="cart"
-          element={
-            <LayoutComponent isShowHeader={true} isShowFooter={true}>
-              <CartPage />
-            </LayoutComponent>
-          }
-        />
         <Route
           path="checkout"
           element={
@@ -152,14 +160,6 @@ const UserRoutes = () => {
           }
         />
         <Route
-          path="fortune-products"
-          element={
-            <LayoutComponent isShowHeader={true} isShowFooter={true}>
-              <FortuneProducts />
-            </LayoutComponent>
-          }
-        />
-        <Route
           path="wishlist"
           element={
             <LayoutComponent isShowHeader={true} isShowFooter={true}>
@@ -213,7 +213,7 @@ const UserRoutes = () => {
         path="products"
         element={
           <LayoutComponent isShowHeader={true} isShowFooter={true}>
-            <AllProducts />
+            <ProductListPage />
           </LayoutComponent>
         }
       />

@@ -14,18 +14,18 @@ const WarrantyPage = () => {
   const policies = [
     {
       icon: <FiAward className="text-amber-500" size={28} />,
-      title: "Cam Kết Đá Tự Nhiên 100%",
-      desc: "Tất cả sản phẩm đều đi kèm chứng thư kiểm định chất lượng đá tự nhiên từ các trung tâm kiểm định độc lập uy tín.",
+      title: "Cam Kết Chính Hãng 100%",
+      desc: "Tất cả thiết bị và linh kiện tại TienTech đều là hàng chính hãng nguyên seal, đầy đủ số serial & bảo hành ủy quyền.",
     },
     {
       icon: <FiTool className="text-blue-500" size={28} />,
-      title: "Bảo Dưỡng & Vệ Sinh Trọn Đời",
-      desc: "Miễn phí xâu lại dây, đánh bóng hạt đá, vệ sinh làm mới sản phẩm không giới hạn số lần cho mọi khách hàng.",
+      title: "Vệ Sinh & Bảo Dưỡng Phần Cứng",
+      desc: "Miễn phí vệ sinh laptop, tra keo tản nhiệt, cân chỉnh phím cơ & kiểm tra sức khỏe pin định kỳ trong 12 tháng đầu.",
     },
     {
       icon: <FiRotateCcw className="text-emerald-500" size={28} />,
       title: "Bảo Hành 1 Đổi 1 Trong 7 Ngày",
-      desc: "Đổi mới lập tức sản phẩm nếu có lỗi do nhà sản xuất hoặc nứt vỡ trong quá trình vận chuyển.",
+      desc: "Đổi mới lập tức thiết bị nếu phát sinh lỗi phần cứng từ nhà sản xuất hoặc hư hại trong quá trình vận chuyển.",
     },
     {
       icon: <FiShield className="text-purple-500" size={28} />,
@@ -38,22 +38,22 @@ const WarrantyPage = () => {
     {
       step: "01",
       title: "Cung Cấp Thông Tin",
-      desc: "Khách hàng đọc Số Điện Thoại mua hàng hoặc Mã đơn hàng cho nhân viên chăm sóc.",
+      desc: "Khách hàng đọc Số Điện Thoại mua hàng hoặc Mã đơn hàng / Serial máy cho nhân viên chăm sóc.",
     },
     {
       step: "02",
-      title: "Gửi Sản Phẩm Hỗ Trợ",
-      desc: "Mang trực tiếp tới Showroom hoặc gửi bưu điện theo hướng dẫn của tổng đài.",
+      title: "Gửi Thiết Bị Kiểm Tra",
+      desc: "Mang trực tiếp tới Showroom hoặc gửi chuyển phát bảo hiểm theo hướng dẫn của tổng đài.",
     },
     {
       step: "03",
-      title: "Xử Lý & Kiểm Định",
-      desc: "Kỹ thuật viên tiến hành vệ sinh, xâu lại dây, thay hạt (nếu cần) trong 24-48h.",
+      title: "Chẩn Đoán & Bảo Hành",
+      desc: "Kỹ thuật viên tiến hành kiểm tra phần cứng, vệ sinh, xử lý bảo hành chính hãng trong 24-48h.",
     },
     {
       step: "04",
       title: "Bàn Giao Cho Khách",
-      desc: "Gửi lại sản phẩm hoàn thiện tận tay quý khách hoàn toàn sạch sẽ và mới nguyên.",
+      desc: "Gửi lại thiết bị hoàn thiện, niêm phong chống sốc tận tay quý khách kèm biên bản nghiệm thu.",
     },
   ];
 
@@ -71,7 +71,7 @@ const WarrantyPage = () => {
             </h1>
             <p className="text-slate-600 dark:text-white/90 text-sm md:text-base leading-relaxed">
               TienTech tự hào mang đến trải nghiệm an tâm tuyệt đối cho quý khách hàng 
-              với chính sách bảo hành, bảo dưỡng đá phong thủy uy tín hàng đầu Việt Nam.
+              với chính sách bảo hành chính hãng, bảo dưỡng thiết bị công nghệ uy tín hàng đầu Việt Nam.
             </p>
           </div>
         </div>
@@ -111,12 +111,12 @@ const WarrantyPage = () => {
             <div className="space-y-4 text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
               <div className="p-4 rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-900/40">
                 <h4 className="font-bold text-emerald-900 dark:text-emerald-300 mb-1 flex items-center gap-2">
-                  <FiCheckCircle className="text-emerald-600" /> Phạm Vi Bảo Hành Miễn Phí Trọn Đời
+                  <FiCheckCircle className="text-emerald-600" /> Phạm Vi Bảo Hành &amp; Bảo Dưỡng Tiêu Chuẩn
                 </h4>
                 <ul className="list-disc list-inside space-y-1 text-xs text-slate-700 dark:text-slate-300">
-                  <li>Thay dây xâu co giãn cho vòng tay đá.</li>
-                  <li>Đánh bóng, siêu âm vệ sinh làm sáng đá tự nhiên.</li>
-                  <li>Gắn lại đá phụ hạt nhỏ bị rơi rớt (miễn phí hạt phụ tiêu chuẩn).</li>
+                  <li>Bảo hành lỗi kỹ thuật phần cứng chính hãng 12 - 36 tháng theo từng dòng máy.</li>
+                  <li>Vệ sinh bụi bẩn, kiểm tra tản nhiệt và bảo dưỡng thiết bị định kỳ miễn phí trong năm đầu.</li>
+                  <li>Hỗ trợ cập nhật firmware, tối ưu hiệu năng và cân chỉnh màn hình chuẩn màu tại showroom.</li>
                 </ul>
               </div>
 
@@ -125,9 +125,9 @@ const WarrantyPage = () => {
                   Trường Hợp Hỗ Trợ Có Tính Phí (Ưu Đãi Khách Hàng)
                 </h4>
                 <ul className="list-disc list-inside space-y-1 text-xs text-slate-600 dark:text-slate-400">
-                  <li>Sản phẩm bị nứt vỡ do va đập mạnh từ phía người sử dụng.</li>
-                  <li>Khách hàng muốn làm lại dây chuyền bạc/vàng mới hoặc bổ sung hạt đá chủ.</li>
-                  <li>Cần làm lại giấy kiểm định mới theo yêu cầu riêng của khách.</li>
+                  <li>Thiết bị hư hỏng do rơi vỡ, va đập mạnh hoặc vào nước từ phía người sử dụng.</li>
+                  <li>Khách hàng có nhu cầu nâng cấp RAM, SSD hoặc thay thế linh kiện ngoài phạm vi bảo hành.</li>
+                  <li>Sửa chữa, khôi phục thiết bị đã hết hạn bảo hành chính hãng với chi phí trợ giá từ TienTech.</li>
                 </ul>
               </div>
             </div>

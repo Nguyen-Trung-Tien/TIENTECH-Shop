@@ -27,11 +27,11 @@ const FengShuiChat = ({ setGlobalBirthYear }) => {
     setMessages([
       {
         sender: "bot",
-        text: "Kính chào quý khách! 🙏 Tôi là **TienTech FengShui Master**.",
+        text: "Xin chào bạn! 👋 Tôi là **AI Tech Color & Setup Advisor** của TienTech.",
       },
       {
         sender: "bot",
-        text: "Để gieo quẻ & tư vấn phong thủy đại cát, xin cho biết năm sinh của quý khách (Ví dụ: **1998**):",
+        text: "Để gợi ý bảng màu thiết bị & phong cách bàn làm việc hợp cá tính/bản mệnh, vui lòng cho biết năm sinh của bạn (Ví dụ: **1998**):",
       },
     ]);
     setStep(STEP.BIRTH);
@@ -88,7 +88,7 @@ const FengShuiChat = ({ setGlobalBirthYear }) => {
           ...prev,
           {
             sender: "bot",
-            text: `✨ Đã xác nhận quý khách là ${text === "female" ? "Nữ" : text}. Quý khách đang tìm dòng sản phẩm phong thủy nào?`,
+            text: `✨ Đã xác nhận hồ sơ (${text === "female" ? "Nữ" : text}). Bạn đang tìm dòng thiết bị hay phong cách setup nào?`,
           },
         ]);
         setStep(STEP.GOAL);
@@ -101,7 +101,7 @@ const FengShuiChat = ({ setGlobalBirthYear }) => {
           {
             sender: "bot",
             type: "loading",
-            text: "Đang gieo quẻ & phân tích thiên cơ ngũ hành...",
+            text: "Đang phân tích bảng màu hợp cá tính & góc setup công nghệ...",
           },
         ]);
         try {
@@ -130,7 +130,7 @@ const FengShuiChat = ({ setGlobalBirthYear }) => {
               {
                 sender: "bot",
                 text:
-                  res.errMessage || "Xin lỗi, tôi chưa thể gieo quẻ lúc này.",
+                  res.errMessage || "Xin lỗi, tôi chưa thể phân tích gợi ý lúc này.",
               },
             ]);
           }
@@ -139,7 +139,7 @@ const FengShuiChat = ({ setGlobalBirthYear }) => {
             ...prev.filter((m) => m.type !== "loading"),
             {
               sender: "bot",
-              text: "Xin lỗi, hiện tại không thể kết nối với thiên cơ. Vui lòng thử lại sau!",
+              text: "Xin lỗi, hiện tại không thể kết nối tới cố vấn AI. Vui lòng thử lại sau!",
             },
           ]);
         }
@@ -151,17 +151,17 @@ const FengShuiChat = ({ setGlobalBirthYear }) => {
 
   return (
     <>
-      {/* Floating FengShui Trigger Button */}
+      {/* Floating AI Tech Color & Setup Advisor Button */}
       <button
         onClick={handleShow}
-        aria-label="Mở FengShui Master Chatbot"
-        className="fixed bottom-20 right-4 md:bottom-24 md:right-6 size-12 md:size-14 bg-gradient-to-tr from-purple-700 via-indigo-600 to-blue-600 text-white rounded-full shadow-xl shadow-indigo-900/30 flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-[999] border-2 border-white dark:border-slate-800 overflow-hidden group"
+        aria-label="Mở AI Tech Color & Setup Advisor"
+        className="fixed bottom-20 right-4 md:bottom-24 md:right-6 size-12 md:size-14 bg-gradient-to-tr from-indigo-700 via-blue-600 to-cyan-600 text-white rounded-full shadow-xl shadow-indigo-900/30 flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-[999] border-2 border-white dark:border-slate-800 overflow-hidden group cursor-pointer"
       >
-        <div className="absolute inset-0 bg-gradient-to-tr from-blue-600 to-purple-600 opacity-0 group-hover:opacity-100 transition-opacity" />
+        <div className="absolute inset-0 bg-gradient-to-tr from-blue-600 to-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity" />
         <FiZap size={22} className="relative z-10 animate-pulse text-amber-300" />
       </button>
 
-      {/* FengShui Master Drawer / Modal */}
+      {/* AI Tech Color & Setup Advisor Drawer / Modal */}
       <AnimatePresence>
         {show && (
           <div className="fixed inset-0 z-[1000] flex justify-end">
@@ -176,24 +176,27 @@ const FengShuiChat = ({ setGlobalBirthYear }) => {
 
             {/* Panel */}
             <Motion.div
+              role="dialog"
+              aria-modal="true"
+              aria-label="AI Tech Color & Setup Advisor"
               initial={{ x: "100%" }}
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="relative w-full max-w-md bg-white dark:bg-slate-900 h-full shadow-2xl flex flex-col border-l border-slate-100 dark:border-slate-800"
+              className="relative w-full max-w-md bg-white dark:bg-slate-900 h-full shadow-2xl flex flex-col border-l border-slate-100 dark:border-slate-800 overscroll-contain"
             >
               {/* Header */}
-              <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-gradient-to-r from-purple-800 via-indigo-800 to-blue-800 text-white shadow-md">
+              <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-gradient-to-r from-indigo-800 via-blue-800 to-cyan-800 text-white shadow-md">
                 <div className="flex items-center gap-3">
                   <div className="size-10 rounded-xl bg-white/15 backdrop-blur-md flex items-center justify-center border border-white/20 shadow-inner">
-                    <FiStar size={20} className="text-amber-300 animate-spin" style={{ animationDuration: '8s' }} />
+                    <FiStar size={20} className="text-amber-300" />
                   </div>
                   <div>
                     <h3 className="font-black text-sm tracking-wide uppercase leading-none">
-                      FengShui Master
+                      AI Color &amp; Setup
                     </h3>
-                    <p className="text-[10px] font-bold text-amber-300 tracking-wider uppercase mt-1 opacity-90">
-                      TienTech Spiritual AI
+                    <p className="text-[10px] font-bold text-cyan-200 tracking-wider uppercase mt-1 opacity-90">
+                      AI Tech Color &amp; Setup Advisor
                     </p>
                   </div>
                 </div>
@@ -201,8 +204,8 @@ const FengShuiChat = ({ setGlobalBirthYear }) => {
                 <div className="flex items-center gap-1">
                   <button
                     onClick={handleReset}
-                    title="Gieo quẻ lại"
-                    className="p-2 hover:bg-white/15 rounded-xl transition-colors text-white/80 hover:text-white"
+                    title="Tư vấn lại"
+                    className="p-2 hover:bg-white/15 rounded-xl transition-colors text-white/80 hover:text-white cursor-pointer"
                   >
                     <FiRefreshCw size={17} />
                   </button>
@@ -325,7 +328,7 @@ const FengShuiChat = ({ setGlobalBirthYear }) => {
                         msg.recommendedProducts.length > 0 && (
                           <div className="grid gap-2 pt-1">
                             <p className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-wider ml-1">
-                              ✨ Sản phẩm hợp phong thủy:
+                              ✨ Thiết bị gợi ý theo AI Color &amp; Setup:
                             </p>
                             {msg.recommendedProducts.map((prod) => (
                               <a
@@ -413,7 +416,7 @@ const FengShuiChat = ({ setGlobalBirthYear }) => {
                   </button>
                 </div>
                 <p className="text-[9px] font-semibold text-slate-400 dark:text-slate-500 uppercase text-center mt-2.5 tracking-wider">
-                  Powered by TienTech AI Engine Spiritual Edition
+                  Powered by AI Tech Color & Setup Advisor
                 </p>
               </div>
             </Motion.div>

@@ -41,7 +41,8 @@ const getDashboardData = async (period) => {
     const startOfThisYear = new Date(now.getFullYear(), 0, 1);
 
     let startDate;
-    if (period === "week") startDate = startOfThisWeek;
+    if (period === "today") startDate = startOfToday;
+    else if (period === "week") startDate = startOfThisWeek;
     else if (period === "year") startDate = startOfThisYear;
     else if (period === "month") startDate = startOfThisMonth;
     else startDate = new Date(0); // All time
@@ -126,6 +127,7 @@ const getDashboardData = async (period) => {
       products: calculateChange(productsThisMonth, productsLastMonth),
       orders: calculateChange(todayOrders, yesterdayOrders),
       revenue: calculateChange(revenueThisMonth, revenueLastMonth),
+      profit: calculateChange(revenueThisMonth, revenueLastMonth),
       users: calculateChange(usersThisMonth, usersLastMonth),
     };
 
@@ -233,6 +235,15 @@ const getDashboardData = async (period) => {
           "productName",
           [db.sequelize.fn("SUM", db.sequelize.col("quantity")), "totalSold"],
           [db.sequelize.fn("SUM", db.sequelize.col("subtotal")), "totalRevenue"],
+        ],
+        include: [
+          {
+            model: db.Order,
+            as: "order",
+            attributes: [],
+            where: { status: { [Op.ne]: "cancelled" } },
+            required: true,
+          },
         ],
         group: ["productId", "productName"],
         order: [[db.sequelize.fn("SUM", db.sequelize.col("quantity")), "DESC"]],

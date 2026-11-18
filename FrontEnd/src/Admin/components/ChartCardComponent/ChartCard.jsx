@@ -15,26 +15,6 @@ import UnifiedSpinner from "../../../components/Loading/UnifiedSpinner";
 
 const PERIOD = { WEEK: "week", MONTH: "month", YEAR: "year" };
 
-const FALLBACK_DATA = {
-  [PERIOD.WEEK]: [
-    { name: "T2", value: 300000 },
-    { name: "T3", value: 420000 },
-    { name: "T4", value: 650000 },
-    { name: "T5", value: 500000 },
-    { name: "T6", value: 720000 },
-    { name: "T7", value: 680000 },
-    { name: "CN", value: 800000 },
-  ],
-  [PERIOD.MONTH]: Array.from({ length: 30 }, (_, i) => ({
-    name: `${i + 1}`,
-    value: Math.floor(Math.random() * 300000) + 200000,
-  })),
-  [PERIOD.YEAR]: Array.from({ length: 12 }, (_, i) => ({
-    name: `T${i + 1}`,
-    value: Math.floor(Math.random() * 5000000) + 10000000,
-  })),
-};
-
 const convertRevenueData = (arr, labelKey, valueKey) =>
   (arr || []).map((item) => ({
     name: item[labelKey] ?? "N/A",
@@ -100,7 +80,7 @@ const ChartCard = ({ token, embedded = false }) => {
         ? dashboardData.revenueByMonth
         : dashboardData.revenueByYear;
     
-    return data.length > 0 ? data : FALLBACK_DATA[type];
+    return Array.isArray(data) ? data : [];
   }, [type, dashboardData]);
 
   return (
@@ -184,6 +164,15 @@ const ChartCard = ({ token, embedded = false }) => {
           <div className="h-full w-full flex flex-col items-center justify-center gap-3">
             <UnifiedSpinner size="lg" variant="primary" />
             <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Đang phân tích doanh thu...</span>
+          </div>
+        ) : selectedData.length === 0 ? (
+          <div className="h-full w-full flex flex-col items-center justify-center gap-2 text-center p-4">
+            <p className="text-sm font-bold text-slate-500 dark:text-slate-400">
+              Chưa có dữ liệu doanh thu trong giai đoạn này
+            </p>
+            <p className="text-xs text-slate-400 dark:text-slate-500">
+              Dữ liệu sẽ tự động cập nhật khi có đơn hàng hoàn tất.
+            </p>
           </div>
         ) : (
           <div className="h-full min-w-[500px] sm:min-w-full">

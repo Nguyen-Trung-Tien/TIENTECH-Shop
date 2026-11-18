@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import {
   FiMail,
   FiLock,
@@ -33,7 +33,25 @@ const LoginPage = () => {
   }, []);
 
   const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
   const dispatch = useDispatch();
+
+  const getSafeRedirect = () => {
+    const redirectParam = searchParams.get("redirect");
+    if (
+      redirectParam &&
+      redirectParam.startsWith("/") &&
+      !redirectParam.startsWith("//")
+    ) {
+      return redirectParam;
+    }
+    const fromPath = location.state?.from?.pathname;
+    if (fromPath && fromPath.startsWith("/") && !fromPath.startsWith("//")) {
+      return `${fromPath}${location.state?.from?.search || ""}`;
+    }
+    return "/";
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -62,10 +80,17 @@ const LoginPage = () => {
           phone: user.phone,
           address: user.address,
           avatar: user.avatar,
+          points: Number(user.points || 0),
+          rank: user.rank || "Bronze",
         };
         dispatch(setUser({ user: minimalUser }));
+        try {
+          sessionStorage.removeItem("tientech_post_login_redirect");
+        } catch {
+          // Ignore storage error
+        }
         showSuccessToast(res.errMessage || "Đăng nhập thành công!");
-        navigate("/");
+        navigate(getSafeRedirect(), { replace: true });
       } else {
         showErrorToast(res.errMessage || "Đăng nhập thất bại!");
       }
@@ -169,6 +194,19 @@ const LoginPage = () => {
                 variant="outline"
                 size="lg"
                 onClick={() => {
+                  try {
+                    const redirectTarget = getSafeRedirect();
+                    if (redirectTarget && redirectTarget !== "/") {
+                      sessionStorage.setItem(
+                        "tientech_post_login_redirect",
+                        redirectTarget,
+                      );
+                    } else {
+                      sessionStorage.removeItem("tientech_post_login_redirect");
+                    }
+                  } catch {
+                    // Ignore storage errors
+                  }
                   window.location.href = `${appConfig.apiUrl}/user/auth/google`;
                 }}
                 className="w-full h-12 rounded-2xl gap-2 text-xs font-bold normal-case tracking-normal"

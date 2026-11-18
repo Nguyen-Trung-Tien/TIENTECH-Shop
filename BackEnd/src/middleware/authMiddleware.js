@@ -161,14 +161,34 @@ const authorizeRole = (roles) => {
 };
 
 const checkMaintenanceMode = async (req, res, next) => {
-  const path = req.originalUrl || req.path || "";
-  // Bypass maintenance for admin routes, system settings, healthcheck, login
-  if (
-    path.startsWith("/healthz") ||
-    path.includes("/system-settings") ||
-    path.includes("/user/login") ||
-    path.includes("/admin")
-  ) {
+  const rawPath = req.originalUrl || req.path || "";
+  const normalizedPath = rawPath.split("?")[0].replace(/\/+$/, "") || "/";
+
+  // Bypass maintenance for admin routes, system settings, healthcheck, auth refresh/logout, VNPay callbacks
+  const MAINTENANCE_EXEMPT_EXACT = [
+    "/healthz",
+    "/api/v1/user/login",
+    "/api/v1/user/refresh-token",
+    "/api/v1/user/logout",
+    "/api/v1/system/public",
+    "/api/v1/system-settings/public",
+  ];
+  const MAINTENANCE_EXEMPT_PREFIXES = [
+    "/api/v1/admin",
+    "/api/v1/system-settings",
+    "/api/v1/vnpay/vnpay_ipn",
+    "/api/v1/vnpay/vnpay-ipn",
+    "/api/v1/vnpay/vnpay_return",
+    "/api/v1/vnpay/vnpay-return",
+  ];
+
+  const isExempt =
+    MAINTENANCE_EXEMPT_EXACT.includes(normalizedPath) ||
+    MAINTENANCE_EXEMPT_PREFIXES.some(
+      (prefix) => normalizedPath === prefix || normalizedPath.startsWith(`${prefix}/`)
+    );
+
+  if (isExempt) {
     return next();
   }
 

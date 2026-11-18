@@ -11,6 +11,7 @@ import {
   FiHeadphones,
 } from "react-icons/fi";
 import { showErrorToast, showSuccessToast } from "../../utils/toastHelper";
+import { submitContactApi } from "../../api/contactApi";
 import { motion } from "framer-motion";
 import { Button, Input, Select, Textarea, PageShell } from "../../components/UI";
 
@@ -32,20 +33,38 @@ const ContactPage = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.name || !formData.email || !formData.message) {
+    if (!formData.name?.trim() || !formData.email?.trim() || !formData.message?.trim()) {
       showErrorToast("Vui lòng điền đầy đủ các thông tin bắt buộc!");
       return;
     }
 
     setIsSubmitting(true);
-    // Simulate sending message
-    setTimeout(() => {
+    try {
+      const res = await submitContactApi({
+        name: formData.name.trim(),
+        email: formData.email.trim(),
+        phone: formData.phone?.trim() || "",
+        subject: formData.subject,
+        message: formData.message.trim(),
+      });
+      if (res?.errCode === 0) {
+        setSubmitted(true);
+        showSuccessToast(
+          res.errMessage ||
+            "Gửi yêu cầu thành công! Chúng tôi sẽ phản hồi trong 24h.",
+        );
+      } else {
+        showErrorToast(
+          res?.errMessage || "Không thể gửi yêu cầu liên hệ lúc này.",
+        );
+      }
+    } catch (error) {
+      showErrorToast(error, "Gửi yêu cầu liên hệ thất bại, vui lòng thử lại.");
+    } finally {
       setIsSubmitting(false);
-      setSubmitted(true);
-      showSuccessToast("Gửi yêu cầu thành công! Chúng tôi sẽ phản hồi trong 24h.");
-    }, 1000);
+    }
   };
 
   return (
@@ -85,7 +104,7 @@ const ContactPage = () => {
               transition={{ delay: 0.2 }}
               className="text-slate-600 dark:text-white/90 text-sm md:text-base leading-relaxed"
             >
-              Bạn cần tư vấn vật phẩm phong thủy, hỗ trợ bảo hành hay có câu hỏi về đơn hàng? 
+              Bạn cần tư vấn thiết bị công nghệ, phối màu góc setup hay hỗ trợ bảo hành &amp; đơn hàng?
               Đội ngũ chuyên gia TienTech luôn phục vụ 24/7.
             </motion.p>
           </div>
@@ -192,25 +211,24 @@ const ContactPage = () => {
             ) : (
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2">
-                      Họ và tên <span className="text-rose-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleChange}
-                      placeholder="Nguyễn Văn A"
-                      required
-                      className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-sm font-medium focus:outline-none focus:border-blue-600 dark:focus:border-blue-400 transition-colors"
-                    />
-                  </div>
+                  <Input
+                    id="contact-name"
+                    label="Họ và tên *"
+                    type="text"
+                    name="name"
+                    autoComplete="name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    placeholder="Nguyễn Văn A"
+                    required
+                  />
 
                   <Input
-                    label="Địa chỉ Email"
+                    id="contact-email"
+                    label="Địa chỉ Email *"
                     type="email"
                     name="email"
+                    autoComplete="email"
                     value={formData.email}
                     onChange={handleChange}
                     placeholder="example@gmail.com"
@@ -220,22 +238,25 @@ const ContactPage = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <Input
+                    id="contact-phone"
                     label="Số điện thoại"
                     type="tel"
                     name="phone"
+                    autoComplete="tel"
                     value={formData.phone}
                     onChange={handleChange}
                     placeholder="0987 654 321"
                   />
 
                   <Select
+                    id="contact-subject"
                     label="Chủ đề cần hỗ trợ"
                     name="subject"
                     value={formData.subject}
                     onChange={handleChange}
                     options={[
-                      { value: "tuvansanpham", label: "Tư vấn sản phẩm & Phong thủy" },
-                      { value: "baohanh", label: "Hỗ trợ bảo hành & Kiểm định" },
+                      { value: "tuvansanpham", label: "Tư vấn thiết bị & AI Color Setup" },
+                      { value: "baohanh", label: "Hỗ trợ bảo hành & Kiểm định chính hãng" },
                       { value: "donhang", label: "Hỏi về trạng thái đơn hàng" },
                       { value: "khac", label: "Ý kiến đóng góp / Khác" },
                     ]}
@@ -301,7 +322,7 @@ const ContactPage = () => {
               <div className="p-4 rounded-2xl bg-blue-50/60 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/40 flex items-center gap-3">
                 <FiShield className="text-blue-600 text-2xl shrink-0" />
                 <p className="text-xs text-slate-600 dark:text-slate-300 font-medium">
-                  Cam kết 100% sản phẩm có giấy kiểm định chất lượng đá tự nhiên & chứng nhận bảo hành chính hãng.
+                  Cam kết 100% sản phẩm chính hãng nguyên seal, đầy đủ tem kiểm định chất lượng &amp; chứng nhận bảo hành điện tử.
                 </p>
               </div>
             </div>

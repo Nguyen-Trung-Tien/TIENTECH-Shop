@@ -2,9 +2,11 @@ import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { motion as Motion } from "framer-motion";
-import { addCart, getAllCarts, createCart } from "../../api/cartApi";
+import { addCart } from "../../api/cartApi";
 import { getProductByIdApi } from "../../api/productApi";
-import { addCartItem } from "../../redux/cartSlice";
+import { addCartItem, addGuestCartItem } from "../../redux/cartSlice";
+import { setBuyNowCheckout } from "../../redux/checkoutSlice";
+import { calculateFinalPrice } from "../../utils/priceHelper";
 import { FiShoppingCart, FiHeart } from "react-icons/fi";
 import { FaStar, FaHeart } from "react-icons/fa";
 import { addToWishlistApi, removeFromWishlistApi } from "../../api/wishlistApi";
@@ -119,7 +121,6 @@ const ProductCard = ({ product }) => {
 
   const handleAddToCartClick = async (e) => {
     e.stopPropagation();
-    if (!userId) return showWarningToast("Vui lòng đăng nhập!");
     if (!isActive) return showErrorToast("Sản phẩm đã ngưng kinh doanh!");
 
     setLoadingCart(true);
@@ -143,6 +144,17 @@ const ProductCard = ({ product }) => {
         }
       } catch (err) {
         console.error("Fetch product for cart error:", err);
+        if (hasVariants) {
+          showErrorToast("Vui lòng chọn phiên bản sản phẩm ở trang chi tiết!");
+          navigate(`/product-detail/${slug || id}`);
+          return;
+        }
+      }
+
+      if (!fullP && hasVariants) {
+        showErrorToast("Vui lòng chọn phiên bản sản phẩm ở trang chi tiết!");
+        navigate(`/product-detail/${slug || id}`);
+        return;
       }
 
       const currentStock = fullP
@@ -153,30 +165,52 @@ const ProductCard = ({ product }) => {
         return showErrorToast("Sản phẩm tạm hết hàng!");
       }
 
-      await executeAddToCart(id);
+      await executeAddToCart(id, false);
     } finally {
       setLoadingCart(false);
     }
   };
 
   const executeAddToCart = async (targetId, isVariant = false, showToast = true) => {
+    const resolvedProduct = fullProduct || product;
+    const resolvedVariantId = isVariant && targetId ? targetId : null;
+    const resolvedVariant =
+      resolvedVariantId && Array.isArray(resolvedProduct?.variants)
+        ? resolvedProduct.variants.find(
+            (v) => Number(v.id) === Number(resolvedVariantId),
+          ) || null
+        : null;
+
+    if (!userId) {
+      dispatch(
+        addGuestCartItem({
+          product: resolvedProduct,
+          variant: resolvedVariant,
+          quantity: 1,
+        }),
+      );
+      if (showToast) {
+        showSuccessToast("Đã thêm vào giỏ hàng!");
+      }
+      setShowQuickModal(false);
+      return {
+        id: `guest_${id}_${resolvedVariantId || "base"}`,
+        productId: id,
+        variantId: resolvedVariantId,
+        product: resolvedProduct,
+        variant: resolvedVariant,
+        quantity: 1,
+        finalPrice: calculateFinalPrice(resolvedProduct, resolvedVariant),
+      };
+    }
+
     setLoadingCart(true);
     try {
-      const cartsRes = await getAllCarts(token);
-      let cart = cartsRes?.data?.find((c) => c.userId === userId);
-      if (!cart) {
-        const newCartRes = await createCart(userId, token);
-        cart = newCartRes.data;
-      }
-
       const payload = {
-        cartId: cart.id,
         productId: id,
+        variantId: resolvedVariantId,
         quantity: 1,
       };
-      if (isVariant || hasVariants) {
-        payload.variantId = targetId;
-      }
 
       const res = await addCart(payload, token);
 
@@ -206,15 +240,35 @@ const ProductCard = ({ product }) => {
     }
   };
 
-  const handleBuyNow = async (targetId) => {
-    const item = await executeAddToCart(targetId, true, false);
-    if (item) {
-      navigate("/checkout", {
-        state: {
-          selectedItems: [item],
-        },
-      });
+  const handleBuyNow = async (targetId, isVariant = false) => {
+    const resolvedProduct = fullProduct || product;
+    const resolvedVariantId = isVariant && targetId ? targetId : null;
+    const resolvedVariant =
+      resolvedVariantId && Array.isArray(resolvedProduct?.variants)
+        ? resolvedProduct.variants.find((v) => Number(v.id) === Number(resolvedVariantId)) || null
+        : null;
+    const buyNowItem = {
+      id: `buynow_${id}_${resolvedVariantId || "base"}`,
+      productId: id,
+      variantId: resolvedVariantId,
+      quantity: 1,
+      product: resolvedProduct,
+      variant: resolvedVariant,
+      finalPrice: calculateFinalPrice(resolvedProduct, resolvedVariant),
+    };
+    dispatch(setBuyNowCheckout([buyNowItem]));
+    setShowQuickModal(false);
+    if (!userId) {
+      showInfoToast("Vui lòng đăng nhập để hoàn tất đơn hàng!");
+      navigate("/login?redirect=/checkout");
+      return;
     }
+    navigate("/checkout", {
+      state: {
+        selectedItems: [buyNowItem],
+        mode: "buy_now",
+      },
+    });
   };
 
   return (

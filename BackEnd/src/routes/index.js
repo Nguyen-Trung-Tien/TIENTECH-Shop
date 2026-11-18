@@ -19,6 +19,7 @@ const AddressRouter = require("./AddressRouter");
 const WishlistRouter = require("./WishlistRouter");
 const AttributeRouter = require("./AttributeRouter");
 const SystemSettingRouter = require("./SystemSettingRouter");
+const ContactRouter = require("./ContactRouter");
 
 const routes = (app) => {
   app.use("/api/v1/user", UserRouter);
@@ -42,6 +43,7 @@ const routes = (app) => {
   app.use("/api/v1/voucher", VoucherRouter);
   app.use("/api/v1/notification", NotificationRouter);
   app.use("/api/v1/system-settings", SystemSettingRouter);
+  app.use("/api/v1/contact", ContactRouter);
 };
 module.exports = routes;
 

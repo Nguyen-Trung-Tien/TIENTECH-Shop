@@ -19,7 +19,7 @@ const FAQPage = () => {
 
   const categories = [
     { id: "all", label: "Tất cả câu hỏi", icon: <FiHelpCircle /> },
-    { id: "product", label: "Sản phẩm & Phong thủy", icon: <FiShield /> },
+    { id: "product", label: "Sản phẩm & AI Setup", icon: <FiShield /> },
     { id: "order", label: "Đơn hàng & Giao hàng", icon: <FiPackage /> },
     { id: "payment", label: "Thanh toán", icon: <FiCreditCard /> },
     { id: "warranty", label: "Bảo hành & Đổi trả", icon: <FiRefreshCw /> },
@@ -28,15 +28,15 @@ const FAQPage = () => {
   const faqs = [
     {
       category: "product",
-      question: "TienTech cam kết chất lượng đá phong thủy như thế nào?",
+      question: "TienTech cam kết chất lượng thiết bị công nghệ như thế nào?",
       answer:
-        "100% các sản phẩm trang sức và vật phẩm phong thủy tại TienTech đều được chế tác từ đá tự nhiên nguyên khối. Tất cả sản phẩm đều có chứng thư kiểm định chất lượng từ các trung tâm kiểm định uy tín hàng đầu Việt Nam.",
+        "100% thiết bị công nghệ, linh kiện và phụ kiện setup tại TienTech đều là hàng chính hãng nguyên seal, đầy đủ hóa đơn VAT và tem bảo hành điện tử từ nhà phân phối ủy quyền tại Việt Nam.",
     },
     {
       category: "product",
-      question: "Làm thế nào để chọn vật phẩm phong thủy hợp mệnh tuổi?",
+      question: "AI Tech Color & Setup Advisor hoạt động như thế nào?",
       answer:
-        "Bạn có thể sử dụng công cụ 'Phong Thủy' trên website để tra cứu theo Năm Sinh và Mệnh (Kim, Mộc, Thủy, Hỏa, Thổ). Ngoài ra, bạn cũng có thể liên hệ trực tiếp với chuyên gia tư vấn TienTech qua hotline hoặc khung chat trực tuyến.",
+        "Bạn có thể mở công cụ 'AI Color & Setup' trên website để nhận gợi ý phối màu thiết bị (bàn phím, chuột, laptop, màn hình) hợp cá tính và tối ưu không gian bàn làm việc. Ngoài ra, đội ngũ kỹ thuật viên TienTech luôn sẵn sàng tư vấn 1-1 qua hotline hoặc khung chat.",
     },
     {
       category: "order",
@@ -64,15 +64,15 @@ const FAQPage = () => {
     },
     {
       category: "warranty",
-      question: "Chính sách bảo hành sản phẩm quy định như thế nào?",
+      question: "Chính sách bảo hành thiết bị công nghệ quy định như thế nào?",
       answer:
-        "Mọi sản phẩm bán ra đều được bảo hành dây xâu, vệ sinh, đánh bóng và làm mới MIỄN PHÍ TRỌN ĐỜI. Đối với lỗi đứt dây, đính lại đá phụ, TienTech hỗ trợ xử lý cực nhanh trong 48h.",
+        "Mọi thiết bị chính hãng tại TienTech đều được bảo hành phần cứng theo tiêu chuẩn nhà sản xuất (12–36 tháng), hỗ trợ vệ sinh, kiểm tra và tối ưu phần mềm MIỄN PHÍ TRỌN ĐỜI. Lỗi kỹ thuật phát sinh được xử lý tiếp nhận nhanh trong 24–48h.",
     },
     {
       category: "warranty",
-      question: "Nếu không vừa size tay hoặc muốn đổi mẫu khác thì sao?",
+      question: "Nếu muốn đổi màu sắc, phiên bản hoặc nâng cấp mẫu khác thì sao?",
       answer:
-        "Trong vòng 7 ngày kể từ khi nhận hàng, bạn được hỗ trợ đổi size tay hoặc đổi sang mẫu mới có giá trị bằng hoặc cao hơn hoàn toàn miễn phí.",
+        "Trong vòng 7 ngày kể từ khi nhận hàng (sản phẩm còn nguyên tem/hộp), bạn được hỗ trợ đổi màu sắc, đổi cấu hình hoặc nâng cấp sang mẫu mới có giá trị bằng hoặc cao hơn hoàn toàn miễn phí.",
     },
   ];
 

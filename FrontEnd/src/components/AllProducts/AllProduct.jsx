@@ -6,7 +6,14 @@ import LoadMoreButton from "../LoadMoreButton/LoadMoreButton";
 import ProductFilter from "./ProductFilter";
 import { getAllCategoryApi } from "../../api/categoryApi";
 import { getAllBrandApi } from "../../api/brandApi";
-import { FiAlertCircle, FiSearch, FiX, FiLayout, FiSidebar, FiRotateCcw } from "react-icons/fi";
+import {
+  FiAlertCircle,
+  FiSearch,
+  FiX,
+  FiLayout,
+  FiSidebar,
+  FiRotateCcw,
+} from "react-icons/fi";
 
 const AllProducts = React.memo(() => {
   const limit = 12;
@@ -281,7 +288,7 @@ const AllProducts = React.memo(() => {
               onChange={(e) => handleUpdateFilters({ sort: e.target.value })}
               className="px-3 py-1 rounded-xl bg-slate-100 dark:bg-[#0c101a] border border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-800 dark:text-slate-200 outline-none focus:border-cyan-500 cursor-pointer"
             >
-              <option value="newest">Mới nhất 2025</option>
+              <option value="newest">Mới nhất</option>
               <option value="price-asc">Giá: Thấp đến Cao</option>
               <option value="price-desc">Giá: Cao đến Thấp</option>
               <option value="best-seller">Bán chạy nhất (Hot Deals)</option>

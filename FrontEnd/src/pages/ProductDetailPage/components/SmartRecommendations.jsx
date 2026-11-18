@@ -1,5 +1,6 @@
 import React from "react";
 import { FiZap, FiChevronRight } from "react-icons/fi";
+import { calculateFinalPrice } from "../../../utils/priceHelper";
 
 const SmartRecommendations = ({ smartRecs }) => {
   if (!smartRecs || smartRecs.length === 0) return null;
@@ -13,11 +14,12 @@ const SmartRecommendations = ({ smartRecs }) => {
               <FiZap className="size-4.5 fill-current" />
             </div>
             <h2 className="text-xl md:text-2xl font-black text-slate-900 dark:text-white tracking-tight uppercase">
-              Hệ Sinh Thái Tương Sinh & Gợi Ý Vượng Khí
+              Hệ Sinh Thái Đồng Bộ &amp; Gợi Ý Setup AI
             </h2>
           </div>
           <p className="text-xs font-semibold text-slate-500 dark:text-dark-text-secondary">
-            Sản phẩm phối hợp hoàn hảo giúp gia tăng năng suất và tài lộc dựa trên thuật toán AI
+            Sản phẩm phối hợp hoàn hảo giúp tối ưu hiệu suất và thẩm mỹ góc
+            setup dựa trên thuật toán AI
           </p>
         </div>
         <a
@@ -31,7 +33,7 @@ const SmartRecommendations = ({ smartRecs }) => {
 
       <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4 md:gap-5">
         {smartRecs.map((rec) => {
-          const finalPrice = rec.basePrice * (1 - (rec.discount || 0) / 100);
+          const finalPrice = calculateFinalPrice(rec);
           return (
             <a
               key={rec.id}
@@ -47,7 +49,9 @@ const SmartRecommendations = ({ smartRecs }) => {
                         : "bg-gradient-to-r from-primary to-indigo-600 text-white"
                     }`}
                   >
-                    {rec.reason === "Thường mua cùng" ? "🤝 Combo Đắc Lộc" : "✨ Đề Xuất"}
+                    {rec.reason === "Thường mua cùng"
+                      ? "🤝 Combo Phối Góc"
+                      : "✨ Đề Xuất"}
                   </span>
                 </div>
 

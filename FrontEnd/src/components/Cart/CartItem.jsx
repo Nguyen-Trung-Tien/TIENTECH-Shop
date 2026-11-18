@@ -3,6 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { FiMinus, FiPlus, FiTrash2 } from "react-icons/fi";
 import { LazyMotion, domAnimation, m as Motion } from "framer-motion";
 import { formatCurrency } from "../../utils/format";
+import {
+  calculateDiscountPercent,
+  calculateFinalPrice,
+  calculateOriginalPrice,
+  isFlashSaleActive,
+} from "../../utils/priceHelper";
 
 /**
  * CartItem Component
@@ -19,37 +25,25 @@ const CartItem = ({
 }) => {
   const navigate = useNavigate();
 
-  // Logic giá: Ưu tiên giá tính sẵn từ backend (finalPrice)
+  // Logic giá: Ưu tiên giá tính sẵn từ backend (finalPrice), fallback dùng priceHelper (hỗ trợ ratio Flash Sale cho biến thể)
   const finalPrice = useMemo(() => {
     if (item.finalPrice != null) return Number(item.finalPrice);
-
-    // Fallback logic
-    if (item.isFlashSaleActive && item.product?.flashSalePrice) {
-      return Math.round(Number(item.product.flashSalePrice));
-    }
-    const base =
-      item.variant?.price != null
-        ? Number(item.variant.price)
-        : Number(item.product?.basePrice || item.product?.price || 0);
-    const disc = Number(
-      item.variant?.discount != null && item.variant?.discount !== 0
-        ? item.variant.discount
-        : (item.product?.discount || 0)
-    );
-    return Math.round(disc > 0 ? base * (1 - disc / 100) : base);
+    return calculateFinalPrice(item.product, item.variant);
   }, [item]);
 
   const basePrice = useMemo(() => {
-    return item.variant?.price != null
-      ? Number(item.variant.price)
-      : Number(item.product?.basePrice || item.product?.price || 0);
+    return calculateOriginalPrice(item.product, item.variant);
   }, [item]);
 
-  const isFlashSale = Boolean(item.isFlashSaleActive);
+  const isFlashSale = Boolean(
+    item.isFlashSaleActive ?? isFlashSaleActive(item.product),
+  );
   const discount = Number(
     isFlashSale
-      ? (item.flashSaleDiscount || 0)
-      : (item.discountPercent || item.variant?.discount || item.product?.discount || 0)
+      ? item.flashSaleDiscount ||
+          calculateDiscountPercent(item.product, item.variant)
+      : item.discountPercent ||
+          calculateDiscountPercent(item.product, item.variant),
   );
 
   // Chuỗi hiển thị các option (Ví dụ: "8GB - 256GB - Titan")
@@ -80,7 +74,8 @@ const CartItem = ({
     }).join(" - ");
   }, [item.variant]);
 
-  const itemImage = item.variant?.imageUrl || item.product?.image;
+  const itemImage =
+    item.variant?.imageUrl || item.variant?.image || item.product?.image;
 
   return (
     <LazyMotion features={domAnimation}>

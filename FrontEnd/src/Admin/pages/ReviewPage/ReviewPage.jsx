@@ -8,9 +8,11 @@ import {
   FiFilter,
   FiRefreshCw,
   FiMessageSquare,
+  FiEye,
+  FiEyeOff,
 } from "react-icons/fi";
 import { FaStar } from "react-icons/fa";
-import { deleteReviewApi, getAllReviewsApi } from "../../../api/reviewApi";
+import { deleteReviewApi, getAllReviewsApi, updateReviewApi } from "../../../api/reviewApi";
 import { createReplyApi, deleteReplyApi } from "../../../api/reviewReplyApi";
 import { showErrorToast, showSuccessToast } from "../../../utils/toastHelper";
 import AppPagination from "../../../components/Pagination/Pagination";
@@ -71,6 +73,27 @@ const ReviewPage = () => {
       showSuccessToast("Đã xóa bình luận");
     } catch (e) {
       showErrorToast(e, "Xóa thất bại");
+    }
+  };
+
+  const handleToggleApprove = async (review) => {
+    const nextApproved = review.isApproved === false || review.isApproved === 0;
+    try {
+      const res = await updateReviewApi(review.id, { isApproved: nextApproved });
+      if (res?.errCode === 0) {
+        setReviews((prev) =>
+          prev.map((r) =>
+            r.id === review.id ? { ...r, isApproved: nextApproved } : r,
+          ),
+        );
+        showSuccessToast(
+          nextApproved ? "Đã duyệt hiển thị đánh giá" : "Đã ẩn đánh giá",
+        );
+      } else {
+        showErrorToast(res?.errMessage || "Không thể cập nhật trạng thái đánh giá");
+      }
+    } catch (e) {
+      showErrorToast(e, "Cập nhật trạng thái đánh giá thất bại");
     }
   };
 
@@ -220,7 +243,16 @@ const ReviewPage = () => {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <span
+                      className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider border ${
+                        review.isApproved !== false
+                          ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-900/40"
+                          : "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-900/40"
+                      }`}
+                    >
+                      {review.isApproved !== false ? "Đang hiển thị" : "Đã ẩn"}
+                    </span>
                     <div className="flex items-center gap-1">
                       {[...Array(5)].map((_, i) => (
                         <FaStar
@@ -235,11 +267,31 @@ const ReviewPage = () => {
                       ))}
                     </div>
                     <button
+                      type="button"
+                      onClick={() => handleToggleApprove(review)}
+                      title={review.isApproved !== false ? "Ẩn đánh giá" : "Duyệt hiển thị"}
+                      aria-label={review.isApproved !== false ? "Ẩn đánh giá" : "Duyệt hiển thị"}
+                      className={`size-10 rounded-xl flex items-center justify-center transition-all shadow-sm border cursor-pointer ${
+                        review.isApproved !== false
+                          ? "bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 border-amber-100 dark:border-amber-900/30 hover:bg-amber-500 hover:text-white"
+                          : "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 border-emerald-100 dark:border-emerald-900/30 hover:bg-emerald-500 hover:text-white"
+                      }`}
+                    >
+                      {review.isApproved !== false ? (
+                        <FiEyeOff size={16} />
+                      ) : (
+                        <FiEye size={16} />
+                      )}
+                    </button>
+                    <button
+                      type="button"
                       onClick={() => {
                         setSelectedReview(review);
                         setShowDeleteModal(true);
                       }}
-                      className="size-10 rounded-xl bg-rose-50 dark:bg-rose-900/20 text-rose-500 dark:text-rose-400 flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all shadow-sm border border-rose-100 dark:border-rose-900/30"
+                      title="Xóa đánh giá"
+                      aria-label="Xóa đánh giá"
+                      className="size-10 rounded-xl bg-rose-50 dark:bg-rose-900/20 text-rose-500 dark:text-rose-400 flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all shadow-sm border border-rose-100 dark:border-rose-900/30 cursor-pointer"
                     >
                       <FiTrash2 size={16} />
                     </button>

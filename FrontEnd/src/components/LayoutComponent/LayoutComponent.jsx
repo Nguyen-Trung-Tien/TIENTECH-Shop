@@ -47,18 +47,9 @@ const LayoutComponent = ({
   }
 
   const hideFooterPaths = [
-    "/cart",
     "/checkout",
     "/checkout-success",
     "/checkout-failed",
-    "/order-history",
-    "/orders",
-    "/orders-detail",
-    "/profile",
-    "/product-detail",
-    "/product-list",
-    "/products",
-    "/fortune-products",
   ];
 
   const shouldHideFooter = hideFooterPaths.some((path) =>

@@ -457,36 +457,64 @@ const UserManage = () => {
   };
 
   // Form fields for GenericAdminModal
-  const formFields = [
-    { name: "username", label: "Tên đăng nhập", placeholder: "Nhập tên người dùng...", required: true },
-    { name: "email", label: "Email", type: "email", placeholder: "example@mail.com", required: true },
-    { name: "phone", label: "Số điện thoại", placeholder: "Nhập số điện thoại..." },
-    { name: "address", label: "Địa chỉ", placeholder: "Nhập địa chỉ..." },
-    {
-      name: "role",
-      label: "Phân quyền",
-      type: "select",
-      options: [
-        { label: "Quản trị viên", value: "admin" },
-        { label: "Khách hàng", value: "customer" },
-      ],
-      required: true,
-    },
-    { name: "avatar", label: "Ảnh đại diện", type: "image", fullWidth: true },
-  ];
+  const formFields = useMemo(
+    () => [
+      { name: "username", label: "Tên đăng nhập", placeholder: "Nhập tên người dùng...", required: true },
+      { name: "email", label: "Email", type: "email", placeholder: "example@mail.com", required: true },
+      ...(!editUser
+        ? [
+            {
+              name: "password",
+              label: "Mật khẩu",
+              type: "password",
+              placeholder: "Tối thiểu 8 ký tự (hoa, thường, số, ký tự đặc biệt)",
+              required: true,
+            },
+          ]
+        : []),
+      { name: "phone", label: "Số điện thoại", placeholder: "Nhập số điện thoại..." },
+      { name: "address", label: "Địa chỉ", placeholder: "Nhập địa chỉ..." },
+      {
+        name: "role",
+        label: "Phân quyền",
+        type: "select",
+        options: [
+          { label: "Quản trị viên", value: "admin" },
+          { label: "Khách hàng", value: "customer" },
+        ],
+        required: true,
+      },
+      { name: "avatar", label: "Ảnh đại diện", type: "image", fullWidth: true },
+    ],
+    [editUser],
+  );
 
   const onSave = async (formData) => {
+    if (!editUser) {
+      const pwd = String(formData.password || "");
+      const isStrong =
+        pwd.length >= 8 &&
+        /[A-Z]/.test(pwd) &&
+        /[a-z]/.test(pwd) &&
+        /[0-9]/.test(pwd) &&
+        /[^A-Za-z0-9]/.test(pwd);
+      if (!isStrong) {
+        showErrorToast(
+          "Mật khẩu phải có ít nhất 8 ký tự, gồm chữ hoa, chữ thường, số và ký tự đặc biệt!",
+        );
+        return;
+      }
+    }
+
     const data = new FormData();
     Object.keys(formData).forEach((key) => {
+      if (editUser && key === "password") return;
       if (key.endsWith("File")) {
         data.append(key.replace("File", ""), formData[key]);
       } else if (formData[key] !== undefined && formData[key] !== null) {
         data.append(key, formData[key]);
       }
     });
-    if (!editUser && !formData.password) {
-      data.append("password", "123456");
-    }
     await handleSave(data);
     fetchMetrics();
   };

@@ -3,11 +3,11 @@ import { useDispatch, useSelector } from "react-redux";
 import { showErrorToast, showSuccessToast, showWarningToast } from "../utils/toastHelper";
 import {
   getProductBySlugApi,
-  getRecommendedProductsApi,
   getSmartRecommendationsApi,
 } from "../api/productApi";
-import { getAllCarts, createCart, addCart } from "../api/cartApi";
-import { addCartItem } from "../redux/cartSlice";
+import { addCart } from "../api/cartApi";
+import { addCartItem, addGuestCartItem } from "../redux/cartSlice";
+import { buildGuestCartItem } from "../utils/guestCart";
 import { getReviewsByProductApi, createReviewApi } from "../api/reviewApi";
 
 export const useProductDetail = (slug) => {
@@ -28,7 +28,6 @@ export const useProductDetail = (slug) => {
   const [hasImageFilter, setHasImageFilter] = useState(false);
   const [pagination, setPagination] = useState({ totalPages: 1, currentPage: 1, totalItems: 0 });
 
-  const [recommended, setRecommended] = useState([]);
   const [smartRecs, setSmartRecs] = useState([]);
   const [addingCart, setAddingCart] = useState(false);
   const [submittingReview, setSubmittingReview] = useState(false);
@@ -90,56 +89,68 @@ export const useProductDetail = (slug) => {
     fetchProduct();
   }, [fetchProduct]);
 
-  // Fetch reviews & recommended & smart recommendations
+  // Fetch reviews independently from recommendation fetches
   useEffect(() => {
     if (product?.id) {
       fetchReviews(1, ratingFilter, hasImageFilter);
-      const fetchExtra = async () => {
-        try {
-          const recommendedRes = await getRecommendedProductsApi(
-            product.id,
-            1,
-            6,
-          );
-          if (recommendedRes.errCode === 0) {
-            setRecommended(recommendedRes.data);
-          }
-
-          const smartRecsRes = await getSmartRecommendationsApi(product.id, 4);
-          if (smartRecsRes.errCode === 0) {
-            setSmartRecs(smartRecsRes.products);
-          }
-        } catch (err) {
-          console.error("Fetch extra data error:", err);
-        }
-      };
-      fetchExtra();
     }
-  }, [product?.id, userId, fetchReviews, ratingFilter, hasImageFilter]);
+  }, [product?.id, fetchReviews, ratingFilter, hasImageFilter]);
+
+  // Fetch smart recommendations once per product
+  useEffect(() => {
+    if (!product?.id) return;
+    let isCancelled = false;
+    const fetchExtra = async () => {
+      try {
+        const smartRecsRes = await getSmartRecommendationsApi(product.id, 4);
+        if (!isCancelled && smartRecsRes?.errCode === 0) {
+          setSmartRecs(smartRecsRes.products || []);
+        }
+      } catch (err) {
+        console.error("Fetch extra data error:", err);
+      }
+    };
+    fetchExtra();
+    return () => {
+      isCancelled = true;
+    };
+  }, [product?.id]);
 
   const handleAddToCart = async (variantId, quantity = 1, showToast = true) => {
-    if (!userId) {
-      showWarningToast("Bạn cần đăng nhập để mua hàng!");
-      return null;
-    }
     if (!variantId && product?.variants?.length > 0) {
       showWarningToast("Vui lòng chọn phiên bản sản phẩm!");
       return null;
     }
 
+    const selectedVariant = variantId
+      ? product?.variants?.find((v) => Number(v.id) === Number(variantId)) || null
+      : null;
+
+    // Guest Cart support via localStorage + cartSlice
+    if (!userId) {
+      const guestItem = buildGuestCartItem({
+        product,
+        variant: selectedVariant,
+        quantity,
+      });
+      dispatch(
+        addGuestCartItem({
+          product,
+          variant: selectedVariant,
+          quantity,
+        }),
+      );
+      if (showToast) {
+        showSuccessToast("Đã thêm vào giỏ hàng!");
+      }
+      return guestItem;
+    }
+
     setAddingCart(true);
     try {
-      const cartsRes = await getAllCarts();
-      let cart = cartsRes.data.find((c) => c.userId === userId);
-      if (!cart) {
-        const newCartRes = await createCart(userId);
-        cart = newCartRes.data;
-      }
-
       const res = await addCart({
-        cartId: cart.id,
         productId: product.id,
-        variantId: variantId || null, // Ensure proper null value for products without variants
+        variantId: variantId || null,
         quantity,
       });
 
@@ -197,7 +208,6 @@ export const useProductDetail = (slug) => {
     changeReviewPage,
     changeReviewFilter,
     fetchReviews,
-    recommended,
     smartRecs,
     addingCart,
     submittingReview,

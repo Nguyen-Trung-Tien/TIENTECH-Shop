@@ -2,6 +2,10 @@ const db = require("../../models");
 const { Op } = require("sequelize");
 const { deleteCacheByPattern } = require("../../config/redis");
 const { generateEmbedding } = require("../../utils/embeddingHelper");
+const {
+  isFlashSaleActive,
+  calculateFinalPrice,
+} = require("../../utils/priceHelper");
 
 const prepareProductEmbeddingText = (product) => {
   const specs =
@@ -52,20 +56,6 @@ const clearProductCache = async (categoryId = null) => {
   await deleteCacheByPattern("flash_sale_*");
 };
 
-const isFlashSaleActive = (product) => {
-  if (!product || !product.isFlashSale) return false;
-  if (!product.flashSaleStart && !product.flashSaleEnd) return true;
-
-  const now = new Date();
-  const start = product.flashSaleStart ? new Date(product.flashSaleStart) : null;
-  const end = product.flashSaleEnd ? new Date(product.flashSaleEnd) : null;
-
-  if (start && now < start) return false;
-  if (end && now > end) return false;
-
-  return true;
-};
-
 const applyFlashSaleToProduct = (productData) => {
   const product = { ...productData };
   const originalPrice = Number(product.basePrice || product.price || 0);
@@ -96,6 +86,23 @@ const applyFlashSaleToProduct = (productData) => {
       product.price = originalPrice;
     }
     product.discountPercent = discountPct;
+  }
+
+  // Áp dụng tỷ lệ giảm giá Flash Sale lên từng biến thể nếu sản phẩm có variants
+  if (Array.isArray(product.variants) && product.variants.length > 0) {
+    product.variants = product.variants.map((v) => {
+      const computedFinalPrice = calculateFinalPrice(product, v);
+      return {
+        ...v,
+        finalPrice: computedFinalPrice,
+        flashSalePrice:
+          product.flashSaleActive && Number(product.flashSalePrice || 0) > 0
+            ? computedFinalPrice
+            : null,
+        isFlashSaleActive: product.flashSaleActive,
+        flashSaleDiscount: product.flashSaleActive ? product.flashSaleDiscount : 0,
+      };
+    });
   }
 
   // Thêm object flashSale đồng bộ cho Frontend (ví dụ ProductDetailPage)

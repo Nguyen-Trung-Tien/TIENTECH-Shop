@@ -54,6 +54,8 @@ const WishlistPage = () => {
           if (addingAll) return;
           setAddingAll(true);
           const { addCart } = await import("../../api/cartApi");
+          const { addCartItem } = await import("../../redux/cartSlice");
+          const { store } = await import("../../redux/store");
           try {
             const inStockItems = wishlist.filter((item) => (item.totalStock ?? item.stock ?? 1) > 0);
             if (inStockItems.length === 0) {
@@ -61,7 +63,18 @@ const WishlistPage = () => {
               return;
             }
             for (const item of inStockItems) {
-              await addCart({ productId: item.id, quantity: 1 });
+              const defaultVariantId =
+                item.hasVariants && Array.isArray(item.variants) && item.variants.length > 0
+                  ? (item.variants.find((v) => (v.stock ?? 0) > 0)?.id || item.variants[0]?.id)
+                  : null;
+              const res = await addCart({
+                productId: item.id,
+                variantId: defaultVariantId,
+                quantity: 1,
+              });
+              if (res?.errCode === 0 && res?.data) {
+                store.dispatch(addCartItem(res.data));
+              }
             }
             showSuccessToast(`Đã thêm ${inStockItems.length} sản phẩm vào giỏ hàng!`);
           } catch (err) {

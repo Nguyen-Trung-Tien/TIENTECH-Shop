@@ -1,5 +1,12 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { setBuyNowCheckout } from "../../redux/checkoutSlice";
+import {
+  calculateDiscountPercent,
+  calculateFinalPrice,
+  calculateOriginalPrice,
+} from "../../utils/priceHelper";
 import { useProductDetail } from "../../hooks/useProductDetail";
 import { useProductVariants } from "../../hooks/useProductVariants";
 import { showErrorToast, showSuccessToast, showWarningToast, showInfoToast } from "../../utils/toastHelper";
@@ -64,6 +71,7 @@ const specLabelMap = {
 const ProductDetailPage = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const {
     product,
     loading,
@@ -307,15 +315,32 @@ const ProductDetailPage = () => {
   };
 
   const handleBuyNow = async () => {
-    if (!user) return showWarningToast("Vui lòng đăng nhập để mua hàng!");
     if (product?.variants?.length > 0 && !selectedVariant) {
       showErrorToast("Vui lòng chọn loại sản phẩm (Màu sắc, kích thước...)");
       return;
     }
-    const itemId = product?.variants?.length > 0 ? selectedVariant?.id : null;
-    const addedItem = await handleAddToCart(itemId, 1, false);
-    if (addedItem)
-      navigate("/checkout", { state: { selectedItems: [addedItem] } });
+
+    const activeVariant = selectedVariant || null;
+    const buyNowItem = {
+      id: `buynow_${product.id}_${activeVariant?.id || "base"}`,
+      productId: product.id,
+      variantId: activeVariant?.id || null,
+      quantity: 1,
+      product,
+      variant: activeVariant,
+      finalPrice: currentPrice,
+    };
+
+    dispatch(setBuyNowCheckout([buyNowItem]));
+    if (!user) {
+      showInfoToast("Vui lòng đăng nhập để hoàn tất đơn hàng!");
+      navigate("/login?redirect=/checkout");
+      return;
+    }
+
+    navigate("/checkout", {
+      state: { selectedItems: [buyNowItem], mode: "buy_now" },
+    });
   };
 
   const onAddToCart = (e) => {
@@ -334,19 +359,28 @@ const ProductDetailPage = () => {
   const flashSalePrice = Number(
     product?.flashSale?.price ?? product?.flashSalePrice ?? 0,
   );
-  const originalPrice = Number(
-    displayVariant
-      ? displayVariant.price
-      : product?.originalPrice || product?.basePrice || product?.price || 0,
-  );
+  const flashNormalizedProduct = product
+    ? {
+        ...product,
+        isFlashSale,
+        flashSalePrice,
+        basePrice: Number(
+          product.originalPrice || product.basePrice || product.price || 0,
+        ),
+      }
+    : null;
+  const originalPrice = flashNormalizedProduct
+    ? calculateOriginalPrice(flashNormalizedProduct, displayVariant)
+    : 0;
 
   let currentPrice = originalPrice;
   let discountPercent = 0;
 
-  if (isFlashSale && flashSalePrice > 0) {
-    currentPrice = flashSalePrice;
-    discountPercent = Math.round(
-      ((originalPrice - currentPrice) / originalPrice) * 100,
+  if (flashNormalizedProduct && isFlashSale && flashSalePrice > 0) {
+    currentPrice = calculateFinalPrice(flashNormalizedProduct, displayVariant);
+    discountPercent = calculateDiscountPercent(
+      flashNormalizedProduct,
+      displayVariant,
     );
   } else {
     const variantDisc =
@@ -403,7 +437,7 @@ const ProductDetailPage = () => {
         </div>
 
         <div className="hidden sm:flex items-center gap-2 shrink-0 text-[11px] text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 px-3 py-1 rounded-full border border-amber-200 dark:border-amber-900/50 font-bold">
-          <FiZap className="size-3 fill-current" /> Tụ Khí Sinh Tài
+          <FiZap className="size-3 fill-current" /> Chính Hãng 100%
         </div>
       </nav>
 
@@ -457,21 +491,21 @@ const ProductDetailPage = () => {
           {/* Privilege & Auspicious Gift Box */}
           <div className="p-5 rounded-3xl bg-gradient-to-br from-amber-500/10 via-white to-primary/5 dark:from-dark-card dark:to-dark-surface border border-amber-200/80 dark:border-dark-border shadow-xs space-y-3.5">
             <div className="flex items-center gap-2 text-xs font-black text-amber-800 dark:text-amber-400 uppercase tracking-wider">
-              <FiGift className="size-4" /> Đặc Quyền Khai Vận TIENTECH
+              <FiGift className="size-4" /> Đặc Quyền Setup &amp; Bảo Hành
             </div>
 
             <ul className="space-y-2.5 text-xs text-slate-700 dark:text-slate-300">
               <li className="flex items-start gap-2">
                 <FiCheckCircle className="size-4 text-emerald-500 shrink-0 mt-0.5" />
-                <span>Tặng gói vệ sinh & thanh tẩy năng lượng thiết bị miễn phí 1 năm</span>
+                <span>Tặng gói vệ sinh &amp; bảo dưỡng phần cứng định kỳ miễn phí 1 năm</span>
               </li>
               <li className="flex items-start gap-2">
                 <FiCheckCircle className="size-4 text-emerald-500 shrink-0 mt-0.5" />
-                <span>Giảm ngay 20% khi mua kèm phụ kiện hợp mệnh phong thuỷ</span>
+                <span>Giảm ngay 20% khi mua kèm phụ kiện đồng bộ góc setup</span>
               </li>
               <li className="flex items-start gap-2">
                 <FiCheckCircle className="size-4 text-emerald-500 shrink-0 mt-0.5" />
-                <span>Giao hàng phong ấn bảo mật, đóng thùng chống sốc 3 lớp</span>
+                <span>Giao hàng niêm phong nguyên seal, đóng thùng chống sốc 3 lớp</span>
               </li>
             </ul>
           </div>
@@ -546,7 +580,7 @@ const ProductDetailPage = () => {
         </React.Suspense>
       )}
 
-      {/* Floating Sticky Buy Bar (Tụ Tài Chốt Đơn) */}
+      {/* Floating Sticky Buy Bar */}
       <AnimatePresence>
         {showStickyBar && (
           <Motion.div

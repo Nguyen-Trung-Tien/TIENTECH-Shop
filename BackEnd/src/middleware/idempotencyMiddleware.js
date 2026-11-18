@@ -1,15 +1,28 @@
-const { getCache, setCache, deleteCache } = require("../config/redis");
+const redis = require("../config/redis");
 
-// Fallback in-memory store when Redis is unavailable
+// Fallback in-memory store ONLY when Redis is unavailable (bounded with TTL eviction)
 const memoryStore = new Map();
+const MAX_MEMORY_KEYS = 1000;
+
+const evictExpiredMemoryEntries = (now = Date.now()) => {
+  for (const [key, entry] of memoryStore.entries()) {
+    if (!entry || now > entry.expiresAt) {
+      memoryStore.delete(key);
+    }
+  }
+};
 
 const readIdempotencyRecord = async (cacheKey) => {
-  const redisRecord = await getCache(cacheKey);
-  if (redisRecord) return redisRecord;
+  if (redis.isRedisConnected()) {
+    const redisRecord = await redis.getCache(cacheKey);
+    if (redisRecord) return redisRecord;
+    return null;
+  }
 
+  const now = Date.now();
   const mem = memoryStore.get(cacheKey);
   if (!mem) return null;
-  if (Date.now() > mem.expiresAt) {
+  if (now > mem.expiresAt) {
     memoryStore.delete(cacheKey);
     return null;
   }
@@ -17,15 +30,33 @@ const readIdempotencyRecord = async (cacheKey) => {
 };
 
 const writeIdempotencyRecord = async (cacheKey, value, ttlSeconds) => {
-  await setCache(cacheKey, value, ttlSeconds);
+  if (redis.isRedisConnected()) {
+    await redis.setCache(cacheKey, value, ttlSeconds);
+    return;
+  }
+
+  const now = Date.now();
+  evictExpiredMemoryEntries(now);
+
+  if (memoryStore.has(cacheKey)) {
+    memoryStore.delete(cacheKey);
+  }
+  while (memoryStore.size >= MAX_MEMORY_KEYS) {
+    const oldestKey = memoryStore.keys().next().value;
+    if (oldestKey === undefined) break;
+    memoryStore.delete(oldestKey);
+  }
+
   memoryStore.set(cacheKey, {
     value,
-    expiresAt: Date.now() + ttlSeconds * 1000,
+    expiresAt: now + ttlSeconds * 1000,
   });
 };
 
 const clearIdempotencyRecord = async (cacheKey) => {
-  await deleteCache(cacheKey);
+  if (redis.isRedisConnected()) {
+    await redis.deleteCache(cacheKey);
+  }
   memoryStore.delete(cacheKey);
 };
 

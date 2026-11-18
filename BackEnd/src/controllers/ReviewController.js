@@ -57,7 +57,7 @@ const handleCreateReview = async (req, res) => {
       });
     }
 
-    let imageUrls = [];
+    const pendingImages = [];
     if (images && Array.isArray(images)) {
       for (const img of images) {
         if (typeof img === "string" && img.startsWith("data:image")) {
@@ -72,12 +72,27 @@ const handleCreateReview = async (req, res) => {
                 errMessage: "Hình ảnh đánh giá không hợp lệ (magic bytes mismatch).",
               });
             }
-            const uploadRes = await uploadToCloudinary(buffer, "reviews");
-            imageUrls.push(uploadRes.secure_url);
+            pendingImages.push({ type: "buffer", buffer });
           }
         } else if (typeof img === "string" && img.startsWith("http")) {
-          imageUrls.push(img);
+          pendingImages.push({ type: "url", url: img });
         }
+      }
+    }
+
+    // Check purchase & review eligibility BEFORE uploading any images to Cloudinary
+    const eligibility = await ReviewService.checkReviewEligibility(req.user.id, productId);
+    if (eligibility.errCode !== 0) {
+      return handleResponse(res, eligibility, 400);
+    }
+
+    const imageUrls = [];
+    for (const item of pendingImages) {
+      if (item.type === "buffer") {
+        const uploadRes = await uploadToCloudinary(item.buffer, "reviews");
+        imageUrls.push(uploadRes.secure_url);
+      } else {
+        imageUrls.push(item.url);
       }
     }
 

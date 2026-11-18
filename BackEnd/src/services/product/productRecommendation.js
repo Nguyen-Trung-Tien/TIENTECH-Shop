@@ -27,6 +27,7 @@ const recommendProducts = async (productId, page = 1, limit = 6) => {
     const { offset, limit: l } = getPagination(page, limit);
     const { count, rows } = await db.Product.findAndCountAll({
       where,
+      attributes: { exclude: ["embedding"] },
       include: [
         { model: db.Brand, as: "brand" },
         { model: db.Category, as: "category" },
@@ -48,6 +49,7 @@ const recommendProducts = async (productId, page = 1, limit = 6) => {
       ],
       offset,
       limit: l,
+      distinct: true,
     });
 
     const pagingData = getPagingData({ count, rows }, page, l);
@@ -75,6 +77,7 @@ const recommendFortuneProducts = async ({
   minPrice,
   maxPrice,
   categoryId,
+  sortBy = "popular",
   page = 1,
   limit = 6,
 }) => {
@@ -97,9 +100,26 @@ const recommendFortuneProducts = async ({
     if (maxPrice != null)
       where.basePrice = { ...where.basePrice, [Op.lte]: maxPrice };
 
+    let order = [
+      ["sold", "DESC"],
+      ["createdAt", "DESC"],
+    ];
+    if (sortBy === "price_asc") {
+      order = [
+        ["basePrice", "ASC"],
+        ["createdAt", "DESC"],
+      ];
+    } else if (sortBy === "price_desc") {
+      order = [
+        ["basePrice", "DESC"],
+        ["createdAt", "DESC"],
+      ];
+    }
+
     const { offset, limit: l } = getPagination(page, limit);
     const { count, rows } = await db.Product.findAndCountAll({
       where,
+      attributes: { exclude: ["embedding"] },
       include: [
         { model: db.Brand, as: "brand" },
         { model: db.Category, as: "category" },
@@ -109,18 +129,23 @@ const recommendFortuneProducts = async ({
           attributes: ["imageUrl", "isPrimary"],
         },
         {
+          model: db.ProductVariant,
+          as: "variants",
+          attributes: ["id", "price", "discount", "stock", "sku"],
+          where: { isActive: true },
+          required: false,
+        },
+        {
           model: db.Review,
           as: "reviews",
           attributes: ["id", "rating"],
           required: false,
         },
       ],
-      order: [
-        ["sold", "DESC"],
-        ["createdAt", "DESC"],
-      ],
+      order,
       offset,
       limit: l,
+      distinct: true,
     });
 
     const pagingData = getPagingData({ count, rows }, page, l);
@@ -132,7 +157,10 @@ const recommendFortuneProducts = async ({
         const pJSON = p.toJSON();
         const primary =
           pJSON.images?.find((i) => i.isPrimary) || pJSON.images?.[0];
-        const product = { ...pJSON, image: primary?.imageUrl || null };
+        const product = applyFlashSaleToProduct({
+          ...pJSON,
+          image: primary?.imageUrl || null,
+        });
         const specsStr =
           typeof product.specifications === "string"
             ? product.specifications
@@ -309,19 +337,30 @@ const getSmartRecommendations = async (productId, limit = 6) => {
     }
 
     if (uniqueResults.length < limit) {
+      const idConditions = [{ [Op.ne]: productId }];
+      if (seenIds.size > 0) {
+        idConditions.push({ [Op.notIn]: Array.from(seenIds) });
+      }
       const fallback = await db.Product.findAll({
         where: {
           categoryId: product.categoryId,
           id: {
-            [Op.and]: [
-              { [Op.ne]: productId },
-              { [Op.notIn]: Array.from(seenIds) },
-            ],
+            [Op.and]: idConditions,
           },
           isActive: true,
         },
         limit: limit - uniqueResults.length,
-        attributes: ["id", "name", "slug", "basePrice", "discount"],
+        attributes: [
+          "id",
+          "name",
+          "slug",
+          "basePrice",
+          "discount",
+          "isFlashSale",
+          "flashSalePrice",
+          "flashSaleStart",
+          "flashSaleEnd",
+        ],
         include: [
           {
             model: db.ProductImage,
@@ -336,12 +375,10 @@ const getSmartRecommendations = async (productId, limit = 6) => {
         const primary =
           plain.images?.find((img) => img.isPrimary) || plain.images?.[0];
         uniqueResults.push({
-          id: plain.id,
-          name: plain.name,
-          slug: plain.slug,
-          basePrice: plain.basePrice,
-          discount: plain.discount,
-          image: primary?.imageUrl || null,
+          ...applyFlashSaleToProduct({
+            ...plain,
+            image: primary?.imageUrl || null,
+          }),
           reason: "Cùng danh mục",
         });
       });
@@ -548,8 +585,9 @@ const getPersonalizedRecommendations = async (userId, limit = 6) => {
               : plain.embedding;
           if (!Array.isArray(pEmbedding)) return null;
           const similarity = cosineSimilarity(userTasteVector, pEmbedding);
+          const { embedding: _emb, ...cleanPlain } = plain;
           return {
-            ...applyFlashSaleToProduct(plain),
+            ...applyFlashSaleToProduct(cleanPlain),
             image: plain.images?.[0]?.imageUrl || null,
             similarity,
             reason: "Dựa trên sở thích của bạn",

@@ -1,4 +1,5 @@
 const db = require("../../models");
+const { calculateFinalPrice } = require("../../utils/priceHelper");
 
 const getAllCarts = async (userId) => {
   try {
@@ -85,6 +86,16 @@ const validateCart = async (userId, items) => {
         continue;
       }
 
+      if (product.hasVariants && !item.variantId) {
+        hasChanged = true;
+        validatedItems.push({
+          ...item,
+          status: "unavailable",
+          message: "Vui lòng chọn phiên bản sản phẩm hợp lệ",
+        });
+        continue;
+      }
+
       let variant = null;
       if (item.variantId) {
         variant = await db.ProductVariant.findOne({
@@ -122,27 +133,8 @@ const validateCart = async (userId, items) => {
         stockMessage = `Chỉ còn ${availableStock} sản phẩm trong kho`;
       }
 
-      // Price logic
-      const now = new Date();
-      let unitPrice = 0;
-      const isFlashSale =
-        product.isFlashSale &&
-        product.flashSaleStart &&
-        product.flashSaleEnd &&
-        now >= new Date(product.flashSaleStart) &&
-        now <= new Date(product.flashSaleEnd);
-
-      if (isFlashSale && product.flashSalePrice) {
-        unitPrice = Math.round(Number(product.flashSalePrice));
-      } else if (variant) {
-        const originalPrice = Number(variant.price || 0);
-        const discount = Number(variant.discount || 0) || Number(product.discount || 0);
-        unitPrice = Math.round(discount > 0 ? originalPrice * (1 - discount / 100) : originalPrice);
-      } else {
-        const basePrice = Number(product.basePrice || 0);
-        const discount = Number(product.discount || 0);
-        unitPrice = Math.round(discount > 0 ? basePrice * (1 - discount / 100) : basePrice);
-      }
+      // Price logic (supports multi-variant Flash Sale ratio)
+      const unitPrice = calculateFinalPrice(product, variant);
 
       const currentItemPrice = Number(item.price || item.finalPrice || 0);
       const isPriceMismatched = Math.abs(currentItemPrice - unitPrice) > 1;

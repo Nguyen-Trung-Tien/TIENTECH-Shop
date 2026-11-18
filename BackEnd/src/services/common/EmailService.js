@@ -28,9 +28,14 @@ const transporter = nodemailer.createTransport({
 if (process.env.NODE_ENV !== "test") {
   transporter.verify((error) => {
     if (error) {
-      console.warn("[SMTP VERIFY] Cannot connect to Gmail SMTP:", error.message);
+      console.warn(
+        "[SMTP VERIFY] Cannot connect to Gmail SMTP:",
+        error.message,
+      );
     } else {
-      console.log(`[SMTP VERIFY] Connected to Gmail SMTP (${emailUser || "NO_USER"}) successfully!`);
+      console.log(
+        `[SMTP VERIFY] Connected to Gmail SMTP (${emailUser || "NO_USER"}) successfully!`,
+      );
     }
   });
 }
@@ -39,7 +44,11 @@ if (process.env.NODE_ENV !== "test") {
  * Helper to get the canonical Frontend URL across FRONTEND_URL and URL_REACT
  */
 const getFrontendUrl = () => {
-  const url = (process.env.FRONTEND_URL || process.env.URL_REACT || "http://localhost:3000").trim();
+  const url = (
+    process.env.FRONTEND_URL ||
+    process.env.URL_REACT ||
+    "http://localhost:3000"
+  ).trim();
   return url.endsWith("/") ? url : `${url}/`;
 };
 
@@ -50,10 +59,15 @@ const sendMailWithRetry = async (mailOptions, retries = 3, delayMs = 500) => {
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
       const info = await transporter.sendMail(mailOptions);
-      console.log(`[EMAIL SENT SUCCESS] MessageId: ${info.messageId} to ${mailOptions.to}`);
+      console.log(
+        `[EMAIL SENT SUCCESS] MessageId: ${info.messageId} to ${mailOptions.to}`,
+      );
       return true;
     } catch (error) {
-      console.error(`[EMAIL ATTEMPT ${attempt}/${retries}] Failed for ${mailOptions.to}:`, error.message);
+      console.error(
+        `[EMAIL ATTEMPT ${attempt}/${retries}] Failed for ${mailOptions.to}:`,
+        error.message,
+      );
       if (attempt === retries) return false;
       await new Promise((resolve) => setTimeout(resolve, delayMs * attempt));
     }
@@ -64,8 +78,13 @@ const sendMailWithRetry = async (mailOptions, retries = 3, delayMs = 500) => {
 class EmailService {
   async sendEmail(to, subject, html) {
     if (!to || !emailUser) {
-      console.warn("[EMAIL SKIPPED] Missing recipient or EMAIL_USER configuration.");
+      console.warn(
+        "[EMAIL SKIPPED] Missing recipient or EMAIL_USER configuration.",
+      );
       return false;
+    }
+    if (process.env.NODE_ENV === "test") {
+      return true;
     }
     const mailOptions = {
       from: `"TIENTECH Shop" <${emailUser}>`,
@@ -163,7 +182,7 @@ class EmailService {
 
   async isEmailOptedIn(user) {
     if (!user || !user.email) return false;
-    
+
     // Explicit false check (boolean, string, or number)
     if (
       user.receiveEmail === false ||
@@ -171,7 +190,9 @@ class EmailService {
       user.receiveEmail === 0 ||
       user.receiveEmail === "0"
     ) {
-      console.log(`[EMAIL SKIPPED] User #${user.id || "?"} (${user.email}) has opted out of email notifications.`);
+      console.log(
+        `[EMAIL SKIPPED] User #${user.id || "?"} (${user.email}) has opted out of email notifications.`,
+      );
       return false;
     }
 
@@ -179,7 +200,9 @@ class EmailService {
     if (user.receiveEmail === undefined && user.id) {
       try {
         const db = require("../../models");
-        const dbUser = await db.User.findByPk(user.id, { attributes: ["id", "receiveEmail"] });
+        const dbUser = await db.User.findByPk(user.id, {
+          attributes: ["id", "receiveEmail"],
+        });
         if (
           dbUser &&
           (dbUser.receiveEmail === false ||
@@ -187,7 +210,9 @@ class EmailService {
             dbUser.receiveEmail === 0 ||
             dbUser.receiveEmail === "0")
         ) {
-          console.log(`[EMAIL SKIPPED DB] User #${user.id} (${user.email}) has receiveEmail=false in DB.`);
+          console.log(
+            `[EMAIL SKIPPED DB] User #${user.id} (${user.email}) has receiveEmail=false in DB.`,
+          );
           return false;
         }
       } catch (err) {
@@ -219,7 +244,7 @@ class EmailService {
               ${Number(item.price || item.subtotal || 0).toLocaleString("vi-VN")}₫
             </td>
           </tr>
-        `
+        `,
           )
           .join("")
       : "";
@@ -265,7 +290,7 @@ class EmailService {
           </div>
 
           <div style="text-align: center; margin: 28px 0;">
-            <a href="${clientUrl}/orders-history" 
+            <a href="${clientUrl.replace(/\/$/, "")}/orders" 
                style="display: inline-block; background: linear-gradient(135deg, #2563eb, #4f46e5); color: white; text-decoration: none; padding: 12px 28px; border-radius: 10px; font-weight: 800; font-size: 14px; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);">
               Theo dõi tình trạng đơn hàng
             </a>
@@ -317,7 +342,7 @@ class EmailService {
           </div>
 
           <div style="text-align: center; margin: 28px 0;">
-            <a href="${clientUrl}/orders-history" 
+            <a href="${clientUrl.replace(/\/$/, "")}/orders" 
                style="display: inline-block; background: linear-gradient(135deg, #0284c7, #0369a1); color: white; text-decoration: none; padding: 12px 28px; border-radius: 10px; font-weight: 800; font-size: 14px; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25);">
               Xem chi tiết tiến trình giao hàng
             </a>
@@ -368,7 +393,7 @@ class EmailService {
           </div>
 
           <div style="text-align: center; margin: 32px 0;">
-            <a href="${clientUrl}/orders-history" 
+            <a href="${clientUrl.replace(/\/$/, "")}/orders" 
               style="display: inline-block; background: linear-gradient(135deg, #2563eb, #4f46e5); color: white; text-decoration: none; padding: 14px 28px; border-radius: 10px; font-weight: 800; font-size: 15px; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);">
               Đánh giá sản phẩm ngay
             </a>
@@ -422,7 +447,7 @@ class EmailService {
           </div>
 
           <div style="text-align: center; margin: 32px 0;">
-            <a href="${clientUrl}/orders-history" 
+            <a href="${clientUrl.replace(/\/$/, "")}/orders" 
               style="display: inline-block; background: linear-gradient(135deg, #2563eb, #4f46e5); color: white; text-decoration: none; padding: 14px 28px; border-radius: 10px; font-weight: 800; font-size: 15px; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);">
               Xem chi tiết đơn hàng
             </a>
@@ -557,13 +582,22 @@ module.exports = {
   emailService,
   sendEmail: (to, subject, html) => emailService.sendEmail(to, subject, html),
   sendEmailAsync: (fn, ...args) => emailService.sendEmailAsync(fn, ...args),
-  sendForgotPasswordEmail: (user, token) => emailService.sendForgotPasswordEmail(user, token),
-  sendOrderCreatedEmail: (user, order) => emailService.sendOrderCreatedEmail(user, order),
-  sendOrderShippingEmail: (user, order) => emailService.sendOrderShippingEmail(user, order),
-  sendOrderDeliveredEmail: (user, order) => emailService.sendOrderDeliveredEmail(user, order),
-  sendOrderConfirmedEmail: (user, order) => emailService.sendOrderConfirmedEmail(user, order),
-  sendOrderCancelledEmail: (user, order, reason) => emailService.sendOrderCancelledEmail(user, order, reason),
-  sendAdminNewOrderEmail: (adminEmail, order, user) => emailService.sendAdminNewOrderEmail(adminEmail, order, user),
-  sendAdminOrderCancelledEmail: (adminEmail, order, user, reason) => emailService.sendAdminOrderCancelledEmail(adminEmail, order, user, reason),
-  sendVerificationEmail: (user, token) => emailService.sendVerificationEmail(user, token),
+  sendForgotPasswordEmail: (user, token) =>
+    emailService.sendForgotPasswordEmail(user, token),
+  sendOrderCreatedEmail: (user, order) =>
+    emailService.sendOrderCreatedEmail(user, order),
+  sendOrderShippingEmail: (user, order) =>
+    emailService.sendOrderShippingEmail(user, order),
+  sendOrderDeliveredEmail: (user, order) =>
+    emailService.sendOrderDeliveredEmail(user, order),
+  sendOrderConfirmedEmail: (user, order) =>
+    emailService.sendOrderConfirmedEmail(user, order),
+  sendOrderCancelledEmail: (user, order, reason) =>
+    emailService.sendOrderCancelledEmail(user, order, reason),
+  sendAdminNewOrderEmail: (adminEmail, order, user) =>
+    emailService.sendAdminNewOrderEmail(adminEmail, order, user),
+  sendAdminOrderCancelledEmail: (adminEmail, order, user, reason) =>
+    emailService.sendAdminOrderCancelledEmail(adminEmail, order, user, reason),
+  sendVerificationEmail: (user, token) =>
+    emailService.sendVerificationEmail(user, token),
 };
