@@ -12,6 +12,7 @@ import {
 } from "react-icons/fi";
 import { toast } from "react-toastify";
 import { motion } from "framer-motion";
+import { Button, Input, Select, Textarea } from "../../components/UI";
 
 const ContactPage = () => {
   const [formData, setFormData] = useState({
@@ -200,83 +201,60 @@ const ContactPage = () => {
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2">
-                      Địa chỉ Email <span className="text-rose-500">*</span>
-                    </label>
-                    <input
-                      type="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      placeholder="example@gmail.com"
-                      required
-                      className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-sm font-medium focus:outline-none focus:border-blue-600 dark:focus:border-blue-400 transition-colors"
-                    />
-                  </div>
+                  <Input
+                    label="Địa chỉ Email"
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    placeholder="example@gmail.com"
+                    required
+                  />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2">
-                      Số điện thoại
-                    </label>
-                    <input
-                      type="tel"
-                      name="phone"
-                      value={formData.phone}
-                      onChange={handleChange}
-                      placeholder="0987 654 321"
-                      className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-sm font-medium focus:outline-none focus:border-blue-600 dark:focus:border-blue-400 transition-colors"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2">
-                      Chủ đề cần hỗ trợ
-                    </label>
-                    <select
-                      name="subject"
-                      value={formData.subject}
-                      onChange={handleChange}
-                      className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-sm font-medium focus:outline-none focus:border-blue-600 dark:focus:border-blue-400 transition-colors"
-                    >
-                      <option value="tuvansanpham">Tư vấn sản phẩm & Phong thủy</option>
-                      <option value="baohanh">Hỗ trợ bảo hành & Kiểm định</option>
-                      <option value="donhang">Hỏi về trạng thái đơn hàng</option>
-                      <option value="khac">Ý kiến đóng góp / Khác</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2">
-                    Nội dung chi tiết <span className="text-rose-500">*</span>
-                  </label>
-                  <textarea
-                    name="message"
-                    rows="4"
-                    value={formData.message}
+                  <Input
+                    label="Số điện thoại"
+                    type="tel"
+                    name="phone"
+                    value={formData.phone}
                     onChange={handleChange}
-                    placeholder="Mô tả nội dung bạn cần hỗ trợ..."
-                    required
-                    className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-sm font-medium focus:outline-none focus:border-blue-600 dark:focus:border-blue-400 transition-colors resize-none"
-                  ></textarea>
+                    placeholder="0987 654 321"
+                  />
+
+                  <Select
+                    label="Chủ đề cần hỗ trợ"
+                    name="subject"
+                    value={formData.subject}
+                    onChange={handleChange}
+                    options={[
+                      { value: "tuvansanpham", label: "Tư vấn sản phẩm & Phong thủy" },
+                      { value: "baohanh", label: "Hỗ trợ bảo hành & Kiểm định" },
+                      { value: "donhang", label: "Hỏi về trạng thái đơn hàng" },
+                      { value: "khac", label: "Ý kiến đóng góp / Khác" },
+                    ]}
+                  />
                 </div>
 
-                <button
+                <Textarea
+                  label="Nội dung chi tiết"
+                  name="message"
+                  rows={4}
+                  value={formData.message}
+                  onChange={handleChange}
+                  placeholder="Mô tả nội dung bạn cần hỗ trợ..."
+                  required
+                />
+
+                <Button
                   type="submit"
-                  disabled={isSubmitting}
-                  className="w-full py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-black text-xs uppercase tracking-widest rounded-2xl shadow-lg shadow-blue-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
+                  size="xl"
+                  loading={isSubmitting}
+                  className="w-full"
                 >
-                  {isSubmitting ? (
-                    <span>ĐANG GỬI THÔNG TIN...</span>
-                  ) : (
-                    <>
-                      <FiSend /> GỬI YÊU CẦU NGAY
-                    </>
-                  )}
-                </button>
+                  <FiSend />
+                  {isSubmitting ? "ĐANG GỬI THÔNG TIN..." : "GỬI YÊU CẦU NGAY"}
+                </Button>
               </form>
             )}
           </div>

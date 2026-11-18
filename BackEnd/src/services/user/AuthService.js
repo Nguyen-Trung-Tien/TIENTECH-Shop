@@ -9,10 +9,10 @@ const {
 } = require("../../utils/jwtHelper");
 const { sendForgotPasswordEmail, sendVerificationEmail, sendEmailAsync } = require("../common/EmailService");
 const { getCache, setCache, deleteCache } = require("../../config/redis");
-const { 
-  hashToken, 
-  generateRandomToken, 
-  getTokenExpiryDate, 
+const {
+  hashToken,
+  generateRandomToken,
+  getTokenExpiryDate,
   hashUserPassword,
   validatePasswordStrength,
   performDummyBcryptCompare,
@@ -22,11 +22,42 @@ const {
   getTokenBlacklistKey,
   getLoginFailKey,
 } = require("./AuthHelper");
+const { resolveUserStatus } = require("../../utils/authTokenValidator");
 
 const LOGIN_MAX_ATTEMPTS_SOFT = 5;
 const LOGIN_MAX_ATTEMPTS_HARD = 10;
 const LOCK_DURATION_SOFT_MS = 5 * 60 * 1000;
 const LOCK_DURATION_HARD_MS = 15 * 60 * 1000;
+const OTP_MAX_ATTEMPTS = 5;
+
+const recordOtpFailure = async (type, email) => {
+  try {
+    const key = `otp:fail:${type}:${String(email).toLowerCase().trim()}`;
+    const count = ((await getCache(key)) || 0) + 1;
+    await setCache(key, count, 15 * 60);
+    return count;
+  } catch {
+    return 0;
+  }
+};
+
+const clearOtpFailure = async (type, email) => {
+  try {
+    await deleteCache(`otp:fail:${type}:${String(email).toLowerCase().trim()}`);
+  } catch {
+    // Non-blocking
+  }
+};
+
+const revokeAllUserSessions = async (userId) => {
+  await db.User.increment("tokenVersion", { by: 1, where: { id: userId } });
+  await db.User.update(
+    { refreshTokenHash: null, refreshTokenExpiresAt: null },
+    { where: { id: userId } }
+  );
+  await deleteCache(getUserStatusKey(userId));
+  await deleteCache(getRefreshTokenKey(userId));
+};
 
 const recordFailedLoginAttempt = async (loginFailKey) => {
   try {
@@ -131,20 +162,23 @@ class AuthService {
 
       if (cachedSession) {
         if (cachedSession.hash !== providedTokenHash) {
-          // Reuse detection: revoke active session immediately
-          await deleteCache(redisKey);
-          await db.User.update(
-            { refreshTokenHash: null, refreshTokenExpiresAt: null },
-            { where: { id: decoded.id } }
-          );
+          // Reuse detection: revoke active session + bump tokenVersion immediately
+          await revokeAllUserSessions(decoded.id);
           return { errCode: 3, errMessage: "Phiên đăng nhập không hợp lệ hoặc đã bị thu hồi", statusCode: 401 };
         }
         if (cachedSession.expiresAt && new Date(cachedSession.expiresAt) < new Date()) {
           return { errCode: 4, errMessage: "Refresh token đã hết hạn", statusCode: 401 };
         }
-        userRole = cachedSession.role || decoded.role;
+        const { notFound, userStatus } = await resolveUserStatus(decoded.id);
+        if (notFound || !userStatus?.isActive) {
+          await revokeAllUserSessions(decoded.id);
+          return { errCode: 2, errMessage: "Refresh token đã bị thu hồi hoặc tài khoản chưa kích hoạt", statusCode: 401 };
+        }
+        userRole = userStatus.role || cachedSession.role || decoded.role;
         userEmail = cachedSession.email || decoded.email;
-        if (typeof cachedSession.ver === "number") tokenVersion = cachedSession.ver;
+        tokenVersion = typeof userStatus.tokenVersion === "number"
+          ? userStatus.tokenVersion
+          : (typeof cachedSession.ver === "number" ? cachedSession.ver : 0);
       } else {
         // Fallback to MySQL DB with Projection (only necessary attributes)
         const user = await db.User.findByPk(decoded.id, {
@@ -155,11 +189,8 @@ class AuthService {
           return { errCode: 2, errMessage: "Refresh token đã bị thu hồi hoặc tài khoản chưa kích hoạt", statusCode: 401 };
         }
         if (user.refreshTokenHash !== providedTokenHash) {
-          // Reuse detection: revoke DB refresh token
-          await db.User.update(
-            { refreshTokenHash: null, refreshTokenExpiresAt: null },
-            { where: { id: decoded.id } }
-          );
+          // Reuse detection: revoke DB refresh token, bump tokenVersion, and clear Redis caches
+          await revokeAllUserSessions(decoded.id);
           return { errCode: 3, errMessage: "Phiên đăng nhập không hợp lệ hoặc đã bị thu hồi", statusCode: 401 };
         }
         if (user.refreshTokenExpiresAt && user.refreshTokenExpiresAt < new Date()) {
@@ -199,13 +230,9 @@ class AuthService {
   async logout(userId, currentAccessToken = null) {
     try {
       if (userId) {
-        // Update DB
-        const user = await db.User.findByPk(userId);
-        if (user) await user.update({ refreshTokenHash: null, refreshTokenExpiresAt: null });
-
-        // Clear Redis Caches
+        // Bump tokenVersion and clear refresh token so existing sessions cannot be reused
+        await revokeAllUserSessions(userId);
         await deleteCache(getUserProfileKey(userId));
-        await deleteCache(getRefreshTokenKey(userId));
       }
 
       // Blacklist current access token in Redis if provided
@@ -246,8 +273,19 @@ class AuthService {
   async verifyResetToken(email, token) {
     try {
       const user = await db.User.findOne({ where: { email } });
-      if (!user || user.resetToken !== hashToken(token)) return { errCode: 1, errMessage: "Token không hợp lệ" };
+      if (!user || !user.resetToken || user.resetToken !== hashToken(token)) {
+        const failCount = await recordOtpFailure("reset", email);
+        if (user && user.resetToken && failCount >= OTP_MAX_ATTEMPTS) {
+          user.resetToken = null;
+          user.resetTokenExpiresAt = null;
+          await user.save();
+          await clearOtpFailure("reset", email);
+          return { errCode: 2, errMessage: "Bạn đã nhập sai quá số lần quy định. Vui lòng yêu cầu mã mới." };
+        }
+        return { errCode: 1, errMessage: "Token không hợp lệ" };
+      }
       if (user.resetTokenExpiresAt < new Date()) return { errCode: 2, errMessage: "Token đã hết hạn" };
+      await clearOtpFailure("reset", email);
       return { errCode: 0 };
     } catch (error) {
       return { errCode: -1, errMessage: error.message };
@@ -289,13 +327,24 @@ class AuthService {
       if (!user) return { errCode: 1, errMessage: "Không tìm thấy người dùng!" };
       if (user.isActive) return { errCode: 0, errMessage: "Tài khoản đã kích hoạt" };
 
-      if (user.verificationToken !== hashToken(token)) return { errCode: 2, errMessage: "Mã xác nhận sai" };
+      if (!user.verificationToken || user.verificationToken !== hashToken(token)) {
+        const failCount = await recordOtpFailure("verify", email);
+        if (user.verificationToken && failCount >= OTP_MAX_ATTEMPTS) {
+          user.verificationToken = null;
+          user.verificationTokenExpiresAt = null;
+          await user.save();
+          await clearOtpFailure("verify", email);
+          return { errCode: 3, errMessage: "Bạn đã nhập sai mã quá nhiều lần. Vui lòng yêu cầu gửi lại mã mới." };
+        }
+        return { errCode: 2, errMessage: "Mã xác nhận sai" };
+      }
       if (user.verificationTokenExpiresAt < new Date()) return { errCode: 3, errMessage: "Mã đã hết hạn" };
 
       user.isActive = true;
       user.verificationToken = null;
       user.verificationTokenExpiresAt = null;
       await user.save();
+      await clearOtpFailure("verify", email);
       return { errCode: 0, errMessage: "Xác nhận thành công!" };
     } catch (error) {
       return { errCode: -1, errMessage: error.message };

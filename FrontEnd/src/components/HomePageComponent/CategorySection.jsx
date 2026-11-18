@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion as Motion } from "framer-motion";
-import SkeletonCard from "../SkeletonCard/SkeletonCard";
+import { ProductCardSkeleton as SkeletonCard } from "../Loading";
 import { getAllCategoryApi } from "../../api/categoryApi";
 import { FiGrid } from "react-icons/fi";
 

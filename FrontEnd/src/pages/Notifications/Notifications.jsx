@@ -28,7 +28,7 @@ import { motion as Motion, AnimatePresence } from "framer-motion";
 import { toast } from "react-toastify";
 import { showErrorToast, showSuccessToast } from "../../utils/toastHelper";
 import UnifiedSpinner from "../../components/Loading/UnifiedSpinner";
-import { ConfirmModal } from "../../components/UI/Modal";
+import { ConfirmModal, PageShell, Button } from "../../components/UI";
 import {
   extractVoucherCode,
   formatRelativeTimeVi,
@@ -273,42 +273,27 @@ const Notifications = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-dark-bg py-8 sm:py-12 transition-colors duration-300">
-      <div className="container-custom max-w-4xl">
-        {/* Navigation back & Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
-          <div>
-            <Link
-              to="/"
-              className="inline-flex items-center gap-2 text-slate-400 dark:text-dark-text-secondary hover:text-primary transition-colors mb-3 font-bold text-xs uppercase tracking-widest"
-            >
-              <FiArrowLeft size={16} /> Quay lại cửa hàng
-            </Link>
-            <h1 className="text-2xl sm:text-3xl font-display font-black text-slate-900 dark:text-white flex items-center gap-3">
-              <div className="size-11 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
-                <FiBell size={24} />
-              </div>
-              Thông báo của bạn
-            </h1>
-          </div>
-
-          {notifications.length > 0 && (
-            <div className="flex items-center gap-3">
-              <button
-                onClick={handleMarkAllRead}
-                className="px-4 py-2.5 bg-white dark:bg-dark-surface border border-slate-200 dark:border-dark-border rounded-2xl text-[11px] font-black uppercase tracking-widest text-slate-600 dark:text-dark-text-secondary hover:border-primary hover:text-primary transition-all shadow-sm flex items-center gap-2 cursor-pointer"
-              >
-                <FiCheck size={14} /> Đánh dấu đã đọc
-              </button>
-              <button
-                onClick={() => setShowClearModal(true)}
-                className="px-4 py-2.5 bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/40 rounded-2xl text-[11px] font-black uppercase tracking-widest text-rose-600 dark:text-rose-400 hover:bg-rose-500 hover:text-white transition-all shadow-sm flex items-center gap-2 cursor-pointer"
-              >
-                <FiTrash2 size={14} /> Xóa tất cả
-              </button>
-            </div>
-          )}
-        </div>
+    <PageShell
+      eyebrow="Trung tâm thông báo"
+      title="Thông báo của bạn"
+      subtitle="Cập nhật trạng thái đơn hàng, ưu đãi và cảnh báo bảo mật tài khoản."
+      backTo="/"
+      backLabel="Quay lại cửa hàng"
+      maxWidthClass="container-custom max-w-4xl"
+      actions={
+        notifications.length > 0 && (
+          <>
+            <Button variant="outline" size="sm" onClick={handleMarkAllRead}>
+              <FiCheck size={14} /> Đánh dấu đã đọc
+            </Button>
+            <Button variant="danger" size="sm" onClick={() => setShowClearModal(true)}>
+              <FiTrash2 size={14} /> Xóa tất cả
+            </Button>
+          </>
+        )
+      }
+    >
+      <div>
 
         {/* Tab Filters */}
         <div className="flex items-center gap-2 mb-6 bg-white dark:bg-dark-surface p-2 rounded-2xl border border-slate-200/80 dark:border-dark-border shadow-sm overflow-x-auto scrollbar-hide">
@@ -662,7 +647,7 @@ const Notifications = () => {
           </AnimatePresence>,
           document.body
         )}
-    </div>
+    </PageShell>
   );
 };
 

@@ -37,4 +37,16 @@ describe("Security Hardening & Middleware Integration Tests", () => {
     // Should not be rejected by CSRF (it will reach auth middleware and return 401 or 400)
     expect(res.status).not.toBe(403);
   });
+
+  test("Double-Submit CSRF blocks cookie mutation when XSRF-TOKEN cookie mismatches X-XSRF-TOKEN header", async () => {
+    const res = await request(app)
+      .post("/api/v1/order/create-new-order")
+      .set("Origin", "http://localhost:5173")
+      .set("Cookie", ["accessToken=fake_cookie_token", "XSRF-TOKEN=abc123token"])
+      .set("X-XSRF-TOKEN", "wrong_token")
+      .send({ items: [] });
+
+    expect(res.status).toBe(403);
+    expect(res.body.errMessage).toMatch(/Invalid CSRF token/i);
+  });
 });

@@ -1,6 +1,9 @@
 // FrontEnd/src/pages/ProductCompare/ProductCompareHub.jsx
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { getAllProductApi } from "../../api/productApi";
+import { showSuccessToast, showInfoToast, showErrorToast } from "../../utils/toastHelper";
+import { SPEC_CATEGORIES, mapApiProductToCompare } from "./compareConfig";
 import {
   ChevronRight,
   Plus,
@@ -14,12 +17,6 @@ import {
   RotateCcw,
   Sparkles,
 } from "lucide-react";
-
-import {
-  INITIAL_COMPARE_PRODUCTS,
-  AVAILABLE_CANDIDATES,
-  SPEC_CATEGORIES,
-} from "./mockData";
 
 import {
   WaffleMenu,
@@ -39,9 +36,29 @@ import {
 } from "./components/CompareDrawersAndModals";
 
 const ProductCompareHub = () => {
-  // State quản lý danh sách sản phẩm đem so sánh
-  const [products, setProducts] = useState(INITIAL_COMPARE_PRODUCTS);
-  const [candidates, setCandidates] = useState(AVAILABLE_CANDIDATES);
+  const navigate = useNavigate();
+  const [products, setProducts] = useState([]);
+  const [candidates, setCandidates] = useState([]);
+
+  useEffect(() => {
+    let active = true;
+    const loadCompareProducts = async () => {
+      try {
+        const res = await getAllProductApi(null, 1, 12);
+        const list = Array.isArray(res?.data) ? res.data : [];
+        if (!active || list.length === 0) return;
+        const mapped = list.map(mapApiProductToCompare);
+        setProducts(mapped.slice(0, 2));
+        setCandidates(mapped.slice(2));
+      } catch (err) {
+        if (active) showErrorToast(err, "Không thể tải danh sách sản phẩm so sánh.");
+      }
+    };
+    loadCompareProducts();
+    return () => {
+      active = false;
+    };
+  }, []);
 
   // Chế độ xem & bộ lọc
   const [viewMode, setViewMode] = useState("all"); // 'all' | 'diff-only' | 'key-specs'
@@ -217,13 +234,15 @@ const ProductCompareHub = () => {
               Hãy chọn tối thiểu 2 thiết bị từ danh mục Laptop Gaming hoặc click nút dưới đây để nạp nhanh danh sách các sản phẩm đang được quan tâm nhất.
             </p>
             <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-              <button
-                type="button"
-                onClick={() => setProducts(INITIAL_COMPARE_PRODUCTS.slice(0, 2))}
-                className="px-4 py-2.5 text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-sm cursor-pointer transition-colors"
-              >
-                Nạp 2 Máy So Sánh Tiêu Biểu
-              </button>
+              {candidates.length >= 2 && (
+                <button
+                  type="button"
+                  onClick={() => setProducts(candidates.slice(0, 2))}
+                  className="px-4 py-2.5 text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-sm cursor-pointer transition-colors"
+                >
+                  Nạp 2 Sản Phẩm Tiêu Biểu
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => setIsDrawerOpen(true)}
@@ -305,7 +324,10 @@ const ProductCompareHub = () => {
                           </span>
                           <ProductOverflowMenu
                             onRemove={() => handleRemoveProduct(product.id)}
-                            onShare={() => alert(`Đã sao chép link so sánh ${product.name}`)}
+                            onShare={() => {
+                              navigator.clipboard?.writeText(window.location.href);
+                              showSuccessToast(`Đã sao chép link so sánh ${product.name}`);
+                            }}
                             onPrint={() => window.print()}
                           />
                         </div>
@@ -343,9 +365,9 @@ const ProductCompareHub = () => {
 
                       {/* Combo Button CTA */}
                       <ComboButton
-                        onPrimaryAction={() => alert(`Đã thêm ${product.name} vào giỏ hàng!`)}
-                        onExportQuote={() => alert(`Đang xuất file báo giá cho ${product.sku}...`)}
-                        onConsult={() => alert(`Nhân viên tư vấn TienTech sẽ liên hệ hỗ trợ ${product.name}`)}
+                        onPrimaryAction={() => navigate(product.slug ? `/product/${product.slug}` : `/product/${product.id}`)}
+                        onExportQuote={() => window.print()}
+                        onConsult={() => showInfoToast(`Chuyên viên tư vấn TienTech sẵn sàng hỗ trợ ${product.name}`)}
                       />
                     </div>
                   ))}

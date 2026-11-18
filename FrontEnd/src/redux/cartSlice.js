@@ -1,8 +1,8 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-  cartItems: JSON.parse(localStorage.getItem("cartItems")) || [],
-  appliedVoucher: JSON.parse(localStorage.getItem("appliedVoucher")) || null,
+  cartItems: [],
+  appliedVoucher: null,
 };
 
 const cartSlice = createSlice({
@@ -12,21 +12,30 @@ const cartSlice = createSlice({
     setCartItems: (state, action) => {
       if (!Array.isArray(action.payload)) return;
       state.cartItems = action.payload;
-      try {
-        localStorage.setItem("cartItems", JSON.stringify(action.payload));
-      } catch (e) {
-        console.error("Failed to save cartItems to localStorage", e);
-      }
     },
 
     appendCartItems: (state, action) => {
       if (!Array.isArray(action.payload)) return;
-      state.cartItems = action.payload;
-      try {
-        localStorage.setItem("cartItems", JSON.stringify(action.payload));
-      } catch (e) {
-        console.error("Failed to save cartItems to localStorage", e);
+      const existingIds = new Set(state.cartItems.map((i) => i.id));
+      const nextItems = action.payload.filter((i) => !existingIds.has(i.id));
+      state.cartItems = [...state.cartItems, ...nextItems];
+    },
+
+    removePurchasedItems: (state, action) => {
+      const purchased = Array.isArray(action.payload) ? action.payload : [];
+      if (purchased.length === 0) {
+        state.cartItems = [];
+        state.appliedVoucher = null;
+        return;
       }
+      const purchasedKeys = new Set(
+        purchased.map((it) => `${it.productId || it.product?.id || ""}:${it.variantId || it.variant?.id || ""}`)
+      );
+      state.cartItems = state.cartItems.filter((item) => {
+        const key = `${item.productId || item.product?.id || ""}:${item.variantId || item.variant?.id || ""}`;
+        return !purchasedKeys.has(key);
+      });
+      state.appliedVoucher = null;
     },
 
     addCartItem: (state, action) => {
@@ -39,11 +48,6 @@ const cartSlice = createSlice({
       } else {
         state.cartItems.push(item);
       }
-      try {
-        localStorage.setItem("cartItems", JSON.stringify(state.cartItems));
-      } catch (e) {
-        console.error("Failed to save cartItems to localStorage", e);
-      }
     },
 
     updateCartItemQuantity: (state, action) => {
@@ -51,42 +55,24 @@ const cartSlice = createSlice({
       const item = state.cartItems.find((i) => i.id === id);
       if (item && quantity > 0) {
         item.quantity = quantity;
-        try {
-          localStorage.setItem("cartItems", JSON.stringify(state.cartItems));
-        } catch (e) {
-          console.error("Failed to save cartItems to localStorage", e);
-        }
       }
     },
 
     removeCartItem: (state, action) => {
       state.cartItems = state.cartItems.filter((i) => i.id !== action.payload);
-      try {
-        localStorage.setItem("cartItems", JSON.stringify(state.cartItems));
-      } catch (e) {
-        console.error("Failed to save cartItems to localStorage", e);
-      }
     },
 
     clearCart: (state) => {
       state.cartItems = [];
       state.appliedVoucher = null;
-      try {
-        localStorage.removeItem("cartItems");
-        localStorage.removeItem("appliedVoucher");
-      } catch (e) {
-        console.error("Failed to clear cart localStorage", e);
-      }
     },
 
     applyVoucher: (state, action) => {
       state.appliedVoucher = action.payload;
-      localStorage.setItem("appliedVoucher", JSON.stringify(action.payload));
     },
 
     removeVoucher: (state) => {
       state.appliedVoucher = null;
-      localStorage.removeItem("appliedVoucher");
     }
   },
 });
@@ -97,6 +83,7 @@ export const {
   addCartItem,
   updateCartItemQuantity,
   removeCartItem,
+  removePurchasedItems,
   clearCart,
   applyVoucher,
   removeVoucher,

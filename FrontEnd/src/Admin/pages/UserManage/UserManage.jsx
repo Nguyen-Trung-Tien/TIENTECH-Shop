@@ -25,6 +25,7 @@ import { userApi } from "../../../api/userApi";
 import { useAdminCrud } from "../../../hooks/useAdminCrud";
 import GenericAdminTable from "../../components/GenericAdminTable";
 import GenericAdminModal from "../../components/GenericAdminModal";
+import { Button } from "../../../components/UI";
 import { ConfirmModal } from "../../../components/UI/Modal";
 import { showSuccessToast, showErrorToast } from "../../../utils/toastHelper";
 import UnifiedSpinner from "../../../components/Loading/UnifiedSpinner";
@@ -768,34 +769,24 @@ const UserManage = () => {
             </div>
 
             <div className="flex items-center justify-end gap-2.5 pt-2">
-              <button
+              <Button
                 type="button"
+                variant="ghost"
                 disabled={statusProcessing}
                 onClick={() => setShowStatusModal(false)}
-                className="px-4 py-2 text-xs font-bold text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors cursor-pointer disabled:opacity-50"
               >
                 Hủy bỏ
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
-                disabled={statusProcessing}
+                variant={targetNextStatus === "active" ? "success" : "danger"}
+                loading={statusProcessing}
+                loadingText="Đang xử lý..."
                 onClick={handleConfirmStatusChange}
-                className={`tt-button px-5 py-2 text-xs font-bold uppercase tracking-wider text-white cursor-pointer ${
-                  targetNextStatus === "active"
-                    ? "bg-emerald-600 hover:bg-emerald-700"
-                    : "bg-rose-600 hover:bg-rose-700"
-                } disabled:opacity-50`}
+                className="uppercase tracking-wider"
               >
-                {statusProcessing ? (
-                  <span className="flex items-center gap-1.5">
-                    <UnifiedSpinner size="xs" /> Đang xử lý...
-                  </span>
-                ) : targetNextStatus === "active" ? (
-                  "Kích hoạt ngay"
-                ) : (
-                  "Vô hiệu hóa"
-                )}
-              </button>
+                {targetNextStatus === "active" ? "Kích hoạt ngay" : "Vô hiệu hóa"}
+              </Button>
             </div>
             </Motion.div>
           </Motion.div>
@@ -846,32 +837,24 @@ const UserManage = () => {
             </div>
 
             <div className="flex items-center justify-end gap-2.5 pt-2">
-              <button
+              <Button
                 type="button"
+                variant="ghost"
                 disabled={bulkProcessing}
                 onClick={() => setShowBulkModal(false)}
-                className="px-4 py-2 text-xs font-bold text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors cursor-pointer disabled:opacity-50"
               >
                 Hủy bỏ
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
-                disabled={bulkProcessing}
+                variant={bulkAction === "active" ? "success" : "danger"}
+                loading={bulkProcessing}
+                loadingText="Đang xử lý..."
                 onClick={handleConfirmBulkAction}
-                className={`tt-button px-5 py-2 text-xs font-bold uppercase tracking-wider text-white cursor-pointer ${
-                  bulkAction === "active"
-                    ? "bg-emerald-600 hover:bg-emerald-700"
-                    : "bg-rose-600 hover:bg-rose-700"
-                } disabled:opacity-50`}
+                className="uppercase tracking-wider"
               >
-                {bulkProcessing ? (
-                  <span className="flex items-center gap-1.5">
-                    <UnifiedSpinner size="xs" /> Đang xử lý...
-                  </span>
-                ) : (
-                  "Xác nhận xử lý"
-                )}
-              </button>
+                Xác nhận xử lý
+              </Button>
             </div>
           </div>
         </div>
@@ -990,13 +973,13 @@ const UserManage = () => {
                   </span>
                 )}
               </div>
-              <button
+              <Button
                 type="button"
+                variant="secondary"
                 onClick={() => setShowAuditModal(false)}
-                className="tt-button tt-button-secondary px-4 py-2 text-xs font-bold cursor-pointer"
               >
                 Đóng
-              </button>
+              </Button>
             </div>
           </div>
         </div>

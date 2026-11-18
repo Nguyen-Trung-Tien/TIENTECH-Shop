@@ -313,8 +313,11 @@ const processReturn = async (id, statusOrAction, noteOrAdmin = null, maybeAdmin 
     const NotificationService = require("../notification/NotificationService");
 
     if (isApprove) {
-      // 1. Restock kho đúng một lần
-      const product = await db.Product.findByPk(item.productId, { transaction: t });
+      // 1. Restock kho đúng một lần (với row lock)
+      const product = await db.Product.findByPk(item.productId, {
+        transaction: t,
+        lock: t.LOCK.UPDATE,
+      });
       if (product) {
         product.totalStock = (product.totalStock || 0) + item.quantity;
         product.sold = Math.max(0, (product.sold || 0) - item.quantity);
@@ -322,7 +325,10 @@ const processReturn = async (id, statusOrAction, noteOrAdmin = null, maybeAdmin 
       }
 
       if (item.variantId) {
-        const variant = await db.ProductVariant.findByPk(item.variantId, { transaction: t });
+        const variant = await db.ProductVariant.findByPk(item.variantId, {
+          transaction: t,
+          lock: t.LOCK.UPDATE,
+        });
         if (variant) {
           variant.stock = (variant.stock || 0) + item.quantity;
           await variant.save({ transaction: t });
@@ -344,12 +350,26 @@ const processReturn = async (id, statusOrAction, noteOrAdmin = null, maybeAdmin 
         }
       }
 
-      // 3. Hoàn tiền nếu đơn hàng đã thanh toán
+      // 3. Hoàn tiền nếu đơn hàng đã thanh toán (tính theo tỷ lệ voucher nếu có)
+      const allItems = await db.OrderItem.findAll({
+        where: { orderId: order.id },
+        transaction: t,
+      });
+      const orderItemsGross = allItems.reduce((sum, i) => sum + Number(i.subtotal || 0), 0);
+      const effectivePaidTotal = Math.max(0, Number(order.totalPrice || 0));
+      const rawItemSubtotal = Number(item.subtotal || 0);
+      const proportionalRefund =
+        orderItemsGross > 0 && effectivePaidTotal < orderItemsGross
+          ? Math.round((rawItemSubtotal / orderItemsGross) * effectivePaidTotal)
+          : rawItemSubtotal;
+      const refundAmount = Math.min(effectivePaidTotal, proportionalRefund);
+
+      let payment = null;
       if (order.paymentStatus === "paid") {
-        const refundAmount = item.subtotal;
-        const payment = await db.Payment.findOne({
+        payment = await db.Payment.findOne({
           where: { orderId: order.id },
           transaction: t,
+          lock: t.LOCK.UPDATE,
         });
 
         if (payment) {
@@ -372,11 +392,6 @@ const processReturn = async (id, statusOrAction, noteOrAdmin = null, maybeAdmin 
       }
 
       // 4. Kiểm tra xem tất cả items trong đơn đã được duyệt trả chưa
-      const allItems = await db.OrderItem.findAll({
-        where: { orderId: order.id },
-        transaction: t,
-      });
-
       const allReturned = allItems.every((i) =>
         i.id === item.id ? true : (i.returnStatus === "approved" || i.returnStatus === "completed")
       );
@@ -384,6 +399,13 @@ const processReturn = async (id, statusOrAction, noteOrAdmin = null, maybeAdmin 
       if (allReturned) {
         order.status = "cancelled";
         order.cancelReason = "Tất cả sản phẩm đã được trả lại.";
+        if (order.paymentStatus === "paid") {
+          order.paymentStatus = "refunded";
+          if (payment) {
+            payment.status = "refunded";
+            await payment.save({ transaction: t });
+          }
+        }
         const history = Array.isArray(order.confirmationHistory) ? order.confirmationHistory : [];
         history.push({
           status: "cancelled",

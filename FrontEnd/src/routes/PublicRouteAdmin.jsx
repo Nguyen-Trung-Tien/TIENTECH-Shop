@@ -3,9 +3,11 @@ import { Outlet, Navigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 
 const PublicRouteAdmin = () => {
-  const user = useSelector((state) => state.user.user);
+  const { user, isAuthenticated, isInitializing } = useSelector((state) => state.user);
 
-  if (user && user.role === "admin") return <Navigate to="/admin" replace />;
+  if (!isInitializing && isAuthenticated && ["admin", "root"].includes(user?.role)) {
+    return <Navigate to="/admin" replace />;
+  }
 
   return <Outlet />;
 };

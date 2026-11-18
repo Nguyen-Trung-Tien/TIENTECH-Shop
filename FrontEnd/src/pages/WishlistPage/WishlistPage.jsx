@@ -5,7 +5,7 @@ import { motion as Motion, AnimatePresence } from "framer-motion";
 import { ErrorBanner, PageShell } from "../../components/UI";
 import { getWishlistApi } from "../../api/wishlistApi";
 import ProductCard from "../../components/ProductCard/ProductCard";
-import SkeletonCard from "../../components/SkeletonCard/SkeletonCard";
+import { ProductCardSkeleton as SkeletonCard } from "../../components/Loading";
 import { toast } from "react-toastify";
 import { showErrorToast } from "../../utils/toastHelper";
 

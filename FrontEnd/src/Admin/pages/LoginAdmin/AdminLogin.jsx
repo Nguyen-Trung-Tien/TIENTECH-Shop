@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from "react";
 import {
-  FiEye,
-  FiEyeOff,
   FiLock,
   FiMail,
   FiCheckCircle,
@@ -12,9 +10,8 @@ import { useDispatch } from "react-redux";
 import { showErrorToast, showSuccessToast } from "../../../utils/toastHelper";
 import { loginUser } from "../../../api/userApi";
 import { setUser } from "../../../redux/userSlice";
-import { AuthShell } from "../../../components/UI";
+import { AuthShell, Button, Input } from "../../../components/UI";
 import ForgotPasswordModal from "../../../components/ForgotPasswordModal/ForgotPasswordModal";
-import UnifiedSpinner from "../../../components/Loading/UnifiedSpinner";
 import { appConfig } from "../../../config/runtimeConfig";
 
 const AdminLogin = () => {
@@ -25,7 +22,6 @@ const AdminLogin = () => {
     return localStorage.getItem("tientech_admin_remember_email") || "";
   });
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showForgotModal, setShowForgotModal] = useState(false);
 
@@ -117,62 +113,31 @@ const AdminLogin = () => {
         backLabel="Về Cổng Mua Sắm"
       >
         <form onSubmit={handleSubmit} className="space-y-5">
-              <div className="space-y-2">
-                <label
-                  htmlFor="email"
-                  className="text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 ml-1"
-                >
-                  Địa chỉ Email Admin
-                </label>
-                <div className="relative group">
-                  <FiMail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 group-focus-within:text-blue-600 dark:group-focus-within:text-blue-400 transition-colors" />
-                  <input
-                    id="email"
-                    name="email"
-                    type="email"
-                    autoComplete="email"
-                    placeholder="admin@tientech.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    className="w-full h-13 bg-slate-50 dark:bg-dark-bg border border-slate-200 dark:border-dark-border rounded-2xl pl-11 pr-4 text-sm font-bold text-slate-900 dark:text-white placeholder-slate-400 focus:bg-white dark:focus:bg-dark-card focus:border-blue-600 dark:focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none"
-                  />
-                </div>
-              </div>
+              <Input
+                id="email"
+                name="email"
+                type="email"
+                label="Địa chỉ Email Admin"
+                autoComplete="email"
+                placeholder="admin@tientech.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                icon={FiMail}
+                required
+              />
 
-              <div className="space-y-2">
-                <label
-                  htmlFor="password"
-                  className="text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 ml-1"
-                >
-                  Mật Khẩu An Ninh
-                </label>
-                <div className="relative group">
-                  <FiLock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 group-focus-within:text-blue-600 dark:group-focus-within:text-blue-400 transition-colors" />
-                  <input
-                    id="password"
-                    name="password"
-                    type={showPassword ? "text" : "password"}
-                    autoComplete="current-password"
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    className="w-full h-13 bg-slate-50 dark:bg-dark-bg border border-slate-200 dark:border-dark-border rounded-2xl pl-11 pr-12 text-sm font-bold text-slate-900 dark:text-white placeholder-slate-400 focus:bg-white dark:focus:bg-dark-card focus:border-blue-600 dark:focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors cursor-pointer"
-                  >
-                    {showPassword ? (
-                      <FiEyeOff size={18} />
-                    ) : (
-                      <FiEye size={18} />
-                    )}
-                  </button>
-                </div>
-              </div>
+              <Input
+                id="password"
+                name="password"
+                type="password"
+                label="Mật Khẩu An Ninh"
+                autoComplete="current-password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                icon={FiLock}
+                required
+              />
 
               <div className="flex items-center justify-between py-1">
                 <label className="flex items-center gap-2.5 cursor-pointer group select-none">
@@ -200,20 +165,16 @@ const AdminLogin = () => {
               </div>
 
               <div className="pt-2 space-y-3">
-                <button
+                <Button
                   type="submit"
-                  disabled={loading}
-                  className="w-full h-13 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-2xl text-xs font-black uppercase tracking-wider shadow-lg shadow-blue-500/25 transition-all flex items-center justify-center gap-2 active:scale-[0.98] disabled:opacity-50 cursor-pointer"
+                  variant="primary"
+                  size="xl"
+                  loading={loading}
+                  loadingText="Đang xác thực..."
+                  className="w-full"
                 >
-                  {loading ? (
-                    <>
-                      <UnifiedSpinner size="xs" variant="white" />
-                      <span>Đang xác thực...</span>
-                    </>
-                  ) : (
-                    "TRUY CẬP DASHBOARD"
-                  )}
-                </button>
+                  TRUY CẬP DASHBOARD
+                </Button>
 
                 <div className="relative my-4">
                   <div className="absolute inset-0 flex items-center">
@@ -226,16 +187,18 @@ const AdminLogin = () => {
                   </div>
                 </div>
 
-                <button
+                <Button
                   type="button"
+                  variant="outline"
+                  size="lg"
                   onClick={() => {
                     window.location.href = `${appConfig.apiUrl}/user/auth/google?from=admin`;
                   }}
-                  className="w-full h-12 bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border text-slate-800 dark:text-white font-bold rounded-2xl flex items-center justify-center gap-2 text-xs transition-all hover:bg-slate-50 dark:hover:bg-dark-surface active:scale-[0.98] cursor-pointer"
+                  className="w-full h-12 rounded-2xl gap-2 text-xs font-bold normal-case tracking-normal"
                 >
                   <FcGoogle size={18} />
                   <span>Đăng nhập với Google</span>
-                </button>
+                </Button>
               </div>
             </form>
       </AuthShell>

@@ -12,10 +12,11 @@ import {
 import { FaStar } from "react-icons/fa";
 import { deleteReviewApi, getAllReviewsApi } from "../../../api/reviewApi";
 import { createReplyApi, deleteReplyApi } from "../../../api/reviewReplyApi";
-import { toast } from "react-toastify";
+import { showErrorToast, showSuccessToast } from "../../../utils/toastHelper";
 import AppPagination from "../../../components/Pagination/Pagination";
 import { motion as Motion } from "framer-motion";
 import { ConfirmModal } from "../../../components/UI/Modal";
+import AdminPageShell from "../../components/AdminPageShell";
 
 const ReviewPage = () => {
   const [reviews, setReviews] = useState([]);
@@ -52,8 +53,7 @@ const ReviewPage = () => {
       });
       setReplies(initialReplies);
     } catch (e) {
-      console.error(e);
-      toast.error("Không thể tải bình luận");
+      showErrorToast(e, "Không thể tải bình luận");
     } finally {
       setLoading(false);
     }
@@ -68,9 +68,9 @@ const ReviewPage = () => {
       await deleteReviewApi(selectedReview.id);
       setShowDeleteModal(false);
       fetchReviews();
-      toast.success("Đã xóa bình luận");
-    } catch {
-      toast.error("Xóa thất bại");
+      showSuccessToast("Đã xóa bình luận");
+    } catch (e) {
+      showErrorToast(e, "Xóa thất bại");
     }
   };
 
@@ -85,12 +85,12 @@ const ReviewPage = () => {
           [reviewId]: [...(prev[reviewId] || []), res.data],
         }));
         setReplyInputs((p) => ({ ...p, [reviewId]: "" }));
-        toast.success("Đã phản hồi");
+        showSuccessToast("Đã phản hồi");
       } else {
-        toast.error(res?.errMessage || "Phản hồi thất bại");
+        showErrorToast(res?.errMessage || "Phản hồi thất bại");
       }
-    } catch {
-      toast.error("Phản hồi thất bại");
+    } catch (e) {
+      showErrorToast(e, "Phản hồi thất bại");
     }
   };
 
@@ -102,28 +102,27 @@ const ReviewPage = () => {
           ...prev,
           [reviewId]: prev[reviewId].filter((x) => x.id !== replyId),
         }));
-        toast.success("Đã xóa phản hồi");
+        showSuccessToast("Đã xóa phản hồi");
       }
-    } catch {
-      toast.error("Xóa phản hồi thất bại");
+    } catch (e) {
+      showErrorToast(e, "Xóa phản hồi thất bại");
     }
   };
 
   return (
-    <div className="space-y-8 p-4 md:p-8 max-w-[1200px] mx-auto transition-colors duration-300">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2.5 sm:gap-3">
-            <div className="size-10 sm:size-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary shadow-sm shrink-0">
-              <FiMessageSquare />
-            </div>
-            <span>Quản lý đánh giá</span>
-          </h1>
-          <p className="text-slate-500 dark:text-dark-text-secondary font-bold text-xs uppercase tracking-widest mt-1.5 sm:mt-2 ml-0 sm:ml-15">
-            Lắng nghe khách hàng & Phản hồi cộng đồng
-          </p>
-        </div>
-      </div>
+    <AdminPageShell
+      eyebrow="CUSTOMER FEEDBACK // MODERATION"
+      title={
+        <span className="flex items-center gap-2.5">
+          <span className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+            <FiMessageSquare />
+          </span>
+          <span>Quản lý đánh giá</span>
+        </span>
+      }
+      subtitle="Lắng nghe khách hàng & Phản hồi cộng đồng"
+      className="max-w-[1200px] mx-auto"
+    >
 
       {/* Filter Bar */}
       <div className="bg-white dark:bg-dark-surface p-4 rounded-2xl border border-slate-200/80 dark:border-dark-border shadow-xs flex flex-wrap items-center gap-4">
@@ -380,7 +379,7 @@ const ReviewPage = () => {
         icon={FiTrash2}
         iconClassName="bg-rose-50 text-rose-500"
       />
-    </div>
+    </AdminPageShell>
   );
 };
 

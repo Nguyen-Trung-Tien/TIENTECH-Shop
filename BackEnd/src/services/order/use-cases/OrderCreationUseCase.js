@@ -1,3 +1,4 @@
+const crypto = require("crypto");
 const db = require("../../../models");
 const VoucherService = require("../../marketing/VoucherService");
 const SystemSettingService = require("../../system/SystemSettingService");
@@ -55,7 +56,7 @@ const createOrder = async (data, actor = null) => {
       };
     }
 
-    const orderCode = `ORD${Date.now()}`;
+    const orderCode = `ORD${Date.now()}${crypto.randomInt(100, 999)}`;
     const formattedItems = [];
     let calculatedTotal = 0;
 
@@ -198,6 +199,19 @@ const createOrder = async (data, actor = null) => {
             errMessage: "Voucher đã hết lượt sử dụng hoặc không còn hiệu lực.",
           };
         }
+        if (appliedVoucher.perUserUsage != null) {
+          const userUsedCount = await db.VoucherUsage.count({
+            where: { voucherId: appliedVoucher.id, userId: effectiveUserId },
+            transaction: t,
+          });
+          if (userUsedCount >= appliedVoucher.perUserUsage) {
+            await t.rollback();
+            return {
+              errCode: 1,
+              errMessage: "Bạn đã sử dụng hết lượt cho phép của voucher này.",
+            };
+          }
+        }
         discountAmount = voucherRes.data.discountAmount;
         await appliedVoucher.increment("usedCount", { by: 1, transaction: t });
       } else {
@@ -236,6 +250,11 @@ const createOrder = async (data, actor = null) => {
       calculatedTotal + shippingFee - discountAmount,
     );
 
+    const isPaypalPaid =
+      selectedPaymentMethod === "paypal" &&
+      data.paymentStatus === "paid" &&
+      Boolean(data.paypalDetails?.id);
+
     const order = await db.Order.create(
       {
         orderCode,
@@ -248,8 +267,8 @@ const createOrder = async (data, actor = null) => {
         receiverPhone: receiverPhone || null,
         paymentMethod: selectedPaymentMethod,
         note: note || "",
-        paymentStatus: "unpaid",
-        status: "pending",
+        paymentStatus: isPaypalPaid ? "paid" : "unpaid",
+        status: isPaypalPaid ? "confirmed" : "pending",
         orderItems: formattedItems,
       },
       {
@@ -257,6 +276,22 @@ const createOrder = async (data, actor = null) => {
         transaction: t,
       },
     );
+
+    if (isPaypalPaid && db.Payment) {
+      await db.Payment.create(
+        {
+          orderId: order.id,
+          userId: effectiveUserId,
+          amount: finalTotal,
+          method: "paypal",
+          transactionId: String(data.paypalDetails.id),
+          status: "completed",
+          paymentDate: new Date(),
+          note: "PayPal Checkout Capture",
+        },
+        { transaction: t },
+      );
+    }
 
     if (voucherCode && appliedVoucher) {
       await db.VoucherUsage.create(
@@ -271,14 +306,22 @@ const createOrder = async (data, actor = null) => {
       );
     }
 
-    // SECURITY: Delete cart belonging only to the effective user
+    // SECURITY: Remove only purchased items from the effective user's cart
     const cart = await db.Cart.findOne({
       where: { userId: effectiveUserId },
       transaction: t,
     });
     if (cart) {
+      const { Op } = require("sequelize");
+      const itemPairs = formattedItems.map((it) => ({
+        productId: it.productId,
+        variantId: it.variantId || null,
+      }));
       await db.CartItem.destroy({
-        where: { cartId: cart.id },
+        where: {
+          cartId: cart.id,
+          [Op.or]: itemPairs,
+        },
         transaction: t,
       });
     }

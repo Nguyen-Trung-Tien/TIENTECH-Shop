@@ -1,6 +1,7 @@
 import React, { memo, useState } from "react";
 import { FaStar, FaCamera, FaTimes } from "react-icons/fa";
 import Button from "../UI/Button";
+import { showWarningToast } from "../../utils/toastHelper";
 
 /**
  * ReviewForm Component - Compact Version
@@ -18,7 +19,7 @@ const ReviewForm = ({ newReview, setNewReview, onSubmit, loading }) => {
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
     if (files.length + previews.length > 5) {
-      alert("Chỉ được tải lên tối đa 5 ảnh");
+      showWarningToast("Chỉ được tải lên tối đa 5 ảnh");
       return;
     }
 

@@ -16,7 +16,6 @@ import { orderStatusMap, paymentStatusMap } from "../../utils/constants";
 import { returnStatusMap } from "../../utils/StatusMap";
 import { formatCurrency, formatDate } from "../../utils/format";
 import { StatusBadge } from "../../utils/StatusBadge";
-import ClickableText from "../../components/ClickableText/ClickableText";
 import Button from "../../components/UI/Button";
 import Badge from "../../components/UI/Badge";
 import { ErrorBanner } from "../../components/UI";
@@ -172,12 +171,13 @@ const OrderHistoryPage = () => {
                             />
                           </div>
                           <div className="flex-1 min-w-0 py-1">
-                            <ClickableText
-                              className="text-base md:text-lg font-bold text-surface-900 dark:text-white line-clamp-2 break-words [overflow-wrap:anywhere] hover:text-primary dark:hover:text-brand transition-colors cursor-pointer"
+                            <button
+                              type="button"
+                              className="text-left text-base md:text-lg font-bold text-surface-900 dark:text-white line-clamp-2 break-words [overflow-wrap:anywhere] hover:text-primary dark:hover:text-brand transition-colors cursor-pointer"
                               onClick={() => navigate(`/orders-detail/${o.id}`)}
                             >
                               {p?.name || i.productName}
-                            </ClickableText>
+                            </button>
                             <div className="flex items-center gap-3 mt-1">
                               <span className="text-sm text-surface-500 dark:text-dark-text-secondary font-medium">
                                 Số lượng: {i.quantity}

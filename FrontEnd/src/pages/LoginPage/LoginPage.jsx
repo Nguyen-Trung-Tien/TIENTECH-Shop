@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
-  FiEye,
-  FiEyeOff,
   FiMail,
   FiLock,
   FiUser,
@@ -14,53 +12,9 @@ import { useDispatch } from "react-redux";
 import { loginUser } from "../../api/userApi";
 import { setUser } from "../../redux/userSlice";
 import ForgotPasswordModal from "../../components/ForgotPasswordModal/ForgotPasswordModal";
-import UnifiedSpinner from "../../components/Loading/UnifiedSpinner";
-import { AuthShell } from "../../components/UI";
+import { AuthShell, Button, Input } from "../../components/UI";
 import { appConfig } from "../../config/runtimeConfig";
 import { showErrorToast, showSuccessToast } from "../../utils/toastHelper";
-
-const FloatingInput = ({
-  id,
-  value,
-  onChange,
-  type,
-  label,
-  icon: Icon,
-  toggleIcon: ToggleIcon,
-  onToggle,
-}) => (
-  <div className="relative group mb-4">
-    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 group-focus-within:text-blue-600 dark:group-focus-within:text-blue-400 transition-colors duration-200 z-10 pointer-events-none">
-      {Icon && (typeof Icon === "function" ? <Icon size={18} /> : Icon)}
-    </div>
-    <input
-      id={id}
-      type={type}
-      value={value}
-      onChange={onChange}
-      required
-      placeholder=" "
-      className="peer w-full h-14 pl-12 pr-12 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-2xl text-[14px] font-bold text-slate-900 dark:text-white focus:bg-white dark:focus:bg-slate-900 focus:border-blue-600 dark:focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all placeholder-transparent"
-    />
-    <label
-      htmlFor={id}
-      className="absolute left-12 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-400 text-[14px] font-medium pointer-events-none transition-all duration-200 
-                 peer-focus:top-0 peer-focus:left-4 peer-focus:text-[11px] peer-focus:font-extrabold peer-focus:text-blue-600 dark:peer-focus:text-blue-400 peer-focus:bg-white dark:peer-focus:bg-slate-900 peer-focus:px-2 rounded
-                 peer-[:not(:placeholder-shown)]:top-0 peer-[:not(:placeholder-shown)]:left-4 peer-[:not(:placeholder-shown)]:text-[11px] peer-[:not(:placeholder-shown)]:font-extrabold peer-[:not(:placeholder-shown)]:text-blue-600 dark:peer-[:not(:placeholder-shown)]:text-blue-400 peer-[:not(:placeholder-shown)]:bg-white dark:peer-[:not(:placeholder-shown)]:bg-slate-900 peer-[:not(:placeholder-shown)]:px-2"
-    >
-      {label}
-    </label>
-    {ToggleIcon && (
-      <button
-        type="button"
-        onClick={onToggle}
-        className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors cursor-pointer"
-      >
-        <ToggleIcon size={18} />
-      </button>
-    )}
-  </div>
-);
 
 const LoginPage = () => {
   const [rememberMe, setRememberMe] = useState(() => {
@@ -71,7 +25,6 @@ const LoginPage = () => {
   });
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
   const [showForgotModal, setShowForgotModal] = useState(false);
 
   // Security: Purge legacy stored passwords
@@ -136,25 +89,31 @@ const LoginPage = () => {
         formMaxWidth="max-w-[360px]"
       >
         <form onSubmit={handleSubmit} className="space-y-1">
-              <FloatingInput
-                id="email"
-                type="email"
-                label="Địa chỉ Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                icon={FiMail}
-              />
+              <div className="space-y-4 mb-4">
+                <Input
+                  id="email"
+                  type="email"
+                  label="Địa chỉ Email"
+                  placeholder="email@example.com"
+                  autoComplete="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  icon={FiMail}
+                  required
+                />
 
-              <FloatingInput
-                id="password"
-                type={showPassword ? "text" : "password"}
-                label="Mật khẩu"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                icon={FiLock}
-                toggleIcon={showPassword ? FiEyeOff : FiEye}
-                onToggle={() => setShowPassword(!showPassword)}
-              />
+                <Input
+                  id="password"
+                  type="password"
+                  label="Mật khẩu"
+                  placeholder="••••••••"
+                  autoComplete="current-password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  icon={FiLock}
+                  required
+                />
+              </div>
 
               <div className="flex items-center justify-between mb-6 py-1">
                 <label className="flex items-center gap-2 cursor-pointer group select-none">
@@ -182,23 +141,17 @@ const LoginPage = () => {
                 </button>
               </div>
 
-              <button
+              <Button
                 type="submit"
-                disabled={loading}
-                className="w-full h-12 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-black text-xs uppercase tracking-wider rounded-2xl shadow-lg shadow-blue-500/25 transition-all active:scale-[0.98] disabled:opacity-70 cursor-pointer flex items-center justify-center gap-2"
+                variant="primary"
+                size="xl"
+                loading={loading}
+                loadingText="ĐANG XÁC THỰC..."
+                icon={FiUser}
+                className="w-full"
               >
-                {loading ? (
-                  <>
-                    <UnifiedSpinner size="xs" variant="white" />
-                    <span>ĐANG XÁC THỰC...</span>
-                  </>
-                ) : (
-                  <>
-                    <FiUser className="text-base" />
-                    <span>ĐĂNG NHẬP NGAY</span>
-                  </>
-                )}
-              </button>
+                ĐĂNG NHẬP NGAY
+              </Button>
 
               <div className="relative my-6">
                 <div className="absolute inset-0 flex items-center">
@@ -211,16 +164,18 @@ const LoginPage = () => {
                 </div>
               </div>
 
-              <button
+              <Button
                 type="button"
+                variant="outline"
+                size="lg"
                 onClick={() => {
                   window.location.href = `${appConfig.apiUrl}/user/auth/google`;
                 }}
-                className="w-full h-12 bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white font-bold rounded-2xl flex items-center justify-center gap-2text-xs transition-all hover:bg-slate-50 dark:hover:bg-slate-800 active:scale-[0.98] cursor-pointer"
+                className="w-full h-12 rounded-2xl gap-2 text-xs font-bold normal-case tracking-normal"
               >
                 <FcGoogle size={18} />
                 <span>Đăng nhập với Google</span>
-              </button>
+              </Button>
             </form>
 
             <p className="text-center mt-6 text-slate-500 dark:text-slate-400 text-xs font-medium">

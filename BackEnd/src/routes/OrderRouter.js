@@ -7,7 +7,13 @@ const {
 } = require("../middleware/authMiddleware");
 
 const { validate } = require("../middleware/zodMiddleware");
-const { orderSchema, changePaymentMethodSchema } = require("../utils/zodSchemas");
+const {
+  orderSchema,
+  changePaymentMethodSchema,
+  updateOrderStatusSchema,
+  returnRequestSchema,
+  returnActionSchema,
+} = require("../utils/zodSchemas");
 
 router.get(
   "/get-all-orders",
@@ -38,6 +44,7 @@ router.put(
   "/update-status-order/:id/status",
   authenticateToken,
   authorizeRole(["admin", "customer"]),
+  validate(updateOrderStatusSchema),
   OrderController.handleUpdateOrderStatus
 );
 router.delete(
@@ -63,6 +70,7 @@ router.post(
   "/return-request",
   authenticateToken,
   authorizeRole(["customer", "admin"]),
+  validate(returnRequestSchema),
   OrderController.handleRequestReturn
 );
 
@@ -70,6 +78,7 @@ router.post(
   "/return-action",
   authenticateToken,
   authorizeRole(["admin"]),
+  validate(returnActionSchema),
   OrderController.handleReturnAction
 );
 

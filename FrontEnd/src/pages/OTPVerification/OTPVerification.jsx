@@ -1,11 +1,14 @@
 import { useState, useRef, useEffect } from "react";
 import { useSearchParams, useNavigate, Link } from "react-router-dom";
 import { verifyEmailApi, resendVerificationApi } from "../../api/userApi";
-import { showErrorToast, showSuccessToast, showWarningToast } from "../../utils/toastHelper";
+import {
+  showErrorToast,
+  showSuccessToast,
+  showWarningToast,
+} from "../../utils/toastHelper";
 import { toast } from "react-toastify";
-import { Mail, ArrowLeft } from "lucide-react";
-import { motion as Motion } from "framer-motion";
-import UnifiedSpinner from "../../components/Loading/UnifiedSpinner";
+import { Mail } from "lucide-react";
+import { AuthShell, Button } from "../../components/UI";
 
 const OTPVerification = () => {
   const [searchParams] = useSearchParams();
@@ -103,80 +106,68 @@ const OTPVerification = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-dark-bg p-4">
-      <Motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="max-w-md w-full bg-white dark:bg-dark-card rounded-3xl shadow-2xl p-8 border border-gray-100 dark:border-gray-800"
-      >
-        <div className="text-center mb-8">
-          <div className="size-16 bg-primary/10 dark:bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Mail className="size-8 text-primary" />
-          </div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-            Xác thực tài khoản
-          </h1>
-          <p className="text-gray-500 dark:text-gray-400">
-            Chúng tôi đã gửi mã OTP 6 chữ số đến <br />
-            <span className="font-semibold text-gray-900 dark:text-white">
-              {email}
-            </span>
-          </p>
+    <AuthShell
+      badge="Xác thực OTP"
+      bannerTitle="Bảo mật tài khoản"
+      bannerHighlight="TIEN TECH"
+      bannerSubtitle="Nhập mã xác thực 6 chữ số đã được gửi tới hộp thư của bạn."
+      title="Xác thực tài khoản"
+      subtitle={`Mã OTP đã được gửi đến ${email || ""}`}
+      backTo="/register"
+      backLabel="Quay lại đăng ký"
+    >
+      <div className="space-y-6">
+        <div className="size-14 bg-primary/10 dark:bg-primary/20 rounded-2xl flex items-center justify-center mx-auto">
+          <Mail className="size-7 text-primary" />
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-8">
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div className="flex justify-between gap-2">
             {otp.map((digit, index) => (
               <input
                 key={index}
                 ref={(el) => (inputRefs.current[index] = el)}
                 type="text"
+                inputMode="numeric"
                 maxLength={1}
                 value={digit}
                 onChange={(e) => handleChange(index, e.target.value)}
                 onKeyDown={(e) => handleKeyDown(index, e)}
                 onPaste={index === 0 ? handlePaste : undefined}
-                className="w-12 h-14 text-center text-2xl font-bold bg-gray-50 dark:bg-dark-bg border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all text-gray-900 dark:text-white"
+                aria-label={`Mã OTP số ${index + 1}`}
+                className="w-11 sm:w-12 h-13 sm:h-14 text-center text-xl sm:text-2xl font-bold bg-surface-50 dark:bg-dark-bg border border-surface-200 dark:border-dark-border rounded-xl focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all text-surface-900 dark:text-white"
               />
             ))}
           </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-4 bg-primary hover:bg-primary-hover text-white font-bold rounded-2xl shadow-lg shadow-primary/20 active:scale-[0.98] transition-all disabled:opacity-70 flex items-center justify-center gap-2 cursor-pointer"
-          >
-            {loading ? <UnifiedSpinner size="xs" variant="white" /> : "XÁC NHẬN"}
-          </button>
+          <Button type="submit" size="xl" loading={loading} className="w-full">
+            XÁC NHẬN
+          </Button>
         </form>
 
-        <div className="mt-8 text-center space-y-4">
-          <p className="text-gray-500 dark:text-gray-400 text-sm">
+        <div className="text-center space-y-3">
+          <p className="text-surface-500 dark:text-dark-text-secondary text-sm">
             Bạn không nhận được mã?{" "}
             {timer > 0 ? (
               <span className="text-primary font-bold">
                 Gửi lại sau {timer}s
               </span>
             ) : (
-              <button
+              <Button
+                type="button"
+                variant="link"
+                size="sm"
                 onClick={handleResend}
-                disabled={resending}
-                className="inline-flex items-center gap-1 text-primary font-bold hover:underline disabled:opacity-50 cursor-pointer bg-transparent border-none outline-none"
+                loading={resending}
+                className="p-0 h-auto font-bold"
               >
-                {resending ? <UnifiedSpinner size="xs" variant="primary" /> : "Gửi lại ngay"}
-              </button>
+                Gửi lại ngay
+              </Button>
             )}
           </p>
-
-          <Link
-            to="/register"
-            className="inline-flex items-center gap-2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 text-sm font-medium transition-colors"
-          >
-            <ArrowLeft className="size-4" /> Quay lại đăng ký
-          </Link>
         </div>
-      </Motion.div>
-    </div>
+      </div>
+    </AuthShell>
   );
 };
 

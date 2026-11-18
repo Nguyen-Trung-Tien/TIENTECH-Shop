@@ -20,14 +20,6 @@ export const getSocket = () => {
       reconnection: true,
       reconnectionAttempts: 5,
       reconnectionDelay: 1000,
-      auth: (cb) => {
-        const token =
-          currentUser?.accessToken ||
-          (typeof localStorage !== "undefined"
-            ? localStorage.getItem("accessToken")
-            : null);
-        cb(token ? { token } : {});
-      },
     });
 
     socket.on("connect", () => {

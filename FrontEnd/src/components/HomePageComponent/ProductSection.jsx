@@ -22,7 +22,7 @@ import {
 } from "react-icons/fi";
 import { getAllProductApi } from "../../api/productApi";
 import ProductCard from "../../components/ProductCard/ProductCard";
-import SkeletonCard from "../SkeletonCard/SkeletonCard";
+import { ProductCardSkeleton as SkeletonCard } from "../Loading";
 
 const SORT_OPTIONS = [
   { id: "featured", label: "Nổi bật nhất" },

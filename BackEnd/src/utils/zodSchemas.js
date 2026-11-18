@@ -30,13 +30,19 @@ const loginSchema = z.object({
   }),
 });
 
+const strongPasswordSchema = z
+  .string({ required_error: "Mật khẩu là bắt buộc" })
+  .min(8, "Mật khẩu phải có ít nhất 8 ký tự")
+  .regex(/[A-Z]/, "Mật khẩu phải chứa ít nhất 1 chữ cái viết hoa")
+  .regex(/[a-z]/, "Mật khẩu phải chứa ít nhất 1 chữ cái viết thường")
+  .regex(/\d/, "Mật khẩu phải chứa ít nhất 1 chữ số")
+  .regex(/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/, "Mật khẩu phải chứa ít nhất 1 ký tự đặc biệt");
+
 const registerSchema = z.object({
   body: z
     .object({
       email: z.string().email("Email không hợp lệ"),
-      password: z
-        .string({ required_error: "Mật khẩu là bắt buộc" })
-        .min(6, "Mật khẩu phải ít nhất 6 ký tự"),
+      password: strongPasswordSchema,
       username: z
         .string()
         .min(3, "Tên người dùng phải có ít nhất 3 ký tự")
@@ -45,7 +51,52 @@ const registerSchema = z.object({
       address: z.union([z.string(), z.literal(""), z.null()]).optional(),
       avatar: z.any().optional(),
       confirmPassword: z.string().optional(),
+    })
+    .refine((data) => !data.confirmPassword || data.password === data.confirmPassword, {
+      message: "Mật khẩu xác nhận không khớp",
+      path: ["confirmPassword"],
     }),
+});
+
+const changePasswordSchema = z.object({
+  body: z.object({
+    oldPassword: z.string().min(1, "Vui lòng nhập mật khẩu cũ"),
+    newPassword: strongPasswordSchema,
+  }),
+});
+
+const forgotPasswordSchema = z.object({
+  body: z.object({
+    email: z.string().email("Email không hợp lệ"),
+  }),
+});
+
+const verifyResetTokenSchema = z.object({
+  body: z.object({
+    email: z.string().email("Email không hợp lệ"),
+    token: z.string().min(1, "Thiếu mã xác thực"),
+  }),
+});
+
+const resetPasswordSchema = z.object({
+  body: z.object({
+    email: z.string().email("Email không hợp lệ"),
+    token: z.string().min(1, "Thiếu mã xác thực"),
+    newPassword: strongPasswordSchema,
+  }),
+});
+
+const verifyEmailSchema = z.object({
+  body: z.object({
+    email: z.string().email("Email không hợp lệ"),
+    token: z.string().min(1, "Thiếu mã xác thực"),
+  }),
+});
+
+const resendVerificationSchema = z.object({
+  body: z.object({
+    email: z.string().email("Email không hợp lệ"),
+  }),
 });
 
 const updateUserSchema = z.object({
@@ -154,11 +205,92 @@ const adminBulkUserStatusSchema = z.object({
     .strict(),
 });
 
+const updateOrderStatusSchema = z.object({
+  params: z.object({
+    id: z.string().min(1, "Thiếu mã đơn hàng"),
+  }),
+  body: z.object({
+    status: z.enum([
+      "pending",
+      "confirmed",
+      "processing",
+      "shipped",
+      "shipping",
+      "delivered",
+      "completed",
+      "cancelled",
+      "cancel_requested",
+      "return_requested",
+      "returned",
+      "refunded",
+    ]),
+    cancelReason: z.string().max(500).optional(),
+    reason: z.string().max(500).optional(),
+    trackingNumber: z.string().max(100).optional(),
+  }),
+});
+
+const returnRequestSchema = z.object({
+  body: z.object({
+    orderId: z.union([z.string().min(1), z.number().int().positive()]),
+    reason: z.string().min(3, "Vui lòng nhập lý do hoàn trả").max(1000),
+    images: z.array(z.string()).optional(),
+  }),
+});
+
+const returnActionSchema = z.object({
+  body: z.object({
+    orderId: z.union([z.string().min(1), z.number().int().positive()]),
+    action: z.enum(["approve", "reject"]),
+    adminNote: z.string().max(1000).optional(),
+  }),
+});
+
+const broadcastNotificationSchema = z.object({
+  body: z.object({
+    title: z.string().min(1, "Tiêu đề không được để trống").max(200),
+    message: z.string().min(1, "Nội dung không được để trống").max(2000),
+    type: z.string().max(50).optional(),
+    targetUrl: z.string().max(500).optional(),
+  }),
+});
+
+const createProductSchema = z.object({
+  body: z.object({
+    name: z
+      .string({ required_error: "Tên sản phẩm không được để trống" })
+      .min(1, "Tên sản phẩm không được để trống"),
+    brandId: z.union([z.string(), z.number()]).optional(),
+    categoryId: z.union([z.string(), z.number()]).optional(),
+    basePrice: z.union([z.string(), z.number()]).optional(),
+    price: z.union([z.string(), z.number()]).optional(),
+    stock: z.union([z.string(), z.number()]).optional(),
+    totalStock: z.union([z.string(), z.number()]).optional(),
+    description: z.string().optional(),
+    isActive: z.union([z.boolean(), z.string()]).optional(),
+    hasVariants: z.union([z.boolean(), z.string()]).optional(),
+    isFlashSale: z.union([z.boolean(), z.string()]).optional(),
+    flashSalePrice: z.union([z.string(), z.number()]).optional(),
+    flashSaleStart: z.string().optional(),
+    flashSaleEnd: z.string().optional(),
+  }),
+});
+
+const updateProductSchema = z.object({
+  body: createProductSchema.shape.body.partial(),
+});
+
 module.exports = {
   voucherSchema,
   checkVoucherSchema,
   loginSchema,
   registerSchema,
+  changePasswordSchema,
+  forgotPasswordSchema,
+  verifyResetTokenSchema,
+  resetPasswordSchema,
+  verifyEmailSchema,
+  resendVerificationSchema,
   orderSchema,
   changePaymentMethodSchema,
   addressSchema,
@@ -168,4 +300,10 @@ module.exports = {
   updateUserSchema,
   adminUpdateUserStatusSchema,
   adminBulkUserStatusSchema,
+  updateOrderStatusSchema,
+  returnRequestSchema,
+  returnActionSchema,
+  broadcastNotificationSchema,
+  createProductSchema,
+  updateProductSchema,
 };

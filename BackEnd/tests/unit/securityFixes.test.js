@@ -39,7 +39,7 @@ describe("Security Hardening Verification", () => {
     expect(emptyPass.success).toBe(false);
 
     const validPass = registerSchema.safeParse({
-      body: { email: "user@example.com", username: "testuser", password: "StrongPassword1" },
+      body: { email: "user@example.com", username: "testuser", password: "StrongPassword1!" },
     });
     expect(validPass.success).toBe(true);
   });

@@ -79,7 +79,10 @@ const executeRefund = async (order, payment, method, amountToRefund = null) => {
         return { success: true, message: "VNPay Refund Success" };
       } else {
         console.error("VNPay Refund API Error Response:", resData);
-        return { success: true, message: `VNPay Refund attempted (Simulated Success): ${resData.vnp_ResponseCode} - ${resData.vnp_Message}` };
+        return {
+          success: false,
+          message: `VNPay Refund Failed: ${resData?.vnp_ResponseCode || "UNKNOWN"} - ${resData?.vnp_Message || "No details"}`,
+        };
       }
     } catch (e) {
       console.error("VNPay Refund API Request failed:", e.message);
@@ -235,10 +238,18 @@ const createPayment = async (data, actor = null) => {
       return { errCode: 2, errMessage: "Missing required orderId" };
     }
 
-    const order = await db.Order.findByPk(orderId, { transaction: t });
+    const order = await db.Order.findByPk(orderId, {
+      transaction: t,
+      lock: t.LOCK.UPDATE,
+    });
     if (!order) {
       await t.rollback();
       return { errCode: 3, errMessage: "Order not found" };
+    }
+
+    if (order.status === "cancelled") {
+      await t.rollback();
+      return { errCode: 5, errMessage: "Order has been cancelled" };
     }
 
     if (actor && !["admin", "root"].includes(actor.role)) {
@@ -327,10 +338,18 @@ const confirmPaymentFromWebhook = async ({ orderId, transactionId, method, note,
 
   const t = await db.sequelize.transaction();
   try {
-    const order = await db.Order.findByPk(orderId, { transaction: t });
+    const order = await db.Order.findByPk(orderId, {
+      transaction: t,
+      lock: t.LOCK.UPDATE,
+    });
     if (!order) {
       await t.rollback();
       return { errCode: 3, errMessage: "Order not found" };
+    }
+
+    if (order.status === "cancelled") {
+      await t.rollback();
+      return { errCode: 5, errMessage: "Order has been cancelled" };
     }
 
     // Idempotency check: if order is already paid, return success without duplicate processing

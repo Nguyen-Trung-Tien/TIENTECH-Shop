@@ -114,7 +114,28 @@ const applyVoucher = async ({ code, orderTotal, userId, orderId = null }) => {
       return validation;
     }
 
-    const voucher = await db.Voucher.findByPk(validation.data.id, { transaction: t });
+    const voucher = await db.Voucher.findByPk(validation.data.id, {
+      transaction: t,
+      lock: t.LOCK.UPDATE,
+    });
+    if (
+      !voucher ||
+      !voucher.isActive ||
+      (voucher.maxUsage != null && voucher.usedCount >= voucher.maxUsage)
+    ) {
+      await t.rollback();
+      return { errCode: 1, errMessage: "Voucher đã hết lượt sử dụng hoặc không còn hiệu lực.", data: null };
+    }
+    if (voucher.perUserUsage != null) {
+      const userUsedCount = await db.VoucherUsage.count({
+        where: { voucherId: voucher.id, userId },
+        transaction: t,
+      });
+      if (userUsedCount >= voucher.perUserUsage) {
+        await t.rollback();
+        return { errCode: 1, errMessage: "Bạn đã sử dụng hết lượt cho phép của voucher này.", data: null };
+      }
+    }
     
     const usage = await db.VoucherUsage.create({
       voucherId: voucher.id,

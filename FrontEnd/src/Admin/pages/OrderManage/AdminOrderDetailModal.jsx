@@ -1,11 +1,12 @@
 import React, { useState } from "react";
-import { FiX, FiPrinter, FiCheckCircle, FiXCircle, FiAlertCircle, FiCalendar, FiUser, FiPhone, FiMapPin, FiPackage, FiClock } from "react-icons/fi";
+import { FiPrinter, FiCheckCircle, FiXCircle, FiAlertCircle, FiCalendar, FiUser, FiPhone, FiMapPin, FiPackage, FiClock } from "react-icons/fi";
 import { StatusBadge } from "../../../utils/StatusBadge";
 import { statusMap, paymentStatusMap } from "../../../utils/StatusMap";
 import { printInvoice } from "../../../pages/OrderDetail/printInvoice";
 import { processReturn } from "../../../api/orderItemApi";
 import { updateOrderStatus } from "../../../api/orderApi";
 import { showSuccessToast, showErrorToast } from "../../../utils/toastHelper";
+import { Modal, Button } from "../../../components/UI";
 import UnifiedSpinner from "../../../components/Loading/UnifiedSpinner";
 
 const formatCurrency = (amount) =>
@@ -150,52 +151,50 @@ const AdminOrderDetailModal = ({ order, isOpen, onClose, onOrderUpdated }) => {
   );
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-900/60 backdrop-blur-xs overflow-y-auto">
-      <div className="bg-white dark:bg-dark-surface rounded-3xl border border-slate-200 dark:border-dark-border w-full max-w-4xl max-h-[92vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-        {/* Header */}
-        <div className="px-5 py-4 sm:px-8 sm:py-5 border-b border-slate-100 dark:border-dark-border flex items-center justify-between bg-slate-50/70 dark:bg-dark-bg/60 shrink-0">
-          <div className="min-w-0">
-            <div className="flex items-center gap-3 flex-wrap">
-              <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">
-                Đơn Hàng #{order.orderCode}
-              </h2>
-              <StatusBadge map={statusMap} status={order.status} />
-              <span
-                className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${
-                  order.paymentStatus === "paid"
-                    ? "bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-900/40"
-                    : "bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-900/40"
-                }`}
-              >
-                {paymentStatusMap[order.paymentStatus]?.label ||
-                  paymentStatusMap[order.paymentStatus]?.text ||
-                  order.paymentStatus}
-              </span>
-            </div>
-            <p className="text-[11px] font-medium text-slate-400 dark:text-dark-text-secondary mt-1 flex items-center gap-1.5">
-              <FiCalendar /> Đặt lúc: {formatDate(order.createdAt)}
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => printInvoice(order)}
-              className="p-2 sm:px-3.5 sm:py-2 rounded-xl bg-white dark:bg-dark-surface border border-slate-200 dark:border-dark-border text-slate-700 dark:text-dark-text-primary hover:text-primary hover:border-primary transition-colors text-xs font-bold flex items-center gap-2 cursor-pointer shadow-xs"
-              title="In phiếu xuất kho / Hóa đơn"
-            >
-              <FiPrinter />
-              <span className="hidden sm:inline">In hóa đơn</span>
-            </button>
-            <button
-              onClick={onClose}
-              className="size-9 rounded-xl flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-dark-bg transition-colors cursor-pointer"
-              title="Đóng modal"
-            >
-              <FiX size={18} />
-            </button>
-          </div>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      size="4xl"
+      showClose={true}
+      loading={processingAction}
+      loadingMessage="Đang xử lý yêu cầu..."
+      headerClassName="bg-slate-50/70 dark:bg-dark-bg/60"
+      bodyClassName="p-0"
+      title={
+        <div className="flex items-center gap-3 flex-wrap">
+          <span>Đơn Hàng #{order.orderCode}</span>
+          <StatusBadge map={statusMap} status={order.status} />
+          <span
+            className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${
+              order.paymentStatus === "paid"
+                ? "bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-900/40"
+                : "bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-900/40"
+            }`}
+          >
+            {paymentStatusMap[order.paymentStatus]?.label ||
+              paymentStatusMap[order.paymentStatus]?.text ||
+              order.paymentStatus}
+          </span>
         </div>
-
+      }
+      subtitle={`Đặt lúc: ${formatDate(order.createdAt)}`}
+      footer={
+        <div className="flex items-center justify-between w-full gap-3">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => printInvoice(order)}
+            icon={FiPrinter}
+          >
+            In hóa đơn
+          </Button>
+          <Button type="button" variant="secondary" onClick={onClose}>
+            Đóng
+          </Button>
+        </div>
+      }
+    >
         {/* Modal Body */}
         <div className="p-5 sm:p-8 overflow-y-auto space-y-6 custom-scrollbar">
           {/* Cancel Requested Banner */}
@@ -526,18 +525,7 @@ const AdminOrderDetailModal = ({ order, isOpen, onClose, onOrderUpdated }) => {
               </div>
             )}
         </div>
-
-        {/* Footer */}
-        <div className="px-5 py-3.5 sm:px-8 sm:py-4 border-t border-slate-100 dark:border-dark-border flex justify-end bg-slate-50/50 dark:bg-dark-bg/40 shrink-0">
-          <button
-            onClick={onClose}
-            className="px-5 py-2 rounded-xl bg-slate-200 dark:bg-dark-card border border-transparent dark:border-dark-border text-slate-700 dark:text-dark-text-primary text-xs font-bold hover:bg-slate-300 dark:hover:bg-dark-surface transition-colors cursor-pointer"
-          >
-            Đóng
-          </button>
-        </div>
-      </div>
-    </div>
+    </Modal>
   );
 };
 

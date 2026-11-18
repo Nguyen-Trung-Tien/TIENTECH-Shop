@@ -10,13 +10,20 @@ const upload = require("./multer");
 const passport = require("../config/passport");
 
 const { validate } = require("../middleware/zodMiddleware");
-const { 
-  loginSchema, 
-  registerSchema, 
+const {
+  loginSchema,
+  registerSchema,
+  changePasswordSchema,
+  forgotPasswordSchema,
+  verifyResetTokenSchema,
+  resetPasswordSchema,
+  verifyEmailSchema,
+  resendVerificationSchema,
   updateUserSchema,
   adminUpdateUserStatusSchema,
   adminBulkUserStatusSchema,
 } = require("../utils/zodSchemas");
+const { getFrontendUrl } = require("../config/corsConfig");
 const { loginAuthLimiter, sensitiveActionLimiter, otpVerificationLimiter, refreshTokenLimiter } = require("../middleware/rateLimiter");
 
 const parseOAuthState = (rawState) => {
@@ -59,9 +66,10 @@ router.get(
     res.clearCookie("oauth_state", { httpOnly: true, secure: isProduction, sameSite: "Lax" });
 
     const isAdmin = from === "admin" || from.includes("admin");
+    const frontendUrl = getFrontendUrl();
     const failureRedirect = isAdmin
-      ? `${process.env.FRONTEND_URL}/admin/login?error=auth_failed`
-      : `${process.env.FRONTEND_URL}/login?error=auth_failed`;
+      ? `${frontendUrl}/admin/login?error=auth_failed`
+      : `${frontendUrl}/login?error=auth_failed`;
 
     if (!nonce || !cookieNonce || nonce !== cookieNonce) {
       return res.redirect(failureRedirect);
@@ -141,14 +149,15 @@ router.post("/logout", UserController.handleLogout);
 router.put(
   "/change-password",
   authenticateToken,
+  validate(changePasswordSchema),
   UserController.handleChangePassword
 );
 
-router.post("/forgot-password", sensitiveActionLimiter, UserController.handleForgotPassword);
-router.post("/verify-reset-token", otpVerificationLimiter, UserController.handleVerifyResetToken);
-router.post("/reset-password", sensitiveActionLimiter, UserController.handleResetPassword);
-router.post("/verify-email", otpVerificationLimiter, UserController.handleVerifyEmail);
-router.post("/resend-verification", sensitiveActionLimiter, UserController.handleResendVerification);
+router.post("/forgot-password", sensitiveActionLimiter, validate(forgotPasswordSchema), UserController.handleForgotPassword);
+router.post("/verify-reset-token", otpVerificationLimiter, validate(verifyResetTokenSchema), UserController.handleVerifyResetToken);
+router.post("/reset-password", sensitiveActionLimiter, validate(resetPasswordSchema), UserController.handleResetPassword);
+router.post("/verify-email", otpVerificationLimiter, validate(verifyEmailSchema), UserController.handleVerifyEmail);
+router.post("/resend-verification", sensitiveActionLimiter, validate(resendVerificationSchema), UserController.handleResendVerification);
 
 
 module.exports = router;

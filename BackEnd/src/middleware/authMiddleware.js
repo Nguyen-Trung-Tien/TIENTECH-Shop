@@ -1,42 +1,7 @@
 const { verifyAccessTokenDetailed } = require("../utils/jwtHelper");
-const { getCache, setCache } = require("../config/redis");
-const { getTokenBlacklistKey, getUserStatusKey } = require("../services/user/AuthHelper");
-
-const resolveUserStatus = async (userId) => {
-  const statusKey = getUserStatusKey(userId);
-  let userStatus = await getCache(statusKey);
-
-  if (!userStatus) {
-    try {
-      const db = require("../models");
-      const dbUser = await db.User.findByPk(userId, {
-        attributes: ["id", "isActive", "role", "tokenVersion"],
-      });
-      if (!dbUser) {
-        return { notFound: true };
-      }
-      userStatus = {
-        isActive: Boolean(dbUser.isActive),
-        role: dbUser.role,
-        ...(typeof dbUser.tokenVersion === "number"
-          ? { tokenVersion: dbUser.tokenVersion }
-          : {}),
-      };
-      await setCache(statusKey, userStatus, 300);
-    } catch (dbErr) {
-      console.error("AuthMiddleware status check error:", dbErr?.message);
-    }
-  }
-  return { userStatus };
-};
-
-const isTokenVersionStale = (decoded, userStatus) => {
-  return (
-    typeof userStatus?.tokenVersion === "number" &&
-    typeof decoded?.ver === "number" &&
-    decoded.ver !== userStatus.tokenVersion
-  );
-};
+const { getCache } = require("../config/redis");
+const { getTokenBlacklistKey } = require("../services/user/AuthHelper");
+const { resolveUserStatus, isTokenVersionStale } = require("../utils/authTokenValidator");
 
 const authenticateToken = async (req, res, next) => {
   const authHeader = req.headers["authorization"];

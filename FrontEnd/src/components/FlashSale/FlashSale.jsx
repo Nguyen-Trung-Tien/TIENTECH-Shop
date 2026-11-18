@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { m as Motion } from "framer-motion";
 import { getFlashSaleProductsApi } from "../../api/productApi";
 import ProductCard from "../../components/ProductCard/ProductCard";
-import SkeletonCard from "../SkeletonCard/SkeletonCard";
+import { ProductCardSkeleton as SkeletonCard } from "../Loading";
 import LoadMoreButton from "../LoadMoreButton/LoadMoreButton";
 import { FiZap, FiClock } from "react-icons/fi";
 

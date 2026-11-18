@@ -45,32 +45,27 @@ const handleCreateProduct = async (req, res) => {
   }
 };
 
-const catchAsync = require("../utils/catchAsync");
-const AppError = require("../utils/AppError");
+const handleGetAllProducts = async (req, res) => {
+  try {
+    const categoryId = req.query.categoryId;
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 10));
+    const isFlashSale =
+      req.query.isFlashSale === "true" || req.query.isFlashSale === "1";
+    const isAdmin = Boolean(req.user && ["admin", "root"].includes(req.user.role));
 
-const handleGetAllProducts = catchAsync(async (req, res, next) => {
-  const categoryId = req.query.categoryId;
-  const page = Math.max(1, parseInt(req.query.page) || 1);
-  const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 10));
-  const isFlashSale =
-    req.query.isFlashSale === "true" || req.query.isFlashSale === "1";
-  
-  const isAdmin = Boolean(req.user && ["admin", "root"].includes(req.user.role));
-
-  const result = await ProductService.getAllProducts(
-    categoryId,
-    page,
-    limit,
-    isFlashSale,
-    isAdmin
-  );
-  
-  if (result.errCode !== 0) {
-    return next(new AppError(result.errMessage, 400, result.errCode));
+    const result = await ProductService.getAllProducts(
+      categoryId,
+      page,
+      limit,
+      isFlashSale,
+      isAdmin
+    );
+    return handleResponse(res, result);
+  } catch (e) {
+    return handleError(res, e, "handleGetAllProducts");
   }
-
-  return res.status(200).json(result);
-});
+};
 
 const handleGetProductById = async (req, res) => {
   try {

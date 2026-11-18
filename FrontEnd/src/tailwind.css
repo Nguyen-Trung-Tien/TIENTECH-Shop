@@ -71,6 +71,12 @@
   /* Spacing */
   --spacing-container: 1280px;
 
+  /* Z-index Scale */
+  --z-dropdown: 30;
+  --z-sticky: 40;
+  --z-modal: 50;
+  --z-toast: 60;
+
   /* Keyframes */
   @keyframes slide-left {
     from { transform: translateX(100%); }
@@ -196,22 +202,6 @@
     @apply text-xl md:text-2xl font-bold mb-6 tracking-tight;
   }
 
-  .btn-modern-primary {
-    @apply inline-flex items-center justify-center gap-2 min-h-[44px] px-6 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-2xl font-bold text-xs md:text-sm tracking-wide transition-all duration-200 shadow-lg shadow-blue-500/20 hover:shadow-blue-500/35 active:scale-95 disabled:opacity-50 disabled:pointer-events-none cursor-pointer;
-  }
-
-  .btn-modern-secondary {
-    @apply inline-flex items-center justify-center gap-2 min-h-[44px] px-6 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-2xl font-bold text-xs md:text-sm tracking-wide transition-all duration-200 border border-slate-200/80 dark:border-slate-700 active:scale-95 disabled:opacity-50 disabled:pointer-events-none cursor-pointer;
-  }
-
-  .btn-modern-danger {
-    @apply inline-flex items-center justify-center gap-2 min-h-[44px] px-6 py-2.5 bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700 text-white rounded-2xl font-bold text-xs md:text-sm tracking-wide transition-all duration-200 shadow-lg shadow-rose-500/20 hover:shadow-rose-500/35 active:scale-95 disabled:opacity-50 disabled:pointer-events-none cursor-pointer;
-  }
-
-  .btn-modern-ghost {
-    @apply inline-flex items-center justify-center gap-2 min-h-[44px] px-4 py-2 bg-transparent hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-2xl font-bold text-xs md:text-sm transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:pointer-events-none cursor-pointer;
-  }
-
   /* Mobile Touch Target helper */
   .touch-target {
     min-width: 44px;
@@ -230,13 +220,13 @@
     @apply w-full min-h-[44px] px-4 border rounded-2xl text-sm font-medium outline-none transition-all duration-200;
   }
 
-  /* Clear default focus outline and rings */
-  input:focus, 
-  select:focus, 
-  textarea:focus, 
-  button:focus {
-    outline: none !important;
-    box-shadow: none !important;
+  /* Accessible focus-visible ring */
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible,
+  button:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
   }
 
   /* Input modern refinement */
@@ -329,26 +319,6 @@
 
   .tt-card-hover {
     @apply hover:border-blue-500/40 dark:hover:border-blue-500/40 hover:shadow-xl hover:shadow-slate-200/50 dark:hover:shadow-black/50;
-  }
-
-  .tt-button {
-    @apply inline-flex items-center justify-center gap-2 min-h-[44px] px-5 sm:px-6 py-2.5 rounded-2xl font-bold text-xs sm:text-sm tracking-wide transition-all duration-200 disabled:opacity-50 disabled:pointer-events-none cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600;
-  }
-
-  .tt-button-primary {
-    @apply inline-flex items-center justify-center gap-2 min-h-[44px] px-6 py-2.5 rounded-2xl font-bold text-xs sm:text-sm tracking-wide transition-all duration-200 disabled:opacity-50 disabled:pointer-events-none cursor-pointer bg-primary hover:bg-primary-hover text-white shadow-md shadow-blue-500/20 hover:shadow-lg hover:shadow-blue-500/30 active:scale-98;
-  }
-
-  .tt-button-secondary {
-    @apply inline-flex items-center justify-center gap-2 min-h-[44px] px-5 sm:px-6 py-2.5 rounded-2xl font-bold text-xs sm:text-sm tracking-wide transition-all duration-200 disabled:opacity-50 disabled:pointer-events-none cursor-pointer bg-slate-100 hover:bg-slate-200/80 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200/70 dark:border-slate-700 active:scale-98;
-  }
-
-  .tt-button-accent {
-    @apply inline-flex items-center justify-center gap-2 min-h-[44px] px-6 py-2.5 rounded-2xl font-bold text-xs sm:text-sm tracking-wide transition-all duration-200 disabled:opacity-50 disabled:pointer-events-none cursor-pointer bg-emerald-500 hover:bg-emerald-600 text-white shadow-md shadow-emerald-500/20 active:scale-98;
-  }
-
-  .tt-button-ghost {
-    @apply inline-flex items-center justify-center gap-2 min-h-[44px] px-4 sm:px-5 py-2.5 rounded-2xl font-bold text-xs sm:text-sm tracking-wide transition-all duration-200 disabled:opacity-50 disabled:pointer-events-none cursor-pointer bg-transparent hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300;
   }
 
   .tt-input {

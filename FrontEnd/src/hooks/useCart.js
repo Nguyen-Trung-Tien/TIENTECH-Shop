@@ -19,7 +19,7 @@ export const useCart = () => {
   const cartItems = useSelector((state) => state.cart.cartItems);
 
   const fetchCart = useCallback(
-    async (page = 1, limit = 10) => {
+    async (page = 1, limit = 100) => {
       try {
         const res = await getAllCartItems(page, limit);
         const items = Array.isArray(res?.data) ? res.data : [];

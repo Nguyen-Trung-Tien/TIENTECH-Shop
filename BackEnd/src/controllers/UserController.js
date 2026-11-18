@@ -2,22 +2,28 @@ const UserService = require("../services/user/UserService");
 const AuthService = require("../services/user/AuthService");
 const { handleError, handleResponse, handleFileUpload } = require("../utils/controllerHelper");
 const { verifyRefreshToken } = require("../utils/jwtHelper");
-const { getCache, setCache, deleteCache } = require("../config/redis");
+const { deleteCache } = require("../config/redis");
 const { getUserProfileKey } = require("../services/user/AuthHelper");
+const { getFrontendUrl } = require("../config/corsConfig");
 const crypto = require("crypto");
-
-const hashToken = (token) => crypto.createHash("sha256").update(token).digest("hex");
 
 const setAuthCookies = (res, accessToken, refreshToken) => {
   const isProduction = process.env.NODE_ENV === "production";
+  const sameSite = isProduction ? "None" : "Lax";
   const cookieOptions = {
     httpOnly: true,
     secure: isProduction,
-    sameSite: isProduction ? "None" : "Lax",
+    sameSite,
   };
 
   res.cookie("accessToken", accessToken, { ...cookieOptions, maxAge: 15 * 60 * 1000 });
   res.cookie("refreshToken", refreshToken, { ...cookieOptions, maxAge: 7 * 24 * 60 * 60 * 1000 });
+  res.cookie("XSRF-TOKEN", crypto.randomBytes(24).toString("hex"), {
+    httpOnly: false,
+    secure: isProduction,
+    sameSite,
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+  });
 };
 
 const handleCreateNewUser = async (req, res) => {
@@ -75,18 +81,7 @@ const handleRefreshToken = async (req, res) => {
 
 const handleGetMe = async (req, res) => {
   try {
-    const userId = req.user.id;
-    const cacheKey = getUserProfileKey(userId);
-    const cachedProfile = await getCache(cacheKey);
-
-    if (cachedProfile) {
-      return handleResponse(res, { errCode: 0, data: cachedProfile });
-    }
-
-    const result = await UserService.getUserById(userId);
-    if (result.errCode === 0 && result.data) {
-      await setCache(cacheKey, result.data, 900); // 15 mins TTL
-    }
+    const result = await UserService.getMyProfile(req.user.id);
     return handleResponse(res, result);
   } catch (e) {
     return handleError(res, e, "handleGetMe");
@@ -108,9 +103,6 @@ const handleUpdateUser = async (req, res) => {
     if (avatarUrl) updateData.avatar = avatarUrl;
 
     const result = await UserService.updateUser(id, updateData, req.user.role, req.user.id);
-    if (result.errCode === 0) {
-      await deleteCache(getUserProfileKey(id));
-    }
     return handleResponse(res, result);
   } catch (e) {
     return handleError(res, e, "handleUpdateUser");
@@ -211,9 +203,6 @@ const handleDeleteUser = async (req, res) => {
       return res.status(403).json({ errCode: 403, errMessage: "Forbidden" });
     }
     const result = await UserService.deleteUser(id, req.user.id);
-    if (result.errCode === 0) {
-      await deleteCache(getUserProfileKey(id));
-    }
     return handleResponse(res, result);
   } catch (e) {
     return handleError(res, e, "handleDeleteUser");
@@ -235,9 +224,11 @@ const handleLogout = async (req, res) => {
     await AuthService.logout(userId, accessToken);
 
     const isProduction = process.env.NODE_ENV === "production";
-    const cookieOptions = { httpOnly: true, secure: isProduction, sameSite: isProduction ? "None" : "Lax" };
+    const sameSite = isProduction ? "None" : "Lax";
+    const cookieOptions = { httpOnly: true, secure: isProduction, sameSite };
     res.clearCookie("accessToken", cookieOptions);
     res.clearCookie("refreshToken", cookieOptions);
+    res.clearCookie("XSRF-TOKEN", { httpOnly: false, secure: isProduction, sameSite });
 
     return handleResponse(res, { errCode: 0, errMessage: "Logout successful" });
   } catch (e) {
@@ -304,9 +295,10 @@ const handleResendVerification = async (req, res) => {
 const handleGoogleAuthCallback = async (req, res) => {
   const state = req.oauthFrom ?? req.query.state;
   const isAdmin = state === "admin" || (typeof state === "string" && state.includes("admin"));
+  const frontendUrl = getFrontendUrl();
   const failureBase = isAdmin
-    ? `${process.env.FRONTEND_URL}/admin/login`
-    : `${process.env.FRONTEND_URL}/login`;
+    ? `${frontendUrl}/admin/login`
+    : `${frontendUrl}/login`;
 
   try {
     const result = await AuthService.processGoogleAuth(req.user, isAdmin);
@@ -319,8 +311,8 @@ const handleGoogleAuthCallback = async (req, res) => {
     setAuthCookies(res, accessToken, refreshToken);
 
     const redirectTarget = isAdmin
-      ? `${process.env.FRONTEND_URL}/login-success?target=admin`
-      : `${process.env.FRONTEND_URL}/login-success`;
+      ? `${frontendUrl}/login-success?target=admin`
+      : `${frontendUrl}/login-success`;
 
     return res.redirect(redirectTarget);
   } catch (error) {

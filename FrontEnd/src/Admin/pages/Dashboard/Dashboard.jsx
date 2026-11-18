@@ -20,7 +20,7 @@ import StatsCard from "../../components/StatsCardComponent/StatsCard";
 import ChartCard from "../../components/ChartCardComponent/ChartCard";
 import AIInsightsWidget from "../../components/AIInsightsWidget/AIInsightsWidget";
 import { getDashboard, exportRevenue } from "../../../api/adminApi";
-import { toast } from "react-toastify";
+import { showErrorToast, showSuccessToast } from "../../../utils/toastHelper";
 import UnifiedSpinner from "../../../components/Loading/UnifiedSpinner";
 import DashboardSkeleton from "./components/DashboardSkeleton";
 import { ErrorBanner } from "../../../components/UI";
@@ -50,9 +50,9 @@ const Dashboard = () => {
       document.body.appendChild(link);
       link.click();
       link.parentNode.removeChild(link);
-      toast.success("Xuất báo cáo thành công!");
-    } catch {
-      toast.error("Lỗi khi xuất báo cáo.");
+      showSuccessToast("Xuất báo cáo thành công!");
+    } catch (e) {
+      showErrorToast(e, "Lỗi khi xuất báo cáo.");
     } finally {
       setExporting(false);
     }

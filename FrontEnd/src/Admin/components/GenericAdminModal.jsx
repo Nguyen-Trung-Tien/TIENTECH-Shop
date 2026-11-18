@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { FiX, FiImage, FiEdit3, FiPlusCircle } from "react-icons/fi";
 import { motion as Motion, AnimatePresence } from "framer-motion";
-import UnifiedSpinner from "../../components/Loading/UnifiedSpinner";
+import { Button } from "../../components/UI";
 
 /**
  * Generic Modal for Add/Edit forms in Admin pages
@@ -261,21 +261,17 @@ const GenericAdminModal = ({
 
             {/* Sticky Action Footer */}
             <div className="p-4 sm:p-6 border-t border-slate-100 dark:border-dark-border bg-slate-50/60 dark:bg-dark-bg/40 flex items-center justify-end gap-3">
-              <button
-                type="button"
-                onClick={onClose}
-                className="btn-modern-secondary text-xs"
-              >
+              <Button type="button" variant="secondary" onClick={onClose}>
                 Hủy bỏ
-              </button>
-              <button
+              </Button>
+              <Button
                 type="submit"
-                disabled={saving}
-                className="btn-modern-primary text-xs flex items-center gap-2"
+                variant="primary"
+                loading={saving}
+                loadingText="Đang lưu..."
               >
-                {saving && <UnifiedSpinner size="xs" variant="white" />}
                 {editingItem ? "Cập Nhật Ngay" : "Tạo Mới Ngay"}
-              </button>
+              </Button>
             </div>
           </form>
         </Motion.div>

@@ -5,7 +5,8 @@ const routes = require("./routes");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const passport = require("passport");
-const { generalLimiter, sensitiveActionLimiter } = require("./middleware/rateLimiter");
+const { generalLimiter } = require("./middleware/rateLimiter");
+const { getAllowedOrigins } = require("./config/corsConfig");
 
 dotenv.config();
 
@@ -26,11 +27,11 @@ app.use((req, res, next) => {
 app.use((req, res, next) => {
   res.setHeader("X-Frame-Options", "DENY");
   res.setHeader("X-Content-Type-Options", "nosniff");
-  res.setHeader("X-XSS-Protection", "1; mode=block");
+  res.setHeader("X-XSS-Protection", "0");
   res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
   res.setHeader(
     "Content-Security-Policy",
-    "default-src 'self'; img-src 'self' data: https:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' https:; object-src 'none'; base-uri 'self'; form-action 'self'"
+    "default-src 'self'; img-src 'self' data: https:; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' https:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
   );
   res.setHeader("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
   if (isProduction) {
@@ -47,19 +48,7 @@ app.use(passport.initialize());
 /*
 CORS CONFIG
 */
-const allowedOrigins = [
-  "http://localhost:5173",
-  "http://127.0.0.1:5173",
-  "http://localhost:3000",
-  "https://tientech-shop-9247.vercel.app",
-];
-
-if (process.env.FRONTEND_URL) {
-  const cleanFrontendUrl = process.env.FRONTEND_URL.trim().replace(/\/+$/, "");
-  if (!allowedOrigins.includes(cleanFrontendUrl)) {
-    allowedOrigins.push(cleanFrontendUrl);
-  }
-}
+const allowedOrigins = getAllowedOrigins();
 
 app.use(
   cors({
@@ -78,6 +67,7 @@ app.use(
       "Content-Type",
       "Authorization",
       "X-Requested-With",
+      "X-XSRF-TOKEN",
       "Accept",
       "Cache-Control",
       "Pragma",
@@ -114,7 +104,6 @@ app.use((req, res, next) => {
     "/api/v1/user/create-new-user",
     "/api/v1/user/verify-otp",
     "/api/v1/user/verify-email",
-    "/api/v1/user/refresh-token",
   ];
 
   const isExempt =
@@ -162,6 +151,21 @@ app.use((req, res, next) => {
         errMessage: "Forbidden: CSRF verification missing required Origin header",
       });
     }
+
+    const xsrfCookie = req.cookies["XSRF-TOKEN"];
+    if (xsrfCookie) {
+      const xsrfHeader = req.headers["x-xsrf-token"];
+      const cookieBuf = Buffer.from(String(xsrfCookie));
+      const headerBuf = Buffer.from(String(xsrfHeader || ""));
+      if (cookieBuf.length !== headerBuf.length || !crypto.timingSafeEqual(cookieBuf, headerBuf)) {
+        return res.status(403).json({
+          status: "FORBIDDEN",
+          statusCode: 403,
+          errCode: 403,
+          errMessage: "Forbidden: Invalid CSRF token",
+        });
+      }
+    }
   }
 
   next();
@@ -171,7 +175,6 @@ app.use((req, res, next) => {
 RATE LIMITER
 */
 app.use("/api/", generalLimiter);
-app.use("/api/v1/user/forgot-password", sensitiveActionLimiter);
 
 /*
 STATIC FILES

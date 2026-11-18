@@ -11,7 +11,7 @@ import {
 } from "react-icons/fi";
 import { motion as Motion } from "framer-motion";
 import { getRevenueStats, exportRevenue } from "../../../api/adminApi";
-import { toast } from "react-toastify";
+import { showErrorToast, showSuccessToast } from "../../../utils/toastHelper";
 import ChartCard from "../../components/ChartCardComponent/ChartCard";
 import { Link } from "react-router-dom";
 import RevenueForecastWidget from "../../components/RevenueForecastWidget/RevenueForecastWidget";
@@ -26,8 +26,8 @@ const Revenue = () => {
       try {
         const res = await getRevenueStats(period);
         if (res.errCode === 0) setStats(res.data);
-      } catch {
-        toast.error("Lỗi tải báo cáo doanh thu");
+      } catch (e) {
+        showErrorToast(e, "Lỗi tải báo cáo doanh thu");
       } finally {
         setLoading(false);
       }
@@ -48,9 +48,9 @@ const Revenue = () => {
       document.body.appendChild(link);
       link.click();
       link.parentNode.removeChild(link);
-      toast.success("Đã xuất báo cáo!");
-    } catch {
-      toast.error("Lỗi khi xuất file");
+      showSuccessToast("Đã xuất báo cáo!");
+    } catch (e) {
+      showErrorToast(e, "Lỗi khi xuất file");
     }
   };
 

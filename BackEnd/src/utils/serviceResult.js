@@ -20,10 +20,12 @@ class ServiceResult {
    * @param {number} errCode Mã lỗi tùy chỉnh (mặc định 1)
    * @param {any} errors Dữ liệu chi tiết lỗi (nếu có)
    */
-  static error(message = "An error occurred", errCode = 1, errors = null) {
+  static error(message = "An error occurred", errCode = 1, errors = null, statusCode = null) {
     return {
       errCode: typeof errCode === "number" ? errCode : 1,
       errMessage: message,
+      data: null,
+      ...(statusCode && { statusCode }),
       ...(errors && { errors }),
     };
   }

@@ -7,7 +7,8 @@ import {
   FiX,
 } from "react-icons/fi";
 import AppPagination from "../../components/Pagination/Pagination";
-
+import { Button } from "../../components/UI";
+import AdminPageShell from "./AdminPageShell";
 import { AdminTableSkeleton, AdminActionLoader } from "./AdminLoading";
 
 /**
@@ -42,33 +43,21 @@ const GenericAdminTable = ({
   const safeColumns = Array.isArray(columns) ? columns : [];
 
   return (
-    <div className="space-y-4 sm:space-y-8">
-      {/* Action Loader Overlay */}
-      {actionLoading && <AdminActionLoader message={actionMessage} />}
-
-      {/* Header Extra (e.g. Metric Cards) */}
-      {headerExtra}
-
-      {/* Header Area */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-6">
-        <div>
-          <div className="tt-eyebrow mb-1">
-            <span className="size-1.5 rounded-full bg-lime-500"></span>
-            <span>OPERATIONS DATABASE // RECORD VIEW</span>
-          </div>
-          <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2.5">
-            <div className="size-9 rounded-lg bg-primary text-white flex items-center justify-center shadow-xs shrink-0 text-base">
-              {Icon && (typeof Icon === "function" ? <Icon /> : Icon)}
-            </div>
-            <span className="truncate">{title}</span>
-          </h1>
-          {subtitle && (
-            <p className="text-slate-500 dark:text-dark-text-secondary font-mono text-xs uppercase tracking-wider mt-1">
-              {subtitle}
-            </p>
+    <AdminPageShell
+      eyebrow="OPERATIONS DATABASE // RECORD VIEW"
+      title={
+        <span className="flex items-center gap-2.5">
+          {Icon && (
+            <span className="size-9 rounded-lg bg-primary text-white flex items-center justify-center shadow-xs shrink-0 text-base">
+              {typeof Icon === "function" ? <Icon /> : Icon}
+            </span>
           )}
-        </div>
-
+          <span className="truncate">{title}</span>
+        </span>
+      }
+      subtitle={subtitle}
+      stats={headerExtra}
+      actions={
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 w-full sm:w-auto">
           {extraControls}
           <div className="relative group w-full sm:w-64 md:w-80">
@@ -93,15 +82,20 @@ const GenericAdminTable = ({
             )}
           </div>
 
-          <button
+          <Button
+            type="button"
+            variant="primary"
             onClick={onAddClick}
-            className="tt-button tt-button-primary group px-4 py-2 flex items-center justify-center gap-2 cursor-pointer shrink-0 text-xs sm:text-sm font-bold uppercase tracking-wider"
+            icon={FiPlus}
+            className="shrink-0 uppercase tracking-wider"
           >
-            <FiPlus className="text-base group-hover:rotate-90 transition-transform duration-200" />
-            <span>{addLabel}</span>
-          </button>
+            {addLabel}
+          </Button>
         </div>
-      </div>
+      }
+    >
+      {/* Action Loader Overlay */}
+      {actionLoading && <AdminActionLoader message={actionMessage} />}
 
       {/* Bulk Actions Toolbar */}
       {bulkActionsBar}
@@ -220,7 +214,7 @@ const GenericAdminTable = ({
           </div>
         )}
       </div>
-    </div>
+    </AdminPageShell>
   );
 };
 

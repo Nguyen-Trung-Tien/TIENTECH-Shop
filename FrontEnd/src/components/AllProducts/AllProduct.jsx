@@ -1,7 +1,7 @@
 import React from "react";
 import { useProductList } from "../../hooks/useProductList";
 import ProductCard from "../../components/ProductCard/ProductCard";
-import SkeletonCard from "../SkeletonCard/SkeletonCard";
+import { ProductCardSkeleton as SkeletonCard } from "../Loading";
 import LoadMoreButton from "../LoadMoreButton/LoadMoreButton";
 import ProductFilter from "./ProductFilter";
 import { getAllCategoryApi } from "../../api/categoryApi";

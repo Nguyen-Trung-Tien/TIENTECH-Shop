@@ -5,6 +5,7 @@ import { showErrorToast, showSuccessToast } from "../../utils/toastHelper";
 
 import { CheckCircle, XCircle, Mail } from "lucide-react";
 import UnifiedSpinner from "../../components/Loading/UnifiedSpinner";
+import { AuthShell, Button } from "../../components/UI";
 
 const VerifyEmail = () => {
   const [searchParams] = useSearchParams();
@@ -72,53 +73,60 @@ const VerifyEmail = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-dark-bg p-4">
-      <div className="max-width-md w-full bg-white dark:bg-dark-card rounded-2xl shadow-xl p-8 text-center border border-gray-100 dark:border-gray-800">
-        <div className="flex justify-center mb-6">
+    <AuthShell
+      badge="Xác thực Email"
+      bannerTitle="Kích hoạt tài khoản"
+      bannerHighlight="TIEN TECH"
+      bannerSubtitle="Hoàn tất bước xác thực email để mở khóa toàn bộ tính năng mua sắm và ưu đãi."
+      title={
+        status === "verifying"
+          ? "Đang xác thực tài khoản..."
+          : status === "success"
+          ? "Xác nhận thành công!"
+          : "Xác nhận thất bại"
+      }
+      backTo="/login"
+      backLabel="Quay lại đăng nhập"
+    >
+      <div className="text-center space-y-6">
+        <div className="flex justify-center">
           {status === "verifying" && (
             <UnifiedSpinner size="xl" variant="primary" />
           )}
           {status === "success" && (
-            <CheckCircle className="size-16 text-green-500" />
+            <CheckCircle className="size-16 text-emerald-500" />
           )}
-          {status === "error" && <XCircle className="size-16 text-red-500" />}
+          {status === "error" && <XCircle className="size-16 text-rose-500" />}
         </div>
 
-        <h1 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">
-          {status === "verifying" && "Đang xác thực tài khoản..."}
-          {status === "success" && "Xác nhận thành công!"}
-          {status === "error" && "Xác nhận thất bại"}
-        </h1>
+        <p className="text-sm text-surface-600 dark:text-dark-text-secondary break-words [overflow-wrap:anywhere]">
+          {message}
+        </p>
 
-        <p className="text-gray-600 dark:text-gray-400 mb-8">{message}</p>
-
-        <div className="space-y-4">
+        <div className="space-y-3">
           {status === "success" && (
-            <Link
-              to="/login"
-              className="block w-full py-3 px-4 bg-primary hover:bg-primary-hover text-white font-semibold rounded-lg transition-colors cursor-pointer text-center"
-            >
-              Đăng nhập ngay
+            <Link to="/login" className="block">
+              <Button size="lg" className="w-full">
+                Đăng nhập ngay
+              </Button>
             </Link>
           )}
 
           {status === "error" && (
             <>
-              <button
+              <Button
+                variant="outline"
+                size="lg"
                 onClick={handleResend}
-                disabled={isResending}
-                className="flex items-center justify-center w-full py-3 px-4 bg-white border border-gray-300 dark:border-gray-600 dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 font-semibold rounded-lg transition-colors disabled:opacity-50 cursor-pointer"
+                loading={isResending}
+                className="w-full"
               >
-                {isResending ? (
-                  <UnifiedSpinner size="xs" variant="primary" className="mr-2" />
-                ) : (
-                  <Mail className="size-5 mr-2" />
-                )}
+                <Mail className="size-4" />
                 Gửi lại email xác nhận
-              </button>
+              </Button>
               <Link
                 to="/register"
-                className="block w-full text-primary dark:text-primary-light hover:underline text-sm text-center"
+                className="block w-full text-primary dark:text-primary-light hover:underline text-sm font-medium text-center pt-1"
               >
                 Quay lại trang đăng ký
               </Link>
@@ -126,13 +134,13 @@ const VerifyEmail = () => {
           )}
 
           {status === "verifying" && (
-            <p className="text-sm text-gray-500">
+            <p className="text-xs text-surface-500 dark:text-dark-text-secondary">
               Vui lòng đợi trong giây lát...
             </p>
           )}
         </div>
       </div>
-    </div>
+    </AuthShell>
   );
 };
 

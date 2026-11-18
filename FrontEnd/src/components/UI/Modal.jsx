@@ -15,7 +15,10 @@ const Modal = ({
   size = "md",
   showClose = true,
   closeOnOverlayClick = true,
+  closeOnEscape = true,
   className = "",
+  headerClassName = "",
+  bodyClassName = "",
   loading = false,
   loadingMessage = "Đang xử lý...",
 }) => {
@@ -29,7 +32,7 @@ const Modal = ({
     document.body.style.overflow = "hidden";
 
     const handleKeyDown = (e) => {
-      if (e.key === "Escape" && !loading) {
+      if (e.key === "Escape" && closeOnEscape && !loading) {
         e.preventDefault();
         if (onClose) onClose();
       }
@@ -39,7 +42,7 @@ const Modal = ({
       document.body.style.overflow = prevOverflow;
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [isModalOpen, loading, onClose]);
+  }, [isModalOpen, loading, closeOnEscape, onClose]);
 
   const sizes = {
     xs: "max-w-xs",
@@ -48,7 +51,9 @@ const Modal = ({
     lg: "max-w-lg",
     xl: "max-w-xl",
     "2xl": "max-w-2xl",
+    "3xl": "max-w-3xl",
     "4xl": "max-w-4xl",
+    "5xl": "max-w-5xl",
     full: "max-w-[95vw]",
   };
 
@@ -104,13 +109,13 @@ const Modal = ({
 
             {/* Header */}
             {(title || showClose) && (
-              <div className="flex items-center justify-between p-5 sm:p-6 pb-3.5 border-b border-slate-100 dark:border-dark-border">
-                <div>
-                  <h3 id="modal-title" className="text-lg sm:text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">
+              <div className={`flex items-center justify-between p-5 sm:p-6 pb-3.5 border-b border-slate-100 dark:border-dark-border gap-3 ${headerClassName}`}>
+                <div className="min-w-0 flex-1">
+                  <h3 id="modal-title" className="text-lg sm:text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight break-words [overflow-wrap:anywhere]">
                     {title}
                   </h3>
                   {subtitle && (
-                    <p className="text-xs font-semibold text-slate-500 dark:text-dark-text-secondary mt-0.5">
+                    <p className="text-xs font-semibold text-slate-500 dark:text-dark-text-secondary mt-0.5 break-words [overflow-wrap:anywhere]">
                       {subtitle}
                     </p>
                   )}
@@ -121,7 +126,7 @@ const Modal = ({
                     onClick={onClose}
                     disabled={loading}
                     aria-label="Đóng hộp thoại"
-                    className="size-8 sm:size-9 bg-slate-100 dark:bg-dark-card hover:bg-slate-200 dark:hover:bg-dark-border rounded-xl flex items-center justify-center text-slate-400 dark:text-dark-text-secondary hover:text-slate-900 dark:hover:text-white transition-all cursor-pointer border border-transparent dark:border-dark-border disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="size-8 sm:size-9 bg-slate-100 dark:bg-dark-card hover:bg-slate-200 dark:hover:bg-dark-border rounded-xl flex items-center justify-center text-slate-400 dark:text-dark-text-secondary hover:text-slate-900 dark:hover:text-white transition-all cursor-pointer border border-transparent dark:border-dark-border disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
                   >
                     <FiX size={18} />
                   </button>
@@ -130,7 +135,7 @@ const Modal = ({
             )}
 
             {/* Body Content */}
-            <div className="p-5 sm:p-6 flex-1 overflow-y-auto custom-scrollbar text-slate-700 dark:text-dark-text-primary">
+            <div className={`p-5 sm:p-6 flex-1 overflow-y-auto custom-scrollbar text-slate-700 dark:text-dark-text-primary ${bodyClassName}`}>
               {children}
             </div>
 
@@ -158,6 +163,7 @@ export const ConfirmModal = ({
   cancelText = "Hủy bỏ",
   variant = "primary",
   loading = false,
+  confirmDisabled = false,
   icon: CustomIcon,
   children,
 }) => {
@@ -236,6 +242,7 @@ export const ConfirmModal = ({
               if (onConfirm) onConfirm(e);
             }}
             loading={loading}
+            disabled={loading || confirmDisabled}
           >
             {confirmText}
           </Button>

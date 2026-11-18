@@ -8,7 +8,7 @@ const {
   authorizeRole,
 } = require("../middleware/authMiddleware");
 const { validate } = require("../middleware/zodMiddleware");
-const { createProductSchema, updateProductSchema } = require("../middleware/schemas/productSchema");
+const { createProductSchema, updateProductSchema } = require("../utils/zodSchemas");
 const { aiApiLimiter } = require("../middleware/rateLimiter");
 
 router.post(

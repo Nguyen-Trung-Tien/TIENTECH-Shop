@@ -85,10 +85,12 @@ describe("Auth & Security Hardening Unit Tests", () => {
       role: "customer",
       ver: 0,
     });
+    const incrementSpy = jest.spyOn(db.User, "increment").mockResolvedValue([1]);
     const updateSpy = jest.spyOn(db.User, "update").mockResolvedValue([1]);
 
     const res = await AuthService.refreshToken(token);
     expect(res.statusCode).toBe(401);
+    expect(incrementSpy).toHaveBeenCalledWith("tokenVersion", { by: 1, where: { id: 77 } });
     expect(redis.deleteCache).toHaveBeenCalledWith("user:refreshtoken:77");
     expect(updateSpy).toHaveBeenCalledWith(
       { refreshTokenHash: null, refreshTokenExpiresAt: null },
@@ -101,6 +103,24 @@ describe("Auth & Security Hardening Unit Tests", () => {
     redis.getCache.mockImplementation(async (key) => {
       if (key.includes("blacklist")) return null;
       if (key === "user:status:88") return { isActive: true, role: "customer", tokenVersion: 2 };
+      return null;
+    });
+
+    const req = { headers: { authorization: `Bearer ${token}` }, cookies: {} };
+    const res = { status: jest.fn().mockReturnThis(), json: jest.fn() };
+    const next = jest.fn();
+
+    await authenticateToken(req, res, next);
+    expect(next).not.toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(401);
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ code: "TOKEN_REVOKED" }));
+  });
+
+  test("authenticateToken rejects token missing ver claim when userStatus has tokenVersion", async () => {
+    const token = generateAccessToken({ id: 89, email: "nover@e.com", role: "customer" });
+    redis.getCache.mockImplementation(async (key) => {
+      if (key.includes("blacklist")) return null;
+      if (key === "user:status:89") return { isActive: true, role: "customer", tokenVersion: 0 };
       return null;
     });
 

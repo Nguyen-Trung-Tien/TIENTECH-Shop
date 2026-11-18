@@ -3,6 +3,8 @@ import { FiMessageSquare, FiX, FiMaximize2, FiMinimize2, FiSend, FiUser, FiCpu, 
 import { useSelector } from "react-redux";
 import { motion as Motion, AnimatePresence } from "framer-motion";
 import { useSystemSettings } from "../../context/useSystemSettings";
+import { ConfirmModal } from "../UI/Modal";
+import { showWarningToast, showSuccessToast } from "../../utils/toastHelper";
 
 import { sendMessage, visualSearch } from "../../api/chatApi";
 
@@ -116,7 +118,7 @@ const ChatBot = () => {
 
   const toggleListening = () => {
     if (!recognitionRef.current) {
-      alert(
+      showWarningToast(
         "Trình duyệt của bạn chưa hỗ trợ nhận diện giọng nói (Web Speech API).",
       );
       return;
@@ -316,11 +318,17 @@ const ChatBot = () => {
     setTimeout(() => setCopiedIdx(null), 2000);
   };
 
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
+
   const handleClearHistory = () => {
-    if (window.confirm("Bạn có muốn xóa toàn bộ lịch sử trò chuyện không?")) {
-      setMessages([]);
-      setHasGreeted(false);
-    }
+    setShowClearConfirm(true);
+  };
+
+  const confirmClearHistory = () => {
+    setMessages([]);
+    setHasGreeted(false);
+    setShowClearConfirm(false);
+    showSuccessToast("Đã xóa lịch sử trò chuyện.");
   };
 
   if (!isAiEnabled) {
@@ -702,6 +710,16 @@ const ChatBot = () => {
           </Motion.div>
         )}
       </AnimatePresence>
+
+      <ConfirmModal
+        isOpen={showClearConfirm}
+        onClose={() => setShowClearConfirm(false)}
+        onConfirm={confirmClearHistory}
+        title="Xóa lịch sử trò chuyện?"
+        message="Toàn bộ nội dung hội thoại hiện tại với trợ lý AI sẽ bị xóa."
+        confirmText="Xóa lịch sử"
+        variant="danger"
+      />
     </>
   );
 };

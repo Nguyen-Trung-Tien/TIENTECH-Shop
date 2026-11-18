@@ -6,27 +6,17 @@ const ProductService = require("./services/product/ProductService");
 const { initOrderCron } = require("./cron/orderCron");
 const { initInventoryCron } = require("./cron/inventoryCron");
 const { verifyAccessToken } = require("./utils/jwtHelper");
-const { getCache, setCache } = require("./config/redis");
-const { getTokenBlacklistKey, getUserStatusKey } = require("./services/user/AuthHelper");
+const { getCache } = require("./config/redis");
+const { getTokenBlacklistKey } = require("./services/user/AuthHelper");
+const { getAllowedOrigins } = require("./config/corsConfig");
+const { resolveUserStatus, isTokenVersionStale } = require("./utils/authTokenValidator");
 
 const server = http.createServer(app);
 
 /*
 CORS CONFIG FOR SOCKET
 */
-const allowedOrigins = [
-  "http://localhost:5173",
-  "http://127.0.0.1:5173",
-  "http://localhost:3000",
-  "https://tientech-shop-9247.vercel.app",
-];
-
-if (process.env.FRONTEND_URL) {
-  const cleanFrontendUrl = process.env.FRONTEND_URL.trim().replace(/\/+$/, "");
-  if (!allowedOrigins.includes(cleanFrontendUrl)) {
-    allowedOrigins.push(cleanFrontendUrl);
-  }
-}
+const allowedOrigins = getAllowedOrigins();
 
 const io = new Server(server, {
   cors: {
@@ -74,40 +64,26 @@ io.use(async (socket, next) => {
 
     if (token) {
       const isBlacklisted = await getCache(getTokenBlacklistKey(token));
-      if (!isBlacklisted) {
-        const decoded = verifyAccessToken(token);
-        if (decoded?.id) {
-          const statusKey = getUserStatusKey(decoded.id);
-          let userStatus = await getCache(statusKey);
-          if (!userStatus) {
-            const db = require("./models");
-            const dbUser = await db.User.findByPk(decoded.id, {
-              attributes: ["id", "isActive", "role", "tokenVersion"],
-            });
-            if (dbUser) {
-              userStatus = {
-                isActive: Boolean(dbUser.isActive),
-                role: dbUser.role,
-                tokenVersion: typeof dbUser.tokenVersion === "number" ? dbUser.tokenVersion : 0,
-              };
-              await setCache(statusKey, userStatus, 300);
-            }
-          }
-          const isVersionValid =
-            typeof userStatus?.tokenVersion !== "number" ||
-            typeof decoded.ver !== "number" ||
-            decoded.ver === userStatus.tokenVersion;
-
-          if (userStatus?.isActive && isVersionValid) {
-            socket.user = { ...decoded, role: userStatus.role || decoded.role };
-          }
-        } else if (decoded) {
-          socket.user = decoded;
+      if (isBlacklisted) {
+        return next(new Error("UNAUTHORIZED: Token revoked"));
+      }
+      const decoded = verifyAccessToken(token);
+      if (!decoded) {
+        return next(new Error("UNAUTHORIZED: Invalid or expired token"));
+      }
+      if (decoded.id) {
+        const { notFound, userStatus } = await resolveUserStatus(decoded.id);
+        if (notFound || !userStatus?.isActive || isTokenVersionStale(decoded, userStatus)) {
+          return next(new Error("UNAUTHORIZED: Account inactive or session expired"));
         }
+        socket.user = { ...decoded, role: userStatus.role || decoded.role };
+      } else {
+        socket.user = decoded;
       }
     }
   } catch (err) {
     console.error("Socket authentication error:", err);
+    return next(new Error("UNAUTHORIZED: Authentication failed"));
   }
   next();
 });

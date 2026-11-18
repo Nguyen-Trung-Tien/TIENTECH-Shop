@@ -1,9 +1,6 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
-import { useSelector, useDispatch } from "react-redux";
-import { getMeApi } from "../api/userApi";
-import { setUser, removeUser, setInitializing } from "../redux/userSlice";
-import { clearCart } from "../redux/cartSlice";
+import { useSelector } from "react-redux";
 import BrandLoader from "../components/Loading/BrandLoader";
 
 const PrivateRoute = ({ requiredRole }) => {
@@ -11,33 +8,6 @@ const PrivateRoute = ({ requiredRole }) => {
     (state) => state.user,
   );
   const location = useLocation();
-  const dispatch = useDispatch();
-
-  useEffect(() => {
-    const checkAuth = async () => {
-      // Nếu đã có user trong Redux nhưng isInitializing vẫn là true,
-      // ta gọi API /me để xác nhận session (ví dụ khi F5 trang)
-      if (isInitializing) {
-        try {
-          const res = await getMeApi();
-          if (res.errCode === 0) {
-            dispatch(setUser(res.data));
-          } else {
-            dispatch(removeUser());
-            dispatch(clearCart());
-          }
-        } catch (error) {
-          console.error("Auth check failed:", error);
-          dispatch(removeUser());
-          dispatch(clearCart());
-        } finally {
-          dispatch(setInitializing(false));
-        }
-      }
-    };
-
-    checkAuth();
-  }, [isInitializing, dispatch]);
 
   if (isInitializing) {
     return (
@@ -60,7 +30,15 @@ const PrivateRoute = ({ requiredRole }) => {
     );
   }
 
-  if (requiredRole && user?.role !== requiredRole) {
+  const allowedRoles = Array.isArray(requiredRole)
+    ? requiredRole
+    : requiredRole === "admin"
+      ? ["admin", "root"]
+      : requiredRole
+        ? [requiredRole]
+        : null;
+
+  if (allowedRoles && !allowedRoles.includes(user?.role)) {
     return <Navigate to="/" replace />;
   }
 

@@ -5,7 +5,7 @@ import { FiArrowLeft, FiShoppingBag, FiChevronRight } from "react-icons/fi";
 import { useCart } from "../../hooks/useCart";
 import CartItem from "../../components/Cart/CartItem";
 import OrderSummary from "../../components/Cart/OrderSummary";
-import CartSkeleton from "../../components/CartSkeleton/CartSkeleton";
+import { CartSkeleton } from "../../components/Loading";
 import VoucherSelector from "../../components/Cart/VoucherSelector";
 import { applyVoucher, removeVoucher } from "../../redux/cartSlice";
 import { validateCart } from "../../api/cartApi";

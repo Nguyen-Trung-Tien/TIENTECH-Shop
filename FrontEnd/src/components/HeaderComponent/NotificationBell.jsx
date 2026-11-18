@@ -16,6 +16,7 @@ import {
   FiCopy,
   FiCheck,
 } from "react-icons/fi";
+import { Button } from "../UI";
 import {
   getNotificationsApi,
   markAsReadApi,
@@ -803,21 +804,21 @@ const NotificationBell = () => {
                   </div>
 
                   <div className="pt-3 flex justify-end gap-3 border-t border-slate-100 dark:border-dark-border">
-                    <button
+                    <Button
                       type="button"
+                      variant="secondary"
                       onClick={() => setShowAdminModal(false)}
-                      className="btn-modern-secondary text-xs"
                     >
                       Hủy bỏ
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       type="submit"
-                      disabled={sendingBroadcast}
-                      className="btn-modern-primary text-xs flex items-center gap-2"
+                      variant="primary"
+                      loading={sendingBroadcast}
+                      icon={FiSend}
                     >
-                      {sendingBroadcast && <UnifiedSpinner size="xs" variant="white" />}
-                      <FiSend /> Gửi Ngay Cho Tất Cả
-                    </button>
+                      Gửi Ngay Cho Tất Cả
+                    </Button>
                   </div>
                 </form>
               </Motion.div>

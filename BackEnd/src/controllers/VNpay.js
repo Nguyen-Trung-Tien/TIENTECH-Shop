@@ -1,6 +1,17 @@
 const { formatDateYYYYMMDDHHmmss } = require("../utils/dateFormatter");
 const crypto = require("crypto");
 const OrderService = require("../services/order/OrderService");
+const { getFrontendUrl } = require("../config/corsConfig");
+
+const sendVnpayJson = (res, statusCode, errCode, errMessage, data = null) =>
+  res.status(statusCode).json({
+    status: statusCode >= 400 ? "ERROR" : "OK",
+    statusCode,
+    errCode,
+    errMessage,
+    message: errMessage,
+    data,
+  });
 
 function sortObject(obj) {
   const sorted = {};
@@ -36,19 +47,13 @@ const handleCreateVnpayPayment = async (req, res) => {
     const { orderCode } = req.body;
 
     if (!orderCode) {
-      return res.status(400).json({
-        errCode: 1,
-        message: "orderCode is required",
-      });
+      return sendVnpayJson(res, 400, 1, "Thiếu mã đơn hàng (orderCode).");
     }
 
     // check order tồn tại
     const orderResult = await OrderService.getOrderByCode(orderCode);
     if (orderResult.errCode !== 0 || !orderResult.data) {
-      return res.status(404).json({
-        errCode: 2,
-        message: "Order not found",
-      });
+      return sendVnpayJson(res, 404, 2, "Không tìm thấy đơn hàng.");
     }
 
     const order = orderResult.data;
@@ -60,28 +65,23 @@ const handleCreateVnpayPayment = async (req, res) => {
       !isElevated &&
       String(order.userId) !== String(req.user.id)
     ) {
-      return res.status(403).json({
-        errCode: 403,
-        message: "Forbidden: You do not own this order",
-      });
+      return sendVnpayJson(res, 403, 403, "Bạn không có quyền thanh toán đơn hàng này.");
+    }
+
+    if (order.status === "cancelled") {
+      return sendVnpayJson(res, 400, 5, "Đơn hàng đã bị hủy, không thể thanh toán.");
     }
 
     // Không cho phép thanh toán lại đơn đã trả tiền
     if (order.paymentStatus === "paid") {
-      return res.status(400).json({
-        errCode: 4,
-        message: "Order has already been paid",
-      });
+      return sendVnpayJson(res, 400, 4, "Đơn hàng này đã được thanh toán.");
     }
 
     // SECURITY: Luôn lấy giá trị từ Database, tuyệt đối không fallback về amount từ client
     const secureAmount = Number(order.totalPrice);
 
     if (!Number.isFinite(secureAmount) || secureAmount <= 0) {
-      return res.status(400).json({
-        errCode: 3,
-        message: "Invalid order payment amount",
-      });
+      return sendVnpayJson(res, 400, 3, "Số tiền thanh toán không hợp lệ.");
     }
 
     let ipAddr =
@@ -130,20 +130,13 @@ const handleCreateVnpayPayment = async (req, res) => {
     // TUYỆT ĐỐI KHÔNG dùng qs.stringify
     const paymentUrl = `${vnpUrl}?${buildSignData(vnp_Params)}`;
 
-    return res.status(200).json({
-      errCode: 0,
-      message: "OK",
-      data: {
-        paymentUrl,
-        orderCode,
-      },
+    return sendVnpayJson(res, 200, 0, "OK", {
+      paymentUrl,
+      orderCode,
     });
   } catch (err) {
     console.error("VNPay Create Error:", err);
-    return res.status(500).json({
-      errCode: -1,
-      message: "Internal server error",
-    });
+    return sendVnpayJson(res, 500, -1, "Lỗi máy chủ nội bộ.");
   }
 };
 
@@ -208,9 +201,10 @@ const handleVnpayReturn = async (req, res) => {
     }
 
     // THANH TOÁN THÀNH CÔNG
+    const frontendUrl = getFrontendUrl();
     if (rspCode === "00") {
       const PaymentService = require("../services/order/PaymentService");
-      await PaymentService.confirmPaymentFromWebhook({
+      const confirmRes = await PaymentService.confirmPaymentFromWebhook({
         orderId: order.id,
         transactionId: vnp_Params.vnp_TransactionNo,
         method: "vnpay",
@@ -218,9 +212,10 @@ const handleVnpayReturn = async (req, res) => {
         amount: vnpAmount,
       });
 
-      return res.redirect(
-        `${process.env.FRONTEND_URL}/checkout-success/${orderCode}`,
-      );
+      if (confirmRes?.errCode === 0) {
+        return res.redirect(`${frontendUrl}/checkout-success/${orderCode}`);
+      }
+      return res.redirect(`${frontendUrl}/checkout-failed/${orderCode}`);
     }
 
     // THANH TOÁN THẤT BẠI (Không ghi đè nếu đơn hàng đã được xác nhận thanh toán qua IPN)
@@ -228,15 +223,10 @@ const handleVnpayReturn = async (req, res) => {
       await OrderService.updatePaymentStatus(order.id, "unpaid");
     }
 
-    return res.redirect(
-      `${process.env.FRONTEND_URL}/checkout-failed/${orderCode}`,
-    );
+    return res.redirect(`${frontendUrl}/checkout-failed/${orderCode}`);
   } catch (err) {
     console.error("VNPay Return Error:", err);
-    return res.status(500).json({
-      errCode: -1,
-      message: "Internal server error",
-    });
+    return sendVnpayJson(res, 500, -1, "Lỗi máy chủ nội bộ.");
   }
 };
 

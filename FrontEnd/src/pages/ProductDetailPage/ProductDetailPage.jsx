@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import { useProductDetail } from "../../hooks/useProductDetail";
 import { useProductVariants } from "../../hooks/useProductVariants";
 import { toast } from "react-toastify";
@@ -383,19 +383,19 @@ const ProductDetailPage = () => {
       {/* Editorial Breadcrumb with Auspicious Status */}
       <nav className="flex items-center justify-between text-xs text-slate-400 dark:text-dark-text-secondary mb-6 pb-3 border-b border-slate-100 dark:border-dark-border">
         <div className="flex items-center space-x-2 truncate min-w-0">
-          <a
-            href="/"
+          <Link
+            to="/"
             className="hover:text-primary transition-colors shrink-0"
           >
             Trang chủ
-          </a>
+          </Link>
           <FiChevronRight className="size-3 shrink-0" />
-          <a
-            href="/products"
+          <Link
+            to="/products"
             className="hover:text-primary transition-colors shrink-0"
           >
             Sản phẩm
-          </a>
+          </Link>
           <FiChevronRight className="size-3 shrink-0" />
           <span className="text-slate-800 dark:text-white font-semibold truncate max-w-[200px] sm:max-w-md">
             {product.name}

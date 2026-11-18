@@ -7,11 +7,10 @@ import {
   FiShoppingBag,
 } from "react-icons/fi";
 import { useSelector, useDispatch } from "react-redux";
-import { toast } from "react-toastify";
-import { showErrorToast, showSuccessToast } from "../../utils/toastHelper";
+import { showErrorToast, showSuccessToast, showWarningToast } from "../../utils/toastHelper";
 import { createOrder } from "../../api/orderApi";
 import { createVnpayPaymentApi } from "../../api/paymentApi";
-import { clearCart, applyVoucher, removeVoucher } from "../../redux/cartSlice";
+import { removePurchasedItems, applyVoucher, removeVoucher } from "../../redux/cartSlice";
 import CheckoutForm from "./CheckoutForm";
 import OrderSummary from "./OrderSummary";
 import VoucherSelector from "../../components/Cart/VoucherSelector";
@@ -39,7 +38,7 @@ const CheckoutPage = () => {
   // Redirect if no items
   useEffect(() => {
     if (selectedItems.length === 0) {
-      toast.warn("Vui lòng chọn sản phẩm để thanh toán");
+      showWarningToast("Vui lòng chọn sản phẩm để thanh toán");
       navigate("/cart");
     }
   }, [selectedItems, navigate]);
@@ -72,13 +71,13 @@ const CheckoutPage = () => {
     const receiverPhone = formData.phone?.trim() || user?.phone || "";
 
     if (!receiverName) {
-      return toast.error("Vui lòng nhập họ và tên người nhận hàng");
+      return showErrorToast("Vui lòng nhập họ và tên người nhận hàng");
     }
     if (!receiverPhone) {
-      return toast.error("Vui lòng nhập số điện thoại người nhận hàng");
+      return showErrorToast("Vui lòng nhập số điện thoại người nhận hàng");
     }
     if (!formData.shippingAddress?.trim()) {
-      return toast.error("Vui lòng nhập hoặc chọn địa chỉ giao hàng");
+      return showErrorToast("Vui lòng nhập hoặc chọn địa chỉ giao hàng");
     }
 
     isSubmitting.current = true;
@@ -100,9 +99,9 @@ const CheckoutPage = () => {
         })),
       };
 
-      const res = await createOrder(orderData, user.accessToken);
+      const res = await createOrder(orderData);
       if (res && res.errCode === 0) {
-        dispatch(clearCart());
+        dispatch(removePurchasedItems(selectedItems));
 
         // Nếu là VNPAY, gọi API lấy link thanh toán và redirect
         if (formData.paymentMethod === "VNPAY") {
@@ -159,9 +158,9 @@ const CheckoutPage = () => {
         paypalDetails: details,
       };
 
-      const res = await createOrder(orderData, user.accessToken);
+      const res = await createOrder(orderData);
       if (res && res.errCode === 0) {
-        dispatch(clearCart());
+        dispatch(removePurchasedItems(selectedItems));
         showSuccessToast("Thanh toán PayPal thành công!");
         navigate("/checkout-success", { state: { order: res.data } });
       } else {

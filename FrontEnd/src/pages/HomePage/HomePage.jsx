@@ -8,8 +8,6 @@ import ProductSection from "../../components/HomePageComponent/ProductSection";
 import SmallBanner from "../../components/SmallBanner/SmallBanner";
 import TechTrustBanner from "../../components/HomePageComponent/TechTrustBanner";
 import FlashSale from "../../components/FlashSale/FlashSale";
-import Testimonials from "../../components/Testimonials/Testimonials";
-import BlogSection from "../../components/BlogSection/BlogSection";
 import BrandSection from "../../components/BrandSection/BrandSection";
 import AISmartPicks from "../../components/HomePageComponent/AISmartPicks";
 import { getPersonalizedRecommendationsApi, getHomePageDataApi } from "../../api/productApi";
@@ -136,12 +134,6 @@ const HomePage = () => {
 
         {/* Tech Trust & Assurance Guarantee Pillars */}
         <TechTrustBanner />
-
-        {/* Social Proof & Tech News */}
-        <div className="bg-surface-100/70 dark:bg-dark-surface/40 py-10 border-t border-surface-200 dark:border-dark-border space-y-10">
-          <Testimonials />
-          <BlogSection />
-        </div>
       </main>
     </div>
   );

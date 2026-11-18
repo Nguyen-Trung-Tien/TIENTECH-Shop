@@ -3,14 +3,23 @@ const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const db = require("../models");
 require("dotenv").config();
 
-passport.use(
-  new GoogleStrategy(
-    {
-      clientID: process.env.GOOGLE_CLIENT_ID || "dummy_google_client_id",
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "dummy_google_client_secret",
-      callbackURL: process.env.GOOGLE_CALLBACK_URL || "/api/v1/user/auth/google/callback",
-      proxy: true,
-    },
+const isProduction = process.env.NODE_ENV === "production";
+const googleClientId = process.env.GOOGLE_CLIENT_ID;
+const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
+
+if (isProduction && (!googleClientId || !googleClientSecret)) {
+  console.error("[SECURITY] GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET is missing in production; Google OAuth disabled.");
+}
+
+if (!isProduction || (googleClientId && googleClientSecret)) {
+  passport.use(
+    new GoogleStrategy(
+      {
+        clientID: googleClientId || "dummy_google_client_id",
+        clientSecret: googleClientSecret || "dummy_google_client_secret",
+        callbackURL: process.env.GOOGLE_CALLBACK_URL || "/api/v1/user/auth/google/callback",
+        proxy: true,
+      },
     async (accessToken, refreshToken, profile, done) => {
       try {
         const { id, emails, displayName, photos } = profile;
@@ -59,6 +68,7 @@ passport.use(
     }
   )
 );
+}
 
 passport.serializeUser((user, done) => {
   done(null, user.id);

@@ -3,8 +3,10 @@ import { Outlet, Navigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 
 const PublicRoute = () => {
-  const user = useSelector((state) => state.user.user);
-  if (user) return <Navigate to="/" replace />;
+  const { user, isAuthenticated, isInitializing } = useSelector((state) => state.user);
+  if (!isInitializing && isAuthenticated && user) {
+    return <Navigate to="/" replace />;
+  }
 
   return <Outlet />;
 };
