@@ -50,6 +50,18 @@ let connectDB = async () => {
         defaultValue: 0,
       });
     }
+    if (db.Order) {
+      await ensureColumn("Orders", "pointsUsed", {
+        type: db.Sequelize.INTEGER,
+        allowNull: false,
+        defaultValue: 0,
+      });
+      await ensureColumn("Orders", "pointsDiscount", {
+        type: db.Sequelize.DECIMAL(15, 2),
+        allowNull: false,
+        defaultValue: 0,
+      });
+    }
   } catch (error) {
     console.error("Unable to connect to database:", error);
   }
