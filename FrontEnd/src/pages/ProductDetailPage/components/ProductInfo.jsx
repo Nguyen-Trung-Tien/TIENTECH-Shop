@@ -622,19 +622,19 @@ const ProductInfo = ({
       {/* Action Buttons (Cặp Nút Hành Động Tụ Lộc) */}
       <div className="space-y-3 pt-2">
         <div className="flex flex-col sm:flex-row gap-3">
-          <div className="flex flex-1 gap-2.5">
+          <div className="flex flex-1 gap-2.5 min-w-0">
             <button
               onClick={onAddToCart}
               disabled={
                 addingCart || (!selectedVariant && product.variants?.length > 0)
               }
-              className={`flex-1 h-13 rounded-2xl font-bold text-xs sm:text-sm transition-all flex items-center justify-center gap-2 border cursor-pointer ${
+              className={`flex-1 h-13 px-3 rounded-2xl font-bold text-xs sm:text-sm whitespace-nowrap transition-all flex items-center justify-center gap-2 border cursor-pointer ${
                 !selectedVariant && product.variants?.length > 0
                   ? "bg-slate-100 dark:bg-slate-800 text-slate-400 border-slate-200/50 cursor-not-allowed"
                   : "bg-white dark:bg-dark-surface border-slate-200 dark:border-dark-border text-slate-800 dark:text-white hover:border-primary dark:hover:border-primary shadow-xs hover:shadow-md"
               }`}
             >
-              <FiShoppingCart className="text-base text-primary" />
+              <FiShoppingCart className="text-base text-primary shrink-0" />
               <span>{addingCart ? "Đang thêm..." : "Thêm vào giỏ"}</span>
             </button>
 
@@ -643,14 +643,14 @@ const ProductInfo = ({
               disabled={
                 addingCart || (!selectedVariant && product.variants?.length > 0)
               }
-              className={`flex-[1.4] h-13 rounded-2xl font-extrabold text-xs sm:text-sm transition-all flex items-center justify-center gap-2 shadow-lg shadow-primary/25 cursor-pointer relative overflow-hidden group ${
+              className={`flex-[1.4] h-13 px-3 rounded-2xl font-extrabold text-xs sm:text-sm whitespace-nowrap transition-all flex items-center justify-center gap-2 shadow-lg shadow-primary/25 cursor-pointer relative overflow-hidden group ${
                 !selectedVariant && product.variants?.length > 0
                   ? "bg-slate-200 dark:bg-slate-800 text-slate-400 cursor-not-allowed shadow-none"
                   : "bg-gradient-to-r from-primary via-indigo-600 to-primary text-white hover:opacity-95 active:scale-98"
               }`}
             >
               <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 pointer-events-none" />
-              <FiCreditCard className="text-base" />
+              <FiCreditCard className="text-base shrink-0" />
               <span>Mua ngay</span>
             </button>
           </div>
@@ -682,7 +682,7 @@ const ProductInfo = ({
             onClick={handleToggleCompare}
             aria-label={isInCompare ? "Bỏ khỏi so sánh" : "Thêm vào so sánh"}
             title={isInCompare ? "Đang trong khay so sánh" : "So sánh"}
-            className={`w-full sm:px-4 h-13 rounded-2xl border flex items-center justify-center gap-1.5 text-xs font-bold transition-all shadow-xs cursor-pointer shrink-0 ${
+            className={`w-full sm:w-auto sm:px-4 h-13 rounded-2xl border flex items-center justify-center gap-1.5 text-xs font-bold whitespace-nowrap transition-all shadow-xs cursor-pointer shrink-0 ${
               isInCompare
                 ? "border-primary bg-primary/10 text-primary"
                 : "border-slate-200 dark:border-dark-border text-slate-600 dark:text-slate-300 hover:border-primary/60 hover:text-primary"

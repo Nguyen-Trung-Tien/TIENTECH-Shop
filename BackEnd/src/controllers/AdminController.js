@@ -103,7 +103,9 @@ const handleSyncEmbeddings = async (req, res) => {
     const io = typeof req.app?.get === "function" ? req.app.get("io") : null;
     const mode = req.body?.mode || "missing";
     const result = await AdminService.syncEmbeddings({ mode, io });
-    const status = result?.statusCode || (result?.errCode === 0 ? 200 : 400);
+    const status =
+      result?.statusCode ||
+      (result?.errCode === 0 ? 200 : result?.errCode === -1 ? 500 : 400);
     res.status(status).json(result);
   } catch (e) {
     console.error(e);

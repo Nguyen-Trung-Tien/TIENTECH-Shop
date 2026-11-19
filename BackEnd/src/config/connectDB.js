@@ -29,11 +29,13 @@ let connectDB = async () => {
       `Database connected successfully (${isProduction ? "Production" : "Development"})`,
     );
 
-    // Ensure newly added tables such as AuditLogs exist in database (TiDB / MySQL)
-    if (db.AuditLog) {
-      await db.AuditLog.sync({ alter: false }).catch((err) => {
-        console.warn("[connectDB] AuditLog auto-sync notice:", err.message);
-      });
+    // Ensure newly added tables exist in database (TiDB / MySQL) where migrations weren't run
+    for (const modelName of ["AuditLog", "ContactTicket", "ProductEmbedding"]) {
+      if (db[modelName]) {
+        await db[modelName].sync({ alter: false }).catch((err) => {
+          console.warn(`[connectDB] ${modelName} auto-sync notice:`, err.message);
+        });
+      }
     }
 
     // Ensure newly added columns exist in TiDB / MySQL production DBs where migrations weren't run
