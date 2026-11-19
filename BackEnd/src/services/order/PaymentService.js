@@ -6,6 +6,7 @@ const { formatDateYYYYMMDDHHmmss, formatDateHHmmss } = require("../../utils/date
 const { getPagination, getPagingData } = require("../../utils/paginationHelper");
 const axios = require("axios");
 const { acquireLock, releaseLock, deleteCacheByPattern } = require("../../config/redis");
+const PaypalService = require("./PaypalService");
 
 // Real refund integration via VNPay API
 const executeRefund = async (order, payment, method, amountToRefund = null) => {
@@ -135,9 +136,23 @@ const getAllPayments = async ({
       ];
     }
 
-    const orderArray = orderBy.startsWith("user.")
-      ? [[{ model: db.User, as: "user" }, orderBy.split(".")[1], order]]
-      : [[orderBy, order]];
+    const ALLOWED_PAYMENT_ORDER_BY = new Set([
+      "id",
+      "amount",
+      "status",
+      "method",
+      "paymentDate",
+      "createdAt",
+      "updatedAt",
+      "user.username",
+      "user.email",
+    ]);
+    const safeOrderBy = ALLOWED_PAYMENT_ORDER_BY.has(orderBy) ? orderBy : "createdAt";
+    const safeOrder = String(order || "").toUpperCase() === "ASC" ? "ASC" : "DESC";
+
+    const orderArray = safeOrderBy.startsWith("user.")
+      ? [[{ model: db.User, as: "user" }, safeOrderBy.split(".")[1], safeOrder]]
+      : [[safeOrderBy, safeOrder]];
 
     const data = await db.Payment.findAndCountAll({
       where,
@@ -164,19 +179,15 @@ const getAllPayments = async ({
 
     const pagingData = getPagingData(data, page, l);
 
-    const items = await Promise.all(
-      pagingData.items.map(async (paymentInstance) => {
-        const p = typeof paymentInstance.toJSON === "function" ? paymentInstance.toJSON() : paymentInstance;
-        if (!p.transactionId) {
-          const fallbackTxn = p.order?.orderCode
-            ? `DH${p.order.orderCode.replace(/^#?ORD/i, "")}`
-            : `DH${Date.now()}${p.orderId || p.id}`;
-          p.transactionId = fallbackTxn;
-          db.Payment.update({ transactionId: fallbackTxn }, { where: { id: p.id } }).catch(() => {});
-        }
-        return p;
-      })
-    );
+    const items = pagingData.items.map((paymentInstance) => {
+      const p = typeof paymentInstance.toJSON === "function" ? paymentInstance.toJSON() : { ...paymentInstance };
+      if (!p.transactionId) {
+        p.transactionId = p.order?.orderCode
+          ? `DH${p.order.orderCode.replace(/^#?ORD/i, "")}`
+          : `DH${p.orderId || p.id}`;
+      }
+      return p;
+    });
 
     return {
       errCode: 0,
@@ -211,14 +222,9 @@ const getPaymentById = async (id) => {
     if (!payment) return { errCode: 1, errMessage: "Payment not found" };
 
     if (!payment.transactionId) {
-      const fallbackTxn = payment.order?.orderCode
+      payment.transactionId = payment.order?.orderCode
         ? `DH${payment.order.orderCode.replace(/^#?ORD/i, "")}`
-        : `DH${Date.now()}${payment.orderId || payment.id}`;
-      payment.transactionId = fallbackTxn;
-      db.Payment.update(
-        { transactionId: fallbackTxn },
-        { where: { id: payment.id } }
-      ).catch(() => {});
+        : `DH${payment.orderId || payment.id}`;
     }
 
     return { errCode: 0, errMessage: "OK", data: payment };
@@ -688,22 +694,36 @@ const getPaymentSummary = async (startDate, endDate) => {
       }
     }
 
-    const allPayments = await db.Payment.findAll({ where });
+    const rows = await db.Payment.findAll({
+      where,
+      attributes: [
+        "status",
+        "method",
+        [db.Sequelize.fn("SUM", db.Sequelize.col("amount")), "totalAmount"],
+        [db.Sequelize.fn("COUNT", db.Sequelize.col("id")), "txCount"],
+      ],
+      group: ["status", "method"],
+      raw: true,
+    });
 
     let totalRevenue = 0;
     let pendingAmount = 0;
     let refundedAmount = 0;
     let onlineCount = 0;
     let codCount = 0;
+    let totalTransactions = 0;
 
-    allPayments.forEach(p => {
-      const amount = Number(p.amount) || 0;
-      if (p.status === 'completed') totalRevenue += amount;
-      if (p.status === 'pending') pendingAmount += amount;
-      if (p.status === 'refunded') refundedAmount += amount;
-      
-      if (p.method === 'cod') codCount++;
-      else onlineCount++;
+    rows.forEach((row) => {
+      const amount = Number(row.totalAmount) || 0;
+      const count = Number(row.txCount) || 0;
+      totalTransactions += count;
+
+      if (row.status === "completed") totalRevenue += amount;
+      else if (row.status === "pending") pendingAmount += amount;
+      else if (row.status === "refunded") refundedAmount += amount;
+
+      if (row.method === "cod") codCount += count;
+      else onlineCount += count;
     });
 
     return {
@@ -715,13 +735,236 @@ const getPaymentSummary = async (startDate, endDate) => {
         refundedAmount,
         onlineCount,
         codCount,
-        totalTransactions: allPayments.length
-      }
+        totalTransactions,
+      },
     };
   } catch (e) {
     console.error("Error getPaymentSummary:", e);
     return { errCode: 1, errMessage: "Internal server error" };
   }
+};
+
+const createPaypalCheckoutOrder = async (orderPayload = {}, user = null) => {
+  if (!user?.id) {
+    return { errCode: 401, statusCode: 401, errMessage: "Vui lòng đăng nhập để thanh toán." };
+  }
+
+  if (!PaypalService.isPaypalConfigured()) {
+    return {
+      errCode: 503,
+      statusCode: 503,
+      errMessage: "Thanh toán PayPal chưa được cấu hình đầy đủ trên máy chủ.",
+    };
+  }
+
+  const OrderCreationUseCase = require("./use-cases/OrderCreationUseCase");
+  const OrderStatusUseCase = require("./use-cases/OrderStatusUseCase");
+
+  const sanitizedOrderPayload = { ...orderPayload };
+  delete sanitizedOrderPayload.paymentStatus;
+  delete sanitizedOrderPayload.paypalDetails;
+
+  const orderRes = await OrderCreationUseCase.createOrder(
+    {
+      ...sanitizedOrderPayload,
+      userId: user.id,
+      paymentMethod: "paypal",
+    },
+    user
+  );
+
+  if (!orderRes || orderRes.errCode !== 0 || !orderRes.data) {
+    return orderRes || { errCode: 1, statusCode: 400, errMessage: "Không thể tạo đơn hàng." };
+  }
+
+  const order = orderRes.data;
+
+  if (Number(order.totalPrice) <= 0) {
+    await OrderStatusUseCase.updateOrderStatus(
+      order.id,
+      "cancelled",
+      { id: user.id, role: "admin" },
+      "Đơn hàng 0đ không hỗ trợ PayPal"
+    );
+    return {
+      errCode: 1,
+      statusCode: 400,
+      errMessage: "Đơn hàng 0đ không cần thanh toán qua PayPal, vui lòng chọn COD.",
+    };
+  }
+
+  const ppRes = await PaypalService.createPaypalOrder({
+    orderCode: order.orderCode,
+    totalPriceVnd: order.totalPrice,
+  });
+
+  if (!ppRes || ppRes.errCode !== 0 || !ppRes.data?.paypalOrderId) {
+    await OrderStatusUseCase.updateOrderStatus(
+      order.id,
+      "cancelled",
+      { id: user.id, role: "admin" },
+      "Khởi tạo thanh toán PayPal thất bại"
+    );
+    return {
+      errCode: ppRes?.errCode || 502,
+      statusCode: ppRes?.errCode === 503 ? 503 : 502,
+      errMessage: ppRes?.errMessage || "Không thể khởi tạo giao dịch PayPal.",
+    };
+  }
+
+  await db.Payment.create({
+    orderId: order.id,
+    userId: order.userId,
+    amount: order.totalPrice,
+    method: "paypal",
+    transactionId: ppRes.data.paypalOrderId,
+    status: "pending",
+    note: JSON.stringify({
+      expectedUsd: ppRes.data.usdAmount,
+      currency: ppRes.data.currency,
+    }),
+  });
+
+  return {
+    errCode: 0,
+    errMessage: "Khởi tạo thanh toán PayPal thành công",
+    data: {
+      order,
+      paypalOrderId: ppRes.data.paypalOrderId,
+      usdAmount: ppRes.data.usdAmount,
+      currency: ppRes.data.currency,
+    },
+  };
+};
+
+const capturePaypalCheckoutOrder = async ({ orderId, paypalOrderId }, user = null) => {
+  if (!user?.id) {
+    return { errCode: 401, statusCode: 401, errMessage: "Vui lòng đăng nhập để thanh toán." };
+  }
+
+  if (!PaypalService.isPaypalConfigured()) {
+    return {
+      errCode: 503,
+      statusCode: 503,
+      errMessage: "Thanh toán PayPal chưa được cấu hình đầy đủ trên máy chủ.",
+    };
+  }
+
+  const order = await db.Order.findByPk(orderId);
+  if (!order) {
+    return { errCode: 3, statusCode: 404, errMessage: "Không tìm thấy đơn hàng." };
+  }
+
+  const isElevated = ["admin", "root"].includes(user.role);
+  if (!isElevated && String(order.userId) !== String(user.id)) {
+    return {
+      errCode: 403,
+      statusCode: 403,
+      errMessage: "Bạn không có quyền xác nhận thanh toán đơn hàng này.",
+    };
+  }
+
+  if (String(order.paymentMethod || "").toLowerCase() !== "paypal") {
+    return {
+      errCode: 4,
+      statusCode: 400,
+      errMessage: "Đơn hàng này không sử dụng phương thức PayPal.",
+    };
+  }
+
+  if (order.status === "cancelled") {
+    return {
+      errCode: 5,
+      statusCode: 400,
+      errMessage: "Đơn hàng đã bị hủy, không thể xác nhận thanh toán.",
+    };
+  }
+
+  if (order.paymentStatus === "paid") {
+    return {
+      errCode: 0,
+      errMessage: "Đơn hàng đã được thanh toán",
+      alreadyPaid: true,
+      data: order,
+    };
+  }
+
+  const pendingPayment = await db.Payment.findOne({ where: { orderId: order.id } });
+  if (
+    !pendingPayment ||
+    String(pendingPayment.method || "").toLowerCase() !== "paypal" ||
+    pendingPayment.transactionId !== paypalOrderId
+  ) {
+    return {
+      errCode: 4,
+      statusCode: 400,
+      errMessage: "Mã giao dịch PayPal không khớp với đơn hàng.",
+    };
+  }
+
+  let expectedUsd = null;
+  try {
+    const meta = JSON.parse(pendingPayment.note || "{}");
+    if (meta.expectedUsd) expectedUsd = Number(meta.expectedUsd);
+  } catch {
+    expectedUsd = null;
+  }
+  if (!expectedUsd || !Number.isFinite(expectedUsd)) {
+    expectedUsd = Number(await PaypalService.convertVndToUsd(order.totalPrice));
+  }
+
+  const captureRes = await PaypalService.capturePaypalOrder(paypalOrderId);
+  if (!captureRes || captureRes.errCode !== 0 || !captureRes.data) {
+    return {
+      errCode: captureRes?.errCode || 502,
+      statusCode: captureRes?.errCode === 503 ? 503 : 400,
+      errMessage: captureRes?.errMessage || "Xác thực thanh toán PayPal thất bại.",
+    };
+  }
+
+  const capturedCurrency = String(captureRes.data.currency || "").toUpperCase();
+  const capturedUsd = Number(captureRes.data.amountUsd);
+  if (
+    capturedCurrency !== "USD" ||
+    !Number.isFinite(capturedUsd) ||
+    Math.abs(capturedUsd - expectedUsd) > 0.01
+  ) {
+    return {
+      errCode: 4,
+      statusCode: 400,
+      errMessage: "Số tiền thanh toán PayPal không khớp với giá trị đơn hàng.",
+    };
+  }
+
+  if (captureRes.data.customId && String(captureRes.data.customId) !== String(order.orderCode)) {
+    return {
+      errCode: 4,
+      statusCode: 400,
+      errMessage: "Mã tham chiếu đơn hàng PayPal không khớp.",
+    };
+  }
+
+  const confirmRes = await confirmPaymentFromWebhook({
+    orderId: order.id,
+    transactionId: captureRes.data.captureId || paypalOrderId,
+    method: "paypal",
+    note: `PayPal Capture ${captureRes.data.captureId} (${captureRes.data.amountUsd} USD)`,
+    amount: order.totalPrice,
+  });
+
+  if (!confirmRes || confirmRes.errCode !== 0) {
+    return confirmRes;
+  }
+
+  const updatedOrder = await db.Order.findByPk(order.id, {
+    include: [{ model: db.OrderItem, as: "orderItems" }],
+  });
+
+  return {
+    errCode: 0,
+    errMessage: "Thanh toán PayPal thành công!",
+    data: updatedOrder || order,
+  };
 };
 
 module.exports = {
@@ -730,6 +973,8 @@ module.exports = {
   getPaymentById,
   createPayment,
   confirmPaymentFromWebhook,
+  createPaypalCheckoutOrder,
+  capturePaypalCheckoutOrder,
   updatePayment,
   deletePayment,
   completePayment,

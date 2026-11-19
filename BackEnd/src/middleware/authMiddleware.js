@@ -164,9 +164,10 @@ const checkMaintenanceMode = async (req, res, next) => {
   const rawPath = req.originalUrl || req.path || "";
   const normalizedPath = rawPath.split("?")[0].replace(/\/+$/, "") || "/";
 
-  // Bypass maintenance for admin routes, system settings, healthcheck, auth refresh/logout, VNPay callbacks
+  // Bypass maintenance for admin routes, system settings, health/readiness probes, auth refresh/logout, VNPay callbacks
   const MAINTENANCE_EXEMPT_EXACT = [
     "/healthz",
+    "/readyz",
     "/api/v1/user/login",
     "/api/v1/user/refresh-token",
     "/api/v1/user/logout",
@@ -196,14 +197,28 @@ const checkMaintenanceMode = async (req, res, next) => {
     const SystemSettingService = require("../services/system/SystemSettingService");
     const isMaintenance = await SystemSettingService.getSetting("MAINTENANCE_MODE", false);
     if (isMaintenance === true || isMaintenance === "true") {
-      // If user is admin, allow
+      // If user is an active, non-revoked admin/root, allow bypass
       const authHeader = req.headers["authorization"];
       let token = authHeader && authHeader.split(" ")[1];
       if (!token) token = req.cookies?.accessToken;
       if (token) {
-        const result = verifyAccessTokenDetailed(token);
-        if (result.valid && (result.decoded.role === "admin" || result.decoded.role === "root")) {
-          return next();
+        const isBlacklisted = await getCache(getTokenBlacklistKey(token));
+        if (!isBlacklisted) {
+          const result = verifyAccessTokenDetailed(token);
+          if (
+            result.valid &&
+            (result.decoded.role === "admin" || result.decoded.role === "root")
+          ) {
+            const { notFound, userStatus } = await resolveUserStatus(result.decoded.id);
+            if (
+              !notFound &&
+              userStatus?.isActive &&
+              !isTokenVersionStale(result.decoded, userStatus) &&
+              (userStatus.role === "admin" || userStatus.role === "root")
+            ) {
+              return next();
+            }
+          }
         }
       }
 

@@ -1,6 +1,9 @@
 const db = require("../../models");
 const { Op } = require("sequelize");
-const { getFengShuiDetail } = require("../../utils/fortuneUtils");
+const {
+  getFengShuiDetail,
+  buildLuckyColorWhereClauses,
+} = require("../../utils/fortuneUtils");
 const { generateContentWithFallback } = require("../../config/gemini");
 
 const extractJson = (text) => {
@@ -32,36 +35,92 @@ const getFengShuiAdvice = async (data) => {
     const fs = getFengShuiDetail(Number(birthYear), gender);
     const allLuckyColors = [...fs.luckyColors, ...fs.supportColors];
 
-    let products = [];
-    try {
-      products = await db.Product.findAll({
-        where: {
-          isActive: true,
-          [Op.or]: allLuckyColors.map((color) => ({
-            specifications: { [Op.like]: `%${color}%` },
-          })),
-          ...(brandId && { brandId }),
-          ...(categoryId && { categoryId }),
-          ...(minPrice && { basePrice: { [Op.gte]: minPrice } }),
-          ...(maxPrice && { basePrice: { [Op.lte]: maxPrice } }),
-        },
-        attributes: { exclude: ["embedding"] },
+    const baseWhere = {
+      isActive: true,
+      ...(brandId && { brandId }),
+      ...(categoryId && { categoryId }),
+      ...(minPrice != null || maxPrice != null
+        ? {
+            basePrice: {
+              ...(minPrice != null ? { [Op.gte]: minPrice } : {}),
+              ...(maxPrice != null ? { [Op.lte]: maxPrice } : {}),
+            },
+          }
+        : {}),
+    };
+    const colorClauses = buildLuckyColorWhereClauses(db, allLuckyColors);
+
+    const productInclude = [
+      { model: db.Brand, as: "brand" },
+      { model: db.Category, as: "category" },
+      {
+        model: db.ProductImage,
+        as: "images",
+        attributes: ["imageUrl", "isPrimary"],
+        required: false,
+      },
+      {
+        model: db.AttributeValue,
+        as: "attributes",
+        attributes: ["id", "value"],
         include: [
-          { model: db.Brand, as: "brand" },
-          { model: db.Category, as: "category" },
           {
-            model: db.ProductImage,
-            as: "images",
-            attributes: ["imageUrl", "isPrimary"],
+            model: db.Attribute,
+            as: "attribute",
+            attributes: ["code", "name"],
             required: false,
           },
         ],
+        required: false,
+      },
+      {
+        model: db.ProductVariant,
+        as: "variants",
+        attributes: ["id", "attributeValues", "isActive"],
+        where: { isActive: true },
+        required: false,
+      },
+    ];
+
+    let products = [];
+    try {
+      const colorWhere =
+        colorClauses.length > 0
+          ? { ...baseWhere, [Op.or]: colorClauses }
+          : baseWhere;
+
+      products = await db.Product.findAll({
+        where: colorWhere,
+        attributes: { exclude: ["embedding"] },
+        include: productInclude,
         order: [
           ["sold", "DESC"],
           ["discount", "DESC"],
         ],
         limit: 6,
       });
+
+      if (products.length === 0 && colorClauses.length > 0) {
+        products = await db.Product.findAll({
+          where: baseWhere,
+          attributes: { exclude: ["embedding"] },
+          include: [
+            { model: db.Brand, as: "brand" },
+            { model: db.Category, as: "category" },
+            {
+              model: db.ProductImage,
+              as: "images",
+              attributes: ["imageUrl", "isPrimary"],
+              required: false,
+            },
+          ],
+          order: [
+            ["sold", "DESC"],
+            ["discount", "DESC"],
+          ],
+          limit: 6,
+        });
+      }
     } catch (dbError) {
       console.error("Lỗi DB FengShui Products:", dbError);
     }
@@ -99,35 +158,48 @@ NGUYÊN TẮC TƯ VẤN:
 7. Trả về JSON THUẦN:
 {
   "reply": "Lời tư vấn chi tiết, súc tích và hiện đại",
-  "recommendedProducts": [id1, id2, id3],
-  "fsData": ${JSON.stringify(fs)}
+  "recommendedProducts": [id1, id2, id3]
 }
 
 DANH SÁCH SẢN PHẨM PHÙ HỢP TRONG CỬA HÀNG:
 ${dbContext || "Không có sản phẩm nào phù hợp trực tiếp trong kho."}
 `;
 
+    const cleanHistory = (Array.isArray(history) ? history : [])
+      .slice(-6)
+      .map((msg) => {
+        const text =
+          typeof msg?.content === "string"
+            ? msg.content.trim()
+            : typeof msg?.text === "string"
+              ? msg.text.trim()
+              : msg?.content
+                ? JSON.stringify(msg.content)
+                : "";
+        return text
+          ? {
+              role: msg?.role === "user" ? "user" : "model",
+              parts: [{ text }],
+            }
+          : null;
+      })
+      .filter(Boolean);
+
     const contents = [
-      { role: "user", parts: [{ text: systemPrompt }] },
-      ...history.slice(-6).map((msg) => ({
-        role: msg.role === "user" ? "user" : "model",
-        parts: [
-          {
-            text:
-              typeof msg.content === "string"
-                ? msg.content
-                : JSON.stringify(msg.content),
-          },
-        ],
-      })),
-      { role: "user", parts: [{ text: message }] },
+      ...cleanHistory,
+      { role: "user", parts: [{ text: String(message || "").trim() }] },
     ];
 
     let result = {};
     try {
       const resultGen = await generateContentWithFallback(
         { contents },
-        { generationConfig: { responseMimeType: "application/json" } },
+        {
+          config: {
+            systemInstruction: systemPrompt,
+            responseMimeType: "application/json",
+          },
+        },
       );
       const responseText = resultGen.response.text();
       result = extractJson(responseText);
@@ -201,6 +273,7 @@ ${dbContext || "Không có sản phẩm nào phù hợp trực tiếp trong kho.
           "Tôi đã xem quẻ cho bạn nhưng gặp chút khó khăn khi diễn đạt. Bạn hãy thử lại nhé!",
         recommendedProducts:
           finalRecommended.length > 0 ? finalRecommended : fallbackProducts,
+        fsData: fs,
       },
     };
   } catch (error) {

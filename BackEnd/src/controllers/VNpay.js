@@ -87,8 +87,28 @@ const handleCreateVnpayPayment = async (req, res) => {
     // SECURITY: Luôn lấy giá trị từ Database, tuyệt đối không fallback về amount từ client
     const secureAmount = Number(order.totalPrice);
 
-    if (!Number.isFinite(secureAmount) || secureAmount <= 0) {
+    if (!Number.isFinite(secureAmount) || secureAmount < 0) {
       return sendVnpayJson(res, 400, 3, "Số tiền thanh toán không hợp lệ.");
+    }
+
+    // Edge case: đơn hàng giảm giá 100% (0đ) không cần chuyển qua cổng VNPay
+    if (secureAmount === 0) {
+      const PaymentService = require("../services/order/PaymentService");
+      const zeroConfirm = await PaymentService.confirmPaymentFromWebhook({
+        orderId: order.id,
+        transactionId: `ZERO-${order.orderCode}`,
+        method: "vnpay",
+        note: "Đơn hàng 0đ tự động xác nhận không cần cổng VNPay",
+        amount: 0,
+      });
+      if (!zeroConfirm || zeroConfirm.errCode !== 0) {
+        return sendVnpayJson(res, 500, 1, zeroConfirm?.errMessage || "Không thể xác nhận đơn 0đ.");
+      }
+      return sendVnpayJson(res, 200, 0, "Đơn hàng 0đ đã được xác nhận thành công.", {
+        paymentUrl: null,
+        zeroAmountCompleted: true,
+        orderCode: order.orderCode,
+      });
     }
 
     let ipAddr =

@@ -1,7 +1,9 @@
 "use strict";
+const { createTableIfNotExists, dropTableIfExists } = require("../utils/migrationHelper");
+
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    await queryInterface.createTable("AuditLogs", {
+    await createTableIfNotExists(queryInterface, "AuditLogs", {
       id: {
         allowNull: false,
         autoIncrement: true,
@@ -68,6 +70,6 @@ module.exports = {
     });
   },
   down: async (queryInterface, Sequelize) => {
-    await queryInterface.dropTable("AuditLogs");
+    await dropTableIfExists(queryInterface, "AuditLogs");
   },
 };

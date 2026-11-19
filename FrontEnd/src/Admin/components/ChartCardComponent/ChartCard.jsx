@@ -9,7 +9,7 @@ import {
   CartesianGrid,
 } from "recharts";
 import { FiRefreshCw } from "react-icons/fi";
-import { motion as Motion } from "framer-motion";
+import { m as Motion } from "framer-motion";
 import { getDashboard } from "../../../api/adminApi";
 import UnifiedSpinner from "../../../components/Loading/UnifiedSpinner";
 

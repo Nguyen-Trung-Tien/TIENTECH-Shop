@@ -1,36 +1,25 @@
 const db = require("../../models");
 const { Op } = require("sequelize");
 const { deleteCacheByPattern } = require("../../config/redis");
-const { generateEmbedding } = require("../../utils/embeddingHelper");
+const { buildProductEmbeddingText } = require("../../utils/embeddingHelper");
 const {
   isFlashSaleActive,
   calculateFinalPrice,
 } = require("../../utils/priceHelper");
 
-const prepareProductEmbeddingText = (product) => {
-  const specs =
-    typeof product.specifications === "string"
-      ? product.specifications
-      : JSON.stringify(product.specifications || {});
-  return `Sản phẩm: ${product.name}. Mô tả: ${product.description || ""}. Thông số: ${specs}`.slice(
-    0,
-    8000,
-  );
-};
+const prepareProductEmbeddingText = (product) =>
+  buildProductEmbeddingText(product);
 
-const updateProductEmbedding = async (product, transaction) => {
+const updateProductEmbedding = async (product, _transaction) => {
   if (process.env.NODE_ENV === "test") return false;
+  if (!product?.id) return false;
   try {
-    const text = prepareProductEmbeddingText(product);
-    const embedding = await generateEmbedding(text);
-    if (embedding) {
-      await product.update(
-        { embedding: JSON.stringify(embedding) },
-        { transaction },
-      );
-      return true;
-    }
-    return false;
+    const EmbeddingSyncService = require("../ai/EmbeddingSyncService");
+    const res = await EmbeddingSyncService.syncProductEmbedding(product.id, {
+      force: true,
+      includeImage: true,
+    });
+    return res?.status === "succeeded";
   } catch (error) {
     console.error(`Lỗi cập nhật embedding cho SP ${product.id}:`, error);
     return false;

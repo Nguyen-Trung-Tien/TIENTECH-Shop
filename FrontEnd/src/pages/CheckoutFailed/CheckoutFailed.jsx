@@ -9,7 +9,7 @@ import {
   FiPackage,
 } from "react-icons/fi";
 import { useNavigate, useParams } from "react-router-dom";
-import { motion as Motion } from "framer-motion";
+import { m as Motion } from "framer-motion";
 import { getOrderById, changePaymentMethod } from "../../api/orderApi";
 import { createVnpayPaymentApi } from "../../api/paymentApi";
 import { showErrorToast, showSuccessToast } from "../../utils/toastHelper";

@@ -1,4 +1,5 @@
 const ProductService = require("../services/product/ProductService");
+const CompareService = require("../services/compare/CompareService");
 const { uploadToCloudinary } = require("../config/cloudinaryConfig");
 const { handleError, handleResponse } = require("../utils/controllerHelper");
 const { sanitizeProductInput } = require("../utils/productInputParser");
@@ -281,13 +282,21 @@ const handleRecommendProducts = async (req, res) => {
 
 const handleRecommendFortuneProducts = async (req, res) => {
   try {
-    const { birthYear, brandId, minPrice, maxPrice, categoryId, sortBy } =
-      req.query;
+    const {
+      birthYear,
+      gender = "male",
+      brandId,
+      minPrice,
+      maxPrice,
+      categoryId,
+      sortBy,
+    } = req.query;
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 6;
 
     const result = await ProductService.recommendFortuneProducts({
       birthYear,
+      gender,
       brandId,
       minPrice: minPrice ? Number(minPrice) : undefined,
       maxPrice: maxPrice ? Number(maxPrice) : undefined,
@@ -382,6 +391,25 @@ const handleGetHomePageData = async (req, res) => {
   }
 };
 
+const handleCompareProducts = async (req, res) => {
+  try {
+    const result = await CompareService.compareProducts(req.query.ids);
+    return handleResponse(res, result);
+  } catch (e) {
+    return handleError(res, e, "handleCompareProducts");
+  }
+};
+
+const handleCompareAiVerdict = async (req, res) => {
+  try {
+    const { productIds, useCase } = req.body;
+    const result = await CompareService.getCompareAiVerdict(productIds, useCase);
+    return handleResponse(res, result);
+  } catch (e) {
+    return handleError(res, e, "handleCompareAiVerdict");
+  }
+};
+
 module.exports = {
   handleCreateProduct,
   handleGetAllProducts,
@@ -400,4 +428,6 @@ module.exports = {
   handleSemanticSearch,
   handleGetPersonalizedRecommendations,
   handleGetHomePageData,
+  handleCompareProducts,
+  handleCompareAiVerdict,
 };

@@ -1,5 +1,5 @@
 import React from "react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import {
   FiShield,
   FiCheckCircle,
@@ -81,7 +81,7 @@ const WarrantyPage = () => {
         {/* Core Policy Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
           {policies.map((p, idx) => (
-            <motion.div
+            <m.div
               key={idx}
               whileHover={{ y: -5 }}
               className="p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between"
@@ -97,7 +97,7 @@ const WarrantyPage = () => {
                   {p.desc}
                 </p>
               </div>
-            </motion.div>
+            </m.div>
           ))}
         </div>
 

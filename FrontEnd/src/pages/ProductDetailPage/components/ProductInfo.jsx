@@ -18,7 +18,16 @@ import {
   FiMessageSquare,
 } from "react-icons/fi";
 import { FaHeart } from "react-icons/fa";
-import { motion as Motion, AnimatePresence } from "framer-motion";
+import { ArrowLeftRight } from "lucide-react";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  toggleCompareItem,
+  selectCompareItems,
+  selectIsInCompare,
+  MAX_COMPARE_ITEMS,
+} from "../../../features/compare/compareSlice";
+import { showInfoToast, showSuccessToast } from "../../../utils/toastHelper";
+import { m as Motion, AnimatePresence } from "framer-motion";
 import { getFengShuiDetailApi, fengShuiChatApi } from "../../../api/chatApi";
 
 const ProductInfo = ({
@@ -44,6 +53,33 @@ const ProductInfo = ({
   addingCart,
 }) => {
   // Feng Shui Dynamic API State (Không hardcode)
+  const dispatch = useDispatch();
+  const compareItems = useSelector(selectCompareItems);
+  const isInCompare = useSelector(selectIsInCompare(product?.id));
+
+  const handleToggleCompare = () => {
+    if (!product?.id) return;
+    if (!isInCompare && compareItems.length >= MAX_COMPARE_ITEMS) {
+      return showInfoToast(
+        `Chỉ so sánh tối đa ${MAX_COMPARE_ITEMS} sản phẩm cùng lúc.`,
+      );
+    }
+    dispatch(
+      toggleCompareItem({
+        id: product.id,
+        slug: product.slug,
+        name: product.name,
+        image: product.image || product.images?.[0]?.imageUrl || null,
+        price: currentPrice || product.basePrice || 0,
+        categoryName: product.category?.name || null,
+        brandName: product.brand?.name || null,
+      }),
+    );
+    showSuccessToast(
+      isInCompare ? "Đã bỏ khỏi danh sách so sánh" : "Đã thêm vào khay so sánh",
+    );
+  };
+
   const [isFengShuiOpen, setIsFengShuiOpen] = useState(false);
   const [birthYear, setBirthYear] = useState("1998");
   const [gender, setGender] = useState("male");
@@ -487,11 +523,19 @@ const ProductInfo = ({
             <div className="text-xs font-bold text-slate-900 dark:text-slate-100 flex items-center gap-1.5 truncate">
               Phân tích giá AI:{" "}
               <span className="text-emerald-600 dark:text-emerald-400 font-bold">
-                Mức giá tối ưu hiện tại
+                {isFlashSale
+                  ? "Flash Sale đang diễn ra"
+                  : discountPercent > 0
+                    ? `Đang giảm ${discountPercent}%`
+                    : "Giá niêm yết hiện tại"}
               </span>
             </div>
             <p className="text-[11px] text-slate-500 dark:text-dark-text-secondary truncate">
-              Thời điểm vàng thích hợp để sở hữu thiết bị với giá tốt
+              {isFlashSale
+                ? "Ưu đãi giới hạn thời gian — xem phân tích xu hướng giá trước khi đặt mua"
+                : discountPercent > 0
+                  ? "Mở công cụ phân tích AI để tham khảo xu hướng giá 30–90 ngày"
+                  : "Mở công cụ phân tích AI để tham khảo mức giá hợp lý và chu kỳ giảm giá"}
             </p>
           </div>
         </div>
@@ -631,6 +675,21 @@ const ProductInfo = ({
             ) : (
               <FiHeart className="text-lg" />
             )}
+          </button>
+
+          <button
+            type="button"
+            onClick={handleToggleCompare}
+            aria-label={isInCompare ? "Bỏ khỏi so sánh" : "Thêm vào so sánh"}
+            title={isInCompare ? "Đang trong khay so sánh" : "So sánh"}
+            className={`w-full sm:px-4 h-13 rounded-2xl border flex items-center justify-center gap-1.5 text-xs font-bold transition-all shadow-xs cursor-pointer shrink-0 ${
+              isInCompare
+                ? "border-primary bg-primary/10 text-primary"
+                : "border-slate-200 dark:border-dark-border text-slate-600 dark:text-slate-300 hover:border-primary/60 hover:text-primary"
+            }`}
+          >
+            <ArrowLeftRight className="w-4 h-4 shrink-0" />
+            <span>{isInCompare ? "Đã chọn so sánh" : "So sánh"}</span>
           </button>
         </div>
 

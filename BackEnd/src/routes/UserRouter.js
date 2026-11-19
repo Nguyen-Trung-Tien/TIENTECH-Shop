@@ -24,6 +24,7 @@ const {
   adminUpdateUserSchema,
   adminUpdateUserStatusSchema,
   adminBulkUserStatusSchema,
+  emptyActionSchema,
 } = require("../utils/zodSchemas");
 const { getFrontendUrl } = require("../config/corsConfig");
 const { loginAuthLimiter, sensitiveActionLimiter, otpVerificationLimiter, refreshTokenLimiter } = require("../middleware/rateLimiter");
@@ -86,7 +87,7 @@ router.get(
 // Thêm upload.none() để xử lý multipart/form-data không có file, hoặc upload.single("avatar") nếu cần
 router.post("/create", optionalAuthenticateToken, sensitiveActionLimiter, upload.single("avatar"), validate(registerSchema), UserController.handleCreateNewUser);
 
-router.post("/refresh-token", refreshTokenLimiter, UserController.handleRefreshToken);
+router.post("/refresh-token", refreshTokenLimiter, validate(emptyActionSchema), UserController.handleRefreshToken);
 router.get("/get-me", authenticateToken, UserController.handleGetMe);
 router.get(
   "/get-all",
@@ -156,7 +157,7 @@ router.delete(
   UserController.handleDeleteUser
 );
 
-router.post("/logout", UserController.handleLogout);
+router.post("/logout", validate(emptyActionSchema), UserController.handleLogout);
 router.put(
   "/change-password",
   authenticateToken,

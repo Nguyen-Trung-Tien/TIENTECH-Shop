@@ -11,6 +11,7 @@ const {
   updateSystemSettingSchema,
   bulkSystemSettingSchema,
   toggleOtpSchema,
+  emptyActionSchema,
 } = require("../utils/zodSchemas");
 
 // Public routes (cho frontend khách hàng đọc các setting public như requireOtp)
@@ -56,6 +57,7 @@ router.post(
   authenticateToken,
   authorizeRole(["admin", "root"]),
   adminMutationLimiter,
+  validate(emptyActionSchema),
   SystemSettingController.handleFlushRedisCache
 );
 

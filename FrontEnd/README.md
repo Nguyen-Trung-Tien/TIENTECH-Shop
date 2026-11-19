@@ -9,7 +9,7 @@
 
   <p>
     <b>Giao diện hiện đại cho hệ sinh thái thương mại điện tử TIENTECH Shop</b><br/>
-    Xây dựng với <b>React 19</b>, <b>Vite 7</b>, và <b>Tailwind CSS 4</b>.
+    Xây dựng với <b>React 19</b>, <b>Vite 7</b>, <b>Tailwind CSS 4</b>, <b>Redux Toolkit</b> và <b>TanStack Query</b>.
   </p>
 
 </div>
@@ -18,89 +18,40 @@
 
 ## 🚀 Tổng quan
 
-Frontend của TIENTECH được thiết kế để mang lại trải nghiệm mua sắm mượt mà, tốc độ cao và thân thiện với người dùng. Hệ thống bao gồm hai phân hệ chính: **Storefront (Dành cho khách hàng)** và **Admin Dashboard (Dành cho quản trị viên)**.
+Frontend bao gồm **Storefront (Khách hàng)** và **Admin Dashboard (Quản trị viên)**.
 
 ### Công nghệ lõi
-- **Framework:** React 19 (Latest Stable)
-- **Build Tool:** Vite 7 (Hot Module Replacement cực nhanh)
-- **State Management:** Redux Toolkit + Redux Persist (Lưu trữ trạng thái đăng nhập & giỏ hàng)
-- **Styling:** Tailwind CSS 4 (Engine mới nhất), SASS
-- **Animation:** Framer Motion 12 (Hiệu ứng chuyển trang và micro-interactions)
-- **Charts:** Recharts (Báo cáo doanh thu cho Admin)
-- **Icons:** React Icons, Lucide React, Bootstrap Icons
+- **Framework:** React 19
+- **Build Tool:** Vite 7
+- **State & Data Fetching:** Redux Toolkit + Redux Persist + TanStack React Query
+- **Styling:** Tailwind CSS 4 (`@tailwindcss/vite`)
+- **Animation:** Framer Motion 12 (`LazyMotion`)
+- **Charts:** Recharts
+- **Icons:** Lucide React & React Icons
 
 ---
 
 ## ✨ Tính năng nổi bật
 
-### 🛍 Storefront (Khách hàng)
-- **Giao diện đa chế độ:** Hỗ trợ Light / Dark Mode.
-- **AI Chatbot Widget:** Trò chuyện trực tiếp với AI để tìm sản phẩm.
-- **Tìm kiếm thông minh:** Gợi ý từ khóa ngay khi gõ và lọc sản phẩm đa năng.
-- **Thanh toán linh hoạt:** Tích hợp SDK PayPal và quy trình điều hướng VNPay.
-- **Quản lý tài khoản:** Dashboard cá nhân, theo dõi đơn hàng, quản lý địa chỉ.
-- **Tư vấn phong thuỷ:** UI riêng biệt để người dùng nhập năm sinh và xem gợi ý.
-
-### 📊 Admin Dashboard (Quản trị)
-- **Real-time Analytics:** Biểu đồ doanh thu và tăng trưởng khách hàng.
-- **Hệ thống Quản lý (CRUD):** Sản phẩm, Biến thể, Danh mục, Thương hiệu, Đơn hàng, Voucher.
-- **AI Business Assistant:** Hiển thị các lời khuyên chiến lược từ AI ngay trên Dashboard.
-- **Quản lý Media:** Upload ảnh trực tiếp lên Cloudinary thông qua giao diện kéo thả.
+- **Storefront:** Light/Dark Mode, AI Chatbot & Visual Search, Tìm kiếm & Lọc đa tiêu chí, Thanh toán PayPal (Server-side Orders API) & VNPay, Theo dõi đơn hàng & Trả hàng, Tư vấn màu sắc hợp mệnh.
+- **Admin Dashboard:** Phân tích doanh thu real-time, Quản lý Sản phẩm/Biến thể/Danh mục/Thương hiệu/Đơn hàng/Voucher/Thanh toán/Liên hệ (CRM Tickets)/Cấu hình hệ thống.
 
 ---
 
-## 📂 Cấu trúc thư mục
+## ⚡ Cài đặt & Chạy
 
-```text
-src/
-├── 📁 Admin/           # Giao diện và logic cho Quản trị viên
-├── 📁 api/             # Cấu hình Axios và các hàm gọi API
-├── 📁 assets/          # Hình ảnh, font, icons tĩnh
-├── 📁 components/      # Các UI components tái sử dụng (Header, Footer, Cards...)
-├── 📁 config/          # Cấu hình Firebase, Google OAuth, PayPal...
-├── 📁 hooks/           # Custom React hooks (useCart, useAuth, useProduct...)
-├── 📁 pages/           # Các trang chính của ứng dụng (Home, Product, Cart...)
-├── 📁 redux/           # Cấu hình Store, Slices (User, Cart, Checkout)
-├── 📁 routes/          # Định nghĩa Route cho User và Admin (Auth Guard)
-└── 📁 utils/           # Các hàm tiện ích (Format price, date...)
-```
-
----
-
-## ⚡ Cài đặt nhanh
-
-### 1. Cài đặt Dependencies
 ```bash
+# Cài đặt từ thư mục gốc monorepo
 npm install
+
+# Cấu hình biến môi trường trong FrontEnd/.env (tham khảo FrontEnd/.env.example)
+# VITE_API_URL=http://localhost:8080/api/v1
+# VITE_SOCKET_URL=http://localhost:8080
+# VITE_PAYPAL_CLIENT_ID=your_paypal_id
+
+# Chạy dev / lint / test / build
+npm run dev:frontend
+npm run lint:frontend
+npm run test:frontend
+npm run build:frontend
 ```
-
-### 2. Cấu hình biến môi trường
-Tạo file `.env` từ `.env.example`:
-```env
-VITE_BACKEND_URL=http://localhost:8080
-VITE_PAYPAL_CLIENT_ID=your_paypal_id
-```
-
-### 3. Chạy môi trường Development
-```bash
-npm run dev
-```
-
-### 4. Build Production
-```bash
-npm run build
-```
-
----
-
-## 🎨 Quy chuẩn Code
-- Sử dụng **Functional Components** và **Hooks**.
-- Tuân thủ **ESLint** (Chạy `npm run lint` trước khi commit).
-- Đặt tên component theo **PascalCase** (ví dụ: `ProductCard.jsx`).
-- Logic gọi API nên được tách riêng vào thư mục `api/`.
-
----
-
-<div align="center">
-  <p>Tự hào được xây dựng bởi đội ngũ <b>TIENTECH</b></p>
-</div>

@@ -22,7 +22,7 @@ import {
   FiSliders,
 } from "react-icons/fi";
 
-import { motion as Motion, AnimatePresence } from "framer-motion";
+import { m as Motion, AnimatePresence } from "framer-motion";
 import { useSelector, useDispatch } from "react-redux";
 
 import { removeUser } from "../../redux/userSlice";
@@ -60,7 +60,7 @@ function Header() {
       state.cart.cartItems?.reduce((sum, i) => sum + (i.quantity || 0), 0) || 0,
   );
 
-  const avatarUrl = user?.avatar || "/images/avatar-default.png";
+  const avatarUrl = user?.avatar || "/images/no-image.png";
 
   // Scroll & Location Listeners
   useEffect(() => {

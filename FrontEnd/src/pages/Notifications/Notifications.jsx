@@ -22,7 +22,7 @@ import {
 import { initUserSocket } from "../../utils/socket";
 import { useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
-import { motion as Motion, AnimatePresence } from "framer-motion";
+import { m as Motion, AnimatePresence } from "framer-motion";
 import { showErrorToast, showSuccessToast } from "../../utils/toastHelper";
 import UnifiedSpinner from "../../components/Loading/UnifiedSpinner";
 import { ConfirmModal, Modal, PageShell, Button } from "../../components/UI";

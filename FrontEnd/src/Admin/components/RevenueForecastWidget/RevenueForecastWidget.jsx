@@ -7,7 +7,7 @@ import {
   FiChevronUp,
 } from "react-icons/fi";
 import { getRevenueForecastApi } from "../../../api/adminApi";
-import { motion as Motion, AnimatePresence } from "framer-motion";
+import { m as Motion, AnimatePresence } from "framer-motion";
 import UnifiedSpinner from "../../../components/Loading/UnifiedSpinner";
 import {
   AreaChart,

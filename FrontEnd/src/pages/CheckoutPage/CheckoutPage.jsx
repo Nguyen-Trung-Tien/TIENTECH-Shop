@@ -10,7 +10,11 @@ import {
 import { useSelector, useDispatch } from "react-redux";
 import { showErrorToast, showSuccessToast, showWarningToast } from "../../utils/toastHelper";
 import { createOrder } from "../../api/orderApi";
-import { createVnpayPaymentApi } from "../../api/paymentApi";
+import {
+  createVnpayPaymentApi,
+  createPaypalOrderApi,
+  capturePaypalOrderApi,
+} from "../../api/paymentApi";
 import { getMeApi } from "../../api/userApi";
 import { removePurchasedItems, applyVoucher, removeVoucher } from "../../redux/cartSlice";
 import {
@@ -30,8 +34,14 @@ import OrderSummary from "./OrderSummary";
 import VoucherSelector from "../../components/Cart/VoucherSelector";
 import { PageShell } from "../../components/UI";
 import { useUnsavedChangesGuard } from "../../hooks/useUnsavedChangesGuard";
+import { useDocumentMeta } from "../../features/shared/hooks/useDocumentMeta";
 
 const CheckoutPage = () => {
+  useDocumentMeta({
+    title: "Thanh toán đơn hàng",
+    description: "Hoàn tất đặt hàng an toàn qua COD, VNPay hoặc PayPal tại TIENTECH Shop.",
+    canonicalPath: "/checkout",
+  });
   const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -56,6 +66,7 @@ const CheckoutPage = () => {
   const [loading, setLoading] = useState(false);
   const isSubmitting = useRef(false);
   const orderCompletedRef = useRef(false);
+  const pendingPaypalOrderIdRef = useRef(null);
   const idempotencyKeyRef = useRef(
     typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
       ? crypto.randomUUID()
@@ -215,7 +226,11 @@ const CheckoutPage = () => {
             orderCode: res.data.orderCode,
           });
 
-          if (vnpayRes && vnpayRes.errCode === 0 && vnpayRes.data?.paymentUrl) {
+          if (vnpayRes && vnpayRes.errCode === 0 && vnpayRes.data?.zeroAmountCompleted) {
+            showSuccessToast("Đơn hàng 0đ đã được xác nhận thành công!");
+            navigate("/checkout-success", { state: { order: res.data } });
+            return;
+          } else if (vnpayRes && vnpayRes.errCode === 0 && vnpayRes.data?.paymentUrl) {
             window.location.href = vnpayRes.data.paymentUrl;
             return;
           } else {
@@ -238,45 +253,116 @@ const CheckoutPage = () => {
     }
   };
 
-  const handlePayPalApprove = async (data, actions) => {
+  const latestCheckoutContextRef = useRef(null);
+  latestCheckoutContextRef.current = {
+    user,
+    formData,
+    appliedVoucher,
+    effectivePointsUsed,
+    checkoutMode,
+    buildOrderItemsPayload,
+  };
+
+  const handlePayPalCreateOrder = async () => {
+    const ctx = latestCheckoutContextRef.current;
+    const currentUser = ctx?.user;
+    const currentForm = ctx?.formData || {};
+
+    if (!currentUser?.id) {
+      showWarningToast("Vui lòng đăng nhập để hoàn tất đơn hàng!");
+      navigate("/login?redirect=/checkout");
+      throw new Error("Vui lòng đăng nhập để thanh toán PayPal.");
+    }
+
+    const receiverName =
+      currentForm.fullName?.trim() || currentUser?.username || currentUser?.fullName || "";
+    const receiverPhone = currentForm.phone?.trim() || currentUser?.phone || "";
+
+    if (!receiverName) {
+      const msg = "Vui lòng nhập họ và tên người nhận hàng";
+      showErrorToast(msg);
+      throw new Error(msg);
+    }
+    if (!receiverPhone) {
+      const msg = "Vui lòng nhập số điện thoại người nhận hàng";
+      showErrorToast(msg);
+      throw new Error(msg);
+    }
+    if (!currentForm.shippingAddress?.trim()) {
+      const msg = "Vui lòng nhập hoặc chọn địa chỉ giao hàng";
+      showErrorToast(msg);
+      throw new Error(msg);
+    }
+
+    if (ctx.checkoutMode !== "buy_now") {
+      await waitForGuestCartSync();
+    }
+
+    const attemptKey =
+      typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+        ? crypto.randomUUID()
+        : `pp_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+
+    const orderData = {
+      userId: currentUser.id,
+      shippingAddress: currentForm.shippingAddress.trim(),
+      receiverName,
+      receiverPhone,
+      paymentMethod: "PAYPAL",
+      note: currentForm.note,
+      voucherCode: ctx.appliedVoucher?.code || null,
+      pointsUsed: ctx.effectivePointsUsed,
+      checkoutMode: ctx.checkoutMode,
+      orderItems: ctx.buildOrderItemsPayload(),
+    };
+
+    const res = await createPaypalOrderApi(orderData, {
+      headers: { "X-Idempotency-Key": attemptKey },
+    });
+
+    if (res?.errCode === 0 && res?.data?.paypalOrderId && res?.data?.order?.id) {
+      pendingPaypalOrderIdRef.current = res.data.order.id;
+      return res.data.paypalOrderId;
+    }
+
+    const errMsg = res?.errMessage || "Không thể khởi tạo giao dịch PayPal!";
+    showErrorToast(errMsg);
+    throw new Error(errMsg);
+  };
+
+  const handlePayPalApprove = async (data) => {
     if (isSubmitting.current || loading) return;
     if (!user?.id) {
       showWarningToast("Vui lòng đăng nhập để hoàn tất đơn hàng!");
       navigate("/login?redirect=/checkout");
       return;
     }
+
+    const orderId = pendingPaypalOrderIdRef.current;
+    const paypalOrderId = data?.orderID;
+    if (!orderId || !paypalOrderId) {
+      showErrorToast("Thiếu thông tin giao dịch PayPal để xác thực.");
+      return;
+    }
+
     isSubmitting.current = true;
     setLoading(true);
     try {
-      if (checkoutMode !== "buy_now") {
-        await waitForGuestCartSync();
-      }
-      const details = await actions.order.capture();
-      // Sau khi PayPal capture thành công, tạo đơn hàng với paymentMethod là PAYPAL và status là paid
-      const orderData = {
-        userId: user.id,
-        shippingAddress: formData.shippingAddress || user?.address || "",
-        receiverName: formData.fullName || user?.username || "",
-        receiverPhone: formData.phone || user?.phone || "",
-        paymentMethod: "PAYPAL",
-        note: formData.note,
-        voucherCode: appliedVoucher?.code || null,
-        pointsUsed: effectivePointsUsed,
-        checkoutMode,
-        orderItems: buildOrderItemsPayload(),
-        paymentStatus: "paid", // Đánh dấu đã thanh toán
-        paypalDetails: details,
-      };
-
-      const res = await createOrder(orderData, {
-        headers: { "X-Idempotency-Key": idempotencyKeyRef.current },
-      });
+      const res = await capturePaypalOrderApi(
+        { orderId, paypalOrderId },
+        {
+          headers: {
+            "X-Idempotency-Key": `capture_${orderId}_${paypalOrderId}`,
+          },
+        },
+      );
       if (res && res.errCode === 0) {
+        pendingPaypalOrderIdRef.current = null;
         await handleAfterOrderSuccess();
         showSuccessToast("Thanh toán PayPal thành công!");
         navigate("/checkout-success", { state: { order: res.data } });
       } else {
-        showErrorToast(res?.errMessage || "Đặt hàng thất bại!");
+        showErrorToast(res?.errMessage || "Xác thực thanh toán PayPal thất bại!");
       }
     } catch (error) {
       showErrorToast(error, "Lỗi xử lý PayPal");
@@ -474,6 +560,7 @@ const CheckoutPage = () => {
                 loading={loading}
                 paymentMethod={formData.paymentMethod}
                 onPlaceOrder={handlePlaceOrder}
+                onPayPalCreateOrder={handlePayPalCreateOrder}
                 onPayPalApprove={handlePayPalApprove}
               />
             </div>

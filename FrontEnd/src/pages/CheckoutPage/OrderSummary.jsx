@@ -18,6 +18,7 @@ const OrderSummary = ({
   pointsUsed = 0,
   pointsDiscount = 0,
   onPlaceOrder,
+  onPayPalCreateOrder,
   onPayPalApprove,
   paymentMethod = "COD",
   loading = false,
@@ -109,17 +110,14 @@ const OrderSummary = ({
           <div className="mt-4">
             <PayPalButtons
               style={{ layout: "vertical", shape: "pill", color: "blue" }}
-              createOrder={(data, actions) => {
-                return actions.order.create({
-                  purchase_units: [
-                    {
-                      amount: {
-                        value: (total / 25000).toFixed(2),
-                      },
-                    },
-                  ],
-                });
-              }}
+              forceReRender={[
+                total,
+                appliedVoucher?.code || "",
+                pointsUsed,
+                selectedItems.length,
+              ]}
+              disabled={selectedItems.length === 0 || loading}
+              createOrder={() => onPayPalCreateOrder?.()}
               onApprove={onPayPalApprove}
             />
           </div>

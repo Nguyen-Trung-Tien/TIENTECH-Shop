@@ -8,7 +8,11 @@ const {
   authorizeRole,
 } = require("../middleware/authMiddleware");
 const { validate } = require("../middleware/zodMiddleware");
-const { createProductSchema, updateProductSchema } = require("../utils/zodSchemas");
+const {
+  createProductSchema,
+  updateProductSchema,
+  compareAiVerdictSchema,
+} = require("../utils/zodSchemas");
 const { aiApiLimiter } = require("../middleware/rateLimiter");
 
 router.post(
@@ -59,5 +63,12 @@ router.get(
   ProductController.handleRecommendFortuneProducts,
 );
 router.get("/semantic-search", aiApiLimiter, ProductController.handleSemanticSearch);
+router.get("/compare", ProductController.handleCompareProducts);
+router.post(
+  "/compare/ai-verdict",
+  aiApiLimiter,
+  validate(compareAiVerdictSchema),
+  ProductController.handleCompareAiVerdict,
+);
 
 module.exports = router;

@@ -1,6 +1,6 @@
 import React from "react";
 import { FiUsers, FiTarget, FiEye, FiAward, FiTrendingUp, FiShield } from "react-icons/fi";
-import { motion as Motion } from "framer-motion";
+import { m as Motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import imgPro1 from "../../assets/about-pro1.webp";
 import imgPro2 from "../../assets/about-pro1.webp";
@@ -8,6 +8,7 @@ import imgPro3 from "../../assets/about-pro2.webp";
 import Logo from "../../components/UI/Logo";
 import Button from "../../components/UI/Button";
 import { PageShell } from "../../components/UI";
+import { useDocumentMeta } from "../../features/shared/hooks/useDocumentMeta";
 
 const teamMembers = [
   {
@@ -32,6 +33,12 @@ const teamMembers = [
 
 const AboutPage = () => {
   const navigate = useNavigate();
+  useDocumentMeta({
+    title: "Giới thiệu TIENTECH Shop",
+    description:
+      "Tìm hiểu tầm nhìn, đội ngũ và hệ sinh thái phần cứng công nghệ tích hợp AI tại TIENTECH Shop.",
+    canonicalPath: "/about",
+  });
 
   return (
     <PageShell maxWidthClass="w-full" className="pb-0">

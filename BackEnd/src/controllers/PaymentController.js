@@ -105,6 +105,28 @@ const handleRefundPayment = async (req, res) => {
   }
 };
 
+const handleCreatePaypalOrder = async (req, res) => {
+  try {
+    const result = await PaymentService.createPaypalCheckoutOrder(req.body, req.user);
+    return handleResponse(res, result, 201);
+  } catch (e) {
+    return handleError(res, e, "handleCreatePaypalOrder");
+  }
+};
+
+const handleCapturePaypalOrder = async (req, res) => {
+  try {
+    const { orderId, paypalOrderId } = req.body;
+    const result = await PaymentService.capturePaypalCheckoutOrder(
+      { orderId, paypalOrderId },
+      req.user
+    );
+    return handleResponse(res, result, 200);
+  } catch (e) {
+    return handleError(res, e, "handleCapturePaypalOrder");
+  }
+};
+
 module.exports = {
   handleGetAllPayments,
   handleGetPaymentSummary,
@@ -114,4 +136,6 @@ module.exports = {
   handleDeletePayment,
   handleCompletePayment,
   handleRefundPayment,
+  handleCreatePaypalOrder,
+  handleCapturePaypalOrder,
 };

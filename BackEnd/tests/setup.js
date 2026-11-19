@@ -5,11 +5,6 @@ process.env.JWT_ACCESS_EXPIRES = process.env.JWT_ACCESS_EXPIRES || "15m";
 process.env.JWT_REFRESH_EXPIRES = process.env.JWT_REFRESH_EXPIRES || "7d";
 process.env.NODE_ENV = "test";
 
-// Mock ESM packages like uuid for Jest CommonJS environment
-jest.mock("uuid", () => ({
-  v4: jest.fn(() => "test-uuid-v4-1234-5678"),
-}));
-
 beforeAll(async () => {
   try {
     const db = require("../src/models");

@@ -100,13 +100,42 @@ const handleGlobalSearch = async (req, res) => {
 
 const handleSyncEmbeddings = async (req, res) => {
   try {
-    const result = await AdminService.syncEmbeddings();
-    res.status(200).json(result);
+    const io = typeof req.app?.get === "function" ? req.app.get("io") : null;
+    const mode = req.body?.mode || "missing";
+    const result = await AdminService.syncEmbeddings({ mode, io });
+    const status = result?.statusCode || (result?.errCode === 0 ? 200 : 400);
+    res.status(status).json(result);
   } catch (e) {
     console.error(e);
     res.status(500).json({
       errCode: 1,
       errMessage: "Lỗi khi đồng bộ dữ liệu AI.",
+    });
+  }
+};
+
+const handleGetVectorStatus = async (req, res) => {
+  try {
+    const result = await AdminService.getVectorStatus();
+    res.status(result?.errCode === 0 ? 200 : 500).json(result);
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({
+      errCode: 1,
+      errMessage: "Lỗi khi kiểm tra trạng thái AI Vector.",
+    });
+  }
+};
+
+const handleReloadVectorIndex = async (req, res) => {
+  try {
+    const result = await AdminService.reloadVectorIndex();
+    res.status(200).json(result);
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({
+      errCode: 1,
+      errMessage: "Lỗi khi nạp lại AI Vector Index.",
     });
   }
 };
@@ -132,5 +161,7 @@ module.exports = {
   handleGenerateDescription,
   handleGlobalSearch,
   handleSyncEmbeddings,
+  handleGetVectorStatus,
+  handleReloadVectorIndex,
   handleRevenueForecast,
 };

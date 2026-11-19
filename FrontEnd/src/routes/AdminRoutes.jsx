@@ -17,6 +17,7 @@ const ReviewPage = lazy(() => import("../Admin/pages/ReviewPage/ReviewPage"));
 const PaymentPage = lazy(() => import("../Admin/pages/Payment/PaymentPage"));
 const BrandManage = lazy(() => import("../Admin/pages/BrandManage/BrandManage"));
 const VoucherManage = lazy(() => import("../Admin/pages/VoucherManage/VoucherManage"));
+const ContactManage = lazy(() => import("../Admin/pages/ContactManage/ContactManage"));
 const SystemSettingsPage = lazy(() => import("../Admin/pages/SystemSettings/SystemSettingsPage"));
 const NotFound = lazy(() => import("../pages/NotFound/NotFound"));
 
@@ -54,6 +55,7 @@ const AdminRoutes = () => {
             <Route path="reviews" element={<ReviewPage />} />
             <Route path="brands" element={<BrandManage />} />
             <Route path="vouchers" element={<VoucherManage />} />
+            <Route path="contacts" element={<ContactManage />} />
             <Route path="settings" element={<SystemSettingsPage />} />
             <Route path="*" element={<NotFound />} />
           </Route>

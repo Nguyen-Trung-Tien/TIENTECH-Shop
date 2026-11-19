@@ -1,18 +1,26 @@
-import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect, useCallback } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { updateUser } from "../../redux/userSlice";
 import { updateUserApi } from "../../api/userApi";
 import { showErrorToast, showSuccessToast } from "../../utils/toastHelper";
-import { getTierProgress, LOYALTY_TIERS } from "../../utils/loyaltyHelper";
 import ChangePasswordModal from "./ChangePasswordModal";
-import { FiArrowLeft, FiUser, FiMail, FiPhone, FiMapPin, FiCamera, FiEdit3, FiSave, FiX, FiLock, FiShield, FiAward, FiCalendar, FiCheckCircle, FiStar, FiCheck } from "react-icons/fi";
-import { motion as Motion, AnimatePresence } from "framer-motion";
-import { Button, Modal, Loader, PageShell } from "../../components/UI";
-import Badge from "../../components/UI/Badge";
+import { User, MapPin, Shield } from "lucide-react";
+import { m as Motion, AnimatePresence } from "framer-motion";
+import { Loader, PageShell } from "../../components/UI";
 import AddressManager from "./AddressManager";
+import ProfileHeroCard from "./components/ProfileHeroCard";
+import ProfileInfoTab from "./components/ProfileInfoTab";
+import ProfileSecurityTab from "./components/ProfileSecurityTab";
+import ProfileAvatarModal from "./components/ProfileAvatarModal";
+import { useDocumentMeta } from "../../features/shared/hooks/useDocumentMeta";
 
 const Profile = () => {
+  useDocumentMeta({
+    title: "Hồ sơ cá nhân",
+    description: "Quản lý thông tin tài khoản, sổ địa chỉ và bảo mật tại TIENTECH Shop.",
+    canonicalPath: "/profile",
+  });
+
   const dispatch = useDispatch();
   const user = useSelector((state) => state.user.user);
 
@@ -49,12 +57,12 @@ const Profile = () => {
     }
   }, [user]);
 
-  const handleChange = (e) => {
+  const handleChange = useCallback((e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-  };
+  }, []);
 
-  const handleToggleEmailNotification = async () => {
+  const handleToggleEmailNotification = useCallback(async () => {
     if (!user?.id) return;
     const nextVal = !receiveEmail;
     setEmailToggleLoading(true);
@@ -66,7 +74,7 @@ const Profile = () => {
         showSuccessToast(
           nextVal
             ? "Đã bật nhận thông báo & khuyến mãi qua Email!"
-            : "Đã tắt nhận thông báo qua Email thành công!"
+            : "Đã tắt nhận thông báo qua Email thành công!",
         );
       } else {
         showErrorToast(res.errMessage, "Không thể cập nhật thiết lập email");
@@ -77,9 +85,9 @@ const Profile = () => {
     } finally {
       setEmailToggleLoading(false);
     }
-  };
+  }, [user, receiveEmail, dispatch]);
 
-  const handleSave = async () => {
+  const handleSave = useCallback(async () => {
     if (!user?.id) return;
     setLoading(true);
     try {
@@ -113,17 +121,17 @@ const Profile = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, formData, receiveEmail, dispatch]);
 
-  const handleFileChange = (e) => {
+  const handleFileChange = useCallback((e) => {
     const file = e.target.files[0];
     if (file) {
       setSelectedFile(file);
       setPreview(URL.createObjectURL(file));
     }
-  };
+  }, []);
 
-  const handleAvatarUpload = async () => {
+  const handleAvatarUpload = useCallback(async () => {
     if (!selectedFile) return showErrorToast("Chưa chọn ảnh!");
     setAvatarLoading(true);
 
@@ -148,7 +156,7 @@ const Profile = () => {
       }
     };
     reader.readAsDataURL(selectedFile);
-  };
+  }, [selectedFile, user, dispatch]);
 
   if (loading && !formData.username) {
     return (
@@ -161,41 +169,6 @@ const Profile = () => {
     );
   }
 
-  const getRankConfig = (rank) => {
-    switch (rank) {
-      case "Platinum":
-        return {
-          label: "Bạch Kim",
-          gradient: "from-cyan-500 via-blue-600 to-indigo-600",
-          badgeBg: "bg-cyan-50 text-cyan-700 dark:bg-cyan-950/30 dark:text-cyan-400 border-cyan-200 dark:border-cyan-800",
-          icon: FiStar,
-        };
-      case "Gold":
-        return {
-          label: "Vàng Sáng",
-          gradient: "from-amber-400 via-yellow-500 to-orange-500",
-          badgeBg: "bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400 border-amber-200 dark:border-amber-800",
-          icon: FiAward,
-        };
-      case "Silver":
-        return {
-          label: "Bạc Sang",
-          gradient: "from-slate-400 via-slate-500 to-zinc-600",
-          badgeBg: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border-slate-200 dark:border-slate-700",
-          icon: FiAward,
-        };
-      default:
-        return {
-          label: "Thành Viên",
-          gradient: "from-blue-500 to-indigo-600",
-          badgeBg: "bg-blue-50 text-blue-700 dark:bg-blue-950/30 dark:text-blue-400 border-blue-200 dark:border-blue-800",
-          icon: FiUser,
-        };
-    }
-  };
-
-  const rankConfig = getRankConfig(user?.rank);
-
   return (
     <PageShell
       eyebrow="ACCOUNT PROFILE // SETTINGS"
@@ -205,543 +178,90 @@ const Profile = () => {
       backLabel="Quay lại trang chủ"
       maxWidthClass="max-w-6xl mx-auto px-3 sm:px-6 space-y-6 sm:space-y-8"
     >
+      <ProfileHeroCard
+        user={user}
+        formData={formData}
+        isEditing={isEditing}
+        onToggleEdit={() => setIsEditing((prev) => !prev)}
+        onOpenAvatarModal={() => setShowAvatarModal(true)}
+        onOpenPasswordModal={() => setShowPasswordModal(true)}
+      />
 
-        {/* Hero Cover Header Card */}
-        <div className="bg-white dark:bg-dark-surface rounded-2xl sm:rounded-[32px] border border-slate-200/80 dark:border-dark-border shadow-xl overflow-hidden relative">
-          {/* Gradient Mesh Banner */}
-          <div className="h-32 sm:h-48 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 relative overflow-hidden">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.2),transparent)]" />
-            <div className="absolute -bottom-10 -right-10 size-48 sm:size-64 bg-white/10 rounded-full blur-2xl" />
-          </div>
-
-          {/* Profile Overview Bar */}
-          <div className="px-4 sm:px-8 pb-6 sm:pb-8 pt-0 relative z-10">
-            <div className="flex flex-col sm:flex-row items-center sm:items-end justify-between gap-4 -mt-16 sm:-mt-20 mb-4 sm:mb-6">
-              {/* Avatar Box */}
-              <div className="flex flex-col sm:flex-row items-center sm:items-end gap-4 text-center sm:text-left">
-                <div
-                  className="group relative size-28 sm:size-36 rounded-full border-4 border-white dark:border-dark-surface shadow-2xl cursor-pointer overflow-hidden bg-slate-100 dark:bg-dark-bg shrink-0 ring-4 ring-primary/20"
-                  onClick={() => setShowAvatarModal(true)}
-                  title="Đổi ảnh đại diện"
-                >
-                  <img
-                    src={formData.avatar || "/images/avatar-default.png"}
-                    alt={formData.username}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                  />
-                  <div className="absolute inset-0 bg-slate-950/50 backdrop-blur-xs flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                    <FiCamera className="text-white text-2xl mb-1" />
-                    <span className="text-[10px] font-black text-white uppercase tracking-wider">Đổi ảnh</span>
-                  </div>
-                </div>
-
-                <div className="space-y-1">
-                  <div className="flex items-center justify-center sm:justify-start gap-2 flex-wrap">
-                    <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
-                      {formData.username || "Người dùng"}
-                    </h1>
-                    <span
-                      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-[10px] font-black uppercase tracking-wider shadow-xs ${rankConfig.badgeBg}`}
-                    >
-                      <rankConfig.icon className="text-xs" />
-                      {rankConfig.label}
-                    </span>
-                  </div>
-                  <p className="text-xs sm:text-sm font-medium text-slate-500 dark:text-dark-text-secondary">
-                    {formData.email}
-                  </p>
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
-                <Button
-                  variant={isEditing ? "secondary" : "primary"}
-                  size="md"
-                  className="flex-1 sm:flex-initial shadow-lg shadow-primary/10 rounded-2xl min-h-[44px]"
-                  icon={isEditing ? FiX : FiEdit3}
-                  onClick={() => setIsEditing(!isEditing)}
-                >
-                  {isEditing ? "HỦY CHỈNH SỬA" : "CHỈNH SỬA HỒ SƠ"}
-                </Button>
-                <Button
-                  variant="outline"
-                  size="md"
-                  className="flex-1 sm:flex-initial font-bold bg-white dark:bg-dark-bg border-slate-200 dark:border-dark-border text-slate-700 dark:text-dark-text-primary rounded-2xl min-h-[44px]"
-                  icon={FiLock}
-                  onClick={() => setShowPasswordModal(true)}
-                >
-                  ĐỔI MẬT KHẨU
-                </Button>
-              </div>
-            </div>
-
-            {/* Quick Metrics Bar */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 pt-4 border-t border-slate-100 dark:border-dark-border">
-              <div className="p-3 sm:p-4 rounded-2xl bg-slate-50/80 dark:bg-dark-bg/60 border border-slate-100 dark:border-dark-border flex items-center gap-3">
-                <div className="size-10 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center text-lg shrink-0">
-                  <FiAward />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest truncate">Hạng hội viên</p>
-                  <p className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate">
-                    {user?.rank || "Thành viên Đồng"}
-                  </p>
-                </div>
-              </div>
-
-              <div className="p-3 sm:p-4 rounded-2xl bg-slate-50/80 dark:bg-dark-bg/60 border border-slate-100 dark:border-dark-border flex items-center gap-3">
-                <div className="size-10 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-lg shrink-0">
-                  <FiStar />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest truncate">Điểm thưởng</p>
-                  <p className="text-xs sm:text-sm font-bold text-emerald-600 dark:text-emerald-400 truncate">
-                    {user?.points || 0} PTS
-                  </p>
-                </div>
-              </div>
-
-              <div className="col-span-2 sm:col-span-1 p-3 sm:p-4 rounded-2xl bg-slate-50/80 dark:bg-dark-bg/60 border border-slate-100 dark:border-dark-border flex items-center gap-3">
-                <div className="size-10 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center text-lg shrink-0">
-                  <FiCalendar />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest truncate">Tham gia từ</p>
-                  <p className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate">
-                    {user?.createdAt ? new Date(user.createdAt).toLocaleDateString("vi-VN") : "N/A"}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {(() => {
-              const tierInfo = getTierProgress(user?.points, user?.rank);
-              return (
-                <div className="mt-5 p-4 rounded-2xl bg-gradient-to-r from-amber-50/80 via-white to-blue-50/60 dark:from-amber-950/20 dark:via-dark-bg/80 dark:to-blue-950/20 border border-amber-200/70 dark:border-dark-border space-y-2.5">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <span className="font-black text-slate-900 dark:text-white uppercase tracking-wider truncate">
-                        Tiến trình hạng {tierInfo.currentTier.label}
-                      </span>
-                      <span className="px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-700 dark:text-amber-300 text-[10px] font-black shrink-0">
-                        {tierInfo.points.toLocaleString()} PTS
-                      </span>
-                    </div>
-                    <span className="text-[11px] font-bold text-slate-500 dark:text-dark-text-secondary">
-                      {tierInfo.nextTier
-                        ? `Cần thêm ${tierInfo.pointsToNext.toLocaleString()} điểm để lên ${tierInfo.nextTier.label}`
-                        : "Bạn đang ở hạng thành viên cao nhất!"}
-                    </span>
-                  </div>
-                  <div className="w-full h-2.5 bg-slate-200/70 dark:bg-slate-800 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-gradient-to-r from-amber-500 via-orange-500 to-primary rounded-full transition-all duration-500"
-                      style={{ width: `${tierInfo.progressPercent}%` }}
-                    />
-                  </div>
-                  <div className="flex items-center justify-between text-[10px] font-bold text-slate-400 dark:text-slate-500 flex-wrap gap-2">
-                    {LOYALTY_TIERS.map((tier) => (
-                      <span
-                        key={tier.name}
-                        className={
-                          tier.name === tierInfo.currentTier.name
-                            ? "text-primary font-black"
-                            : ""
-                        }
-                      >
-                        {tier.name} ({tier.minPoints.toLocaleString()})
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              );
-            })()}
-          </div>
-        </div>
-
-        {/* Animated Tabs Bar */}
-        <div className="flex items-center gap-2 p-1.5 bg-white dark:bg-dark-surface rounded-2xl border border-slate-200/80 dark:border-dark-border shadow-soft overflow-x-auto touch-pan-x">
-          {[
-            { id: "info", label: "Thông tin cá nhân", icon: FiUser },
-            { id: "address", label: "Sổ địa chỉ nhận hàng", icon: FiMapPin },
-            { id: "security", label: "Bảo mật & Cài đặt", icon: FiShield },
-          ].map((tab) => {
-            const Icon = tab.icon;
-            const isActive = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`relative flex-1 min-w-[140px] sm:min-w-[180px] py-3 px-4 rounded-xl font-black text-xs uppercase tracking-wider transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer z-10 ${
-                  isActive
-                    ? "text-white"
-                    : "text-slate-500 dark:text-dark-text-secondary hover:text-slate-900 dark:hover:text-white"
-                }`}
-              >
-                {isActive && (
-                  <Motion.div
-                    layoutId="activeProfileTab"
-                    className="absolute inset-0 bg-primary rounded-xl shadow-lg shadow-primary/20 -z-10"
-                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                  />
-                )}
-                {Icon && (typeof Icon === "function" ? <Icon className="text-sm" /> : Icon)}
-                <span>{tab.label}</span>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Tab Content Display */}
-        <AnimatePresence mode="wait">
-          {activeTab === "info" ? (
-            <Motion.div
-              key="info"
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -15 }}
-              transition={{ duration: 0.2 }}
-              className="bg-white dark:bg-dark-surface rounded-2xl p-5 sm:p-6 md:p-8 border border-slate-200/80 dark:border-dark-border shadow-soft"
+      <div className="flex items-center gap-2 p-1.5 bg-white dark:bg-dark-surface rounded-2xl border border-slate-200/80 dark:border-dark-border shadow-soft overflow-x-auto touch-pan-x">
+        {[
+          { id: "info", label: "Thông tin cá nhân", Icon: User },
+          { id: "address", label: "Sổ địa chỉ nhận hàng", Icon: MapPin },
+          { id: "security", label: "Bảo mật & Cài đặt", Icon: Shield },
+        ].map((tab) => {
+          const Icon = tab.Icon;
+          const isActive = activeTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setActiveTab(tab.id)}
+              className={`relative flex-1 min-w-[140px] sm:min-w-[180px] py-3 px-4 rounded-xl font-black text-xs uppercase tracking-wider transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer z-10 ${
+                isActive
+                  ? "text-white"
+                  : "text-slate-500 dark:text-dark-text-secondary hover:text-slate-900 dark:hover:text-white"
+              }`}
             >
-              <div className="flex items-center justify-between mb-6 sm:mb-8 pb-4 sm:pb-6 border-b border-slate-100 dark:border-dark-border">
-                <div>
-                  <h3 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">
-                    Chi tiết hồ sơ
-                  </h3>
-                  <p className="text-xs text-slate-400 dark:text-dark-text-secondary font-medium mt-0.5">
-                    Quản lý thông tin định danh và liên lạc chính thức.
-                  </p>
-                </div>
-
-                {isEditing && (
-                  <span className="px-3 py-1 bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800 text-[10px] font-black uppercase tracking-widest rounded-full animate-pulse">
-                    Đang chỉnh sửa
-                  </span>
-                )}
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                {[
-                  {
-                    name: "username",
-                    label: "Họ và tên người dùng",
-                    icon: FiUser,
-                    placeholder: "Nhập họ tên...",
-                  },
-                  {
-                    name: "email",
-                    label: "Địa chỉ Email",
-                    icon: FiMail,
-                    type: "email",
-                    placeholder: "example@mail.com",
-                  },
-                  {
-                    name: "phone",
-                    label: "Số điện thoại",
-                    icon: FiPhone,
-                    placeholder: "09xx xxx xxx",
-                  },
-                  {
-                    name: "address",
-                    label: "Địa chỉ mặc định",
-                    icon: FiMapPin,
-                    placeholder: "Số nhà, đường, phường/xã, quận/huyện...",
-                    colSpan: true,
-                  },
-                ].map((field) => (
-                  <div
-                    key={field.name}
-                    className={`${field.colSpan ? "md:col-span-2" : ""} space-y-1.5`}
-                  >
-                    <label className="text-[10px] sm:text-[11px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest ml-1">
-                      {field.label}
-                    </label>
-                    <div className="relative group">
-                      <div
-                        className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors ${
-                          isEditing ? "text-primary" : "text-slate-400 dark:text-slate-600"
-                        }`}
-                      >
-                        <field.icon size={18} />
-                      </div>
-                      <input
-                        type={field.type || "text"}
-                        name={field.name}
-                        value={formData[field.name] || ""}
-                        onChange={handleChange}
-                        disabled={!isEditing}
-                        placeholder={field.placeholder}
-                        className={`w-full h-13 pl-12 pr-4 bg-slate-50 dark:bg-dark-bg border border-slate-200 dark:border-dark-border rounded-2xl text-sm font-bold outline-none transition-all ${
-                          isEditing
-                            ? "bg-white dark:bg-dark-surface border-primary/40 focus:border-primary focus:ring-4 focus:ring-primary/10 text-slate-900 dark:text-white"
-                            : "border-transparent text-slate-700 dark:text-slate-300 cursor-not-allowed"
-                        }`}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Email Notification Quick Status */}
-              <div className="mt-6 p-4 rounded-2xl bg-slate-50 dark:bg-dark-bg/60 border border-slate-200/60 dark:border-dark-border flex items-center justify-between gap-3">
-                <div className="flex items-center gap-3">
-                  <div className={`size-10 rounded-xl flex items-center justify-center text-lg shrink-0 ${
-                    receiveEmail
-                      ? "bg-blue-500/10 text-blue-600 dark:text-blue-400"
-                      : "bg-slate-200 dark:bg-slate-800 text-slate-400"
-                  }`}>
-                    <FiMail />
-                  </div>
-                  <div>
-                    <p className="text-xs font-bold text-slate-800 dark:text-white">
-                      Nhận thông báo qua Email
-                    </p>
-                    <p className="text-[11px] text-slate-400 dark:text-dark-text-secondary">
-                      {receiveEmail
-                        ? "Đang nhận cập nhật đơn hàng và khuyến mãi qua email"
-                        : "Đã tạm dừng nhận email thông báo"}
-                    </p>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={handleToggleEmailNotification}
-                  disabled={emailToggleLoading}
-                  className={`relative inline-flex h-8 w-14 shrink-0 cursor-pointer rounded-full p-1 transition-colors duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary/40 ${
-                    receiveEmail ? "bg-primary shadow-md shadow-primary/25" : "bg-slate-300 dark:bg-slate-700"
-                  } ${emailToggleLoading ? "opacity-60 cursor-wait" : ""}`}
-                  aria-label="Bật/tắt nhận email"
-                >
-                  <Motion.span
-                    animate={{ x: receiveEmail ? 24 : 0 }}
-                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                    className="pointer-events-none flex size-6 items-center justify-center rounded-full bg-white shadow-md"
-                  >
-                    {emailToggleLoading ? (
-                      <div className="size-3 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                    ) : receiveEmail ? (
-                      <FiCheck className="size-3.5 text-primary stroke-[3]" />
-                    ) : (
-                      <FiX className="size-3 text-slate-400 stroke-[2.5]" />
-                    )}
-                  </Motion.span>
-                </button>
-              </div>
-
-              {isEditing && (
+              {isActive && (
                 <Motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="mt-8 pt-6 border-t border-slate-100 dark:border-dark-border flex justify-end gap-3"
-                >
-                  <Button
-                    variant="secondary"
-                    size="lg"
-                    className="min-h-[44px]"
-                    onClick={() => setIsEditing(false)}
-                  >
-                    HỦY BỎ
-                  </Button>
-                  <Button
-                    variant="primary"
-                    size="lg"
-                    className="shadow-xl shadow-primary/20 min-h-[44px]"
-                    icon={FiSave}
-                    loading={loading}
-                    onClick={handleSave}
-                  >
-                    LƯU THAY ĐỔI
-                  </Button>
-                </Motion.div>
+                  layoutId="activeProfileTab"
+                  className="absolute inset-0 bg-primary rounded-xl shadow-lg shadow-primary/20 -z-10"
+                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                />
               )}
-            </Motion.div>
-          ) : activeTab === "address" ? (
-            <Motion.div
-              key="address"
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -15 }}
-              transition={{ duration: 0.2 }}
-              className="bg-white dark:bg-dark-surface rounded-2xl p-5 sm:p-6 md:p-8 border border-slate-200/80 dark:border-dark-border shadow-soft"
-            >
-              <AddressManager />
-            </Motion.div>
-          ) : (
-            <Motion.div
-              key="security"
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -15 }}
-              transition={{ duration: 0.2 }}
-              className="bg-white dark:bg-dark-surface rounded-2xl p-5 sm:p-6 md:p-8 border border-slate-200/80 dark:border-dark-border shadow-soft space-y-6"
-            >
-              <div className="flex items-center justify-between pb-6 border-b border-slate-100 dark:border-dark-border">
-                <div>
-                  <h3 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">
-                    Bảo mật & Cài đặt thông báo
-                  </h3>
-                  <p className="text-xs text-slate-400 dark:text-dark-text-secondary font-medium mt-0.5">
-                    Quản lý mật khẩu, trạng thái tài khoản và tùy chọn nhận thông báo qua Email.
-                  </p>
-                </div>
-                <div className="size-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-xl shrink-0">
-                  <FiShield />
-                </div>
-              </div>
+              <Icon className="size-3.5" />
+              <span>{tab.label}</span>
+            </button>
+          );
+        })}
+      </div>
 
-              {/* Email Notification Setting Card */}
-              <div className="p-5 sm:p-6 rounded-2xl bg-gradient-to-r from-blue-50/70 via-indigo-50/40 to-cyan-50/50 dark:from-dark-bg dark:via-dark-bg dark:to-dark-bg border border-blue-100 dark:border-dark-border flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all">
-                <div className="flex items-start sm:items-center gap-3.5">
-                  <div className={`size-12 rounded-2xl flex items-center justify-center text-xl shrink-0 transition-all ${
-                    receiveEmail
-                      ? "bg-primary text-white shadow-lg shadow-primary/30"
-                      : "bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-500"
-                  }`}>
-                    <FiMail />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <h4 className="text-sm sm:text-base font-black text-slate-900 dark:text-white">
-                        Nhận thông báo qua Email
-                      </h4>
-                      <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border transition-colors ${
-                        receiveEmail
-                          ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800"
-                          : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 border-slate-200 dark:border-slate-700"
-                      }`}>
-                        {receiveEmail ? "Đang bật" : "Đang tắt"}
-                      </span>
-                    </div>
-                    <p className="text-xs text-slate-500 dark:text-dark-text-secondary font-medium mt-1 max-w-xl leading-relaxed">
-                      Nhận email tự động về trạng thái đơn hàng (xác nhận, vận chuyển, giao thành công), biên lai thanh toán điện tử, mã giảm giá và ưu đãi thành viên độc quyền.
-                    </p>
-                  </div>
-                </div>
+      <AnimatePresence mode="wait">
+        {activeTab === "info" ? (
+          <ProfileInfoTab
+            formData={formData}
+            isEditing={isEditing}
+            onChange={handleChange}
+            onCancelEdit={() => setIsEditing(false)}
+            onSave={handleSave}
+            loading={loading}
+            receiveEmail={receiveEmail}
+            emailToggleLoading={emailToggleLoading}
+            onToggleEmailNotification={handleToggleEmailNotification}
+          />
+        ) : activeTab === "address" ? (
+          <Motion.div
+            key="address"
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -15 }}
+            transition={{ duration: 0.2 }}
+            className="bg-white dark:bg-dark-surface rounded-2xl p-5 sm:p-6 md:p-8 border border-slate-200/80 dark:border-dark-border shadow-soft"
+          >
+            <AddressManager />
+          </Motion.div>
+        ) : (
+          <ProfileSecurityTab
+            receiveEmail={receiveEmail}
+            emailToggleLoading={emailToggleLoading}
+            onToggleEmailNotification={handleToggleEmailNotification}
+            onOpenPasswordModal={() => setShowPasswordModal(true)}
+          />
+        )}
+      </AnimatePresence>
 
-                {/* Animated Toggle Switch */}
-                <button
-                  type="button"
-                  onClick={handleToggleEmailNotification}
-                  disabled={emailToggleLoading}
-                  className={`relative inline-flex h-8 w-14 shrink-0 cursor-pointer rounded-full p-1 transition-colors duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary/40 self-start sm:self-center ${
-                    receiveEmail ? "bg-primary shadow-md shadow-primary/25" : "bg-slate-300 dark:bg-slate-700"
-                  } ${emailToggleLoading ? "opacity-60 cursor-wait" : ""}`}
-                  aria-label="Bật/tắt nhận email"
-                >
-                  <Motion.span
-                    animate={{ x: receiveEmail ? 24 : 0 }}
-                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                    className="pointer-events-none flex size-6 items-center justify-center rounded-full bg-white shadow-md"
-                  >
-                    {emailToggleLoading ? (
-                      <div className="size-3 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                    ) : receiveEmail ? (
-                      <FiCheck className="size-3.5 text-primary stroke-[3]" />
-                    ) : (
-                      <FiX className="size-3 text-slate-400 stroke-[2.5]" />
-                    )}
-                  </Motion.span>
-                </button>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="p-5 rounded-2xl bg-slate-50 dark:bg-dark-bg border border-slate-200/60 dark:border-dark-border flex flex-col justify-between gap-4">
-                  <div>
-                    <div className="flex items-center gap-2.5 mb-2">
-                      <div className="size-9 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center text-base">
-                        <FiLock />
-                      </div>
-                      <h4 className="text-sm font-black text-slate-900 dark:text-white">Mật khẩu đăng nhập</h4>
-                    </div>
-                    <p className="text-xs text-slate-500 dark:text-dark-text-secondary font-medium">
-                      Thay đổi định kỳ mật khẩu để bảo vệ thông tin cá nhân và đơn hàng.
-                    </p>
-                  </div>
-                  <Button
-                    variant="primary"
-                    size="md"
-                    className="w-full justify-center min-h-[44px]"
-                    icon={FiLock}
-                    onClick={() => setShowPasswordModal(true)}
-                  >
-                    ĐỔI MẬT KHẨU NGAY
-                  </Button>
-                </div>
-
-                <div className="p-5 rounded-2xl bg-slate-50 dark:bg-dark-bg border border-slate-200/60 dark:border-dark-border flex flex-col justify-between gap-4">
-                  <div>
-                    <div className="flex items-center gap-2.5 mb-2">
-                      <div className="size-9 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-base">
-                        <FiShield />
-                      </div>
-                      <h4 className="text-sm font-black text-slate-900 dark:text-white">Trạng thái xác minh</h4>
-                    </div>
-                    <p className="text-xs text-slate-500 dark:text-dark-text-secondary font-medium">
-                      Tài khoản của bạn đã được xác minh địa chỉ Email thành công.
-                    </p>
-                  </div>
-                  <span className="inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 font-bold text-xs">
-                    <FiCheckCircle /> Đã xác thực an toàn
-                  </span>
-                </div>
-              </div>
-            </Motion.div>
-          )}
-        </AnimatePresence>
-
-      {/* Avatar Upload Modal with Backdrop Blur Loading Spinner */}
-      <Modal
+      <ProfileAvatarModal
         isOpen={showAvatarModal}
         onClose={() => setShowAvatarModal(false)}
-        title="Cập nhật ảnh đại diện"
-        size="md"
-        loading={avatarLoading}
-        loadingMessage="Đang tải ảnh đại diện..."
-      >
-        <div className="space-y-6 text-center">
-          <div className="size-44 sm:size-48 mx-auto rounded-full border-4 border-slate-200 dark:border-dark-border overflow-hidden shadow-2xl bg-slate-100 dark:bg-dark-bg relative group">
-            <img
-              src={preview || "/images/avatar-default.png"}
-              alt="Preview"
-              className="w-full h-full object-cover"
-            />
-          </div>
-
-          <div className="relative group">
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleFileChange}
-              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-            />
-            <div className="w-full h-14 bg-slate-50 dark:bg-dark-bg border-2 border-dashed border-slate-200 dark:border-dark-border rounded-2xl flex items-center justify-center gap-2 group-hover:border-primary group-hover:bg-primary/5 transition-all">
-              <FiCamera className="text-slate-400 group-hover:text-primary transition-colors text-lg" />
-              <span className="text-xs sm:text-sm font-bold text-slate-600 dark:text-dark-text-secondary group-hover:text-primary transition-colors">
-                Tải ảnh mới từ thiết bị
-              </span>
-            </div>
-          </div>
-
-          <div className="flex gap-3 pt-2">
-            <Button
-              variant="secondary"
-              className="flex-1 min-h-[44px]"
-              onClick={() => setShowAvatarModal(false)}
-            >
-              HỦY BỎ
-            </Button>
-            <Button
-              variant="primary"
-              className="flex-1 min-h-[44px]"
-              loading={avatarLoading}
-              onClick={handleAvatarUpload}
-            >
-              CẬP NHẬT NGAY
-            </Button>
-          </div>
-        </div>
-      </Modal>
+        preview={preview}
+        avatarLoading={avatarLoading}
+        onFileChange={handleFileChange}
+        onUpload={handleAvatarUpload}
+      />
 
       <ChangePasswordModal
         show={showPasswordModal}

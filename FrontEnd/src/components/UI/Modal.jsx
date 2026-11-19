@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import { motion as Motion, AnimatePresence } from "framer-motion";
+import { m as Motion, AnimatePresence } from "framer-motion";
 import { FiX, FiAlertTriangle, FiCheckCircle, FiInfo, FiTrash2 } from "react-icons/fi";
 import { Button } from "./Button";
 import UnifiedSpinner from "../Loading/UnifiedSpinner";
@@ -220,7 +220,7 @@ export const ConfirmModal = ({
           transition={{ type: "spring", stiffness: 450, damping: 20, delay: 0.06 }}
           className={`size-14 sm:size-16 rounded-2xl flex items-center justify-center text-2xl sm:text-3xl mb-4 border shadow-inner ${style}`}
         >
-          {Icon && (typeof Icon === "function" ? <Icon /> : Icon)}
+          {Icon && (React.isValidElement(Icon) ? Icon : <Icon />)}
         </Motion.div>
 
         <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white tracking-tight uppercase mb-1.5">

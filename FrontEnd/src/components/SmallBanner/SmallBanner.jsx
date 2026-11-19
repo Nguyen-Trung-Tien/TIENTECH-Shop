@@ -1,5 +1,5 @@
 import { FiTruck, FiTag, FiHeadphones, FiCheckCircle } from "react-icons/fi";
-import { motion as Motion } from "framer-motion";
+import { m as Motion } from "framer-motion";
 
 const SmallBanner = () => {
   const items = [

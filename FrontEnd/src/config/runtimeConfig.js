@@ -18,8 +18,4 @@ export const appConfig = {
     runtimeConfig.VITE_PAYPAL_CURRENCY ||
     import.meta.env.VITE_PAYPAL_CURRENCY ||
     "USD",
-  showReactQueryDevtools:
-    (runtimeConfig.VITE_SHOW_REACT_QUERY_DEVTOOLS ||
-      import.meta.env.VITE_SHOW_REACT_QUERY_DEVTOOLS ||
-      "false") === "true",
 };

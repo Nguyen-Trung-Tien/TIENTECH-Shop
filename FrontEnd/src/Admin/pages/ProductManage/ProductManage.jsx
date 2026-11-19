@@ -22,7 +22,12 @@ import {
 import { getAllCategoryApi } from "../../../api/categoryApi";
 import { getAllBrandApi } from "../../../api/brandApi";
 import { getAllAttributesApi } from "../../../api/attributeApi";
-import { syncEmbeddings } from "../../../api/adminApi";
+import {
+  syncEmbeddings,
+  getVectorStatusApi,
+  reloadVectorIndexApi,
+} from "../../../api/adminApi";
+import { getSocket } from "../../../utils/socket";
 
 import AppPagination from "../../../components/Pagination/Pagination";
 import { ConfirmModal } from "../../../components/UI/Modal";
@@ -65,6 +70,8 @@ const ProductManage = () => {
   const limit = 10;
   const [loadingTable, setLoadingTable] = useState(false);
   const [isSyncingAI, setIsSyncingAI] = useState(false);
+  const [vectorStatus, setVectorStatus] = useState(null);
+  const [syncProgress, setSyncProgress] = useState(null);
 
   // Delete confirm modal state
   const [isDeleting, setIsDeleting] = useState(false);
@@ -267,17 +274,50 @@ const ProductManage = () => {
     }
   };
 
+  const fetchVectorStatus = useCallback(async () => {
+    try {
+      const res = await getVectorStatusApi();
+      if (res?.errCode === 0 && res.data) {
+        setVectorStatus(res.data);
+        if (res.data.job?.running) {
+          setSyncProgress(res.data.job);
+          setIsSyncingAI(true);
+        }
+      }
+    } catch {
+      // Non-blocking vector status poll
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchVectorStatus();
+    const sock = getSocket();
+    const handleProgress = (payload) => {
+      if (!payload) return;
+      setSyncProgress(payload);
+      setIsSyncingAI(Boolean(payload.running));
+      if (!payload.running && payload.finishedAt) {
+        fetchVectorStatus();
+      }
+    };
+    sock.on("vector_sync_progress", handleProgress);
+    return () => {
+      sock.off("vector_sync_progress", handleProgress);
+    };
+  }, [fetchVectorStatus]);
+
   // Sync AI Vector Embeddings
-  const handleSyncAI = async () => {
+  const handleSyncAI = async (mode = "missing") => {
     setIsSyncingAI(true);
     try {
-      const res = await syncEmbeddings();
+      const res = await syncEmbeddings(mode);
       if (res?.errCode === 0) {
         showSuccessToast(
           res.message,
           "Đồng bộ dữ liệu AI Vector thành công! ✨",
         );
         fetchProducts(page);
+        fetchVectorStatus();
       } else {
         showErrorToast(res?.errMessage, "Đồng bộ thất bại");
       }
@@ -286,6 +326,20 @@ const ProductManage = () => {
       showErrorToast(error, "Lỗi khi đồng bộ dữ liệu Vector AI");
     } finally {
       setIsSyncingAI(false);
+    }
+  };
+
+  const handleReloadVector = async () => {
+    try {
+      const res = await reloadVectorIndexApi();
+      if (res?.errCode === 0) {
+        showSuccessToast(res.errMessage || "Đã nạp lại AI Vector vào RAM!");
+        fetchVectorStatus();
+      } else {
+        showErrorToast(res?.errMessage || "Không thể nạp lại Vector Index");
+      }
+    } catch (error) {
+      showErrorToast(error, "Lỗi khi nạp lại AI Vector Index");
     }
   };
 
@@ -326,12 +380,22 @@ const ProductManage = () => {
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full sm:w-auto">
           <button
             type="button"
-            onClick={handleSyncAI}
+            onClick={() => handleSyncAI("missing")}
             disabled={isSyncingAI}
             className="flex items-center justify-center gap-2 px-4 h-11 rounded-xl bg-white dark:bg-dark-surface hover:bg-slate-50 dark:hover:bg-dark-bg border border-slate-200 dark:border-dark-border text-slate-600 dark:text-dark-text-secondary hover:text-primary font-black uppercase tracking-wider text-[11px] transition-all disabled:opacity-50 cursor-pointer shadow-xs"
           >
             <FiCpu className={isSyncingAI ? "animate-spin text-primary" : ""} />
-            <span>{isSyncingAI ? "Đang đồng bộ..." : "Đồng bộ AI Vector"}</span>
+            <span>{isSyncingAI ? "Đang đồng bộ..." : "Đồng bộ thiếu/cũ"}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleSyncAI("all")}
+            disabled={isSyncingAI}
+            className="flex items-center justify-center gap-2 px-4 h-11 rounded-xl bg-white dark:bg-dark-surface hover:bg-slate-50 dark:hover:bg-dark-bg border border-slate-200 dark:border-dark-border text-slate-600 dark:text-dark-text-secondary hover:text-amber-600 font-black uppercase tracking-wider text-[11px] transition-all disabled:opacity-50 cursor-pointer shadow-xs"
+          >
+            <FiZap />
+            <span>Rebuild toàn bộ</span>
           </button>
 
           <button
@@ -346,6 +410,41 @@ const ProductManage = () => {
       }
       className="pb-16"
     >
+        {/* AI Vector Ops Status Bar */}
+        {vectorStatus && (
+          <div className="mb-4 rounded-2xl border border-slate-200/80 dark:border-dark-border bg-white/90 dark:bg-dark-surface p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+            <div className="min-w-0 flex-1 space-y-1">
+              <div className="flex flex-wrap items-center gap-2 text-xs font-bold text-slate-800 dark:text-white">
+                <span className="inline-flex items-center gap-1.5 text-primary">
+                  <FiCpu /> AI Vector Index ({vectorStatus.model})
+                </span>
+                <span className="px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 text-[11px] font-mono">
+                  DB: {vectorStatus.counts?.ready || 0}/{vectorStatus.totalActiveProducts || 0} ({vectorStatus.coveragePct || 0}%)
+                </span>
+                <span className="px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 text-[11px] font-mono">
+                  RAM: {vectorStatus.indexStats?.inMemoryCount || 0} vectors ({vectorStatus.dimensions || 768}d)
+                </span>
+                {vectorStatus.counts?.failed > 0 && (
+                  <span className="px-2 py-0.5 rounded-full bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 text-[11px] font-mono">
+                    Lỗi: {vectorStatus.counts.failed}
+                  </span>
+                )}
+              </div>
+              {syncProgress?.running && (
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 break-words [overflow-wrap:anywhere]">
+                  Tiến trình đồng bộ ({syncProgress.mode}): {syncProgress.processed}/{syncProgress.total} SP — Thành công: {syncProgress.succeeded}, Bỏ qua: {syncProgress.skipped}, Lỗi: {syncProgress.failed}
+                </p>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={handleReloadVector}
+              className="shrink-0 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-dark-border text-xs font-bold text-slate-600 dark:text-dark-text-secondary hover:text-primary hover:bg-slate-50 dark:hover:bg-dark-bg transition cursor-pointer"
+            >
+              Nạp lại RAM
+            </button>
+          </div>
+        )}
 
         {/* Filter Toolbar */}
         <ProductFilterBar

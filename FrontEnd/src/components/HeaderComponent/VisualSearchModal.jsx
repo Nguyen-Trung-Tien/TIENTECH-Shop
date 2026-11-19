@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { FiX, FiCamera, FiUploadCloud, FiArrowRight, FiSearch } from "react-icons/fi";
-import { motion as Motion, AnimatePresence } from "framer-motion";
+import { m as Motion, AnimatePresence } from "framer-motion";
 import { visualSearch } from "../../api/chatApi";
 import { useNavigate } from "react-router-dom";
 import { showSuccessToast, showErrorToast } from "../../utils/toastHelper";

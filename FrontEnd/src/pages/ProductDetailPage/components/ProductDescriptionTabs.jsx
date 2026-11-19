@@ -13,7 +13,7 @@ import {
   FiChevronDown,
   FiChevronUp,
 } from "react-icons/fi";
-import { motion as Motion, AnimatePresence } from "framer-motion";
+import { m as Motion, AnimatePresence } from "framer-motion";
 import { getFengShuiDetailApi } from "../../../api/chatApi";
 
 const ProductDescriptionTabs = ({ product, mergedSpecs, displayVariant }) => {

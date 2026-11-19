@@ -10,7 +10,7 @@ import {
   FiPackage,
 } from "react-icons/fi";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
-import { motion as Motion } from "framer-motion";
+import { m as Motion } from "framer-motion";
 
 const CheckoutSuccess = () => {
   const navigate = useNavigate();

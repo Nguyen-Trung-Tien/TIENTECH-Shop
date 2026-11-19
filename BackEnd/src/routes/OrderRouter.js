@@ -13,6 +13,7 @@ const {
   orderSchema,
   changePaymentMethodSchema,
   updateOrderStatusSchema,
+  updateOrderPaymentStatusSchema,
   returnRequestSchema,
   returnActionSchema,
 } = require("../utils/zodSchemas");
@@ -61,6 +62,7 @@ router.put(
   "/update-payment-status/:id",
   authenticateToken,
   authorizeRole(["admin"]),
+  validate(updateOrderPaymentStatusSchema),
   OrderController.handleUpdatePaymentStatus
 );
 router.get(

@@ -17,7 +17,6 @@ export const useSystemSettings = () => {
       isCodEnabled: true,
       isVnpayEnabled: true,
       isPaypalEnabled: true,
-      isMomoEnabled: false,
       isMaintenance: false,
       maintenanceMessage: "",
       isAiEnabled: true,

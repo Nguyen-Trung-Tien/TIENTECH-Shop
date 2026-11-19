@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import {
   FiHelpCircle,
@@ -148,7 +148,7 @@ const SupportHub = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {supportCategories.map((cat, idx) => (
-            <motion.div
+            <m.div
               key={idx}
               whileHover={{ y: -6 }}
               className={`p-8 rounded-3xl border ${cat.color} backdrop-blur-md transition-all shadow-sm flex flex-col justify-between`}
@@ -179,7 +179,7 @@ const SupportHub = () => {
                   Xem chi tiết <FiArrowRight />
                 </Link>
               </div>
-            </motion.div>
+            </m.div>
           ))}
         </div>
       </div>

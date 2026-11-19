@@ -4,7 +4,7 @@ import {
   showSuccessToast,
   showWarningToast,
 } from "../../utils/toastHelper";
-import { motion as Motion, AnimatePresence } from "framer-motion";
+import { m as Motion, AnimatePresence } from "framer-motion";
 import {
   FiMail,
   FiShield,

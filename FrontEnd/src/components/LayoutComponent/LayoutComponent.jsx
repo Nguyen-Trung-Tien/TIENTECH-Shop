@@ -1,12 +1,15 @@
-import React from "react";
-import { motion as Motion } from "framer-motion";
+import React, { lazy, Suspense } from "react";
+import { m as Motion } from "framer-motion";
 import Header from "../HeaderComponent/Header";
 import Footer from "../FooterComponent/Footer";
 import MobileBottomNav from "./MobileBottomNav";
+import FloatingCompareBar from "../../features/compare/components/FloatingCompareBar";
 import { useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { useSystemSettings } from "../../context/useSystemSettings";
 import { FiTool } from "react-icons/fi";
+
+const ChatBot = lazy(() => import("../ChatBot/ChatBot"));
 
 const LayoutComponent = ({
   children,
@@ -60,7 +63,7 @@ const LayoutComponent = ({
     <div className="flex flex-col min-h-screen bg-[var(--bg-main)] transition-colors duration-300 selection:bg-primary/10 selection:text-primary">
       {isShowHeader && <Header />}
       
-      <main id="main-content" className="flex-grow pb-20">
+      <main id="main-content" tabIndex={-1} className="flex-grow pb-20 focus:outline-none">
         <Motion.div
           key={location.pathname}
           initial={{ opacity: 0, y: 8 }}
@@ -72,6 +75,12 @@ const LayoutComponent = ({
       </main>
 
       {isShowFooter && !shouldHideFooter && <Footer />}
+      <FloatingCompareBar />
+      {!shouldHideFooter && !location.pathname.startsWith("/admin") && (
+        <Suspense fallback={null}>
+          <ChatBot />
+        </Suspense>
+      )}
       {isShowHeader && <MobileBottomNav />}
     </div>
   );

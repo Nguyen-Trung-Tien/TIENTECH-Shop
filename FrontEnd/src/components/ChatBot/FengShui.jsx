@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { FiX, FiSend, FiZap, FiStar, FiRefreshCw } from "react-icons/fi";
-import { motion as Motion, AnimatePresence } from "framer-motion";
+import { m as Motion, AnimatePresence } from "framer-motion";
 import { fengShuiChatApi } from "../../api/chatApi";
 import UnifiedSpinner from "../Loading/UnifiedSpinner";
 
@@ -331,9 +332,9 @@ const FengShuiChat = ({ setGlobalBirthYear }) => {
                               ✨ Thiết bị gợi ý theo AI Color &amp; Setup:
                             </p>
                             {msg.recommendedProducts.map((prod) => (
-                              <a
+                              <Link
                                 key={prod.id || prod._id}
-                                href={`/product-detail/${prod.slug || prod.id || prod._id}`}
+                                to={`/product-detail/${prod.slug || prod.id || prod._id}`}
                                 className="flex items-center gap-3 p-2.5 bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 hover:border-indigo-400 dark:hover:border-indigo-600 transition-all group shadow-sm"
                               >
                                 <div className="size-12 rounded-lg bg-slate-50 dark:bg-slate-900 overflow-hidden flex-shrink-0 border border-slate-100 dark:border-slate-700 p-1">
@@ -358,7 +359,7 @@ const FengShuiChat = ({ setGlobalBirthYear }) => {
                                     )}
                                   </div>
                                 </div>
-                              </a>
+                              </Link>
                             ))}
                           </div>
                         )}

@@ -6,9 +6,6 @@ const BASE_URL = "/voucher";
 export const getAllVouchersApi = (page, limit, search) => 
   axiosClient.get(`${BASE_URL}/get-all`, { params: { page, limit, search } });
 
-export const getVoucherByIdApi = (id) => 
-  axiosClient.get(`${BASE_URL}/get-by-id/${id}`);
-
 export const createVoucherApi = (data) => 
   axiosClient.post(`${BASE_URL}/create`, data);
 
@@ -26,7 +23,6 @@ export const checkVoucherApi = (data) =>
 
 export const voucherApi = {
   getAll: getAllVouchersApi,
-  getById: getVoucherByIdApi,
   create: createVoucherApi,
   update: updateVoucherApi,
   delete: deleteVoucherApi,

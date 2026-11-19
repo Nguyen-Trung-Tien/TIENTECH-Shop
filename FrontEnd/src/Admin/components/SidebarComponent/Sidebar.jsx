@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { FiHome, FiShoppingCart, FiBox, FiUsers, FiLayers, FiLogOut, FiBarChart, FiDollarSign, FiMessageSquare, FiTag, FiChevronDown, FiX, FiSettings } from "react-icons/fi";
+import { FiHome, FiShoppingCart, FiBox, FiUsers, FiLayers, FiLogOut, FiBarChart, FiDollarSign, FiMessageSquare, FiTag, FiChevronDown, FiX, FiSettings, FiMail } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
 import { logoutUserApi } from "../../../api/userApi";
 import { getAdminCounters } from "../../../api/adminApi";
 import { removeUser } from "../../../redux/userSlice";
 import { clearCart } from "../../../redux/cartSlice";
 import { showSuccessToast } from "../../../utils/toastHelper";
-import { motion as Motion, AnimatePresence } from "framer-motion";
+import { m as Motion, AnimatePresence } from "framer-motion";
 
 import Logo from "../../../components/UI/Logo";
 import UnifiedSpinner from "../../../components/Loading/UnifiedSpinner";
@@ -57,6 +57,7 @@ const MENU_SECTIONS = [
       { to: "/admin/users", icon: <FiUsers />, label: "Người dùng" },
       { to: "/admin/vouchers", icon: <FiTag />, label: "Mã giảm giá" },
       { to: "/admin/reviews", icon: <FiMessageSquare />, label: "Đánh giá" },
+      { to: "/admin/contacts", icon: <FiMail />, label: "Liên hệ & Hỗ trợ" },
     ],
   },
   {

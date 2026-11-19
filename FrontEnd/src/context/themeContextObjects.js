@@ -15,7 +15,6 @@ export const DEFAULT_SYSTEM_SETTINGS = {
   PAYMENT_COD_ENABLED: true,
   PAYMENT_VNPAY_ENABLED: true,
   PAYMENT_PAYPAL_ENABLED: true,
-  PAYMENT_MOMO_ENABLED: false,
   MAINTENANCE_MODE: false,
   MAINTENANCE_MESSAGE: "Hệ thống đang bảo trì định kỳ. Quý khách vui lòng quay lại sau!",
   AI_BOT_ENABLED: true,

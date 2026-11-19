@@ -434,26 +434,22 @@ describe("Phase 2 Business Logic, Loyalty, Multi-Variant Flash Sale & AI Fixes",
       expect(literalSql).toContain("VariantAttributeValues");
     });
 
-    test("gemini defaults to gemini-2.5-flash and InventoryService passes product ID in prompt", async () => {
-      expect(geminiConfig.FALLBACK_MODELS[0]).toBe("gemini-2.5-flash");
+    test("gemini defaults to gemini-3.8-flash and InventoryService passes product ID in prompt", async () => {
+      expect(geminiConfig.FALLBACK_MODELS[0]).toBe("gemini-3.8-flash");
 
-      jest.spyOn(SystemSettingService, "getSetting").mockResolvedValue("gemini-2.5-flash");
+      jest.spyOn(SystemSettingService, "getSetting").mockResolvedValue("gemini-3.8-flash");
       jest.spyOn(db.Product, "findAll").mockResolvedValue([
         { id: 42, name: "RTX Mouse", totalStock: 2, sold: 35, basePrice: 500000 },
       ]);
       const generateContentMock = jest.fn().mockResolvedValue({
-        response: {
-          text: () => JSON.stringify({ alerts: [{ productId: 42, priority: "HIGH", reason: "Low" }] }),
-        },
+        text: JSON.stringify({ alerts: [{ productId: 42, priority: "HIGH", reason: "Low" }] }),
       });
-      jest.spyOn(geminiConfig.genAI, "getGenerativeModel").mockReturnValue({
-        generateContent: generateContentMock,
-      });
+      jest.spyOn(geminiConfig.genAI.models, "generateContent").mockImplementation(generateContentMock);
       const NotificationService = require("../../src/services/notification/NotificationService");
       jest.spyOn(NotificationService, "createNotification").mockResolvedValue({ errCode: 0 });
 
       await InventoryService.checkInventoryAndAlert();
-      expect(generateContentMock.mock.calls[0][0]).toContain("[ID: 42]");
+      expect(generateContentMock.mock.calls[0][0].contents).toContain("[ID: 42]");
     });
 
     test("EmailService order emails link to /orders without double slash", async () => {

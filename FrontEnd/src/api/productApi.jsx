@@ -278,15 +278,27 @@ export const getPersonalizedRecommendationsApi = async (limit = 6) => {
 
 export const fetchFortuneProducts = async ({
   birthYear,
+  gender,
   brandId,
   minPrice,
   maxPrice,
   categoryId,
+  sortBy,
   page,
   limit,
 }) => {
   const res = await axiosClient.get("/product/recommend-fortune", {
-    params: { birthYear, brandId, minPrice, maxPrice, categoryId, page, limit },
+    params: {
+      birthYear,
+      gender,
+      brandId,
+      minPrice,
+      maxPrice,
+      categoryId,
+      sortBy,
+      page,
+      limit,
+    },
   });
   return res;
 };

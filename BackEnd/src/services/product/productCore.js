@@ -103,6 +103,80 @@ const createProduct = async (data, imageRecords = []) => {
   }
 };
 
+const ALLOWED_PRODUCT_UPDATE_FIELDS = [
+  "name",
+  "sku",
+  "slug",
+  "description",
+  "basePrice",
+  "discount",
+  "hasVariants",
+  "isActive",
+  "brandId",
+  "categoryId",
+  "isFlashSale",
+  "flashSalePrice",
+  "flashSaleStart",
+  "flashSaleEnd",
+];
+
+const sanitizeProductUpdateData = (data = {}) => {
+  const safeData = {};
+
+  for (const field of ALLOWED_PRODUCT_UPDATE_FIELDS) {
+    if (data[field] !== undefined) {
+      safeData[field] = data[field];
+    }
+  }
+
+  if (data.price !== undefined && safeData.basePrice === undefined) {
+    safeData.basePrice = data.price;
+  }
+
+  const numericNullableFields = ["brandId", "categoryId", "flashSalePrice"];
+  for (const field of numericNullableFields) {
+    if (safeData[field] !== undefined) {
+      if (safeData[field] === "" || safeData[field] === null) {
+        safeData[field] = null;
+      } else {
+        const parsed = Number(safeData[field]);
+        if (Number.isNaN(parsed)) {
+          delete safeData[field];
+        } else {
+          safeData[field] = parsed;
+        }
+      }
+    }
+  }
+
+  const dateNullableFields = ["flashSaleStart", "flashSaleEnd"];
+  for (const field of dateNullableFields) {
+    if (safeData[field] !== undefined && (safeData[field] === "" || safeData[field] === null)) {
+      safeData[field] = null;
+    }
+  }
+
+  if (safeData.basePrice !== undefined) {
+    const parsedPrice = Number(safeData.basePrice);
+    if (!Number.isNaN(parsedPrice)) {
+      safeData.basePrice = parsedPrice;
+    } else {
+      delete safeData.basePrice;
+    }
+  }
+
+  if (safeData.discount !== undefined) {
+    const parsedDiscount = Number(safeData.discount);
+    if (!Number.isNaN(parsedDiscount)) {
+      safeData.discount = parsedDiscount;
+    } else {
+      delete safeData.discount;
+    }
+  }
+
+  return safeData;
+};
+
 const updateProduct = async (id, data, imageRecords = []) => {
   const t = await db.sequelize.transaction();
   try {
@@ -111,7 +185,7 @@ const updateProduct = async (id, data, imageRecords = []) => {
       await t.rollback();
       return { errCode: 1, errMessage: "Product not found" };
     }
-    const updatedData = { ...data };
+    const updatedData = sanitizeProductUpdateData(data);
 
     if (
       updatedData.name &&
@@ -126,18 +200,18 @@ const updateProduct = async (id, data, imageRecords = []) => {
     }
 
     // Handle Image Deletion
-    if (updatedData.deletedImages) {
-      const imagesToDelete = Array.isArray(updatedData.deletedImages) 
-        ? updatedData.deletedImages 
-        : JSON.parse(updatedData.deletedImages);
-      
+    if (data.deletedImages) {
+      const imagesToDelete = Array.isArray(data.deletedImages)
+        ? data.deletedImages
+        : JSON.parse(data.deletedImages);
+
       if (imagesToDelete.length > 0) {
         await db.ProductImage.destroy({
           where: {
             productId: id,
-            imageUrl: { [Op.in]: imagesToDelete }
+            imageUrl: { [Op.in]: imagesToDelete },
           },
-          transaction: t
+          transaction: t,
         });
       }
     }
@@ -146,8 +220,8 @@ const updateProduct = async (id, data, imageRecords = []) => {
       transaction: t,
     });
 
-    if (updatedData.specifications) {
-      let specs = updatedData.specifications;
+    if (data.specifications) {
+      let specs = data.specifications;
       if (typeof specs === "string") {
         try {
           specs = JSON.parse(specs);
@@ -161,11 +235,11 @@ const updateProduct = async (id, data, imageRecords = []) => {
       );
     }
 
-    if (updatedData.attributes) {
+    if (data.attributes) {
       const attrs =
-        typeof updatedData.attributes === "string"
-          ? JSON.parse(updatedData.attributes)
-          : updatedData.attributes;
+        typeof data.attributes === "string"
+          ? JSON.parse(data.attributes)
+          : data.attributes;
       await db.ProductAttributeValue.destroy({
         where: { productId: id },
         transaction: t,
@@ -186,8 +260,8 @@ const updateProduct = async (id, data, imageRecords = []) => {
     }
 
     if (hasVariantsFinal) {
-      if (updatedData.variants && Array.isArray(updatedData.variants)) {
-        const incomingVariantIds = updatedData.variants
+      if (data.variants && Array.isArray(data.variants)) {
+        const incomingVariantIds = data.variants
           .filter((v) => v.id)
           .map((v) => v.id);
 
@@ -199,7 +273,7 @@ const updateProduct = async (id, data, imageRecords = []) => {
           transaction: t,
         });
 
-        for (const vData of updatedData.variants) {
+        for (const vData of data.variants) {
           if (vData.id) {
             await ProductVariantService.updateVariant(vData.id, vData, t);
           } else {
@@ -215,7 +289,7 @@ const updateProduct = async (id, data, imageRecords = []) => {
         where: { productId: id },
         transaction: t,
       });
-      
+
       const totalStockCalculated = finalTotalStock || 0;
       await updatedProduct.update(
         {
@@ -235,9 +309,9 @@ const updateProduct = async (id, data, imageRecords = []) => {
       });
 
       // 2. Lấy tồn kho từ stock hoặc totalStock gửi lên, nếu không có thì giữ nguyên tồn kho hiện tại
-      const rawStock = updatedData.stock !== undefined
-        ? updatedData.stock
-        : (updatedData.totalStock !== undefined ? updatedData.totalStock : product.totalStock);
+      const rawStock = data.stock !== undefined
+        ? data.stock
+        : (data.totalStock !== undefined ? data.totalStock : product.totalStock);
       const stockVal = !isNaN(Number(rawStock)) ? Number(rawStock) : 0;
 
       await updatedProduct.update(
@@ -266,7 +340,7 @@ const updateProduct = async (id, data, imageRecords = []) => {
     updateProductEmbedding(updatedProduct).catch((err) =>
       console.error("Lỗi cập nhật embedding cho SP cập nhật:", err)
     );
-    clearProductCache();
+    await clearProductCache(updatedProduct.categoryId);
     return { errCode: 0, product: updatedProduct };
   } catch (e) {
     await t.rollback();
@@ -410,6 +484,10 @@ const deleteProduct = async (id) => {
       // If product has order history, just deactivate it instead of hard delete
       product.isActive = false;
       await product.save();
+      if (process.env.NODE_ENV !== "test") {
+        const { removeProductEmbedding } = require("../ai/EmbeddingSyncService");
+        removeProductEmbedding(id).catch(() => {});
+      }
       clearProductCache();
       return {
         errCode: 0,
@@ -419,6 +497,10 @@ const deleteProduct = async (id) => {
 
     const deleted = await ProductRepository.destroy(id);
     if (!deleted) return { errCode: 1, errMessage: "Product not found" };
+    if (process.env.NODE_ENV !== "test") {
+      const { removeProductEmbedding } = require("../ai/EmbeddingSyncService");
+      removeProductEmbedding(id).catch(() => {});
+    }
     clearProductCache();
     return { errCode: 0, errMessage: "Product deleted successfully" };
   } catch (e) {

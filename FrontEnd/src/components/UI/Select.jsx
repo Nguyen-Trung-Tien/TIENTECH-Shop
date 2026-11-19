@@ -1,5 +1,5 @@
 import React from "react";
-import { motion as Motion, AnimatePresence } from "framer-motion";
+import { m as Motion, AnimatePresence } from "framer-motion";
 import { FiChevronDown, FiAlertCircle } from "react-icons/fi";
 import { cn } from "../../utils/cn";
 

@@ -1,5 +1,5 @@
 import React from "react";
-import { motion as Motion } from "framer-motion";
+import { m as Motion } from "framer-motion";
 import { FiAlertCircle, FiAlertTriangle, FiRefreshCw, FiX } from "react-icons/fi";
 
 /**

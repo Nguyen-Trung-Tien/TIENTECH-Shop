@@ -1,7 +1,7 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { motion as Motion } from "framer-motion";
+import { m as Motion } from "framer-motion";
 import { FiHome, FiGrid, FiShoppingCart, FiPackage, FiUser } from "react-icons/fi";
 
 const HIDE_BOTTOM_NAV_PREFIXES = ["/product-detail", "/checkout", "/cart"];

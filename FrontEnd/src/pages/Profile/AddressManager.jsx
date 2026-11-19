@@ -8,7 +8,7 @@ import {
 } from "../../api/addressApi";
 import { showErrorToast, showSuccessToast } from "../../utils/toastHelper";
 import { FiPlus, FiMapPin, FiPhone, FiEdit2, FiTrash2, FiCheckCircle } from "react-icons/fi";
-import { motion as Motion } from "framer-motion";
+import { m as Motion } from "framer-motion";
 import { Button, Modal } from "../../components/UI";
 import Badge from "../../components/UI/Badge";
 import { ConfirmModal } from "../../components/UI/Modal";

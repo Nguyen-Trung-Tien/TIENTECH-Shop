@@ -195,17 +195,36 @@ RATE LIMITER
 app.use("/api/", generalLimiter);
 
 /*
-STATIC FILES
-*/
-app.use(express.static("public"));
-
-/*
-HEALTH CHECK
+HEALTH & READINESS CHECKS
 */
 app.get("/healthz", (req, res) => {
   res.status(200).json({
     status: "ok",
     uptime: process.uptime(),
+    timestamp: new Date().toISOString(),
+  });
+});
+
+app.get("/readyz", async (req, res) => {
+  const db = require("./models");
+  const redis = require("./config/redis");
+
+  let dbOk = false;
+  try {
+    await db.sequelize.authenticate();
+    dbOk = true;
+  } catch {
+    dbOk = false;
+  }
+
+  const redisConnected = redis.isRedisConnected();
+  const redisRequired = process.env.REDIS_REQUIRED === "true";
+  const ready = dbOk && (!redisRequired || redisConnected);
+
+  return res.status(ready ? 200 : 503).json({
+    status: ready ? "ready" : "not_ready",
+    database: dbOk ? "ok" : "error",
+    redis: redisConnected ? "connected" : redisRequired ? "error" : "optional_offline",
     timestamp: new Date().toISOString(),
   });
 });

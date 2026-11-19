@@ -71,10 +71,46 @@ const validateCart = async (userId, items) => {
     let hasChanged = false;
     let totalAmount = 0;
 
+    const productIds = [
+      ...new Set(
+        items
+          .map((it) => Number(it?.productId))
+          .filter((id) => Number.isInteger(id) && id > 0),
+      ),
+    ];
+    const variantIds = [
+      ...new Set(
+        items
+          .map((it) => Number(it?.variantId))
+          .filter((id) => Number.isInteger(id) && id > 0),
+      ),
+    ];
+
+    const [productsList, variantsList] = await Promise.all([
+      productIds.length > 0
+        ? db.Product.findAll({
+            where: { id: { [db.Sequelize.Op.in]: productIds } },
+            include: [
+              {
+                model: db.ProductImage,
+                as: "images",
+                attributes: ["imageUrl", "isPrimary"],
+              },
+            ],
+          })
+        : [],
+      variantIds.length > 0
+        ? db.ProductVariant.findAll({
+            where: { id: { [db.Sequelize.Op.in]: variantIds } },
+          })
+        : [],
+    ]);
+
+    const productMap = new Map(productsList.map((p) => [Number(p.id), p]));
+    const variantMap = new Map(variantsList.map((v) => [Number(v.id), v]));
+
     for (const item of items) {
-      const product = await db.Product.findByPk(item.productId, {
-        include: [{ model: db.ProductImage, as: "images", attributes: ["imageUrl", "isPrimary"] }]
-      });
+      const product = productMap.get(Number(item.productId));
 
       if (!product || !product.isActive) {
         hasChanged = true;
@@ -98,10 +134,12 @@ const validateCart = async (userId, items) => {
 
       let variant = null;
       if (item.variantId) {
-        variant = await db.ProductVariant.findOne({
-          where: { id: item.variantId, productId: product.id },
-        });
-        if (!variant || !variant.isActive) {
+        variant = variantMap.get(Number(item.variantId));
+        if (
+          !variant ||
+          Number(variant.productId) !== Number(product.id) ||
+          !variant.isActive
+        ) {
           hasChanged = true;
           validatedItems.push({
             ...item,
@@ -141,13 +179,16 @@ const validateCart = async (userId, items) => {
 
       if (isPriceMismatched) {
         hasChanged = true;
-        console.log(`[CartValidation] Price mismatch for ${product.name}: Client=${currentItemPrice}, Server=${unitPrice}`);
+        console.log(
+          `[CartValidation] Price mismatch for ${product.name}: Client=${currentItemPrice}, Server=${unitPrice}`,
+        );
       }
 
       const subtotal = Number((unitPrice * finalQuantity).toFixed(2));
       totalAmount += subtotal;
 
-      const primaryImage = product.images?.find(img => img.isPrimary) || product.images?.[0];
+      const primaryImage =
+        product.images?.find((img) => img.isPrimary) || product.images?.[0];
 
       validatedItems.push({
         ...item,

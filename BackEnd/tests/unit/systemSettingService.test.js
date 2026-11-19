@@ -14,6 +14,7 @@ jest.mock("../../src/config/redis", () => ({
 describe("SystemSettingService Unit Tests", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    systemSettingService._clearLocal();
   });
 
   test("getSetting returns fallback from DEFAULT_SETTINGS when DB returns null", async () => {

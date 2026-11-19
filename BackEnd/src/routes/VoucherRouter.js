@@ -8,7 +8,7 @@ const {
 } = require("../middleware/authMiddleware");
 
 const { validate } = require("../middleware/zodMiddleware");
-const { voucherSchema, checkVoucherSchema } = require("../utils/zodSchemas");
+const { voucherSchema, updateVoucherSchema, checkVoucherSchema } = require("../utils/zodSchemas");
 const { voucherCheckLimiter } = require("../middleware/rateLimiter");
 
 // PUBLIC
@@ -41,6 +41,7 @@ router.put(
   "/update/:id",
   authenticateToken,
   authorizeRole(["admin"]),
+  validate(updateVoucherSchema),
   VoucherController.handleUpdateVoucher
 );
 

@@ -1,6 +1,6 @@
-import { motion as Motion } from "framer-motion";
+import { m as Motion } from "framer-motion";
+import BrandLoader from "../../components/Loading/BrandLoader";
 import UnifiedSpinner from "../../components/Loading/UnifiedSpinner";
-import Logo from "../../components/UI/Logo";
 
 /**
  * AdminTableSkeleton - Giữ chỗ cho bảng dữ liệu admin
@@ -51,20 +51,12 @@ export const AdminTableSkeleton = ({ rows = 5, cols = 5 }) => {
  */
 export const AdminPageLoader = () => {
   return (
-    <div className="flex min-h-[360px] w-full flex-col items-center justify-center space-y-4 rounded-2xl bg-white/70 dark:bg-dark-surface/70 border border-slate-200/80 dark:border-dark-border backdrop-blur-md p-6">
-      <Logo size="md" />
-      <div className="w-32 h-1 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden relative">
-        <Motion.div
-          className="h-full bg-gradient-to-r from-blue-600 via-indigo-500 to-cyan-400 rounded-full"
-          initial={{ x: "-100%" }}
-          animate={{ x: "100%" }}
-          transition={{ repeat: Infinity, duration: 1.4, ease: "easeInOut" }}
-        />
-      </div>
-      <p className="text-[11px] font-bold uppercase tracking-widest text-slate-500 dark:text-dark-text-secondary">
-        Đang tải phân hệ quản trị...
-      </p>
-    </div>
+    <BrandLoader
+      message="Đang tải phân hệ quản trị..."
+      subMessage="TIENTECH Admin Console"
+      size="md"
+      minHeight="min-h-[360px]"
+    />
   );
 };
 

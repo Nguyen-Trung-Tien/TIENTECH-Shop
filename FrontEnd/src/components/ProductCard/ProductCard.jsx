@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { motion as Motion } from "framer-motion";
+import { m as Motion } from "framer-motion";
 import { addCart } from "../../api/cartApi";
 import { getProductByIdApi } from "../../api/productApi";
 import { addCartItem, addGuestCartItem } from "../../redux/cartSlice";
@@ -9,6 +9,12 @@ import { setBuyNowCheckout } from "../../redux/checkoutSlice";
 import { calculateFinalPrice } from "../../utils/priceHelper";
 import { FiShoppingCart, FiHeart } from "react-icons/fi";
 import { FaStar, FaHeart } from "react-icons/fa";
+import { ArrowLeftRight } from "lucide-react";
+import {
+  toggleCompareItem,
+  selectCompareItems,
+  MAX_COMPARE_ITEMS,
+} from "../../features/compare/compareSlice";
 import { addToWishlistApi, removeFromWishlistApi } from "../../api/wishlistApi";
 import { formatCurrency } from "../../utils/format";
 import { showErrorToast, showSuccessToast, showWarningToast, showInfoToast } from "../../utils/toastHelper";
@@ -20,6 +26,8 @@ const ProductCard = ({ product }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const user = useSelector((state) => state.user.user);
+  const compareItems = useSelector(selectCompareItems);
+  const isInCompare = compareItems.some((item) => Number(item.id) === Number(product?.id));
   const userId = user?.id;
   const token = user?.accessToken;
 
@@ -87,6 +95,30 @@ const ProductCard = ({ product }) => {
     } catch (error) {
       showErrorToast(error, "Không thể cập nhật danh sách yêu thích");
     }
+  };
+
+  const handleToggleCompare = (e) => {
+    e.stopPropagation();
+    if (!id) return;
+    if (!isInCompare && compareItems.length >= MAX_COMPARE_ITEMS) {
+      return showWarningToast(`Chỉ có thể so sánh tối đa ${MAX_COMPARE_ITEMS} sản phẩm!`);
+    }
+    dispatch(
+      toggleCompareItem({
+        id,
+        slug,
+        name,
+        image,
+        price: finalPrice,
+        categoryName: product?.category?.name || null,
+        brandName: product?.brand?.name || null,
+      })
+    );
+    showInfoToast(
+      isInCompare
+        ? `Đã bỏ "${name}" khỏi danh sách so sánh`
+        : `Đã thêm "${name}" vào khay so sánh`,
+    );
   };
 
   const avgRating = useMemo(() => {
@@ -314,22 +346,38 @@ const ProductCard = ({ product }) => {
             )}
           </div>
 
-          {/* Wishlist Button with aria-label */}
-          <button
-            type="button"
-            onClick={handleWishlist}
-            aria-label={isWishlisted ? "Xóa khỏi danh sách yêu thích" : "Thêm vào danh sách yêu thích"}
-            className="absolute top-3 right-3 z-20 size-8.5 flex items-center justify-center bg-white/90 dark:bg-slate-900/90 backdrop-blur-xs border border-slate-200/70 dark:border-slate-700/70 rounded-full shadow-xs hover:scale-110 transition-all active:scale-95 group/heart cursor-pointer"
-          >
-            {isWishlisted ? (
-              <FaHeart className="text-rose-500" size={14} />
-            ) : (
-              <FiHeart
-                className="text-slate-400 group-hover/heart:text-rose-500 transition-colors"
-                size={14}
-              />
-            )}
-          </button>
+          {/* Wishlist & Compare Buttons */}
+          <div className="absolute top-3 right-3 z-20 flex flex-col gap-1.5">
+            <button
+              type="button"
+              onClick={handleWishlist}
+              aria-label={isWishlisted ? "Xóa khỏi danh sách yêu thích" : "Thêm vào danh sách yêu thích"}
+              className="size-8.5 flex items-center justify-center bg-white/90 dark:bg-slate-900/90 backdrop-blur-xs border border-slate-200/70 dark:border-slate-700/70 rounded-full shadow-xs hover:scale-110 transition-all active:scale-95 group/heart cursor-pointer"
+            >
+              {isWishlisted ? (
+                <FaHeart className="text-rose-500" size={14} />
+              ) : (
+                <FiHeart
+                  className="text-slate-400 group-hover/heart:text-rose-500 transition-colors"
+                  size={14}
+                />
+              )}
+            </button>
+
+            <button
+              type="button"
+              onClick={handleToggleCompare}
+              aria-label={isInCompare ? "Bỏ khỏi so sánh" : "Thêm vào so sánh"}
+              title={isInCompare ? "Đang trong khay so sánh" : "So sánh"}
+              className={`size-8.5 flex items-center justify-center backdrop-blur-xs border rounded-full shadow-xs hover:scale-110 transition-all active:scale-95 cursor-pointer ${
+                isInCompare
+                  ? "bg-primary text-white border-primary"
+                  : "bg-white/90 dark:bg-slate-900/90 text-slate-400 border-slate-200/70 dark:border-slate-700/70 hover:text-primary"
+              }`}
+            >
+              <ArrowLeftRight size={14} />
+            </button>
+          </div>
 
           {/* Mobile quick add button */}
           <div className="absolute bottom-3 right-3 lg:hidden">

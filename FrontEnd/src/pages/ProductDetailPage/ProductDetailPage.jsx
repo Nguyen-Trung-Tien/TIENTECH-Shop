@@ -9,8 +9,9 @@ import {
 } from "../../utils/priceHelper";
 import { useProductDetail } from "../../hooks/useProductDetail";
 import { useProductVariants } from "../../hooks/useProductVariants";
+import { useDocumentMeta } from "../../features/shared/hooks/useDocumentMeta";
 import { showErrorToast, showSuccessToast, showWarningToast, showInfoToast } from "../../utils/toastHelper";
-import { motion as Motion, AnimatePresence } from "framer-motion";
+import { m as Motion, AnimatePresence } from "framer-motion";
 import {
   FiZap,
   FiInfo,
@@ -90,6 +91,14 @@ const ProductDetailPage = () => {
     handleReviewSubmit,
     submittingReview,
   } = useProductDetail(slug);
+
+  useDocumentMeta({
+    title: product?.name ? product.name : "Chi tiết sản phẩm",
+    description: product?.name
+      ? `Mua ${product.name} chính hãng tại TIENTECH Shop — xem thông số kỹ thuật, so sánh hiệu năng và dự báo giá AI.`
+      : undefined,
+    canonicalPath: slug ? `/product-detail/${slug}` : undefined,
+  });
 
   const averageRating = useMemo(() => {
     if (
@@ -594,7 +603,7 @@ const ProductDetailPage = () => {
               {/* Product Short Info */}
               <div className="flex items-center gap-3 min-w-0">
                 <img
-                  src={mainImage || product?.thumbnail || "/images/placeholder.png"}
+                  src={mainImage || product?.thumbnail || "/images/no-image.png"}
                   alt={product?.name}
                   className="size-11 object-cover rounded-xl bg-slate-100 dark:bg-dark-card shrink-0 border border-slate-200/80 dark:border-dark-border"
                 />

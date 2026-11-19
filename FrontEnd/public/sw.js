@@ -1,9 +1,9 @@
 // Service Worker for TIENTECH Shop PWA & Web Push Notification
-const CACHE_NAME = "tientech-shop-v1";
+const CACHE_NAME = "tientech-shop-v2";
 const STATIC_ASSETS = [
   "/",
   "/manifest.json",
-  "/src/assets/logo.png"
+  "/logo.png"
 ];
 
 // Install Event
@@ -34,9 +34,13 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
 
-  // Ignore API requests or socket connections for caching
+  // Ignore cross-origin, API requests, or socket connections for caching
   const url = new URL(event.request.url);
-  if (url.pathname.startsWith("/api") || url.pathname.startsWith("/socket.io")) {
+  if (
+    url.origin !== self.location.origin ||
+    url.pathname.startsWith("/api") ||
+    url.pathname.startsWith("/socket.io")
+  ) {
     return;
   }
 

@@ -1,7 +1,7 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FiHome, FiArrowLeft, FiSearch, FiCompass, FiShoppingBag } from "react-icons/fi";
-import { motion as Motion } from "framer-motion";
+import { m as Motion } from "framer-motion";
 
 const NotFound = () => {
   const navigate = useNavigate();

@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { showErrorToast } from "../../utils/toastHelper";
-import { motion as Motion, AnimatePresence } from "framer-motion";
+import { m as Motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import {
   FiArrowRight,

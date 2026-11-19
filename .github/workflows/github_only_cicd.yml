@@ -18,9 +18,6 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-env:
-  ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: "true"
-
 jobs:
   # --- 1. KIỂM TRA CHẤT LƯỢNG (CI) ---
   build-and-test:
@@ -43,14 +40,17 @@ jobs:
         with:
           node-version: 22
           cache: 'npm'
-          cache-dependency-path: |
-            BackEnd/package-lock.json
-            FrontEnd/package-lock.json
+          cache-dependency-path: package-lock.json
 
-      - name: Backend - Test
+      - name: Install Monorepo Dependencies
+        run: npm ci
+
+      - name: Backend - Migrate (Idempotency Check), Lint & Test
         working-directory: ./BackEnd
         run: |
-          npm ci
+          npx sequelize-cli db:migrate
+          npx sequelize-cli db:migrate
+          npm run lint
           npm test
         env:
           NODE_ENV: test
@@ -72,7 +72,6 @@ jobs:
       - name: Frontend - Lint, Test & Build
         working-directory: ./FrontEnd
         run: |
-          npm ci
           npm run lint
           npm test
           npm run build
@@ -123,7 +122,8 @@ jobs:
       - name: Build and Push Backend Image
         uses: docker/build-push-action@v6
         with:
-          context: ./BackEnd
+          context: .
+          file: ./BackEnd/Dockerfile
           push: true
           tags: |
             ${{ env.IMAGE_BACKEND }}:latest
@@ -156,7 +156,8 @@ jobs:
       - name: Build and Push Frontend Image
         uses: docker/build-push-action@v6
         with:
-          context: ./FrontEnd
+          context: .
+          file: ./FrontEnd/Dockerfile
           push: true
           tags: |
             ${{ env.IMAGE_FRONTEND }}:latest

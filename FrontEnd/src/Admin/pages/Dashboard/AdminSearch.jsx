@@ -4,7 +4,7 @@ import { FiSearch, FiPackage, FiShoppingBag, FiUsers, FiEdit2, FiEye, FiX } from
 import { globalSearchApi } from "../../../api/adminApi";
 import { getProductImage, handleImageError } from "../../../utils/imageHelper";
 import { AdminTableSkeleton } from "../../components/AdminLoading";
-import { motion as Motion } from "framer-motion";
+import { m as Motion } from "framer-motion";
 import AdminPageShell from "../../components/AdminPageShell";
 import { EmptyState } from "../../../components/UI";
 

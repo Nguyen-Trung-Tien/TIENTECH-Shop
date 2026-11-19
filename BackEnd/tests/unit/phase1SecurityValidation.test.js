@@ -164,6 +164,7 @@ describe("Phase 1 Security & Validation Fixes", () => {
   describe("Idempotency Redis vs Bounded Memory Fallback", () => {
     test("skips memory fallback when Redis is connected and enforces max 1000 keys when offline", async () => {
       jest.spyOn(redisConfig, "isRedisConnected").mockReturnValue(true);
+      const setCacheNxSpy = jest.spyOn(redisConfig, "setCacheNx").mockResolvedValue(true);
       const getCacheSpy = jest.spyOn(redisConfig, "getCache").mockResolvedValue(null);
       const setCacheSpy = jest.spyOn(redisConfig, "setCache").mockResolvedValue(undefined);
 
@@ -182,8 +183,18 @@ describe("Phase 1 Security & Validation Fixes", () => {
         json: jest.fn((b) => b),
       };
       await middleware(req, res, () => res.status(201).json({ errCode: 0 }));
-      expect(getCacheSpy).toHaveBeenCalled();
+      expect(setCacheNxSpy).toHaveBeenCalled();
       expect(setCacheSpy).toHaveBeenCalled();
+
+      // Verify existing key falls back to getCache to check IN_PROGRESS vs COMPLETED
+      setCacheNxSpy.mockResolvedValueOnce(false);
+      await middleware(req, {
+        statusCode: 200,
+        setHeader: jest.fn(),
+        status: jest.fn().mockReturnThis(),
+        json: jest.fn((b) => b),
+      }, jest.fn());
+      expect(getCacheSpy).toHaveBeenCalled();
 
       // Switch to offline mode and verify > 1000 keys doesn't fail or grow unboundedly
       jest.spyOn(redisConfig, "isRedisConnected").mockReturnValue(false);
@@ -312,12 +323,27 @@ describe("Phase 1 Security & Validation Fixes", () => {
       expect(res.data.body.checkoutMode).toBe("buy_now");
     });
 
-    test("contactSchema validates payload and ContactController persists admin notification + emits socket", async () => {
+    test("contactSchema validates payload and ContactController persists ticket, admin notification & emits socket", async () => {
       expect(
         contactSchema.safeParse({
           body: { name: "A", email: "bad", message: "hi" },
         }).success
       ).toBe(false);
+
+      const mockTx = {
+        commit: jest.fn().mockResolvedValue(true),
+        rollback: jest.fn().mockResolvedValue(true),
+        LOCK: { UPDATE: "UPDATE" },
+      };
+      jest.spyOn(db.sequelize, "transaction").mockResolvedValue(mockTx);
+      const ticketCreateSpy = jest
+        .spyOn(db.ContactTicket, "create")
+        .mockResolvedValue({
+          id: 99,
+          ticketCode: "TK123456",
+          subject: "Tư vấn sản phẩm & Góc setup",
+          status: "open",
+        });
 
       const emitMock = jest.fn();
       const ioMock = { to: jest.fn(() => ({ emit: emitMock })) };
@@ -346,12 +372,23 @@ describe("Phase 1 Security & Validation Fixes", () => {
       await ContactController.handleSubmitContact(req, res);
       await new Promise((resolve) => setImmediate(resolve));
 
+      expect(ticketCreateSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: "Le Minh <script>",
+          email: "minh@tientech.test",
+          status: "open",
+        }),
+        { transaction: mockTx }
+      );
+      expect(mockTx.commit).toHaveBeenCalled();
       expect(notifSpy).toHaveBeenCalledWith(
         expect.objectContaining({
           userId: null,
           type: "system",
+          link: "/admin/contacts",
           metadata: expect.objectContaining({
             source: "contact_form",
+            ticketId: 99,
             email: "minh@tientech.test",
           }),
         }),
@@ -365,7 +402,10 @@ describe("Phase 1 Security & Validation Fixes", () => {
       );
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith(
-        expect.objectContaining({ errCode: 0 })
+        expect.objectContaining({
+          errCode: 0,
+          data: expect.objectContaining({ id: 99, ticketCode: "TK123456" }),
+        })
       );
     });
   });

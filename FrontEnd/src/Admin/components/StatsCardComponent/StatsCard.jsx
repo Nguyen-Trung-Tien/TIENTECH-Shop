@@ -1,5 +1,5 @@
 import { FiTrendingUp, FiTrendingDown } from "react-icons/fi";
-import { motion as Motion } from "framer-motion";
+import { m as Motion } from "framer-motion";
 
 const StatsCard = ({ title, value, icon, change, isIncrease }) => {
   return (

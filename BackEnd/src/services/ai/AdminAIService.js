@@ -121,39 +121,6 @@ Trả về kết quả bằng tiếng Việt, súc tích, định dạng JSON:
   }
 };
 
-const answerAdminQuery = async (query) => {
-  try {
-    const totalRevenue = await db.Order.sum("totalPrice", {
-      where: { status: "delivered" },
-    });
-    const totalOrders = await db.Order.count();
-    const totalUsers = await db.User.count();
-
-    const context = `
-Dữ liệu tổng quan hệ thống:
-- Doanh thu tích luỹ: ${totalRevenue || 0} VND
-- Tổng số đơn: ${totalOrders}
-- Tổng số tài khoản: ${totalUsers}
-
-Câu hỏi của Admin: "${query}"
-Hãy trả lời chuyên nghiệp, súc tích và hỗ trợ ra quyết định.
-    `;
-
-    const result = await generateContentWithFallback(context);
-    return {
-      errCode: 0,
-      answer: result.response.text(),
-    };
-  } catch (error) {
-    console.error("Admin Query AI Error:", error);
-    return {
-      errCode: 1,
-      message: "Lỗi xử lý câu hỏi AI.",
-      error: error.message,
-    };
-  }
-};
-
 const escapeHtmlBasic = (str) =>
   String(str || "")
     .replace(/&/g, "&amp;")

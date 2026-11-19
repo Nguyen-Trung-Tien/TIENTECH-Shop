@@ -1,5 +1,5 @@
 import React from "react";
-import { motion as Motion, AnimatePresence } from "framer-motion";
+import { m as Motion, AnimatePresence } from "framer-motion";
 import {
   FiX,
   FiCheck,

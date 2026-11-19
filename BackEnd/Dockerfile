@@ -2,10 +2,17 @@ FROM node:22-slim
 
 WORKDIR /app
 
-COPY package*.json ./
-RUN npm ci --omit=dev
+COPY package.json package-lock.json ./
+COPY BackEnd/package.json ./BackEnd/package.json
+COPY FrontEnd/package.json ./FrontEnd/package.json
 
-COPY . .
+RUN npm ci --workspace=BackEnd --omit=dev
+
+COPY BackEnd ./BackEnd
+
+WORKDIR /app/BackEnd
+RUN chown -R node:node /app
+USER node
 
 EXPOSE 8080
 

@@ -23,10 +23,10 @@ redisClient.on("ready", () => {
 });
 
 (async () => {
-  if (process.env.NODE_ENV !== "test") {
+    if (process.env.NODE_ENV !== "test") {
     try {
       await redisClient.connect();
-    } catch (err) {
+    } catch (_err) {
       console.warn("[Redis] Not available. System will run without cache.");
       isRedisConnected = false;
     }
@@ -67,15 +67,30 @@ const deleteCache = async (key) => {
 const deleteCacheByPattern = async (pattern) => {
   if (!isRedisConnected) return;
   try {
-    const keysToDelete = [];
-    for await (const key of redisClient.scanIterator({ MATCH: pattern, COUNT: 100 })) {
-      keysToDelete.push(key);
-    }
-    if (keysToDelete.length > 0) {
-      await redisClient.del(keysToDelete);
+    for await (const entry of redisClient.scanIterator({ MATCH: pattern, COUNT: 100 })) {
+      const batch = Array.isArray(entry) ? entry : [entry];
+      const validKeys = batch.filter((k) => typeof k === "string" && k.length > 0);
+      if (validKeys.length > 0) {
+        await redisClient.del(validKeys);
+      }
     }
   } catch (err) {
     console.error(`[Redis] deleteCacheByPattern error for pattern ${pattern}:`, err);
+  }
+};
+
+const setCacheNx = async (key, value, ttlSeconds = 30) => {
+  if (!isRedisConnected || !redisClient) return null;
+  try {
+    const serialized = typeof value === "string" ? value : JSON.stringify(value);
+    const result = await redisClient.set(key, serialized, {
+      NX: true,
+      EX: ttlSeconds,
+    });
+    return result === "OK";
+  } catch (err) {
+    console.error(`[Redis] setCacheNx error for key ${key}:`, err);
+    return null;
   }
 };
 
@@ -132,9 +147,11 @@ const getRedisStats = async () => {
 
 const crypto = require("crypto");
 
-const acquireLock = async (key, ttl = 10) => {
+const acquireLock = async (key, ttl = 10, { failClosed = false } = {}) => {
   const lockToken = crypto.randomUUID ? crypto.randomUUID() : crypto.randomBytes(16).toString("hex");
-  if (!isRedisConnected) return lockToken;
+  if (!isRedisConnected) {
+    return failClosed ? null : lockToken;
+  }
   try {
     const result = await redisClient.set(`lock:${key}`, lockToken, {
       NX: true,
@@ -143,8 +160,13 @@ const acquireLock = async (key, ttl = 10) => {
     return result === "OK" ? lockToken : null;
   } catch (err) {
     console.error(`[Redis] acquireLock error for key ${key}:`, err);
-    return lockToken;
+    return failClosed ? null : lockToken;
   }
+};
+
+const acquireCronLock = async (jobName, ttlSeconds = 55) => {
+  const requireRedisLocks = process.env.REQUIRE_REDIS_LOCKS === "true";
+  return acquireLock(`cron:${jobName}`, ttlSeconds, { failClosed: requireRedisLocks });
 };
 
 const releaseLock = async (key, lockToken = null) => {
@@ -174,11 +196,13 @@ module.exports = {
   redisClient,
   getCache,
   setCache,
+  setCacheNx,
   deleteCache,
   deleteCacheByPattern,
   flushAllCache,
   getRedisStats,
   acquireLock,
+  acquireCronLock,
   releaseLock,
   isRedisConnected: () => isRedisConnected,
 };

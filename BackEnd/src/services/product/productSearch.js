@@ -1,14 +1,10 @@
 const db = require("../../models");
 const { Op } = require("sequelize");
 const { getPagination, getPagingData } = require("../../utils/paginationHelper");
-const {
-  generateEmbedding,
-  cosineSimilarity,
-} = require("../../utils/embeddingHelper");
-const {
-  applyFlashSaleToProduct,
-  updateProductEmbedding,
-} = require("./productHelper");
+const { applyFlashSaleToProduct } = require("./productHelper");
+const VectorIndexService = require("../ai/VectorIndexService");
+const HybridSearchService = require("../ai/HybridSearchService");
+const EmbeddingSyncService = require("../ai/EmbeddingSyncService");
 
 const searchProducts = async (query, page = 1, limit = 10) => {
   const { offset, limit: l } = getPagination(page, limit);
@@ -111,8 +107,34 @@ const searchSuggestions = async (query, limit = 8) => {
       discount: processed.flashSaleDiscount,
       image: primary ? primary.imageUrl : null,
       isFlashSale: processed.flashSaleActive,
+      isSemanticMatch: false,
     };
   });
+
+  if (productSuggestions.length < Math.min(limit, 4) && VectorIndexService.count > 0) {
+    try {
+      const hybridRes = await HybridSearchService.search(q, { limit });
+      const seenIds = new Set(productSuggestions.map((item) => Number(item.id)));
+      for (const item of hybridRes?.products || []) {
+        if (productSuggestions.length >= limit) break;
+        const pid = Number(item.id);
+        if (seenIds.has(pid)) continue;
+        seenIds.add(pid);
+        productSuggestions.push({
+          id: pid,
+          name: item.name,
+          price: item.displayPrice ?? item.price ?? item.basePrice,
+          originalPrice: item.basePrice,
+          discount: item.flashSaleDiscount ?? item.discount ?? 0,
+          image: item.image || null,
+          isFlashSale: Boolean(item.flashSaleActive),
+          isSemanticMatch: true,
+        });
+      }
+    } catch {
+      // Non-blocking fallback to lexical suggestions only
+    }
+  }
 
   const brandSuggestions = await db.Brand.findAll({
     where: { name: { [Op.like]: `%${q}%` } },
@@ -432,101 +454,20 @@ const getHomePageData = async () => {
   }
 };
 
-const searchSemanticProducts = async (query, limit = 5) => {
+const searchSemanticProducts = async (query, limit = 5, filters = {}) => {
   try {
-    const { getCache, setCache } = require("../../config/redis");
-    const queryEmbedding = await generateEmbedding(query);
-    if (!queryEmbedding)
-      return {
-        errCode: 1,
-        errMessage: "Không thể tạo embedding cho truy vấn.",
-      };
-
-    let productsData = await getCache("semantic_embeddings");
-
-    if (!productsData) {
-      const products = await db.Product.findAll({
-        where: {
-          isActive: true,
-          embedding: { [Op.ne]: null },
-        },
-        attributes: ["id", "name", "basePrice", "discount", "embedding", "description"],
-        limit: 500,
-        include: [
-          {
-            model: db.ProductImage,
-            as: "images",
-            where: { isPrimary: true },
-            attributes: ["imageUrl"],
-            required: false,
-          },
-        ],
-      });
-
-      productsData = products
-        .map((product) => {
-          try {
-            return {
-              id: product.id,
-              name: product.name,
-              price: product.basePrice * (1 - (product.discount || 0) / 100),
-              image: product.images?.[0]?.imageUrl || null,
-              embedding: typeof product.embedding === "string" ? JSON.parse(product.embedding) : product.embedding,
-            };
-          } catch {
-            return null;
-          }
-        })
-        .filter((p) => p && Array.isArray(p.embedding));
-
-      // Cache for 24 hours
-      await setCache("semantic_embeddings", productsData, 86400);
-    }
-
-    const results = productsData
-      .map((product) => {
-        const similarity = cosineSimilarity(queryEmbedding, product.embedding);
-        return {
-          id: product.id,
-          name: product.name,
-          price: product.price,
-          image: product.image,
-          similarity: similarity,
-        };
-      })
-      .filter((p) => p.similarity > 0.3)
-      .sort((a, b) => b.similarity - a.similarity)
-      .slice(0, limit);
-
-    return { errCode: 0, products: results };
+    return await HybridSearchService.search(query, {
+      limit,
+      ...filters,
+    });
   } catch (e) {
     console.error("Lỗi tìm kiếm ngữ nghĩa:", e);
     return { errCode: 1, errMessage: e.message };
   }
 };
 
-const syncAllProductEmbeddings = async () => {
-  const { deleteCacheByPattern } = require("../../config/redis");
-  const products = await db.Product.findAll();
-  let successCount = 0;
-  let failCount = 0;
-  for (const product of products) {
-    const success = await updateProductEmbedding(product);
-    if (success) successCount++;
-    else failCount++;
-    
-    if ((successCount + failCount) % 10 === 0)
-      console.log(`Đã xử lý ${successCount + failCount}/${products.length} sản phẩm...`);
-  }
-  
-  await deleteCacheByPattern("semantic_embeddings");
-
-  return { 
-    errCode: 0, 
-    message: `Đồng bộ hoàn tất: ${successCount} thành công, ${failCount} thất bại.`,
-    successCount,
-    failCount
-  };
+const syncAllProductEmbeddings = async (options = {}) => {
+  return await EmbeddingSyncService.syncAllProducts(options);
 };
 
 module.exports = {

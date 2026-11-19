@@ -62,12 +62,30 @@ export const getAdminCounters = async () => {
   }
 };
 
-export const syncEmbeddings = async () => {
+export const syncEmbeddings = async (mode = "missing") => {
   try {
-    const res = await axiosClient.post("/admin/sync-embeddings");
+    const res = await axiosClient.post("/admin/sync-embeddings", { mode });
     return res;
   } catch (error) {
     console.error("Error syncing embeddings:", error);
+    throw error;
+  }
+};
+
+export const getVectorStatusApi = async () => {
+  try {
+    return await axiosClient.get("/admin/vector-status");
+  } catch (error) {
+    console.error("Error getting vector status:", error);
+    throw error;
+  }
+};
+
+export const reloadVectorIndexApi = async () => {
+  try {
+    return await axiosClient.post("/admin/vector-reload", {});
+  } catch (error) {
+    console.error("Error reloading vector index:", error);
     throw error;
   }
 };

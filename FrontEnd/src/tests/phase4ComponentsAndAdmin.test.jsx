@@ -47,7 +47,6 @@ vi.mock("../context/useSystemSettings", () => ({
     isCodEnabled: true,
     isVnpayEnabled: false,
     isPaypalEnabled: false,
-    isMomoEnabled: false,
   }),
 }));
 vi.mock("../api/adminApi", () => ({

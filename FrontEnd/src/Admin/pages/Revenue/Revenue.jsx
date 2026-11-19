@@ -9,7 +9,7 @@ import {
   FiArrowDownRight,
   FiBarChart2,
 } from "react-icons/fi";
-import { motion as Motion } from "framer-motion";
+import { m as Motion } from "framer-motion";
 import { getRevenueStats, exportRevenue } from "../../../api/adminApi";
 import { showErrorToast, showSuccessToast } from "../../../utils/toastHelper";
 import ChartCard from "../../components/ChartCardComponent/ChartCard";

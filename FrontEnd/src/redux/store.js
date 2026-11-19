@@ -5,17 +5,19 @@ import storage from "redux-persist/lib/storage";
 import userReducer from "./userSlice";
 import cartReducer from "./cartSlice";
 import checkoutReducer from "./checkoutSlice";
+import compareReducer from "../features/compare/compareSlice";
 
 const rootReducer = combineReducers({
   user: userReducer,
   cart: cartReducer,
   checkout: checkoutReducer,
+  compare: compareReducer,
 });
 
 const persistConfig = {
   key: "root",
   storage,
-  whitelist: ["user", "cart"],
+  whitelist: ["user", "cart", "compare"],
 };
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

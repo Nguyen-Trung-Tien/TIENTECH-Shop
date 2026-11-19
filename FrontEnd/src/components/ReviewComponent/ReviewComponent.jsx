@@ -1,6 +1,7 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import { FiStar, FiMessageSquare, FiImage, FiFilter, FiEdit3, FiLock } from "react-icons/fi";
-import { motion as Motion } from "framer-motion";
+import { m as Motion } from "framer-motion";
 import ReviewItem from "./ReviewItem";
 import ReviewForm from "./ReviewForm";
 import AppPagination from "../Pagination/Pagination";
@@ -254,12 +255,12 @@ const ReviewComponent = ({
               <FiLock className="text-slate-300 dark:text-slate-600" size={22} />
             </div>
             <p className="text-slate-500 dark:text-dark-text-secondary font-bold text-sm">Vui lòng đăng nhập để gửi đánh giá</p>
-            <a
-              href="/login"
+            <Link
+              to="/login"
               className="mt-4 px-6 py-2 bg-primary text-white rounded-xl text-xs font-bold hover:bg-primary/90 transition"
             >
               Đăng nhập ngay
-            </a>
+            </Link>
           </div>
         ) : showForm ? (
           <Motion.div

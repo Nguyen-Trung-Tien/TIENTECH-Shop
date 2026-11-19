@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion as Motion } from "framer-motion";
+import { m as Motion } from "framer-motion";
 import { ProductCardSkeleton as SkeletonCard } from "../Loading";
 import { getAllCategoryApi } from "../../api/categoryApi";
 import { FiGrid } from "react-icons/fi";
@@ -105,7 +105,7 @@ const CategorySection = React.memo(({ categories: propCategories, loading: propL
                 <div className="relative w-full aspect-square rounded-xl overflow-hidden bg-slate-50 dark:bg-dark-card mb-3 flex items-center justify-center p-3 border border-slate-100 dark:border-slate-800/60">
                   <img
                     src={
-                      cat.image || cat.imageUrl || "/images/default-category.jpg"
+                      cat.image || cat.imageUrl || "/images/no-image.png"
                     }
                     alt={cat.name}
                     className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-110"

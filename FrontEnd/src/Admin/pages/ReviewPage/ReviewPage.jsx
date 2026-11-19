@@ -16,7 +16,7 @@ import { deleteReviewApi, getAllReviewsApi, updateReviewApi } from "../../../api
 import { createReplyApi, deleteReplyApi } from "../../../api/reviewReplyApi";
 import { showErrorToast, showSuccessToast } from "../../../utils/toastHelper";
 import AppPagination from "../../../components/Pagination/Pagination";
-import { motion as Motion } from "framer-motion";
+import { m as Motion } from "framer-motion";
 import { ConfirmModal } from "../../../components/UI/Modal";
 import AdminPageShell from "../../components/AdminPageShell";
 

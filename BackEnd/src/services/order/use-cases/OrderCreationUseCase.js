@@ -71,7 +71,14 @@ const createOrder = async (data, actor = null) => {
     const formattedItems = [];
     let calculatedTotal = 0;
 
-    for (const item of orderItems) {
+    // Sort deterministically to avoid InnoDB row-lock deadlocks across concurrent checkouts
+    const sortedOrderItems = [...orderItems].sort((a, b) => {
+      const pDiff = Number(a.productId || 0) - Number(b.productId || 0);
+      if (pDiff !== 0) return pDiff;
+      return Number(a.variantId || 0) - Number(b.variantId || 0);
+    });
+
+    for (const item of sortedOrderItems) {
       const product = await db.Product.findByPk(item.productId, {
         transaction: t,
         lock: t.LOCK.UPDATE,
@@ -287,21 +294,16 @@ const createOrder = async (data, actor = null) => {
       subtotalAfterVoucher + shippingFee - pointsDiscount,
     );
 
-    const isPaypalPaid =
-      selectedPaymentMethod === "paypal" &&
-      data.paymentStatus === "paid" &&
-      Boolean(data.paypalDetails?.id) &&
-      String(data.paypalDetails?.status || "").toUpperCase() === "COMPLETED";
-
+    // SECURITY: Never trust client-supplied paymentStatus or paypalDetails.
+    // PayPal payments MUST be created unpaid/pending and verified server-side via PaypalService capture.
     if (
       selectedPaymentMethod === "paypal" &&
-      data.paymentStatus === "paid" &&
-      !isPaypalPaid
+      (data.paymentStatus === "paid" || data.paypalDetails)
     ) {
       await t.rollback();
       return {
         errCode: 1,
-        errMessage: "Xác thực thanh toán PayPal không hợp lệ hoặc chưa hoàn tất.",
+        errMessage: "Thanh toán PayPal phải được xác thực trực tiếp qua máy chủ.",
       };
     }
 
@@ -319,8 +321,8 @@ const createOrder = async (data, actor = null) => {
         receiverPhone: receiverPhone || null,
         paymentMethod: selectedPaymentMethod,
         note: note || "",
-        paymentStatus: isPaypalPaid ? "paid" : "unpaid",
-        status: isPaypalPaid ? "confirmed" : "pending",
+        paymentStatus: "unpaid",
+        status: "pending",
         orderItems: formattedItems,
       },
       {
@@ -328,22 +330,6 @@ const createOrder = async (data, actor = null) => {
         transaction: t,
       },
     );
-
-    if (isPaypalPaid && db.Payment) {
-      await db.Payment.create(
-        {
-          orderId: order.id,
-          userId: effectiveUserId,
-          amount: finalTotal,
-          method: "paypal",
-          transactionId: String(data.paypalDetails.id),
-          status: "completed",
-          paymentDate: new Date(),
-          note: "PayPal Checkout Capture",
-        },
-        { transaction: t },
-      );
-    }
 
     if (voucherCode && appliedVoucher) {
       await db.VoucherUsage.create(

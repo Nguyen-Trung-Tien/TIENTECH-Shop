@@ -12,16 +12,26 @@ export const sendMessage = async (message, userId = null, history = []) => {
     console.error("Chatbot error:", error);
 
     if (error.response) {
-      return `Lỗi server: ${
-        error.response.data.error || "Không thể xử lý yêu cầu."
-      }`;
+      return {
+        errCode: error.response.data?.errCode ?? -1,
+        errMessage:
+          error.response.data?.errMessage ||
+          error.response.data?.error ||
+          "Không thể xử lý yêu cầu.",
+      };
     }
 
     if (error.code === "ECONNABORTED") {
-      return "Máy chủ phản hồi quá lâu. Bạn thử lại giúp mình nhé!";
+      return {
+        errCode: -1,
+        errMessage: "Máy chủ phản hồi quá lâu. Bạn thử lại giúp mình nhé!",
+      };
     }
 
-    return "Lỗi không xác định. Vui lòng thử lại.";
+    return {
+      errCode: -1,
+      errMessage: "Lỗi kết nối trợ lý AI. Vui lòng thử lại.",
+    };
   }
 };
 

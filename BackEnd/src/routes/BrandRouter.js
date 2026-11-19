@@ -6,6 +6,8 @@ const {
   authenticateToken,
   authorizeRole,
 } = require("../middleware/authMiddleware");
+const { validate } = require("../middleware/zodMiddleware");
+const { brandCreateSchema, brandUpdateSchema } = require("../utils/zodSchemas");
 
 router.get("/get-all", BrandController.handleGetAllBrands);
 router.get("/get-by-id/:id", BrandController.handleGetBrandById);
@@ -16,6 +18,7 @@ router.post(
   authenticateToken,
   authorizeRole(["admin"]),
   upload.single("image"),
+  validate(brandCreateSchema),
   BrandController.handleCreateBrand
 );
 
@@ -24,6 +27,7 @@ router.put(
   authenticateToken,
   authorizeRole(["admin"]),
   upload.single("image"),
+  validate(brandUpdateSchema),
   BrandController.handleUpdateBrand
 );
 

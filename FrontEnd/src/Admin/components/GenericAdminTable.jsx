@@ -49,7 +49,7 @@ const GenericAdminTable = ({
         <span className="flex items-center gap-2.5">
           {Icon && (
             <span className="size-9 rounded-lg bg-primary text-white flex items-center justify-center shadow-xs shrink-0 text-base">
-              {typeof Icon === "function" ? <Icon /> : Icon}
+              {React.isValidElement(Icon) ? Icon : <Icon className="size-4.5" />}
             </span>
           )}
           <span className="truncate">{title}</span>

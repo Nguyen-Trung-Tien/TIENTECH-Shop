@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { motion as Motion } from "framer-motion";
+import { m as Motion } from "framer-motion";
 import { FiArrowLeft, FiShield, FiLock } from "react-icons/fi";
 import Logo from "./Logo";
 

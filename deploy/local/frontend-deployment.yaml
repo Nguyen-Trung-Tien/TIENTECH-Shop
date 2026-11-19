@@ -19,6 +19,13 @@ spec:
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 80
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "200m"
+              memory: "128Mi"
           env:
             - name: VITE_API_URL
               value: "http://localhost:30080/api/v1"
@@ -28,8 +35,6 @@ spec:
               value: "sb"
             - name: VITE_PAYPAL_CURRENCY
               value: "USD"
-            - name: VITE_SHOW_REACT_QUERY_DEVTOOLS
-              value: "false"
           readinessProbe:
             httpGet:
               path: /healthz

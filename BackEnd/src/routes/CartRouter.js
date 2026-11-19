@@ -5,6 +5,8 @@ const {
   authenticateToken,
   authorizeRole,
 } = require("../middleware/authMiddleware");
+const { validate } = require("../middleware/zodMiddleware");
+const { createCartSchema, updateCartSchema, validateCartSchema } = require("../utils/zodSchemas");
 
 router.get(
   "/get-all-cart",
@@ -22,12 +24,14 @@ router.post(
   "/create-cart",
   authenticateToken,
   authorizeRole(["admin", "customer"]),
+  validate(createCartSchema),
   CartController.createCart
 );
 router.put(
   "/update-cart/:id",
   authenticateToken,
   authorizeRole(["admin", "customer"]),
+  validate(updateCartSchema),
   CartController.updateCart
 );
 router.delete(
@@ -41,6 +45,7 @@ router.post(
   "/validate",
   authenticateToken,
   authorizeRole(["admin", "customer"]),
+  validate(validateCartSchema),
   CartController.handleValidateCart
 );
 

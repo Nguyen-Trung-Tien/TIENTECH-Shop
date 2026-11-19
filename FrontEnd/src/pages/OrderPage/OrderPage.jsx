@@ -15,7 +15,7 @@ import {
 } from "react-icons/fi";
 import { useNavigate, Link } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { motion as Motion } from "framer-motion";
+import { m as Motion } from "framer-motion";
 
 import { Button, ConfirmModal, EmptyState, PageShell, Tabs } from "../../components/UI";
 import { getOrdersByUserId, updateOrderStatus } from "../../api/orderApi";

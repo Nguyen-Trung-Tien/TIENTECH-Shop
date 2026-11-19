@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { FiCpu, FiCheckCircle } from "react-icons/fi";
 import { Sparkles } from "lucide-react";
-import { motion as Motion, AnimatePresence } from "framer-motion";
+import { m as Motion, AnimatePresence } from "framer-motion";
 import ProductCard from "../ProductCard/ProductCard";
 
 const AI_FILTER_CHIPS = [
@@ -73,7 +73,7 @@ const AISmartPicks = ({ products, title = "Dành Riêng Cho Bạn" }) => {
           <div className="min-w-0">
             <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-gradient-to-r from-indigo-500/10 to-violet-500/10 dark:from-indigo-950/60 dark:to-violet-950/60 border border-indigo-500/30 text-indigo-600 dark:text-indigo-400 text-xs font-bold font-mono tracking-wider mb-2.5 shadow-xs">
               <Sparkles className="size-3.5 text-indigo-500 animate-spin" />
-              <span>TIENTECH NEURAL RECS &bull; 99% ACCURACY</span>
+              <span>TIENTECH AI RECOMMENDATIONS</span>
             </div>
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-3">
               <span>{title}</span>
@@ -118,17 +118,23 @@ const AISmartPicks = ({ products, title = "Dành Riêng Cho Bạn" }) => {
           >
             {(filteredProducts.length > 0 ? filteredProducts : products)
               .slice(0, 6)
-              .map((product, idx) => (
-                <div key={product.id} className="relative group">
-                  {/* Subtle Top AI Match Pill */}
-                  <div className="absolute -top-2.5 left-3 z-10 pointer-events-none">
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-indigo-600 text-[10px] font-black text-white font-mono shadow-xs uppercase tracking-wider">
-                      <FiCpu className="text-[9px]" /> {99 - idx * 2}% Match
-                    </span>
+              .map((product) => {
+                const badgeLabel =
+                  typeof product.similarity === "number" && product.similarity > 0
+                    ? `${Math.round(product.similarity * 100)}% Tương đồng`
+                    : product.reason || "Đề xuất cho bạn";
+                return (
+                  <div key={product.id} className="relative group min-w-0">
+                    {/* Real recommendation signal badge */}
+                    <div className="absolute -top-2.5 left-3 z-10 pointer-events-none max-w-[calc(100%-1.5rem)]">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-indigo-600 text-[10px] font-black text-white font-mono shadow-xs uppercase tracking-wider truncate max-w-full">
+                        <FiCpu className="text-[9px] shrink-0" /> {badgeLabel}
+                      </span>
+                    </div>
+                    <ProductCard product={product} />
                   </div>
-                  <ProductCard product={product} />
-                </div>
-              ))}
+                );
+              })}
           </Motion.div>
         </AnimatePresence>
       </div>

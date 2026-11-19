@@ -1,4 +1,3 @@
-import { useEffect, useState, useCallback, lazy, Suspense } from "react";
 import { Link } from "react-router-dom";
 import { FiArrowRight, FiGrid, FiSliders, FiCpu } from "react-icons/fi";
 import { ErrorBanner } from "../../components/UI";
@@ -10,56 +9,36 @@ import TechTrustBanner from "../../components/HomePageComponent/TechTrustBanner"
 import FlashSale from "../../components/FlashSale/FlashSale";
 import BrandSection from "../../components/BrandSection/BrandSection";
 import AISmartPicks from "../../components/HomePageComponent/AISmartPicks";
-import { getPersonalizedRecommendationsApi, getHomePageDataApi } from "../../api/productApi";
-
-const ChatBot = lazy(() => import("../../components/ChatBot/ChatBot"));
+import { useDocumentMeta } from "../../features/shared/hooks/useDocumentMeta";
+import {
+  useHomeDataQuery,
+  usePersonalizedRecsQuery,
+} from "../../features/shared/queries/catalogQueries";
 
 const HomePage = () => {
-  const [personalizedRecs, setPersonalizedRecs] = useState([]);
-  const [homeData, setHomeData] = useState(null);
-  const [homeError, setHomeError] = useState(null);
+  useDocumentMeta({
+    title: "Trang chủ",
+    description:
+      "Khám phá laptop, smartphone, gaming gear chính hãng cùng trợ lý AI Vector Search, so sánh hiệu năng và tư vấn cấu hình tại TIENTECH Shop.",
+    canonicalPath: "/",
+  });
 
-  const fetchHomeData = useCallback(async () => {
-    try {
-      setHomeError(null);
-      const res = await getHomePageDataApi();
-      if (res?.errCode === 0 && res.data) {
-        setHomeData(res.data);
-      } else {
-        setHomeError(res?.errMessage || "Không thể tải dữ liệu trang chủ.");
-      }
-    } catch (err) {
-      console.error("Failed to load aggregated home page data", err);
-      setHomeError("Kết nối đến máy chủ bị gián đoạn. Vui lòng thử lại.");
-    }
-  }, []);
+  const {
+    data: homeData,
+    isLoading: homeLoading,
+    error: homeQueryError,
+    refetch: fetchHomeData,
+  } = useHomeDataQuery();
+  const { data: personalizedRecs = [] } = usePersonalizedRecsQuery(6);
 
-  const fetchRecs = useCallback(async () => {
-    try {
-      const res = await getPersonalizedRecommendationsApi(6);
-      if (res?.errCode === 0) setPersonalizedRecs(res.products || []);
-    } catch (err) {
-      console.error("Failed to load Personalized Recommendations", err);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchHomeData();
-    fetchRecs();
-  }, [fetchHomeData, fetchRecs]);
-
-  const homeLoading = !homeData && !homeError;
+  const homeError = homeQueryError ? homeQueryError.message : null;
 
   return (
     <div className="bg-slate-50 dark:bg-dark-bg transition-colors duration-300 min-h-screen">
-      <Suspense fallback={null}>
-        <ChatBot />
-      </Suspense>
-
       {/* Futuristic Hero Section */}
       <HeroSection />
 
-      <main className="min-w-0">
+      <div className="min-w-0">
         {homeError && (
           <div className="container-custom pt-4">
             <ErrorBanner message={homeError} onRetry={fetchHomeData} />
@@ -140,7 +119,7 @@ const HomePage = () => {
 
         {/* Tech Trust & Assurance Guarantee Pillars */}
         <TechTrustBanner />
-      </main>
+      </div>
     </div>
   );
 };

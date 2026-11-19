@@ -34,13 +34,10 @@ export default defineConfig({
             if (id.includes("@paypal")) {
               return "vendor-paypal";
             }
-            if (id.includes("swiper")) {
-              return "vendor-swiper";
-            }
             if (id.includes("socket.io-client")) {
               return "vendor-socket";
             }
-            if (id.includes("axios") || id.includes("lodash")) {
+            if (id.includes("axios")) {
               return "vendor-utils";
             }
           }

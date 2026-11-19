@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import { FiZap, FiChevronRight } from "react-icons/fi";
 import { calculateFinalPrice } from "../../../utils/priceHelper";
 
@@ -22,22 +23,22 @@ const SmartRecommendations = ({ smartRecs }) => {
             setup dựa trên thuật toán AI
           </p>
         </div>
-        <a
-          href="/products"
+        <Link
+          to="/products"
           className="text-xs font-black uppercase tracking-wider text-primary dark:text-primary-light hover:underline transition-colors flex items-center gap-1.5 group shrink-0"
         >
           Khám phá tất cả{" "}
           <FiChevronRight className="group-hover:translate-x-1 transition-transform" />
-        </a>
+        </Link>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4 md:gap-5">
         {smartRecs.map((rec) => {
           const finalPrice = calculateFinalPrice(rec);
           return (
-            <a
+            <Link
               key={rec.id}
-              href={`/product-detail/${rec.slug || rec.id}`}
+              to={`/product-detail/${rec.slug || rec.id}`}
               className="group bg-white dark:bg-dark-surface rounded-3xl border border-slate-200/80 dark:border-dark-border p-4 hover:shadow-xl hover:border-primary/40 transition-all duration-300 relative overflow-hidden flex flex-col justify-between"
             >
               <div>
@@ -78,7 +79,7 @@ const SmartRecommendations = ({ smartRecs }) => {
                   </span>
                 )}
               </div>
-            </a>
+            </Link>
           );
         })}
       </div>

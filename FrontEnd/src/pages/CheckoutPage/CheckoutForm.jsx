@@ -15,7 +15,7 @@ import {
 import { getAddressesApi, createAddressApi } from "../../api/addressApi";
 import { FaPaypal } from "react-icons/fa";
 import { showErrorToast, showInfoToast, showSuccessToast } from "../../utils/toastHelper";
-import { motion as Motion, AnimatePresence } from "framer-motion";
+import { m as Motion, AnimatePresence } from "framer-motion";
 import { useSystemSettings } from "../../context/useSystemSettings";
 import { Modal, Button } from "../../components/UI";
 
@@ -225,7 +225,7 @@ const CheckoutForm = ({ formData, setFormData, user }) => {
     }
   };
 
-  const { isCodEnabled, isVnpayEnabled, isPaypalEnabled, isMomoEnabled } =
+  const { isCodEnabled, isVnpayEnabled, isPaypalEnabled } =
     useSystemSettings();
 
   const paymentOptions = React.useMemo(
@@ -260,18 +260,8 @@ const CheckoutForm = ({ formData, setFormData, user }) => {
             },
           ]
         : []),
-      ...(isMomoEnabled
-        ? [
-            {
-              id: "MOMO",
-              label: "Ví MoMo",
-              desc: "Thanh toán ví điện tử",
-              icon: FiCreditCard,
-            },
-          ]
-        : []),
     ],
-    [isCodEnabled, isVnpayEnabled, isPaypalEnabled, isMomoEnabled],
+    [isCodEnabled, isVnpayEnabled, isPaypalEnabled],
   );
 
   // Auto-switch payment method if current is disabled

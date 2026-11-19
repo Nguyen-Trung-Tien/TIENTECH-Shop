@@ -10,7 +10,7 @@ import {
   FiInfo,
   FiActivity,
 } from "react-icons/fi";
-import { motion as Motion, AnimatePresence } from "framer-motion";
+import { m as Motion, AnimatePresence } from "framer-motion";
 import { Button, Loader } from "../UI";
 
 import {
@@ -244,6 +244,32 @@ const PricePredictionModal = ({ productId, isOpen, onClose }) => {
     }
   }, [data]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") onClose?.();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
+
+  const fairPrice = Number(data?.aiAnalysis?.fairPrice || 0);
+  const currentPrice = Number(data?.currentPrice || 0);
+  const fairPriceComparisonText = useMemo(() => {
+    if (currentPrice > 0 && fairPrice > 0 && fairPrice < currentPrice) {
+      const pct = Math.round(((currentPrice - fairPrice) / currentPrice) * 100);
+      return `Thấp hơn ${pct}% so với hiện tại`;
+    }
+    if (currentPrice > 0 && fairPrice > currentPrice) {
+      const pct = Math.round(((fairPrice - currentPrice) / currentPrice) * 100);
+      return `Giá hiện tại thấp hơn mức hợp lý ${pct}%`;
+    }
+    if (currentPrice > 0 && fairPrice === currentPrice) {
+      return "Đang ở mức giá hợp lý";
+    }
+    return "Đang cập nhật đối chiếu giá";
+  }, [fairPrice, currentPrice]);
+
   if (!isOpen) return null;
 
   return (
@@ -258,6 +284,9 @@ const PricePredictionModal = ({ productId, isOpen, onClose }) => {
         />
 
         <Motion.div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="price-prediction-modal-title"
           initial={{ opacity: 0, scale: 0.9, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -265,22 +294,27 @@ const PricePredictionModal = ({ productId, isOpen, onClose }) => {
         >
           {/* Header */}
           <div className="px-8 py-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/50">
-            <div className="flex items-center gap-4">
-              <div className="size-12 rounded-2xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-200 dark:shadow-none">
+            <div className="flex items-center gap-4 min-w-0">
+              <div className="size-12 rounded-2xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-200 dark:shadow-none shrink-0">
                 <FiActivity size={24} />
               </div>
-              <div>
-                <h3 className="text-xl font-semibold text-slate-900 dark:text-white uppercase tracking-tight">
+              <div className="min-w-0">
+                <h3
+                  id="price-prediction-modal-title"
+                  className="text-xl font-semibold text-slate-900 dark:text-white uppercase tracking-tight truncate"
+                >
                   AI Price Analytics
                 </h3>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mt-1">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mt-1 truncate">
                   Dự đoán xu hướng giá TienTech Engine
                 </p>
               </div>
             </div>
             <button
+              type="button"
               onClick={onClose}
-              className="size-10 rounded-xl flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-slate-400"
+              aria-label="Đóng hộp thoại dự báo giá"
+              className="size-10 rounded-xl flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-slate-400 shrink-0 cursor-pointer"
             >
               <FiX size={24} />
             </button>
@@ -308,16 +342,10 @@ const PricePredictionModal = ({ productId, isOpen, onClose }) => {
                   <StatCard
                     icon={<FiShoppingBag />}
                     label="Giá hợp lý nên mua"
-                    value={`${data?.aiAnalysis?.fairPrice?.toLocaleString() || "---"}đ`}
+                    value={`${fairPrice > 0 ? fairPrice.toLocaleString() : "---"}đ`}
                     subValue={
                       <>
-                        <FiTrendingDown /> Thấp hơn{" "}
-                        {Math.round(
-                          (1 -
-                            data?.aiAnalysis?.fairPrice / data?.currentPrice) *
-                            100,
-                        )}
-                        % so với hiện tại
+                        <FiTrendingDown /> {fairPriceComparisonText}
                       </>
                     }
                   />
@@ -353,11 +381,13 @@ const PricePredictionModal = ({ productId, isOpen, onClose }) => {
             )}
           </div>
 
-          <div className="px-8 py-6 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 flex items-center justify-between">
-            <div className="flex items-center gap-2 text-slate-400">
-              <FiInfo size={14} />
-              <span className="text-[9px] font-black uppercase tracking-widest">
-                Dữ liệu được cập nhật dựa trên thời gian thực
+          <div className="px-8 py-6 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-2 text-slate-400 min-w-0 flex-1">
+              <FiInfo size={14} className="shrink-0" />
+              <span className="text-[9px] font-black uppercase tracking-widest break-words [overflow-wrap:anywhere]">
+                {data?.aiAnalysis?.isFallback
+                  ? "Ước tính định lượng theo chu kỳ thị trường (Chế độ dự phòng)"
+                  : "Phân tích tham khảo bởi AI dựa trên chu kỳ sản phẩm hiện hành"}
               </span>
             </div>
             <Button

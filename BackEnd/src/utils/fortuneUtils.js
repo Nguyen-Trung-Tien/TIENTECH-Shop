@@ -3,7 +3,37 @@
  * Hệ thống tính toán phong thủy chuyên sâu: Mệnh Niên, Cung Phi, Ngũ Hành Tương Sinh
  */
 
+const { Op } = require("sequelize");
+
 const elements = ["Kim", "Thủy", "Mộc", "Hỏa", "Thổ"];
+
+const COLOR_SYNONYMS = {
+  "trắng": ["trắng", "white", "starlight", "pearl", "ivory"],
+  "xám": ["xám", "gray", "grey", "graphite", "space gray", "space grey", "titanium"],
+  "ghi": ["ghi", "xám", "gray", "grey", "slate"],
+  "bạc": ["bạc", "silver", "platinum"],
+  "vàng kim": ["vàng kim", "gold", "champagne"],
+  "đen": ["đen", "black", "midnight", "obsidian", "onyx"],
+  "xanh dương": ["xanh dương", "blue", "navy", "azure", "cobalt", "sky blue", "sierra blue"],
+  "xanh navy": ["xanh navy", "navy", "midnight blue", "dark blue"],
+  "xanh đen": ["xanh đen", "midnight", "dark blue", "navy"],
+  "xanh lá": ["xanh lá", "green", "mint", "emerald", "alpine green"],
+  "xanh lục": ["xanh lục", "green", "emerald", "mint"],
+  "xanh rêu": ["xanh rêu", "olive", "sage", "moss", "forest green"],
+  "xanh lục bảo": ["xanh lục bảo", "emerald", "green"],
+  "đỏ": ["đỏ", "red", "burgundy", "crimson", "coral"],
+  "đỏ đô": ["đỏ đô", "burgundy", "wine", "maroon"],
+  "hồng": ["hồng", "pink", "rose", "blush"],
+  "tím": ["tím", "purple", "violet", "lavender", "lilac"],
+  "cam": ["cam", "orange", "coral", "peach"],
+  "vàng": ["vàng", "gold", "yellow", "amber"],
+  "vàng đất": ["vàng đất", "amber", "ochre", "bronze", "tan"],
+  "vàng duyên": ["vàng", "gold", "cream", "amber"],
+  "nâu": ["nâu", "brown", "bronze", "mocha", "coffee"],
+  "nâu đất": ["nâu đất", "brown", "bronze", "mocha"],
+  "hổ phách": ["hổ phách", "amber", "gold"],
+  "kem be": ["kem be", "beige", "cream", "sand"],
+};
 
 const elementColors = {
   Kim: {
@@ -201,8 +231,150 @@ const getLuckyNumbers = (element) => {
   return map[element] || [];
 };
 
+const expandColorKeywords = (colors = []) => {
+  if (!Array.isArray(colors)) return [];
+  const keywordSet = new Set();
+  for (const rawColor of colors) {
+    const normalized = String(rawColor || "").trim().toLowerCase();
+    if (!normalized) continue;
+    keywordSet.add(normalized);
+    const synonyms = COLOR_SYNONYMS[normalized];
+    if (Array.isArray(synonyms)) {
+      for (const syn of synonyms) {
+        const s = String(syn || "").trim().toLowerCase();
+        if (s) keywordSet.add(s);
+      }
+    }
+  }
+  return Array.from(keywordSet);
+};
+
+const buildLuckyColorWhereClauses = (db, luckyColors = []) => {
+  const keywords = expandColorKeywords(luckyColors);
+  if (keywords.length === 0) return [];
+
+  const clauses = [];
+  const seq = db?.sequelize;
+  const hasFullSequelize =
+    seq &&
+    typeof seq.escape === "function" &&
+    typeof seq.literal === "function" &&
+    typeof seq.where === "function" &&
+    typeof seq.fn === "function" &&
+    typeof seq.cast === "function" &&
+    typeof seq.col === "function";
+
+  const castType =
+    typeof seq?.getDialect === "function" && seq.getDialect() === "sqlite"
+      ? "TEXT"
+      : "CHAR";
+
+  for (const kw of keywords) {
+    clauses.push({ name: { [Op.like]: `%${kw}%` } });
+    if (hasFullSequelize) {
+      clauses.push(
+        seq.where(
+          seq.fn("LOWER", seq.cast(seq.col("Product.specifications"), castType)),
+          { [Op.like]: `%${kw}%` },
+        ),
+      );
+    } else {
+      clauses.push({ specifications: { [Op.like]: `%${kw}%` } });
+    }
+  }
+
+  if (hasFullSequelize) {
+    const pavConditions = keywords.map(
+      (kw) => `LOWER(av.value) LIKE ${seq.escape(`%${kw}%`)}`,
+    );
+    clauses.push(
+      seq.literal(
+        `EXISTS (SELECT 1 FROM ProductAttributeValues pav INNER JOIN AttributeValues av ON av.id = pav.attributeValueId INNER JOIN Attributes a ON a.id = av.attributeId WHERE pav.productId = \`Product\`.\`id\` AND (a.code = 'color' OR LOWER(a.name) LIKE '%màu%' OR LOWER(a.name) LIKE '%color%') AND (${pavConditions.join(" OR ")}))`,
+      ),
+    );
+
+    const pvJsonConditions = keywords.map(
+      (kw) =>
+        `LOWER(CAST(pv.attributeValues AS ${castType})) LIKE ${seq.escape(`%${kw}%`)}`,
+    );
+    clauses.push(
+      seq.literal(
+        `EXISTS (SELECT 1 FROM ProductVariants pv WHERE pv.productId = \`Product\`.\`id\` AND pv.isActive = 1 AND (${pvJsonConditions.join(" OR ")} OR EXISTS (SELECT 1 FROM VariantAttributeValues vav INNER JOIN AttributeValues av ON av.id = vav.attributeValueId INNER JOIN Attributes a ON a.id = av.attributeId WHERE vav.variantId = pv.id AND (a.code = 'color' OR LOWER(a.name) LIKE '%màu%' OR LOWER(a.name) LIKE '%color%') AND (${pavConditions.join(" OR ")}))))`,
+      ),
+    );
+  }
+
+  return clauses;
+};
+
+const matchesLuckyColor = (product, luckyColors = []) => {
+  if (!product) return false;
+  const keywords = expandColorKeywords(luckyColors);
+  if (keywords.length === 0) return false;
+
+  const chunks = [];
+  if (product.name) chunks.push(String(product.name));
+  if (product.description) chunks.push(String(product.description));
+  if (product.specifications) {
+    chunks.push(
+      typeof product.specifications === "string"
+        ? product.specifications
+        : JSON.stringify(product.specifications),
+    );
+  }
+
+  if (Array.isArray(product.attributes)) {
+    for (const attr of product.attributes) {
+      const code = String(attr?.attribute?.code || "").toLowerCase();
+      const attrName = String(attr?.attribute?.name || "").toLowerCase();
+      if (
+        !attr?.attribute ||
+        code === "color" ||
+        attrName.includes("màu") ||
+        attrName.includes("color")
+      ) {
+        if (attr?.value) chunks.push(String(attr.value));
+      }
+    }
+  }
+
+  if (Array.isArray(product.variants)) {
+    for (const variant of product.variants) {
+      if (variant?.isActive === false) continue;
+      if (variant?.attributeValues) {
+        chunks.push(
+          typeof variant.attributeValues === "string"
+            ? variant.attributeValues
+            : JSON.stringify(variant.attributeValues),
+        );
+      }
+      if (Array.isArray(variant?.attributes)) {
+        for (const vAttr of variant.attributes) {
+          const code = String(vAttr?.attribute?.code || "").toLowerCase();
+          const attrName = String(vAttr?.attribute?.name || "").toLowerCase();
+          if (
+            !vAttr?.attribute ||
+            code === "color" ||
+            attrName.includes("màu") ||
+            attrName.includes("color")
+          ) {
+            if (vAttr?.value) chunks.push(String(vAttr.value));
+          }
+        }
+      }
+    }
+  }
+
+  const haystack = chunks.join(" ").toLowerCase();
+  return keywords.some((kw) => haystack.includes(kw));
+};
+
 module.exports = {
   getFengShuiDetail,
   getAllElementsMetadata,
   elementColors,
+  COLOR_SYNONYMS,
+  expandColorKeywords,
+  buildLuckyColorWhereClauses,
+  matchesLuckyColor,
 };

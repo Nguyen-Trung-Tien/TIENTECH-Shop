@@ -1,7 +1,7 @@
 import React from "react";
 import { FiAlertTriangle } from "react-icons/fi";
 import { ConfirmModal } from "../../../components/UI";
-import { motion as Motion } from "framer-motion";
+import { m as Motion } from "framer-motion";
 
 const CANCEL_REASONS = [
   "Thay đổi ý định mua hàng",

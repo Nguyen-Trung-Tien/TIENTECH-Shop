@@ -41,7 +41,7 @@ const strongPasswordSchema = z
   .regex(/[A-Z]/, "Mật khẩu phải chứa ít nhất 1 chữ cái viết hoa")
   .regex(/[a-z]/, "Mật khẩu phải chứa ít nhất 1 chữ cái viết thường")
   .regex(/\d/, "Mật khẩu phải chứa ít nhất 1 chữ số")
-  .regex(/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/, "Mật khẩu phải chứa ít nhất 1 ký tự đặc biệt");
+  .regex(/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/, "Mật khẩu phải chứa ít nhất 1 ký tự đặc biệt");
 
 const registerSchema = z.object({
   body: z
@@ -383,6 +383,13 @@ const createPaymentSchema = z.object({
     }),
 });
 
+const paypalCaptureSchema = z.object({
+  body: z.object({
+    orderId: z.coerce.number().int().positive("Mã đơn hàng không hợp lệ"),
+    paypalOrderId: z.string().trim().min(5, "Mã PayPal Order không hợp lệ").max(128),
+  }),
+});
+
 const contactSchema = z.object({
   body: z.object({
     name: z.string().trim().min(2, "Vui lòng nhập họ tên hợp lệ").max(120),
@@ -397,8 +404,288 @@ const contactSchema = z.object({
   }),
 });
 
+const updateContactTicketSchema = z.object({
+  params: z.object({
+    id: z.coerce.number().int().positive("ID yêu cầu liên hệ không hợp lệ"),
+  }),
+  body: z.object({
+    status: z.enum(["open", "in_progress", "resolved", "closed"]).optional(),
+    adminReply: z.string().trim().max(4000).optional(),
+    sendEmailReply: z.boolean().optional(),
+  }),
+});
+
+const emptyActionSchema = z.object({
+  body: z.any().optional(),
+});
+
+const idParamSchema = z.object({
+  params: z.object({
+    id: z.coerce.number().int().positive("ID không hợp lệ"),
+  }),
+  body: z.any().optional(),
+});
+
+const addressIdParamSchema = z.object({
+  params: z.object({
+    addressId: z.coerce.number().int().positive("ID địa chỉ không hợp lệ"),
+  }),
+});
+
+const generateDescriptionSchema = z.object({
+  body: z.object({
+    name: z.string().trim().min(1, "Vui lòng nhập tên sản phẩm").max(255),
+    keywords: z.string().max(2000).optional().default(""),
+  }).passthrough(),
+});
+
+const brandCreateSchema = z.object({
+  body: z.object({
+    name: z.string().trim().min(1, "Tên thương hiệu không được để trống").max(150),
+    slug: z.string().max(200).optional(),
+    description: z.string().nullable().optional(),
+  }).passthrough(),
+});
+
+const brandUpdateSchema = z.object({
+  params: z.object({
+    id: z.coerce.number().int().positive("ID thương hiệu không hợp lệ"),
+  }),
+  body: z.object({
+    name: z.string().trim().min(1, "Tên thương hiệu không được để trống").max(150).optional(),
+  }).passthrough(),
+});
+
+const categoryCreateSchema = z.object({
+  body: z.object({
+    name: z.string().trim().min(1, "Tên danh mục không được để trống").max(150),
+    slug: z.string().max(200).optional(),
+    description: z.string().nullable().optional(),
+    parentId: z.union([z.coerce.number().int().positive(), z.literal(""), z.null()]).optional(),
+  }).passthrough(),
+});
+
+const categoryUpdateSchema = z.object({
+  params: z.object({
+    id: z.coerce.number().int().positive("ID danh mục không hợp lệ"),
+  }),
+  body: z.object({
+    name: z.string().trim().min(1, "Tên danh mục không được để trống").max(150).optional(),
+  }).passthrough(),
+});
+
+const variantCreateSchema = z.object({
+  body: z.object({
+    productId: z.coerce.number().int().positive("Mã sản phẩm không hợp lệ"),
+    sku: z.string().trim().min(1, "SKU biến thể không được để trống").max(100),
+    price: z.coerce.number().nonnegative("Giá biến thể không hợp lệ"),
+    stock: z.coerce.number().int().nonnegative("Tồn kho không hợp lệ").optional().default(0),
+  }).passthrough(),
+});
+
+const variantUpdateSchema = z.object({
+  params: z.object({
+    id: z.coerce.number().int().positive("ID biến thể không hợp lệ"),
+  }),
+  body: z.object({
+    price: z.coerce.number().nonnegative("Giá biến thể không hợp lệ").optional(),
+    stock: z.coerce.number().int().nonnegative("Tồn kho không hợp lệ").optional(),
+  }).passthrough(),
+});
+
+const createCartSchema = z.object({
+  body: z.object({
+    userId: z.union([z.string(), z.number()]).optional(),
+  }).passthrough().optional(),
+});
+
+const updateCartSchema = z.object({
+  params: z.object({
+    id: z.coerce.number().int().positive("ID giỏ hàng không hợp lệ"),
+  }),
+  body: z.object({}).passthrough(),
+});
+
+const validateCartSchema = z.object({
+  body: z.object({
+    items: z.array(
+      z.object({
+        productId: z.coerce.number().int().positive("Mã sản phẩm không hợp lệ"),
+        variantId: z.coerce.number().int().positive().nullable().optional(),
+        quantity: z.coerce.number().int().positive("Số lượng phải lớn hơn 0"),
+      }).passthrough()
+    ),
+  }),
+});
+
+const chatAskSchema = z.object({
+  body: z.object({
+    message: z.string().trim().min(1, "Bạn phải gửi kèm 'message' dạng text.").max(500, "Tin nhắn quá dài, vui lòng rút gọn."),
+    userId: z.union([z.string(), z.number()]).nullable().optional(),
+    history: z.array(z.any()).max(20).optional(),
+  }).passthrough(),
+});
+
+const chatVisualSearchSchema = z.object({
+  body: z.object({
+    image: z.string().min(10, "Thiếu dữ liệu hình ảnh hợp lệ."),
+  }).passthrough(),
+});
+
+const chatPredictSchema = z.object({
+  body: z.object({
+    productId: z.coerce.number().int().positive("Bạn phải gửi kèm 'productId' hợp lệ."),
+  }).passthrough(),
+});
+
+const chatFengShuiSchema = z.object({
+  body: z.object({
+    birthYear: z.coerce.number().int().min(1900, "Năm sinh không hợp lệ").max(2100, "Năm sinh không hợp lệ"),
+    gender: z.enum(["male", "female"]).optional().default("male"),
+    message: z.string().trim().min(1, "Bạn phải gửi kèm 'message' dạng text.").max(500, "Tin nhắn quá dài, vui lòng rút gọn."),
+  }).passthrough(),
+});
+
+const createOrderItemSchema = z.object({
+  body: z.object({
+    orderId: z.coerce.number().int().positive("Mã đơn hàng không hợp lệ"),
+    productId: z.coerce.number().int().positive("Mã sản phẩm không hợp lệ"),
+    quantity: z.coerce.number().int().positive("Số lượng phải lớn hơn 0"),
+    price: z.coerce.number().nonnegative().optional(),
+  }).passthrough(),
+});
+
+const updateOrderItemSchema = z.object({
+  params: z.object({
+    id: z.coerce.number().int().positive("ID chi tiết đơn hàng không hợp lệ"),
+  }),
+  body: z.object({
+    quantity: z.coerce.number().int().positive().optional(),
+  }).passthrough(),
+});
+
+const orderItemReturnRequestSchema = z.object({
+  params: z.object({
+    id: z.coerce.number().int().positive("ID chi tiết đơn hàng không hợp lệ"),
+  }),
+  body: z.object({
+    reason: z.string().trim().min(3, "Vui lòng nhập lý do trả hàng").max(1000),
+  }).passthrough(),
+});
+
+const orderItemProcessReturnSchema = z.object({
+  params: z.object({
+    id: z.coerce.number().int().positive("ID chi tiết đơn hàng không hợp lệ"),
+  }),
+  body: z.object({
+    status: z.string().optional(),
+    action: z.string().optional(),
+  }).passthrough().refine((b) => Boolean(b.status || b.action), {
+    message: "Thiếu trạng thái hoặc hành động xử lý trả hàng",
+  }),
+});
+
+const updateOrderPaymentStatusSchema = z.object({
+  params: z.object({
+    id: z.coerce.number().int().positive("Mã đơn hàng không hợp lệ"),
+  }),
+  body: z.object({
+    paymentStatus: z.enum(["unpaid", "paid", "refunded"]),
+  }).passthrough(),
+});
+
+const updatePaymentSchema = z.object({
+  params: z.object({
+    orderId: z.coerce.number().int().positive("Mã đơn hàng không hợp lệ"),
+  }),
+  body: z.object({
+    paymentStatus: z.string().min(1).optional(),
+    status: z.string().min(1).optional(),
+    note: z.string().max(1000).optional(),
+    transactionId: z.string().max(200).optional(),
+  }).passthrough(),
+});
+
+const completePaymentSchema = z.object({
+  params: z.object({
+    id: z.coerce.number().int().positive("Mã thanh toán không hợp lệ"),
+  }),
+  body: z.object({
+    transactionId: z.string().max(200).optional(),
+  }).passthrough().optional(),
+});
+
+const refundPaymentSchema = z.object({
+  params: z.object({
+    id: z.coerce.number().int().positive("Mã thanh toán không hợp lệ"),
+  }),
+  body: z.object({
+    note: z.string().max(1000).optional(),
+  }).passthrough().optional(),
+});
+
+const reviewReplySchema = z.object({
+  body: z.object({
+    reviewId: z.coerce.number().int().positive("Thiếu mã đánh giá hợp lệ"),
+    comment: z.string().trim().min(1, "Nội dung phản hồi không được để trống").max(2000),
+  }).passthrough(),
+});
+
+const createVnpayPaymentSchema = z.object({
+  body: z.object({
+    orderCode: z.string().trim().min(1, "Thiếu mã đơn hàng (orderCode)").max(100),
+  }).passthrough(),
+});
+
+const updateVoucherSchema = z.object({
+  params: z.object({
+    id: z.coerce.number().int().positive("ID voucher không hợp lệ"),
+  }),
+  body: z.object({
+    code: z.string().min(3, "Mã voucher phải ít nhất 3 ký tự").max(20).optional(),
+    name: z.string().min(1).optional(),
+    type: z.enum(["percentage", "fixed"]).optional(),
+    value: z.preprocess(
+      (val) => (val === "" || val === undefined || val === null ? undefined : Number(val)),
+      z.number().positive("Giá trị phải lớn hơn 0").optional()
+    ),
+    isActive: z.boolean().optional(),
+  }).passthrough(),
+});
+
+const wishlistAddSchema = z.object({
+  body: z.object({
+    productId: z.coerce.number().int().positive("Mã sản phẩm không hợp lệ"),
+  }).passthrough(),
+});
+
+const syncEmbeddingsSchema = z.object({
+  body: z
+    .object({
+      mode: z.enum(["missing", "stale", "all"]).optional().default("missing"),
+    })
+    .passthrough()
+    .optional(),
+});
+
+const compareAiVerdictSchema = z.object({
+  body: z
+    .object({
+      productIds: z
+        .array(z.coerce.number().int().positive("ID sản phẩm không hợp lệ"))
+        .min(2, "Cần ít nhất 2 sản phẩm để AI phân tích so sánh")
+        .max(4, "Chỉ so sánh tối đa 4 sản phẩm cùng lúc"),
+      useCase: z
+        .enum(["general", "gaming", "office", "creative", "student", "battery"])
+        .optional()
+        .default("general"),
+    })
+    .passthrough(),
+});
+
 module.exports = {
   voucherSchema,
+  updateVoucherSchema,
   checkVoucherSchema,
   loginSchema,
   registerSchema,
@@ -412,23 +699,55 @@ module.exports = {
   createOrderSchema: orderSchema,
   changePaymentMethodSchema,
   addressSchema,
+  addressIdParamSchema,
   cartItemSchema,
   updateCartItemSchema,
+  createCartSchema,
+  updateCartSchema,
+  validateCartSchema,
   reviewSchema,
+  reviewReplySchema,
   updateUserSchema,
   adminUpdateUserSchema,
   adminUpdateUserStatusSchema,
   adminBulkUserStatusSchema,
   updateOrderStatusSchema,
+  updateOrderPaymentStatusSchema,
+  createOrderItemSchema,
+  updateOrderItemSchema,
+  orderItemReturnRequestSchema,
+  orderItemProcessReturnSchema,
   returnRequestSchema,
   returnActionSchema,
   broadcastNotificationSchema,
   createProductSchema,
   updateProductSchema,
+  brandCreateSchema,
+  brandUpdateSchema,
+  categoryCreateSchema,
+  categoryUpdateSchema,
+  variantCreateSchema,
+  variantUpdateSchema,
   updateSystemSettingSchema,
   bulkSystemSettingSchema,
   toggleOtpSchema,
   updateReviewSchema,
   createPaymentSchema,
+  updatePaymentSchema,
+  completePaymentSchema,
+  refundPaymentSchema,
+  createVnpayPaymentSchema,
+  paypalCaptureSchema,
   contactSchema,
+  updateContactTicketSchema,
+  chatAskSchema,
+  chatVisualSearchSchema,
+  chatPredictSchema,
+  chatFengShuiSchema,
+  generateDescriptionSchema,
+  wishlistAddSchema,
+  syncEmbeddingsSchema,
+  compareAiVerdictSchema,
+  emptyActionSchema,
+  idParamSchema,
 };

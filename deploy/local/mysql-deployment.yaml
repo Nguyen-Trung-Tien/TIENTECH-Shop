@@ -20,6 +20,13 @@ spec:
             - --lower-case-table-names=1
           ports:
             - containerPort: 3306
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "512Mi"
+            limits:
+              cpu: "1000m"
+              memory: "1Gi"
           env:
             - name: MYSQL_ROOT_PASSWORD
               value: "123456"
@@ -28,12 +35,7 @@ spec:
           volumeMounts:
             - name: mysql-data
               mountPath: /var/lib/mysql
-            - name: mysql-initdb
-              mountPath: /docker-entrypoint-initdb.d
       volumes:
         - name: mysql-data
           persistentVolumeClaim:
             claimName: mysql-pvc
-        - name: mysql-initdb
-          configMap:
-            name: mysql-initdb

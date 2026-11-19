@@ -1,14 +1,10 @@
 "use strict";
+const { addIndexIfNotExists, removeIndexIfExists } = require("../utils/migrationHelper");
 
 module.exports = {
-  async up(queryInterface, Sequelize) {
+  async up(queryInterface) {
     const addIndexSafe = async (table, fields, name) => {
-      try {
-        await queryInterface.addIndex(table, fields, { name });
-        console.log(`Index ${name} added to ${table}`);
-      } catch (err) {
-        console.log(`Index ${name} might already exist or failed: ${err.message}`);
-      }
+      await addIndexIfNotExists(queryInterface, table, fields, { name });
     };
 
     // Products table indexes
@@ -33,11 +29,9 @@ module.exports = {
     await addIndexSafe("Brands", ["slug"], "idx_brands_slug");
   },
 
-  async down(queryInterface, Sequelize) {
+  async down(queryInterface) {
     const removeIndexSafe = async (table, name) => {
-      try {
-        await queryInterface.removeIndex(table, name);
-      } catch (err) {}
+      await removeIndexIfExists(queryInterface, table, name);
     };
 
     await removeIndexSafe("Products", "idx_products_category_active");

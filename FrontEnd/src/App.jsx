@@ -125,7 +125,7 @@ const App = () => {
       <RouteProgressBar />
       <AccountLockedModal />
       <MotionConfig reducedMotion="user">
-        <LazyMotion features={domAnimation}>
+        <LazyMotion features={domAnimation} strict>
           <ErrorBoundary>
             <Routes>
               <Route path="/admin/*" element={<AdminRoutes />} />

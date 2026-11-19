@@ -16,6 +16,10 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: "productId",
         as: "attributes"
       });
+      Product.hasOne(models.ProductEmbedding, {
+        foreignKey: "productId",
+        as: "productEmbedding",
+      });
     }
   }
 

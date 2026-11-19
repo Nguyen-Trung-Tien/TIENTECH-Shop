@@ -64,7 +64,6 @@ export const SystemSettingsProvider = ({ children }) => {
       isCodEnabled: settings.PAYMENT_COD_ENABLED !== false,
       isVnpayEnabled: settings.PAYMENT_VNPAY_ENABLED !== false,
       isPaypalEnabled: settings.PAYMENT_PAYPAL_ENABLED !== false,
-      isMomoEnabled: settings.PAYMENT_MOMO_ENABLED === true,
       isMaintenance: settings.MAINTENANCE_MODE === true,
       maintenanceMessage: settings.MAINTENANCE_MESSAGE,
       isAiEnabled: settings.AI_BOT_ENABLED !== false,

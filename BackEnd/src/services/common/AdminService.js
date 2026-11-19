@@ -3,6 +3,8 @@ const { Op } = require("sequelize");
 const ExcelJS = require("exceljs");
 const { getCache, setCache } = require("../../config/redis");
 const ProductService = require("../product/ProductService");
+const EmbeddingSyncService = require("../ai/EmbeddingSyncService");
+const VectorIndexService = require("../ai/VectorIndexService");
 
 /**
  * Tính toán phần trăm thay đổi
@@ -478,12 +480,35 @@ const globalSearch = async (query) => {
   };
 };
 
-const syncEmbeddings = async () => {
+const syncEmbeddings = async (options = {}) => {
   try {
-    const result = await ProductService.syncAllProductEmbeddings();
-    return result;
+    return await EmbeddingSyncService.syncAllProducts(options);
   } catch (error) {
     console.error("Error from AdminService.syncEmbeddings:", error);
+    throw error;
+  }
+};
+
+const getVectorStatus = async () => {
+  try {
+    return await EmbeddingSyncService.getVectorOpsStatus();
+  } catch (error) {
+    console.error("Error from AdminService.getVectorStatus:", error);
+    throw error;
+  }
+};
+
+const reloadVectorIndex = async () => {
+  try {
+    const count = await VectorIndexService.loadFromDatabase();
+    await VectorIndexService.publishEvent({ action: "reload" });
+    return {
+      errCode: 0,
+      errMessage: `Đã nạp lại ${count} vector sản phẩm vào bộ nhớ.`,
+      data: VectorIndexService.getStats(),
+    };
+  } catch (error) {
+    console.error("Error from AdminService.reloadVectorIndex:", error);
     throw error;
   }
 };
@@ -494,4 +519,6 @@ module.exports = {
   exportRevenueExcel,
   globalSearch,
   syncEmbeddings,
+  getVectorStatus,
+  reloadVectorIndex,
 };

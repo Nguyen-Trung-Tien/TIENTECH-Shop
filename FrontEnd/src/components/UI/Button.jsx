@@ -38,7 +38,21 @@ const buttonVariants = cva(
   }
 );
 
-const Button = ({ className, variant, size, loading = false, loadingText, asChild = false, type = "button", ref, children, icon: Icon, onClick, disabled, ...props }) => {
+const Button = ({
+  className = "",
+  variant = "default",
+  size = "default",
+  loading = false,
+  loadingText = "",
+  asChild = false,
+  type = "button",
+  ref = undefined,
+  children = null,
+  icon: Icon = undefined,
+  onClick = undefined,
+  disabled = false,
+  ...props
+}) => {
   const [internalLoading, setInternalLoading] = useState(false);
   const isMountedRef = useRef(true);
   const inFlightRef = useRef(false);
@@ -93,7 +107,7 @@ const Button = ({ className, variant, size, loading = false, loadingText, asChil
           }
         />
       )}
-      {!isLoading && Icon && (typeof Icon === "function" ? <Icon className="size-4 shrink-0" /> : Icon)}
+      {!isLoading && Icon && (React.isValidElement(Icon) ? Icon : <Icon className="size-4 shrink-0" />)}
       {isLoading && loadingText ? loadingText : children}
     </Comp>
   );

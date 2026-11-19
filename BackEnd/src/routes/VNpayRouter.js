@@ -4,12 +4,15 @@ const VNpay = require("../controllers/VNpay");
 const { authenticateToken } = require("../middleware/authMiddleware");
 const { paymentActionLimiter } = require("../middleware/rateLimiter");
 const { idempotencyGuard } = require("../middleware/idempotencyMiddleware");
+const { validate } = require("../middleware/zodMiddleware");
+const { createVnpayPaymentSchema } = require("../utils/zodSchemas");
 
 router.post(
   "/create-vnpay-payment",
   authenticateToken,
   paymentActionLimiter,
   idempotencyGuard(),
+  validate(createVnpayPaymentSchema),
   VNpay.handleCreateVnpayPayment,
 );
 router.get("/vnpay-return", VNpay.handleVnpayReturn);

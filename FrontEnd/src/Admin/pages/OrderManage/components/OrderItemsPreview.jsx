@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { motion as Motion, AnimatePresence } from "framer-motion";
+import { m as Motion, AnimatePresence } from "framer-motion";
 import { FiChevronDown, FiX } from "react-icons/fi";
 
 const OrderItemsPreview = ({ items, formatCurrency }) => {

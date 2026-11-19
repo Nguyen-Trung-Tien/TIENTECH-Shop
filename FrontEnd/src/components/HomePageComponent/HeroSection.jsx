@@ -13,7 +13,7 @@ import {
   FiSmartphone,
   FiSliders,
 } from "react-icons/fi";
-import { motion as Motion, AnimatePresence } from "framer-motion";
+import { m as Motion, AnimatePresence } from "framer-motion";
 
 const SHOWCASE_ITEMS = [
   {

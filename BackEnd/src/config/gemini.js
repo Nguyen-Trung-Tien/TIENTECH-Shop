@@ -1,78 +1,132 @@
-const { GoogleGenerativeAI } = require("@google/generative-ai");
+const { GoogleGenAI } = require("@google/genai");
 require("dotenv").config();
 
 const apiKey = process.env.GEMINI_API_KEY || process.env.API_KEY || "dummy_key";
-const genAI = new GoogleGenerativeAI(apiKey);
+const genAI = new GoogleGenAI({ apiKey });
 
-// Fallback sequence when Google updates/deprecates model versions
-const FALLBACK_MODELS = [
-  "gemini-2.5-flash",
-  "gemini-2.0-flash",
+const DEFAULT_MODEL = "gemini-3.8-flash";
+const FALLBACK_MODELS = ["gemini-3.8-flash", "gemini-3.5-flash-lite"];
+
+const DEPRECATED_MODELS = new Set([
+  "gemini-pro",
+  "gemini-1.0-pro",
   "gemini-1.5-flash",
   "gemini-1.5-pro",
-];
+  "gemini-2.0-flash",
+  "gemini-2.0-flash-lite",
+  "gemini-2.5-flash",
+  "gemini-3.6-flash",
+  "text-embedding-004",
+]);
 
-/**
- * Get generative model with given name and options
- */
-const getGeminiModel = (modelName = "gemini-2.5-flash", options = {}) => {
-  return genAI.getGenerativeModel({
-    model: modelName,
-    ...options,
-  });
+const getGenAIClient = () => genAI;
+
+const normalizeContents = (contentsOrPrompt) => {
+  if (
+    contentsOrPrompt &&
+    typeof contentsOrPrompt === "object" &&
+    !Array.isArray(contentsOrPrompt) &&
+    contentsOrPrompt.contents !== undefined
+  ) {
+    return contentsOrPrompt.contents;
+  }
+  return contentsOrPrompt;
+};
+
+const normalizeConfig = (options = {}) => {
+  const merged = {
+    ...(options.generationConfig || {}),
+    ...(options.config || {}),
+  };
+  if (options.systemInstruction !== undefined && merged.systemInstruction === undefined) {
+    merged.systemInstruction = options.systemInstruction;
+  }
+  return Object.keys(merged).length > 0 ? merged : undefined;
+};
+
+const wrapResponse = (raw) => {
+  const textValue =
+    typeof raw?.text === "function"
+      ? raw.text()
+      : typeof raw?.text === "string"
+        ? raw.text
+        : typeof raw?.response?.text === "function"
+          ? raw.response.text()
+          : "";
+
+  return {
+    text: textValue,
+    response: {
+      text: () => textValue,
+    },
+    raw,
+  };
+};
+
+const isModelRetryableError = (err) => {
+  const status = Number(err?.status || err?.statusCode || 0);
+  const msg = String(err?.message || "").toLowerCase();
+
+  // Never retry auth, bad request, or rate-limit errors on another model
+  if ([400, 401, 403, 429].includes(status)) return false;
+  if (msg.includes("429") || msg.includes("quota") || msg.includes("api key")) {
+    return false;
+  }
+
+  return (
+    status === 404 ||
+    status === 503 ||
+    msg.includes("404") ||
+    msg.includes("503") ||
+    msg.includes("not found") ||
+    msg.includes("no longer available") ||
+    msg.includes("deprecated") ||
+    msg.includes("unavailable")
+  );
 };
 
 /**
- * Generate content with automatic model fallback on 404 or version obsolescence
+ * Generate content using @google/genai with automatic fallback on model unavailability (404/503).
  */
 const generateContentWithFallback = async (contentsOrPrompt, options = {}) => {
-  let preferredModel = "gemini-2.5-flash";
+  let preferredModel = DEFAULT_MODEL;
   try {
     const SystemSettingService = require("../services/system/SystemSettingService");
     const configuredModel = await SystemSettingService.getSetting("AI_MODEL_NAME");
-    preferredModel = configuredModel && configuredModel !== "gemini-3.6-flash"
-      ? configuredModel
-      : "gemini-2.5-flash";
+    const normalizedModel = String(configuredModel || "").trim();
+    if (normalizedModel && !DEPRECATED_MODELS.has(normalizedModel)) {
+      preferredModel = normalizedModel;
+    }
   } catch {
-    preferredModel = "gemini-2.5-flash";
+    preferredModel = DEFAULT_MODEL;
   }
 
-  // Deduplicate candidate models starting with preferred
   const candidateModels = [
     preferredModel,
     ...FALLBACK_MODELS.filter((m) => m !== preferredModel),
   ];
 
+  const contents = normalizeContents(contentsOrPrompt);
+  const config = normalizeConfig(options);
+
   let lastError = null;
   for (const modelName of candidateModels) {
     try {
-      const model = genAI.getGenerativeModel({
+      const request = {
         model: modelName,
-        ...options,
-      });
-
-      const result = await model.generateContent(contentsOrPrompt);
-      return result;
+        contents,
+        ...(config ? { config } : {}),
+      };
+      const raw = await genAI.models.generateContent(request);
+      return wrapResponse(raw);
     } catch (err) {
       lastError = err;
-      const errMsg = err.message || "";
-      const isModelNotFound =
-        err.status === 404 ||
-        errMsg.includes("404") ||
-        errMsg.includes("not found") ||
-        errMsg.includes("no longer available") ||
-        errMsg.includes("deprecated");
-
-      if (isModelNotFound) {
+      if (isModelRetryableError(err)) {
         console.warn(`[Gemini AI] Model '${modelName}' is unavailable. Trying fallback...`);
         continue;
       }
-
-      // If it's another error (e.g., quota or prompt error), rethrow or continue
-      console.warn(`[Gemini AI] Model '${modelName}' failed:`, errMsg);
-      if (err.status === 429 || errMsg.includes("429") || errMsg.includes("quota")) {
-        throw err;
-      }
+      console.warn(`[Gemini AI] Model '${modelName}' failed:`, err?.message || err);
+      throw err;
     }
   }
 
@@ -81,7 +135,8 @@ const generateContentWithFallback = async (contentsOrPrompt, options = {}) => {
 
 module.exports = {
   genAI,
-  getGeminiModel,
+  getGenAIClient,
   generateContentWithFallback,
+  DEFAULT_MODEL,
   FALLBACK_MODELS,
 };

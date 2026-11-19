@@ -6,6 +6,8 @@ const {
   authenticateToken,
   authorizeRole,
 } = require("../middleware/authMiddleware");
+const { validate } = require("../middleware/zodMiddleware");
+const { categoryCreateSchema, categoryUpdateSchema } = require("../utils/zodSchemas");
 
 router.get("/get-all", CategoryController.handleGetAllCategories);
 router.get("/get-by-id/:id", CategoryController.handleGetCategoryById);
@@ -16,6 +18,7 @@ router.post(
   authenticateToken,
   authorizeRole(["admin"]),
   upload.single("image"),
+  validate(categoryCreateSchema),
   CategoryController.handleCreateCategory
 );
 router.put(
@@ -23,6 +26,7 @@ router.put(
   authenticateToken,
   authorizeRole(["admin"]),
   upload.single("image"),
+  validate(categoryUpdateSchema),
   CategoryController.handleUpdateCategory
 );
 router.delete(

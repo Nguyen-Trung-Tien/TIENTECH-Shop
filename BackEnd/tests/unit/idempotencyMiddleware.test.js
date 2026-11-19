@@ -87,4 +87,60 @@ describe("idempotencyGuard middleware", () => {
     expect(res2.statusCode).toBe(409);
     expect(res2.body.code).toBe("IDEMPOTENCY_IN_PROGRESS");
   });
+
+  it("prevents concurrent TOCTOU race condition and allows only one request through", async () => {
+    const middleware = idempotencyGuard({ ttlSeconds: 60 });
+    const key = `race-key-${Date.now()}`;
+    const baseReq = {
+      headers: { "x-idempotency-key": key },
+      user: { id: 101 },
+      method: "POST",
+      baseUrl: "/api/v1/order",
+      path: "/create-new-order",
+    };
+
+    const resA = createMockRes();
+    const resB = createMockRes();
+    const nextA = jest.fn();
+    const nextB = jest.fn();
+
+    await Promise.all([
+      middleware({ ...baseReq }, resA, nextA),
+      middleware({ ...baseReq }, resB, nextB),
+    ]);
+
+    expect(nextA.mock.calls.length + nextB.mock.calls.length).toBe(1);
+    const conflictRes = nextA.mock.calls.length === 0 ? resA : resB;
+    expect(conflictRes.statusCode).toBe(409);
+    expect(conflictRes.body.code).toBe("IDEMPOTENCY_IN_PROGRESS");
+  });
+
+  it("clears IN_PROGRESS lock on finish when handler ends without res.json", async () => {
+    const EventEmitter = require("events");
+    const middleware = idempotencyGuard({ ttlSeconds: 60 });
+    const key = `non-json-${Date.now()}`;
+    const req = {
+      headers: { "x-idempotency-key": key },
+      user: { id: 102 },
+      method: "POST",
+      baseUrl: "/api/v1/order",
+      path: "/create-new-order",
+    };
+
+    const res1 = Object.assign(new EventEmitter(), createMockRes());
+    const next1 = jest.fn(() => {
+      res1.emit("finish");
+    });
+
+    await middleware(req, res1, next1);
+    expect(next1).toHaveBeenCalledTimes(1);
+
+    // Allow microtask queue for async clearIdempotencyRecord
+    await Promise.resolve();
+
+    const res2 = createMockRes();
+    const next2 = jest.fn();
+    await middleware({ ...req }, res2, next2);
+    expect(next2).toHaveBeenCalledTimes(1);
+  });
 });

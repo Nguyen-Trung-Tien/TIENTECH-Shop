@@ -5,6 +5,12 @@ const {
   authenticateToken,
   authorizeRole,
 } = require("../middleware/authMiddleware");
+const { validate } = require("../middleware/zodMiddleware");
+const {
+  generateDescriptionSchema,
+  syncEmbeddingsSchema,
+  emptyActionSchema,
+} = require("../utils/zodSchemas");
 
 router.get(
   "/dashboard",
@@ -38,6 +44,7 @@ router.post(
   "/generate-description",
   authenticateToken,
   authorizeRole(["admin"]),
+  validate(generateDescriptionSchema),
   AdminController.handleGenerateDescription
 );
 
@@ -55,11 +62,27 @@ router.get(
   AdminController.handleGlobalSearch
 );
 
+router.get(
+  "/vector-status",
+  authenticateToken,
+  authorizeRole(["admin"]),
+  AdminController.handleGetVectorStatus
+);
+
 router.post(
   "/sync-embeddings",
   authenticateToken,
   authorizeRole(["admin"]),
+  validate(syncEmbeddingsSchema),
   AdminController.handleSyncEmbeddings
+);
+
+router.post(
+  "/vector-reload",
+  authenticateToken,
+  authorizeRole(["admin"]),
+  validate(emptyActionSchema),
+  AdminController.handleReloadVectorIndex
 );
 
 module.exports = router;

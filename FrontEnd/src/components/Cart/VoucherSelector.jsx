@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { motion as Motion, AnimatePresence } from "framer-motion";
+import { m as Motion, AnimatePresence } from "framer-motion";
 import { FiTag, FiX, FiCheck, FiInfo, FiChevronRight } from "react-icons/fi";
 import { getActiveVouchersApi } from "../../api/voucherApi";
 import { showErrorToast } from "../../utils/toastHelper";

@@ -1,48 +1,20 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
-import { useSelector } from "react-redux";
-import {
-  FiUser,
-  FiShield,
-  FiMail,
-  FiPhone,
-  FiCheckCircle,
-  FiSlash,
-  FiClock,
-  FiEdit2,
-  FiTrash2,
-  FiUsers,
-  FiUserCheck,
-  FiUserX,
-  FiAlertCircle,
-  FiFilter,
-  FiRotateCcw,
-  FiX,
-  FiActivity,
-  FiChevronLeft,
-  FiChevronRight,
-} from "react-icons/fi";
-import { userApi } from "../../../api/userApi";
-import { useAdminCrud } from "../../../hooks/useAdminCrud";
+import React, { useMemo } from "react";
+import { User, Mail, Phone } from "lucide-react";
 import GenericAdminTable from "../../components/GenericAdminTable";
 import GenericAdminModal from "../../components/GenericAdminModal";
-import { Button } from "../../../components/UI";
-import Modal, { ConfirmModal } from "../../../components/UI/Modal";
-import { showSuccessToast, showErrorToast } from "../../../utils/toastHelper";
-import UnifiedSpinner from "../../../components/Loading/UnifiedSpinner";
+import { ConfirmModal } from "../../../components/UI/Modal";
+import { useAdminUsers } from "./hooks/useAdminUsers";
+import { getUserStatusDisplay, getUserFormFields } from "./userManageConstants";
+import UserMetricsCards from "./components/UserMetricsCards";
+import UserFilterToolbar from "./components/UserFilterToolbar";
+import UserBulkActionsBar from "./components/UserBulkActionsBar";
+import UserActionButtons from "./components/UserActionButtons";
+import UserStatusModals from "./components/UserStatusModals";
+import UserAuditLogsModal from "./components/UserAuditLogsModal";
 
 const UserManage = () => {
-  const currentUser = useSelector((state) => state.user?.user);
-
-  // Filter States
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [roleFilter, setRoleFilter] = useState("all");
-
-  const filterParams = useMemo(() => ({
-    status: statusFilter === "all" ? undefined : statusFilter,
-    role: roleFilter === "all" ? undefined : roleFilter,
-  }), [statusFilter, roleFilter]);
-
   const {
+    currentUser,
     data: users,
     loading,
     saving,
@@ -56,226 +28,61 @@ const UserManage = () => {
     totalItems,
     handleShowModal,
     handleCloseModal,
-    handleSave,
     handleDelete,
     showDeleteModal,
     setShowDeleteModal,
     deletingItem,
     confirmDelete,
     setPage,
-    fetchData,
-  } = useAdminCrud(userApi, {
-    itemName: "Người dùng",
-    initialLimit: 8,
-    filterParams,
-  });
+    statusFilter,
+    setStatusFilter,
+    roleFilter,
+    setRoleFilter,
+    metrics,
+    loadingMetrics,
+    selectedIds,
+    setSelectedIds,
+    showBulkModal,
+    setShowBulkModal,
+    bulkAction,
+    bulkReason,
+    setBulkReason,
+    bulkProcessing,
+    showStatusModal,
+    setShowStatusModal,
+    targetUserForStatus,
+    targetNextStatus,
+    statusReason,
+    setStatusReason,
+    statusProcessing,
+    showAuditModal,
+    setShowAuditModal,
+    auditLogs,
+    auditLoading,
+    selectedUserForAudit,
+    auditPage,
+    auditTotalPages,
+    auditTotalItems,
+    handleToggleSelectAll,
+    handleToggleSelect,
+    handleOpenStatusModal,
+    handleConfirmStatusChange,
+    handleOpenBulkModal,
+    handleConfirmBulkAction,
+    handleOpenAuditModal,
+    handleAuditPageChange,
+    onSaveUser,
+  } = useAdminUsers();
 
-  // Metrics State
-  const [metrics, setMetrics] = useState(null);
-  const [loadingMetrics, setLoadingMetrics] = useState(false);
+  const selectableCount = users.filter((u) => u.id !== currentUser?.id).length;
 
-  const fetchMetrics = useCallback(async () => {
-    setLoadingMetrics(true);
-    try {
-      const res = await userApi.getMetrics();
-      if (res?.errCode === 0 && res.data) {
-        setMetrics(res.data);
-      }
-    } catch (err) {
-      console.warn("Failed to fetch user metrics:", err?.message);
-    } finally {
-      setLoadingMetrics(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchMetrics();
-  }, [fetchMetrics]);
-
-  // Bulk Selection State
-  const [selectedIds, setSelectedIds] = useState([]);
-  const [showBulkModal, setShowBulkModal] = useState(false);
-  const [bulkAction, setBulkAction] = useState("active");
-  const [bulkReason, setBulkReason] = useState("");
-  const [bulkProcessing, setBulkProcessing] = useState(false);
-
-  // Single Status Change Modal State
-  const [showStatusModal, setShowStatusModal] = useState(false);
-  const [targetUserForStatus, setTargetUserForStatus] = useState(null);
-  const [targetNextStatus, setTargetNextStatus] = useState("active");
-  const [statusReason, setStatusReason] = useState("");
-  const [statusProcessing, setStatusProcessing] = useState(false);
-
-  // Audit Log Drawer / Modal State
-  const [showAuditModal, setShowAuditModal] = useState(false);
-  const [auditLogs, setAuditLogs] = useState([]);
-  const [auditLoading, setAuditLoading] = useState(false);
-  const [selectedUserForAudit, setSelectedUserForAudit] = useState(null);
-  const [auditPage, setAuditPage] = useState(1);
-  const [auditTotalPages, setAuditTotalPages] = useState(1);
-  const [auditTotalItems, setAuditTotalItems] = useState(0);
-
-  // Selection handlers
-  const handleToggleSelectAll = useCallback(() => {
-    const selectable = users
-      .filter((u) => u.id !== currentUser?.id)
-      .map((u) => u.id);
-    if (selectable.length > 0 && selectedIds.length === selectable.length) {
-      setSelectedIds([]);
-    } else {
-      setSelectedIds(selectable);
-    }
-  }, [users, selectedIds, currentUser]);
-
-  const handleToggleSelect = useCallback((id) => {
-    setSelectedIds((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
-    );
-  }, []);
-
-  // Open single status modal
-  const handleOpenStatusModal = useCallback((user, nextStatus) => {
-    setTargetUserForStatus(user);
-    setTargetNextStatus(nextStatus);
-    setStatusReason("");
-    setShowStatusModal(true);
-  }, []);
-
-  // Confirm single status change
-  const handleConfirmStatusChange = async () => {
-    if (!targetUserForStatus) return;
-    setStatusProcessing(true);
-    try {
-      const res = await userApi.updateStatus(
-        targetUserForStatus.id,
-        targetNextStatus,
-        statusReason
-      );
-      if (res?.errCode === 0) {
-        showSuccessToast(
-          res.errMessage ||
-            (targetNextStatus === "active"
-              ? "Kích hoạt tài khoản thành công!"
-              : "Vô hiệu hóa tài khoản thành công!")
-        );
-        setShowStatusModal(false);
-        setTargetUserForStatus(null);
-        fetchData(page, searchTerm);
-        fetchMetrics();
-      } else {
-        showErrorToast(res?.errMessage, "Thao tác thất bại");
-      }
-    } catch (err) {
-      showErrorToast(err, "Không thể kết nối máy chủ");
-    } finally {
-      setStatusProcessing(false);
-    }
-  };
-
-  // Open Bulk Modal
-  const handleOpenBulkModal = (action) => {
-    setBulkAction(action);
-    setBulkReason("");
-    setShowBulkModal(true);
-  };
-
-  // Confirm Bulk Action
-  const handleConfirmBulkAction = async () => {
-    if (selectedIds.length === 0) return;
-    setBulkProcessing(true);
-    try {
-      const res = await userApi.bulkUpdateStatus(selectedIds, bulkAction, bulkReason);
-      if (res?.errCode === 0) {
-        showSuccessToast(res.errMessage || "Đã xử lý hàng loạt thành công!");
-        setShowBulkModal(false);
-        setSelectedIds([]);
-        fetchData(page, searchTerm);
-        fetchMetrics();
-      } else {
-        showErrorToast(res?.errMessage, "Thao tác hàng loạt thất bại");
-      }
-    } catch (err) {
-      showErrorToast(err, "Lỗi kết nối máy chủ");
-    } finally {
-      setBulkProcessing(false);
-    }
-  };
-
-  // Audit Log View & Pagination
-  const fetchAuditLogs = useCallback(async (user = null, pageNum = 1) => {
-    setAuditLoading(true);
-    try {
-      const params = { page: pageNum, limit: 6 };
-      if (user?.id) {
-        params.targetUserId = user.id;
-      }
-      const res = await userApi.getAuditLogs(params);
-      if (res?.errCode === 0) {
-        setAuditLogs(res.data || []);
-        if (res.pagination) {
-          setAuditPage(res.pagination.currentPage || pageNum);
-          setAuditTotalPages(res.pagination.totalPages || 1);
-          setAuditTotalItems(res.pagination.totalItems || 0);
-        }
-      } else {
-        setAuditLogs([]);
-      }
-    } catch (err) {
-      console.warn("Failed to load audit logs:", err?.message);
-      setAuditLogs([]);
-    } finally {
-      setAuditLoading(false);
-    }
-  }, []);
-
-  const handleOpenAuditModal = (user = null) => {
-    setSelectedUserForAudit(user);
-    setShowAuditModal(true);
-    setAuditPage(1);
-    fetchAuditLogs(user, 1);
-  };
-
-  const handleAuditPageChange = (newPage) => {
-    if (newPage < 1 || newPage > auditTotalPages || newPage === auditPage) return;
-    setAuditPage(newPage);
-    fetchAuditLogs(selectedUserForAudit, newPage);
-  };
-
-  // Status mapping helper
-  const getStatusDisplay = (item) => {
-    const status = item.accountStatus || (item.isActive ? "active" : "suspended");
-    if (status === "active" || item.isActive) {
-      return {
-        label: "Hoạt động",
-        colorClass: "bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/40",
-        dotClass: "bg-emerald-500 animate-pulse",
-      };
-    }
-    if (status === "pending") {
-      return {
-        label: "Chờ OTP",
-        colorClass: "bg-amber-50 dark:bg-amber-950/20 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800/40",
-        dotClass: "bg-amber-500",
-      };
-    }
-    return {
-      label: "Đã khóa",
-      colorClass: "bg-rose-50 dark:bg-rose-950/20 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800/40",
-      dotClass: "bg-rose-500",
-    };
-  };
-
-  // Table Columns Definition
   const columns = [
     {
       header: (
         <div className="flex items-center justify-center">
           <input
             type="checkbox"
-            checked={(() => {
-              const selectableCount = users.filter((u) => u.id !== currentUser?.id).length;
-              return selectableCount > 0 && selectedIds.length === selectableCount;
-            })()}
+            checked={selectableCount > 0 && selectedIds.length === selectableCount}
             onChange={handleToggleSelectAll}
             className="rounded text-primary focus:ring-primary size-4 cursor-pointer"
             title="Chọn tất cả trang này"
@@ -306,7 +113,7 @@ const UserManage = () => {
               <img src={item.avatar} alt={item.username} className="w-full h-full object-cover" />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-slate-300 dark:text-slate-700">
-                <FiUser />
+                <User className="size-4" />
               </div>
             )}
           </div>
@@ -333,12 +140,12 @@ const UserManage = () => {
       render: (item) => (
         <div className="space-y-1 min-w-0">
           <div className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-dark-text-secondary truncate">
-            <FiMail className="text-primary shrink-0" />
+            <Mail className="text-primary shrink-0 size-3.5" />
             <span className="truncate">{item.email}</span>
           </div>
           {item.phone && (
             <div className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-dark-text-secondary truncate">
-              <FiPhone className="text-primary shrink-0" />
+              <Phone className="text-primary shrink-0 size-3.5" />
               <span className="truncate">{item.phone}</span>
             </div>
           )}
@@ -353,8 +160,8 @@ const UserManage = () => {
             item.rank === "Platinum"
               ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
               : item.rank === "Gold"
-              ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
-              : "bg-slate-100 dark:bg-dark-bg text-slate-500 dark:text-dark-text-secondary"
+                ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
+                : "bg-slate-100 dark:bg-dark-bg text-slate-500 dark:text-dark-text-secondary"
           }`}
         >
           {item.rank || "Đồng"}
@@ -378,7 +185,7 @@ const UserManage = () => {
     {
       header: "Trạng thái",
       render: (item) => {
-        const info = getStatusDisplay(item);
+        const info = getUserStatusDisplay(item);
         return (
           <span
             className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase ${info.colorClass}`}
@@ -391,312 +198,14 @@ const UserManage = () => {
     },
   ];
 
-  // Actions column render
-  const renderActions = (item) => {
-    const isSelf = currentUser?.id === item.id;
-    const isCurrentlyActive = item.isActive;
-
-    return (
-      <div className="flex items-center justify-end gap-1.5 flex-wrap">
-        {/* Quick Activation / Suspension Toggle */}
-        {!isCurrentlyActive ? (
-          <button
-            type="button"
-            title="Kích hoạt tài khoản"
-            onClick={() => handleOpenStatusModal(item, "active")}
-            className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 border border-emerald-200 dark:border-emerald-800/40 rounded-md transition-all active:scale-95 cursor-pointer shadow-xs"
-          >
-            <FiCheckCircle size={13} />
-            <span className="hidden sm:inline">Kích hoạt</span>
-          </button>
-        ) : (
-          <button
-            type="button"
-            title={isSelf ? "Không thể khóa tài khoản của chính mình" : "Vô hiệu hóa tài khoản"}
-            disabled={isSelf}
-            onClick={() => handleOpenStatusModal(item, "suspended")}
-            className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-bold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/30 hover:bg-rose-100 dark:hover:bg-rose-900/40 border border-rose-200 dark:border-rose-800/40 rounded-md transition-all active:scale-95 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed shadow-xs"
-          >
-            <FiSlash size={13} />
-            <span className="hidden sm:inline">Khóa</span>
-          </button>
-        )}
-
-        {/* History Audit Button */}
-        <button
-          type="button"
-          title="Nhật ký kích hoạt"
-          onClick={() => handleOpenAuditModal(item)}
-          className="size-8 text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-primary-light bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-md hover:border-primary transition-all cursor-pointer flex items-center justify-center active:scale-95 shadow-xs"
-        >
-          <FiClock size={14} />
-        </button>
-
-        {/* Edit Button */}
-        <button
-          type="button"
-          title="Chỉnh sửa thông tin"
-          onClick={() => handleShowModal(item)}
-          className="size-8 text-primary dark:text-blue-400 bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-md hover:border-primary transition-all cursor-pointer flex items-center justify-center active:scale-95 shadow-xs"
-        >
-          <FiEdit2 size={14} />
-        </button>
-
-        {/* Delete Button */}
-        <button
-          type="button"
-          title={isSelf ? "Không thể tự xóa chính mình" : "Xóa tài khoản"}
-          disabled={isSelf}
-          onClick={() => handleDelete(item)}
-          className="size-8 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-md hover:border-rose-300 dark:hover:border-rose-800 transition-all cursor-pointer flex items-center justify-center active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed shadow-xs"
-        >
-          <FiTrash2 size={14} />
-        </button>
-      </div>
-    );
-  };
-
-  // Form fields for GenericAdminModal
-  const formFields = useMemo(
-    () => [
-      { name: "username", label: "Tên đăng nhập", placeholder: "Nhập tên người dùng...", required: true },
-      { name: "email", label: "Email", type: "email", placeholder: "example@mail.com", required: true },
-      ...(!editUser
-        ? [
-            {
-              name: "password",
-              label: "Mật khẩu",
-              type: "password",
-              placeholder: "Tối thiểu 8 ký tự (hoa, thường, số, ký tự đặc biệt)",
-              required: true,
-            },
-          ]
-        : []),
-      { name: "phone", label: "Số điện thoại", placeholder: "Nhập số điện thoại..." },
-      { name: "address", label: "Địa chỉ", placeholder: "Nhập địa chỉ..." },
-      {
-        name: "role",
-        label: "Phân quyền",
-        type: "select",
-        options: [
-          { label: "Quản trị viên", value: "admin" },
-          { label: "Khách hàng", value: "customer" },
-        ],
-        required: true,
-      },
-      { name: "avatar", label: "Ảnh đại diện", type: "image", fullWidth: true },
-    ],
-    [editUser],
-  );
-
-  const onSave = async (formData) => {
-    if (!editUser) {
-      const pwd = String(formData.password || "");
-      const isStrong =
-        pwd.length >= 8 &&
-        /[A-Z]/.test(pwd) &&
-        /[a-z]/.test(pwd) &&
-        /[0-9]/.test(pwd) &&
-        /[^A-Za-z0-9]/.test(pwd);
-      if (!isStrong) {
-        showErrorToast(
-          "Mật khẩu phải có ít nhất 8 ký tự, gồm chữ hoa, chữ thường, số và ký tự đặc biệt!",
-        );
-        return;
-      }
-    }
-
-    const data = new FormData();
-    Object.keys(formData).forEach((key) => {
-      if (editUser && key === "password") return;
-      if (key.endsWith("File")) {
-        data.append(key.replace("File", ""), formData[key]);
-      } else if (formData[key] !== undefined && formData[key] !== null) {
-        data.append(key, formData[key]);
-      }
-    });
-    await handleSave(data);
-    fetchMetrics();
-  };
-
-  // Metric Cards Header
-  const headerExtra = (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 mb-2">
-      <div className="bg-white dark:bg-dark-surface p-4 rounded-xl border border-slate-200 dark:border-dark-border shadow-xs min-w-0">
-        <div className="flex items-center justify-between gap-2">
-          <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 font-bold">Tổng user</span>
-          <div className="size-7 rounded-lg bg-slate-100 dark:bg-dark-card text-slate-600 dark:text-dark-text-secondary flex items-center justify-center">
-            <FiUsers size={14} />
-          </div>
-        </div>
-        <p className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white mt-2">
-          {loadingMetrics ? "..." : metrics?.totalUsers ?? totalItems}
-        </p>
-      </div>
-
-      <div className="bg-white dark:bg-dark-surface p-4 rounded-xl border border-emerald-100 dark:border-emerald-950/40 shadow-xs min-w-0">
-        <div className="flex items-center justify-between gap-2">
-          <span className="text-[10px] font-mono uppercase tracking-wider text-emerald-600 dark:text-emerald-400 font-bold">Hoạt động</span>
-          <div className="size-7 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
-            <FiUserCheck size={14} />
-          </div>
-        </div>
-        <p className="text-xl sm:text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-2">
-          {loadingMetrics ? "..." : metrics?.activeUsers ?? 0}
-        </p>
-      </div>
-
-      <div className="bg-white dark:bg-dark-surface p-4 rounded-xl border border-amber-100 dark:border-amber-950/40 shadow-xs min-w-0">
-        <div className="flex items-center justify-between gap-2">
-          <span className="text-[10px] font-mono uppercase tracking-wider text-amber-600 dark:text-amber-400 font-bold">Chờ OTP</span>
-          <div className="size-7 rounded-lg bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 flex items-center justify-center">
-            <FiAlertCircle size={14} />
-          </div>
-        </div>
-        <p className="text-xl sm:text-2xl font-black text-amber-600 dark:text-amber-400 mt-2">
-          {loadingMetrics ? "..." : metrics?.pendingUsers ?? 0}
-        </p>
-      </div>
-
-      <div className="bg-white dark:bg-dark-surface p-4 rounded-xl border border-rose-100 dark:border-rose-950/40 shadow-xs min-w-0">
-        <div className="flex items-center justify-between gap-2">
-          <span className="text-[10px] font-mono uppercase tracking-wider text-rose-600 dark:text-rose-400 font-bold">Đã khóa</span>
-          <div className="size-7 rounded-lg bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 flex items-center justify-center">
-            <FiUserX size={14} />
-          </div>
-        </div>
-        <p className="text-xl sm:text-2xl font-black text-rose-600 dark:text-rose-400 mt-2">
-          {loadingMetrics ? "..." : metrics?.suspendedUsers ?? 0}
-        </p>
-      </div>
-
-      <div className="bg-white dark:bg-dark-surface p-4 rounded-xl border border-purple-100 dark:border-purple-950/40 shadow-xs min-w-0 col-span-2 sm:col-span-1">
-        <div className="flex items-center justify-between gap-2">
-          <span className="text-[10px] font-mono uppercase tracking-wider text-purple-600 dark:text-purple-400 font-bold">Quản trị</span>
-          <div className="size-7 rounded-lg bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 flex items-center justify-center">
-            <FiShield size={14} />
-          </div>
-        </div>
-        <p className="text-xl sm:text-2xl font-black text-purple-600 dark:text-purple-400 mt-2">
-          {loadingMetrics ? "..." : metrics?.adminUsers ?? 0}
-        </p>
-      </div>
-    </div>
-  );
-
-  // Extra filter controls (Status, Role)
-  const extraControls = (
-    <div className="flex items-center gap-2 flex-wrap">
-      <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-dark-card px-3 py-1.5 rounded-lg border border-slate-200 dark:border-dark-border">
-        <FiFilter className="text-slate-400 text-xs shrink-0" />
-        <select
-          value={statusFilter}
-          onChange={(e) => {
-            setStatusFilter(e.target.value);
-            setPage(1);
-          }}
-          className="bg-transparent text-xs font-bold text-slate-700 dark:text-slate-200 focus:outline-none cursor-pointer dark:[color-scheme:dark] [&>option]:bg-white [&>option]:text-slate-900 dark:[&>option]:bg-dark-surface dark:[&>option]:text-slate-100"
-          aria-label="Lọc theo trạng thái tài khoản"
-        >
-          <option value="all" className="bg-white text-slate-900 dark:bg-dark-surface dark:text-slate-100">Tất cả trạng thái</option>
-          <option value="active" className="bg-white text-slate-900 dark:bg-dark-surface dark:text-slate-100">Đang hoạt động</option>
-          <option value="pending" className="bg-white text-slate-900 dark:bg-dark-surface dark:text-slate-100">Chờ kích hoạt OTP</option>
-          <option value="suspended" className="bg-white text-slate-900 dark:bg-dark-surface dark:text-slate-100">Đã vô hiệu hóa</option>
-        </select>
-      </div>
-
-      <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-dark-card px-3 py-1.5 rounded-lg border border-slate-200 dark:border-dark-border">
-        <FiShield className="text-slate-400 text-xs shrink-0" />
-        <select
-          value={roleFilter}
-          onChange={(e) => {
-            setRoleFilter(e.target.value);
-            setPage(1);
-          }}
-          className="bg-transparent text-xs font-bold text-slate-700 dark:text-slate-200 focus:outline-none cursor-pointer dark:[color-scheme:dark] [&>option]:bg-white [&>option]:text-slate-900 dark:[&>option]:bg-dark-surface dark:[&>option]:text-slate-100"
-          aria-label="Lọc theo vai trò"
-        >
-          <option value="all" className="bg-white text-slate-900 dark:bg-dark-surface dark:text-slate-100">Tất cả vai trò</option>
-          <option value="customer" className="bg-white text-slate-900 dark:bg-dark-surface dark:text-slate-100">Khách hàng</option>
-          <option value="admin" className="bg-white text-slate-900 dark:bg-dark-surface dark:text-slate-100">Quản trị viên</option>
-        </select>
-      </div>
-
-      {(statusFilter !== "all" || roleFilter !== "all") && (
-        <button
-          type="button"
-          onClick={() => {
-            setStatusFilter("all");
-            setRoleFilter("all");
-            setPage(1);
-          }}
-          className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-bold text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white transition-colors cursor-pointer"
-          title="Đặt lại bộ lọc"
-        >
-          <FiRotateCcw size={12} />
-          <span>Đặt lại</span>
-        </button>
-      )}
-
-      {/* Global Audit Logs Button */}
-      <button
-        type="button"
-        onClick={() => handleOpenAuditModal(null)}
-        className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-slate-700 dark:text-slate-300 bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border hover:border-primary rounded-lg transition-all cursor-pointer shadow-xs"
-        title="Xem toàn bộ nhật ký quản trị"
-      >
-        <FiActivity size={13} className="text-primary" />
-        <span className="hidden md:inline">Nhật ký hệ thống</span>
-      </button>
-    </div>
-  );
-
-  // Bulk Actions Toolbar
-  const bulkActionsBar = selectedIds.length > 0 && (
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 py-3 bg-primary/5 dark:bg-primary/10 border border-primary/20 rounded-xl transition-all animate-fadeIn">
-      <div className="flex items-center gap-2 text-xs font-bold text-slate-700 dark:text-slate-200">
-        <span className="size-2 rounded-full bg-primary animate-ping" />
-        <span>Đã chọn <strong className="text-primary font-black">{selectedIds.length}</strong> tài khoản</span>
-      </div>
-
-      <div className="flex items-center gap-2 flex-wrap">
-        <button
-          type="button"
-          onClick={() => handleOpenBulkModal("active")}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold bg-emerald-600 text-white hover:bg-emerald-700 rounded-lg transition-colors cursor-pointer shadow-xs active:scale-95"
-        >
-          <FiCheckCircle size={13} />
-          <span>Kích hoạt hàng loạt</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => handleOpenBulkModal("suspended")}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold bg-rose-600 text-white hover:bg-rose-700 rounded-lg transition-colors cursor-pointer shadow-xs active:scale-95"
-        >
-          <FiSlash size={13} />
-          <span>Khóa hàng loạt</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setSelectedIds([])}
-          className="size-8 rounded-lg bg-slate-200/80 dark:bg-dark-card border border-transparent dark:border-dark-border text-slate-500 hover:text-slate-800 dark:hover:text-white flex items-center justify-center transition-colors cursor-pointer"
-          title="Bỏ chọn tất cả"
-          aria-label="Bỏ chọn tất cả"
-        >
-          <FiX size={14} />
-        </button>
-      </div>
-    </div>
-  );
+  const formFields = useMemo(() => getUserFormFields(editUser), [editUser]);
 
   return (
     <>
       <GenericAdminTable
         title="Quản trị Thành viên & Kích hoạt"
         subtitle="Quản lý tài khoản, Kích hoạt OTP, Phân quyền & Nhật ký Audit"
-        icon={FiUser}
+        icon={User}
         columns={columns}
         data={users}
         loading={loading}
@@ -709,24 +218,62 @@ const UserManage = () => {
         totalPages={totalPages}
         onPageChange={setPage}
         addLabel="Thêm thành viên"
-        renderActions={renderActions}
-        headerExtra={headerExtra}
-        extraControls={extraControls}
-        bulkActionsBar={bulkActionsBar}
+        renderActions={(item) => (
+          <UserActionButtons
+            item={item}
+            currentUserId={currentUser?.id}
+            onOpenStatusModal={handleOpenStatusModal}
+            onOpenAuditModal={handleOpenAuditModal}
+            onEdit={handleShowModal}
+            onDelete={handleDelete}
+          />
+        )}
+        headerExtra={
+          <UserMetricsCards
+            metrics={metrics}
+            loadingMetrics={loadingMetrics}
+            totalItems={totalItems}
+          />
+        }
+        extraControls={
+          <UserFilterToolbar
+            statusFilter={statusFilter}
+            roleFilter={roleFilter}
+            onStatusChange={(val) => {
+              setStatusFilter(val);
+              setPage(1);
+            }}
+            onRoleChange={(val) => {
+              setRoleFilter(val);
+              setPage(1);
+            }}
+            onResetFilters={() => {
+              setStatusFilter("all");
+              setRoleFilter("all");
+              setPage(1);
+            }}
+            onOpenGlobalAudit={() => handleOpenAuditModal(null)}
+          />
+        }
+        bulkActionsBar={
+          <UserBulkActionsBar
+            selectedCount={selectedIds.length}
+            onOpenBulkModal={handleOpenBulkModal}
+            onClearSelection={() => setSelectedIds([])}
+          />
+        }
       />
 
-      {/* Edit / Create User Modal */}
       <GenericAdminModal
         show={showModal}
         onClose={handleCloseModal}
         title="Người dùng"
         editingItem={editUser}
         fields={formFields}
-        onSave={onSave}
+        onSave={onSaveUser}
         saving={saving}
       />
 
-      {/* Delete User Modal */}
       <ConfirmModal
         show={showDeleteModal}
         onClose={() => setShowDeleteModal(false)}
@@ -737,272 +284,36 @@ const UserManage = () => {
         message={`Bạn có chắc chắn muốn xóa tài khoản "${deletingItem?.username}"? Mọi dữ liệu liên quan sẽ bị mất.`}
       />
 
-      {/* Single Account Status Modal */}
-      <Modal
-        isOpen={Boolean(showStatusModal && targetUserForStatus)}
-        onClose={() => !statusProcessing && setShowStatusModal(false)}
-        size="md"
-        loading={statusProcessing}
-        loadingMessage="Đang cập nhật trạng thái..."
-        title={
-          <span className="flex items-center gap-3 min-w-0">
-            <span
-              className={`size-10 rounded-xl flex items-center justify-center shrink-0 ${
-                targetNextStatus === "active"
-                  ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400"
-                  : "bg-rose-50 text-rose-600 dark:bg-rose-950/40 dark:text-rose-400"
-              }`}
-            >
-              {targetNextStatus === "active" ? <FiCheckCircle size={20} /> : <FiSlash size={20} />}
-            </span>
-            <span className="min-w-0 flex-1 truncate">
-              {targetNextStatus === "active"
-                ? "Xác nhận kích hoạt tài khoản"
-                : "Xác nhận vô hiệu hóa tài khoản"}
-            </span>
-          </span>
-        }
-        subtitle={
-          targetUserForStatus
-            ? `${targetUserForStatus.username} (${targetUserForStatus.email})`
-            : ""
-        }
-        footer={
-          <div className="flex items-center justify-end gap-2.5">
-            <Button
-              type="button"
-              variant="ghost"
-              disabled={statusProcessing}
-              onClick={() => setShowStatusModal(false)}
-            >
-              Hủy bỏ
-            </Button>
-            <Button
-              type="button"
-              variant={targetNextStatus === "active" ? "success" : "danger"}
-              loading={statusProcessing}
-              loadingText="Đang xử lý..."
-              onClick={handleConfirmStatusChange}
-              className="uppercase tracking-wider"
-            >
-              {targetNextStatus === "active" ? "Kích hoạt ngay" : "Vô hiệu hóa"}
-            </Button>
-          </div>
-        }
-      >
-        <div className="space-y-4">
-          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-            {targetNextStatus === "active"
-              ? "Tài khoản sẽ được mở khóa hoặc kích hoạt ngay lập tức. Người dùng sẽ nhận được thông báo trong hệ thống."
-              : "Tài khoản sẽ bị tạm ngừng hoạt động. Phiên đăng nhập hiện tại sẽ bị thu hồi ngay lập tức."}
-          </p>
+      <UserStatusModals
+        showStatusModal={showStatusModal}
+        onCloseStatusModal={() => setShowStatusModal(false)}
+        targetUserForStatus={targetUserForStatus}
+        targetNextStatus={targetNextStatus}
+        statusReason={statusReason}
+        onStatusReasonChange={setStatusReason}
+        statusProcessing={statusProcessing}
+        onConfirmStatusChange={handleConfirmStatusChange}
+        showBulkModal={showBulkModal}
+        onCloseBulkModal={() => setShowBulkModal(false)}
+        bulkAction={bulkAction}
+        selectedCount={selectedIds.length}
+        bulkReason={bulkReason}
+        onBulkReasonChange={setBulkReason}
+        bulkProcessing={bulkProcessing}
+        onConfirmBulkAction={handleConfirmBulkAction}
+      />
 
-          <div>
-            <label
-              htmlFor="status-reason-input"
-              className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5"
-            >
-              Lý do thực hiện (tùy chọn, lưu vào Audit Log):
-            </label>
-            <textarea
-              id="status-reason-input"
-              aria-label="Lý do kích hoạt hoặc khóa tài khoản"
-              rows={2}
-              value={statusReason}
-              onChange={(e) => setStatusReason(e.target.value)}
-              placeholder="Nhập lý do kích hoạt hoặc khóa tài khoản..."
-              className="tt-input w-full text-xs sm:text-sm font-medium resize-none"
-            />
-          </div>
-        </div>
-      </Modal>
-
-      {/* Bulk Status Modal */}
-      <Modal
-        isOpen={showBulkModal}
-        onClose={() => !bulkProcessing && setShowBulkModal(false)}
-        size="md"
-        loading={bulkProcessing}
-        loadingMessage="Đang xử lý hàng loạt..."
-        title={
-          <span className="flex items-center gap-3 min-w-0">
-            <span
-              className={`size-10 rounded-xl flex items-center justify-center shrink-0 ${
-                bulkAction === "active"
-                  ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400"
-                  : "bg-rose-50 text-rose-600 dark:bg-rose-950/40 dark:text-rose-400"
-              }`}
-            >
-              {bulkAction === "active" ? <FiCheckCircle size={20} /> : <FiSlash size={20} />}
-            </span>
-            <span className="min-w-0 flex-1 truncate">
-              Thao tác hàng loạt ({selectedIds.length} tài khoản)
-            </span>
-          </span>
-        }
-        subtitle={`Hành động: ${bulkAction === "active" ? "Kích hoạt" : "Vô hiệu hóa"}`}
-        footer={
-          <div className="flex items-center justify-end gap-2.5">
-            <Button
-              type="button"
-              variant="ghost"
-              disabled={bulkProcessing}
-              onClick={() => setShowBulkModal(false)}
-            >
-              Hủy bỏ
-            </Button>
-            <Button
-              type="button"
-              variant={bulkAction === "active" ? "success" : "danger"}
-              loading={bulkProcessing}
-              loadingText="Đang xử lý..."
-              onClick={handleConfirmBulkAction}
-              className="uppercase tracking-wider"
-            >
-              Xác nhận xử lý
-            </Button>
-          </div>
-        }
-      >
-        <div className="space-y-4">
-          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-            Thao tác sẽ được áp dụng tuần tự cho từng tài khoản đã chọn. Hệ thống tự động bỏ qua tài khoản của chính bạn để bảo đảm an toàn.
-          </p>
-
-          <div>
-            <label
-              htmlFor="bulk-reason-input"
-              className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5"
-            >
-              Lý do thao tác hàng loạt (ghi vào Audit Log):
-            </label>
-            <textarea
-              id="bulk-reason-input"
-              aria-label="Lý do thao tác hàng loạt"
-              rows={2}
-              value={bulkReason}
-              onChange={(e) => setBulkReason(e.target.value)}
-              placeholder="Nhập lý do thao tác hàng loạt..."
-              className="tt-input w-full text-xs sm:text-sm font-medium resize-none"
-            />
-          </div>
-        </div>
-      </Modal>
-
-      {/* Audit Log Modal */}
-      <Modal
+      <UserAuditLogsModal
         isOpen={showAuditModal}
         onClose={() => setShowAuditModal(false)}
-        size="2xl"
-        title={
-          <span className="flex items-center gap-2.5 min-w-0">
-            <span className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
-              <FiClock size={18} />
-            </span>
-            <span className="min-w-0 flex-1 break-words [overflow-wrap:anywhere]">
-              {selectedUserForAudit
-                ? `Lịch sử thao tác: ${selectedUserForAudit.username}`
-                : "Nhật ký quản trị tài khoản hệ thống"}
-            </span>
-          </span>
-        }
-        subtitle="Bảo đảm tính toàn vẹn và minh bạch dữ liệu"
-        footer={
-          <div className="flex items-center justify-between gap-3 flex-wrap w-full">
-            <div className="flex items-center gap-2">
-              {auditTotalPages > 1 && (
-                <div className="flex items-center gap-1.5">
-                  <button
-                    type="button"
-                    disabled={auditPage <= 1 || auditLoading}
-                    onClick={() => handleAuditPageChange(auditPage - 1)}
-                    className="p-1.5 rounded-lg border border-slate-200 dark:border-dark-border bg-white dark:bg-dark-card text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-dark-surface disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
-                    title="Trang trước"
-                    aria-label="Trang trước"
-                  >
-                    <FiChevronLeft size={14} />
-                  </button>
-                  <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">
-                    Trang <strong className="text-slate-900 dark:text-white">{auditPage}</strong> / {auditTotalPages}
-                  </span>
-                  <button
-                    type="button"
-                    disabled={auditPage >= auditTotalPages || auditLoading}
-                    onClick={() => handleAuditPageChange(auditPage + 1)}
-                    className="p-1.5 rounded-lg border border-slate-200 dark:border-dark-border bg-white dark:bg-dark-card text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-dark-surface disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
-                    title="Trang sau"
-                    aria-label="Trang sau"
-                  >
-                    <FiChevronRight size={14} />
-                  </button>
-                </div>
-              )}
-              {auditTotalItems > 0 && (
-                <span className="text-[11px] text-slate-400 hidden sm:inline">
-                  (Tổng {auditTotalItems} bản ghi)
-                </span>
-              )}
-            </div>
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={() => setShowAuditModal(false)}
-            >
-              Đóng
-            </Button>
-          </div>
-        }
-      >
-        <div className="space-y-3">
-          {auditLoading ? (
-            <div className="py-12 flex justify-center">
-              <UnifiedSpinner size="md" message="Đang tải lịch sử thao tác..." />
-            </div>
-          ) : auditLogs.length === 0 ? (
-            <div className="py-12 text-center text-slate-400 font-medium text-xs">
-              Chưa có bản ghi nhật ký nào cho mục tiêu này.
-            </div>
-          ) : (
-            auditLogs.map((log) => (
-              <div
-                key={log.id}
-                className="p-3.5 bg-slate-50 dark:bg-dark-bg/60 rounded-xl border border-slate-200/60 dark:border-dark-border/60 space-y-1.5"
-              >
-                <div className="flex items-center justify-between gap-2 flex-wrap">
-                  <div className="flex items-center gap-2">
-                    <span
-                      className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider ${
-                        log.action === "ACCOUNT_ACTIVATED"
-                          ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400"
-                          : "bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-400"
-                      }`}
-                    >
-                      {log.action === "ACCOUNT_ACTIVATED" ? "Kích hoạt" : "Vô hiệu hóa"}
-                    </span>
-                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                      Mục tiêu: {log.targetUser?.username || `ID ${log.targetUserId}`}
-                    </span>
-                  </div>
-                  <span className="text-[10px] font-mono text-slate-400">
-                    {new Date(log.createdAt).toLocaleString("vi-VN")}
-                  </span>
-                </div>
-
-                <p className="text-xs text-slate-600 dark:text-slate-300 break-words [overflow-wrap:anywhere]">
-                  <strong>Lý do:</strong> {log.reason || "Không ghi chú"}
-                </p>
-
-                <div className="flex items-center justify-between text-[10px] text-slate-400 font-mono pt-1 border-t border-slate-200/30 dark:border-dark-border/40">
-                  <span>
-                    Người thực hiện: <strong>{log.admin?.username || `Admin #${log.adminId}`}</strong>
-                  </span>
-                  {log.ipAddress && <span>IP: {log.ipAddress}</span>}
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-      </Modal>
+        selectedUserForAudit={selectedUserForAudit}
+        auditLogs={auditLogs}
+        auditLoading={auditLoading}
+        auditPage={auditPage}
+        auditTotalPages={auditTotalPages}
+        auditTotalItems={auditTotalItems}
+        onPageChange={handleAuditPageChange}
+      />
     </>
   );
 };

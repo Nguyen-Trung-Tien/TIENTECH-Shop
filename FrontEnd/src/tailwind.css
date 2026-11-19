@@ -514,3 +514,22 @@
 .Toastify__close-button:hover {
   opacity: 1 !important;
 }
+
+/* Accessible Scroll-Snap Carousel (modern-web-guidance) */
+.tt-carousel-track {
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+}
+.tt-carousel-track::-webkit-scrollbar {
+  display: none;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .tt-carousel-track {
+    scroll-behavior: smooth;
+  }
+}
+.tt-carousel-slide {
+  scroll-snap-align: start;
+}

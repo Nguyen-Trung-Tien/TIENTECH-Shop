@@ -1,22 +1,15 @@
 "use strict";
+const { addIndexIfNotExists, removeIndexIfExists } = require("../utils/migrationHelper");
 
 module.exports = {
-  async up(queryInterface, Sequelize) {
-    try {
-      await queryInterface.addIndex("Payments", ["orderId"], {
-        unique: true,
-        name: "payments_order_id_unique",
-      });
-    } catch (e) {
-      console.warn("[Migration] payments_order_id_unique:", e.message);
-    }
+  async up(queryInterface) {
+    await addIndexIfNotExists(queryInterface, "Payments", ["orderId"], {
+      unique: true,
+      name: "payments_order_id_unique",
+    });
   },
 
-  async down(queryInterface, Sequelize) {
-    try {
-      await queryInterface.removeIndex("Payments", "payments_order_id_unique");
-    } catch (e) {
-      console.warn("[Migration] remove payments_order_id_unique:", e.message);
-    }
+  async down(queryInterface) {
+    await removeIndexIfExists(queryInterface, "Payments", "payments_order_id_unique");
   },
 };

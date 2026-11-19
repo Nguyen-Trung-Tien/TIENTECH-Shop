@@ -83,20 +83,15 @@ describe("Security Hardening Verification", () => {
         key === "AI_BOT_ENABLED" ? true : defaultVal
       );
     jest
-      .spyOn(geminiConfig.genAI, "getGenerativeModel")
-      .mockReturnValue({
-        generateContent: jest
-          .fn()
-          .mockResolvedValueOnce({
-            response: {
-              text: () => JSON.stringify({ isOrderQuery: true, semanticQuery: "don hang" }),
-            },
-          })
-          .mockResolvedValueOnce({
-            response: {
-              text: () => JSON.stringify({ reply: "Xin vui lòng đăng nhập để kiểm tra đơn hàng.", recommendedProductIds: [] }),
-            },
-          }),
+      .spyOn(geminiConfig.genAI.models, "generateContent")
+      .mockResolvedValueOnce({
+        text: JSON.stringify({ isOrderQuery: true, semanticQuery: "don hang" }),
+      })
+      .mockResolvedValueOnce({
+        text: JSON.stringify({
+          reply: "Xin vui lòng đăng nhập để kiểm tra đơn hàng.",
+          recommendedProductIds: [],
+        }),
       });
     jest.spyOn(ProductService, "filterProducts").mockResolvedValue({ errCode: 0, data: [] });
     const orderSpy = jest.spyOn(db.Order, "findOne");
@@ -117,12 +112,8 @@ describe("Security Hardening Verification", () => {
       .spyOn(SystemSettingService, "getSetting")
       .mockImplementation(async (key, defaultVal) => defaultVal);
     jest
-      .spyOn(geminiConfig.genAI, "getGenerativeModel")
-      .mockReturnValue({
-        generateContent: jest
-          .fn()
-          .mockRejectedValue(Object.assign(new Error("429 quota exceeded"), { status: 429 })),
-      });
+      .spyOn(geminiConfig.genAI.models, "generateContent")
+      .mockRejectedValue(Object.assign(new Error("429 quota exceeded"), { status: 429 }));
 
     const result = await AdminAIService.generateProductDescription(
       'Laptop <script>alert(1)</script>',

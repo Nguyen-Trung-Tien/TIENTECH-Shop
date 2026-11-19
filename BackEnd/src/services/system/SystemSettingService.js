@@ -119,12 +119,6 @@ const DEFAULT_SETTINGS = {
     category: "payment",
     isPublic: true,
   },
-  PAYMENT_MOMO_ENABLED: {
-    value: "false",
-    description: "Kích hoạt cổng thanh toán ví MoMo",
-    category: "payment",
-    isPublic: true,
-  },
   DEFAULT_SHIPPING_FEE: {
     value: "30000",
     description: "Phí vận chuyển giao hàng tiêu chuẩn mặc định (VNĐ)",
@@ -211,7 +205,7 @@ const DEFAULT_SETTINGS = {
     isPublic: true,
   },
   AI_MODEL_NAME: {
-    value: "gemini-2.5-flash",
+    value: "gemini-3.8-flash",
     description: "Mô hình AI đang vận hành tư vấn",
     category: "ai",
     isPublic: false,
@@ -225,7 +219,38 @@ const DEFAULT_SETTINGS = {
   },
 };
 
+const LOCAL_CACHE_TTL_MS = 10 * 1000;
+
 class SystemSettingService {
+  constructor() {
+    this.localCache = new Map();
+  }
+
+  _getLocal(key) {
+    const entry = this.localCache.get(key);
+    if (!entry) return undefined;
+    if (Date.now() > entry.expiresAt) {
+      this.localCache.delete(key);
+      return undefined;
+    }
+    return entry.value;
+  }
+
+  _setLocal(key, value, ttlMs = LOCAL_CACHE_TTL_MS) {
+    this.localCache.set(key, {
+      value,
+      expiresAt: Date.now() + ttlMs,
+    });
+  }
+
+  _deleteLocal(key) {
+    this.localCache.delete(key);
+  }
+
+  _clearLocal() {
+    this.localCache.clear();
+  }
+
   getCacheKey(key) {
     return `system:setting:${key}`;
   }
@@ -267,9 +292,13 @@ class SystemSettingService {
           }
           if (
             key === "AI_MODEL_NAME" &&
-            existing.value === "gemini-3.6-flash"
+            [
+              "gemini-3.6-flash",
+              "gemini-2.5-flash",
+              "gemini-2.0-flash",
+            ].includes(existing.value)
           ) {
-            updates.value = "gemini-2.5-flash";
+            updates.value = "gemini-3.8-flash";
             needsUpdate = true;
           }
           if (needsUpdate) {
@@ -288,8 +317,14 @@ class SystemSettingService {
   async getSetting(key, defaultValue = null) {
     try {
       const cacheKey = this.getCacheKey(key);
+      const localVal = this._getLocal(cacheKey);
+      if (localVal !== undefined) {
+        return localVal;
+      }
+
       const cached = await getCache(cacheKey);
       if (cached !== null && cached !== undefined) {
+        this._setLocal(cacheKey, cached);
         return cached;
       }
 
@@ -298,11 +333,14 @@ class SystemSettingService {
       const record = await db.SystemSetting.findOne({ where: { key } });
       if (!record) {
         if (DEFAULT_SETTINGS[key]) {
-          return DEFAULT_SETTINGS[key].value === "true"
-            ? true
-            : DEFAULT_SETTINGS[key].value === "false"
-              ? false
-              : DEFAULT_SETTINGS[key].value;
+          const fallbackVal =
+            DEFAULT_SETTINGS[key].value === "true"
+              ? true
+              : DEFAULT_SETTINGS[key].value === "false"
+                ? false
+                : DEFAULT_SETTINGS[key].value;
+          this._setLocal(cacheKey, fallbackVal);
+          return fallbackVal;
         }
         return defaultValue;
       }
@@ -318,6 +356,7 @@ class SystemSettingService {
         }
       }
 
+      this._setLocal(cacheKey, parsedValue);
       await setCache(cacheKey, parsedValue, 3600); // 1 hour TTL
       return parsedValue;
     } catch (error) {
@@ -386,7 +425,10 @@ class SystemSettingService {
           : value === "false" || value === false
             ? false
             : value;
-      await setCache(this.getCacheKey(key), parsedValue, 3600);
+      const cacheKey = this.getCacheKey(key);
+      this._setLocal(cacheKey, parsedValue);
+      this._deleteLocal("system:settings:public");
+      await setCache(cacheKey, parsedValue, 3600);
       await deleteCache("system:settings:public");
 
       return {
@@ -453,6 +495,18 @@ class SystemSettingService {
 
   async getPublicSettings() {
     try {
+      const publicCacheKey = "system:settings:public";
+      const localPublic = this._getLocal(publicCacheKey);
+      if (localPublic !== undefined) {
+        return { errCode: 0, data: localPublic };
+      }
+
+      const redisPublic = await getCache(publicCacheKey);
+      if (redisPublic && typeof redisPublic === "object") {
+        this._setLocal(publicCacheKey, redisPublic);
+        return { errCode: 0, data: redisPublic };
+      }
+
       const settings = await db.SystemSetting.findAll({
         where: { isPublic: true },
         attributes: ["key", "value", "category", "description"],
@@ -464,6 +518,9 @@ class SystemSettingService {
           s.value === "true" ? true : s.value === "false" ? false : s.value;
       });
 
+      this._setLocal(publicCacheKey, formatted);
+      await setCache(publicCacheKey, formatted, 300);
+
       return { errCode: 0, data: formatted };
     } catch (error) {
       console.error("[SystemSettingService] getPublicSettings error:", error);
@@ -473,6 +530,7 @@ class SystemSettingService {
 
   async flushCache() {
     try {
+      this._clearLocal();
       const result = await flushAllCache();
       return {
         errCode: result.success ? 0 : 1,
@@ -545,8 +603,5 @@ class SystemSettingService {
 }
 
 const instance = new SystemSettingService();
-if (process.env.NODE_ENV !== "test") {
-  instance.initializeDefaultSettings();
-}
 
 module.exports = instance;

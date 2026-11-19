@@ -1,9 +1,8 @@
-import React, { useMemo, lazy, Suspense } from "react";
+import React, { useMemo } from "react";
 import AllProducts from "../../components/AllProducts/AllProduct";
 import Breadcrumbs from "../../components/Breadcrumbs/Breadcrumbs";
 import { useParams, useLocation } from "react-router-dom";
-
-const ChatBot = lazy(() => import("../../components/ChatBot/ChatBot"));
+import { useDocumentMeta } from "../../features/shared/hooks/useDocumentMeta";
 
 const ProductListPage = () => {
   const { slug } = useParams();
@@ -19,11 +18,14 @@ const ProductListPage = () => {
     return "TẤT CẢ SẢN PHẨM";
   }, [isCategory, isBrand, slug]);
 
+  useDocumentMeta({
+    title: pageTitle,
+    description: `Danh mục ${pageTitle.toLowerCase()} chính hãng với bộ lọc thông số kỹ thuật chuyên sâu tại TIENTECH Shop.`,
+    canonicalPath: location.pathname,
+  });
+
   return (
-    <main className="min-h-screen bg-surface-50 dark:bg-dark-bg transition-colors duration-300">
-      <Suspense fallback={null}>
-        <ChatBot />
-      </Suspense>
+    <div className="min-h-screen bg-surface-50 dark:bg-dark-bg transition-colors duration-300">
 
       {/* Page Header Banner */}
       <section className="bg-gradient-to-r from-blue-50/80 via-indigo-50/40 to-slate-100/60 dark:from-slate-900 dark:via-indigo-950 dark:to-slate-900 text-slate-900 dark:text-white pt-10 pb-12 overflow-hidden relative border-b border-slate-200/80 dark:border-slate-800 shadow-xs dark:shadow-lg transition-colors duration-300">
@@ -55,7 +57,7 @@ const ProductListPage = () => {
       <div className="py-6 md:py-10">
         <AllProducts />
       </div>
-    </main>
+    </div>
   );
 };
 

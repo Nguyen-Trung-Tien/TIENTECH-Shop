@@ -8,7 +8,7 @@ const {
 } = require("../middleware/authMiddleware");
 
 const { validate } = require("../middleware/zodMiddleware");
-const { reviewSchema, updateReviewSchema } = require("../utils/zodSchemas");
+const { reviewSchema, updateReviewSchema, idParamSchema } = require("../utils/zodSchemas");
 const { reviewMutationLimiter } = require("../middleware/rateLimiter");
 
 router.get("/product/:productId", optionalAuthenticateToken, ReviewController.handleGetReviewsByProduct);
@@ -52,6 +52,7 @@ router.post(
   "/like/:id",
   authenticateToken,
   authorizeRole(["admin", "customer"]),
+  validate(idParamSchema),
   ReviewController.handleToggleLikeReview
 );
 router.get(

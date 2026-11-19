@@ -1,83 +1,45 @@
-import { useEffect, useState } from "react";
-import { getAllBrandApi } from "../../api/brandApi";
 import { useNavigate } from "react-router-dom";
-import { motion as Motion } from "framer-motion";
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Autoplay } from "swiper/modules";
-import "swiper/css";
+import Carousel from "../../features/shared/components/Carousel";
+import { useBrandsQuery } from "../../features/shared/queries/catalogQueries";
 
 const BrandSection = ({ brands: propBrands, parentLoading = false }) => {
-  const [brands, setBrands] = useState(propBrands || []);
-  const [loading, setLoading] = useState(parentLoading || !propBrands);
   const navigate = useNavigate();
+  const hasPropBrands = Array.isArray(propBrands);
+  const { data: queriedBrands = [], isLoading: queryLoading } = useBrandsQuery(
+    15,
+    !parentLoading && !hasPropBrands,
+  );
 
-  useEffect(() => {
-    if (parentLoading) {
-      setLoading(true);
-      return;
-    }
-    if (Array.isArray(propBrands)) {
-      setBrands(propBrands);
-      setLoading(false);
-      return;
-    }
+  const brands = hasPropBrands ? propBrands : queriedBrands;
+  const loading = parentLoading || (!hasPropBrands && queryLoading);
 
-    const fetchBrands = async () => {
-      try {
-        const res = await getAllBrandApi(1, 15, ""); 
-        if (res?.errCode === 0 && Array.isArray(res.brands)) {
-          setBrands(res.brands);
-        } else {
-          setBrands([]);
-        }
-      } catch (err) {
-        console.error("Fetch brands error:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchBrands();
-  }, [propBrands, parentLoading]);
-
-  if (loading) return null;
+  if (loading || !brands || brands.length === 0) return null;
 
   return (
     <div className="container-custom py-6">
       <div className="p-3.5 rounded-2xl bg-white/60 dark:bg-slate-900/60 backdrop-blur-md border border-slate-200/80 dark:border-slate-800/80 shadow-2xs">
-        <Swiper
-          modules={[Autoplay]}
-          spaceBetween={12}
-          slidesPerView={4}
-          autoplay={{
-            delay: 2500,
-            disableOnInteraction: false,
-          }}
-          breakpoints={{
-            640: { slidesPerView: 5 },
-            768: { slidesPerView: 7 },
-            1024: { slidesPerView: 10 },
-          }}
-          className="flex items-center"
-        >
-          {brands.map((brand, index) => (
-            <SwiperSlide key={brand.id}>
-              <Motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.02 }}
-                className="group cursor-pointer bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/90 shadow-2xs rounded-xl transition-all duration-300 flex items-center justify-center h-[40px] px-2.5 hover:shadow-md hover:border-cyan-500/40 dark:hover:border-cyan-500/40 hover:-translate-y-0.5"
-                onClick={() => navigate(`/brand/${brand.slug}`)}
-              >
-                <img
-                  src={brand.image}
-                  alt={brand.name}
-                  className="max-w-full max-h-[22px] object-contain transition-transform duration-300 opacity-90 group-hover:opacity-100 group-hover:scale-110"
-                />
-              </Motion.div>
-            </SwiperSlide>
-          ))}
-        </Swiper>
+        <Carousel
+          items={brands}
+          keyExtractor={(brand) => brand.id}
+          ariaLabel="Thương hiệu đối tác chính hãng"
+          autoPlayIntervalMs={3200}
+          itemClassName="w-[120px] sm:w-[132px]"
+          renderItem={(brand) => (
+            <button
+              type="button"
+              onClick={() => navigate(`/brand/${brand.slug}`)}
+              aria-label={`Xem sản phẩm thương hiệu ${brand.name}`}
+              className="w-full group cursor-pointer bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/90 shadow-2xs rounded-xl transition-all duration-300 flex items-center justify-center h-[42px] px-2.5 hover:shadow-md hover:border-cyan-500/40 dark:hover:border-cyan-500/40 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary touch-manipulation"
+            >
+              <img
+                src={brand.image}
+                alt={brand.name}
+                loading="lazy"
+                className="max-w-full max-h-[22px] object-contain transition-transform duration-300 opacity-90 group-hover:opacity-100 group-hover:scale-105"
+              />
+            </button>
+          )}
+        />
       </div>
     </div>
   );

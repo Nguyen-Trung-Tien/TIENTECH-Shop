@@ -50,8 +50,10 @@ Trả về JSON THUẦN với cấu trúc:
   }
 };
 
-const predictPriceAdvanced = (price, discount, categoryName) => {
-  const current = Math.round(price * (1 - discount / 100));
+const predictPriceAdvanced = (price, discount, categoryName, productMeta = {}) => {
+  const numericPrice = Number(price || 0);
+  const numericDiscount = Number(discount || 0);
+  const current = Math.round(numericPrice * (1 - numericDiscount / 100));
   const month = new Date().getMonth() + 1;
 
   let seasonalDrop = 0;
@@ -66,7 +68,12 @@ const predictPriceAdvanced = (price, discount, categoryName) => {
   const predicted60 = Math.round(current * (1 - rate60));
   const predicted90 = Math.round(current * (1 - rate90));
 
-  const reliability = 70 + Math.floor(Math.random() * 20);
+  let rawReliability = 70;
+  if (numericDiscount > 0) rawReliability += 6;
+  if (categoryName && String(categoryName).trim()) rawReliability += 5;
+  if ([6, 7, 11, 12].includes(month)) rawReliability += 4;
+  if (Number(productMeta.sold || 0) >= 10) rawReliability += 5;
+  const reliability = Math.min(90, Math.max(65, rawReliability));
 
   return {
     currentPrice: current,
@@ -94,11 +101,24 @@ const getPricePrediction = async (productId) => {
     const basicPredict = predictPriceAdvanced(
       product.basePrice || product.price,
       product.discount,
-      product.category?.name
+      product.category?.name,
+      { sold: product.sold }
     );
 
-    const aiAnalysis = await analyzeProductWithGemini(product);
+    const rawAiAnalysis = await analyzeProductWithGemini(product);
     const discountRate = Number(product.discount || 0);
+    const aiAnalysis = rawAiAnalysis
+      ? {
+          ...rawAiAnalysis,
+          reliability:
+            Number.isFinite(Number(rawAiAnalysis.reliability)) && Number(rawAiAnalysis.reliability) > 0
+              ? Math.min(95, Math.max(50, Math.round(Number(rawAiAnalysis.reliability))))
+              : basicPredict.reliability,
+          isFallback: false,
+          methodology: "gemini_market_analysis",
+        }
+      : null;
+
     const fallbackAiAnalysis = {
       trend:
         discountRate >= 10
@@ -113,6 +133,7 @@ const getPricePrediction = async (productId) => {
       fairPrice: basicPredict.predicted30,
       reliability: basicPredict.reliability,
       isFallback: true,
+      methodology: "deterministic_seasonal_heuristic",
       chartData: [
         { name: "Hiện tại", price: basicPredict.currentPrice },
         { name: "30 ngày", price: basicPredict.predicted30 },
@@ -139,4 +160,4 @@ const getPricePrediction = async (productId) => {
   }
 };
 
-module.exports = { getPricePrediction };
+module.exports = { getPricePrediction, predictPriceAdvanced };

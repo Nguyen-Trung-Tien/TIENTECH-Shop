@@ -4,7 +4,11 @@ const {
   getPagination,
   getPagingData,
 } = require("../../utils/paginationHelper");
-const { getFengShuiDetail } = require("../../utils/fortuneUtils");
+const {
+  getFengShuiDetail,
+  buildLuckyColorWhereClauses,
+  matchesLuckyColor,
+} = require("../../utils/fortuneUtils");
 const { cosineSimilarity } = require("../../utils/embeddingHelper");
 const { applyFlashSaleToProduct } = require("./productHelper");
 
@@ -73,6 +77,7 @@ const recommendProducts = async (productId, page = 1, limit = 6) => {
 
 const recommendFortuneProducts = async ({
   birthYear,
+  gender = "male",
   brandId,
   minPrice,
   maxPrice,
@@ -82,23 +87,27 @@ const recommendFortuneProducts = async ({
   limit = 6,
 }) => {
   try {
-    const fsDetail = getFengShuiDetail(Number(birthYear));
+    const safeYear = Number(birthYear) || 1998;
+    const fsDetail = getFengShuiDetail(safeYear, gender);
     const luckyColors = [
       ...(fsDetail.luckyColors || []),
       ...(fsDetail.supportColors || []),
     ];
-    const where = { isActive: true };
-    if (luckyColors.length) {
-      where[Op.or] = luckyColors.map((color) => ({
-        specifications: { [Op.like]: `%${color}%` },
-      }));
+    const baseWhere = { isActive: true };
+    if (brandId) baseWhere.brandId = brandId;
+    if (categoryId) baseWhere.categoryId = categoryId;
+    if (minPrice != null) {
+      baseWhere.basePrice = { ...baseWhere.basePrice, [Op.gte]: minPrice };
     }
-    if (brandId) where.brandId = brandId;
-    if (categoryId) where.categoryId = categoryId;
-    if (minPrice != null)
-      where.basePrice = { ...where.basePrice, [Op.gte]: minPrice };
-    if (maxPrice != null)
-      where.basePrice = { ...where.basePrice, [Op.lte]: maxPrice };
+    if (maxPrice != null) {
+      baseWhere.basePrice = { ...baseWhere.basePrice, [Op.lte]: maxPrice };
+    }
+
+    const colorClauses = buildLuckyColorWhereClauses(db, luckyColors);
+    const where =
+      colorClauses.length > 0
+        ? { ...baseWhere, [Op.or]: colorClauses }
+        : { ...baseWhere };
 
     let order = [
       ["sold", "DESC"],
@@ -114,10 +123,17 @@ const recommendFortuneProducts = async ({
         ["basePrice", "DESC"],
         ["createdAt", "DESC"],
       ];
+    } else if (sortBy === "newest") {
+      order = [["createdAt", "DESC"]];
+    } else if (sortBy === "discount") {
+      order = [
+        ["discount", "DESC"],
+        ["sold", "DESC"],
+      ];
     }
 
     const { offset, limit: l } = getPagination(page, limit);
-    const { count, rows } = await db.Product.findAndCountAll({
+    const queryOptions = {
       where,
       attributes: { exclude: ["embedding"] },
       include: [
@@ -129,9 +145,31 @@ const recommendFortuneProducts = async ({
           attributes: ["imageUrl", "isPrimary"],
         },
         {
+          model: db.AttributeValue,
+          as: "attributes",
+          attributes: ["id", "value"],
+          include: [
+            {
+              model: db.Attribute,
+              as: "attribute",
+              attributes: ["code", "name"],
+              required: false,
+            },
+          ],
+          required: false,
+        },
+        {
           model: db.ProductVariant,
           as: "variants",
-          attributes: ["id", "price", "discount", "stock", "sku"],
+          attributes: [
+            "id",
+            "price",
+            "discount",
+            "stock",
+            "sku",
+            "attributeValues",
+            "isActive",
+          ],
           where: { isActive: true },
           required: false,
         },
@@ -146,33 +184,38 @@ const recommendFortuneProducts = async ({
       offset,
       limit: l,
       distinct: true,
-    });
+    };
 
+    let result = await db.Product.findAndCountAll(queryOptions);
+    let isFallback = false;
+
+    if ((result?.count || 0) === 0 && luckyColors.length > 0) {
+      result = await db.Product.findAndCountAll({
+        ...queryOptions,
+        where: baseWhere,
+      });
+      isFallback = true;
+    }
+
+    const { count, rows } = result;
     const pagingData = getPagingData({ count, rows }, page, l);
     const { items, ...paginationMetadata } = pagingData;
 
     return {
       errCode: 0,
       data: items.map((p) => {
-        const pJSON = p.toJSON();
+        const pJSON = typeof p.toJSON === "function" ? p.toJSON() : { ...p };
         const primary =
           pJSON.images?.find((i) => i.isPrimary) || pJSON.images?.[0];
         const product = applyFlashSaleToProduct({
           ...pJSON,
           image: primary?.imageUrl || null,
         });
-        const specsStr =
-          typeof product.specifications === "string"
-            ? product.specifications
-            : JSON.stringify(product.specifications || {});
-        const nameAndDesc =
-          `${product.name} ${product.description || ""} ${specsStr}`.toLowerCase();
-        product.isLuckyColor = luckyColors.some((color) =>
-          nameAndDesc.includes(color.toLowerCase()),
-        );
+        product.isLuckyColor = matchesLuckyColor(product, luckyColors);
         return product;
       }),
       luckyColors,
+      isFallback,
       pagination: paginationMetadata,
     };
   } catch (e) {
@@ -184,6 +227,7 @@ const recommendFortuneProducts = async ({
 const getSmartRecommendations = async (productId, limit = 6) => {
   try {
     const { getCache, setCache } = require("../../config/redis");
+    const VectorIndexService = require("../ai/VectorIndexService");
     const cacheKey = `smart_recs_${productId}_${limit}`;
     const cached = await getCache(cacheKey);
     if (cached) return cached;
@@ -192,7 +236,49 @@ const getSmartRecommendations = async (productId, limit = 6) => {
     if (!product) return { errCode: 1, errMessage: "Sản phẩm không tồn tại" };
 
     let semanticMatches = [];
-    if (product.embedding) {
+    const vectorHits = VectorIndexService.getSimilarByProductId(Number(productId), {
+      limit,
+      minScore: 0.45,
+    });
+
+    if (vectorHits.length > 0) {
+      const hitIds = vectorHits.map((h) => h.productId);
+      const scoreMap = new Map(vectorHits.map((h) => [Number(h.productId), h.score]));
+      const similarRows = await db.Product.findAll({
+        where: { id: { [Op.in]: hitIds }, isActive: true },
+        attributes: [
+          "id",
+          "name",
+          "slug",
+          "basePrice",
+          "discount",
+          "isFlashSale",
+          "flashSalePrice",
+          "flashSaleStart",
+          "flashSaleEnd",
+        ],
+        include: [
+          {
+            model: db.ProductImage,
+            as: "images",
+            attributes: ["imageUrl", "isPrimary"],
+          },
+        ],
+      });
+
+      const byId = new Map();
+      for (const row of similarRows) {
+        const plain = typeof row.get === "function" ? row.get({ plain: true }) : { ...row };
+        const primary = plain.images?.find((img) => img.isPrimary) || plain.images?.[0];
+        byId.set(Number(plain.id), {
+          ...plain,
+          image: primary?.imageUrl || null,
+          similarity: scoreMap.get(Number(plain.id)) || 0,
+          reason: "Tương đồng ngữ nghĩa AI",
+        });
+      }
+      semanticMatches = hitIds.map((hid) => byId.get(Number(hid))).filter(Boolean);
+    } else if (product.embedding) {
       let queryEmbedding = null;
       try {
         queryEmbedding =

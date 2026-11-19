@@ -13,8 +13,14 @@ import { validateCart } from "../../api/cartApi";
 import { showErrorToast, showWarningToast, showInfoToast } from "../../utils/toastHelper";
 import { useSystemSettings } from "../../context/useSystemSettings";
 import { ErrorBanner, PageShell, EmptyState } from "../../components/UI";
+import { useDocumentMeta } from "../../features/shared/hooks/useDocumentMeta";
 
 const CartPage = () => {
+  useDocumentMeta({
+    title: "Giỏ hàng",
+    description: "Quản lý sản phẩm đã chọn, áp dụng voucher và tiến hành thanh toán tại TIENTECH Shop.",
+    canonicalPath: "/cart",
+  });
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { freeshipMinOrder } = useSystemSettings();

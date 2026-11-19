@@ -5,6 +5,8 @@ const {
   authenticateToken,
   authorizeRole,
 } = require("../middleware/authMiddleware");
+const { validate } = require("../middleware/zodMiddleware");
+const { variantCreateSchema, variantUpdateSchema } = require("../utils/zodSchemas");
 
 router.get(
   "/product/:productId",
@@ -16,12 +18,14 @@ router.post(
   "/create",
   authenticateToken,
   authorizeRole(["admin"]),
+  validate(variantCreateSchema),
   ProductVariantController.handleCreate
 );
 router.put(
   "/update/:id",
   authenticateToken,
   authorizeRole(["admin"]),
+  validate(variantUpdateSchema),
   ProductVariantController.handleUpdate
 );
 router.delete(

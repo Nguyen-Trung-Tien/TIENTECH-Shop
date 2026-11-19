@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
-import { motion as Motion, AnimatePresence } from "framer-motion";
+import { m as Motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import {
   FiSearch,
@@ -331,7 +331,7 @@ export default function OmniSearchModal({
                           >
                             <div className="size-13 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-700/50 p-1.5 shrink-0 group-hover:scale-105 transition-transform">
                               <img
-                                src={item.thumbnail || item.image || "/images/placeholder.png"}
+                                src={item.thumbnail || item.image || "/images/no-image.png"}
                                 alt={item.name}
                                 className="w-full h-full object-contain"
                               />
@@ -340,13 +340,18 @@ export default function OmniSearchModal({
                               <h4 className="text-xs font-semibold text-slate-900 dark:text-white truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                                 {item.name}
                               </h4>
-                              <div className="flex items-center gap-2 mt-1">
+                              <div className="flex flex-wrap items-center gap-1.5 mt-1 min-w-0">
                                 <span className="text-xs font-bold text-blue-600 dark:text-blue-400">
                                   {item.price ? `${Number(item.price).toLocaleString("vi-VN")}đ` : "Liên hệ"}
                                 </span>
                                 {item.isFlashSale && (
                                   <span className="px-1.5 py-0.5 bg-rose-500 text-white text-[9px] font-bold rounded-full">
                                     Hot
+                                  </span>
+                                )}
+                                {item.isSemanticMatch && (
+                                  <span className="px-1.5 py-0.5 bg-indigo-500/10 text-indigo-600 dark:text-indigo-300 border border-indigo-400/30 text-[9px] font-bold rounded-full">
+                                    AI Semantic
                                   </span>
                                 )}
                               </div>

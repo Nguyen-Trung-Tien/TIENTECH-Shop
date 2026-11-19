@@ -12,10 +12,17 @@ import {
 } from "react-icons/fi";
 import { showErrorToast, showSuccessToast } from "../../utils/toastHelper";
 import { submitContactApi } from "../../api/contactApi";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { Button, Input, Select, Textarea, PageShell } from "../../components/UI";
+import { useDocumentMeta } from "../../features/shared/hooks/useDocumentMeta";
 
 const ContactPage = () => {
+  useDocumentMeta({
+    title: "Liên hệ & Hỗ trợ",
+    description:
+      "Gửi yêu cầu tư vấn sản phẩm, bảo hành hoặc hỗ trợ đơn hàng tới đội ngũ chăm sóc khách hàng TIENTECH Shop.",
+    canonicalPath: "/contact",
+  });
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -83,22 +90,22 @@ const ContactPage = () => {
           </div>
           
           <div className="relative z-10 max-w-2xl">
-            <motion.span
+            <m.span
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               className="inline-block px-3 py-1 bg-primary/10 text-primary border border-primary/20 dark:bg-white/20 dark:text-white dark:border-transparent backdrop-blur-md rounded-full text-xs font-black uppercase tracking-widest mb-4"
             >
               Liên Hệ & Hỗ Trợ Khách Hàng
-            </motion.span>
-            <motion.h1
+            </m.span>
+            <m.h1
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
               className="text-3xl md:text-5xl font-black tracking-tight mb-4 text-slate-900 dark:text-white"
             >
               Chúng tôi luôn sẵn sàng lắng nghe bạn!
-            </motion.h1>
-            <motion.p
+            </m.h1>
+            <m.p
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
@@ -106,7 +113,7 @@ const ContactPage = () => {
             >
               Bạn cần tư vấn thiết bị công nghệ, phối màu góc setup hay hỗ trợ bảo hành &amp; đơn hàng?
               Đội ngũ chuyên gia TienTech luôn phục vụ 24/7.
-            </motion.p>
+            </m.p>
           </div>
         </div>
       </div>
@@ -114,7 +121,7 @@ const ContactPage = () => {
       <div className="container-custom">
         {/* Contact Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-          <motion.div
+          <m.div
             whileHover={{ y: -5 }}
             className="p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm flex items-start gap-4"
           >
@@ -130,9 +137,9 @@ const ContactPage = () => {
                 0123 456 789
               </a>
             </div>
-          </motion.div>
+          </m.div>
 
-          <motion.div
+          <m.div
             whileHover={{ y: -5 }}
             className="p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm flex items-start gap-4"
           >
@@ -148,9 +155,9 @@ const ContactPage = () => {
                 support@tientech.vn
               </a>
             </div>
-          </motion.div>
+          </m.div>
 
-          <motion.div
+          <m.div
             whileHover={{ y: -5 }}
             className="p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm flex items-start gap-4"
           >
@@ -166,7 +173,7 @@ const ContactPage = () => {
                 08:00 - 22:00
               </span>
             </div>
-          </motion.div>
+          </m.div>
         </div>
 
         {/* Main Content Form & Store Locations */}

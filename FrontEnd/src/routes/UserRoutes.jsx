@@ -17,7 +17,7 @@ const CartPage = lazy(() => import("../pages/CartPage/CartPage"));
 const CheckoutPage = lazy(() => import("../pages/CheckoutPage/CheckoutPage"));
 const CheckoutSuccess = lazy(() => import("../pages/CheckoutSuccess/CheckoutSuccess"));
 const CheckoutFailed = lazy(() => import("../pages/CheckoutFailed/CheckoutFailed"));
-const ProductCompareHub = lazy(() => import("../pages/ProductCompare/ProductCompareHub"));
+const ProductCompareHub = lazy(() => import("../features/compare/ComparePage"));
 const Profile = lazy(() => import("../pages/Profile/Profile"));
 const Notifications = lazy(() => import("../pages/Notifications/Notifications"));
 const NotFound = lazy(() => import("../pages/NotFound/NotFound"));

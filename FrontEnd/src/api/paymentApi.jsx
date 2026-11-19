@@ -5,6 +5,15 @@ export const createVnpayPaymentApi = async (data) => {
   return await axiosClient.post("/vnpay/create-vnpay-payment", data);
 };
 
+// PAYPAL (Server-Side Orders API)
+export const createPaypalOrderApi = async (data, config = {}) => {
+  return await axiosClient.post("/payment/paypal/create-order", data, config);
+};
+
+export const capturePaypalOrderApi = async (data, config = {}) => {
+  return await axiosClient.post("/payment/paypal/capture-order", data, config);
+};
+
 // Admin Payment Management
 export const getAllPayments = async (params = {}) => {
   return await axiosClient.get("/payment/get-all-payment", {

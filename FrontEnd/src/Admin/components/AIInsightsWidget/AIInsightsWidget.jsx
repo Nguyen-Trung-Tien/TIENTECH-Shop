@@ -8,7 +8,7 @@ import {
   FiChevronUp,
 } from "react-icons/fi";
 import { getAIInsights } from "../../../api/adminApi";
-import { motion as Motion, AnimatePresence } from "framer-motion";
+import { m as Motion, AnimatePresence } from "framer-motion";
 import { showSuccessToast } from "../../../utils/toastHelper";
 import UnifiedSpinner from "../../../components/Loading/UnifiedSpinner";
 
