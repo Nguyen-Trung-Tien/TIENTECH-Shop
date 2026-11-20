@@ -159,7 +159,7 @@ describe("ContactService Deletion & Member Tickets Unit Tests", () => {
       expect.objectContaining({
         userId: 12,
         title: expect.stringContaining("TK7777"),
-        link: "/profile?tab=tickets&ticketId=77",
+        link: "/support-tickets?ticketId=77",
       }),
       null,
       ioMock

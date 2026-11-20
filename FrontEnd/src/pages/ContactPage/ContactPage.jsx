@@ -243,7 +243,7 @@ const ContactPage = () => {
                       </span>
                     </div>
                     <Link
-                      to="/profile?tab=tickets"
+                      to="/support-tickets"
                       className="shrink-0 font-bold text-blue-600 dark:text-blue-400 hover:underline"
                     >
                       Lịch sử yêu cầu &rarr;

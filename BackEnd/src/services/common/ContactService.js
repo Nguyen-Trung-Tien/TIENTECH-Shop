@@ -302,7 +302,7 @@ const updateTicket = async (id, payload = {}, adminUser = null, io = null) => {
           title: `Phản hồi yêu cầu hỗ trợ #${ticket.ticketCode}`,
           message: `Quản trị viên đã phản hồi yêu cầu "${ticket.subject}": ${replySnippet}`,
           type: "system",
-          link: `/profile?tab=tickets&ticketId=${ticket.id}`,
+          link: `/support-tickets?ticketId=${ticket.id}`,
           metadata: {
             source: "contact_ticket_reply",
             ticketId: ticket.id,

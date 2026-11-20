@@ -1,7 +1,7 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import React from "react";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter, Routes, Route } from "react-router-dom";
 import ContactManage from "../Admin/pages/ContactManage/ContactManage";
 import { ProfileTicketsTab } from "../pages/Profile/components/ProfileTicketsTab";
 import * as contactApi from "../api/contactApi";
@@ -146,37 +146,19 @@ describe("ContactManage Component Tests", () => {
     });
   });
 
-  it("ProfileTicketsTab automatically opens detail modal when ticketId searchParam is present", async () => {
-    contactApi.getMyContactTicketsApi.mockResolvedValue({
-      errCode: 0,
-      data: [
-        {
-          id: 555,
-          ticketCode: "TK555",
-          subject: "Hỗ trợ kỹ thuật màn hình",
-          message: "Màn hình bị nháy sọc khi kết nối qua DisplayPort",
-          adminReply: "Bạn hãy cập nhật lại firmware mới nhất theo link này.",
-          replier: { username: "Admin TienTech" },
-          status: "resolved",
-          createdAt: new Date().toISOString(),
-        },
-      ],
-      pagination: { totalPages: 1, total: 1 },
-    });
-
+  it("ProfileTicketsTab redirects to unified /support-tickets page", () => {
     render(
       <MemoryRouter initialEntries={["/profile?tab=tickets&ticketId=555"]}>
-        <ProfileTicketsTab />
+        <Routes>
+          <Route path="/profile" element={<ProfileTicketsTab />} />
+          <Route
+            path="/support-tickets"
+            element={<div>Support Tickets Unified Page</div>}
+          />
+        </Routes>
       </MemoryRouter>
     );
 
-    // Modal chi tiết phản hồi tự động mở
-    await waitFor(() => {
-      expect(screen.getByText("Yêu cầu #TK555")).toBeInTheDocument();
-      expect(screen.getByText("Phản hồi từ Ban Quản Trị TienTech:")).toBeInTheDocument();
-      expect(
-        screen.getByText(/Bạn hãy cập nhật lại firmware mới nhất/i)
-      ).toBeInTheDocument();
-    });
+    expect(screen.getByText("Support Tickets Unified Page")).toBeInTheDocument();
   });
 });

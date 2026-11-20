@@ -349,7 +349,7 @@ const NotificationBroadcastModal = ({
               </label>
               <input
                 type="text"
-                placeholder="Ví dụ: /profile?tab=tickets hoặc /orders"
+                placeholder="Ví dụ: /support-tickets hoặc /orders"
                 value={broadcastForm.link}
                 onChange={(e) =>
                   setBroadcastForm({ ...broadcastForm, link: e.target.value })

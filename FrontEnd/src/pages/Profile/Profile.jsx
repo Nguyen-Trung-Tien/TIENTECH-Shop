@@ -1,11 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { updateUser } from "../../redux/userSlice";
 import { updateUserApi } from "../../api/userApi";
 import { showErrorToast, showSuccessToast } from "../../utils/toastHelper";
 import ChangePasswordModal from "./ChangePasswordModal";
-import { User, MapPin, Shield, MessageSquare } from "lucide-react";
+import { User, MapPin, Shield } from "lucide-react";
 import { m as Motion, AnimatePresence } from "framer-motion";
 import { Loader, PageShell } from "../../components/UI";
 import AddressManager from "./AddressManager";
@@ -13,7 +13,6 @@ import ProfileHeroCard from "./components/ProfileHeroCard";
 import ProfileInfoTab from "./components/ProfileInfoTab";
 import ProfileSecurityTab from "./components/ProfileSecurityTab";
 import ProfileAvatarModal from "./components/ProfileAvatarModal";
-import ProfileTicketsTab from "./components/ProfileTicketsTab";
 import { useDocumentMeta } from "../../features/shared/hooks/useDocumentMeta";
 
 const Profile = () => {
@@ -24,9 +23,23 @@ const Profile = () => {
   });
 
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const user = useSelector((state) => state.user.user);
   const [searchParams, setSearchParams] = useSearchParams();
   const tabFromUrl = searchParams.get("tab");
+
+  // Redirect legacy tickets tab to unified /support-tickets page
+  useEffect(() => {
+    if (tabFromUrl === "tickets") {
+      const ticketId = searchParams.get("ticketId");
+      navigate(
+        ticketId
+          ? `/support-tickets?ticketId=${encodeURIComponent(ticketId)}`
+          : "/support-tickets",
+        { replace: true }
+      );
+    }
+  }, [tabFromUrl, searchParams, navigate]);
 
   const [formData, setFormData] = useState({
     username: "",
@@ -43,7 +56,7 @@ const Profile = () => {
   const [showAvatarModal, setShowAvatarModal] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [activeTab, setActiveTab] = useState(
-    ["info", "address", "security", "tickets"].includes(tabFromUrl)
+    ["info", "address", "security"].includes(tabFromUrl)
       ? tabFromUrl
       : "info"
   );
@@ -52,7 +65,7 @@ const Profile = () => {
   const [avatarLoading, setAvatarLoading] = useState(false);
 
   useEffect(() => {
-    if (tabFromUrl && ["info", "address", "security", "tickets"].includes(tabFromUrl)) {
+    if (tabFromUrl && ["info", "address", "security"].includes(tabFromUrl)) {
       setActiveTab(tabFromUrl);
     }
   }, [tabFromUrl]);
@@ -215,7 +228,6 @@ const Profile = () => {
           { id: "info", label: "Thông tin cá nhân", Icon: User },
           { id: "address", label: "Sổ địa chỉ nhận hàng", Icon: MapPin },
           { id: "security", label: "Bảo mật & Cài đặt", Icon: Shield },
-          { id: "tickets", label: "Yêu cầu hỗ trợ", Icon: MessageSquare },
         ].map((tab) => {
           const Icon = tab.Icon;
           const isActive = activeTab === tab.id;
@@ -268,15 +280,13 @@ const Profile = () => {
           >
             <AddressManager />
           </Motion.div>
-        ) : activeTab === "security" ? (
+        ) : (
           <ProfileSecurityTab
             receiveEmail={receiveEmail}
             emailToggleLoading={emailToggleLoading}
             onToggleEmailNotification={handleToggleEmailNotification}
             onOpenPasswordModal={() => setShowPasswordModal(true)}
           />
-        ) : (
-          <ProfileTicketsTab key="tickets" />
         )}
       </AnimatePresence>
 
