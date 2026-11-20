@@ -3,7 +3,7 @@ import { m as Motion, AnimatePresence } from "framer-motion";
 import { FiTag, FiX, FiCheck, FiInfo, FiChevronRight } from "react-icons/fi";
 import { getActiveVouchersApi } from "../../api/voucherApi";
 import { showErrorToast } from "../../utils/toastHelper";
-import { Loader } from "../UI";
+import { Modal, Loader } from "../UI";
 
 const VoucherSelector = ({ subtotal, onApply, appliedVoucher, onRemove }) => {
   const [vouchers, setVouchers] = useState([]);
@@ -115,111 +115,93 @@ const VoucherSelector = ({ subtotal, onApply, appliedVoucher, onRemove }) => {
       )}
 
       {/* Modal Selection */}
-      <AnimatePresence>
-        {showModal && (
-          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
-            <Motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setShowModal(false)}
-              className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
-            />
-            <Motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-md bg-white dark:bg-dark-surface rounded-3xl shadow-2xl overflow-hidden border border-transparent dark:border-dark-border transition-colors duration-300"
-            >
-              <div className="p-6 border-b border-slate-50 dark:border-dark-border flex items-center justify-between bg-white dark:bg-dark-surface">
-                <h3 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tight flex items-center gap-2">
-                  <FiTag className="text-primary dark:text-primary-light" /> Mã giảm giá của bạn
-                </h3>
-                <button
-                  onClick={() => setShowModal(false)}
-                  className="p-2 text-slate-400 dark:text-dark-text-secondary hover:text-slate-600 dark:hover:text-white cursor-pointer"
+      <Modal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        title="Mã giảm giá của bạn"
+        subtitle="Chọn mã ưu đãi phù hợp với giỏ hàng của bạn"
+        size="md"
+        bodyClassName="p-0"
+      >
+        <div className="p-6 max-h-[60vh] overflow-y-auto space-y-4 custom-scrollbar">
+          {loading ? (
+            <div className="py-10 text-center space-y-3">
+              <Loader size="lg" className="mx-auto text-primary dark:text-primary-light" />
+              <p className="text-xs font-bold text-slate-400 dark:text-dark-text-secondary animate-pulse uppercase">
+                Đang tải mã...
+              </p>
+            </div>
+          ) : vouchers.length > 0 ? (
+            vouchers.map((v) => {
+              const minOrder = Number(v.minOrderValue || 0);
+              const isEligible = subtotal >= minOrder;
+              const isSelected = appliedVoucher?.code === v.code;
+
+              return (
+                <Motion.div
+                  key={v.id}
+                  whileHover={isEligible ? { scale: 1.015, y: -2 } : {}}
+                  whileTap={isEligible ? { scale: 0.985 } : {}}
+                  transition={{ duration: 0.15 }}
+                  onClick={() => isEligible && handleSelect(v)}
+                  className={`relative p-4 rounded-2xl border-2 transition-all cursor-pointer group ${
+                    isSelected
+                      ? "border-primary dark:border-primary-light bg-primary/5 dark:bg-primary-light/10 shadow-md shadow-primary/10 ring-2 ring-primary/20"
+                      : isEligible
+                        ? "border-slate-100 dark:border-dark-border bg-white dark:bg-dark-bg hover:border-primary/40 dark:hover:border-primary-light/40 hover:shadow-md"
+                        : "border-slate-50 dark:border-dark-border bg-slate-50 dark:bg-dark-bg opacity-60 grayscale cursor-not-allowed"
+                  }`}
                 >
-                  <FiX size={20} />
-                </button>
-              </div>
-
-              <div className="p-6 max-h-[60vh] overflow-y-auto space-y-4 custom-scrollbar bg-white dark:bg-dark-surface">
-                {loading ? (
-                  <div className="py-10 text-center space-y-3">
-                    <Loader size="lg" className="mx-auto text-primary dark:text-primary-light" />
-                    <p className="text-xs font-bold text-slate-400 dark:text-dark-text-secondary animate-pulse uppercase">
-                      Đang tải mã...
+                  <div className="flex justify-between items-start mb-2">
+                    <span
+                      className={`text-sm font-black uppercase tracking-widest ${isSelected ? "text-primary dark:text-primary-light" : "text-slate-900 dark:text-white"}`}
+                    >
+                      {v.code}
+                    </span>
+                    {isSelected && (
+                      <span className="flex items-center gap-1 text-[11px] font-black text-primary dark:text-primary-light bg-primary/10 px-2 py-0.5 rounded-full">
+                        <FiCheck size={14} /> Đang chọn
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs font-bold text-slate-500 dark:text-dark-text-secondary mb-3">
+                    {v.type === "percentage"
+                      ? `Giảm ${v.value}% (Tối đa ${Number(v.maxDiscount).toLocaleString()}₫)`
+                      : `Giảm trực tiếp ${Number(v.value).toLocaleString()}₫`}
+                  </p>
+                  <div className="flex items-center gap-2 pt-3 border-t border-slate-100 dark:border-dark-border mt-auto">
+                    <FiInfo size={12} className="text-slate-400 dark:text-dark-text-secondary" />
+                    <p className="text-[10px] font-bold text-slate-400 dark:text-dark-text-secondary uppercase tracking-tighter">
+                      Đơn tối thiểu {minOrder.toLocaleString()}₫
                     </p>
                   </div>
-                ) : vouchers.length > 0 ? (
-                  vouchers.map((v) => {
-                    const minOrder = Number(v.minOrderValue || 0);
-                    const isEligible = subtotal >= minOrder;
-                    const isSelected = appliedVoucher?.code === v.code;
 
-                    return (
-                      <div
-                        key={v.id}
-                        onClick={() => isEligible && handleSelect(v)}
-                        className={`relative p-4 rounded-2xl border-2 transition-all cursor-pointer group ${
-                          isSelected
-                            ? "border-primary dark:border-primary-light bg-primary/5 dark:bg-primary-light/10"
-                            : isEligible
-                              ? "border-slate-100 dark:border-dark-border bg-white dark:bg-dark-bg hover:border-primary/30 dark:hover:border-primary-light/30"
-                              : "border-slate-50 dark:border-dark-border bg-slate-50 dark:bg-dark-bg opacity-60 grayscale cursor-not-allowed"
-                        }`}
-                      >
-                        <div className="flex justify-between items-start mb-2">
-                          <span
-                            className={`text-sm font-black uppercase tracking-widest ${isSelected ? "text-primary dark:text-primary-light" : "text-slate-900 dark:text-white"}`}
-                          >
-                            {v.code}
-                          </span>
-                          {isSelected && (
-                            <FiCheck className="text-primary dark:text-primary-light" size={18} />
-                          )}
-                        </div>
-                        <p className="text-xs font-bold text-slate-500 dark:text-dark-text-secondary mb-3">
-                          {v.type === "percentage"
-                            ? `Giảm ${v.value}% (Tối đa ${Number(v.maxDiscount).toLocaleString()}₫)`
-                            : `Giảm trực tiếp ${Number(v.value).toLocaleString()}₫`}
-                        </p>
-                        <div className="flex items-center gap-2 pt-3 border-t border-slate-50 dark:border-dark-border mt-auto">
-                          <FiInfo size={12} className="text-slate-400 dark:text-dark-text-secondary" />
-                          <p className="text-[10px] font-bold text-slate-400 dark:text-dark-text-secondary uppercase tracking-tighter">
-                            Đơn tối thiểu {minOrder.toLocaleString()}₫
-                          </p>
-                        </div>
+                  {!isEligible && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-white/40 dark:bg-dark-bg/60 rounded-2xl pointer-events-none">
+                      <span className="bg-slate-800 dark:bg-black text-white text-[9px] font-black px-2 py-1 rounded-lg uppercase">
+                        Chưa đủ điều kiện
+                      </span>
+                    </div>
+                  )}
+                </Motion.div>
+              );
+            })
+          ) : (
+            <div className="py-10 text-center space-y-3">
+              <FiTag size={40} className="mx-auto text-slate-200 dark:text-dark-border" />
+              <p className="text-sm font-bold text-slate-400 dark:text-dark-text-secondary uppercase">
+                Hiện chưa có mã nào
+              </p>
+            </div>
+          )}
+        </div>
 
-                        {!isEligible && (
-                          <div className="absolute inset-0 flex items-center justify-center bg-white/40 dark:bg-dark-bg/60 rounded-2xl pointer-events-none">
-                            <span className="bg-slate-800 dark:bg-black text-white text-[9px] font-black px-2 py-1 rounded-lg uppercase">
-                              Chưa đủ điều kiện
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })
-                ) : (
-                  <div className="py-10 text-center space-y-3">
-                    <FiTag size={40} className="mx-auto text-slate-100 dark:text-dark-border" />
-                    <p className="text-sm font-bold text-slate-400 dark:text-dark-text-secondary uppercase">
-                      Hiện chưa có mã nào
-                    </p>
-                  </div>
-                )}
-              </div>
-
-              <div className="p-6 bg-slate-50/50 dark:bg-dark-bg/50 border-t border-slate-50 dark:border-dark-border">
-                <p className="text-[10px] text-slate-400 dark:text-dark-text-secondary font-bold uppercase text-center tracking-widest">
-                  Thêm mã để tiết kiệm nhiều hơn cho đơn hàng của bạn
-                </p>
-              </div>
-            </Motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+        <div className="p-4 bg-slate-50/50 dark:bg-dark-bg/50 border-t border-slate-100 dark:border-dark-border">
+          <p className="text-[10px] text-slate-400 dark:text-dark-text-secondary font-bold uppercase text-center tracking-widest">
+            Thêm mã để tiết kiệm nhiều hơn cho đơn hàng của bạn
+          </p>
+        </div>
+      </Modal>
     </div>
   );
 };

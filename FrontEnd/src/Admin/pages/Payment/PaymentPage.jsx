@@ -38,6 +38,7 @@ const PaymentPage = () => {
     paymentId: null,
     message: "",
   });
+  const [actionLoading, setActionLoading] = useState(false);
 
   const loadSummary = useCallback(async () => {
     try {
@@ -108,6 +109,7 @@ const PaymentPage = () => {
           ? "Hoàn tiền"
           : "Xóa";
 
+    setActionLoading(true);
     try {
       let res;
       if (actionModal.actionFn === refundPayment) {
@@ -136,6 +138,7 @@ const PaymentPage = () => {
       console.error("confirmAction error:", error);
       showErrorToast(error, `${actionName} thất bại do lỗi hệ thống.`);
     } finally {
+      setActionLoading(false);
       setActionModal({
         show: false,
         actionFn: null,
@@ -241,6 +244,7 @@ const PaymentPage = () => {
         setTransactionCodeInput={setTransactionCodeInput}
         isRefundAction={actionModal.actionFn === refundPayment}
         isCompleteAction={actionModal.actionFn === completePayment}
+        actionLoading={actionLoading}
       />
     </AdminPageShell>
   );
