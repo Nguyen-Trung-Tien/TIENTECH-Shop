@@ -23,6 +23,7 @@ import {
   Select,
   EmptyState,
   PageShell,
+  Tabs,
 } from "../../components/UI";
 import UnifiedSpinner from "../../components/Loading/UnifiedSpinner";
 import AppPagination from "../../components/Pagination/Pagination";
@@ -66,7 +67,9 @@ export const SupportTicketsPage = () => {
   const navigate = useNavigate();
   const ticketIdFromUrl = searchParams.get("ticketId");
 
-  const user = useSelector((state) => state.auth?.user || state.user);
+  const user = useSelector(
+    (state) => state.user?.user || (state.user?.id ? state.user : null) || state.auth?.user
+  );
 
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -87,9 +90,20 @@ export const SupportTicketsPage = () => {
   // Form states
   const [createForm, setCreateForm] = useState({
     subject: "tuvansanpham",
-    phone: "",
+    email: user?.email || "",
+    phone: user?.phone || "",
     message: "",
   });
+
+  useEffect(() => {
+    if (user?.email) {
+      setCreateForm((prev) => ({
+        ...prev,
+        email: prev.email || user.email || "",
+        phone: prev.phone || user.phone || "",
+      }));
+    }
+  }, [user]);
 
   const [editForm, setEditForm] = useState({
     subject: "",
@@ -98,7 +112,7 @@ export const SupportTicketsPage = () => {
   });
 
   const fetchTickets = useCallback(
-    async (targetPage = 1) => {
+    async (targetPage = 1, status = activeFilter, query = searchQuery) => {
       if (!user) {
         setLoading(false);
         return;
@@ -108,6 +122,8 @@ export const SupportTicketsPage = () => {
         const res = await getMyContactTicketsApi({
           page: targetPage,
           limit: 8,
+          status: status !== "all" ? status : undefined,
+          search: (query || "").trim() || undefined,
         });
         if (res?.errCode === 0) {
           setTickets(res.data || []);
@@ -123,12 +139,12 @@ export const SupportTicketsPage = () => {
         setLoading(false);
       }
     },
-    [user]
+    [user, activeFilter, searchQuery]
   );
 
   useEffect(() => {
-    fetchTickets(page);
-  }, [fetchTickets, page]);
+    fetchTickets(page, activeFilter, searchQuery);
+  }, [fetchTickets, page, activeFilter, searchQuery]);
 
   // Deep-link from notification bell (?ticketId=...)
   useEffect(() => {
@@ -162,6 +178,11 @@ export const SupportTicketsPage = () => {
   // Handle Create Ticket
   const handleCreateSubmit = async (e) => {
     e.preventDefault();
+    const finalEmail = (createForm.email || user?.email || "").trim();
+    if (!finalEmail) {
+      showErrorToast("Vui lòng cung cấp địa chỉ email để nhận thông báo phản hồi.");
+      return;
+    }
     if (!createForm.message.trim() || createForm.message.trim().length < 5) {
       showErrorToast("Nội dung yêu cầu cần tối thiểu 5 ký tự.");
       return;
@@ -170,12 +191,12 @@ export const SupportTicketsPage = () => {
     setIsSubmitting(true);
     try {
       const res = await submitContactApi({
-        name: user.name || user.username || "Khách hàng",
-        email: user.email,
-        phone: createForm.phone || user.phone || "",
+        name: user?.name || user?.username || "Khách hàng",
+        email: finalEmail,
+        phone: createForm.phone || user?.phone || "",
         subject: createForm.subject,
         message: createForm.message.trim(),
-        userId: user.id,
+        userId: user?.id,
       });
 
       if (res?.errCode === 0) {
@@ -185,7 +206,8 @@ export const SupportTicketsPage = () => {
         setIsCreateOpen(false);
         setCreateForm({
           subject: "tuvansanpham",
-          phone: "",
+          email: user?.email || "",
+          phone: user?.phone || "",
           message: "",
         });
         fetchTickets(1);
@@ -319,30 +341,34 @@ export const SupportTicketsPage = () => {
         {/* Filter bar & Search */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-2xl bg-white dark:bg-dark-surface border border-slate-200/80 dark:border-dark-border shadow-sm">
           {/* Status Tabs */}
-          <div className="flex flex-wrap items-center gap-1.5">
-            {STATUS_FILTERS.map((f) => (
-              <button
-                key={f.key}
-                onClick={() => setActiveFilter(f.key)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                  activeFilter === f.key
-                    ? "bg-primary text-white shadow-sm shadow-primary/30"
-                    : "bg-slate-100 dark:bg-dark-bg text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800"
-                }`}
-              >
-                {f.label}
-              </button>
-            ))}
+          <div className="flex-1 min-w-0">
+            <Tabs
+              items={STATUS_FILTERS.map((f) => ({
+                key: f.key,
+                label: f.label,
+              }))}
+              activeKey={activeFilter}
+              onChange={(key) => {
+                setActiveFilter(key);
+                setPage(1);
+                fetchTickets(1, key, searchQuery);
+              }}
+              variant="pill"
+            />
           </div>
 
           {/* Search box */}
-          <div className="w-full md:w-72">
+          <div className="w-full md:w-72 shrink-0">
             <Input
               size="sm"
               prefix={<FiSearch className="text-slate-400" />}
               placeholder="Tìm mã ticket, chủ đề..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                const val = e.target.value;
+                setSearchQuery(val);
+                fetchTickets(1, activeFilter, val);
+              }}
             />
           </div>
         </div>
@@ -497,6 +523,21 @@ export const SupportTicketsPage = () => {
                 setCreateForm({ ...createForm, subject: e.target.value })
               }
               options={SUBJECT_OPTIONS}
+            />
+          </div>
+
+          <div>
+            <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 block mb-1.5">
+              Email nhận phản hồi: <span className="text-rose-500">*</span>
+            </label>
+            <Input
+              type="email"
+              placeholder="ví dụ: email@domain.com"
+              value={createForm.email}
+              onChange={(e) =>
+                setCreateForm({ ...createForm, email: e.target.value })
+              }
+              required
             />
           </div>
 
@@ -722,6 +763,7 @@ export const SupportTicketsPage = () => {
         message="Bạn có chắc chắn muốn hủy yêu cầu hỗ trợ này không? Thao tác này không thể hoàn tác."
         confirmText="Hủy yêu cầu"
         cancelText="Đóng"
+        loading={isDeleting}
         isLoading={isDeleting}
       />
     </PageShell>

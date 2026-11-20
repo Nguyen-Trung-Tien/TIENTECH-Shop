@@ -6,8 +6,16 @@ const handleSubmitContact = async (req, res) => {
     const io = typeof req.app?.get === "function" ? req.app.get("io") : null;
     const payload = {
       ...req.body,
+      name: (req.body?.name || req.user?.username || req.user?.name || "Khách hàng").trim(),
+      email: (req.body?.email || req.user?.email || "").trim(),
       userId: req.user?.id || req.body?.userId || null,
     };
+    if (!payload.email) {
+      return handleResponse(res, {
+        errCode: 400,
+        errMessage: "Vui lòng cung cấp email liên hệ hợp lệ.",
+      });
+    }
     const result = await ContactService.createTicket(payload, io);
     return handleResponse(res, result);
   } catch (error) {

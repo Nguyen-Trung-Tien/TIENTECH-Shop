@@ -365,7 +365,7 @@ const updateTicket = async (id, payload = {}, adminUser = null, io = null) => {
   };
 };
 
-const getUserTickets = async (userId, { page = 1, limit = 10 } = {}) => {
+const getUserTickets = async (userId, { page = 1, limit = 10, status, search } = {}) => {
   try {
     if (!userId) {
       return {
@@ -375,8 +375,21 @@ const getUserTickets = async (userId, { page = 1, limit = 10 } = {}) => {
     }
 
     const { offset, limit: parsedLimit } = getPagination(page, limit);
+    const whereClause = { userId };
+    if (status && status !== "all") {
+      whereClause.status = status;
+    }
+    if (search && search.trim()) {
+      const q = `%${search.trim()}%`;
+      whereClause[Op.or] = [
+        { ticketCode: { [Op.like]: q } },
+        { subject: { [Op.like]: q } },
+        { message: { [Op.like]: q } },
+      ];
+    }
+
     const { count, rows } = await db.ContactTicket.findAndCountAll({
-      where: { userId },
+      where: whereClause,
       include: [
         {
           model: db.User,

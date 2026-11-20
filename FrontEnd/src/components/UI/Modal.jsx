@@ -196,10 +196,12 @@ export const ConfirmModal = ({
   cancelText = "Hủy bỏ",
   variant = "primary",
   loading = false,
+  isLoading = false,
   confirmDisabled = false,
   icon: CustomIcon,
   children,
 }) => {
+  const isBusy = Boolean(loading || isLoading);
   const getIconAndStyle = () => {
     if (CustomIcon) return { Icon: CustomIcon, style: "bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border-blue-100 dark:border-blue-900/30" };
     switch (variant) {
@@ -225,7 +227,7 @@ export const ConfirmModal = ({
       title={null}
       showClose={false}
       className="text-center"
-      loading={loading}
+      loading={isBusy}
     >
       <div className="flex flex-col items-center py-1">
         <Motion.div
@@ -259,7 +261,7 @@ export const ConfirmModal = ({
               if (e && e.stopPropagation) e.stopPropagation();
               if (onClose) onClose(e);
             }}
-            disabled={loading}
+            disabled={isBusy}
           >
             {cancelText}
           </Button>
@@ -274,8 +276,8 @@ export const ConfirmModal = ({
               if (e && e.stopPropagation) e.stopPropagation();
               if (onConfirm) onConfirm(e);
             }}
-            loading={loading}
-            disabled={loading || confirmDisabled}
+            loading={isBusy}
+            disabled={isBusy || confirmDisabled}
           >
             {confirmText}
           </Button>

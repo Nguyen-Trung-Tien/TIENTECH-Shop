@@ -392,8 +392,8 @@ const paypalCaptureSchema = z.object({
 
 const contactSchema = z.object({
   body: z.object({
-    name: z.string().trim().min(2, "Vui lòng nhập họ tên hợp lệ").max(120),
-    email: z.string().trim().email("Email không hợp lệ").max(160),
+    name: z.string().trim().max(120).optional(),
+    email: z.string().trim().email("Email không hợp lệ").max(160).optional(),
     phone: z.string().trim().max(30).optional().default(""),
     subject: z.string().trim().max(120).optional().default("tuvansanpham"),
     message: z
@@ -401,6 +401,7 @@ const contactSchema = z.object({
       .trim()
       .min(5, "Nội dung cần hỗ trợ phải có ít nhất 5 ký tự")
       .max(3000, "Nội dung tối đa 3000 ký tự"),
+    userId: z.union([z.string(), z.number()]).optional(),
   }),
 });
 
