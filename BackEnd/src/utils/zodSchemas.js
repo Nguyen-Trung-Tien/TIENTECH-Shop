@@ -642,6 +642,7 @@ const refundPaymentSchema = z.object({
   }),
   body: z.object({
     note: z.string().max(1000).optional(),
+    refundNote: z.string().max(1000).optional(),
   }).passthrough().optional(),
 });
 

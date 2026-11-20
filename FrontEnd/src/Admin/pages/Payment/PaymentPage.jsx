@@ -10,6 +10,7 @@ import {
 import { showErrorToast, showSuccessToast } from "../../../utils/toastHelper";
 import AppPagination from "../../../components/Pagination/Pagination";
 import AdminPageShell from "../../components/AdminPageShell";
+import { Button } from "../../../components/UI";
 import { exportPaymentsCsv } from "./components/paymentConstants";
 import PaymentSummaryCards from "./components/PaymentSummaryCards";
 import PaymentFiltersBar from "./components/PaymentFiltersBar";
@@ -161,14 +162,16 @@ const PaymentPage = () => {
       }
       subtitle="Theo dõi dòng tiền & Trạng thái giao dịch"
       actions={
-        <button
+        <Button
           type="button"
+          variant="secondary"
+          size="sm"
           onClick={() => exportPaymentsCsv(payments)}
-          className="flex items-center gap-2 h-10 px-5 bg-white dark:bg-dark-surface border border-slate-200 dark:border-dark-border text-slate-600 dark:text-dark-text-secondary rounded-xl text-xs font-black uppercase tracking-wider hover:bg-slate-50 dark:hover:bg-dark-bg transition-all shadow-xs print:hidden cursor-pointer"
+          icon={<Download className="size-3.5" />}
+          className="font-black uppercase tracking-wider text-xs print:hidden"
         >
-          <Download className="size-3.5" />
-          <span>Xuất CSV</span>
-        </button>
+          Xuất CSV
+        </Button>
       }
       className="print:p-0"
     >

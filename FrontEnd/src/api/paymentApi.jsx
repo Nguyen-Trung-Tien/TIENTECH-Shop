@@ -46,5 +46,8 @@ export const completePayment = async (id, transactionId = "") => {
 };
 
 export const refundPayment = async (id, note = "") => {
-  return await axiosClient.put(`/payment/payment-refund/${id}/refund`, { note });
+  return await axiosClient.put(`/payment/payment-refund/${id}/refund`, {
+    note,
+    refundNote: note,
+  });
 };

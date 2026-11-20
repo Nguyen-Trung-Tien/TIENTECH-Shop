@@ -16,6 +16,7 @@ import ChartCard from "../../components/ChartCardComponent/ChartCard";
 import { Link } from "react-router-dom";
 import RevenueForecastWidget from "../../components/RevenueForecastWidget/RevenueForecastWidget";
 import AdminPageShell from "../../components/AdminPageShell";
+import { Button } from "../../../components/UI";
 
 const Revenue = () => {
   const [stats, setStats] = useState(null);
@@ -129,13 +130,15 @@ const Revenue = () => {
               </button>
             ))}
           </div>
-          <button
+          <Button
+            type="button"
+            variant="secondary"
             onClick={handleExport}
-            className="flex items-center justify-center gap-2 h-11 sm:h-12 px-5 sm:px-6 bg-white dark:bg-dark-surface text-slate-700 dark:text-dark-text-primary border border-slate-100 dark:border-dark-border rounded-2xl font-bold text-xs sm:text-sm hover:bg-slate-50 dark:hover:bg-dark-bg transition-all shadow-sm group cursor-pointer shrink-0 min-h-[44px]"
+            icon={<FiDownload className="text-base sm:text-lg" />}
+            className="font-bold text-xs sm:text-sm h-11 sm:h-12 px-5 sm:px-6 rounded-2xl"
           >
-            <FiDownload className="text-base sm:text-lg group-hover:scale-110 transition-transform" />
-            <span>Xuất Excel</span>
-          </button>
+            Xuất Excel
+          </Button>
         </div>
       }
     >

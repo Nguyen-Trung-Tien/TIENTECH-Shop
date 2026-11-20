@@ -186,6 +186,7 @@ const getAllPayments = async ({
           ? `DH${p.order.orderCode.replace(/^#?ORD/i, "")}`
           : `DH${p.orderId || p.id}`;
       }
+      p.refundNote = p.note || "";
       return p;
     });
 
@@ -227,7 +228,10 @@ const getPaymentById = async (id) => {
         : `DH${payment.orderId || payment.id}`;
     }
 
-    return { errCode: 0, errMessage: "OK", data: payment };
+    const paymentData = typeof payment.toJSON === "function" ? payment.toJSON() : { ...payment };
+    paymentData.refundNote = payment.note || "";
+
+    return { errCode: 0, errMessage: "OK", data: paymentData };
   } catch (e) {
     console.error("Error getPaymentById:", e);
     throw e;
@@ -673,7 +677,9 @@ const refundPayment = async (id, note = "", t_external = null) => {
         console.warn("Failed to invalidate dashboard cache:", cacheErr?.message);
       }
     }
-    return { errCode: 0, errMessage: "Payment refunded", data: payment };
+    const paymentData = typeof payment.toJSON === "function" ? payment.toJSON() : { ...payment };
+    paymentData.refundNote = payment.note || "";
+    return { errCode: 0, errMessage: "Payment refunded", data: paymentData };
   } catch (e) {
     if (!t_external) await t.rollback();
     console.error("Error refundPayment:", e);

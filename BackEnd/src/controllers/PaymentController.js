@@ -97,7 +97,7 @@ const handleCompletePayment = async (req, res) => {
 
 const handleRefundPayment = async (req, res) => {
   try {
-    const note = req.body?.note || "";
+    const note = req.body?.note || req.body?.refundNote || "";
     const result = await PaymentService.refundPayment(req.params.id, note);
     return handleResponse(res, result, 200);
   } catch (e) {
