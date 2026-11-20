@@ -7,6 +7,7 @@ import {
   FiX,
 } from "react-icons/fi";
 import { Button } from "./Button";
+import { AlertPopup } from "./AlertPopup";
 
 const VARIANT_STYLES = {
   info: {
@@ -36,7 +37,8 @@ const VARIANT_STYLES = {
 };
 
 /**
- * Unified inline status / feedback banner (400/401/402/403, maintenance, notices).
+ * Unified status / feedback banner or popup dialog (400/401/402/403, maintenance, notices).
+ * Supports both inline banner (`mode="banner"`, default) and popup dialog (`mode="popup"` or `asPopup={true}`).
  */
 const AlertBanner = ({
   variant = "info",
@@ -46,7 +48,32 @@ const AlertBanner = ({
   onAction,
   onDismiss,
   className = "",
+  mode = "banner",
+  asPopup = false,
+  isOpen,
+  show,
 }) => {
+  if (mode === "popup" || asPopup) {
+    const isVisible =
+      isOpen !== undefined
+        ? Boolean(isOpen)
+        : show !== undefined
+          ? Boolean(show)
+          : true;
+    return (
+      <AlertPopup
+        isOpen={isVisible}
+        onClose={onDismiss}
+        onConfirm={onAction || onDismiss}
+        title={title}
+        message={message}
+        variant={variant}
+        confirmText={actionLabel || "Đã hiểu"}
+        className={className}
+      />
+    );
+  }
+
   const style = VARIANT_STYLES[variant] || VARIANT_STYLES.info;
   const Icon = style.icon;
 
@@ -56,7 +83,10 @@ const AlertBanner = ({
       className={`rounded-2xl border p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 min-w-0 ${style.wrapper} ${className}`}
     >
       <div className="flex items-start gap-3 min-w-0 flex-1">
-        <Icon className={`w-5 h-5 shrink-0 mt-0.5 ${style.iconColor}`} aria-hidden="true" />
+        <Icon
+          className={`w-5 h-5 shrink-0 mt-0.5 ${style.iconColor}`}
+          aria-hidden="true"
+        />
         <div className="min-w-0 flex-1">
           {title && (
             <p className="text-sm font-bold break-words [overflow-wrap:anywhere]">

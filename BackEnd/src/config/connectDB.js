@@ -3,6 +3,7 @@ require("dotenv").config();
 const isProduction = process.env.NODE_ENV === "production";
 
 const db = require("../models");
+const { runPendingMigrations } = require("./autoMigrate");
 
 const ensureColumn = async (tableName, columnName, columnDef) => {
   try {
@@ -28,6 +29,13 @@ let connectDB = async () => {
     console.log(
       `Database connected successfully (${isProduction ? "Production" : "Development"})`,
     );
+
+    // Auto-run pending migrations on server boot (Render + TiDB Cloud)
+    if (!process.env.NODE_ENV || process.env.NODE_ENV !== "test") {
+      await runPendingMigrations().catch((mErr) => {
+        console.warn("[connectDB] Auto-migration warning:", mErr?.message || mErr);
+      });
+    }
 
     // Ensure newly added tables exist in database (TiDB / MySQL) where migrations weren't run
     for (const modelName of ["AuditLog", "ContactTicket", "ProductEmbedding"]) {
@@ -62,6 +70,12 @@ let connectDB = async () => {
         type: db.Sequelize.DECIMAL(15, 2),
         allowNull: false,
         defaultValue: 0,
+      });
+    }
+    if (db.ContactTicket) {
+      await ensureColumn("ContactTickets", "userId", {
+        type: db.Sequelize.INTEGER,
+        allowNull: true,
       });
     }
   } catch (error) {

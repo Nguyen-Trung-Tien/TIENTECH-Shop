@@ -16,7 +16,7 @@ describe("Database Migrations Ordering & Idempotency", () => {
       .filter((f) => f.endsWith(".js"))
       .sort();
 
-    expect(files.length).toBe(37);
+    expect(files.length).toBe(38);
 
     const createdTables = new Set();
 

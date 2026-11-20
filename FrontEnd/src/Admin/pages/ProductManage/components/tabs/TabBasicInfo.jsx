@@ -26,12 +26,7 @@ const TabBasicInfo = ({
   };
 
   return (
-    <Motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -10 }}
-      className="space-y-8"
-    >
+    <div className="space-y-8 animate-in fade-in duration-150">
       {/* Top Banner: Quick Mode Indicator */}
       <div className="p-4 rounded-2xl bg-indigo-50/60 dark:bg-indigo-900/10 border border-indigo-100 dark:border-indigo-900/30 flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -281,7 +276,7 @@ const TabBasicInfo = ({
           </div>
         </div>
       </div>
-    </Motion.div>
+    </div>
   );
 };
 

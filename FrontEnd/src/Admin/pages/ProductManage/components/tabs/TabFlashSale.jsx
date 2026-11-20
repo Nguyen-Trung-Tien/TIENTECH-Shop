@@ -4,12 +4,7 @@ import { m as Motion } from "framer-motion";
 
 const TabFlashSale = ({ formData, handleChange, errors }) => {
   return (
-    <Motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -10 }}
-      className="space-y-6"
-    >
+    <div className="space-y-6 animate-in fade-in duration-150">
       <div className="p-8 bg-orange-50/50 dark:bg-orange-950/20 rounded-3xl border border-orange-200/80 dark:border-orange-900/40 space-y-6">
         <label className="flex items-center gap-4 cursor-pointer">
           <input
@@ -84,7 +79,7 @@ const TabFlashSale = ({ formData, handleChange, errors }) => {
           </div>
         )}
       </div>
-    </Motion.div>
+    </div>
   );
 };
 

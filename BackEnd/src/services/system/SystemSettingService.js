@@ -360,10 +360,15 @@ class SystemSettingService {
       await setCache(cacheKey, parsedValue, 3600); // 1 hour TTL
       return parsedValue;
     } catch (error) {
-      console.error(
-        `[SystemSettingService] getSetting error for key ${key}:`,
-        error,
-      );
+      if (
+        !String(error?.message || "").includes("ConnectionManager.getConnection was called after the connection manager was closed") &&
+        !String(error?.message || "").includes("connection manager was closed")
+      ) {
+        console.error(
+          `[SystemSettingService] getSetting error for key ${key}:`,
+          error,
+        );
+      }
       return defaultValue;
     }
   }

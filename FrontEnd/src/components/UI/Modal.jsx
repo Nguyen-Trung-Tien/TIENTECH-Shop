@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import { m as Motion, AnimatePresence } from "framer-motion";
-import { FiX, FiAlertTriangle, FiCheckCircle, FiInfo, FiTrash2 } from "react-icons/fi";
+import { FiX, FiAlertTriangle, FiCheckCircle, FiInfo, FiTrash2, FiAlertCircle } from "react-icons/fi";
 import { Button } from "./Button";
 import UnifiedSpinner from "../Loading/UnifiedSpinner";
 
@@ -25,6 +25,11 @@ const Modal = ({
   const isModalOpen = Boolean(isOpen || show);
   const modalRef = useRef(null);
   const previousFocusRef = useRef(null);
+  const optionsRef = useRef({ onClose, closeOnEscape, loading });
+
+  useEffect(() => {
+    optionsRef.current = { onClose, closeOnEscape, loading };
+  });
 
   // Keyboard accessibility: Close on Escape key (blocked while loading), lock body scroll, and manage focus
   useEffect(() => {
@@ -33,26 +38,35 @@ const Modal = ({
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
 
+    // Focus modal container ONLY on initial opening if active focus is outside the modal
     const focusTimer = setTimeout(() => {
-      modalRef.current?.focus?.({ preventScroll: true });
+      if (modalRef.current && !modalRef.current.contains(document.activeElement)) {
+        modalRef.current.focus?.({ preventScroll: true });
+      }
     }, 0);
 
-    const handleKeyDown = (e) => {
-      if (e.key === "Escape" && closeOnEscape && !loading) {
-        e.preventDefault();
-        if (onClose) onClose();
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
     return () => {
       clearTimeout(focusTimer);
       document.body.style.overflow = prevOverflow;
-      window.removeEventListener("keydown", handleKeyDown);
       if (previousFocusRef.current && typeof previousFocusRef.current.focus === "function") {
         previousFocusRef.current.focus({ preventScroll: true });
       }
     };
-  }, [isModalOpen, loading, closeOnEscape, onClose]);
+  }, [isModalOpen]);
+
+  useEffect(() => {
+    if (!isModalOpen) return;
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape" && optionsRef.current.closeOnEscape && !optionsRef.current.loading) {
+        e.preventDefault();
+        if (optionsRef.current.onClose) optionsRef.current.onClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isModalOpen]);
 
   const sizes = {
     xs: "max-w-xs",
@@ -239,7 +253,6 @@ export const ConfirmModal = ({
           <Button
             type="button"
             variant="secondary"
-            autoFocus={variant === "danger" || variant === "destructive"}
             className="flex-1 h-11 rounded-xl text-[11px] font-black uppercase tracking-wider"
             onClick={(e) => {
               if (e && e.preventDefault) e.preventDefault();
@@ -263,6 +276,116 @@ export const ConfirmModal = ({
             }}
             loading={loading}
             disabled={loading || confirmDisabled}
+          >
+            {confirmText}
+          </Button>
+        </div>
+      </div>
+    </Modal>
+  );
+};
+
+export const AlertModal = ({
+  isOpen,
+  show,
+  onClose,
+  onConfirm,
+  title = "Thông báo",
+  message,
+  confirmText = "Đã hiểu",
+  variant = "info",
+  icon: CustomIcon,
+  children,
+  className = "",
+}) => {
+  const isModalOpen = Boolean(isOpen || show);
+  const getIconAndStyle = () => {
+    if (CustomIcon)
+      return {
+        Icon: CustomIcon,
+        style:
+          "bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border-blue-100 dark:border-blue-900/30",
+        btnVariant: "primary",
+      };
+    switch (variant) {
+      case "danger":
+      case "destructive":
+      case "error":
+        return {
+          Icon: FiAlertCircle,
+          style:
+            "bg-rose-50 dark:bg-rose-950/40 text-rose-500 dark:text-rose-400 border-rose-100 dark:border-rose-900/30",
+          btnVariant: "destructive",
+        };
+      case "warning":
+        return {
+          Icon: FiAlertTriangle,
+          style:
+            "bg-amber-50 dark:bg-amber-950/40 text-amber-500 dark:text-amber-400 border-amber-100 dark:border-amber-900/30",
+          btnVariant: "primary",
+        };
+      case "success":
+        return {
+          Icon: FiCheckCircle,
+          style:
+            "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-500 dark:text-emerald-400 border-emerald-100 dark:border-emerald-900/30",
+          btnVariant: "primary",
+        };
+      default:
+        return {
+          Icon: FiInfo,
+          style:
+            "bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border-blue-100 dark:border-blue-900/30",
+          btnVariant: "primary",
+        };
+    }
+  };
+
+  const { Icon, style, btnVariant } = getIconAndStyle();
+
+  return (
+    <Modal
+      isOpen={isModalOpen}
+      onClose={onClose || onConfirm}
+      size="sm"
+      title={null}
+      showClose={true}
+      className={`text-center ${className}`}
+    >
+      <div className="flex flex-col items-center py-1">
+        <Motion.div
+          initial={{ scale: 0.55, rotate: -8, opacity: 0 }}
+          animate={{ scale: 1, rotate: 0, opacity: 1 }}
+          transition={{ type: "spring", stiffness: 450, damping: 20, delay: 0.06 }}
+          className={`size-14 sm:size-16 rounded-2xl flex items-center justify-center text-2xl sm:text-3xl mb-4 border shadow-inner ${style}`}
+        >
+          {Icon && (React.isValidElement(Icon) ? Icon : <Icon />)}
+        </Motion.div>
+
+        {title && (
+          <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white tracking-tight uppercase mb-1.5 break-words [overflow-wrap:anywhere]">
+            {title}
+          </h3>
+        )}
+
+        {message && (
+          <p className="text-slate-500 dark:text-slate-400 text-xs font-medium leading-relaxed mb-4 max-w-xs break-words [overflow-wrap:anywhere]">
+            {message}
+          </p>
+        )}
+
+        {children}
+
+        <div className="w-full mt-4">
+          <Button
+            type="button"
+            variant={btnVariant}
+            className="w-full h-11 rounded-xl text-[11px] font-black uppercase tracking-wider shadow-md"
+            onClick={(e) => {
+              if (e && e.preventDefault) e.preventDefault();
+              if (onConfirm) onConfirm(e);
+              else if (onClose) onClose(e);
+            }}
           >
             {confirmText}
           </Button>

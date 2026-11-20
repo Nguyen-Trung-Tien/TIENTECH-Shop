@@ -8,6 +8,7 @@ import { cn } from "../../utils/cn";
  */
 const Select = ({
   className,
+  containerClassName,
   error,
   label,
   required,
@@ -54,12 +55,8 @@ const Select = ({
     </div>
   );
 
-  if (!label && !error) {
-    return selectEl;
-  }
-
   return (
-    <div className="w-full space-y-1.5 min-w-0">
+    <div className={cn("w-full min-w-0", (label || error) && "space-y-1.5", containerClassName)}>
       {label && (
         <label className="block text-xs font-bold text-surface-700 dark:text-dark-text-secondary">
           {label}

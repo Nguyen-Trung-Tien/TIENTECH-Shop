@@ -5,6 +5,10 @@ module.exports = (sequelize, DataTypes) => {
   class ContactTicket extends Model {
     static associate(models) {
       ContactTicket.belongsTo(models.User, {
+        foreignKey: "userId",
+        as: "user",
+      });
+      ContactTicket.belongsTo(models.User, {
         foreignKey: "repliedBy",
         as: "replier",
       });
@@ -13,6 +17,10 @@ module.exports = (sequelize, DataTypes) => {
 
   ContactTicket.init(
     {
+      userId: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+      },
       ticketCode: {
         type: DataTypes.STRING(40),
         allowNull: false,

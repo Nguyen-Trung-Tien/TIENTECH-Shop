@@ -3,6 +3,7 @@ import {
   FiEye,
   FiClock,
   FiCheckCircle,
+  FiHelpCircle,
   FiSettings,
   FiTruck,
   FiPackage,
@@ -206,10 +207,10 @@ const OrderPage = () => {
       actions={
         <div className="flex items-center gap-3">
           <Link
-            to="/order-history"
+            to="/support-tickets"
             className="flex items-center justify-center gap-2 px-4 py-2 bg-primary/5 dark:bg-brand/10 border border-primary/10 dark:border-brand/20 rounded-xl text-xs font-bold text-primary dark:text-brand hover:bg-primary/10 transition-all shadow-sm"
           >
-            <FiCheckCircle size={14} /> Lịch sử đơn hàng
+            <FiHelpCircle size={14} /> Hỗ trợ & Phản hồi
           </Link>
           <button
             type="button"
@@ -550,12 +551,7 @@ const OrderPage = () => {
           </div>
 
           {selectedReason === "Lý do khác" && (
-            <Motion.div
-              layout
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="space-y-2"
-            >
+            <div className="space-y-2 animate-in fade-in duration-150">
               <label
                 className="text-[10px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest mb-1.5 block"
                 htmlFor="cancelReason"
@@ -570,7 +566,7 @@ const OrderPage = () => {
                 value={cancelReason}
                 onChange={(e) => setCancelReason(e.target.value)}
               />
-            </Motion.div>
+            </div>
           )}
         </div>
       </ConfirmModal>

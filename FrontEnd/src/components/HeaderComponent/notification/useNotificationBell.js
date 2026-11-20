@@ -28,6 +28,8 @@ const INITIAL_BROADCAST_FORM = {
   type: "system",
   link: "",
   target: "all",
+  targetUserId: null,
+  selectedUser: null,
 };
 
 export const useNotificationBell = () => {
@@ -343,17 +345,51 @@ export const useNotificationBell = () => {
     }
   }, [notifySync, fetchNotifications]);
 
+  useEffect(() => {
+    const handleOpenNotificationModal = (event) => {
+      const targetUser = event?.detail?.targetUser;
+      if (targetUser) {
+        setBroadcastForm({
+          ...INITIAL_BROADCAST_FORM,
+          target: "user",
+          targetUserId: targetUser.id,
+          selectedUser: targetUser,
+        });
+      } else {
+        setBroadcastForm(INITIAL_BROADCAST_FORM);
+      }
+      setShowAdminModal(true);
+    };
+
+    window.addEventListener("tientech:open_send_notification", handleOpenNotificationModal);
+    return () => {
+      window.removeEventListener("tientech:open_send_notification", handleOpenNotificationModal);
+    };
+  }, []);
+
   const handleSendBroadcast = useCallback(
     async (e) => {
       e.preventDefault();
       if (!broadcastForm.title.trim() || !broadcastForm.message.trim()) {
         return showWarningToast("Vui lòng nhập tiêu đề và nội dung!");
       }
+      if (broadcastForm.target === "user" && !broadcastForm.targetUserId) {
+        return showWarningToast("Vui lòng chọn người dùng nhận thông báo!");
+      }
       setSendingBroadcast(true);
       try {
-        const res = await sendBroadcastNotificationApi(broadcastForm);
+        const payload = {
+          title: broadcastForm.title.trim(),
+          message: broadcastForm.message.trim(),
+          type: broadcastForm.type,
+          link: (broadcastForm.link || "").trim(),
+          target: broadcastForm.target,
+          targetUserId:
+            broadcastForm.target === "user" ? broadcastForm.targetUserId : undefined,
+        };
+        const res = await sendBroadcastNotificationApi(payload);
         if (res.errCode === 0) {
-          showSuccessToast(res.message, "Đã phát thông báo thành công!");
+          showSuccessToast(res.message, "Đã gửi thông báo thành công!");
           setShowAdminModal(false);
           setBroadcastForm(INITIAL_BROADCAST_FORM);
           fetchNotifications();

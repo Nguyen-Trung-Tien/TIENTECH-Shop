@@ -33,12 +33,7 @@ const TabSpecifications = ({
   };
 
   return (
-    <Motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -10 }}
-      className="space-y-8"
-    >
+    <div className="space-y-8 animate-in fade-in duration-150">
       {/* Category & Brand Selectors */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-2 relative">
@@ -150,7 +145,7 @@ const TabSpecifications = ({
           onChange={(e) => handleChange("description", e.target.value)}
         />
       </div>
-    </Motion.div>
+    </div>
   );
 };
 

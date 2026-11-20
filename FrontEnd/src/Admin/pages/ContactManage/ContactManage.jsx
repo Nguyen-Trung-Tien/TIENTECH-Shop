@@ -9,11 +9,13 @@ import {
   FiSend,
   FiUser,
   FiCheckCircle,
+  FiTrash2,
 } from "react-icons/fi";
 import {
   Button,
   Badge,
   Modal,
+  ConfirmModal,
   EmptyState,
   Input,
   Textarea,
@@ -25,6 +27,8 @@ import { showErrorToast, showSuccessToast } from "../../../utils/toastHelper";
 import {
   getContactTicketsApi,
   updateContactTicketApi,
+  deleteContactTicketApi,
+  bulkDeleteContactTicketsApi,
 } from "../../../api/contactApi";
 
 const STATUS_META = {
@@ -78,12 +82,22 @@ const ContactManage = () => {
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
   const [loading, setLoading] = useState(false);
+
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [deleteModalState, setDeleteModalState] = useState({
+    isOpen: false,
+    type: "single",
+    targetId: null,
+    targetCode: "",
+  });
+  const [deleting, setDeleting] = useState(false);
 
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [replyStatus, setReplyStatus] = useState("resolved");
   const [replyText, setReplyText] = useState("");
-  const [sendEmailReply, setSendEmailReply] = useState(true);
+  const [sendEmailReply, setSendEmailReply] = useState(false);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -120,6 +134,7 @@ const ContactManage = () => {
           },
         );
         setTotalPages(res.pagination?.totalPages || 1);
+        setTotalItems(res.pagination?.totalItems ?? res.data?.length ?? 0);
       } else {
         showErrorToast(
           res?.errMessage || "Không thể tải danh sách yêu cầu liên hệ.",
@@ -142,13 +157,13 @@ const ContactManage = () => {
       ticket.status === "open" ? "resolved" : ticket.status || "resolved",
     );
     setReplyText(ticket.adminReply || "");
-    setSendEmailReply(Boolean(ticket.email));
+    setSendEmailReply(false);
   };
 
-  const handleCloseModal = () => {
+  const handleCloseModal = useCallback(() => {
     if (saving) return;
     setSelectedTicket(null);
-  };
+  }, [saving]);
 
   const handleSaveTicket = async () => {
     if (!selectedTicket) return;
@@ -177,6 +192,85 @@ const ContactManage = () => {
       showErrorToast(error, "Lỗi khi cập nhật yêu cầu liên hệ.");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleToggleSelectAll = () => {
+    if (tickets.length === 0) return;
+    const currentTicketIds = tickets.map((t) => t.id);
+    const allSelected = currentTicketIds.every((id) => selectedIds.includes(id));
+    if (allSelected) {
+      setSelectedIds((prev) => prev.filter((id) => !currentTicketIds.includes(id)));
+    } else {
+      setSelectedIds((prev) => Array.from(new Set([...prev, ...currentTicketIds])));
+    }
+  };
+
+  const handleToggleSelect = (id) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    );
+  };
+
+  const handleOpenDeleteSingle = (ticket) => {
+    setDeleteModalState({
+      isOpen: true,
+      type: "single",
+      targetId: ticket.id,
+      targetCode: ticket.ticketCode,
+    });
+  };
+
+  const handleOpenDeleteBulk = () => {
+    if (selectedIds.length === 0) return;
+    setDeleteModalState({
+      isOpen: true,
+      type: "bulk",
+      targetId: null,
+      targetCode: "",
+    });
+  };
+
+  const handleConfirmDelete = async () => {
+    setDeleting(true);
+    try {
+      if (deleteModalState.type === "single") {
+        const res = await deleteContactTicketApi(deleteModalState.targetId);
+        if (res?.errCode === 0) {
+          showSuccessToast(res?.errMessage || "Đã xóa yêu cầu liên hệ thành công!");
+          setSelectedIds((prev) => prev.filter((id) => id !== deleteModalState.targetId));
+          setDeleteModalState({
+            isOpen: false,
+            type: "single",
+            targetId: null,
+            targetCode: "",
+          });
+          await fetchTickets();
+        } else {
+          showErrorToast(res?.errMessage || "Không thể xóa yêu cầu liên hệ.");
+        }
+      } else {
+        const res = await bulkDeleteContactTicketsApi(selectedIds);
+        if (res?.errCode === 0) {
+          showSuccessToast(
+            res?.errMessage || `Đã xóa ${res.deletedCount || selectedIds.length} yêu cầu liên hệ!`,
+          );
+          setSelectedIds([]);
+          setDeleteModalState({
+            isOpen: false,
+            type: "bulk",
+            targetId: null,
+            targetCode: "",
+          });
+          await fetchTickets();
+        } else {
+          showErrorToast(res?.errMessage || "Không thể xóa các yêu cầu đã chọn.");
+        }
+      }
+    } catch (error) {
+      showErrorToast(error, "Lỗi khi xóa yêu cầu liên hệ.");
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -255,6 +349,35 @@ const ContactManage = () => {
         </div>
       </div>
 
+      {/* Bulk Action Toolbar */}
+      {selectedIds.length > 0 && (
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-rose-50/80 dark:bg-rose-950/25 border border-rose-200 dark:border-rose-900/40 rounded-2xl p-4 shadow-xs animate-in fade-in">
+          <div className="flex items-center gap-2 text-rose-800 dark:text-rose-300 font-bold text-xs">
+            <span className="flex items-center justify-center size-6 rounded-full bg-rose-600 text-white font-mono text-[11px]">
+              {selectedIds.length}
+            </span>
+            <span>yêu cầu liên hệ đã được chọn</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setSelectedIds([])}
+            >
+              Bỏ chọn
+            </Button>
+            <Button
+              variant="destructive"
+              size="sm"
+              icon={<FiTrash2 />}
+              onClick={handleOpenDeleteBulk}
+            >
+              Xóa đã chọn ({selectedIds.length})
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Ticket List */}
       {loading ? (
         <div className="flex flex-col items-center justify-center py-24 gap-3 bg-white dark:bg-dark-surface border border-slate-200 dark:border-dark-border rounded-3xl">
@@ -288,61 +411,93 @@ const ContactManage = () => {
         />
       ) : (
         <div className="space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-2 text-xs text-slate-500 dark:text-dark-text-secondary">
+            <label className="inline-flex items-center gap-2 cursor-pointer font-semibold select-none">
+              <input
+                type="checkbox"
+                checked={
+                  tickets.length > 0 &&
+                  tickets.every((t) => selectedIds.includes(t.id))
+                }
+                onChange={handleToggleSelectAll}
+                className="size-4 rounded border-slate-300 text-primary focus:ring-primary cursor-pointer"
+              />
+              <span>Chọn tất cả trên trang này</span>
+            </label>
+            <span className="text-[11px] font-medium">
+              Hiển thị <strong>{tickets.length}</strong> / <strong>{totalItems}</strong> yêu cầu
+            </span>
+          </div>
+
           {tickets.map((ticket) => {
+            const isSelected = selectedIds.includes(ticket.id);
             const meta = STATUS_META[ticket.status] || STATUS_META.open;
             return (
               <div
                 key={ticket.id}
-                className="bg-white dark:bg-dark-surface border border-slate-200 dark:border-dark-border rounded-3xl p-5 shadow-xs hover:border-primary/40 transition-colors"
+                className={`bg-white dark:bg-dark-surface border rounded-3xl p-5 shadow-xs transition-colors ${
+                  isSelected
+                    ? "border-primary/80 ring-2 ring-primary/20 bg-primary/5 dark:bg-primary/10"
+                    : "border-slate-200 dark:border-dark-border hover:border-primary/40"
+                }`}
               >
                 <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 min-w-0">
-                  <div className="min-w-0 flex-1 space-y-2">
-                    <div className="flex flex-wrap items-center gap-2 min-w-0">
-                      <span className="font-mono text-xs font-black px-2.5 py-1 rounded-xl bg-slate-100 dark:bg-dark-bg text-slate-800 dark:text-slate-200 break-words [overflow-wrap:anywhere]">
-                        #{ticket.ticketCode}
-                      </span>
-                      <Badge variant={meta.variant} size="sm" dot>
-                        {meta.label}
-                      </Badge>
-                      <span className="text-xs font-bold text-primary break-words [overflow-wrap:anywhere]">
-                        {ticket.subject}
-                      </span>
-                    </div>
-
-                    <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2 sm:gap-4 text-xs text-slate-600 dark:text-dark-text-secondary min-w-0">
-                      <span className="inline-flex items-center gap-1.5 font-semibold text-slate-800 dark:text-white min-w-0 break-words [overflow-wrap:anywhere]">
-                        <FiUser className="shrink-0 text-slate-400" />
-                        <span>{ticket.name}</span>
-                      </span>
-                      <span className="inline-flex items-center gap-1.5 min-w-0 break-words [overflow-wrap:anywhere]">
-                        <FiMail className="shrink-0 text-slate-400" />
-                        <span>{ticket.email}</span>
-                      </span>
-                      {ticket.phone && (
-                        <span className="inline-flex items-center gap-1.5 min-w-0 break-words [overflow-wrap:anywhere]">
-                          <FiPhone className="shrink-0 text-slate-400" />
-                          <span>{ticket.phone}</span>
+                  <div className="flex items-start gap-3 min-w-0 flex-1">
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      onChange={() => handleToggleSelect(ticket.id)}
+                      className="size-4 rounded border-slate-300 text-primary focus:ring-primary cursor-pointer mt-1 shrink-0"
+                      aria-label={`Chọn yêu cầu #${ticket.ticketCode}`}
+                    />
+                    <div className="min-w-0 flex-1 space-y-2">
+                      <div className="flex flex-wrap items-center gap-2 min-w-0">
+                        <span className="font-mono text-xs font-black px-2.5 py-1 rounded-xl bg-slate-100 dark:bg-dark-bg text-slate-800 dark:text-slate-200 break-words [overflow-wrap:anywhere]">
+                          #{ticket.ticketCode}
                         </span>
-                      )}
-                      <span className="inline-flex items-center gap-1.5 shrink-0 text-slate-400">
-                        <FiClock className="shrink-0" />
-                        <span>{formatDateTime(ticket.createdAt)}</span>
-                      </span>
-                    </div>
-
-                    <p className="text-sm text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-dark-bg/70 rounded-2xl p-3.5 line-clamp-3 break-words [overflow-wrap:anywhere]">
-                      {ticket.message}
-                    </p>
-
-                    {ticket.adminReply && (
-                      <div className="flex items-start gap-2 text-xs text-emerald-700 dark:text-emerald-400 bg-emerald-50/70 dark:bg-emerald-950/25 border border-emerald-200/70 dark:border-emerald-900/40 rounded-2xl p-3 min-w-0">
-                        <FiCheckCircle className="shrink-0 mt-0.5" />
-                        <div className="min-w-0 flex-1 break-words [overflow-wrap:anywhere]">
-                          <span className="font-bold">Đã phản hồi: </span>
-                          <span>{ticket.adminReply}</span>
-                        </div>
+                        <Badge variant={meta.variant} size="sm" dot>
+                          {meta.label}
+                        </Badge>
+                        <span className="text-xs font-bold text-primary break-words [overflow-wrap:anywhere]">
+                          {ticket.subject}
+                        </span>
                       </div>
-                    )}
+
+                      <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2 sm:gap-4 text-xs text-slate-600 dark:text-dark-text-secondary min-w-0">
+                        <span className="inline-flex items-center gap-1.5 font-semibold text-slate-800 dark:text-white min-w-0 break-words [overflow-wrap:anywhere]">
+                          <FiUser className="shrink-0 text-slate-400" />
+                          <span>{ticket.name}</span>
+                        </span>
+                        <span className="inline-flex items-center gap-1.5 min-w-0 break-words [overflow-wrap:anywhere]">
+                          <FiMail className="shrink-0 text-slate-400" />
+                          <span>{ticket.email}</span>
+                        </span>
+                        {ticket.phone && (
+                          <span className="inline-flex items-center gap-1.5 min-w-0 break-words [overflow-wrap:anywhere]">
+                            <FiPhone className="shrink-0 text-slate-400" />
+                            <span>{ticket.phone}</span>
+                          </span>
+                        )}
+                        <span className="inline-flex items-center gap-1.5 shrink-0 text-slate-400">
+                          <FiClock className="shrink-0" />
+                          <span>{formatDateTime(ticket.createdAt)}</span>
+                        </span>
+                      </div>
+
+                      <p className="text-sm text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-dark-bg/70 rounded-2xl p-3.5 line-clamp-3 break-words [overflow-wrap:anywhere]">
+                        {ticket.message}
+                      </p>
+
+                      {ticket.adminReply && (
+                        <div className="flex items-start gap-2 text-xs text-emerald-700 dark:text-emerald-400 bg-emerald-50/70 dark:bg-emerald-950/25 border border-emerald-200/70 dark:border-emerald-900/40 rounded-2xl p-3 min-w-0">
+                          <FiCheckCircle className="shrink-0 mt-0.5" />
+                          <div className="min-w-0 flex-1 break-words [overflow-wrap:anywhere]">
+                            <span className="font-bold">Đã phản hồi: </span>
+                            <span>{ticket.adminReply}</span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   <div className="shrink-0 flex sm:flex-col items-stretch sm:items-end justify-end gap-2">
@@ -354,6 +509,15 @@ const ContactManage = () => {
                     >
                       Xử lý &amp; Phản hồi
                     </Button>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      icon={<FiTrash2 />}
+                      onClick={() => handleOpenDeleteSingle(ticket)}
+                      title="Xóa yêu cầu"
+                    >
+                      Xóa
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -362,12 +526,17 @@ const ContactManage = () => {
         </div>
       )}
 
-      <AppPagination
-        page={page}
-        totalPages={totalPages}
-        onPageChange={(nextPage) => setPage(nextPage)}
-        loading={loading}
-      />
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500 dark:text-dark-text-secondary px-2">
+        <span>
+          Hiển thị <strong>{tickets.length}</strong> / <strong>{totalItems}</strong> yêu cầu liên hệ (Trang {page} / {totalPages})
+        </span>
+        <AppPagination
+          page={page}
+          totalPages={totalPages}
+          onPageChange={(nextPage) => setPage(nextPage)}
+          loading={loading}
+        />
+      </div>
 
       {/* Detail & Reply Modal */}
       <Modal
@@ -471,6 +640,36 @@ const ContactManage = () => {
           </div>
         )}
       </Modal>
+
+      {/* Confirm Delete Modal */}
+      <ConfirmModal
+        isOpen={deleteModalState.isOpen}
+        onClose={() =>
+          !deleting &&
+          setDeleteModalState({
+            isOpen: false,
+            type: "single",
+            targetId: null,
+            targetCode: "",
+          })
+        }
+        onConfirm={handleConfirmDelete}
+        title={
+          deleteModalState.type === "single"
+            ? `Xóa yêu cầu #${deleteModalState.targetCode}?`
+            : `Xóa ${selectedIds.length} yêu cầu liên hệ?`
+        }
+        message={
+          deleteModalState.type === "single"
+            ? "Thao tác này sẽ xóa vĩnh viễn yêu cầu liên hệ này khỏi hệ thống. Không thể hoàn tác."
+            : `Thao tác này sẽ xóa vĩnh viễn ${selectedIds.length} yêu cầu liên hệ đã chọn khỏi hệ thống. Không thể hoàn tác.`
+        }
+        confirmText="Xóa vĩnh viễn"
+        cancelText="Hủy bỏ"
+        variant="danger"
+        loading={deleting}
+        loadingMessage="Đang xóa..."
+      />
     </div>
   );
 };

@@ -1,5 +1,5 @@
 import React from "react";
-import { CheckCircle2, Ban, Clock, Edit2, Trash2 } from "lucide-react";
+import { CheckCircle2, Ban, Clock, Edit2, Trash2, Bell } from "lucide-react";
 
 const UserActionButtons = ({
   item,
@@ -36,6 +36,22 @@ const UserActionButtons = ({
           <span className="hidden sm:inline">Khóa</span>
         </button>
       )}
+
+      <button
+        type="button"
+        title="Gửi thông báo riêng"
+        aria-label={`Gửi thông báo riêng cho ${item.username}`}
+        onClick={() => {
+          window.dispatchEvent(
+            new CustomEvent("tientech:open_send_notification", {
+              detail: { targetUser: item },
+            }),
+          );
+        }}
+        className="size-8 text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/40 rounded-md hover:bg-amber-100 dark:hover:bg-amber-900/40 transition-all cursor-pointer flex items-center justify-center active:scale-95 shadow-xs"
+      >
+        <Bell className="size-3.5" />
+      </button>
 
       <button
         type="button"

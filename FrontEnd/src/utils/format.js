@@ -23,3 +23,5 @@ export const formatDate = (date) => {
     minute: "2-digit",
   });
 };
+
+export const formatDateTime = formatDate;

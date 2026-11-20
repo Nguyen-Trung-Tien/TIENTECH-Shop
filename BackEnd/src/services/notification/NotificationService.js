@@ -237,6 +237,13 @@ const sendBroadcastNotification = async (
         null,
         io
       );
+      if (result?.errCode === 0) {
+        return {
+          errCode: 0,
+          message: "Đã gửi thông báo đến người dùng thành công!",
+          data: result.data,
+        };
+      }
       return result;
     }
 

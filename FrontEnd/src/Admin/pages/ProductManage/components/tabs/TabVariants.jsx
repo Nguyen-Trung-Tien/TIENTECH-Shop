@@ -13,12 +13,7 @@ const TabVariants = ({
   attributes = [],
 }) => {
   return (
-    <Motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -10 }}
-      className="space-y-6"
-    >
+    <div className="space-y-6 animate-in fade-in duration-150">
       {errors?.variants && (
         <div className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/40 flex items-center gap-3 text-rose-600 dark:text-rose-400 text-xs font-bold shadow-sm">
           <FiAlertCircle className="text-xl shrink-0" />
@@ -58,7 +53,7 @@ const TabVariants = ({
           attributes={attributes}
         />
       )}
-    </Motion.div>
+    </div>
   );
 };
 

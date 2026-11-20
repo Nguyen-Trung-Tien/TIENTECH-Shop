@@ -69,6 +69,13 @@ module.exports = (sequelize, DataTypes) => {
           onDelete: "CASCADE",
         });
       }
+      if (models.ContactTicket) {
+        User.hasMany(models.ContactTicket, {
+          foreignKey: "userId",
+          as: "contactTickets",
+          onDelete: "SET NULL",
+        });
+      }
     }
   }
 

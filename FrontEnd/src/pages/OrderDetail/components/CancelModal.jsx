@@ -56,12 +56,7 @@ const CancelModal = ({
         </div>
 
         {selectedCancelReason === "Lý do khác" && (
-          <Motion.div
-            layout
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="space-y-2"
-          >
+          <div className="space-y-2 animate-in fade-in duration-150">
             <label
               className="text-[10px] font-black text-slate-400 dark:text-dark-text-secondary uppercase tracking-widest mb-1.5 block"
               htmlFor="cancelReason"
@@ -76,7 +71,7 @@ const CancelModal = ({
               value={cancelReason}
               onChange={(e) => onChangeCustomReason(e.target.value)}
             />
-          </Motion.div>
+          </div>
         )}
       </div>
     </ConfirmModal>

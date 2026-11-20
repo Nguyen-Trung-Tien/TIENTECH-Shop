@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
+import { Link } from "react-router-dom";
 import {
   FiMail,
   FiPhone,
@@ -9,6 +11,7 @@ import {
   FiMessageSquare,
   FiShield,
   FiHeadphones,
+  FiUserCheck,
 } from "react-icons/fi";
 import { showErrorToast, showSuccessToast } from "../../utils/toastHelper";
 import { submitContactApi } from "../../api/contactApi";
@@ -23,6 +26,7 @@ const ContactPage = () => {
       "Gửi yêu cầu tư vấn sản phẩm, bảo hành hoặc hỗ trợ đơn hàng tới đội ngũ chăm sóc khách hàng TIENTECH Shop.",
     canonicalPath: "/contact",
   });
+  const currentUser = useSelector((state) => state.user.user);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -33,10 +37,22 @@ const ContactPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
+  useEffect(() => {
+    if (currentUser) {
+      setFormData((prev) => ({
+        ...prev,
+        name: prev.name || currentUser.username || currentUser.fullName || "",
+        email: prev.email || currentUser.email || "",
+        phone: prev.phone || currentUser.phone || "",
+      }));
+    }
+  }, [currentUser]);
+
   const handleChange = (e) => {
+    const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [e.target.name]: e.target.value,
+      [name]: value,
     }));
   };
 
@@ -55,6 +71,7 @@ const ContactPage = () => {
         phone: formData.phone?.trim() || "",
         subject: formData.subject,
         message: formData.message.trim(),
+        userId: currentUser?.id || undefined,
       });
       if (res?.errCode === 0) {
         setSubmitted(true);
@@ -217,6 +234,23 @@ const ContactPage = () => {
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-5">
+                {currentUser && (
+                  <div className="p-4 rounded-2xl bg-blue-50/80 dark:bg-blue-950/40 border border-blue-200/60 dark:border-blue-900/40 flex items-start sm:items-center justify-between gap-3 text-xs text-blue-900 dark:text-blue-100">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <FiUserCheck className="size-4 shrink-0 text-blue-600 dark:text-blue-400" />
+                      <span className="font-medium truncate">
+                        Gửi với tư cách Thành viên: <strong>{currentUser.username || currentUser.email}</strong>
+                      </span>
+                    </div>
+                    <Link
+                      to="/profile?tab=tickets"
+                      className="shrink-0 font-bold text-blue-600 dark:text-blue-400 hover:underline"
+                    >
+                      Lịch sử yêu cầu &rarr;
+                    </Link>
+                  </div>
+                )}
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <Input
                     id="contact-name"

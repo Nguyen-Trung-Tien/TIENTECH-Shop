@@ -29,6 +29,7 @@ const OrderDetail = lazy(() => import("../pages/OrderDetail/OrderDetail"));
 const AboutPage = lazy(() => import("../pages/AboutPage/AboutPage"));
 const WishlistPage = lazy(() => import("../pages/WishlistPage/WishlistPage"));
 const ContactPage = lazy(() => import("../pages/ContactPage/ContactPage"));
+const SupportTicketsPage = lazy(() => import("../pages/SupportTickets/SupportTicketsPage"));
 const SupportHub = lazy(() => import("../pages/SupportPage/SupportHub"));
 const FAQPage = lazy(() => import("../pages/SupportPage/FAQPage"));
 const WarrantyPage = lazy(() => import("../pages/SupportPage/WarrantyPage"));
@@ -126,6 +127,16 @@ const UserRoutes = () => {
         <Route
           path="order-history"
           element={<Navigate to="/orders" replace />}
+        />
+        <Route
+          path="support-tickets"
+          element={
+            <LayoutComponent isShowHeader={true} isShowFooter={true}>
+              <Suspense fallback={<BrandLoader minHeight="min-h-[60vh]" message="Đang tải danh sách hỗ trợ..." />}>
+                <SupportTicketsPage />
+              </Suspense>
+            </LayoutComponent>
+          }
         />
         <Route
           path="orders"

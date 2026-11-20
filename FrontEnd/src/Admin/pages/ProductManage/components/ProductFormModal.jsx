@@ -15,33 +15,32 @@ const ProductFormModal = ({
   brands,
   attributes,
 }) => {
-  if (!showModal) return null;
-
   const {
-    formData,
+    formData = {},
     handleChange,
     imagePreview,
     handleImageChange,
     galleryPreviews,
     handleGalleryChange,
     handleDeleteGalleryImage,
-    errors,
-    saving,
-    isGeneratingDesc,
+    errors = {},
+    saving = false,
+    isGeneratingDesc = false,
     handleGenerateDesc,
-    modalTab,
+    modalTab = "basic",
     setModalTab,
     setFormData,
-    variants,
+    variants = [],
     fetchVariants,
     handleSubmit,
-  } = formHook;
+  } = formHook || {};
 
-  const isBasicValid = Boolean(formData.name?.trim() && formData.price);
+  const isBasicValid = Boolean(formData?.name?.trim() && formData?.price);
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-[1000] flex items-end sm:items-center justify-center p-0 sm:p-4 md:p-6">
+      {showModal && (
+        <div key="product-form-modal-overlay" className="fixed inset-0 z-[1000] flex items-end sm:items-center justify-center p-0 sm:p-4 md:p-6">
         {/* Backdrop */}
         <Motion.div
           initial={{ opacity: 0 }}
@@ -156,10 +155,9 @@ const ProductFormModal = ({
           {/* Scrollable Tab Content Container */}
           <div className="flex-1 overflow-y-auto p-6 sm:p-10 custom-scrollbar bg-slate-50/50 dark:bg-dark-bg/20">
             <form id="product-form" onSubmit={handleSubmit} className="max-w-4xl mx-auto">
-              <AnimatePresence mode="wait">
+              <div className="tab-viewport">
                 {modalTab === "basic" && (
                   <TabBasicInfo
-                    key="basic"
                     formData={formData}
                     handleChange={handleChange}
                     imagePreview={imagePreview}
@@ -173,7 +171,6 @@ const ProductFormModal = ({
 
                 {modalTab === "attributes" && (
                   <TabSpecifications
-                    key="attributes"
                     formData={formData}
                     handleChange={handleChange}
                     categories={categories}
@@ -186,7 +183,6 @@ const ProductFormModal = ({
 
                 {modalTab === "variants" && (
                   <TabVariants
-                    key="variants"
                     formData={formData}
                     setFormData={setFormData}
                     editProduct={editProduct}
@@ -199,13 +195,12 @@ const ProductFormModal = ({
 
                 {modalTab === "flashsale" && (
                   <TabFlashSale
-                    key="flashsale"
                     formData={formData}
                     handleChange={handleChange}
                     errors={errors}
                   />
                 )}
-              </AnimatePresence>
+              </div>
             </form>
           </div>
 
@@ -243,6 +238,7 @@ const ProductFormModal = ({
           </div>
         </Motion.div>
       </div>
+      )}
     </AnimatePresence>
   );
 };

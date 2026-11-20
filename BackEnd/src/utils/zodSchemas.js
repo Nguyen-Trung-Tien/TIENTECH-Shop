@@ -415,6 +415,26 @@ const updateContactTicketSchema = z.object({
   }),
 });
 
+const bulkDeleteTicketsSchema = z.object({
+  body: z.object({
+    ids: z
+      .array(z.coerce.number().int().positive())
+      .min(1, "Vui lòng chọn ít nhất 1 yêu cầu để xóa")
+      .max(100, "Tối đa 100 yêu cầu mỗi lần xóa"),
+  }),
+});
+
+const updateUserTicketSchema = z.object({
+  params: z.object({
+    id: z.coerce.number().int().positive("ID yêu cầu không hợp lệ"),
+  }),
+  body: z.object({
+    subject: z.string().trim().min(3, "Chủ đề tối thiểu 3 ký tự").max(120).optional(),
+    message: z.string().trim().min(5, "Nội dung cần hỗ trợ tối thiểu 5 ký tự").max(3000).optional(),
+    phone: z.string().trim().max(30).optional().nullable(),
+  }),
+});
+
 const emptyActionSchema = z.object({
   body: z.any().optional(),
 });
@@ -740,6 +760,8 @@ module.exports = {
   paypalCaptureSchema,
   contactSchema,
   updateContactTicketSchema,
+  bulkDeleteTicketsSchema,
+  updateUserTicketSchema,
   chatAskSchema,
   chatVisualSearchSchema,
   chatPredictSchema,

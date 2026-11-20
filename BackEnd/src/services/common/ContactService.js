@@ -26,6 +26,7 @@ const escapeHtml = (str) =>
 
 const createTicket = async (payload, io = null) => {
   const {
+    userId = null,
     name,
     email,
     phone = "",
@@ -40,6 +41,7 @@ const createTicket = async (payload, io = null) => {
   try {
     ticket = await db.ContactTicket.create(
       {
+        userId: userId || null,
         ticketCode,
         name,
         email,
@@ -123,7 +125,9 @@ const createTicket = async (payload, io = null) => {
         );
       }
     } catch (emailErr) {
-      console.warn("[ContactService] Admin email error:", emailErr?.message);
+      if (!String(emailErr?.message || "").includes("connection manager was closed")) {
+        console.warn("[ContactService] Admin email error:", emailErr?.message);
+      }
     }
   });
 
@@ -221,10 +225,11 @@ const getAllTickets = async ({ page = 1, limit = 15, status, search } = {}) => {
   }
 };
 
-const updateTicket = async (id, payload = {}, adminUser = null) => {
+const updateTicket = async (id, payload = {}, adminUser = null, io = null) => {
   const t = await db.sequelize.transaction();
   let ticket;
   const updates = {};
+  let targetUserId = null;
 
   try {
     ticket = await db.ContactTicket.findByPk(id, {
@@ -255,6 +260,24 @@ const updateTicket = async (id, payload = {}, adminUser = null) => {
       }
     }
 
+    // Auto-link registered user by email if ticket was submitted anonymously
+    targetUserId = ticket.userId;
+    if (!targetUserId && ticket.email) {
+      try {
+        const matchedUser = await db.User.findOne({
+          where: { email: ticket.email },
+          attributes: ["id"],
+          transaction: t,
+        });
+        if (matchedUser) {
+          targetUserId = matchedUser.id;
+          updates.userId = matchedUser.id;
+        }
+      } catch (_userMatchErr) {
+        // Safe fallback
+      }
+    }
+
     await ticket.update(updates, { transaction: t });
     await t.commit();
   } catch (err) {
@@ -264,6 +287,37 @@ const updateTicket = async (id, payload = {}, adminUser = null) => {
       errCode: -1,
       errMessage: "Không thể cập nhật yêu cầu liên hệ.",
     };
+  }
+
+  // Dispatch real-time in-app notification to the member if admin answered
+  if (updates.adminReply && targetUserId) {
+    try {
+      const replySnippet =
+        updates.adminReply.length > 120
+          ? `${updates.adminReply.slice(0, 120)}...`
+          : updates.adminReply;
+      await NotificationService.createNotification(
+        {
+          userId: targetUserId,
+          title: `Phản hồi yêu cầu hỗ trợ #${ticket.ticketCode}`,
+          message: `Quản trị viên đã phản hồi yêu cầu "${ticket.subject}": ${replySnippet}`,
+          type: "system",
+          link: `/profile?tab=tickets&ticketId=${ticket.id}`,
+          metadata: {
+            source: "contact_ticket_reply",
+            ticketId: ticket.id,
+            ticketCode: ticket.ticketCode,
+          },
+        },
+        null,
+        io,
+      );
+    } catch (notifErr) {
+      console.warn(
+        "[ContactService.updateTicket] Member notification warning:",
+        notifErr?.message,
+      );
+    }
   }
 
   let emailSent = false;
@@ -311,9 +365,207 @@ const updateTicket = async (id, payload = {}, adminUser = null) => {
   };
 };
 
+const getUserTickets = async (userId, { page = 1, limit = 10 } = {}) => {
+  try {
+    if (!userId) {
+      return {
+        errCode: 400,
+        errMessage: "Thiếu thông tin người dùng.",
+      };
+    }
+
+    const { offset, limit: parsedLimit } = getPagination(page, limit);
+    const { count, rows } = await db.ContactTicket.findAndCountAll({
+      where: { userId },
+      include: [
+        {
+          model: db.User,
+          as: "replier",
+          attributes: ["id", "username", "email"],
+          required: false,
+        },
+      ],
+      order: [["createdAt", "DESC"]],
+      offset,
+      limit: parsedLimit,
+      distinct: true,
+    });
+
+    const pagingData = getPagingData({ count, rows }, page, parsedLimit);
+    const { items, rows: _ignoredRows, ...paginationMetadata } = pagingData;
+
+    return {
+      errCode: 0,
+      errMessage: "OK",
+      data: items,
+      pagination: {
+        ...paginationMetadata,
+        limit: parsedLimit,
+      },
+    };
+  } catch (error) {
+    console.error("[ContactService.getUserTickets] Error:", error);
+    return {
+      errCode: -1,
+      errMessage: "Lỗi hệ thống khi tải danh sách yêu cầu của bạn.",
+    };
+  }
+};
+
+const deleteTicket = async (id) => {
+  const t = await db.sequelize.transaction();
+  try {
+    const ticket = await db.ContactTicket.findByPk(id, { transaction: t });
+    if (!ticket) {
+      await t.rollback();
+      return {
+        errCode: 404,
+        errMessage: "Không tìm thấy yêu cầu liên hệ cần xóa.",
+      };
+    }
+
+    await ticket.destroy({ transaction: t });
+    await t.commit();
+
+    return {
+      errCode: 0,
+      errMessage: "Đã xóa yêu cầu liên hệ thành công!",
+    };
+  } catch (err) {
+    await t.rollback();
+    console.error("[ContactService.deleteTicket] Transaction error:", err);
+    return {
+      errCode: -1,
+      errMessage: "Không thể xóa yêu cầu liên hệ lúc này.",
+    };
+  }
+};
+
+const bulkDeleteTickets = async (ids = []) => {
+  if (!Array.isArray(ids) || ids.length === 0) {
+    return {
+      errCode: 400,
+      errMessage: "Vui lòng chọn ít nhất một yêu cầu để xóa.",
+    };
+  }
+
+  const t = await db.sequelize.transaction();
+  try {
+    const deletedCount = await db.ContactTicket.destroy({
+      where: {
+        id: {
+          [Op.in]: ids,
+        },
+      },
+      transaction: t,
+    });
+    await t.commit();
+
+    return {
+      errCode: 0,
+      errMessage: `Đã xóa thành công ${deletedCount} yêu cầu liên hệ!`,
+      deletedCount,
+      data: { deletedCount },
+    };
+  } catch (err) {
+    await t.rollback();
+    console.error("[ContactService.bulkDeleteTickets] Transaction error:", err);
+    return {
+      errCode: -1,
+      errMessage: "Không thể xóa các yêu cầu liên hệ lúc này.",
+    };
+  }
+};
+
+const updateUserTicket = async (userId, id, { subject, message, phone }) => {
+  try {
+    const ticket = await db.ContactTicket.findOne({
+      where: { id, userId },
+    });
+
+    if (!ticket) {
+      return {
+        errCode: 404,
+        errMessage: "Không tìm thấy yêu cầu hỗ trợ hoặc bạn không có quyền chỉnh sửa.",
+      };
+    }
+
+    if (ticket.status !== "open") {
+      return {
+        errCode: 400,
+        errMessage: "Yêu cầu đã được tiếp nhận hoặc phản hồi, không thể chỉnh sửa.",
+      };
+    }
+
+    if (subject !== undefined) ticket.subject = subject;
+    if (message !== undefined) ticket.message = message;
+    if (phone !== undefined) ticket.phone = phone;
+
+    await ticket.save();
+
+    return {
+      errCode: 0,
+      errMessage: "Cập nhật yêu cầu hỗ trợ thành công!",
+      data: ticket,
+    };
+  } catch (error) {
+    console.error("[ContactService.updateUserTicket] Error:", error);
+    return {
+      errCode: -1,
+      errMessage: "Lỗi hệ thống khi cập nhật yêu cầu hỗ trợ.",
+    };
+  }
+};
+
+const deleteUserTicket = async (userId, id) => {
+  const t = await db.sequelize.transaction();
+  try {
+    const ticket = await db.ContactTicket.findOne({
+      where: { id, userId },
+      transaction: t,
+    });
+
+    if (!ticket) {
+      await t.rollback();
+      return {
+        errCode: 404,
+        errMessage: "Không tìm thấy yêu cầu hỗ trợ hoặc bạn không có quyền xóa.",
+      };
+    }
+
+    if (ticket.status !== "open") {
+      await t.rollback();
+      return {
+        errCode: 400,
+        errMessage: "Chỉ có thể hủy hoặc xóa yêu cầu đang ở trạng thái Chờ xử lý.",
+      };
+    }
+
+    await ticket.destroy({ transaction: t });
+    await t.commit();
+
+    return {
+      errCode: 0,
+      errMessage: "Đã hủy yêu cầu hỗ trợ thành công!",
+    };
+  } catch (err) {
+    await t.rollback();
+    console.error("[ContactService.deleteUserTicket] Transaction error:", err);
+    return {
+      errCode: -1,
+      errMessage: "Không thể hủy yêu cầu hỗ trợ lúc này.",
+    };
+  }
+};
+
 module.exports = {
   SUBJECT_LABELS,
   createTicket,
   getAllTickets,
   updateTicket,
+  getUserTickets,
+  updateUserTicket,
+  deleteUserTicket,
+  deleteTicket,
+  bulkDeleteTickets,
 };

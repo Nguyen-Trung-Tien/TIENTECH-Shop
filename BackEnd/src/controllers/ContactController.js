@@ -4,10 +4,23 @@ const { handleResponse, handleError } = require("../utils/controllerHelper");
 const handleSubmitContact = async (req, res) => {
   try {
     const io = typeof req.app?.get === "function" ? req.app.get("io") : null;
-    const result = await ContactService.createTicket(req.body, io);
+    const payload = {
+      ...req.body,
+      userId: req.user?.id || req.body?.userId || null,
+    };
+    const result = await ContactService.createTicket(payload, io);
     return handleResponse(res, result);
   } catch (error) {
     return handleError(res, error, "handleSubmitContact");
+  }
+};
+
+const handleGetMyTickets = async (req, res) => {
+  try {
+    const result = await ContactService.getUserTickets(req.user.id, req.query);
+    return handleResponse(res, result);
+  } catch (error) {
+    return handleError(res, error, "handleGetMyTickets");
   }
 };
 
@@ -22,10 +35,12 @@ const handleGetAllTickets = async (req, res) => {
 
 const handleUpdateTicket = async (req, res) => {
   try {
+    const io = req.app.get("io");
     const result = await ContactService.updateTicket(
       req.params.id,
       req.body,
       req.user,
+      io,
     );
     return handleResponse(res, result);
   } catch (error) {
@@ -33,8 +48,53 @@ const handleUpdateTicket = async (req, res) => {
   }
 };
 
+const handleDeleteTicket = async (req, res) => {
+  try {
+    const result = await ContactService.deleteTicket(req.params.id);
+    return handleResponse(res, result);
+  } catch (error) {
+    return handleError(res, error, "handleDeleteTicket");
+  }
+};
+
+const handleBulkDeleteTickets = async (req, res) => {
+  try {
+    const result = await ContactService.bulkDeleteTickets(req.body.ids);
+    return handleResponse(res, result);
+  } catch (error) {
+    return handleError(res, error, "handleBulkDeleteTickets");
+  }
+};
+
+const handleUpdateUserTicket = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const ticketId = req.params.id;
+    const result = await ContactService.updateUserTicket(userId, ticketId, req.body);
+    return handleResponse(res, result);
+  } catch (error) {
+    return handleError(res, error, "handleUpdateUserTicket");
+  }
+};
+
+const handleDeleteUserTicket = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const ticketId = req.params.id;
+    const result = await ContactService.deleteUserTicket(userId, ticketId);
+    return handleResponse(res, result);
+  } catch (error) {
+    return handleError(res, error, "handleDeleteUserTicket");
+  }
+};
+
 module.exports = {
   handleSubmitContact,
+  handleGetMyTickets,
   handleGetAllTickets,
   handleUpdateTicket,
+  handleDeleteTicket,
+  handleBulkDeleteTickets,
+  handleUpdateUserTicket,
+  handleDeleteUserTicket,
 };

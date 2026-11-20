@@ -169,7 +169,11 @@ describe("Phase 4: Checkout Loyalty, VisualSearchModal & Admin ERP Fixes", () =>
           variantId: null,
           quantity: 1,
           finalPrice: 1000000, // 10% max = 100,000đ = 1,000 points
-          product: { id: 33, name: "Chuột Logitech MX Master 3S", image: "/mx.png" },
+          product: {
+            id: 33,
+            name: "Chuột Logitech MX Master 3S",
+            image: "/mx.png",
+          },
         },
       ]),
     );
@@ -196,7 +200,9 @@ describe("Phase 4: Checkout Loyalty, VisualSearchModal & Admin ERP Fixes", () =>
       target: { value: "123 Nguyễn Huệ, Q.1, TP.HCM" },
     });
 
-    const placeOrderBtn = screen.getByRole("button", { name: /ĐẶT HÀNG NGAY/i });
+    const placeOrderBtn = screen.getByRole("button", {
+      name: /ĐẶT HÀNG NGAY/i,
+    });
     fireEvent.click(placeOrderBtn);
 
     await waitFor(() => {
@@ -279,10 +285,14 @@ describe("Phase 4: Checkout Loyalty, VisualSearchModal & Admin ERP Fixes", () =>
 
       const dialog = screen.getByRole("dialog");
       expect(dialog).toHaveAttribute("aria-modal", "true");
-      expect(screen.getByText(/Tìm kiếm bằng hình ảnh AI/i)).toBeInTheDocument();
+      expect(
+        screen.getByText(/Tìm kiếm bằng hình ảnh AI/i),
+      ).toBeInTheDocument();
 
       const fileInput = dialog.querySelector('input[type="file"]');
-      const fakeFile = new File(["fake"], "keyboard.png", { type: "image/png" });
+      const fakeFile = new File(["fake"], "keyboard.png", {
+        type: "image/png",
+      });
       fireEvent.change(fileInput, { target: { files: [fakeFile] } });
 
       await waitFor(() => {
@@ -297,10 +307,25 @@ describe("Phase 4: Checkout Loyalty, VisualSearchModal & Admin ERP Fixes", () =>
   });
 
   it("ContactPage submits form to backend API without fake setTimeout", async () => {
+    const store = configureStore({
+      reducer: {
+        user: userReducer,
+      },
+      preloadedState: {
+        user: {
+          user: null,
+          isAuthenticated: false,
+          isInitializing: false,
+        },
+      },
+    });
+
     render(
-      <MemoryRouter>
-        <ContactPage />
-      </MemoryRouter>,
+      <Provider store={store}>
+        <MemoryRouter>
+          <ContactPage />
+        </MemoryRouter>
+      </Provider>,
     );
 
     fireEvent.change(screen.getByPlaceholderText(/Nguyễn Văn A/i), {

@@ -42,12 +42,8 @@ const Input = ({ className, containerClassName, type, error, label, required, ic
     </div>
   );
 
-  if (!label && !error) {
-    return inputEl;
-  }
-
   return (
-    <div className={cn("w-full space-y-1.5 min-w-0", containerClassName)}>
+    <div className={cn("w-full min-w-0", (label || error) && "space-y-1.5", containerClassName)}>
       {label && (
         <label className="block text-xs font-bold text-surface-700 dark:text-dark-text-secondary">
           {label}

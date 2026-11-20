@@ -124,7 +124,7 @@ const CheckoutForm = ({ formData, setFormData, user }) => {
         setAddresses(res.data);
         // Auto-select default address if not set
         const defaultAddr = res.data.find((a) => a.isDefault);
-        if (defaultAddr && !formData.shippingAddress) {
+        if (defaultAddr) {
           const fullAddress = [
             defaultAddr.detailAddress,
             defaultAddr.ward,
@@ -132,13 +132,16 @@ const CheckoutForm = ({ formData, setFormData, user }) => {
           ]
             .filter((part) => part && part !== "undefined")
             .join(", ");
-          setFormData((prev) => ({
-            ...prev,
-            shippingAddress: fullAddress,
-            phone: defaultAddr.phone || prev.phone || user?.phone || "",
-            fullName:
-              defaultAddr.fullName || prev.fullName || user?.username || "",
-          }));
+          setFormData((prev) => {
+            if (prev.shippingAddress) return prev;
+            return {
+              ...prev,
+              shippingAddress: fullAddress,
+              phone: defaultAddr.phone || prev.phone || user?.phone || "",
+              fullName:
+                defaultAddr.fullName || prev.fullName || user?.username || "",
+            };
+          });
         } else if (res.data.length === 0) {
           setShowManual(true);
         }
@@ -146,7 +149,7 @@ const CheckoutForm = ({ formData, setFormData, user }) => {
     } catch (error) {
       console.error("Error fetching addresses:", error);
     }
-  }, [formData.shippingAddress, user, setFormData]);
+  }, [user, setFormData]);
 
   useEffect(() => {
     if (user) fetchAddresses();

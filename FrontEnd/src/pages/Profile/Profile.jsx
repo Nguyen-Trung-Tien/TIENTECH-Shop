@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
 import { useSelector, useDispatch } from "react-redux";
+import { useSearchParams } from "react-router-dom";
 import { updateUser } from "../../redux/userSlice";
 import { updateUserApi } from "../../api/userApi";
 import { showErrorToast, showSuccessToast } from "../../utils/toastHelper";
 import ChangePasswordModal from "./ChangePasswordModal";
-import { User, MapPin, Shield } from "lucide-react";
+import { User, MapPin, Shield, MessageSquare } from "lucide-react";
 import { m as Motion, AnimatePresence } from "framer-motion";
 import { Loader, PageShell } from "../../components/UI";
 import AddressManager from "./AddressManager";
@@ -12,6 +13,7 @@ import ProfileHeroCard from "./components/ProfileHeroCard";
 import ProfileInfoTab from "./components/ProfileInfoTab";
 import ProfileSecurityTab from "./components/ProfileSecurityTab";
 import ProfileAvatarModal from "./components/ProfileAvatarModal";
+import ProfileTicketsTab from "./components/ProfileTicketsTab";
 import { useDocumentMeta } from "../../features/shared/hooks/useDocumentMeta";
 
 const Profile = () => {
@@ -23,6 +25,8 @@ const Profile = () => {
 
   const dispatch = useDispatch();
   const user = useSelector((state) => state.user.user);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabFromUrl = searchParams.get("tab");
 
   const [formData, setFormData] = useState({
     username: "",
@@ -38,10 +42,29 @@ const Profile = () => {
   const [loading, setLoading] = useState(false);
   const [showAvatarModal, setShowAvatarModal] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
-  const [activeTab, setActiveTab] = useState("info");
+  const [activeTab, setActiveTab] = useState(
+    ["info", "address", "security", "tickets"].includes(tabFromUrl)
+      ? tabFromUrl
+      : "info"
+  );
   const [selectedFile, setSelectedFile] = useState(null);
   const [preview, setPreview] = useState(null);
   const [avatarLoading, setAvatarLoading] = useState(false);
+
+  useEffect(() => {
+    if (tabFromUrl && ["info", "address", "security", "tickets"].includes(tabFromUrl)) {
+      setActiveTab(tabFromUrl);
+    }
+  }, [tabFromUrl]);
+
+  const handleTabChange = useCallback((tabId) => {
+    setActiveTab(tabId);
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.set("tab", tabId);
+      return next;
+    }, { replace: true });
+  }, [setSearchParams]);
 
   useEffect(() => {
     if (user) {
@@ -192,6 +215,7 @@ const Profile = () => {
           { id: "info", label: "Thông tin cá nhân", Icon: User },
           { id: "address", label: "Sổ địa chỉ nhận hàng", Icon: MapPin },
           { id: "security", label: "Bảo mật & Cài đặt", Icon: Shield },
+          { id: "tickets", label: "Yêu cầu hỗ trợ", Icon: MessageSquare },
         ].map((tab) => {
           const Icon = tab.Icon;
           const isActive = activeTab === tab.id;
@@ -199,7 +223,7 @@ const Profile = () => {
             <button
               key={tab.id}
               type="button"
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => handleTabChange(tab.id)}
               className={`relative flex-1 min-w-[140px] sm:min-w-[180px] py-3 px-4 rounded-xl font-black text-xs uppercase tracking-wider transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer z-10 ${
                 isActive
                   ? "text-white"
@@ -244,13 +268,15 @@ const Profile = () => {
           >
             <AddressManager />
           </Motion.div>
-        ) : (
+        ) : activeTab === "security" ? (
           <ProfileSecurityTab
             receiveEmail={receiveEmail}
             emailToggleLoading={emailToggleLoading}
             onToggleEmailNotification={handleToggleEmailNotification}
             onOpenPasswordModal={() => setShowPasswordModal(true)}
           />
+        ) : (
+          <ProfileTicketsTab key="tickets" />
         )}
       </AnimatePresence>
 

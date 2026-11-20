@@ -137,4 +137,56 @@ describe("NotificationBell Component Tests", () => {
 
     expect(mockShowInfoToast).toHaveBeenCalledTimes(1);
   });
+
+  it("opens broadcast modal with user preselected on tientech:open_send_notification event", async () => {
+    const notificationApi = await import("../api/notificationApi");
+    await act(async () => {
+      render(
+        <Provider store={store}>
+          <MemoryRouter>
+            <NotificationBell />
+          </MemoryRouter>
+        </Provider>
+      );
+    });
+
+    const targetUser = { id: 88, username: "Khách VIP", email: "vip@example.com" };
+    act(() => {
+      window.dispatchEvent(
+        new CustomEvent("tientech:open_send_notification", {
+          detail: { targetUser },
+        })
+      );
+    });
+
+    // Modal xuất hiện với tiêu đề Gửi thông báo cá nhân
+    expect(screen.getByText("Gửi thông báo cá nhân")).toBeInTheDocument();
+    expect(screen.getByText("Khách VIP")).toBeInTheDocument();
+    expect(screen.getByText("vip@example.com")).toBeInTheDocument();
+
+    // Điền tiêu đề và nội dung
+    fireEvent.change(screen.getByPlaceholderText(/Ví dụ: 💬 Phản hồi yêu cầu/i), {
+      target: { value: "Ưu đãi riêng dành cho bạn" },
+    });
+    fireEvent.change(screen.getByPlaceholderText(/Nhập thông điệp gửi tới khách hàng/i), {
+      target: { value: "Cảm ơn bạn đã luôn ủng hộ TIENTECH!" },
+    });
+
+    // Nút submit có chữ Gửi Riêng Cho Khách VIP
+    const submitBtn = screen.getByRole("button", { name: /Gửi Riêng Cho Khách VIP/i });
+    expect(submitBtn).toBeInTheDocument();
+
+    await act(async () => {
+      fireEvent.click(submitBtn);
+    });
+
+    expect(notificationApi.sendBroadcastNotificationApi).toHaveBeenCalledWith(
+      expect.objectContaining({
+        target: "user",
+        targetUserId: 88,
+        title: "Ưu đãi riêng dành cho bạn",
+        message: "Cảm ơn bạn đã luôn ủng hộ TIENTECH!",
+      })
+    );
+  });
 });
