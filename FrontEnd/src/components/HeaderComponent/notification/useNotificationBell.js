@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { toast } from "react-toastify";
 import { useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   getNotificationsApi,
   markAsReadApi,
@@ -34,6 +34,7 @@ const INITIAL_BROADCAST_FORM = {
 
 export const useNotificationBell = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const user = useSelector((state) => state.user.user);
   const dropdownRef = useRef(null);
 
@@ -251,15 +252,33 @@ export const useNotificationBell = () => {
     };
   }, [user, activeFilter, fetchNotifications, triggerDebouncedFetch, shouldSuppressDuplicate]);
 
+  // Auto close dropdown on route change
   useEffect(() => {
+    setShowDropdown(false);
+  }, [location.pathname]);
+
+  // Click outside to close notification panel & Escape key
+  useEffect(() => {
+    if (!showDropdown) return;
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setShowDropdown(false);
       }
     };
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        setShowDropdown(false);
+      }
+    };
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+    document.addEventListener("touchstart", handleClickOutside);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [showDropdown]);
 
   const notifySync = useCallback(() => {
     window.dispatchEvent(

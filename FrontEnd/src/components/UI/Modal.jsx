@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { m as Motion, AnimatePresence } from "framer-motion";
 import { FiX, FiAlertTriangle, FiCheckCircle, FiInfo, FiTrash2, FiAlertCircle } from "react-icons/fi";
 import { Button } from "./Button";
@@ -81,7 +82,7 @@ const Modal = ({
     full: "max-w-[95vw]",
   };
 
-  return (
+  const modalContent = (
     <AnimatePresence>
       {isModalOpen && (
         <div
@@ -90,7 +91,7 @@ const Modal = ({
           aria-labelledby={title ? "modal-title" : undefined}
           aria-describedby={subtitle ? "modal-subtitle" : undefined}
           onClick={(e) => e.stopPropagation()}
-          className="fixed inset-0 z-[1000] flex items-end sm:items-center justify-center p-0 sm:p-4"
+          className="fixed inset-0 z-[1000] overflow-y-auto flex items-end sm:items-center justify-center p-0 sm:p-4"
         >
           {/* Overlay */}
           <Motion.div
@@ -103,7 +104,7 @@ const Modal = ({
                 onClose(e);
               }
             }}
-            className="absolute inset-0 bg-slate-950/60 backdrop-blur-md transition-opacity"
+            className="fixed inset-0 bg-slate-950/60 backdrop-blur-md transition-opacity"
             aria-hidden="true"
           />
 
@@ -116,7 +117,7 @@ const Modal = ({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 30, scale: 0.96 }}
             transition={{ type: "spring", stiffness: 380, damping: 30 }}
-            className={`relative w-full ${sizes[size]} max-h-[92vh] sm:max-h-[85vh] overscroll-contain bg-white/98 dark:bg-dark-surface/98 backdrop-blur-2xl rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col border border-slate-200/80 dark:border-dark-border transition-colors duration-300 focus:outline-none ${className}`}
+            className={`relative w-full ${sizes[size]} max-h-[92vh] sm:max-h-[85vh] overscroll-contain bg-white/98 dark:bg-dark-surface/98 backdrop-blur-2xl rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col border border-slate-200/80 dark:border-dark-border transition-colors duration-300 focus:outline-none my-auto ${className}`}
           >
             {/* Mobile Drag Indicator Pill */}
             <div className="flex justify-center pt-2.5 pb-1 sm:hidden bg-slate-50/80 dark:bg-dark-bg/60" aria-hidden="true">
@@ -183,6 +184,12 @@ const Modal = ({
       )}
     </AnimatePresence>
   );
+
+  if (typeof document === "undefined") {
+    return null;
+  }
+
+  return createPortal(modalContent, document.body);
 };
 
 export const ConfirmModal = ({

@@ -1,6 +1,6 @@
 import React from "react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor, act } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { configureStore } from "@reduxjs/toolkit";
 import { MemoryRouter } from "react-router-dom";
@@ -18,6 +18,22 @@ vi.mock("../utils/toastHelper", () => ({
   showSuccessToast: vi.fn(),
   showErrorToast: vi.fn(),
   showWarningToast: vi.fn(),
+}));
+
+const socketHandlers = {};
+const mockSocket = {
+  on: vi.fn((event, cb) => {
+    socketHandlers[event] = cb;
+  }),
+  off: vi.fn((event) => {
+    delete socketHandlers[event];
+  }),
+};
+
+vi.mock("../utils/socket", () => ({
+  initUserSocket: vi.fn(() => mockSocket),
+  getSocket: vi.fn(() => mockSocket),
+  disconnectSocket: vi.fn(),
 }));
 
 const createMockStore = (loggedIn = true) => {
@@ -270,6 +286,102 @@ describe("SupportTicketsPage Component", () => {
       expect(screen.getByText("Yêu cầu #TK401")).toBeInTheDocument();
       expect(screen.getAllByText("Hỏi về driver card mạng").length).toBeGreaterThanOrEqual(1);
       expect(screen.getAllByText(/Bạn tải bản driver v22.10 từ trang chủ Intel nhé/i).length).toBeGreaterThanOrEqual(1);
+    });
+  });
+
+  it("locks edit and delete features when ticket status is in_progress, displays lock badge and notice", async () => {
+    const store = createMockStore(true);
+    contactApi.getMyContactTicketsApi.mockResolvedValue({
+      errCode: 0,
+      data: [
+        {
+          id: 501,
+          ticketCode: "TK501",
+          subject: "Hỗ trợ lắp đặt máy bộ",
+          message: "Tôi cần nhân viên hỗ trợ cài lại Windows",
+          status: "in_progress",
+          adminReply: null,
+          createdAt: new Date().toISOString(),
+        },
+      ],
+      pagination: { totalPages: 1, total: 1 },
+    });
+
+    render(
+      <Provider store={store}>
+        <MemoryRouter>
+          <SupportTicketsPage />
+        </MemoryRouter>
+      </Provider>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText("#TK501")).toBeInTheDocument();
+      expect(screen.getByText("Đang xử lý (Đã khóa)")).toBeInTheDocument();
+      expect(screen.getByText(/Kỹ thuật viên đang xử lý • Đã khóa chỉnh sửa & hủy/i)).toBeInTheDocument();
+      expect(screen.getByText("Đã khóa sửa/hủy")).toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: /^Sửa$/i })).not.toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: /^Hủy$/i })).not.toBeInTheDocument();
+    });
+
+    // Open Detail Modal
+    fireEvent.click(screen.getByRole("button", { name: /Chi tiết/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText("Yêu cầu đang được kỹ thuật viên xử lý")).toBeInTheDocument();
+      expect(screen.getByText(/Đã khóa chỉnh sửa & hủy khi đang xử lý/i)).toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: "Hủy yêu cầu" })).not.toBeInTheDocument();
+    });
+  });
+
+  it("receives real-time support_ticket_updated socket event and updates ticket state to locked", async () => {
+    const store = createMockStore(true);
+    contactApi.getMyContactTicketsApi.mockResolvedValue({
+      errCode: 0,
+      data: [
+        {
+          id: 601,
+          ticketCode: "TK601",
+          subject: "Kiểm tra bàn phím cơ",
+          message: "Bàn phím bị liệt phím space",
+          status: "open",
+          adminReply: null,
+          createdAt: new Date().toISOString(),
+        },
+      ],
+      pagination: { totalPages: 1, total: 1 },
+    });
+
+    render(
+      <Provider store={store}>
+        <MemoryRouter>
+          <SupportTicketsPage />
+        </MemoryRouter>
+      </Provider>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText("#TK601")).toBeInTheDocument();
+      expect(screen.getAllByText("Chờ xử lý").length).toBeGreaterThanOrEqual(1);
+      expect(screen.getByRole("button", { name: /Sửa/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /Hủy/i })).toBeInTheDocument();
+    });
+
+    // Simulate Admin changing status to in_progress via socket
+    expect(socketHandlers.support_ticket_updated).toBeTypeOf("function");
+    act(() => {
+      socketHandlers.support_ticket_updated({
+        ticketId: 601,
+        ticketCode: "TK601",
+        status: "in_progress",
+      });
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText("Đang xử lý (Đã khóa)")).toBeInTheDocument();
+      expect(screen.getByText("Đã khóa sửa/hủy")).toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: /^Sửa$/i })).not.toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: /^Hủy$/i })).not.toBeInTheDocument();
     });
   });
 });

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   FiSearch,
   FiUser,
@@ -50,18 +50,45 @@ const HeaderAdmin = ({ toggleSidebar, isCollapsed, theme, toggleTheme }) => {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showCommandPalette, setShowCommandPalette] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
+  const profileMenuRef = useRef(null);
 
   const displayName =
     user?.username?.length > 15
       ? user.username.slice(0, 15) + "..."
       : user?.username || user?.email || "Admin";
 
-  // Global Keyboard shortcut listener (Ctrl+K / Cmd+K)
+  // Close profile menu on route change
+  useEffect(() => {
+    setShowProfileMenu(false);
+  }, [location.pathname]);
+
+  // Click outside listener for Admin profile menu
+  useEffect(() => {
+    if (!showProfileMenu) return;
+    const handleClickOutside = (event) => {
+      if (
+        profileMenuRef.current &&
+        !profileMenuRef.current.contains(event.target)
+      ) {
+        setShowProfileMenu(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+    };
+  }, [showProfileMenu]);
+
+  // Global Keyboard shortcut listener (Ctrl+K / Cmd+K & Escape)
   useEffect(() => {
     const handleKeyDown = (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
         setShowCommandPalette((prev) => !prev);
+      } else if (e.key === "Escape") {
+        setShowProfileMenu(false);
       }
     };
     window.addEventListener("keydown", handleKeyDown);
@@ -216,7 +243,7 @@ const HeaderAdmin = ({ toggleSidebar, isCollapsed, theme, toggleTheme }) => {
         <div className="h-6 w-[1px] bg-slate-200 dark:border-dark-border mx-1"></div>
 
         {/* Admin Profile Dropdown */}
-        <div className="relative">
+        <div className="relative" ref={profileMenuRef}>
           <button
             type="button"
             onClick={() => setShowProfileMenu(!showProfileMenu)}
@@ -247,39 +274,34 @@ const HeaderAdmin = ({ toggleSidebar, isCollapsed, theme, toggleTheme }) => {
           </button>
 
           {showProfileMenu && (
-            <>
-              <div
-                className="fixed inset-0 z-40"
-                onClick={() => setShowProfileMenu(false)}
-              ></div>
-              <div className="absolute right-0 top-full mt-2 w-56 rounded-2xl border border-slate-200 dark:border-dark-border bg-white dark:bg-dark-surface p-2 shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-150">
-                <div className="px-3 py-2 border-b border-slate-100 dark:border-dark-border mb-1">
-                  <p className="text-xs font-bold text-slate-900 dark:text-white truncate">
-                    {user?.username || "Admin"}
-                  </p>
-                  <p className="text-[11px] text-slate-400 dark:text-dark-text-secondary truncate mt-0.5">
-                    {user?.email}
-                  </p>
-                </div>
+            <div className="absolute right-0 top-full mt-2 w-56 rounded-2xl border border-slate-200 dark:border-dark-border bg-white dark:bg-dark-surface p-2 shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-150">
+              <div className="px-3 py-2 border-b border-slate-100 dark:border-dark-border mb-1">
+                <p className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                  {user?.username || "Admin"}
+                </p>
+                <p className="text-[11px] text-slate-400 dark:text-dark-text-secondary truncate mt-0.5">
+                  {user?.email}
+                </p>
+              </div>
 
-                <button
-                  onClick={() => {
-                    navigate("/profile");
-                    setShowProfileMenu(false);
-                  }}
-                  className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-medium text-slate-700 dark:text-dark-text-primary hover:bg-slate-50 dark:hover:bg-dark-bg hover:text-primary transition-colors cursor-pointer"
-                >
-                  <FiUser className="text-sm" />
-                  <span>Hồ sơ cá nhân</span>
-                </button>
+              <button
+                onClick={() => {
+                  navigate("/profile");
+                  setShowProfileMenu(false);
+                }}
+                className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-medium text-slate-700 dark:text-dark-text-primary hover:bg-slate-50 dark:hover:bg-dark-bg hover:text-primary transition-colors cursor-pointer"
+              >
+                <FiUser className="text-sm" />
+                <span>Hồ sơ cá nhân</span>
+              </button>
 
-                <div className="my-1 border-t border-slate-100 dark:border-dark-border"></div>
+              <div className="my-1 border-t border-slate-100 dark:border-dark-border"></div>
 
-                <button
-                  onClick={handleLogout}
-                  disabled={loggingOut}
-                  className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/20 transition-colors disabled:opacity-60 cursor-pointer"
-                >
+              <button
+                onClick={handleLogout}
+                disabled={loggingOut}
+                className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/20 transition-colors disabled:opacity-60 cursor-pointer"
+              >
                   {loggingOut ? (
                     <>
                       <UnifiedSpinner size="xs" variant="danger" />
@@ -293,8 +315,7 @@ const HeaderAdmin = ({ toggleSidebar, isCollapsed, theme, toggleTheme }) => {
                   )}
                 </button>
               </div>
-            </>
-          )}
+            )}
         </div>
       </div>
 

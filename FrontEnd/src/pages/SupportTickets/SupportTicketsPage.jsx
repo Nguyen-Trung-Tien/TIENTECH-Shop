@@ -12,6 +12,7 @@ import {
   FiRefreshCw,
   FiChevronRight,
   FiEye,
+  FiLock,
 } from "react-icons/fi";
 import {
   Badge,
@@ -38,6 +39,7 @@ import {
   showErrorToast,
 } from "../../utils/toastHelper";
 import { formatDateTime } from "../../utils/format";
+import { initUserSocket } from "../../utils/socket";
 
 const STATUS_FILTERS = [
   { key: "all", label: "Tất cả" },
@@ -48,10 +50,10 @@ const STATUS_FILTERS = [
 ];
 
 const STATUS_META = {
-  open: { label: "Chờ xử lý", variant: "warning" },
-  in_progress: { label: "Đang xử lý", variant: "info" },
-  resolved: { label: "Đã phản hồi", variant: "success" },
-  closed: { label: "Đã đóng", variant: "neutral" },
+  open: { label: "Chờ xử lý", variant: "warning", isLocked: false },
+  in_progress: { label: "Đang xử lý (Đã khóa)", variant: "info", isLocked: true },
+  resolved: { label: "Đã phản hồi", variant: "success", isLocked: true },
+  closed: { label: "Đã đóng", variant: "neutral", isLocked: true },
 };
 
 const SUBJECT_OPTIONS = [
@@ -145,6 +147,51 @@ export const SupportTicketsPage = () => {
   useEffect(() => {
     fetchTickets(page, activeFilter, searchQuery);
   }, [fetchTickets, page, activeFilter, searchQuery]);
+
+  // Real-time synchronization when admin updates ticket status / reply
+  useEffect(() => {
+    if (!user) return;
+    const socket = initUserSocket(user);
+    if (!socket) return;
+
+    const handleTicketUpdated = (data) => {
+      if (data?.ticketId) {
+        setTickets((prev) =>
+          prev.map((t) =>
+            t.id === Number(data.ticketId)
+              ? {
+                  ...t,
+                  status: data.status || t.status,
+                  adminReply:
+                    data.adminReply !== undefined ? data.adminReply : t.adminReply,
+                  updatedAt: data.updatedAt || new Date().toISOString(),
+                }
+              : t
+          )
+        );
+        setSelectedTicket((prev) => {
+          if (prev && prev.id === Number(data.ticketId)) {
+            return {
+              ...prev,
+              status: data.status || prev.status,
+              adminReply:
+                data.adminReply !== undefined ? data.adminReply : prev.adminReply,
+              updatedAt: data.updatedAt || new Date().toISOString(),
+            };
+          }
+          return prev;
+        });
+      } else {
+        fetchTickets(page, activeFilter, searchQuery);
+      }
+    };
+
+    socket.on("support_ticket_updated", handleTicketUpdated);
+
+    return () => {
+      socket.off("support_ticket_updated", handleTicketUpdated);
+    };
+  }, [user, page, activeFilter, searchQuery, fetchTickets]);
 
   // Deep-link from notification bell (?ticketId=...)
   useEffect(() => {
@@ -441,6 +488,11 @@ export const SupportTicketsPage = () => {
                           "{ticket.adminReply}"
                         </p>
                       </div>
+                    ) : ticket.status === "in_progress" ? (
+                      <div className="flex items-center gap-1.5 text-[11px] text-blue-600 dark:text-blue-400 font-medium bg-blue-50/50 dark:bg-blue-950/20 p-2 rounded-xl border border-blue-100 dark:border-blue-900/30">
+                        <FiLock className="size-3.5 shrink-0 text-blue-600 dark:text-blue-400" />
+                        <span>Kỹ thuật viên đang xử lý • Đã khóa chỉnh sửa & hủy</span>
+                      </div>
                     ) : (
                       <div className="flex items-center gap-1.5 text-[11px] text-amber-600 dark:text-amber-400">
                         <FiClock className="size-3.5 shrink-0" />
@@ -452,7 +504,7 @@ export const SupportTicketsPage = () => {
                   {/* Actions Footer */}
                   <div className="mt-4 pt-3 border-t border-slate-100 dark:border-dark-border flex items-center justify-between gap-2">
                     <div className="flex items-center gap-1.5">
-                      {ticket.status === "open" && (
+                      {ticket.status === "open" ? (
                         <>
                           <Button
                             variant="ghost"
@@ -473,6 +525,11 @@ export const SupportTicketsPage = () => {
                             Hủy
                           </Button>
                         </>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 text-[11px] text-slate-400 dark:text-dark-text-secondary font-medium px-1">
+                          <FiLock className="size-3 shrink-0" />
+                          <span>{ticket.status === "in_progress" ? "Đã khóa sửa/hủy" : "Đã khóa"}</span>
+                        </span>
                       )}
                     </div>
 
@@ -664,17 +721,40 @@ export const SupportTicketsPage = () => {
         subtitle={selectedTicket?.subject}
         size="lg"
         footer={
-          <div className="flex justify-between items-center w-full">
+          <div className="flex justify-between items-center w-full gap-2">
             <div>
-              {selectedTicket?.status === "open" && (
-                <Button
-                  variant="danger"
-                  size="sm"
-                  icon={<FiTrash2 />}
-                  onClick={() => setDeleteTicketId(selectedTicket.id)}
-                >
-                  Hủy yêu cầu
-                </Button>
+              {selectedTicket?.status === "open" ? (
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    icon={<FiEdit3 />}
+                    onClick={() => {
+                      const t = selectedTicket;
+                      setSelectedTicket(null);
+                      openEdit(t);
+                    }}
+                  >
+                    Sửa yêu cầu
+                  </Button>
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    icon={<FiTrash2 />}
+                    onClick={() => setDeleteTicketId(selectedTicket.id)}
+                  >
+                    Hủy yêu cầu
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1.5 text-xs text-slate-400 dark:text-dark-text-secondary font-medium">
+                  <FiLock className="size-3.5 shrink-0 text-slate-400" />
+                  <span>
+                    {selectedTicket?.status === "in_progress"
+                      ? "Đã khóa chỉnh sửa & hủy khi đang xử lý"
+                      : "Yêu cầu đã hoàn tất / đã đóng"}
+                  </span>
+                </div>
               )}
             </div>
             <Button variant="secondary" onClick={() => setSelectedTicket(null)}>
@@ -710,6 +790,23 @@ export const SupportTicketsPage = () => {
               </div>
             </div>
 
+            {/* Lock Notice Banner for in_progress status */}
+            {selectedTicket.status === "in_progress" && (
+              <div className="p-3.5 sm:p-4 rounded-2xl bg-blue-50/80 dark:bg-blue-950/30 border border-blue-200/80 dark:border-blue-900/40 text-xs text-blue-900 dark:text-blue-200 flex items-start gap-3">
+                <div className="size-8 rounded-xl bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center shrink-0 text-blue-600 dark:text-blue-400">
+                  <FiLock className="size-4" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="font-bold text-[13px] text-blue-700 dark:text-blue-300 mb-0.5">
+                    Yêu cầu đang được kỹ thuật viên xử lý
+                  </p>
+                  <p className="text-slate-600 dark:text-slate-300 leading-relaxed break-words [overflow-wrap:anywhere]">
+                    Để đảm bảo tính nhất quán của quá trình giải quyết, tính năng chỉnh sửa và hủy đã được khóa. Bạn sẽ nhận được thông báo chuông và phản hồi ngay khi có cập nhật mới.
+                  </p>
+                </div>
+              </div>
+            )}
+
             {/* User message */}
             <div className="space-y-1.5">
               <label className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-dark-text-secondary block">
@@ -738,6 +835,13 @@ export const SupportTicketsPage = () => {
                     </span>
                   </div>
                   {selectedTicket.adminReply}
+                </div>
+              ) : selectedTicket.status === "in_progress" ? (
+                <div className="p-4 rounded-2xl bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200/50 dark:border-blue-900/30 text-xs font-medium text-blue-800 dark:text-blue-200 flex items-center gap-2">
+                  <FiClock className="size-4 shrink-0 text-blue-600 dark:text-blue-400" />
+                  <span>
+                    Kỹ thuật viên đang nghiên cứu và xử lý trường hợp của bạn.
+                  </span>
                 </div>
               ) : (
                 <div className="p-4 rounded-2xl bg-amber-50/70 dark:bg-amber-950/20 border border-amber-200/60 dark:border-amber-900/30 text-xs font-medium text-amber-800 dark:text-amber-200 flex items-center gap-2">

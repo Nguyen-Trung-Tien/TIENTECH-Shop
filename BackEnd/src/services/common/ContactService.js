@@ -230,6 +230,7 @@ const updateTicket = async (id, payload = {}, adminUser = null, io = null) => {
   let ticket;
   const updates = {};
   let targetUserId = null;
+  let previousStatus = null;
 
   try {
     ticket = await db.ContactTicket.findByPk(id, {
@@ -243,6 +244,8 @@ const updateTicket = async (id, payload = {}, adminUser = null, io = null) => {
         errMessage: "Không tìm thấy yêu cầu liên hệ.",
       };
     }
+
+    previousStatus = ticket.status;
 
     if (payload.status) {
       updates.status = payload.status;
@@ -289,29 +292,73 @@ const updateTicket = async (id, payload = {}, adminUser = null, io = null) => {
     };
   }
 
-  // Dispatch real-time in-app notification to the member if admin answered
-  if (updates.adminReply && targetUserId) {
+  // Dispatch real-time in-app notification to the member
+  if (targetUserId) {
     try {
-      const replySnippet =
-        updates.adminReply.length > 120
-          ? `${updates.adminReply.slice(0, 120)}...`
-          : updates.adminReply;
-      await NotificationService.createNotification(
-        {
-          userId: targetUserId,
-          title: `Phản hồi yêu cầu hỗ trợ #${ticket.ticketCode}`,
-          message: `Quản trị viên đã phản hồi yêu cầu "${ticket.subject}": ${replySnippet}`,
-          type: "system",
-          link: `/support-tickets?ticketId=${ticket.id}`,
-          metadata: {
-            source: "contact_ticket_reply",
-            ticketId: ticket.id,
-            ticketCode: ticket.ticketCode,
+      if (updates.adminReply) {
+        const replySnippet =
+          updates.adminReply.length > 120
+            ? `${updates.adminReply.slice(0, 120)}...`
+            : updates.adminReply;
+        await NotificationService.createNotification(
+          {
+            userId: targetUserId,
+            title: `Phản hồi yêu cầu hỗ trợ #${ticket.ticketCode}`,
+            message: `Quản trị viên đã phản hồi yêu cầu "${ticket.subject}": ${replySnippet}`,
+            type: "system",
+            link: `/support-tickets?ticketId=${ticket.id}`,
+            metadata: {
+              source: "contact_ticket_reply",
+              ticketId: ticket.id,
+              ticketCode: ticket.ticketCode,
+              status: ticket.status,
+            },
           },
-        },
-        null,
-        io,
-      );
+          null,
+          io,
+        );
+      } else if (updates.status && updates.status !== previousStatus) {
+        let notifTitle = `Cập nhật yêu cầu hỗ trợ #${ticket.ticketCode}`;
+        let notifMsg = `Yêu cầu hỗ trợ "${ticket.subject}" của bạn đã được cập nhật trạng thái.`;
+        if (updates.status === "in_progress") {
+          notifTitle = `Tiếp nhận yêu cầu #${ticket.ticketCode}`;
+          notifMsg = `Yêu cầu hỗ trợ "${ticket.subject}" của bạn đã được tiếp nhận và chuyển sang trạng thái Đang xử lý.`;
+        } else if (updates.status === "closed") {
+          notifTitle = `Đóng yêu cầu hỗ trợ #${ticket.ticketCode}`;
+          notifMsg = `Yêu cầu hỗ trợ "${ticket.subject}" của bạn đã được chuyển sang trạng thái Đã đóng.`;
+        } else if (updates.status === "resolved") {
+          notifTitle = `Yêu cầu hỗ trợ #${ticket.ticketCode} đã giải quyết`;
+          notifMsg = `Yêu cầu hỗ trợ "${ticket.subject}" của bạn đã được chuyển sang trạng thái Đã giải quyết.`;
+        }
+
+        await NotificationService.createNotification(
+          {
+            userId: targetUserId,
+            title: notifTitle,
+            message: notifMsg,
+            type: "system",
+            link: `/support-tickets?ticketId=${ticket.id}`,
+            metadata: {
+              source: "contact_ticket_status",
+              ticketId: ticket.id,
+              ticketCode: ticket.ticketCode,
+              status: ticket.status,
+            },
+          },
+          null,
+          io,
+        );
+      }
+
+      if (io) {
+        io.to(`user_${targetUserId}`).emit("support_ticket_updated", {
+          ticketId: ticket.id,
+          ticketCode: ticket.ticketCode,
+          status: ticket.status,
+          adminReply: ticket.adminReply,
+          updatedAt: ticket.updatedAt,
+        });
+      }
     } catch (notifErr) {
       console.warn(
         "[ContactService.updateTicket] Member notification warning:",
