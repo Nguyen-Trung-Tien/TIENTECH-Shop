@@ -58,7 +58,7 @@ const generateRefreshToken = (payload) => {
 const verifyAccessToken = (token) => {
   try {
     return jwt.verify(token, getAccessSecret(), JWT_VERIFY_OPTIONS);
-  } catch (e) {
+  } catch (_e) {
     return null;
   }
 };
@@ -79,7 +79,7 @@ const verifyAccessTokenDetailed = (token) => {
 const verifyRefreshToken = (token) => {
   try {
     return jwt.verify(token, getRefreshSecret(), JWT_VERIFY_OPTIONS);
-  } catch (e) {
+  } catch (_e) {
     return null;
   }
 };

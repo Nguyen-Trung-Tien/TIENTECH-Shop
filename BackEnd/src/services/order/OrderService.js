@@ -7,6 +7,7 @@ const {
   getOrdersByUserId,
   getActiveOrdersByUserId,
   getOrderByCode,
+  trackOrderPublic,
 } = require("./use-cases/OrderQueryUseCase");
 
 const { createOrder } = require("./use-cases/OrderCreationUseCase");
@@ -36,6 +37,7 @@ module.exports = {
   getOrdersByUserId,
   getActiveOrdersByUserId,
   getOrderByCode,
+  trackOrderPublic,
   syncOrderCancellationSideEffects,
   requestReturn,
   handleReturnAction,

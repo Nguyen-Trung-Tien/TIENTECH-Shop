@@ -146,6 +146,7 @@ const Footer = () => {
             </h4>
             <ul className="space-y-2.5">
               {[
+                { name: "Tra cứu đơn hàng", path: "/track-order" },
                 { name: "Câu hỏi thường gặp", path: "/support/faq" },
                 { name: "Chính sách bảo hành", path: "/support/warranty" },
                 { name: "Vận chuyển & giao nhận", path: "/support/shipping-returns" },

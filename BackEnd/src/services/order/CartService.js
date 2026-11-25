@@ -10,7 +10,7 @@ const getAllCarts = async (userId) => {
         { model: db.CartItem, as: "cartItems" },
       ],
     });
-  } catch (error) {
+  } catch (_error) {
     throw new Error("Error from server");
   }
 };
@@ -34,7 +34,7 @@ const getCartById = async (id, userId) => {
 const createCart = async (userId) => {
   try {
     return await db.Cart.create({ userId });
-  } catch (error) {
+  } catch (_error) {
     throw new Error("Error from server");
   }
 };

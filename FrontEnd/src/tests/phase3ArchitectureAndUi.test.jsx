@@ -8,9 +8,10 @@ vi.mock("../components/ProductCard/ProductCard", () => ({
 
 vi.mock("recharts", () => {
   const MockBox = ({ children }) => <div data-testid="recharts-mock">{children}</div>;
+  const MockSvg = ({ children }) => <svg data-testid="recharts-area-mock">{children}</svg>;
   return {
     ResponsiveContainer: MockBox,
-    AreaChart: MockBox,
+    AreaChart: MockSvg,
     Area: () => null,
     XAxis: () => null,
     YAxis: () => null,

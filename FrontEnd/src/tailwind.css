@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /* Tích hợp Dark Mode theo dạng class cho Tailwind v4 */
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
   /* Font chữ duy nhất cho toàn bộ hệ thống - Plus Jakarta Sans */
@@ -114,6 +114,7 @@
   }
   
   :root {
+    color-scheme: light;
     --bg-main: #f8fafc;
     --bg-card: #ffffff;
     --text-main: #0f172a;
@@ -125,6 +126,7 @@
   }
   
   :root.dark {
+    color-scheme: dark;
     --bg-main: var(--color-dark-bg);
     --bg-card: var(--color-dark-surface);
     --text-main: var(--color-dark-text-primary);

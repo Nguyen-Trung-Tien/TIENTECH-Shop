@@ -3,7 +3,7 @@ const { Model } = require("sequelize");
 
 module.exports = (sequelize, DataTypes) => {
   class VariantAttributeValue extends Model {
-    static associate(models) {
+    static associate(_models) {
       // Define associations here if needed
     }
   }

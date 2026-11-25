@@ -15,7 +15,7 @@ try {
   if (!sequelizeConfig.dialectModule) {
     sequelizeConfig.dialectModule = require('mysql2');
   }
-} catch (e) {
+} catch (_e) {
   // fallback
 }
 

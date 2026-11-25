@@ -18,13 +18,13 @@ const createProduct = async (data, imageRecords = []) => {
     const {
       variants,
       attributes,
-      options,
+      options: _options,
       price,
       stock,
       totalStock,
-      image,
-      imageFile,
-      deletedImages,
+      image: _image,
+      imageFile: _imageFile,
+      deletedImages: _deletedImages,
       specifications,
       ...productData
     } = data;
@@ -449,7 +449,7 @@ const getProductById = async (id) => {
     if (typeof specs === "string") {
       try {
         specs = JSON.parse(specs);
-      } catch (e) {
+      } catch (_e) {
         specs = {};
       }
     }

@@ -44,12 +44,12 @@ module.exports = {
         type: "unique",
         name: "unique_review_user_like",
       });
-    } catch (error) {
+    } catch (_error) {
       console.log("Constraint 'unique_review_user_like' already exists or could not be added.");
     }
   },
 
-  async down(queryInterface, Sequelize) {
+  async down(queryInterface, _Sequelize) {
     await dropTableIfExists(queryInterface, "ReviewLikes");
   },
 };

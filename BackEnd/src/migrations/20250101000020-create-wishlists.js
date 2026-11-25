@@ -45,12 +45,12 @@ module.exports = {
         type: "unique",
         name: "unique_wishlist_user_product",
       });
-    } catch (error) {
+    } catch (_error) {
       console.log("Constraint 'unique_wishlist_user_product' already exists or could not be added.");
     }
   },
 
-  async down(queryInterface, Sequelize) {
+  async down(queryInterface, _Sequelize) {
     await dropTableIfExists(queryInterface, "Wishlists");
   },
 };

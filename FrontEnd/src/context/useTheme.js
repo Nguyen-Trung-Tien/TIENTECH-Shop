@@ -9,4 +9,20 @@ export const useTheme = () => {
   return context;
 };
 
+export const useOptionalTheme = () => {
+  const context = useContext(ThemeContext);
+  if (context) return context;
+  const isDark =
+    typeof document !== "undefined" &&
+    document.documentElement.classList.contains("dark");
+  return {
+    theme: isDark ? "dark" : "light",
+    themeMode: isDark ? "dark" : "light",
+    resolvedTheme: isDark ? "dark" : "light",
+    isDark,
+    toggleTheme: () => {},
+    setTheme: () => {},
+  };
+};
+
 export default useTheme;

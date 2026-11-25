@@ -285,7 +285,7 @@ const getSmartRecommendations = async (productId, limit = 6) => {
           typeof product.embedding === "string"
             ? JSON.parse(product.embedding)
             : product.embedding;
-      } catch (e) {
+      } catch (_e) {
         queryEmbedding = null;
       }
 

@@ -3,7 +3,7 @@ const { Model } = require("sequelize");
 
 module.exports = (sequelize, DataTypes) => {
   class SystemSetting extends Model {
-    static associate(models) {
+    static associate(_models) {
       // No relations required
     }
   }

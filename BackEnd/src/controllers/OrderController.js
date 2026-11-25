@@ -295,6 +295,19 @@ const handleChangePaymentMethod = async (req, res) => {
   }
 };
 
+const handleTrackOrder = async (req, res) => {
+  try {
+    const { orderCode, contact } = req.body;
+    const result = await OrderService.trackOrderPublic(orderCode, contact);
+    if (result.errCode === 0) {
+      return handleResponse(res, result, 200);
+    }
+    return handleResponse(res, result, 404);
+  } catch (e) {
+    return handleError(res, e, "handleTrackOrder");
+  }
+};
+
 module.exports = {
   handleGetAllOrders,
   handleGetOrderById,
@@ -307,4 +320,5 @@ module.exports = {
   handleRequestReturn,
   handleReturnAction,
   handleChangePaymentMethod,
+  handleTrackOrder,
 };

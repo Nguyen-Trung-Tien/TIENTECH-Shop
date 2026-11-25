@@ -15,11 +15,13 @@ import {
   FiRotateCcw,
 } from "react-icons/fi";
 import { useNavigate, Link } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { m as Motion } from "framer-motion";
 
 import { Button, ConfirmModal, EmptyState, PageShell, Tabs } from "../../components/UI";
 import { getOrdersByUserId, updateOrderStatus } from "../../api/orderApi";
+import { addCart, getAllCartItems } from "../../api/cartApi";
+import { setCartItems } from "../../redux/cartSlice";
 import { showErrorToast, showSuccessToast, showWarningToast } from "../../utils/toastHelper";
 import AppPagination from "../../components/Pagination/Pagination";
 import { statusMap, paymentStatusMap } from "../../utils/StatusMap";
@@ -41,6 +43,7 @@ const STATUS_TABS = [
 
 const OrderPage = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const user = useSelector((state) => state.user.user);
   const [orders, setOrders] = useState([]);
   const [activeTab, setActiveTab] = useState("all");
@@ -48,6 +51,7 @@ const OrderPage = () => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [receivingId, setReceivingId] = useState(null);
+  const [reorderingId, setReorderingId] = useState(null);
   const [cancelling, setCancelling] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [orderToCancel, setOrderToCancel] = useState(null);
@@ -128,6 +132,51 @@ const OrderPage = () => {
       showErrorToast(err, "Lỗi khi xác nhận nhận hàng");
     } finally {
       setReceivingId(null);
+    }
+  };
+
+  const handleReorder = async (order) => {
+    const items = Array.isArray(order?.orderItems) ? order.orderItems : [];
+    if (items.length === 0) {
+      showWarningToast("Đơn hàng này không có sản phẩm để mua lại.");
+      return;
+    }
+
+    setReorderingId(order.id);
+    let addedCount = 0;
+    try {
+      for (const item of items) {
+        if (!item?.productId) continue;
+        try {
+          const res = await addCart({
+            productId: item.productId,
+            variantId: item.variantId || null,
+            quantity: Math.max(1, Number(item.quantity) || 1),
+          });
+          if (res?.errCode === 0) addedCount += 1;
+        } catch {
+          // Skip out-of-stock or discontinued items
+        }
+      }
+
+      if (addedCount > 0) {
+        const cartRes = await getAllCartItems(1, 100);
+        if (cartRes?.errCode === 0 && Array.isArray(cartRes.data)) {
+          dispatch(setCartItems(cartRes.data));
+        }
+        showSuccessToast(
+          `Đã thêm ${addedCount}/${items.length} sản phẩm vào giỏ hàng!`
+        );
+        navigate("/cart");
+      } else {
+        showWarningToast(
+          "Các sản phẩm trong đơn này hiện đã hết hàng hoặc ngừng kinh doanh."
+        );
+      }
+    } catch (err) {
+      showErrorToast(err, "Không thể thêm sản phẩm vào giỏ hàng");
+    } finally {
+      setReorderingId(null);
     }
   };
 
@@ -458,6 +507,18 @@ const OrderPage = () => {
                             <FiCheckCircle size={16} /> Đánh giá
                           </button>
                         </>
+                      )}
+
+                      {["delivered", "completed", "cancelled"].includes(o.status) && (
+                        <button
+                          type="button"
+                          disabled={reorderingId === o.id}
+                          onClick={() => handleReorder(o)}
+                          className="flex-1 sm:flex-none h-10 px-5 bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 rounded-xl text-xs font-bold hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-all border border-blue-200/70 dark:border-blue-800/60 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                        >
+                          <FiRefreshCw className={reorderingId === o.id ? "animate-spin" : ""} size={15} />
+                          Mua lại
+                        </button>
                       )}
                     </div>
                   </div>

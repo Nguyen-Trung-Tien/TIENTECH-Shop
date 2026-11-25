@@ -87,7 +87,7 @@ const recordFailedLoginAttempt = async (loginFailKey) => {
       lockedUntil = Date.now() + LOCK_DURATION_SOFT_MS;
     }
     await setCache(loginFailKey, { count: nextCount, lockedUntil }, 15 * 60);
-  } catch (e) {
+  } catch (_e) {
     // Non-blocking if Redis unavailable
   }
 };

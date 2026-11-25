@@ -6,6 +6,7 @@ import { PersistGate } from "redux-persist/integration/react";
 import { PayPalScriptProvider } from "@paypal/react-paypal-js";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "./context/ThemeContext";
+import { DialogProvider } from "./context/DialogContext";
 import { SystemSettingsProvider } from "./context/SystemSettingsContext";
 import App from "./App";
 import "./tailwind.css";
@@ -34,11 +35,13 @@ ReactDOM.createRoot(document.getElementById("root")).render(
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
           <ThemeProvider>
-            <SystemSettingsProvider>
-              <PayPalScriptProvider options={initialOptions}>
-                <App />
-              </PayPalScriptProvider>
-            </SystemSettingsProvider>
+            <DialogProvider>
+              <SystemSettingsProvider>
+                <PayPalScriptProvider options={initialOptions}>
+                  <App />
+                </PayPalScriptProvider>
+              </SystemSettingsProvider>
+            </DialogProvider>
           </ThemeProvider>
         </BrowserRouter>
       </QueryClientProvider>

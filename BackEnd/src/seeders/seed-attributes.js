@@ -1,7 +1,7 @@
 "use strict";
 
 module.exports = {
-  async up(queryInterface, Sequelize) {
+  async up(queryInterface, _Sequelize) {
     const attributes = [
       {
         name: "RAM",
@@ -341,7 +341,7 @@ module.exports = {
     await queryInterface.bulkInsert("AttributeValues", attributeValues, {});
   },
 
-  async down(queryInterface, Sequelize) {
+  async down(queryInterface, _Sequelize) {
     await queryInterface.bulkDelete("AttributeValues", null, {});
     await queryInterface.bulkDelete("Attributes", null, {});
   },

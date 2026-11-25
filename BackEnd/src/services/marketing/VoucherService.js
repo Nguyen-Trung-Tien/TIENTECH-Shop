@@ -205,7 +205,7 @@ const getAllVouchers = async () => {
       errMessage: "Lấy danh sách mã giảm giá thành công.",
       data: vouchers,
     };
-  } catch (error) {
+  } catch (_error) {
     return { errCode: -1, errMessage: "Lỗi server.", data: null };
   }
 };
@@ -242,7 +242,7 @@ const updateVoucher = async (id, data) => {
       errMessage: "Cập nhật mã giảm giá thành công.",
       data: voucher,
     };
-  } catch (error) {
+  } catch (_error) {
     return { errCode: -1, errMessage: "Lỗi server.", data: null };
   }
 };

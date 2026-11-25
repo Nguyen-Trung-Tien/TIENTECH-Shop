@@ -118,3 +118,13 @@ export const changePaymentMethod = async (orderId, paymentMethod) => {
     throw error;
   }
 };
+
+export const trackOrderPublic = async ({ orderCode, contact }) => {
+  try {
+    const res = await axiosClient.post("/order/track", { orderCode, contact });
+    return res;
+  } catch (error) {
+    console.error("Error tracking order:", error);
+    throw error;
+  }
+};

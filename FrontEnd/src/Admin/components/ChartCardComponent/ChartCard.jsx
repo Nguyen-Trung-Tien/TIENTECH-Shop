@@ -12,6 +12,7 @@ import { FiRefreshCw } from "react-icons/fi";
 import { m as Motion } from "framer-motion";
 import { getDashboard } from "../../../api/adminApi";
 import UnifiedSpinner from "../../../components/Loading/UnifiedSpinner";
+import { useOptionalTheme } from "../../../context/useTheme";
 
 const PERIOD = { WEEK: "week", MONTH: "month", YEAR: "year" };
 
@@ -29,6 +30,7 @@ const formatCurrency = (value) => {
 };
 
 const ChartCard = ({ token, embedded = false }) => {
+  const { isDark } = useOptionalTheme();
   const [type, setType] = useState(PERIOD.WEEK);
   const [loading, setLoading] = useState(false);
   const [dashboardData, setDashboardData] = useState({
@@ -202,16 +204,16 @@ const ChartCard = ({ token, embedded = false }) => {
                 />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: "rgba(15, 23, 42, 0.92)",
+                    backgroundColor: isDark ? "rgba(15, 23, 42, 0.95)" : "rgba(255, 255, 255, 0.96)",
                     borderRadius: "16px",
-                    border: "1px solid rgba(255,255,255,0.1)",
+                    border: isDark ? "1px solid rgba(255,255,255,0.1)" : "1px solid rgba(226,232,240,0.9)",
                     backdropFilter: "blur(12px)",
-                    boxShadow: "0 20px 25px -5px rgba(0,0,0,0.3)",
+                    boxShadow: isDark ? "0 20px 25px -5px rgba(0,0,0,0.4)" : "0 16px 24px -6px rgba(15,23,42,0.12)",
                     padding: "10px 14px",
-                    color: "#fff"
+                    color: isDark ? "#f8fafc" : "#0f172a",
                   }}
-                  itemStyle={{ fontSize: "12px", fontWeight: "900", color: "#818cf8" }}
-                  labelStyle={{ fontSize: "10px", fontWeight: "bold", color: "#94a3b8", marginBottom: "2px" }}
+                  itemStyle={{ fontSize: "12px", fontWeight: "900", color: isDark ? "#818cf8" : "#4f46e5" }}
+                  labelStyle={{ fontSize: "10px", fontWeight: "bold", color: isDark ? "#94a3b8" : "#64748b", marginBottom: "2px" }}
                   cursor={{ stroke: "#6366f1", strokeWidth: 2, strokeDasharray: "5 5" }}
                 />
                 <Line

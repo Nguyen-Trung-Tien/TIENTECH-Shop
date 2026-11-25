@@ -2,7 +2,6 @@ const db = require("../../models");
 const { Op } = require("sequelize");
 const ExcelJS = require("exceljs");
 const { getCache, setCache } = require("../../config/redis");
-const ProductService = require("../product/ProductService");
 const EmbeddingSyncService = require("../ai/EmbeddingSyncService");
 const VectorIndexService = require("../ai/VectorIndexService");
 
@@ -333,11 +332,19 @@ const getAdminCounters = async () => {
       distinct: true,
     });
 
+    const lowStockCount = await db.Product.count({
+      where: {
+        isActive: true,
+        totalStock: { [Op.lte]: 5 },
+      },
+    });
+
     const result = {
       errCode: 0,
       data: {
         cancelRequestedCount,
         returnRequestedCount,
+        lowStockCount,
       },
     };
 

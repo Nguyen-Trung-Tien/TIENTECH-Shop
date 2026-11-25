@@ -41,7 +41,7 @@ const DUMMY_PASSWORD_HASH = "$2a$10$e8wYf/48Z/b4j0G9N.4SVO4cWd6E3jS2.yO15ZJ2hW1m
 const performDummyBcryptCompare = async (password) => {
   try {
     await bcrypt.compare(password || "dummyPassword123!", DUMMY_PASSWORD_HASH);
-  } catch (e) {
+  } catch (_e) {
     // Ignore dummy compare errors
   }
 };

@@ -13,7 +13,7 @@ const extractJson = (text) => {
       return JSON.parse(jsonMatch[0]);
     }
     return JSON.parse(text);
-  } catch (e) {
+  } catch (_e) {
     console.error("Failed to extract JSON:", text);
     return {};
   }

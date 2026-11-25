@@ -1,5 +1,4 @@
 const db = require("../../models");
-const ProductService = require("../product/ProductService");
 const { sendOrderConfirmedEmail } = require("../common/EmailService");
 const crypto = require("crypto");
 const { formatDateYYYYMMDDHHmmss, formatDateHHmmss } = require("../../utils/dateFormatter");

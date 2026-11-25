@@ -11,6 +11,7 @@ const { idempotencyGuard } = require("../middleware/idempotencyMiddleware");
 const { validate } = require("../middleware/zodMiddleware");
 const {
   orderSchema,
+  trackOrderSchema,
   changePaymentMethodSchema,
   updateOrderStatusSchema,
   updateOrderPaymentStatusSchema,
@@ -96,6 +97,13 @@ router.put(
   orderActionLimiter,
   validate(changePaymentMethodSchema),
   OrderController.handleChangePaymentMethod
+);
+
+router.post(
+  "/track",
+  orderActionLimiter,
+  validate(trackOrderSchema),
+  OrderController.handleTrackOrder
 );
 
 module.exports = router;

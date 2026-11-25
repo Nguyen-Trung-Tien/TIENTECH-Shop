@@ -2,8 +2,6 @@ const UserService = require("../services/user/UserService");
 const AuthService = require("../services/user/AuthService");
 const { handleError, handleResponse, handleFileUpload } = require("../utils/controllerHelper");
 const { verifyRefreshToken } = require("../utils/jwtHelper");
-const { deleteCache } = require("../config/redis");
-const { getUserProfileKey } = require("../services/user/AuthHelper");
 const { getFrontendUrl } = require("../config/corsConfig");
 const crypto = require("crypto");
 

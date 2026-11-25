@@ -58,7 +58,7 @@ const createVariant = async (data, t_external = null) => {
     if (typeof finalAttrValues === "string") {
       try {
         finalAttrValues = JSON.parse(finalAttrValues);
-      } catch (e) {
+      } catch (_e) {
         finalAttrValues = {};
       }
     }
@@ -122,7 +122,7 @@ const updateVariant = async (id, data, t_external = null) => {
     if (typeof finalAttrValues === "string") {
       try {
         finalAttrValues = JSON.parse(finalAttrValues);
-      } catch (e) {
+      } catch (_e) {
         finalAttrValues = variant.attributeValues;
       }
     }

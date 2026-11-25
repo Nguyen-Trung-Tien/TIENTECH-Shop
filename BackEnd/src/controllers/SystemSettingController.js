@@ -54,7 +54,7 @@ class SystemSettingController {
       }
 
       const isEnabled = enabled === true || enabled === "true";
-      const result = await SystemSettingService.setSetting(
+      await SystemSettingService.setSetting(
         "REQUIRE_OTP_VERIFICATION",
         isEnabled ? "true" : "false",
         "Yêu cầu người dùng xác thực mã OTP qua Email khi đăng ký tài khoản mới",

@@ -31,13 +31,16 @@ app.use((req, res, next) => {
   res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
   res.setHeader(
     "Content-Security-Policy",
-    "default-src 'self'; img-src 'self' data: https:; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' https:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+    "default-src 'self'; img-src 'self' data: https:; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' https:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'",
   );
-  res.setHeader("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+  res.setHeader(
+    "Permissions-Policy",
+    "camera=(), microphone=(), geolocation=()",
+  );
   if (isProduction) {
     res.setHeader(
       "Strict-Transport-Security",
-      "max-age=31536000; includeSubDomains; preload"
+      "max-age=31536000; includeSubDomains; preload",
     );
   }
   next();
@@ -74,7 +77,7 @@ app.use(
       "Pragma",
     ],
     exposedHeaders: ["X-XSRF-TOKEN", "X-Idempotency-Replayed"],
-  })
+  }),
 );
 
 /*
@@ -105,7 +108,9 @@ app.use((req, res, next) => {
 
   // Bypass CSRF for public payment webhooks / unauthenticated endpoints
   // Strip query parameters to prevent query-string injection bypass (e.g. ?bypass=/webhook)
-  const normalizedPath = (req.originalUrl || req.path || "").split("?")[0].replace(/\/+$/, "") || "/";
+  const normalizedPath =
+    (req.originalUrl || req.path || "").split("?")[0].replace(/\/+$/, "") ||
+    "/";
   const CSRF_EXEMPT_EXACT = [
     "/api/v1/vnpay/vnpay_ipn",
     "/api/v1/vnpay/vnpay-ipn",
@@ -128,7 +133,8 @@ app.use((req, res, next) => {
     return next();
   }
 
-  const hasAuthCookie = req.cookies && (req.cookies.accessToken || req.cookies.refreshToken);
+  const hasAuthCookie =
+    req.cookies && (req.cookies.accessToken || req.cookies.refreshToken);
   if (hasAuthCookie) {
     const origin = req.headers["origin"];
     const referer = req.headers["referer"];
@@ -140,7 +146,7 @@ app.use((req, res, next) => {
       try {
         const parsed = new URL(referer);
         requestOrigin = parsed.origin;
-      } catch (err) {}
+      } catch (_err) {}
     }
 
     if (requestOrigin) {
@@ -163,7 +169,8 @@ app.use((req, res, next) => {
         statusCode: 403,
         errCode: 403,
         code: "CSRF_ERROR",
-        errMessage: "Forbidden: CSRF verification missing required Origin header",
+        errMessage:
+          "Forbidden: CSRF verification missing required Origin header",
         message: "Forbidden: CSRF verification missing required Origin header",
       });
     }
@@ -173,7 +180,10 @@ app.use((req, res, next) => {
       const xsrfHeader = req.headers["x-xsrf-token"];
       const cookieBuf = Buffer.from(String(xsrfCookie));
       const headerBuf = Buffer.from(String(xsrfHeader || ""));
-      if (cookieBuf.length !== headerBuf.length || !crypto.timingSafeEqual(cookieBuf, headerBuf)) {
+      if (
+        cookieBuf.length !== headerBuf.length ||
+        !crypto.timingSafeEqual(cookieBuf, headerBuf)
+      ) {
         return res.status(403).json({
           status: "FORBIDDEN",
           statusCode: 403,
@@ -224,7 +234,11 @@ app.get("/readyz", async (req, res) => {
   return res.status(ready ? 200 : 503).json({
     status: ready ? "ready" : "not_ready",
     database: dbOk ? "ok" : "error",
-    redis: redisConnected ? "connected" : redisRequired ? "error" : "optional_offline",
+    redis: redisConnected
+      ? "connected"
+      : redisRequired
+        ? "error"
+        : "optional_offline",
     timestamp: new Date().toISOString(),
   });
 });
@@ -243,7 +257,7 @@ routes(app);
 /*
 GLOBAL ERROR HANDLER
 */
-app.use((err, req, res, next) => {
+app.use((err, req, res, _next) => {
   err.statusCode = err.statusCode || 500;
   err.status = err.status || "error";
   err.errCode = err.errCode || -1;

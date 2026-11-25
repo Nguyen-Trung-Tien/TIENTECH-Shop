@@ -23,6 +23,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { predictPrice } from "../../api/chatApi";
+import { useOptionalTheme } from "../../context/useTheme";
 
 const StatCard = ({
   icon,
@@ -75,6 +76,7 @@ const StatCard = ({
 );
 
 const TrendChart = ({ data }) => {
+  const { isDark } = useOptionalTheme();
   const chartData = useMemo(
     () =>
       data?.aiAnalysis?.chartData || [
@@ -119,7 +121,7 @@ const TrendChart = ({ data }) => {
             <CartesianGrid
               strokeDasharray="3 3"
               vertical={false}
-              stroke="#e2e8f0"
+              stroke={isDark ? "#1e293b" : "#e2e8f0"}
             />
             <XAxis
               dataKey="name"
@@ -128,16 +130,18 @@ const TrendChart = ({ data }) => {
               tick={{
                 fontSize: 10,
                 fontWeight: 900,
-                fill: "#94a3b8",
+                fill: isDark ? "#94a3b8" : "#64748b",
               }}
               dy={10}
             />
             <YAxis hide domain={["dataMin - 1000000", "dataMax + 1000000"]} />
             <Tooltip
               contentStyle={{
+                backgroundColor: isDark ? "rgba(15, 23, 42, 0.95)" : "rgba(255, 255, 255, 0.96)",
+                color: isDark ? "#f8fafc" : "#0f172a",
                 borderRadius: "16px",
-                border: "none",
-                boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+                border: isDark ? "1px solid rgba(255,255,255,0.1)" : "1px solid rgba(226,232,240,0.9)",
+                boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.15)",
                 fontSize: "12px",
                 fontWeight: "bold",
               }}

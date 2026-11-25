@@ -3,7 +3,7 @@ const { Model } = require("sequelize");
 
 module.exports = (sequelize, DataTypes) => {
   class Voucher extends Model {
-    static associate(models) {
+    static associate(_models) {
       // Voucher can be applied to many orders
     }
   }

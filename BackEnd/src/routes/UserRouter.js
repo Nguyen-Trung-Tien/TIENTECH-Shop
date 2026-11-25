@@ -34,7 +34,7 @@ const parseOAuthState = (rawState) => {
   try {
     const decoded = JSON.parse(Buffer.from(rawState, "base64url").toString("utf8"));
     return { nonce: decoded?.n || null, from: String(decoded?.from || "") };
-  } catch (e) {
+  } catch (_e) {
     return { nonce: null, from: rawState };
   }
 };

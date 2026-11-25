@@ -705,6 +705,13 @@ const compareAiVerdictSchema = z.object({
     .passthrough(),
 });
 
+const trackOrderSchema = z.object({
+  body: z.object({
+    orderCode: z.string().trim().min(3, "Vui lòng nhập mã đơn hàng hợp lệ").max(64),
+    contact: z.string().trim().min(5, "Vui lòng nhập số điện thoại hoặc email đặt hàng").max(120),
+  }),
+});
+
 module.exports = {
   voucherSchema,
   updateVoucherSchema,
@@ -718,6 +725,7 @@ module.exports = {
   verifyEmailSchema,
   resendVerificationSchema,
   orderSchema,
+  trackOrderSchema,
   createOrderSchema: orderSchema,
   changePaymentMethodSchema,
   addressSchema,

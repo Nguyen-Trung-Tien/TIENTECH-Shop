@@ -1,5 +1,4 @@
 const db = require("../../models");
-const OrderService = require("./OrderService");
 
 const getAllOrderItems = async () => {
   try {

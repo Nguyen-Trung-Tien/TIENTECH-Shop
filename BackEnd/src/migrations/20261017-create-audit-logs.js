@@ -69,7 +69,7 @@ module.exports = {
       },
     });
   },
-  down: async (queryInterface, Sequelize) => {
+  down: async (queryInterface, _Sequelize) => {
     await dropTableIfExists(queryInterface, "AuditLogs");
   },
 };

@@ -377,10 +377,106 @@ const getOrderByCode = async (orderCode) => {
   }
 };
 
+const normalizePhone = (value = "") => String(value).replace(/\D/g, "");
+
+const trackOrderPublic = async (orderCode, contact) => {
+  try {
+    const cleanCode = String(orderCode || "").trim();
+    const cleanContact = String(contact || "").trim();
+    if (!cleanCode || !cleanContact) {
+      return { errCode: 1, errMessage: "Vui lòng nhập đầy đủ mã đơn hàng và SĐT/Email" };
+    }
+
+    const order = await db.Order.findOne({
+      where: { orderCode: cleanCode },
+      include: [
+        {
+          model: db.OrderItem,
+          as: "orderItems",
+          include: [
+            {
+              model: db.Product,
+              as: "productInfo",
+              attributes: ["id", "name", "slug"],
+              include: [
+                {
+                  model: db.ProductImage,
+                  as: "images",
+                  attributes: ["imageUrl", "isPrimary"],
+                  required: false,
+                },
+              ],
+            },
+          ],
+        },
+        {
+          model: db.User,
+          as: "user",
+          attributes: ["id", "email", "phone"],
+        },
+      ],
+    });
+
+    if (!order) {
+      return { errCode: 1, errMessage: "Không tìm thấy đơn hàng hoặc thông tin đối chiếu không khớp" };
+    }
+
+    const normalizedContactPhone = normalizePhone(cleanContact);
+    const normalizedContactEmail = cleanContact.toLowerCase();
+
+    const phoneMatches =
+      normalizedContactPhone.length >= 6 &&
+      (normalizePhone(order.receiverPhone) === normalizedContactPhone ||
+        normalizePhone(order.user?.phone) === normalizedContactPhone);
+
+    const emailMatches =
+      normalizedContactEmail.includes("@") &&
+      String(order.user?.email || "").trim().toLowerCase() === normalizedContactEmail;
+
+    if (!phoneMatches && !emailMatches) {
+      return { errCode: 1, errMessage: "Không tìm thấy đơn hàng hoặc thông tin đối chiếu không khớp" };
+    }
+
+    const enriched = enrichOrderItemsWithImage(order);
+    return {
+      errCode: 0,
+      errMessage: "OK",
+      data: {
+        orderCode: enriched.orderCode,
+        status: enriched.status,
+        paymentStatus: enriched.paymentStatus,
+        paymentMethod: enriched.paymentMethod,
+        totalPrice: enriched.totalPrice,
+        shippingFee: enriched.shippingFee,
+        discountAmount: enriched.discountAmount,
+        createdAt: enriched.createdAt,
+        updatedAt: enriched.updatedAt,
+        receiverName: enriched.receiverName,
+        confirmationHistory: Array.isArray(enriched.confirmationHistory)
+          ? enriched.confirmationHistory
+          : [],
+        orderItems: (enriched.orderItems || []).map((item) => ({
+          id: item.id,
+          productId: item.productId,
+          productName: item.productName || item.productInfo?.name || "Sản phẩm",
+          quantity: item.quantity,
+          price: item.price,
+          image: item.image,
+          slug: item.productInfo?.slug || null,
+        })),
+      },
+    };
+  } catch (e) {
+    console.error("Error in trackOrderPublic:", e);
+    throw e;
+  }
+};
+
 module.exports = {
   getAllOrders,
   getOrderById,
   getOrdersByUserId,
   getActiveOrdersByUserId,
   getOrderByCode,
+  trackOrderPublic,
 };

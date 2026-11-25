@@ -9,7 +9,6 @@ const { getCache, setCache } = require("../../config/redis");
  */
 const generateHeuristicForecast = (historyData) => {
   const revenues = historyData.map((h) => Number(h.revenue) || 0);
-  const n = revenues.length;
   // Lấy 3 tháng gần nhất
   const last3 = revenues.slice(-3);
   const avgLast3 = last3.reduce((a, b) => a + b, 0) / (last3.length || 1);

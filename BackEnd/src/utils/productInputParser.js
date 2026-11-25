@@ -10,7 +10,7 @@ const parseJsonFields = (data, fields) => {
     if (data[field] && typeof data[field] === "string") {
       try {
         data[field] = JSON.parse(data[field]);
-      } catch (e) {
+      } catch (_e) {
         // Keep string if parse fails
       }
     }
@@ -27,7 +27,7 @@ const sanitizeProductInput = (rawBody) => {
       if (v.attributes && typeof v.attributes === "string") {
         try {
           v.attributes = JSON.parse(v.attributes);
-        } catch (e) {}
+        } catch (_e) {}
       }
       return v;
     });

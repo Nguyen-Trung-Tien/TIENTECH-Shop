@@ -1,12 +1,8 @@
 const request = require("supertest");
-const express = require("express");
-const cookieParser = require("cookie-parser");
 const UserService = require("../../src/services/user/UserService");
 const AuthService = require("../../src/services/user/AuthService");
 const OrderService = require("../../src/services/order/OrderService");
-const UserController = require("../../src/controllers/UserController");
-const { validate } = require("../../src/middleware/zodMiddleware");
-const { registerSchema, updateUserSchema } = require("../../src/utils/zodSchemas");
+const { updateUserSchema } = require("../../src/utils/zodSchemas");
 const db = require("../../src/models");
 const app = require("../../src/app");
 

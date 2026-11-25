@@ -161,7 +161,7 @@ const markAsRead = async (id, userId, role) => {
       await notification.update({ isRead: true });
     }
     return { errCode: 0, message: "Đã đánh dấu đã đọc." };
-  } catch (error) {
+  } catch (_error) {
     return { errCode: -1, errMessage: "Lỗi server." };
   }
 };

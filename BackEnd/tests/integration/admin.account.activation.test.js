@@ -1,7 +1,6 @@
 const request = require("supertest");
 const express = require("express");
 const db = require("../../src/models");
-const UserService = require("../../src/services/user/UserService");
 const UserRouter = require("../../src/routes/UserRouter");
 const { generateAccessToken } = require("../../src/utils/jwtHelper");
 const { getCache, setCache } = require("../../src/config/redis");
@@ -22,7 +21,7 @@ describe("Admin Account Activation & Status Management Integration Tests", () =>
       if (db.AuditLog) await db.AuditLog.destroy({ where: {} });
       await db.User.destroy({ where: { email: { [db.Sequelize.Op.like]: "%@tientech.test" } } });
       await db.User.destroy({ where: { username: { [db.Sequelize.Op.in]: ["admin_test_activation", "customer_test_activation", "bulk_u1", "bulk_u2"] } } });
-    } catch (e) {}
+    } catch (_e) {}
 
     // Create admin user
     adminUser = await db.User.create({
@@ -63,7 +62,7 @@ describe("Admin Account Activation & Status Management Integration Tests", () =>
       if (adminUser) await db.User.destroy({ where: { id: adminUser.id } });
       if (normalUser) await db.User.destroy({ where: { id: normalUser.id } });
       await db.User.destroy({ where: { email: { [db.Sequelize.Op.like]: "%@tientech.test" } } });
-    } catch (e) {
+    } catch (_e) {
       // Ignore cleanup error
     }
   });

@@ -26,6 +26,7 @@ const ProductListPage = lazy(() => import("../pages/ProductListPage/ProductListP
 const FortuneProducts = lazy(() => import("../components/FortuneProducts/FortuneProducts"));
 const OrderPage = lazy(() => import("../pages/OrderPage/OrderPage"));
 const OrderDetail = lazy(() => import("../pages/OrderDetail/OrderDetail"));
+const OrderTrackingPage = lazy(() => import("../pages/OrderTrackingPage/OrderTrackingPage"));
 const AboutPage = lazy(() => import("../pages/AboutPage/AboutPage"));
 const WishlistPage = lazy(() => import("../pages/WishlistPage/WishlistPage"));
 const ContactPage = lazy(() => import("../pages/ContactPage/ContactPage"));
@@ -151,6 +152,16 @@ const UserRoutes = () => {
           element={
             <LayoutComponent isShowHeader={true} isShowFooter={true}>
               <OrderDetail />
+            </LayoutComponent>
+          }
+        />
+        <Route
+          path="track-order"
+          element={
+            <LayoutComponent isShowHeader={true} isShowFooter={true}>
+              <Suspense fallback={<BrandLoader minHeight="min-h-[60vh]" message="Đang tải trang tra cứu..." />}>
+                <OrderTrackingPage />
+              </Suspense>
             </LayoutComponent>
           }
         />

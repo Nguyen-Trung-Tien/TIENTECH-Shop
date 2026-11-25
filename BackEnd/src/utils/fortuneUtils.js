@@ -5,8 +5,6 @@
 
 const { Op } = require("sequelize");
 
-const elements = ["Kim", "Thủy", "Mộc", "Hỏa", "Thổ"];
-
 const COLOR_SYNONYMS = {
   "trắng": ["trắng", "white", "starlight", "pearl", "ivory"],
   "xám": ["xám", "gray", "grey", "graphite", "space gray", "space grey", "titanium"],

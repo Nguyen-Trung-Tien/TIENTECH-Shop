@@ -1,9 +1,17 @@
 import React, { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { m as Motion, AnimatePresence } from "framer-motion";
-import { FiX, FiAlertTriangle, FiCheckCircle, FiInfo, FiTrash2, FiAlertCircle } from "react-icons/fi";
+import {
+  FiX,
+  FiAlertTriangle,
+  FiCheckCircle,
+  FiInfo,
+  FiTrash2,
+  FiAlertCircle,
+} from "react-icons/fi";
 import { Button } from "./Button";
 import UnifiedSpinner from "../Loading/UnifiedSpinner";
+import AlertPopup from "./AlertPopup";
 
 const Modal = ({
   isOpen,
@@ -41,7 +49,10 @@ const Modal = ({
 
     // Focus modal container ONLY on initial opening if active focus is outside the modal
     const focusTimer = setTimeout(() => {
-      if (modalRef.current && !modalRef.current.contains(document.activeElement)) {
+      if (
+        modalRef.current &&
+        !modalRef.current.contains(document.activeElement)
+      ) {
         modalRef.current.focus?.({ preventScroll: true });
       }
     }, 0);
@@ -49,7 +60,10 @@ const Modal = ({
     return () => {
       clearTimeout(focusTimer);
       document.body.style.overflow = prevOverflow;
-      if (previousFocusRef.current && typeof previousFocusRef.current.focus === "function") {
+      if (
+        previousFocusRef.current &&
+        typeof previousFocusRef.current.focus === "function"
+      ) {
         previousFocusRef.current.focus({ preventScroll: true });
       }
     };
@@ -58,7 +72,11 @@ const Modal = ({
   useEffect(() => {
     if (!isModalOpen) return;
     const handleKeyDown = (e) => {
-      if (e.key === "Escape" && optionsRef.current.closeOnEscape && !optionsRef.current.loading) {
+      if (
+        e.key === "Escape" &&
+        optionsRef.current.closeOnEscape &&
+        !optionsRef.current.loading
+      ) {
         e.preventDefault();
         if (optionsRef.current.onClose) optionsRef.current.onClose();
       }
@@ -120,7 +138,10 @@ const Modal = ({
             className={`relative w-full ${sizes[size]} max-h-[92vh] sm:max-h-[85vh] overscroll-contain bg-white/98 dark:bg-dark-surface/98 backdrop-blur-2xl rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col border border-slate-200/80 dark:border-dark-border transition-colors duration-300 focus:outline-none my-auto ${className}`}
           >
             {/* Mobile Drag Indicator Pill */}
-            <div className="flex justify-center pt-2.5 pb-1 sm:hidden bg-slate-50/80 dark:bg-dark-bg/60" aria-hidden="true">
+            <div
+              className="flex justify-center pt-2.5 pb-1 sm:hidden bg-slate-50/80 dark:bg-dark-bg/60"
+              aria-hidden="true"
+            >
               <div className="w-10 h-1 rounded-full bg-slate-300 dark:bg-slate-700" />
             </div>
 
@@ -143,13 +164,21 @@ const Modal = ({
 
             {/* Header */}
             {(title || showClose) && (
-              <div className={`flex items-center justify-between p-5 sm:p-6 pb-3.5 border-b border-slate-100 dark:border-dark-border gap-3 ${headerClassName}`}>
+              <div
+                className={`flex items-center justify-between p-5 sm:p-6 pb-3.5 border-b border-slate-100 dark:border-dark-border gap-3 ${headerClassName}`}
+              >
                 <div className="min-w-0 flex-1">
-                  <h3 id="modal-title" className="text-lg sm:text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight break-words [overflow-wrap:anywhere]">
+                  <h3
+                    id="modal-title"
+                    className="text-lg sm:text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight break-words [overflow-wrap:anywhere]"
+                  >
                     {title}
                   </h3>
                   {subtitle && (
-                    <p id="modal-subtitle" className="text-xs font-semibold text-slate-500 dark:text-dark-text-secondary mt-0.5 break-words [overflow-wrap:anywhere]">
+                    <p
+                      id="modal-subtitle"
+                      className="text-xs font-semibold text-slate-500 dark:text-dark-text-secondary mt-0.5 break-words [overflow-wrap:anywhere]"
+                    >
                       {subtitle}
                     </p>
                   )}
@@ -169,7 +198,9 @@ const Modal = ({
             )}
 
             {/* Body Content */}
-            <div className={`p-5 sm:p-6 flex-1 overflow-y-auto custom-scrollbar text-slate-700 dark:text-dark-text-primary ${bodyClassName}`}>
+            <div
+              className={`p-5 sm:p-6 flex-1 overflow-y-auto custom-scrollbar text-slate-700 dark:text-dark-text-primary ${bodyClassName}`}
+            >
               {children}
             </div>
 
@@ -210,17 +241,38 @@ export const ConfirmModal = ({
 }) => {
   const isBusy = Boolean(loading || isLoading);
   const getIconAndStyle = () => {
-    if (CustomIcon) return { Icon: CustomIcon, style: "bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border-blue-100 dark:border-blue-900/30" };
+    if (CustomIcon)
+      return {
+        Icon: CustomIcon,
+        style:
+          "bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border-blue-100 dark:border-blue-900/30",
+      };
     switch (variant) {
       case "danger":
       case "destructive":
-        return { Icon: FiTrash2, style: "bg-rose-50 dark:bg-rose-950/40 text-rose-500 dark:text-rose-400 border-rose-100 dark:border-rose-900/30" };
+        return {
+          Icon: FiTrash2,
+          style:
+            "bg-rose-50 dark:bg-rose-950/40 text-rose-500 dark:text-rose-400 border-rose-100 dark:border-rose-900/30",
+        };
       case "warning":
-        return { Icon: FiAlertTriangle, style: "bg-amber-50 dark:bg-amber-950/40 text-amber-500 dark:text-amber-400 border-amber-100 dark:border-amber-900/30" };
+        return {
+          Icon: FiAlertTriangle,
+          style:
+            "bg-amber-50 dark:bg-amber-950/40 text-amber-500 dark:text-amber-400 border-amber-100 dark:border-amber-900/30",
+        };
       case "success":
-        return { Icon: FiCheckCircle, style: "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-500 dark:text-emerald-400 border-emerald-100 dark:border-emerald-900/30" };
+        return {
+          Icon: FiCheckCircle,
+          style:
+            "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-500 dark:text-emerald-400 border-emerald-100 dark:border-emerald-900/30",
+        };
       default:
-        return { Icon: FiInfo, style: "bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border-blue-100 dark:border-blue-900/30" };
+        return {
+          Icon: FiInfo,
+          style:
+            "bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border-blue-100 dark:border-blue-900/30",
+        };
     }
   };
 
@@ -240,7 +292,12 @@ export const ConfirmModal = ({
         <Motion.div
           initial={{ scale: 0.55, rotate: -8, opacity: 0 }}
           animate={{ scale: 1, rotate: 0, opacity: 1 }}
-          transition={{ type: "spring", stiffness: 450, damping: 20, delay: 0.06 }}
+          transition={{
+            type: "spring",
+            stiffness: 450,
+            damping: 20,
+            delay: 0.06,
+          }}
           className={`size-14 sm:size-16 rounded-2xl flex items-center justify-center text-2xl sm:text-3xl mb-4 border shadow-inner ${style}`}
         >
           {Icon && (React.isValidElement(Icon) ? Icon : <Icon />)}
@@ -276,7 +333,9 @@ export const ConfirmModal = ({
             type="button"
             variant={variant === "danger" ? "destructive" : variant}
             className={`flex-1 h-11 rounded-xl text-[11px] font-black uppercase tracking-wider ${
-              variant === "danger" || variant === "destructive" ? "bg-rose-500 hover:bg-rose-600 shadow-md shadow-rose-500/20" : ""
+              variant === "danger" || variant === "destructive"
+                ? "bg-rose-500 hover:bg-rose-600 shadow-md shadow-rose-500/20"
+                : ""
             }`}
             onClick={(e) => {
               if (e && e.preventDefault) e.preventDefault();
@@ -294,114 +353,6 @@ export const ConfirmModal = ({
   );
 };
 
-export const AlertModal = ({
-  isOpen,
-  show,
-  onClose,
-  onConfirm,
-  title = "Thông báo",
-  message,
-  confirmText = "Đã hiểu",
-  variant = "info",
-  icon: CustomIcon,
-  children,
-  className = "",
-}) => {
-  const isModalOpen = Boolean(isOpen || show);
-  const getIconAndStyle = () => {
-    if (CustomIcon)
-      return {
-        Icon: CustomIcon,
-        style:
-          "bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border-blue-100 dark:border-blue-900/30",
-        btnVariant: "primary",
-      };
-    switch (variant) {
-      case "danger":
-      case "destructive":
-      case "error":
-        return {
-          Icon: FiAlertCircle,
-          style:
-            "bg-rose-50 dark:bg-rose-950/40 text-rose-500 dark:text-rose-400 border-rose-100 dark:border-rose-900/30",
-          btnVariant: "destructive",
-        };
-      case "warning":
-        return {
-          Icon: FiAlertTriangle,
-          style:
-            "bg-amber-50 dark:bg-amber-950/40 text-amber-500 dark:text-amber-400 border-amber-100 dark:border-amber-900/30",
-          btnVariant: "primary",
-        };
-      case "success":
-        return {
-          Icon: FiCheckCircle,
-          style:
-            "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-500 dark:text-emerald-400 border-emerald-100 dark:border-emerald-900/30",
-          btnVariant: "primary",
-        };
-      default:
-        return {
-          Icon: FiInfo,
-          style:
-            "bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border-blue-100 dark:border-blue-900/30",
-          btnVariant: "primary",
-        };
-    }
-  };
-
-  const { Icon, style, btnVariant } = getIconAndStyle();
-
-  return (
-    <Modal
-      isOpen={isModalOpen}
-      onClose={onClose || onConfirm}
-      size="sm"
-      title={null}
-      showClose={true}
-      className={`text-center ${className}`}
-    >
-      <div className="flex flex-col items-center py-1">
-        <Motion.div
-          initial={{ scale: 0.55, rotate: -8, opacity: 0 }}
-          animate={{ scale: 1, rotate: 0, opacity: 1 }}
-          transition={{ type: "spring", stiffness: 450, damping: 20, delay: 0.06 }}
-          className={`size-14 sm:size-16 rounded-2xl flex items-center justify-center text-2xl sm:text-3xl mb-4 border shadow-inner ${style}`}
-        >
-          {Icon && (React.isValidElement(Icon) ? Icon : <Icon />)}
-        </Motion.div>
-
-        {title && (
-          <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white tracking-tight uppercase mb-1.5 break-words [overflow-wrap:anywhere]">
-            {title}
-          </h3>
-        )}
-
-        {message && (
-          <p className="text-slate-500 dark:text-slate-400 text-xs font-medium leading-relaxed mb-4 max-w-xs break-words [overflow-wrap:anywhere]">
-            {message}
-          </p>
-        )}
-
-        {children}
-
-        <div className="w-full mt-4">
-          <Button
-            type="button"
-            variant={btnVariant}
-            className="w-full h-11 rounded-xl text-[11px] font-black uppercase tracking-wider shadow-md"
-            onClick={(e) => {
-              if (e && e.preventDefault) e.preventDefault();
-              if (onConfirm) onConfirm(e);
-              else if (onClose) onClose(e);
-            }}
-          >
-            {confirmText}
-          </Button>
-        </div>
-      </div>
-    </Modal>
-  );
-};
+export const AlertModal = (props) => <AlertPopup {...props} />;
 
 export default Modal;

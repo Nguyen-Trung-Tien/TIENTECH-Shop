@@ -2,41 +2,73 @@ import React, { useState, useEffect, useMemo, useCallback } from "react";
 
 import { ThemeContext } from "./themeContextObjects";
 
-export const ThemeProvider = ({ children }) => {
-  const [theme, setThemeState] = useState(() => {
-    if (typeof window !== "undefined") {
-      const savedTheme = localStorage.getItem("theme") || localStorage.getItem("admin_theme");
-      if (savedTheme) return savedTheme;
-      if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
-        return "dark";
-      }
-    }
-    return "light";
-  });
+const VALID_THEMES = new Set(["light", "dark", "system"]);
 
-  const applyTheme = (newTheme) => {
+const getSystemTheme = () => {
+  if (typeof window !== "undefined" && window.matchMedia) {
+    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  }
+  return "light";
+};
+
+const readStoredThemeMode = () => {
+  if (typeof window === "undefined") return "system";
+  try {
+    const saved = localStorage.getItem("theme") || localStorage.getItem("admin_theme");
+    if (saved && VALID_THEMES.has(saved)) {
+      return saved;
+    }
+  } catch {
+    // Ignore storage access errors
+  }
+  return "system";
+};
+
+export const ThemeProvider = ({ children }) => {
+  const [themeMode, setThemeMode] = useState(readStoredThemeMode);
+  const [systemTheme, setSystemTheme] = useState(getSystemTheme);
+
+  const resolvedTheme = themeMode === "system" ? systemTheme : themeMode;
+
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.matchMedia) return;
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    const handleChange = (e) => {
+      setSystemTheme(e.matches ? "dark" : "light");
+    };
+    mediaQuery.addEventListener("change", handleChange);
+    return () => mediaQuery.removeEventListener("change", handleChange);
+  }, []);
+
+  useEffect(() => {
     const root = document.documentElement;
-    if (newTheme === "dark") {
+    if (resolvedTheme === "dark") {
       root.classList.add("dark");
       root.style.colorScheme = "dark";
     } else {
       root.classList.remove("dark");
       root.style.colorScheme = "light";
     }
-  };
 
-  useEffect(() => {
-    applyTheme(theme);
-    localStorage.setItem("theme", theme);
-    localStorage.setItem("admin_theme", theme);
-  }, [theme]);
+    const metaTheme = document.querySelector('meta[name="theme-color"]');
+    if (metaTheme) {
+      metaTheme.setAttribute("content", resolvedTheme === "dark" ? "#090d16" : "#2563eb");
+    }
+
+    try {
+      localStorage.setItem("theme", themeMode);
+      localStorage.setItem("admin_theme", themeMode);
+    } catch {
+      // Ignore storage access errors
+    }
+  }, [themeMode, resolvedTheme]);
 
   // Sync across browser tabs
   useEffect(() => {
     const handleStorageChange = (e) => {
       if (e.key === "theme" || e.key === "admin_theme") {
-        if (e.newValue && (e.newValue === "light" || e.newValue === "dark")) {
-          setThemeState(e.newValue);
+        if (e.newValue && VALID_THEMES.has(e.newValue)) {
+          setThemeMode(e.newValue);
         }
       }
     };
@@ -45,23 +77,28 @@ export const ThemeProvider = ({ children }) => {
   }, []);
 
   const toggleTheme = useCallback(() => {
-    setThemeState((prev) => (prev === "light" ? "dark" : "light"));
+    setThemeMode((prev) => {
+      const currentResolved = prev === "system" ? getSystemTheme() : prev;
+      return currentResolved === "light" ? "dark" : "light";
+    });
   }, []);
 
   const setTheme = useCallback((newTheme) => {
-    if (newTheme === "light" || newTheme === "dark") {
-      setThemeState(newTheme);
+    if (VALID_THEMES.has(newTheme)) {
+      setThemeMode(newTheme);
     }
   }, []);
 
   const contextValue = useMemo(
     () => ({
-      theme,
-      isDark: theme === "dark",
+      theme: resolvedTheme,
+      themeMode,
+      resolvedTheme,
+      isDark: resolvedTheme === "dark",
       toggleTheme,
       setTheme,
     }),
-    [theme, toggleTheme, setTheme]
+    [resolvedTheme, themeMode, toggleTheme, setTheme]
   );
 
   return (

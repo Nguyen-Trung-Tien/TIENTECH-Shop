@@ -46,7 +46,7 @@ const MENU_SECTIONS = [
   {
     title: "SẢN PHẨM & KHO",
     items: [
-      { to: "/admin/products", icon: <FiBox />, label: "Sản phẩm" },
+      { to: "/admin/products", icon: <FiBox />, label: "Sản phẩm", badgeKey: "lowStockCount" },
       { to: "/admin/categories", icon: <FiLayers />, label: "Danh mục" },
       { to: "/admin/brands", icon: <FiTag />, label: "Thương hiệu" },
     ],
@@ -79,6 +79,7 @@ const Sidebar = ({ collapsed, mobileOpen, onCloseMobile }) => {
   const [counters, setCounters] = useState({
     cancelRequestedCount: 0,
     returnRequestedCount: 0,
+    lowStockCount: 0,
   });
 
   const prevPathnameRef = useRef(location.pathname);
@@ -318,29 +319,43 @@ const Sidebar = ({ collapsed, mobileOpen, onCloseMobile }) => {
 
                 // Regular Single Link
                 const isActive = location.pathname.startsWith(item.to);
+                const itemBadgeCount = item.badgeKey ? counters[item.badgeKey] || 0 : 0;
 
                 return (
                   <div key={item.to} className="relative group">
                     <Link
                       to={item.to}
                       onClick={onCloseMobile}
-                      className={`flex items-center gap-2.5 px-3 py-2 rounded-lg transition-all duration-150 ${
+                      className={`flex items-center justify-between gap-2.5 px-3 py-2 rounded-lg transition-all duration-150 ${
                         isActive
                           ? "bg-primary text-white font-bold shadow-xs"
                           : "hover:bg-slate-100/80 dark:hover:bg-dark-bg text-slate-700 dark:text-dark-text-secondary"
                       }`}
                     >
-                      <span
-                        className={`text-base flex-shrink-0 ${
-                          isActive
-                            ? "text-white"
-                            : "text-slate-400 dark:text-dark-text-secondary group-hover:text-primary"
-                        }`}
-                      >
-                        {item.icon}
-                      </span>
-                      {(mobileOpen || !collapsed) && (
-                        <span className="text-xs truncate">{item.label}</span>
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <span
+                          className={`text-base flex-shrink-0 ${
+                            isActive
+                              ? "text-white"
+                              : "text-slate-400 dark:text-dark-text-secondary group-hover:text-primary"
+                          }`}
+                        >
+                          {item.icon}
+                        </span>
+                        {(mobileOpen || !collapsed) && (
+                          <span className="text-xs truncate">{item.label}</span>
+                        )}
+                      </div>
+                      {(mobileOpen || !collapsed) && itemBadgeCount > 0 && (
+                        <span
+                          className={`px-1.5 py-0.5 rounded-full text-[10px] font-black leading-none shrink-0 ${
+                            isActive
+                              ? "bg-white text-primary"
+                              : "bg-amber-500/15 text-amber-600 dark:text-amber-400"
+                          }`}
+                        >
+                          {itemBadgeCount}
+                        </span>
                       )}
                     </Link>
 
