@@ -26,7 +26,7 @@ const AuthShell = ({
   const isAdmin = variant === "admin";
 
   return (
-    <div className="min-h-screen w-full bg-surface-100 dark:bg-dark-bg flex items-center justify-center p-3 sm:p-4 md:p-6 overflow-y-auto">
+    <div className="min-h-[100dvh] [.flex-1>&]:min-h-0 flex-1 w-full bg-surface-100 dark:bg-dark-bg flex items-center justify-center p-3 sm:p-4 md:p-6 overflow-y-auto">
       <Motion.div
         initial={{ opacity: 0, y: 16, scale: 0.98 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}

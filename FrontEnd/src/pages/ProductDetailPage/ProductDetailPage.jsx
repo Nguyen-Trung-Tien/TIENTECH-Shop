@@ -422,7 +422,7 @@ const ProductDetailPage = () => {
   }
 
   return (
-    <div className="container-custom py-6 md:py-10 min-h-screen">
+    <div className="container-custom py-6 md:py-10 flex-1">
       {/* Editorial Breadcrumb with Auspicious Status */}
       <nav className="flex items-center justify-between text-xs text-slate-400 dark:text-dark-text-secondary mb-6 pb-3 border-b border-slate-100 dark:border-dark-border">
         <div className="flex items-center space-x-2 truncate min-w-0">

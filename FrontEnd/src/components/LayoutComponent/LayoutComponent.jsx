@@ -23,7 +23,7 @@ const LayoutComponent = ({
 
   if (isMaintenance && !isAdmin) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white p-4 sm:p-6 relative overflow-hidden transition-colors duration-300">
+      <div className="min-h-[100dvh] flex items-center justify-center bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white p-4 sm:p-6 relative overflow-hidden transition-colors duration-300">
         <div className="absolute inset-0 bg-gradient-to-tr from-blue-600/10 via-indigo-600/5 to-transparent blur-3xl pointer-events-none" />
         <div className="relative max-w-lg w-full text-center space-y-6 bg-white/95 dark:bg-slate-900/90 backdrop-blur-2xl border border-slate-200/80 dark:border-slate-800 p-6 sm:p-10 rounded-[28px] shadow-2xl">
           <div className="size-16 sm:size-20 mx-auto rounded-2xl bg-blue-500/10 border border-blue-500/20 text-blue-600 dark:text-blue-400 flex items-center justify-center shadow-inner">
@@ -89,16 +89,27 @@ const LayoutComponent = ({
     location.pathname.startsWith(path),
   );
 
+  const hasMobileBottomNav =
+    isShowHeader &&
+    !["/product-detail", "/checkout"].some((path) =>
+      location.pathname.startsWith(path),
+    );
+
   return (
-    <div className="flex flex-col min-h-screen bg-[var(--bg-main)] transition-colors duration-300 selection:bg-primary/10 selection:text-primary">
+    <div className="flex flex-col min-h-[100dvh] bg-[var(--bg-main)] transition-colors duration-300 selection:bg-primary/10 selection:text-primary">
       {isShowHeader && <Header />}
       
-      <main id="main-content" tabIndex={-1} className="flex-grow pb-20 focus:outline-none">
+      <main
+        id="main-content"
+        tabIndex={-1}
+        className={`flex-1 flex flex-col focus:outline-none ${hasMobileBottomNav ? "pb-16 md:pb-0" : ""}`}
+      >
         <Motion.div
           key={location.pathname}
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.22, ease: "easeOut" }}
+          className="flex-1 flex flex-col"
         >
           {children}
         </Motion.div>

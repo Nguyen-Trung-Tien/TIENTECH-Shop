@@ -196,7 +196,7 @@ const Profile = () => {
 
   if (loading && !formData.username) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 dark:bg-dark-bg gap-4">
+      <div className="flex-1 flex flex-col items-center justify-center bg-slate-50 dark:bg-dark-bg gap-4 p-6">
         <Loader size="lg" className="text-primary" />
         <p className="text-slate-400 dark:text-dark-text-secondary font-black uppercase tracking-widest text-[11px] animate-pulse">
           Đang tải hồ sơ cá nhân...

@@ -19,7 +19,7 @@ const PageShell = ({
 }) => {
   return (
     <div
-      className={`min-h-screen bg-surface-50 dark:bg-dark-bg text-surface-900 dark:text-dark-text-primary transition-colors duration-300 pb-20 ${className}`}
+      className={`flex-1 bg-surface-50 dark:bg-dark-bg text-surface-900 dark:text-dark-text-primary transition-colors duration-300 pb-8 sm:pb-12 ${className}`}
     >
       {(title || backTo || actions) && (
         <header className="bg-white/80 dark:bg-dark-surface/80 backdrop-blur-md border-b border-surface-200 dark:border-dark-border py-6 sm:py-8 mb-6 sm:mb-8">

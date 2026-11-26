@@ -29,7 +29,7 @@ const ShippingPage = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 transition-colors duration-300 py-12">
+    <div className="flex-1 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 transition-colors duration-300 py-12">
       {/* Hero Banner */}
       <div className="container-custom mb-12">
         <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-blue-50/90 via-sky-50/60 to-slate-100/80 dark:from-blue-900/80 dark:via-indigo-950 dark:to-slate-900 text-slate-900 dark:text-white border border-blue-100 dark:border-slate-800 p-8 md:p-14 shadow-sm dark:shadow-2xl transition-colors duration-300">

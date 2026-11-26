@@ -143,7 +143,7 @@ const FortuneProducts = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 transition-colors duration-300 pb-24 relative overflow-x-hidden">
+    <div className="flex-1 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 transition-colors duration-300 pb-12 relative overflow-x-clip">
       <FengShuiChat setGlobalBirthYear={handleGlobalYearChange} />
 
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">

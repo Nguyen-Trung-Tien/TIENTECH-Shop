@@ -34,7 +34,7 @@ const HomePage = () => {
   const homeError = homeQueryError ? homeQueryError.message : null;
 
   return (
-    <div className="bg-slate-50 dark:bg-dark-bg transition-colors duration-300 min-h-screen">
+    <div className="bg-slate-50 dark:bg-dark-bg transition-colors duration-300 flex-1">
       {/* Futuristic Hero Section */}
       <HeroSection />
 

@@ -259,7 +259,7 @@ const OrderDetail = () => {
 
   if (!order) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-surface-50 dark:bg-dark-bg p-6">
+      <div className="flex-1 flex flex-col items-center justify-center bg-surface-50 dark:bg-dark-bg p-6">
         <div className="bg-white dark:bg-dark-surface rounded-[32px] p-12 text-center shadow-soft max-w-md">
           <FiXCircle className="text-5xl text-danger mx-auto mb-4" />
           <h2 className="text-2xl font-display font-bold text-surface-900 dark:text-white mb-2">
@@ -275,7 +275,7 @@ const OrderDetail = () => {
     order.status === "cancelled" || order.status === "cancel_requested";
 
   return (
-    <div className="min-h-screen bg-surface-50 dark:bg-dark-bg py-6 sm:py-10 md:py-12 transition-colors duration-300">
+    <div className="flex-1 bg-surface-50 dark:bg-dark-bg py-6 sm:py-10 md:py-12 transition-colors duration-300">
       <div className="container-custom">
         <OrderDetailHeader
           orderCode={order.orderCode}

@@ -25,7 +25,7 @@ const ProductListPage = () => {
   });
 
   return (
-    <div className="min-h-screen bg-surface-50 dark:bg-dark-bg transition-colors duration-300">
+    <div className="flex-1 bg-surface-50 dark:bg-dark-bg transition-colors duration-300">
 
       {/* Page Header Banner */}
       <section className="bg-gradient-to-r from-blue-50/80 via-indigo-50/40 to-slate-100/60 dark:from-slate-900 dark:via-indigo-950 dark:to-slate-900 text-slate-900 dark:text-white pt-10 pb-12 overflow-hidden relative border-b border-slate-200/80 dark:border-slate-800 shadow-xs dark:shadow-lg transition-colors duration-300">

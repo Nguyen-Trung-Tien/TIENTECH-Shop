@@ -115,7 +115,7 @@ const CheckoutFailed = () => {
   };
 
   return (
-    <div className="min-h-screen bg-surface-50 dark:bg-dark-bg flex items-center justify-center p-4 md:p-6 relative overflow-hidden transition-colors duration-300">
+    <div className="flex-1 bg-surface-50 dark:bg-dark-bg flex items-center justify-center p-4 md:p-6 relative overflow-hidden transition-colors duration-300">
       {/* Background Decorative Orbs */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-1/4 right-1/4 w-[450px] h-[450px] bg-red-500/10 dark:bg-red-600/15 rounded-full blur-[130px]"></div>
