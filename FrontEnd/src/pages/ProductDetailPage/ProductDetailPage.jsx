@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useMemo } from "react";
-import { Link, useParams, useNavigate } from "react-router-dom";
+import React, { useState, useEffect, useLayoutEffect, useMemo, useRef } from "react";
+import { Link, useParams, useNavigate, useLocation } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { setBuyNowCheckout } from "../../redux/checkoutSlice";
 import {
@@ -72,7 +72,9 @@ const specLabelMap = {
 const ProductDetailPage = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
+  const { hash } = useLocation();
   const dispatch = useDispatch();
+  const initialScrollResetRef = useRef("");
   const {
     product,
     loading,
@@ -134,6 +136,17 @@ const ProductDetailPage = () => {
   const [loadingWishlist, setLoadingWishlist] = useState(false);
   const [showPrediction, setShowPrediction] = useState(false);
   const [showStickyBar, setShowStickyBar] = useState(false);
+
+  useLayoutEffect(() => {
+    if (hash) return;
+    const targetKey = `${slug || ""}:${loading ? "loading" : "ready"}`;
+    if (initialScrollResetRef.current === targetKey) return;
+    initialScrollResetRef.current = targetKey;
+
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  }, [slug, loading, hash]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -422,7 +435,7 @@ const ProductDetailPage = () => {
   }
 
   return (
-    <div className="container-custom py-6 md:py-10 flex-1">
+    <div className="container-custom py-6 md:py-10 flex-1 [overflow-anchor:none]">
       {/* Editorial Breadcrumb with Auspicious Status */}
       <nav className="flex items-center justify-between text-xs text-slate-400 dark:text-dark-text-secondary mb-6 pb-3 border-b border-slate-100 dark:border-dark-border">
         <div className="flex items-center space-x-2 truncate min-w-0">
