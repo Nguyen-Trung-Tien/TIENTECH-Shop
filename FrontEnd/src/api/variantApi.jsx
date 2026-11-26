@@ -10,16 +10,6 @@ export const getVariantsByProduct = async (productId) => {
   }
 };
 
-export const createVariant = async (data) => {
-  try {
-    const res = await axiosClient.post(`/variant/create`, data);
-    return res;
-  } catch (err) {
-    console.error("Create variant error:", err);
-    throw err;
-  }
-};
-
 export const updateVariant = async (id, data) => {
   try {
     const res = await axiosClient.put(`/variant/update/${id}`, data);

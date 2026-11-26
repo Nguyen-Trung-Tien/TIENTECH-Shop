@@ -308,10 +308,9 @@ const ProductCard = ({ product }) => {
       <Motion.article
         initial={{ opacity: 0, y: 10 }}
         whileInView={{ opacity: 1, y: 0 }}
-        whileHover={{ y: -4 }}
         transition={{ duration: 0.25, ease: "easeOut" }}
         viewport={{ once: true }}
-        className={`group relative flex flex-col h-full bg-white dark:bg-dark-surface rounded-2xl border border-slate-100 dark:border-slate-800/80 overflow-hidden shadow-xs hover:shadow-xl hover:shadow-slate-200/50 dark:hover:shadow-black/50 hover:border-blue-500/40 dark:hover:border-blue-500/40 transition-all duration-300 cursor-pointer min-w-0 ${!isActive ? "opacity-60 grayscale pointer-events-none" : ""}`}
+        className={`group relative flex flex-col h-full bg-white dark:bg-dark-surface rounded-2xl border border-slate-100 dark:border-slate-800/80 overflow-hidden shadow-xs hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-200/50 dark:hover:shadow-black/50 hover:border-blue-500/40 dark:hover:border-blue-500/40 transition-[transform,box-shadow,border-color,opacity] duration-300 cursor-pointer min-w-0 ${!isActive ? "opacity-60 grayscale pointer-events-none" : ""}`}
         onClick={() => navigate(`/product-detail/${slug || id}`)}
       >
         {/* Image Container */}
@@ -412,18 +411,18 @@ const ProductCard = ({ product }) => {
 
         {/* Content Area */}
         <div className="p-4 flex flex-col flex-1 min-w-0">
-          <div className="flex items-center justify-between gap-1 mb-1.5">
-            <p className="text-[11px] font-bold text-primary dark:text-blue-400 uppercase tracking-wide truncate">
+          <div className="flex items-center justify-between gap-2 mb-1.5 min-w-0">
+            <p className="text-[11px] font-bold text-primary dark:text-blue-400 uppercase tracking-wide truncate min-w-0">
               {product.brand?.name || "Chính hãng"}
             </p>
             {/* Stock indicator */}
-            <span className="flex items-center gap-1.5 text-[10px] text-slate-500 dark:text-slate-400 font-medium">
+            <span className="flex items-center gap-1.5 text-[10px] text-slate-500 dark:text-slate-400 font-medium shrink-0 whitespace-nowrap">
               <span className={`size-1.5 rounded-full ${effectiveStock > 0 ? "bg-emerald-500" : "bg-red-500"}`}></span>
               {effectiveStock > 0 ? "Còn hàng" : "Tạm hết"}
             </span>
           </div>
 
-          <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100 line-clamp-2 leading-snug mb-2.5 min-h-[2.4rem] group-hover:text-primary dark:group-hover:text-blue-400 transition-colors break-words [overflow-wrap:anywhere]">
+          <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100 line-clamp-2 leading-snug mb-2.5 min-h-[2.36rem] sm:min-h-[2.75rem] group-hover:text-primary dark:group-hover:text-blue-400 transition-colors break-words">
             {name}
           </h3>
 

@@ -95,28 +95,6 @@ export const deleteProductApi = async (id) => {
   }
 };
 
-export const searchProductsApi = async (query, page = 1, limit = 10) => {
-  try {
-    const res = await axiosClient.get(
-      `/product/search?q=${encodeURIComponent(
-        query,
-      )}&page=${page}&limit=${limit}`,
-    );
-
-    return {
-      products: res.products || [],
-      suggestions: res.suggestions || {},
-      totalItems: res.totalItems || 0,
-      currentPage: res.currentPage || 1,
-      totalPages: res.totalPages || 1,
-      errCode: res.errCode,
-    };
-  } catch (err) {
-    console.error("Search products API error:", err);
-    throw err;
-  }
-};
-
 export const searchSuggestionsApi = async (query) => {
   const q = (query || "").trim();
   if (!q) {
@@ -149,18 +127,6 @@ export const searchSuggestionsApi = async (query) => {
 
   suggestInflight.set(q.toLowerCase(), req);
   return req;
-};
-
-export const getDiscountedProductsApi = async (page = 1, limit = 6) => {
-  try {
-    const res = await axiosClient.get(`/product/discounted`, {
-      params: { page, limit },
-    });
-    return res;
-  } catch (err) {
-    console.error("Get discounted products API error:", err);
-    throw err;
-  }
 };
 
 export const getFlashSaleProductsApi = async (page = 1, limit = 6) => {
@@ -236,22 +202,6 @@ export const filterProductsApi = async ({
     return res;
   } catch (err) {
     console.error("Filter products API error:", err);
-    throw err;
-  }
-};
-
-export const getRecommendedProductsApi = async (
-  productId,
-  page = 1,
-  limit = 6,
-) => {
-  try {
-    const res = await axiosClient.get(`/product/recommend/${productId}`, {
-      params: { page, limit },
-    });
-    return res;
-  } catch (err) {
-    console.error("Get recommended products API error:", err);
     throw err;
   }
 };

@@ -318,10 +318,11 @@ const ContactPage = () => {
                   type="submit"
                   size="xl"
                   loading={isSubmitting}
+                  loadingText="ĐANG GỬI THÔNG TIN..."
+                  icon={FiSend}
                   className="w-full"
                 >
-                  <FiSend />
-                  {isSubmitting ? "ĐANG GỬI THÔNG TIN..." : "GỬI YÊU CẦU NGAY"}
+                  GỬI YÊU CẦU NGAY
                 </Button>
               </form>
             )}

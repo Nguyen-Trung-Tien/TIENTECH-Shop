@@ -52,19 +52,6 @@ export const updateOrderStatus = async (orderId, status, reason = "") => {
   }
 };
 
-export const updatePaymentStatus = async (orderId, paymentStatus) => {
-  try {
-    const res = await axiosClient.put(
-      `/order/update-payment-status/${orderId}`,
-      { paymentStatus },
-    );
-    return res;
-  } catch (error) {
-    console.error("Error updating payment status:", error);
-    throw error;
-  }
-};
-
 export const deleteOrder = async (orderId) => {
   try {
     const res = await axiosClient.delete(`/order/delete-order/${orderId}`);
@@ -88,18 +75,6 @@ export const getOrdersByUserId = async (
     return res;
   } catch (err) {
     console.error("Error fetching user orders:", err);
-    throw err;
-  }
-};
-
-export const getActiveOrdersByUser = async (userId, page = 1, limit = 10) => {
-  try {
-    const res = await axiosClient.get(`/order/active/${userId}`, {
-      params: { page, limit },
-    });
-    return res;
-  } catch (err) {
-    console.error("Error fetching active orders:", err);
     throw err;
   }
 };

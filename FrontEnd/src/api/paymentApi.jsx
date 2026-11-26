@@ -27,16 +27,8 @@ export const getPaymentSummary = async (params = {}) => {
   });
 };
 
-export const getPaymentById = async (id) => {
-  return await axiosClient.get(`/payment/get-payment/${id}`);
-};
-
 export const deletePayment = async (id) => {
   return await axiosClient.delete(`/payment/delete-payment/${id}`);
-};
-
-export const updatePayment = async (orderId, data) => {
-  return await axiosClient.put(`/payment/update-payment/${orderId}`, data);
 };
 
 export const completePayment = async (id, transactionId = "") => {

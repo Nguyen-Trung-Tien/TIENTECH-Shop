@@ -26,14 +26,14 @@ const FilterBar = ({
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder={searchPlaceholder}
             icon={<FiSearch className="w-4 h-4" />}
-            className="w-full"
+            className={`w-full ${searchValue ? "pr-10" : ""}`}
           />
           {searchValue && (
             <button
               type="button"
               onClick={() => onSearchChange("")}
               aria-label="Xóa từ khóa tìm kiếm"
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-surface-400 hover:text-surface-700 dark:hover:text-white p-1"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-surface-400 hover:text-surface-700 dark:hover:text-white p-1 rounded-lg transition-colors cursor-pointer"
             >
               <FiX className="w-4 h-4" />
             </button>
@@ -53,7 +53,7 @@ const FilterBar = ({
           variant="ghost"
           size="sm"
           onClick={onReset}
-          className="shrink-0"
+          className="shrink-0 self-start lg:self-center"
         >
           Đặt lại
         </Button>

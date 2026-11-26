@@ -163,7 +163,7 @@ const Modal = ({
             </AnimatePresence>
 
             {/* Header */}
-            {(title || showClose) && (
+            {title ? (
               <div
                 className={`flex items-center justify-between p-5 sm:p-6 pb-3.5 border-b border-slate-100 dark:border-dark-border gap-3 ${headerClassName}`}
               >
@@ -195,6 +195,18 @@ const Modal = ({
                   </button>
                 )}
               </div>
+            ) : (
+              showClose && (
+                <button
+                  type="button"
+                  onClick={onClose}
+                  disabled={loading}
+                  aria-label="Đóng hộp thoại"
+                  className="absolute top-4 right-4 z-10 size-8 sm:size-9 bg-slate-100/90 dark:bg-dark-card/90 hover:bg-slate-200 dark:hover:bg-dark-border rounded-xl flex items-center justify-center text-slate-400 dark:text-dark-text-secondary hover:text-slate-900 dark:hover:text-white transition-all cursor-pointer border border-transparent dark:border-dark-border disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  <FiX size={18} />
+                </button>
+              )
             )}
 
             {/* Body Content */}

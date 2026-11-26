@@ -18,6 +18,7 @@ import {
 } from "./utils/guestCart";
 import { LazyMotion, domAnimation, MotionConfig } from "framer-motion";
 import RouteProgressBar from "./components/Loading/RouteProgressBar";
+import ScrollToTop from "./components/LayoutComponent/ScrollToTop";
 import ErrorBoundary from "./components/UI/ErrorBoundary";
 import { useTheme } from "./context/useTheme";
 
@@ -123,6 +124,7 @@ const App = () => {
         Chuyển đến nội dung chính
       </a>
       <RouteProgressBar />
+      <ScrollToTop />
       <AccountLockedModal />
       <MotionConfig reducedMotion="user">
         <LazyMotion features={domAnimation} strict>

@@ -72,18 +72,6 @@ export const getAllReviewsApi = async (
   }
 };
 
-export const getReviewsByUserApi = async (page = 1, limit = 10) => {
-  try {
-    const res = await axiosClient.get(`/review/user`, {
-      params: { page, limit },
-    });
-    return res;
-  } catch (err) {
-    console.error("Lỗi khi lấy lịch sử đơn hầng:", err);
-    return { errCode: 1, errMessage: "Không thể tải lịch sử đơn hầng" };
-  }
-};
-
 export const getPendingReviewsApi = async () => {
   try {
     const res = await axiosClient.get(`/review/pending`);

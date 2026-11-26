@@ -16,7 +16,7 @@ export const EmptyState = ({
   const isCompact = size === "sm";
   return (
     <div
-      className={`flex flex-col items-center justify-center text-center rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/60 dark:bg-dark-surface/40 backdrop-blur-sm ${
+      className={`w-full flex flex-col items-center justify-center text-center rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/60 dark:bg-dark-surface/40 backdrop-blur-sm ${
         isCompact ? "p-6 sm:p-8" : "p-8 sm:p-12"
       } ${className}`}
     >
@@ -67,7 +67,7 @@ export const ErrorState = ({
 }) => {
   return (
     <div
-      className={`flex flex-col items-center justify-center p-8 sm:p-12 text-center rounded-3xl border border-rose-200/80 dark:border-rose-950/50 bg-rose-50/30 dark:bg-rose-950/10 ${className}`}
+      className={`w-full flex flex-col items-center justify-center p-8 sm:p-12 text-center rounded-3xl border border-rose-200/80 dark:border-rose-950/50 bg-rose-50/30 dark:bg-rose-950/10 ${className}`}
     >
       <div className="size-16 sm:size-20 rounded-2xl bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center text-rose-500 dark:text-rose-400 mb-4">
         <Icon size={32} className="stroke-[1.5]" />

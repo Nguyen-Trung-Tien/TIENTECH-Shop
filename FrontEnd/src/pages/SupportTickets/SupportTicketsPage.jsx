@@ -367,9 +367,9 @@ export const SupportTicketsPage = () => {
           <Button
             variant="secondary"
             size="sm"
-            icon={<FiRefreshCw className={loading ? "animate-spin" : ""} />}
+            icon={FiRefreshCw}
             onClick={() => fetchTickets(page)}
-            disabled={loading}
+            loading={loading}
           >
             Làm mới
           </Button>

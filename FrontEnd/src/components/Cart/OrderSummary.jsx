@@ -7,7 +7,6 @@ import {
   FiCheckCircle,
 } from "react-icons/fi";
 import { Button } from "../UI/Button";
-import UnifiedSpinner from "../Loading/UnifiedSpinner";
 import { useSystemSettings } from "../../context/useSystemSettings";
 
 /**
@@ -95,21 +94,14 @@ const OrderSummary = ({
       {!isCheckoutPage && (
         <Button
           variant="default"
+          loading={loading}
+          loadingText="ĐANG XỬ LÝ..."
           className="w-full h-16 rounded-2xl font-black text-sm tracking-[0.2em] mb-8 group flex items-center justify-center gap-2"
           onClick={onCheckout}
           disabled={items.length === 0 || loading}
         >
-          {loading ? (
-            <div className="flex items-center gap-2">
-              <UnifiedSpinner size="xs" variant="white" />
-              <span>ĐANG XỬ LÝ...</span>
-            </div>
-          ) : (
-            <>
-              TIẾP TỤC THANH TOÁN
-              <FiArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />
-            </>
-          )}
+          TIẾP TỤC THANH TOÁN
+          <FiArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />
         </Button>
       )}
 

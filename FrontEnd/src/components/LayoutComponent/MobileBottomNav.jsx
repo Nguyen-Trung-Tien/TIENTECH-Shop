@@ -34,7 +34,7 @@ const MobileBottomNav = () => {
       match: (p) => p.startsWith("/cart"),
     },
     {
-      to: user ? "/order-history" : "/login",
+      to: user ? "/orders" : "/login",
       label: "Đơn hàng",
       icon: FiPackage,
       match: (p) => p.startsWith("/order"),

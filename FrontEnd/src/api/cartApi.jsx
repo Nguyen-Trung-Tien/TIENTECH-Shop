@@ -1,55 +1,5 @@
 import axiosClient from "../utils/axiosClient";
 
-export const getAllCarts = async () => {
-  try {
-    const res = await axiosClient.get("/cart/get-all-cart");
-    return res;
-  } catch (error) {
-    console.error("Error getting all carts:", error);
-    throw error;
-  }
-};
-
-export const getCartById = async (id) => {
-  try {
-    const res = await axiosClient.get(`/cart/get-cart/${id}`);
-    return res;
-  } catch (error) {
-    console.error("Error getting cart by id:", error);
-    throw error;
-  }
-};
-
-export const createCart = async (userId) => {
-  try {
-    const res = await axiosClient.post("/cart/create-cart", { userId });
-    return res;
-  } catch (error) {
-    console.error("Error creating cart:", error);
-    throw error;
-  }
-};
-
-export const updateCart = async ({ id, data }) => {
-  try {
-    const res = await axiosClient.put(`/cart/update-cart/${id}`, data);
-    return res;
-  } catch (error) {
-    console.error("Error updating cart:", error);
-    throw error;
-  }
-};
-
-export const deleteCart = async (id) => {
-  try {
-    const res = await axiosClient.delete(`/cart/delete-cart/${id}`);
-    return res;
-  } catch (error) {
-    console.error("Error deleting cart:", error);
-    throw error;
-  }
-};
-
 export const getAllCartItems = async (page = 1, limit = 10) => {
   try {
     const res = await axiosClient.get("/cartItem/get-all-cartItem", {
@@ -58,16 +8,6 @@ export const getAllCartItems = async (page = 1, limit = 10) => {
     return res;
   } catch (error) {
     console.error("Error getting all cart items:", error);
-    throw error;
-  }
-};
-
-export const getCartItemById = async (id) => {
-  try {
-    const res = await axiosClient.get(`/cartItem/get-cartItem/${id}`);
-    return res;
-  } catch (error) {
-    console.error("Error getting cart item by id:", error);
     throw error;
   }
 };

@@ -294,8 +294,8 @@ const ContactManage = () => {
             variant="outline"
             size="sm"
             onClick={fetchTickets}
-            disabled={loading}
-            icon={<FiRefreshCw className={loading ? "animate-spin" : ""} />}
+            loading={loading}
+            icon={FiRefreshCw}
           >
             Làm mới
           </Button>

@@ -32,7 +32,7 @@ const StatCard = ({
     <Wrapper
       type={onClick ? "button" : undefined}
       onClick={onClick}
-      className={`w-full text-left bg-white dark:bg-dark-card border border-surface-200 dark:border-dark-border rounded-2xl p-4 sm:p-5 shadow-xs transition-all duration-200 flex items-center gap-4 min-w-0 ${
+      className={`w-full h-full text-left bg-white dark:bg-dark-card border border-surface-200 dark:border-dark-border rounded-2xl p-4 sm:p-5 shadow-xs transition-all duration-200 flex items-center gap-4 min-w-0 ${
         onClick
           ? "hover:border-primary/40 hover:shadow-md cursor-pointer"
           : ""

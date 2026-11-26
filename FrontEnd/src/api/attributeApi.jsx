@@ -12,16 +12,3 @@ export const getAllAttributesApi = async () => {
     throw err;
   }
 };
-
-/**
- * Lấy thuộc tính theo mã code
- */
-export const getAttributeByCodeApi = async (code) => {
-  try {
-    const res = await axiosClient.get(`/attribute/get-by-code/${code}`);
-    return res;
-  } catch (err) {
-    console.error("Get Attribute By Code API error:", err);
-    throw err;
-  }
-};
