@@ -196,9 +196,9 @@ const ForgotPasswordModal = ({ show, onClose }) => {
                       className="shrink-0 size-12 rounded-2xl"
                       onClick={handleSendEmail}
                       loading={loading}
-                    >
-                      <FiRefreshCw />
-                    </Button>
+                      icon={FiRefreshCw}
+                      aria-label="Gửi lại mã xác nhận"
+                    />
                   </div>
                 </div>
               </div>

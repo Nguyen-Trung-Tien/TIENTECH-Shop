@@ -1,5 +1,5 @@
 import React from "react";
-import { User, Check, Lock, CheckCircle2, RefreshCw } from "lucide-react";
+import { User, Check, Lock, CheckCircle2 } from "lucide-react";
 import { STATUS_FLOW, ALLOWED_TRANSITIONS } from "../orderConstants";
 import { statusMap } from "../../../../utils/StatusMap";
 import { StatusBadge } from "../../../../utils/StatusBadge";
@@ -43,15 +43,11 @@ const OrderStatusModal = ({
             }
             onClick={onConfirm}
             loading={isUpdating}
+            loadingText="Đang cập nhật..."
+            icon={CheckCircle2}
             className="flex-1 h-12 uppercase tracking-wider text-xs shadow-lg"
           >
-            {isUpdating ? (
-              <RefreshCw className="animate-spin size-4" />
-            ) : (
-              <>
-                <CheckCircle2 className="size-4" /> Xác nhận chuyển
-              </>
-            )}
+            Xác nhận chuyển
           </Button>
         </div>
       }

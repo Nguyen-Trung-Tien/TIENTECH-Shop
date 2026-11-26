@@ -144,44 +144,40 @@ const CheckoutFailed = () => {
         </Motion.div>
 
         {/* TITLE */}
-        <div className="space-y-1 mb-3">
-          <span className="px-3 py-1 bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 text-[10px] font-black uppercase tracking-widest rounded-full border border-red-200 dark:border-red-800">
-            Giao Dịch Chưa Thành Công
-          </span>
-          <h1 className="text-xl md:text-2xl font-black text-slate-900 dark:text-white tracking-tight pt-1">
-            Thanh Toán Bị Gián Đoạn
+        <div className="space-y-1.5 mb-3">
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+            Thanh Toán Chưa Thành Công
           </h1>
+          <p className="text-slate-600 dark:text-slate-400 text-xs sm:text-sm leading-relaxed max-w-md mx-auto">
+            Giao dịch bị gián đoạn hoặc đã bị hủy. Đơn hàng của bạn vẫn được giữ an toàn, bạn có thể đổi phương thức hoặc thử lại bên dưới.
+          </p>
         </div>
-
-        {/* DESCRIPTION */}
-        <p className="text-slate-600 dark:text-slate-400 text-xs md:text-sm leading-relaxed max-w-md mx-auto mb-5">
-          Giao dịch thanh toán chưa thể hoàn tất do lỗi mạng hoặc hủy bỏ. Đơn
-          hàng của bạn vẫn được lưu giữ an toàn, bạn có thể đổi phương thức hoặc
-          thử lại ngay bên dưới.
-        </p>
 
         {/* ORDER INFO BOX */}
         {orderId && (
-          <div className="bg-slate-50 dark:bg-slate-950/70 rounded-2xl p-4 mb-5 border border-slate-200/80 dark:border-slate-800 text-left flex flex-col sm:flex-row items-center justify-between gap-3">
-            <div className="min-w-0 flex-1">
+          <div className="bg-slate-50 dark:bg-slate-950/70 rounded-2xl p-4 mb-5 border border-slate-200/80 dark:border-slate-800 text-left flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-1.5 h-full bg-gradient-to-b from-rose-500 to-amber-500" />
+            <div className="min-w-0 flex-1 pl-1">
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-0.5">
                 Mã Đơn Hàng
               </span>
-              <strong className="text-sm font-black text-slate-800 dark:text-white font-mono tracking-wider truncate block">
+              <strong className="text-sm font-black text-slate-800 dark:text-white font-mono tracking-wider break-all block">
                 #{order?.orderCode || orderId}
               </strong>
             </div>
 
-            {order && (
-              <div className="text-right flex-shrink-0">
+            {fetchingOrder ? (
+              <span className="text-xs text-slate-400 animate-pulse pl-1 sm:pl-0">Đang tải thông tin...</span>
+            ) : order ? (
+              <div className="text-left sm:text-right flex-shrink-0 pl-1 sm:pl-0">
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-0.5">
                   Tổng Tiền
                 </span>
-                <span className="text-base font-black text-primary">
-                  {Number(order.totalPrice || 0).toLocaleString()} ₫
+                <span className="text-base font-black text-primary font-mono">
+                  {Number(order.totalPrice || 0).toLocaleString("vi-VN")}₫
                 </span>
               </div>
-            )}
+            ) : null}
           </div>
         )}
 

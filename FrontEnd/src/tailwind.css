@@ -107,9 +107,14 @@
     overflow-wrap: break-word;
   }
 
-  html, body {
+  html {
     @apply scroll-smooth antialiased overflow-x-clip max-w-full;
     font-size: 14px;
+    font-family: var(--font-sans);
+  }
+
+  body {
+    @apply antialiased max-w-full;
     font-family: var(--font-sans);
   }
   

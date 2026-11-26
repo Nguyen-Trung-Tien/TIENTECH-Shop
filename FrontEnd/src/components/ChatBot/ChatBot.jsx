@@ -57,14 +57,14 @@ const ChatBot = () => {
 
   return (
     <>
-      <div className="fixed bottom-20 right-4 lg:bottom-6 lg:right-6 z-40">
+      <div className="fixed bottom-20 right-4 lg:bottom-6 lg:right-6 z-[90]">
         <Motion.button
           type="button"
           whileHover={{ scale: 1.08 }}
           whileTap={{ scale: 0.92 }}
           onClick={() => setIsOpen(!isOpen)}
-          aria-label="Mở Chatbot AI"
-          className={`relative size-14 md:size-16 rounded-full flex items-center justify-center text-white shadow-2xl transition-all duration-500 cursor-pointer ${
+          aria-label={isOpen ? "Đóng Chatbot AI" : "Mở Chatbot AI"}
+          className={`relative size-13 md:size-15 rounded-full flex items-center justify-center text-white shadow-2xl transition-all duration-300 cursor-pointer ${
             isOpen
               ? "bg-gray-900 dark:bg-gray-800 rotate-90 shadow-gray-900/30"
               : "bg-gradient-to-tr from-blue-600 via-indigo-600 to-purple-600 shadow-blue-600/40"
@@ -98,10 +98,10 @@ const ChatBot = () => {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 30, scale: 0.95 }}
             transition={{ duration: 0.25, ease: "easeOut" }}
-            className={`fixed z-50 bg-white dark:bg-gray-900 shadow-2xl border border-gray-100 dark:border-gray-800 flex flex-col max-w-full overflow-hidden transition-all duration-300 ${
+            className={`fixed z-[1050] bg-white dark:bg-gray-900 shadow-2xl border border-gray-100 dark:border-gray-800 flex flex-col max-w-full overflow-hidden transition-all duration-300 ${
               fullMode
-                ? "inset-2 md:inset-6 rounded-2xl md:rounded-[36px]"
-                : "inset-x-2 bottom-20 top-16 md:inset-auto md:bottom-24 md:right-6 md:w-[420px] md:h-[660px] md:max-h-[85vh] rounded-2xl md:rounded-[32px]"
+                ? "inset-2 md:inset-6 rounded-2xl md:rounded-[32px]"
+                : "inset-x-2 bottom-2 top-2 max-h-[calc(100dvh-1rem)] sm:inset-auto sm:bottom-24 sm:right-6 sm:w-[410px] sm:h-[min(640px,calc(100dvh-7.5rem))] rounded-2xl sm:rounded-[28px]"
             }`}
           >
             <div className="px-5 py-4 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white flex items-center justify-between shrink-0 shadow-md">

@@ -7,7 +7,7 @@ import FloatingCompareBar from "../../features/compare/components/FloatingCompar
 import { useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { useSystemSettings } from "../../context/useSystemSettings";
-import { FiTool } from "react-icons/fi";
+import { FiTool, FiRefreshCw, FiPhoneCall, FiMail } from "react-icons/fi";
 
 const ChatBot = lazy(() => import("../ChatBot/ChatBot"));
 
@@ -23,26 +23,56 @@ const LayoutComponent = ({
 
   if (isMaintenance && !isAdmin) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-950 text-white p-6 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-tr from-blue-600/10 via-purple-600/10 to-transparent blur-3xl pointer-events-none" />
-        <div className="relative max-w-lg w-full text-center space-y-6 bg-slate-900/80 backdrop-blur-2xl border border-slate-800 p-8 md:p-12 rounded-[32px] shadow-2xl">
-          <div className="size-20 mx-auto rounded-3xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center shadow-inner">
-            <FiTool className="size-10 animate-pulse" />
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white p-4 sm:p-6 relative overflow-hidden transition-colors duration-300">
+        <div className="absolute inset-0 bg-gradient-to-tr from-blue-600/10 via-indigo-600/5 to-transparent blur-3xl pointer-events-none" />
+        <div className="relative max-w-lg w-full text-center space-y-6 bg-white/95 dark:bg-slate-900/90 backdrop-blur-2xl border border-slate-200/80 dark:border-slate-800 p-6 sm:p-10 rounded-[28px] shadow-2xl">
+          <div className="size-16 sm:size-20 mx-auto rounded-2xl bg-blue-500/10 border border-blue-500/20 text-blue-600 dark:text-blue-400 flex items-center justify-center shadow-inner">
+            <FiTool className="size-8 sm:size-10 animate-pulse" />
           </div>
+
           <div className="space-y-2">
-            <span className="inline-block text-[10px] font-black uppercase tracking-[0.3em] px-3 py-1 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">
-              Hệ Thống Đang Nâng Cấp
-            </span>
-            <h1 className="text-2xl md:text-3xl font-black tracking-tight text-white">
-              BẢO TRÌ HỆ THỐNG
+            <div className="inline-flex items-center gap-2 text-[11px] font-bold px-3 py-1 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+              <span className="size-2 rounded-full bg-amber-500 animate-ping" />
+              <span>Đang bảo trì &amp; nâng cấp</span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-white">
+              Hệ Thống Đang Bảo Trì
             </h1>
           </div>
-          <p className="text-sm text-slate-300 leading-relaxed">
-            {maintenanceMessage || "TIENTECH đang tiến hành bảo trì & nâng cấp hệ thống định kỳ. Quý khách vui lòng quay lại sau ít phút!"}
+
+          <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed break-words">
+            {maintenanceMessage ||
+              "TIENTECH đang nâng cấp hạ tầng để phục vụ bạn tốt hơn. Vui lòng quay lại sau ít phút!"}
           </p>
-          <div className="pt-4 border-t border-slate-800 text-xs text-slate-400 space-y-1">
-            <p>Hotline hỗ trợ: <span className="font-bold text-white">{storeHotline}</span></p>
-            <p>Email liên hệ: <span className="font-bold text-white">{storeEmail}</span></p>
+
+          <button
+            type="button"
+            onClick={() => window.location.reload()}
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold uppercase tracking-wider shadow-lg shadow-blue-600/25 transition-all cursor-pointer active:scale-98"
+          >
+            <FiRefreshCw className="size-4" />
+            Kiểm tra lại trạng thái
+          </button>
+
+          <div className="pt-5 border-t border-slate-200/80 dark:border-slate-800 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-slate-500 dark:text-slate-400">
+            {storeHotline && (
+              <a
+                href={`tel:${storeHotline}`}
+                className="flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors font-semibold text-slate-700 dark:text-slate-200"
+              >
+                <FiPhoneCall className="text-blue-500 shrink-0" />
+                <span className="truncate">{storeHotline}</span>
+              </a>
+            )}
+            {storeEmail && (
+              <a
+                href={`mailto:${storeEmail}`}
+                className="flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors font-semibold text-slate-700 dark:text-slate-200 min-w-0"
+              >
+                <FiMail className="text-blue-500 shrink-0" />
+                <span className="truncate">{storeEmail}</span>
+              </a>
+            )}
           </div>
         </div>
       </div>

@@ -306,11 +306,11 @@ const ProductCard = ({ product }) => {
   return (
     <>
       <Motion.article
-        initial={{ opacity: 0, y: 10 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.25, ease: "easeOut" }}
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        transition={{ duration: 0.2, ease: "easeOut" }}
         viewport={{ once: true }}
-        className={`group relative flex flex-col h-full bg-white dark:bg-dark-surface rounded-2xl border border-slate-100 dark:border-slate-800/80 overflow-hidden shadow-xs hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-200/50 dark:hover:shadow-black/50 hover:border-blue-500/40 dark:hover:border-blue-500/40 transition-[transform,box-shadow,border-color,opacity] duration-300 cursor-pointer min-w-0 ${!isActive ? "opacity-60 grayscale pointer-events-none" : ""}`}
+        className={`group relative flex flex-col h-full bg-white dark:bg-dark-surface rounded-2xl border border-slate-100 dark:border-slate-800/80 overflow-hidden shadow-xs hover:shadow-xl hover:shadow-slate-200/50 dark:hover:shadow-black/50 hover:border-blue-500/40 dark:hover:border-blue-500/40 transition-[box-shadow,border-color,opacity] duration-300 cursor-pointer min-w-0 ${!isActive ? "opacity-60 grayscale pointer-events-none" : ""}`}
         onClick={() => navigate(`/product-detail/${slug || id}`)}
       >
         {/* Image Container */}
@@ -333,16 +333,6 @@ const ProductCard = ({ product }) => {
                 -{Math.round(effectiveDiscountPct)}%
               </span>
             ) : null}
-            {Boolean(
-              hasVariants === true ||
-              hasVariants === 1 ||
-              hasVariants === "true" ||
-              (Array.isArray(product.variants) && product.variants.length > 0)
-            ) && (
-              <span className="px-2 py-0.5 bg-slate-900/75 dark:bg-slate-800/80 backdrop-blur-xs text-white text-[9px] font-semibold rounded-full w-fit">
-                Nhiều phiên bản
-              </span>
-            )}
           </div>
 
           {/* Wishlist & Compare Buttons */}
@@ -410,10 +400,10 @@ const ProductCard = ({ product }) => {
         </div>
 
         {/* Content Area */}
-        <div className="p-4 flex flex-col flex-1 min-w-0">
-          <div className="flex items-center justify-between gap-2 mb-1.5 min-w-0">
+        <div className="p-3.5 sm:p-4 flex flex-col flex-1 min-w-0">
+          <div className="flex items-center justify-between gap-2 mb-1.5 min-w-0 min-h-[16px]">
             <p className="text-[11px] font-bold text-primary dark:text-blue-400 uppercase tracking-wide truncate min-w-0">
-              {product.brand?.name || "Chính hãng"}
+              {product.brand?.name || ""}
             </p>
             {/* Stock indicator */}
             <span className="flex items-center gap-1.5 text-[10px] text-slate-500 dark:text-slate-400 font-medium shrink-0 whitespace-nowrap">
@@ -422,33 +412,30 @@ const ProductCard = ({ product }) => {
             </span>
           </div>
 
-          <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100 line-clamp-2 leading-snug mb-2.5 min-h-[2.36rem] sm:min-h-[2.75rem] group-hover:text-primary dark:group-hover:text-blue-400 transition-colors break-words">
+          <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100 line-clamp-2 leading-snug mb-2 h-[2.15rem] sm:h-[2.5rem] group-hover:text-primary dark:group-hover:text-blue-400 transition-colors break-words [overflow-wrap:anywhere]">
             {name}
           </h3>
 
-          {/* Mini Specs - Attributes */}
-          {product.attributes && product.attributes.length > 0 && (
-            <div className="flex flex-wrap gap-1 mb-2">
-              {product.attributes.slice(0, 3).map((attr, idx) => {
-                if (
-                  ["ram", "rom", "refresh_rate"].includes(attr.attribute?.code)
-                ) {
-                  return (
-                    <span
-                      key={idx}
-                      className="px-2 py-0.5 bg-slate-50 dark:bg-slate-800/80 text-[10px] font-medium text-slate-600 dark:text-slate-300 rounded-md border border-slate-100 dark:border-slate-800"
-                    >
-                      {attr.value}
-                    </span>
-                  );
-                }
-                return null;
-              })}
-            </div>
-          )}
+          {/* Mini Specs - Attributes (reserved height to prevent card text shift) */}
+          <div className="flex items-center gap-1 mb-2 min-h-[22px] overflow-hidden">
+            {product.attributes &&
+              product.attributes
+                .filter((attr) =>
+                  ["ram", "rom", "refresh_rate"].includes(attr.attribute?.code),
+                )
+                .slice(0, 3)
+                .map((attr, idx) => (
+                  <span
+                    key={idx}
+                    className="px-2 py-0.5 bg-slate-50 dark:bg-slate-800/80 text-[10px] font-medium text-slate-600 dark:text-slate-300 rounded-md border border-slate-100 dark:border-slate-800 truncate max-w-[90px]"
+                  >
+                    {attr.value}
+                  </span>
+                ))}
+          </div>
 
-          <div className="flex items-center gap-1.5 mb-2.5 text-[10px]">
-            <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1.5 mb-2.5 text-[10px] min-w-0">
+            <div className="flex items-center gap-1 shrink-0">
               <div
                 className="flex text-amber-400 text-[9px] gap-0.5"
                 aria-label={`Đánh giá ${Number(avgRating || 5).toFixed(1)} sao`}
@@ -468,25 +455,29 @@ const ProductCard = ({ product }) => {
                 {Number(avgRating || 5).toFixed(1)}
               </span>
             </div>
-            <span className="font-mono text-slate-400 dark:text-slate-500">
+            <span className="font-mono text-slate-400 dark:text-slate-500 shrink-0">
               ({reviewCount})
             </span>
             {sold > 0 && (
-              <span className="font-mono text-slate-400 dark:text-slate-500 ml-auto">
-                BÁN: {sold}
+              <span className="font-mono text-slate-400 dark:text-slate-500 ml-auto truncate">
+                Đã bán {sold}
               </span>
             )}
           </div>
 
-          <div className="mt-auto pt-2 border-t border-slate-100 dark:border-slate-800 flex items-baseline justify-between gap-1 min-w-0">
-            <div className="min-w-0 flex-1">
+          <div className="mt-auto pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-1 min-w-0 min-h-[42px]">
+            <div className="min-w-0 flex-1 flex flex-col justify-center">
               <p className="text-sm sm:text-base font-black text-slate-900 dark:text-white leading-none font-mono truncate">
                 {formatCurrency(finalPrice)}
               </p>
-              {effectiveDiscountPct > 0 && productOriginalPrice > finalPrice && (
+              {effectiveDiscountPct > 0 && productOriginalPrice > finalPrice ? (
                 <p className="text-[10px] text-slate-400 dark:text-slate-500 line-through font-mono leading-none mt-1 truncate">
                   {formatCurrency(productOriginalPrice)}
                 </p>
+              ) : (
+                <span className="text-[10px] leading-none mt-1 opacity-0 select-none" aria-hidden="true">
+                  0₫
+                </span>
               )}
             </div>
           </div>

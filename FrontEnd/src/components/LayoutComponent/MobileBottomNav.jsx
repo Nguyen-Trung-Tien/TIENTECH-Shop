@@ -4,7 +4,7 @@ import { useSelector } from "react-redux";
 import { m as Motion } from "framer-motion";
 import { FiHome, FiGrid, FiShoppingCart, FiPackage, FiUser } from "react-icons/fi";
 
-const HIDE_BOTTOM_NAV_PREFIXES = ["/product-detail", "/checkout", "/cart"];
+const HIDE_BOTTOM_NAV_PREFIXES = ["/product-detail", "/checkout"];
 
 const MobileBottomNav = () => {
   const location = useLocation();

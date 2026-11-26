@@ -26,11 +26,16 @@ const AddCompareDrawer: React.FC<AddCompareDrawerProps> = ({
 
   useEffect(() => {
     if (!isOpen) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     };
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
   }, [isOpen, onClose]);
 
   useEffect(() => {
@@ -60,7 +65,7 @@ const AddCompareDrawer: React.FC<AddCompareDrawerProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex justify-end bg-slate-950/60 backdrop-blur-xs"
+      className="fixed inset-0 z-[1000] flex justify-end bg-slate-950/60 backdrop-blur-xs"
       onClick={onClose}
     >
       <div
@@ -68,9 +73,9 @@ const AddCompareDrawer: React.FC<AddCompareDrawerProps> = ({
         aria-modal="true"
         aria-label="Thêm sản phẩm vào so sánh"
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-md h-full bg-white dark:bg-dark-surface border-l border-slate-200 dark:border-dark-border shadow-2xl flex flex-col"
+        className="w-full max-w-md h-full max-h-[100dvh] bg-white dark:bg-dark-surface border-l border-slate-200 dark:border-dark-border shadow-2xl flex flex-col"
       >
-        <div className="p-4 sm:p-5 border-b border-slate-200 dark:border-dark-border flex items-center justify-between gap-3">
+        <div className="p-4 sm:p-5 border-b border-slate-200 dark:border-dark-border flex items-center justify-between gap-3 shrink-0">
           <div className="min-w-0 flex-1">
             <h3 className="text-sm sm:text-base font-black text-slate-900 dark:text-white truncate">
               Chọn sản phẩm để so sánh
@@ -85,9 +90,9 @@ const AddCompareDrawer: React.FC<AddCompareDrawerProps> = ({
             type="button"
             aria-label="Đóng hộp thoại chọn sản phẩm"
             onClick={onClose}
-            className="size-9 rounded-xl bg-slate-100 dark:bg-dark-bg text-slate-600 dark:text-slate-300 flex items-center justify-center hover:bg-slate-200 cursor-pointer shrink-0"
+            className="size-10 rounded-xl bg-slate-100 dark:bg-dark-bg text-slate-600 dark:text-slate-300 flex items-center justify-center hover:bg-slate-200 dark:hover:bg-slate-800 cursor-pointer shrink-0"
           >
-            <X className="w-4 h-4" />
+            <X className="w-5 h-5" />
           </button>
         </div>
 
