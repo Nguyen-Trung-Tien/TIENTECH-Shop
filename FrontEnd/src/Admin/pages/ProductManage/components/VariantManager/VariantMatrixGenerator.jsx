@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { FiPlus, FiTrash2, FiLayers, FiZap } from "react-icons/fi";
+import { FiPlus, FiTrash2, FiLayers, FiZap, FiInfo, FiRotateCcw } from "react-icons/fi";
 import { showInfoToast, showWarningToast, showSuccessToast } from "../../../../../utils/toastHelper";
 
 // Quick Preset Options for common products
@@ -187,8 +187,9 @@ const VariantMatrixGenerator = ({
 
       {/* Preset Fast Buttons */}
       <div className="space-y-2">
-        <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">
-          ⚡ Thêm nhanh mẫu phân loại có sẵn:
+        <span className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-slate-400">
+          <FiZap className="text-amber-500" aria-hidden="true" />
+          <span>Thêm nhanh mẫu phân loại có sẵn:</span>
         </span>
         <div className="flex flex-wrap gap-2">
           {PRESETS.map((p, idx) => (
@@ -297,8 +298,9 @@ const VariantMatrixGenerator = ({
                   {savedDbValues.length > 0 && (
                     <div className="space-y-1 pt-1">
                       <div className="flex flex-wrap items-center gap-1.5">
-                        <span className="text-[9px] font-bold text-slate-400 uppercase mr-1">
-                          💡 Đã lưu trước đó ({savedDbValues.length}):
+                        <span className="inline-flex items-center gap-1 text-[9px] font-bold text-slate-400 uppercase mr-1">
+                          <FiInfo className="text-amber-500" aria-hidden="true" />
+                          <span>Đã lưu trước đó ({savedDbValues.length}):</span>
                         </span>
                         {visibleBadges.map((v, i) => {
                           const isAlreadyAdded = opt.values.includes(v);
@@ -332,7 +334,7 @@ const VariantMatrixGenerator = ({
                             className="px-2 py-0.5 rounded-lg text-[10px] font-extrabold bg-slate-200 dark:bg-dark-card border border-transparent dark:border-dark-border text-indigo-600 dark:text-indigo-400 hover:bg-slate-300 dark:hover:bg-dark-surface transition-all cursor-pointer"
                           >
                             {isExpanded
-                              ? "↩️ Rút gọn"
+                              ? <span className="inline-flex items-center gap-1"><FiRotateCcw className="size-2.5" aria-hidden="true" /> Rút gọn</span>
                               : `+ Xem thêm ${hiddenCount} giá trị khác...`}
                           </button>
                         )}

@@ -18,7 +18,7 @@ import {
   FiMessageSquare,
 } from "react-icons/fi";
 import { FaHeart } from "react-icons/fa";
-import { ArrowLeftRight } from "lucide-react";
+import { ArrowLeftRight, Sparkles, Palette, Lightbulb, Compass, User } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   toggleCompareItem,
@@ -282,9 +282,12 @@ const ProductInfo = ({
             </span>
           )}
           {savingsAmount > 0 && (
-            <span className="text-[11px] font-black text-emerald-700 dark:text-emerald-400 bg-emerald-100/70 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-800 px-2.5 py-1 rounded-xl shadow-xs">
-              ⚡ Tiết kiệm {Number(savingsAmount).toLocaleString("vi-VN")}₫ (
-              {discountPercent}%)
+            <span className="inline-flex items-center gap-1 text-[11px] font-black text-emerald-700 dark:text-emerald-400 bg-emerald-100/70 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-800 px-2.5 py-1 rounded-xl shadow-xs">
+              <FiZap className="size-3 fill-current" aria-hidden="true" />
+              <span>
+                Tiết kiệm {Number(savingsAmount).toLocaleString("vi-VN")}₫ (
+                {discountPercent}%)
+              </span>
             </span>
           )}
         </div>
@@ -362,15 +365,23 @@ const ProductInfo = ({
             </div>
             {variantColorMatch !== null && (
               <span
-                className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${
+                className={`inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-0.5 rounded-full ${
                   variantColorMatch
                     ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300"
                     : "bg-slate-100 text-slate-600 dark:bg-dark-card dark:text-slate-400"
                 }`}
               >
-                {variantColorMatch
-                  ? "✨ Màu đang chọn cực hợp mệnh!"
-                  : "☯️ Có thể phối thêm ốp lưng tương sinh"}
+                {variantColorMatch ? (
+                  <>
+                    <Sparkles className="size-3 shrink-0" aria-hidden="true" />
+                    <span>Màu đang chọn cực hợp mệnh!</span>
+                  </>
+                ) : (
+                  <>
+                    <Compass className="size-3 shrink-0" aria-hidden="true" />
+                    <span>Có thể phối thêm ốp lưng tương sinh</span>
+                  </>
+                )}
               </span>
             )}
           </div>
@@ -416,7 +427,10 @@ const ProductInfo = ({
                     onClick={handleGenderToggle}
                     className="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-dark-border bg-white dark:bg-dark-card text-xs font-bold text-slate-800 dark:text-white hover:border-primary cursor-pointer"
                   >
-                    {gender === "male" ? "👨 Nam" : "👩 Nữ"} (Đổi)
+                    <span className="inline-flex items-center gap-1.5">
+                      <User className="size-3.5 text-primary" aria-hidden="true" />
+                      <span>{gender === "male" ? "Nam" : "Nữ"} (Đổi)</span>
+                    </span>
                   </button>
                 </div>
               </div>
@@ -437,16 +451,18 @@ const ProductInfo = ({
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs leading-relaxed">
                     <div>
-                      <strong className="block mb-0.5">
-                        🌟 Màu Đại Cát (Tương sinh):
+                      <strong className="flex items-center gap-1 mb-0.5">
+                        <Sparkles className="size-3.5 text-amber-500 shrink-0" aria-hidden="true" />
+                        <span>Màu Đại Cát (Tương sinh):</span>
                       </strong>
                       <p className="opacity-90">
                         {fsData.supportColors?.join(", ")}
                       </p>
                     </div>
                     <div>
-                      <strong className="block mb-0.5">
-                        🎨 Màu Bình An (Bản mệnh):
+                      <strong className="flex items-center gap-1 mb-0.5">
+                        <Palette className="size-3.5 text-primary shrink-0" aria-hidden="true" />
+                        <span>Màu Bình An (Bản mệnh):</span>
                       </strong>
                       <p className="opacity-90">
                         {fsData.luckyColors?.join(", ")}
@@ -455,12 +471,18 @@ const ProductInfo = ({
                   </div>
 
                   <div className="pt-1 text-[11px] leading-relaxed border-t border-black/5 dark:border-white/5 space-y-1">
-                    <p>
-                      <strong>💡 Lời khuyên thiết bị:</strong> {fsData.advice}
+                    <p className="flex items-start gap-1.5">
+                      <Lightbulb className="size-3.5 text-amber-500 shrink-0 mt-0.5" aria-hidden="true" />
+                      <span>
+                        <strong>Lời khuyên thiết bị:</strong> {fsData.advice}
+                      </span>
                     </p>
-                    <p>
-                      <strong>🧭 Bố trí bàn làm việc:</strong>{" "}
-                      {fsData.workspaceTip}
+                    <p className="flex items-start gap-1.5">
+                      <Compass className="size-3.5 text-primary shrink-0 mt-0.5" aria-hidden="true" />
+                      <span>
+                        <strong>Bố trí bàn làm việc:</strong>{" "}
+                        {fsData.workspaceTip}
+                      </span>
                     </p>
                   </div>
                 </div>
@@ -497,8 +519,9 @@ const ProductInfo = ({
                       className="mt-3 p-3.5 rounded-2xl bg-indigo-50/90 dark:bg-indigo-950/40 border border-indigo-200/80 dark:border-indigo-900/40 text-xs text-slate-800 dark:text-slate-200 leading-relaxed space-y-1.5"
                     >
                       <div className="font-extrabold text-indigo-800 dark:text-indigo-300 flex items-center gap-1.5">
+                        <Sparkles className="size-3.5 shrink-0" aria-hidden="true" />
                         <span>
-                          ✨ Tư vấn từ AI Tech Color &amp; Setup Advisor:
+                          Tư vấn từ AI Tech Color &amp; Setup Advisor:
                         </span>
                       </div>
                       <p className="text-[11px] whitespace-pre-line leading-relaxed">

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { FiPlus, FiTrash2, FiCheck, FiLayers } from "react-icons/fi";
+import { FiPlus, FiTrash2, FiCheck, FiLayers, FiAlertTriangle } from "react-icons/fi";
 import {
   showErrorToast,
   showSuccessToast,
@@ -235,8 +235,14 @@ const VariantManager = ({
                         </span>
                       )}
                     </h5>
-                    <p className="text-[10px] font-mono text-slate-400 dark:text-dark-text-secondary">
-                      SKU: {v.sku || "⚠️ Chưa có SKU"}
+                    <p className="text-[10px] font-mono text-slate-400 dark:text-dark-text-secondary flex items-center gap-1">
+                      SKU:{" "}
+                      {v.sku || (
+                        <span className="inline-flex items-center gap-1 text-amber-500">
+                          <FiAlertTriangle className="size-3" aria-hidden="true" />
+                          <span>Chưa có SKU</span>
+                        </span>
+                      )}
                     </p>
                   </div>
                 </div>

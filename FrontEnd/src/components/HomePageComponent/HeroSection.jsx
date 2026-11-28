@@ -141,7 +141,7 @@ const HeroSection = () => {
                 className="inline-flex items-center justify-center gap-2 min-h-[48px] px-6 py-3 rounded-2xl font-bold text-xs sm:text-sm tracking-wide transition-all duration-200 bg-white hover:bg-slate-100 dark:bg-slate-900/80 dark:hover:bg-slate-800 text-slate-800 dark:text-cyan-300 hover:text-blue-600 dark:hover:text-white border border-slate-200 dark:border-cyan-500/40 hover:border-blue-400 dark:hover:border-cyan-400 shadow-2xs active:scale-98 cursor-pointer"
               >
                 <FiZap className="text-amber-500 dark:text-amber-400 fill-amber-500 dark:fill-amber-400 animate-bounce" />
-                Săn Deal Hot ⚡
+                Săn Deal Hot
               </button>
             </Motion.div>
 

@@ -127,7 +127,7 @@ export const useChatBotSession = () => {
       timer = setTimeout(() => {
         addMessage(
           "assistant",
-          "👋 Xin chào! Tôi là **TienTech AI Assistant**.\nTôi có thể hỗ trợ bạn tìm kiếm sản phẩm, tư vấn cấu hình, tra cứu khuyến mãi và tìm kiếm bằng hình ảnh!",
+          "Xin chào! Tôi là **TienTech AI Assistant**.\nTôi có thể hỗ trợ bạn tìm kiếm sản phẩm, tư vấn cấu hình, tra cứu khuyến mãi và tìm kiếm bằng hình ảnh!",
         );
       }, 400);
     }
@@ -172,7 +172,7 @@ export const useChatBotSession = () => {
       if (imageToSend) {
         addMessage(
           "user",
-          messageContent || "📷 Đã tải lên 1 hình ảnh để tìm kiếm...",
+          messageContent || "Đã tải lên 1 hình ảnh để tìm kiếm...",
         );
         setImagePreview(imageToSend);
         try {
@@ -180,7 +180,7 @@ export const useChatBotSession = () => {
           setImagePreview(null);
           if (res.errCode === 0) {
             await streamText(
-              `🔍 **TienTech Visual AI** tìm thấy các sản phẩm tương tự (${
+              `**TienTech Visual AI** tìm thấy các sản phẩm tương tự (${
                 res.data.description || "Phân tích hoàn tất"
               }):`,
               res.data.products || [],
@@ -233,7 +233,7 @@ export const useChatBotSession = () => {
       } catch (err) {
         console.error(err);
         await streamText(
-          "Xin lỗi, kết nối tới hệ thống AI tạm thời gián đoạn. Vui lòng thử lại sau! 😥",
+          "Xin lỗi, kết nối tới hệ thống AI tạm thời gián đoạn. Vui lòng thử lại sau!",
         );
       } finally {
         setLoading(false);

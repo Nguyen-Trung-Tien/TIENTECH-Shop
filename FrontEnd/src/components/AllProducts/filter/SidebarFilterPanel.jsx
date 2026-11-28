@@ -115,7 +115,7 @@ const SidebarFilterPanel = ({
                 }`}
               />
             </span>
-            <span>SĂN DEAL FLASH SALE ⚡</span>
+            <span>SĂN DEAL FLASH SALE</span>
           </div>
           <div
             className={`w-9 h-5 rounded-full p-0.5 transition-colors ${

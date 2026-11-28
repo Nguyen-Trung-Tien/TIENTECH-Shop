@@ -1,6 +1,6 @@
 import React from "react";
 import { m as Motion } from "framer-motion";
-import { Check, RotateCcw } from "lucide-react";
+import { ArrowRight, Check, RotateCcw } from "lucide-react";
 import UnifiedSpinner from "../../../../components/Loading/UnifiedSpinner";
 import {
   isBooleanSetting,
@@ -152,8 +152,9 @@ const SettingFieldCard = ({
           {(item.key.includes("FEE") || item.key.includes("MIN_ORDER")) &&
             !isNaN(currentValue) &&
             currentValue !== "" && (
-              <p className="text-[11px] font-bold text-primary dark:text-primary-light">
-                👉 Quy đổi: {(Number(currentValue) || 0).toLocaleString("vi-VN")} ₫
+              <p className="text-[11px] font-bold text-primary dark:text-primary-light inline-flex items-center gap-1">
+                <ArrowRight className="size-3 shrink-0" aria-hidden="true" />
+                <span>Quy đổi: {(Number(currentValue) || 0).toLocaleString("vi-VN")} ₫</span>
               </p>
             )}
         </div>

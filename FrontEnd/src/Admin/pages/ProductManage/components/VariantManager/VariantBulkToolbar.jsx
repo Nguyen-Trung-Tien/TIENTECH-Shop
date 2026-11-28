@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { FiDollarSign, FiBox, FiPercent, FiCheckCircle } from "react-icons/fi";
+import { FiDollarSign, FiBox, FiPercent, FiCheckCircle, FiZap } from "react-icons/fi";
 import { showWarningToast, showSuccessToast } from "../../../../../utils/toastHelper";
 
 const VariantBulkToolbar = ({ variantsCount, onApplyBulk }) => {
@@ -25,7 +25,9 @@ const VariantBulkToolbar = ({ variantsCount, onApplyBulk }) => {
   return (
     <div className="p-4 rounded-2xl bg-amber-50/70 dark:bg-amber-950/20 border border-amber-200/80 dark:border-amber-900/40 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div className="flex items-center gap-2">
-        <span className="text-amber-600 dark:text-amber-400 text-lg">⚡</span>
+        <span className="text-amber-600 dark:text-amber-400 text-lg flex items-center">
+          <FiZap aria-hidden="true" />
+        </span>
         <div>
           <h5 className="text-xs font-black uppercase text-amber-900 dark:text-amber-300">
             Sửa nhanh hàng loạt ({variantsCount} biến thể)

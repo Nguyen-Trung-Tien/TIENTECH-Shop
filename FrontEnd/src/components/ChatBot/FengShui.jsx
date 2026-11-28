@@ -28,7 +28,7 @@ const FengShuiChat = ({ setGlobalBirthYear }) => {
     setMessages([
       {
         sender: "bot",
-        text: "Xin chào bạn! 👋 Tôi là **AI Tech Color & Setup Advisor** của TienTech.",
+        text: "Xin chào bạn! Tôi là **AI Tech Color & Setup Advisor** của TienTech.",
       },
       {
         sender: "bot",
@@ -65,7 +65,7 @@ const FengShuiChat = ({ setGlobalBirthYear }) => {
             ...prev,
             {
               sender: "bot",
-              text: "⚠️ Năm sinh không hợp lệ. Vui lòng nhập số năm hợp lệ (Ví dụ: **1995**):",
+              text: "Năm sinh không hợp lệ. Vui lòng nhập số năm hợp lệ (Ví dụ: **1995**):",
             },
           ]);
           return;
@@ -76,7 +76,7 @@ const FengShuiChat = ({ setGlobalBirthYear }) => {
           ...prev,
           {
             sender: "bot",
-            text: "✅ Năm sinh đã nhận. Xin hãy chọn giới tính để tôi tính toán Cung Phi chính xác nhất:",
+            text: "Năm sinh đã nhận. Xin hãy chọn giới tính để tôi tính toán Cung Phi chính xác nhất:",
           },
         ]);
         setStep(STEP.GENDER);
@@ -89,7 +89,7 @@ const FengShuiChat = ({ setGlobalBirthYear }) => {
           ...prev,
           {
             sender: "bot",
-            text: `✨ Đã xác nhận hồ sơ (${text === "female" ? "Nữ" : text}). Bạn đang tìm dòng thiết bị hay phong cách setup nào?`,
+            text: `Đã xác nhận hồ sơ (${text === "female" ? "Nữ" : text}). Bạn đang tìm dòng thiết bị hay phong cách setup nào?`,
           },
         ]);
         setStep(STEP.GOAL);
@@ -329,7 +329,7 @@ const FengShuiChat = ({ setGlobalBirthYear }) => {
                         msg.recommendedProducts.length > 0 && (
                           <div className="grid gap-2 pt-1">
                             <p className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-wider ml-1">
-                              ✨ Thiết bị gợi ý theo AI Color &amp; Setup:
+                              Thiết bị gợi ý theo AI Color &amp; Setup:
                             </p>
                             {msg.recommendedProducts.map((prod) => (
                               <Link

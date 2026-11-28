@@ -1,6 +1,6 @@
 import React, { memo, useState } from "react";
 import { FaStar, FaCheckCircle, FaThumbsUp } from "react-icons/fa";
-import { FiThumbsUp, FiMessageSquare, FiX, FiSend } from "react-icons/fi";
+import { FiThumbsUp, FiMessageSquare, FiX, FiSend, FiSearch } from "react-icons/fi";
 import ReplyItem from "./ReplyItem";
 import { toggleLikeReviewApi } from "../../api/reviewApi";
 import { createReplyApi } from "../../api/reviewReplyApi";
@@ -154,7 +154,7 @@ const ReviewItem = ({ review, user }) => {
                       className="w-full h-full object-cover dark:mix-blend-normal"
                     />
                     <div className="absolute inset-0 bg-black/20 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-bold">
-                      🔍
+                      <FiSearch className="size-4" aria-hidden="true" />
                     </div>
                   </div>
                 ))}

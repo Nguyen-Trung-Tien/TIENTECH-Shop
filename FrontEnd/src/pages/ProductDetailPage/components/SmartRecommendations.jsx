@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { FiZap, FiChevronRight } from "react-icons/fi";
+import { FiZap, FiChevronRight, FiLayers } from "react-icons/fi";
+import { Sparkles } from "lucide-react";
 import { calculateFinalPrice } from "../../../utils/priceHelper";
 
 const SmartRecommendations = ({ smartRecs }) => {
@@ -50,9 +51,17 @@ const SmartRecommendations = ({ smartRecs }) => {
                         : "bg-gradient-to-r from-primary to-indigo-600 text-white"
                     }`}
                   >
-                    {rec.reason === "Thường mua cùng"
-                      ? "🤝 Combo Phối Góc"
-                      : "✨ Đề Xuất"}
+                    {rec.reason === "Thường mua cùng" ? (
+                      <>
+                        <FiLayers className="size-3 shrink-0" aria-hidden="true" />
+                        <span>Combo Phối Góc</span>
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="size-3 shrink-0" aria-hidden="true" />
+                        <span>Đề Xuất</span>
+                      </>
+                    )}
                   </span>
                 </div>
 

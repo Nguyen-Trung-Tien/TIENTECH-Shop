@@ -447,7 +447,7 @@ const Sidebar = ({ collapsed, mobileOpen, onCloseMobile }) => {
             )}
             {(mobileOpen || !collapsed) && (
               <span className="truncate">
-                {loggingOut ? "Đang xử lý..." : "Đăng xuất console"}
+                {loggingOut ? "Đang xử lý..." : "Đăng xuất"}
               </span>
             )}
           </button>

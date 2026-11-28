@@ -229,9 +229,9 @@ const ProductFormModal = ({
                     <span>Đang lưu...</span>
                   </>
                 ) : editProduct ? (
-                  "Cập nhật sản phẩm ✨"
+                  "Cập nhật sản phẩm"
                 ) : (
-                  "Đăng bán sản phẩm 🚀"
+                  "Đăng bán sản phẩm"
                 )}
               </button>
             </div>

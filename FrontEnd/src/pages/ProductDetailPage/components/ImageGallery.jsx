@@ -7,6 +7,7 @@ import {
   FiShield,
   FiPackage,
   FiCheckCircle,
+  FiZap,
 } from "react-icons/fi";
 import { m as Motion, AnimatePresence } from "framer-motion";
 
@@ -72,7 +73,8 @@ const ImageGallery = ({
         {/* Discount Badge */}
         {discountPercent > 0 && (
           <div className="absolute top-4 left-4 z-20 bg-gradient-to-r from-rose-600 via-red-600 to-amber-500 text-white text-[10px] font-black px-3 py-1.5 rounded-xl shadow-md uppercase tracking-wider pointer-events-none flex items-center gap-1">
-            <span>⚡ Tiết Kiệm {discountPercent}%</span>
+            <FiZap className="size-3 fill-current" aria-hidden="true" />
+            <span>Tiết Kiệm {discountPercent}%</span>
           </div>
         )}
 

@@ -11,6 +11,7 @@ import {
   Smartphone,
   SlidersHorizontal,
   RotateCcw,
+  Zap,
 } from "lucide-react";
 import PriceFilterPanel from "../PriceFilterPanel";
 
@@ -73,7 +74,7 @@ const TopbarFilterBar = ({
               />
             </span>
             <span className="flex items-center gap-1 font-mono tracking-tight">
-              FLASH SALE <span className="text-amber-500 text-[11px]">⚡</span>
+              FLASH SALE <Zap className="size-3 text-amber-500 fill-amber-500" aria-hidden="true" />
             </span>
           </button>
 

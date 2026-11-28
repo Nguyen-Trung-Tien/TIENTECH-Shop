@@ -16,11 +16,12 @@
 
 ---
 
-## 🚀 Tổng quan
+## Tổng quan
 
 Backend của TIENTECH được tổ chức theo kiến trúc 4 tầng (**Router → Controller → Service → Model/Repository**), bảo đảm toàn vẹn giao dịch qua Sequelize Transactions và sẵn sàng mở rộng ngang với Redis + Socket.IO Adapter.
 
 ### Công nghệ lõi
+
 - **Runtime:** Node.js 22 (LTS)
 - **Framework:** Express 5.x
 - **Database:** MySQL 8.0 / TiDB Cloud Serverless
@@ -32,7 +33,7 @@ Backend của TIENTECH được tổ chức theo kiến trúc 4 tầng (**Router
 
 ---
 
-## 🤖 Hệ sinh thái AI (Google Gemini)
+## Hệ sinh thái AI (Google Gemini)
 
 - **Official SDK:** `@google/genai` (`gemini-3.8-flash`, `gemini-3.5-flash-lite`, `gemini-embedding-2`)
 - **AI ChatBot & Setup Advisor:** Trợ lý mua sắm RAG + tư vấn màu sắc hợp mệnh (`FengShuiService`).
@@ -60,7 +61,7 @@ src/
 
 ---
 
-## ⚡ Cài đặt & Chạy (Monorepo Root)
+## Cài đặt & Chạy (Monorepo Root)
 
 ```bash
 # 1. Cài đặt dependencies từ thư mục gốc monorepo

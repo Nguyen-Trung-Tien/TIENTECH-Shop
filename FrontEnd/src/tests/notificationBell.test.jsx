@@ -165,7 +165,7 @@ describe("NotificationBell Component Tests", () => {
     expect(screen.getByText("vip@example.com")).toBeInTheDocument();
 
     // Điền tiêu đề và nội dung
-    fireEvent.change(screen.getByPlaceholderText(/Ví dụ: 💬 Phản hồi yêu cầu/i), {
+    fireEvent.change(screen.getByPlaceholderText(/Ví dụ: Phản hồi yêu cầu/i), {
       target: { value: "Ưu đãi riêng dành cho bạn" },
     });
     fireEvent.change(screen.getByPlaceholderText(/Nhập thông điệp gửi tới khách hàng/i), {

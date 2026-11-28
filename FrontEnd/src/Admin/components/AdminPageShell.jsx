@@ -40,7 +40,7 @@ const AdminPageShell = ({
 
       {stats && <div className="min-w-0">{stats}</div>}
       {filters && <div className="min-w-0">{filters}</div>}
-      <div className="min-w-0">{children}</div>
+      <div className="min-w-0 space-y-6">{children}</div>
     </div>
   );
 };

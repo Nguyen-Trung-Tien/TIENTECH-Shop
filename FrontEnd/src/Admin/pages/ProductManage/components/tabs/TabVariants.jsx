@@ -17,7 +17,7 @@ const TabVariants = ({
       {errors?.variants && (
         <div className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/40 flex items-center gap-3 text-rose-600 dark:text-rose-400 text-xs font-bold shadow-sm">
           <FiAlertCircle className="text-xl shrink-0" />
-          <span>⚠️ {errors.variants}</span>
+          <span>{errors.variants}</span>
         </div>
       )}
 
@@ -39,7 +39,7 @@ const TabVariants = ({
             onClick={() => setFormData((prev) => ({ ...prev, hasVariants: true }))}
             className="px-6 py-2.5 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-black uppercase tracking-wider shadow-lg shadow-indigo-200 dark:shadow-none transition-all cursor-pointer"
           >
-            Bật tính năng Biến thể ngay 🚀
+            Bật tính năng Biến thể ngay
           </button>
         </div>
       ) : (

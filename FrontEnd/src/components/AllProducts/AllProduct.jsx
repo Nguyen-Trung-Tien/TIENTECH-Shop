@@ -103,7 +103,7 @@ const AllProducts = React.memo(() => {
       chips.push({
         key: "isFlashSale",
         val: "true",
-        label: "⚡ Flash Sale",
+        label: "Flash Sale",
       });
     }
 

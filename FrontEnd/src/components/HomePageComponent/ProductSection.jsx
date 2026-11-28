@@ -26,9 +26,9 @@ import { ProductCardSkeleton as SkeletonCard } from "../Loading";
 
 const SORT_OPTIONS = [
   { id: "featured", label: "Nổi bật nhất" },
-  { id: "bestseller", label: "Bán chạy nhất 🔥" },
+  { id: "bestseller", label: "Bán chạy nhất" },
   { id: "discount", label: "Ưu đãi sốc (%)" },
-  { id: "top_rated", label: "Đánh giá cao (⭐)" },
+  { id: "top_rated", label: "Đánh giá cao" },
   { id: "price_asc", label: "Giá: Thấp → Cao" },
   { id: "price_desc", label: "Giá: Cao → Thấp" },
 ];

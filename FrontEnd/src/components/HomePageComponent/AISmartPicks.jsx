@@ -1,15 +1,15 @@
 import React, { useState, useMemo } from "react";
 import { FiCpu, FiCheckCircle } from "react-icons/fi";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Zap, Palette, Headphones, Gamepad2 } from "lucide-react";
 import { m as Motion, AnimatePresence } from "framer-motion";
 import ProductCard from "../ProductCard/ProductCard";
 
 const AI_FILTER_CHIPS = [
-  { id: "all", label: "Tất cả gợi ý", icon: "✨" },
-  { id: "flagship", label: "Hiệu năng Flagship", icon: "⚡" },
-  { id: "creative", label: "Sáng tạo & Đồ họa", icon: "🎨" },
-  { id: "sound", label: "Âm thanh Hi-Res", icon: "🎧" },
-  { id: "gaming", label: "Gaming Pro", icon: "🎮" },
+  { id: "all", label: "Tất cả gợi ý", icon: Sparkles },
+  { id: "flagship", label: "Hiệu năng Flagship", icon: Zap },
+  { id: "creative", label: "Sáng tạo & Đồ họa", icon: Palette },
+  { id: "sound", label: "Âm thanh Hi-Res", icon: Headphones },
+  { id: "gaming", label: "Gaming Pro", icon: Gamepad2 },
 ];
 
 const AISmartPicks = ({ products, title = "Dành Riêng Cho Bạn" }) => {
@@ -62,14 +62,14 @@ const AISmartPicks = ({ products, title = "Dành Riêng Cho Bạn" }) => {
   if (!products || products.length === 0) return null;
 
   return (
-    <section className="py-12 md:py-16 relative overflow-hidden bg-gradient-to-b from-indigo-50/60 via-slate-50/50 to-white dark:from-dark-bg dark:via-indigo-950/20 dark:to-dark-bg border-b border-slate-200/80 dark:border-slate-800/80 transition-colors duration-300">
+    <section className="py-8 md:py-12 relative overflow-hidden bg-gradient-to-b from-indigo-50/60 via-slate-50/50 to-white dark:from-dark-bg dark:via-indigo-950/20 dark:to-dark-bg border-b border-slate-200/80 dark:border-slate-800/80 transition-colors duration-300">
       {/* Background Neural Glows */}
       <div className="absolute top-1/4 -right-20 w-[450px] h-[300px] bg-indigo-500/10 dark:bg-indigo-600/15 blur-[120px] rounded-full pointer-events-none"></div>
       <div className="absolute -bottom-10 left-10 w-[350px] h-[250px] bg-cyan-500/10 dark:bg-cyan-500/10 blur-[100px] rounded-full pointer-events-none"></div>
 
       <div className="container-custom relative z-10">
         {/* Header with AI Badge */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-5">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-6 gap-5">
           <div className="min-w-0">
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-3">
               <span>{title}</span>
@@ -84,7 +84,9 @@ const AISmartPicks = ({ products, title = "Dành Riêng Cho Bạn" }) => {
 
           {/* AI Interactive Chips */}
           <div className="flex items-center gap-2 overflow-x-auto pb-1 max-w-full scrollbar-none">
-            {AI_FILTER_CHIPS.map((chip) => (
+            {AI_FILTER_CHIPS.map((chip) => {
+              const ChipIcon = chip.icon;
+              return (
               <button
                 key={chip.id}
                 type="button"
@@ -95,10 +97,11 @@ const AISmartPicks = ({ products, title = "Dành Riêng Cho Bạn" }) => {
                     : "bg-white/80 dark:bg-slate-900/80 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-800 hover:border-indigo-400 dark:hover:border-indigo-500"
                 }`}
               >
-                <span>{chip.icon}</span>
+                <ChipIcon className="size-3.5 shrink-0" aria-hidden="true" />
                 <span>{chip.label}</span>
               </button>
-            ))}
+              );
+            })}
           </div>
         </div>
 
@@ -110,7 +113,7 @@ const AISmartPicks = ({ products, title = "Dành Riêng Cho Bạn" }) => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.25 }}
-            className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3.5 md:gap-4.5"
+            className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-5"
           >
             {(filteredProducts.length > 0 ? filteredProducts : products)
               .slice(0, 6)

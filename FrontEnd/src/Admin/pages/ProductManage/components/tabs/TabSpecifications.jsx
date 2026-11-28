@@ -135,7 +135,7 @@ const TabSpecifications = ({
             className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white text-xs font-black uppercase tracking-wider shadow-md shadow-indigo-200 dark:shadow-none transition-all active:scale-95 disabled:opacity-50 cursor-pointer"
           >
             <FiCpu className={isGeneratingDesc ? "animate-spin" : ""} />
-            {isGeneratingDesc ? "Đang tạo bằng AI..." : "Tạo bằng AI ✨"}
+            {isGeneratingDesc ? "Đang tạo bằng AI..." : "Tạo bằng AI"}
           </button>
         </div>
         <textarea

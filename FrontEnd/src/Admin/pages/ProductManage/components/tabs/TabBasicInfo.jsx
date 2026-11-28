@@ -1,5 +1,5 @@
 import React from "react";
-import { FiUploadCloud, FiTrash2, FiPlus, FiBox, FiDollarSign, FiPercent, FiLayers, FiAlertCircle, FiRefreshCw } from "react-icons/fi";
+import { FiUploadCloud, FiTrash2, FiPlus, FiBox, FiDollarSign, FiPercent, FiLayers, FiAlertCircle, FiRefreshCw, FiZap } from "react-icons/fi";
 import { m as Motion } from "framer-motion";
 
 const TabBasicInfo = ({
@@ -31,7 +31,7 @@ const TabBasicInfo = ({
       <div className="p-4 rounded-2xl bg-indigo-50/60 dark:bg-indigo-900/10 border border-indigo-100 dark:border-indigo-900/30 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="size-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-black text-sm shadow-md shadow-indigo-200 dark:shadow-none">
-            ⚡
+            <FiZap className="size-5" aria-hidden="true" />
           </div>
           <div>
             <h4 className="text-xs font-black uppercase text-indigo-900 dark:text-indigo-300">

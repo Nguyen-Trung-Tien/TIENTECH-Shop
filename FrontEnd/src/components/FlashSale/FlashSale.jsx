@@ -5,6 +5,7 @@ import ProductCard from "../../components/ProductCard/ProductCard";
 import { ProductCardSkeleton as SkeletonCard } from "../Loading";
 import LoadMoreButton from "../LoadMoreButton/LoadMoreButton";
 import { FiZap, FiClock } from "react-icons/fi";
+import { Flame } from "lucide-react";
 
 const FlashSale = ({ products: propProducts, parentLoading = false }) => {
   const [timeLeft, setTimeLeft] = useState(0);
@@ -126,14 +127,14 @@ const FlashSale = ({ products: propProducts, parentLoading = false }) => {
   return (
     <section
       id="flash-sale-section"
-      className="py-10 md:py-16 bg-gradient-to-b from-red-50/60 via-white to-slate-50/50 dark:from-red-950/20 dark:via-dark-bg dark:to-dark-bg border-y border-red-200/60 dark:border-red-900/30 transition-colors duration-300 relative overflow-hidden"
+      className="py-8 md:py-12 bg-gradient-to-b from-red-50/60 via-white to-slate-50/50 dark:from-red-950/20 dark:via-dark-bg dark:to-dark-bg border-y border-red-200/60 dark:border-red-900/30 transition-colors duration-300 relative overflow-hidden"
     >
       {/* Ambient Red/Orange cyber glow */}
       <div className="absolute top-0 right-1/4 w-[400px] h-[200px] bg-red-600/10 blur-[130px] rounded-full pointer-events-none"></div>
 
       <div className="container-custom relative z-10">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 bg-white/90 dark:bg-slate-900/80 p-5 md:p-6 rounded-3xl border border-red-500/20 dark:border-red-500/30 shadow-lg shadow-red-500/5 backdrop-blur-xl">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-6 bg-white/90 dark:bg-slate-900/80 p-5 md:p-6 rounded-3xl border border-red-500/20 dark:border-red-500/30 shadow-lg shadow-red-500/5 backdrop-blur-xl">
           <div className="flex items-center gap-4">
             <div className="size-13 bg-gradient-to-tr from-red-600 via-rose-600 to-amber-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-red-600/30 shrink-0">
               <FiZap className="text-2xl fill-current animate-bounce" />
@@ -143,8 +144,9 @@ const FlashSale = ({ products: propProducts, parentLoading = false }) => {
                 <h2 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
                   CYBER FLASH SALE
                 </h2>
-                <span className="px-2.5 py-0.5 rounded-full bg-gradient-to-r from-red-600 to-amber-600 text-white font-black text-[10px] uppercase font-mono tracking-wider shadow-xs">
-                  SĂN DEAL GIỜ VÀNG 🔥
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-gradient-to-r from-red-600 to-amber-600 text-white font-black text-[10px] uppercase font-mono tracking-wider shadow-xs">
+                  <span>SĂN DEAL GIỜ VÀNG</span>
+                  <Flame className="size-3 fill-current" aria-hidden="true" />
                 </span>
               </div>
               <p className="text-slate-500 dark:text-slate-400 text-xs font-semibold mt-1">

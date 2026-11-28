@@ -73,12 +73,12 @@ const CategorySection = React.memo(
     if (!categories || categories.length === 0) return null;
 
     return (
-      <section className="py-10 md:py-16 bg-white dark:bg-dark-bg border-b border-slate-200/80 dark:border-slate-800/80 transition-colors duration-300 relative overflow-hidden">
+      <section className="py-8 md:py-12 bg-white dark:bg-dark-bg border-b border-slate-200/80 dark:border-slate-800/80 transition-colors duration-300 relative overflow-hidden">
         {/* Subtle ambient accent glow */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[250px] bg-cyan-500/5 dark:bg-cyan-500/10 blur-[120px] rounded-full pointer-events-none"></div>
 
         <div className="container-custom relative z-10">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-6 gap-4">
             <div className="min-w-0">
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
                 Danh Mục Công Nghệ{" "}
@@ -89,7 +89,7 @@ const CategorySection = React.memo(
             </div>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5 sm:gap-4.5">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-5">
             {categories.map((cat, index) => (
               <Motion.div
                 key={cat.id || index}

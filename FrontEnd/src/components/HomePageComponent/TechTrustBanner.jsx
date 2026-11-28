@@ -39,12 +39,12 @@ const TRUST_PILLARS = [
 
 const TechTrustBanner = () => {
   return (
-    <section className="py-12 md:py-16 relative overflow-hidden bg-slate-100/60 dark:bg-slate-950/80 border-b border-slate-200/80 dark:border-slate-800/80 transition-colors duration-300">
+    <section className="py-8 md:py-12 relative overflow-hidden bg-slate-100/60 dark:bg-slate-950/80 border-b border-slate-200/80 dark:border-slate-800/80 transition-colors duration-300">
       {/* Ambient background blur */}
       <div className="absolute top-1/2 left-1/3 w-[500px] h-[250px] bg-cyan-500/5 dark:bg-cyan-500/10 blur-[130px] rounded-full pointer-events-none"></div>
 
       <div className="container-custom relative z-10">
-        <div className="text-center max-w-2xl mx-auto mb-10">
+        <div className="text-center max-w-2xl mx-auto mb-8">
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-900 dark:text-white tracking-tight">
             Đặc Quyền An Tâm Khi Mua Sắm Tại{" "}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-500">

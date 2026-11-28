@@ -56,7 +56,7 @@ const PageShell = ({
           </div>
         </header>
       )}
-      <div className={maxWidthClass}>{children}</div>
+      <div className={`${maxWidthClass} space-y-6`}>{children}</div>
     </div>
   );
 };

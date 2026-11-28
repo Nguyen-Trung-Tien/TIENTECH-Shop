@@ -1,8 +1,8 @@
 export const QUICK_ACTIONS = [
-  "⚡ Tìm laptop đồ họa",
-  "🔥 Điện thoại giảm giá sâu",
-  "📦 Tra cứu đơn hàng",
-  "🛡️ Chính sách bảo hành",
+  "Tìm laptop đồ họa",
+  "Điện thoại giảm giá sâu",
+  "Tra cứu đơn hàng",
+  "Chính sách bảo hành",
 ];
 
 export const formatChatTime = (date) => {

@@ -280,10 +280,10 @@ const NotificationBroadcastModal = ({
             }
             className="w-full h-11 bg-slate-50 dark:bg-dark-bg border border-slate-200 dark:border-dark-border rounded-2xl px-4 text-xs font-bold text-slate-900 dark:text-white outline-none focus:ring-4 focus:ring-primary/10"
           >
-            <option value="system">⚙️ Hệ thống (Bảo trì / Hỗ trợ / Cập nhật)</option>
-            <option value="promotion">🏷️ Khuyến mãi (Voucher / Tri ân)</option>
-            <option value="order">📦 Đơn hàng</option>
-            <option value="security">🔒 Bảo mật tài khoản</option>
+            <option value="system">Hệ thống (Bảo trì / Hỗ trợ / Cập nhật)</option>
+            <option value="promotion">Khuyến mãi (Voucher / Tri ân)</option>
+            <option value="order">Đơn hàng</option>
+            <option value="security">Bảo mật tài khoản</option>
           </select>
         </div>
 
@@ -296,8 +296,8 @@ const NotificationBroadcastModal = ({
             required
             placeholder={
               isUserTarget
-                ? "Ví dụ: 💬 Phản hồi yêu cầu của bạn từ Ban Quản Trị"
-                : "Ví dụ: 🎉 Siêu SALE Khuyến Mãi Khủng!"
+                ? "Ví dụ: Phản hồi yêu cầu của bạn từ Ban Quản Trị"
+                : "Ví dụ: Siêu SALE Khuyến Mãi Khủng!"
             }
             value={broadcastForm.title}
             onChange={(e) =>

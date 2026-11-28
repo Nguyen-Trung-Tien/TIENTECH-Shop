@@ -1,5 +1,5 @@
 import React from "react";
-import { m } from "framer-motion";
+import { m as Motion } from "framer-motion";
 import {
   FiCreditCard,
   FiShield,
@@ -58,8 +58,8 @@ const PaymentPage = () => {
       <div className="container-custom">
         {/* Payment Methods Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-14">
-          {paymentMethods.map((m, idx) => (
-            <m.div
+          {paymentMethods.map((method, idx) => (
+            <Motion.div
               key={idx}
               whileHover={{ y: -5 }}
               className="p-8 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between"
@@ -67,21 +67,21 @@ const PaymentPage = () => {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="p-3.5 bg-slate-50 dark:bg-slate-800/60 rounded-2xl">
-                    {m.icon}
+                    {method.icon}
                   </div>
                   <span className="px-3 py-1 bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 font-black text-xs uppercase tracking-wider rounded-full border border-purple-100 dark:border-purple-900/30">
-                    {m.badge}
+                    {method.badge}
                   </span>
                 </div>
 
                 <h3 className="text-xl font-black text-slate-900 dark:text-white">
-                  {m.name}
+                  {method.name}
                 </h3>
                 <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-                  {m.desc}
+                  {method.desc}
                 </p>
               </div>
-            </m.div>
+            </Motion.div>
           ))}
         </div>
 

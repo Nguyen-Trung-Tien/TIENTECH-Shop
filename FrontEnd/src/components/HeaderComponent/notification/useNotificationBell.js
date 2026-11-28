@@ -139,10 +139,10 @@ export const useNotificationBell = () => {
         } else if (batchOrderCountRef.current === 0) {
           batchOrderCountRef.current = 1;
           const msg = data?.message || "Có đơn hàng mới từ khách hàng!";
-          showInfoToast(`🔔 ${msg}`, { toastId: "active_order_batch" });
+          showInfoToast(msg, { toastId: "active_order_batch" });
         } else {
           batchOrderCountRef.current += 1;
-          const batchMsg = `🔔 Hệ thống vừa nhận thêm ${batchOrderCountRef.current} đơn hàng mới!`;
+          const batchMsg = `Hệ thống vừa nhận thêm ${batchOrderCountRef.current} đơn hàng mới!`;
           if (toast.isActive("active_order_batch")) {
             toast.update("active_order_batch", {
               render: batchMsg,
@@ -171,7 +171,7 @@ export const useNotificationBell = () => {
         playNotificationChime();
         const key = `status_${data.orderId || data.orderCode}_${data.status}`;
         if (shouldSuppressDuplicate(key)) return;
-        showInfoToast(`🔔 ${data.message}`, { toastId: key });
+        showInfoToast(data.message, { toastId: key });
       };
 
       handleNotification = (data) => {
@@ -228,7 +228,7 @@ export const useNotificationBell = () => {
         }
 
         const text = data.message ? `: ${data.message}` : "";
-        showInfoToast(`🔔 ${data.title}${text}`, { toastId: `notif_${notifKey}` });
+        showInfoToast(`${data.title}${text}`, { toastId: `notif_${notifKey}` });
       };
 
       if (user.role === "admin" || user.role === "root") {

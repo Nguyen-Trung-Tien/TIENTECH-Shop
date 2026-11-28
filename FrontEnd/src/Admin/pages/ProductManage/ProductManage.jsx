@@ -314,7 +314,7 @@ const ProductManage = () => {
       if (res?.errCode === 0) {
         showSuccessToast(
           res.message,
-          "Đồng bộ dữ liệu AI Vector thành công! ✨",
+          "Đồng bộ dữ liệu AI Vector thành công!",
         );
         fetchProducts(page);
         fetchVectorStatus();

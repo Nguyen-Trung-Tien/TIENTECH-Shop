@@ -13,6 +13,7 @@ import {
   FiChevronDown,
   FiChevronUp,
 } from "react-icons/fi";
+import { Palette, Sparkles, Lightbulb, Monitor, Leaf } from "lucide-react";
 import { m as Motion, AnimatePresence } from "framer-motion";
 import { getFengShuiDetailApi } from "../../../api/chatApi";
 
@@ -361,7 +362,8 @@ const ProductDescriptionTabs = ({ product, mergedSpecs, displayVariant }) => {
               {/* Header */}
               <div className="border-b border-slate-100 dark:border-dark-border pb-4">
                 <div className="flex items-center gap-2 text-primary font-black text-xs uppercase tracking-wider mb-1">
-                  🎨 AI Tech Color &amp; Setup Advisor
+                  <Palette className="size-3.5" aria-hidden="true" />
+                  <span>AI Tech Color &amp; Setup Advisor</span>
                 </div>
                 <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white">
                   Gợi Ý Phối Màu Thiết Bị &amp; Bố Trí Góc Setup Công Nghệ
@@ -412,17 +414,26 @@ const ProductDescriptionTabs = ({ product, mergedSpecs, displayVariant }) => {
                       </span>
                     </div>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                      <p>
-                        <strong>🌟 Bảng màu tương hợp:</strong>{" "}
-                        {fsData.supportColors?.join(", ")}
+                      <p className="flex items-start gap-1.5">
+                        <Sparkles className="size-3.5 text-amber-500 shrink-0 mt-0.5" aria-hidden="true" />
+                        <span>
+                          <strong>Bảng màu tương hợp:</strong>{" "}
+                          {fsData.supportColors?.join(", ")}
+                        </span>
                       </p>
-                      <p>
-                        <strong>🎨 Màu chủ đạo gợi ý:</strong>{" "}
-                        {fsData.luckyColors?.join(", ")}
+                      <p className="flex items-start gap-1.5">
+                        <Palette className="size-3.5 text-primary shrink-0 mt-0.5" aria-hidden="true" />
+                        <span>
+                          <strong>Màu chủ đạo gợi ý:</strong>{" "}
+                          {fsData.luckyColors?.join(", ")}
+                        </span>
                       </p>
                     </div>
-                    <p className="pt-1 text-[11px] border-t border-black/5 dark:border-white/5">
-                      <strong>💡 Gợi ý góc setup:</strong> {fsData.advice}
+                    <p className="pt-1 text-[11px] border-t border-black/5 dark:border-white/5 flex items-start gap-1.5">
+                      <Lightbulb className="size-3.5 text-amber-500 shrink-0 mt-0.5" aria-hidden="true" />
+                      <span>
+                        <strong>Gợi ý góc setup:</strong> {fsData.advice}
+                      </span>
                     </p>
                   </div>
                 )}
@@ -432,7 +443,8 @@ const ProductDescriptionTabs = ({ product, mergedSpecs, displayVariant }) => {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="p-4.5 rounded-2xl bg-gradient-to-b from-amber-50/60 to-white dark:from-dark-card dark:to-dark-surface border border-amber-200/60 dark:border-amber-900/40 space-y-2">
                   <div className="text-xs font-black text-amber-700 dark:text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
-                    🖥️ Ánh Sáng &amp; Góc Nhìn Chính
+                    <Monitor className="size-3.5 shrink-0" aria-hidden="true" />
+                    <span>Ánh Sáng &amp; Góc Nhìn Chính</span>
                   </div>
                   <h4 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">
                     Vị Trí Đặt Màn Hình &amp; Máy Chính
@@ -445,7 +457,8 @@ const ProductDescriptionTabs = ({ product, mergedSpecs, displayVariant }) => {
 
                 <div className="p-4.5 rounded-2xl bg-gradient-to-b from-blue-50/60 to-white dark:from-dark-card dark:to-dark-surface border border-blue-200/60 dark:border-blue-900/40 space-y-2">
                   <div className="text-xs font-black text-primary dark:text-primary-light uppercase tracking-wider flex items-center gap-1.5">
-                    🎨 Đồng Bộ Tone Màu Phụ Kiện
+                    <Palette className="size-3.5 shrink-0" aria-hidden="true" />
+                    <span>Đồng Bộ Tone Màu Phụ Kiện</span>
                   </div>
                   <h4 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">
                     Cân Bằng Thẩm Mỹ &amp; Công Thái Học
@@ -458,7 +471,8 @@ const ProductDescriptionTabs = ({ product, mergedSpecs, displayVariant }) => {
 
                 <div className="p-4.5 rounded-2xl bg-gradient-to-b from-emerald-50/60 to-white dark:from-dark-card dark:to-dark-surface border border-emerald-200/60 dark:border-emerald-900/40 space-y-2">
                   <div className="text-xs font-black text-emerald-700 dark:text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
-                    🌿 Tối Ưu Không Gian &amp; Góc Setup
+                    <Leaf className="size-3.5 shrink-0" aria-hidden="true" />
+                    <span>Tối Ưu Không Gian &amp; Góc Setup</span>
                   </div>
                   <h4 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">
                     Vệ Sinh &amp; Trật Tự Dây Cáp

@@ -12,7 +12,11 @@ import {
   FiEyeOff,
 } from "react-icons/fi";
 import { FaStar } from "react-icons/fa";
-import { deleteReviewApi, getAllReviewsApi, updateReviewApi } from "../../../api/reviewApi";
+import {
+  deleteReviewApi,
+  getAllReviewsApi,
+  updateReviewApi,
+} from "../../../api/reviewApi";
 import { createReplyApi, deleteReplyApi } from "../../../api/reviewReplyApi";
 import { showErrorToast, showSuccessToast } from "../../../utils/toastHelper";
 import AppPagination from "../../../components/Pagination/Pagination";
@@ -79,7 +83,9 @@ const ReviewPage = () => {
   const handleToggleApprove = async (review) => {
     const nextApproved = review.isApproved === false || review.isApproved === 0;
     try {
-      const res = await updateReviewApi(review.id, { isApproved: nextApproved });
+      const res = await updateReviewApi(review.id, {
+        isApproved: nextApproved,
+      });
       if (res?.errCode === 0) {
         setReviews((prev) =>
           prev.map((r) =>
@@ -90,7 +96,9 @@ const ReviewPage = () => {
           nextApproved ? "Đã duyệt hiển thị đánh giá" : "Đã ẩn đánh giá",
         );
       } else {
-        showErrorToast(res?.errMessage || "Không thể cập nhật trạng thái đánh giá");
+        showErrorToast(
+          res?.errMessage || "Không thể cập nhật trạng thái đánh giá",
+        );
       }
     } catch (e) {
       showErrorToast(e, "Cập nhật trạng thái đánh giá thất bại");
@@ -145,7 +153,6 @@ const ReviewPage = () => {
       subtitle="Lắng nghe khách hàng & Phản hồi cộng đồng"
       className="max-w-[1200px] mx-auto"
     >
-
       {/* Filter Bar */}
       <div className="bg-white dark:bg-dark-surface p-4 rounded-2xl border border-slate-200/80 dark:border-dark-border shadow-xs flex flex-wrap items-center gap-4">
         <div className="flex items-center gap-2 px-4 h-12 bg-slate-50 dark:bg-dark-bg border border-slate-100 dark:border-dark-border rounded-2xl">
@@ -268,8 +275,16 @@ const ReviewPage = () => {
                     <button
                       type="button"
                       onClick={() => handleToggleApprove(review)}
-                      title={review.isApproved !== false ? "Ẩn đánh giá" : "Duyệt hiển thị"}
-                      aria-label={review.isApproved !== false ? "Ẩn đánh giá" : "Duyệt hiển thị"}
+                      title={
+                        review.isApproved !== false
+                          ? "Ẩn đánh giá"
+                          : "Duyệt hiển thị"
+                      }
+                      aria-label={
+                        review.isApproved !== false
+                          ? "Ẩn đánh giá"
+                          : "Duyệt hiển thị"
+                      }
                       className={`size-10 rounded-xl flex items-center justify-center transition-all shadow-sm border cursor-pointer ${
                         review.isApproved !== false
                           ? "bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 border-amber-100 dark:border-amber-900/30 hover:bg-amber-500 hover:text-white"
@@ -337,14 +352,15 @@ const ReviewPage = () => {
                     {/* AI Smart Reply Pills */}
                     <div className="flex items-center gap-1.5 flex-wrap pb-1">
                       <span className="text-[10px] font-extrabold text-indigo-500 uppercase tracking-wider mr-1">
-                        🤖 AI Quick Reply:
+                        AI Quick Reply:
                       </span>
                       <button
                         type="button"
                         onClick={() =>
                           setReplyInputs((prev) => ({
                             ...prev,
-                            [review.id]: "Cảm ơn quý khách đã tin tưởng và ủng hộ TIENTECH! Chúc bạn có trải nghiệm sản phẩm tuyệt vời.",
+                            [review.id]:
+                              "Cảm ơn quý khách đã tin tưởng và ủng hộ TIENTECH! Chúc bạn có trải nghiệm sản phẩm tuyệt vời.",
                           }))
                         }
                         className="px-2.5 py-1 text-[11px] font-semibold bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-300 rounded-lg hover:bg-indigo-500 hover:text-white transition border border-indigo-100 dark:border-indigo-900/30"
@@ -356,7 +372,8 @@ const ReviewPage = () => {
                         onClick={() =>
                           setReplyInputs((prev) => ({
                             ...prev,
-                            [review.id]: "TIENTECH xin cảm ơn bạn rất nhiều! Rất hân hạnh được phục vụ bạn trong các đơn hàng tiếp theo.",
+                            [review.id]:
+                              "TIENTECH xin cảm ơn bạn rất nhiều! Rất hân hạnh được phục vụ bạn trong các đơn hàng tiếp theo.",
                           }))
                         }
                         className="px-2.5 py-1 text-[11px] font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-300 rounded-lg hover:bg-emerald-500 hover:text-white transition border border-emerald-100 dark:border-emerald-900/30"
@@ -368,7 +385,8 @@ const ReviewPage = () => {
                         onClick={() =>
                           setReplyInputs((prev) => ({
                             ...prev,
-                            [review.id]: "TIENTECH chân thành xin lỗi vì trải nghiệm chưa hoàn hảo. Bộ phận CSKH đã ghi nhận và sẽ liên hệ hỗ trợ bạn ngay!",
+                            [review.id]:
+                              "TIENTECH chân thành xin lỗi vì trải nghiệm chưa hoàn hảo. Bộ phận CSKH đã ghi nhận và sẽ liên hệ hỗ trợ bạn ngay!",
                           }))
                         }
                         className="px-2.5 py-1 text-[11px] font-semibold bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-300 rounded-lg hover:bg-amber-500 hover:text-white transition border border-amber-100 dark:border-amber-900/30"

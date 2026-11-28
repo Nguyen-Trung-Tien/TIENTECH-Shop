@@ -157,7 +157,7 @@ const Dashboard = () => {
   }, []);
 
   return (
-    <AdminPageShell className="space-y-6 sm:space-y-8 text-slate-900 dark:text-dark-text-primary transition-colors duration-300">
+    <AdminPageShell className="text-slate-900 dark:text-dark-text-primary transition-colors duration-300">
       {/* Executive Hero Banner */}
       <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-blue-50/90 via-indigo-50/50 to-slate-100/80 dark:from-slate-900 dark:via-[#0e1628] dark:to-slate-900 text-slate-900 dark:text-white p-5 sm:p-7 md:p-8 border border-blue-100/80 dark:border-slate-800 shadow-sm dark:shadow-xl transition-colors duration-300">
         {/* Ambient Glow Orbs */}
@@ -223,9 +223,9 @@ const Dashboard = () => {
       ) : error ? (
         <ErrorBanner message={error} onRetry={fetchDashboard} />
       ) : (
-        <div className="space-y-6 sm:space-y-10">
+        <div className="space-y-6">
           {/* Primary Business KPIs (4 spacious columns) */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5">
             {stats.map((item, i) => (
               <Link key={i} to={item.link} className="block group min-w-0">
                 <StatsCard {...item} />
@@ -238,7 +238,7 @@ const Dashboard = () => {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.25, ease: "easeOut" }}
-            className="grid grid-cols-1 md:grid-cols-3 gap-4"
+            className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5"
           >
             <Link
               to="/admin/orders?tab=cancel_requested"

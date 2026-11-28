@@ -13,6 +13,10 @@ import {
   FiTag,
   FiZap,
   FiCornerDownLeft,
+  FiSmartphone,
+  FiMonitor,
+  FiHeadphones,
+  FiCpu,
 } from "react-icons/fi";
 import { searchSuggestionsApi } from "../../api/productApi";
 import debounce from "../../utils/debounce";
@@ -28,10 +32,10 @@ const TRENDING_KEYWORDS = [
 ];
 
 const QUICK_CATEGORIES = [
-  { name: "Điện thoại", icon: "📱", path: "/products?category=dien-thoai" },
-  { name: "Laptop", icon: "💻", path: "/products?category=laptop" },
-  { name: "Tai nghe", icon: "🎧", path: "/products?category=tai-nghe" },
-  { name: "Phụ kiện", icon: "🔌", path: "/products?category=phu-kien" },
+  { name: "Điện thoại", icon: FiSmartphone, path: "/products?category=dien-thoai" },
+  { name: "Laptop", icon: FiMonitor, path: "/products?category=laptop" },
+  { name: "Tai nghe", icon: FiHeadphones, path: "/products?category=tai-nghe" },
+  { name: "Phụ kiện", icon: FiCpu, path: "/products?category=phu-kien" },
 ];
 
 export default function OmniSearchModal({
@@ -486,7 +490,9 @@ export default function OmniSearchModal({
                       <span>Danh mục phổ biến</span>
                     </div>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                      {QUICK_CATEGORIES.map((cat, idx) => (
+                      {QUICK_CATEGORIES.map((cat, idx) => {
+                        const CatIcon = cat.icon;
+                        return (
                         <button
                           key={idx}
                           onClick={() => {
@@ -495,14 +501,15 @@ export default function OmniSearchModal({
                           }}
                           className="flex items-center gap-2.5 p-2.5 rounded-2xl bg-slate-50/80 dark:bg-slate-800/40 hover:bg-white dark:hover:bg-slate-800 border border-slate-100 dark:border-slate-800 hover:border-blue-200 dark:hover:border-blue-800/60 hover:shadow-2xs transition-all duration-200 text-left cursor-pointer group"
                         >
-                          <span className="size-8 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-700/50 flex items-center justify-center text-base shrink-0 group-hover:scale-105 transition-transform shadow-2xs">
-                            {cat.icon}
+                          <span className="size-8 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-700/50 flex items-center justify-center text-primary dark:text-blue-400 shrink-0 group-hover:scale-105 transition-transform shadow-2xs">
+                            <CatIcon className="size-4" aria-hidden="true" />
                           </span>
                           <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 truncate transition-colors">
                             {cat.name}
                           </span>
                         </button>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                 </>

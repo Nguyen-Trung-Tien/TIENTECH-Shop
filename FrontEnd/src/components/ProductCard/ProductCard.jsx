@@ -7,7 +7,7 @@ import { getProductByIdApi } from "../../api/productApi";
 import { addCartItem, addGuestCartItem } from "../../redux/cartSlice";
 import { setBuyNowCheckout } from "../../redux/checkoutSlice";
 import { calculateFinalPrice } from "../../utils/priceHelper";
-import { FiShoppingCart, FiHeart } from "react-icons/fi";
+import { FiShoppingCart, FiHeart, FiZap } from "react-icons/fi";
 import { FaStar, FaHeart } from "react-icons/fa";
 import { ArrowLeftRight } from "lucide-react";
 import {
@@ -326,7 +326,8 @@ const ProductCard = ({ product }) => {
           <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-10">
             {flashSaleActive && effectiveDiscountPct > 0 ? (
               <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-red-600 text-white text-[10px] font-bold shadow-sm shadow-red-500/30">
-                ⚡ -{Math.round(effectiveDiscountPct)}%
+                <FiZap className="size-3 fill-current" aria-hidden="true" />
+                <span>-{Math.round(effectiveDiscountPct)}%</span>
               </span>
             ) : effectiveDiscountPct > 0 ? (
               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-blue-600 text-white text-[10px] font-bold shadow-sm shadow-blue-500/20">

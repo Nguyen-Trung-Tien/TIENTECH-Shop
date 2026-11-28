@@ -106,7 +106,7 @@ const FilterSlideDrawer = ({
                     : "text-slate-400"
                 }
               />
-              SĂN DEAL FLASH SALE ⚡
+              SĂN DEAL FLASH SALE
             </span>
             <div
               className={`w-9 h-5 rounded-full p-0.5 transition-colors ${

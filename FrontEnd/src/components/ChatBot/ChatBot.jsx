@@ -9,6 +9,7 @@ import {
   Maximize2,
   Cpu,
   ArrowDown,
+  Search,
 } from "lucide-react";
 import { ConfirmModal } from "../UI/Modal";
 import { useChatBotSession } from "./components/useChatBotSession";
@@ -184,8 +185,9 @@ const ChatBot = () => {
                       alt="Preview"
                       className="w-full h-auto max-h-44 object-cover rounded-xl animate-pulse"
                     />
-                    <p className="text-[10px] text-center text-blue-600 dark:text-blue-400 font-semibold">
-                      🔍 Đang phân tích hình ảnh...
+                    <p className="text-[10px] text-center text-blue-600 dark:text-blue-400 font-semibold flex items-center justify-center gap-1">
+                      <Search className="size-3" aria-hidden="true" />
+                      <span>Đang phân tích hình ảnh...</span>
                     </p>
                   </div>
                 </div>

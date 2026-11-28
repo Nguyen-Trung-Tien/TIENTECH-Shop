@@ -362,7 +362,7 @@ export const useProductForm = ({ editProduct, onSuccess, onClose }) => {
       const res = await generateProductDescriptionApi(formData.name, keywords);
       if (res.errCode === 0) {
         setFormData((prev) => ({ ...prev, description: res.data }));
-        showSuccessToast("✨ Đã tự động tạo mô tả sản phẩm bằng AI!");
+        showSuccessToast("Đã tự động tạo mô tả sản phẩm bằng AI!");
       } else {
         showErrorToast(res.errMessage, "Không thể tạo mô tả bằng AI");
       }
