@@ -50,13 +50,13 @@ const AdminLayout = () => {
               </div>
             </Suspense>
           </div>
-
-          {/* Admin Footer */}
-          <footer className="py-3 px-4 sm:px-10 border-t border-slate-200/60 dark:border-dark-border bg-white/50 dark:bg-dark-surface/50 text-center text-[10px] sm:text-[11px] font-bold uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary">
-            &copy; {new Date().getFullYear()} TienTech Shop &bull; Mobile Ready
-            Dashboard
-          </footer>
         </main>
+
+        {/* Fixed Admin Footer */}
+        <footer className="shrink-0 py-3 px-4 sm:px-10 border-t border-slate-200/60 dark:border-dark-border bg-white/80 dark:bg-dark-surface/80 backdrop-blur-sm text-center text-[10px] sm:text-[11px] font-bold uppercase tracking-widest text-slate-400 dark:text-dark-text-secondary">
+          &copy; {new Date().getFullYear()} TienTech Shop &bull; Mobile Ready
+          Dashboard
+        </footer>
       </div>
     </div>
   );

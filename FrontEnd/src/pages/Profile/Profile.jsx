@@ -248,7 +248,7 @@ const Profile = () => {
                   transition={{ type: "spring", stiffness: 400, damping: 30 }}
                 />
               )}
-              <Icon className="size-3.5" />
+              {Icon && (typeof Icon === "function" || Icon.$$typeof ? <Icon className="size-3.5" /> : Icon)}
               <span>{tab.label}</span>
             </button>
           );

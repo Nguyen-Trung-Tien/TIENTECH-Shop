@@ -4,7 +4,6 @@ import { ErrorBanner } from "../../components/UI";
 import HeroSection from "../../components/HomePageComponent/HeroSection";
 import CategorySection from "../../components/HomePageComponent/CategorySection";
 import ProductSection from "../../components/HomePageComponent/ProductSection";
-import SmallBanner from "../../components/SmallBanner/SmallBanner";
 import TechTrustBanner from "../../components/HomePageComponent/TechTrustBanner";
 import FlashSale from "../../components/FlashSale/FlashSale";
 import BrandSection from "../../components/BrandSection/BrandSection";
@@ -64,13 +63,6 @@ const HomePage = () => {
             title="Dành Riêng Cho Bạn"
           />
         )}
-
-        {/* Promotional Banner */}
-        <div className="container-custom py-4">
-          <div className="rounded-3xl overflow-hidden shadow-sm border border-slate-200/80 dark:border-slate-800/80">
-            <SmallBanner />
-          </div>
-        </div>
 
         {/* Curated Featured Products */}
         <ProductSection

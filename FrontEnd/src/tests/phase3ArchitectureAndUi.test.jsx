@@ -42,7 +42,7 @@ describe("Phase 3: UI Architecture, Carousel A11y, SEO & AI Honesty", () => {
     window.HTMLElement.prototype.scrollTo = vi.fn();
   });
 
-  it("Carousel renders accessible semantics, slide group labels, and pause toggle without aria-pressed", () => {
+  it("Carousel renders accessible semantics, slide group labels, omits pause toggle, and shows nav controls only on overflow", () => {
     const items = [
       { id: 1, name: "ASUS" },
       { id: 2, name: "Apple" },
@@ -67,19 +67,25 @@ describe("Phase 3: UI Architecture, Carousel A11y, SEO & AI Honesty", () => {
     expect(slides[0]).toHaveAttribute("aria-roledescription", "slide");
     expect(slides[0]).toHaveAttribute("aria-label", "1 / 3");
 
-    const pauseBtn = screen.getByRole("button", {
-      name: /tạm dừng trình chiếu/i,
-    });
-    expect(pauseBtn).not.toHaveAttribute("aria-pressed");
-    fireEvent.click(pauseBtn);
     expect(
-      screen.getByRole("button", { name: /tiếp tục trình chiếu/i }),
-    ).not.toHaveAttribute("aria-pressed");
+      screen.queryByRole("button", { name: /tạm dừng trình chiếu/i }),
+    ).not.toBeInTheDocument();
+
+    // Without horizontal overflow (jsdom default scrollWidth === clientWidth), nav buttons stay hidden
+    expect(screen.queryByRole("button", { name: "Mục trước" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Mục tiếp theo" })).not.toBeInTheDocument();
+
+    // Simulate horizontal overflow and trigger resize
+    const track = screen.getByLabelText("Danh sách Thương hiệu nổi bật");
+    Object.defineProperty(track, "scrollWidth", { configurable: true, value: 800 });
+    Object.defineProperty(track, "clientWidth", { configurable: true, value: 320 });
+    fireEvent(window, new Event("resize"));
 
     expect(screen.getByRole("button", { name: "Mục trước" })).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: "Mục tiếp theo" }),
     ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Mục tiếp theo" })).toBeInTheDocument();
   });
 
   it("useDocumentMeta updates document title and meta description dynamically", () => {

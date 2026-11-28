@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { ChevronLeft, ChevronRight, Pause, Play } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 export interface CarouselProps<T> {
   items: T[];
@@ -27,20 +27,19 @@ export function Carousel<T>({
   const userInteractedRef = useRef(false);
   const scrollTimerRef = useRef<number | null>(null);
 
-  const [isPaused, setIsPaused] = useState<boolean>(() => {
-    if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
-      return false;
-    }
-    return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  });
   const [isHoverOrFocused, setIsHoverOrFocused] = useState(false);
+  const [hasOverflow, setHasOverflow] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
   const [statusMessage, setStatusMessage] = useState("");
 
   const computeSlideMetrics = useCallback(() => {
     const track = trackRef.current;
-    if (!track || items.length === 0) return;
+    if (!track || items.length === 0) {
+      setHasOverflow(false);
+      return;
+    }
 
+    setHasOverflow(track.scrollWidth > track.clientWidth + 1);
     const scrollLeft = track.scrollLeft;
 
     const slides = track.querySelectorAll<HTMLElement>('[role="group"][aria-roledescription="slide"]');
@@ -88,11 +87,17 @@ export function Carousel<T>({
     track.addEventListener("scrollend", handleScrollSettled);
     track.addEventListener("scroll", handleScroll, { passive: true });
     window.addEventListener("resize", computeSlideMetrics);
+    const observer =
+      typeof ResizeObserver === "function"
+        ? new ResizeObserver(() => computeSlideMetrics())
+        : null;
+    observer?.observe(track);
 
     return () => {
       track.removeEventListener("scrollend", handleScrollSettled);
       track.removeEventListener("scroll", handleScroll);
       window.removeEventListener("resize", computeSlideMetrics);
+      observer?.disconnect();
       if (scrollTimerRef.current !== null) {
         window.clearTimeout(scrollTimerRef.current);
       }
@@ -137,14 +142,24 @@ export function Carousel<T>({
   );
 
   useEffect(() => {
-    if (autoPlayIntervalMs <= 0 || isPaused || isHoverOrFocused || items.length <= 1) {
+    const prefersReducedMotion =
+      typeof window !== "undefined" &&
+      typeof window.matchMedia === "function" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (
+      autoPlayIntervalMs <= 0 ||
+      prefersReducedMotion ||
+      isHoverOrFocused ||
+      !hasOverflow ||
+      items.length <= 1
+    ) {
       return;
     }
     const id = window.setInterval(() => {
       scrollByStep(1, true);
     }, autoPlayIntervalMs);
     return () => window.clearInterval(id);
-  }, [autoPlayIntervalMs, isPaused, isHoverOrFocused, items.length, scrollByStep]);
+  }, [autoPlayIntervalMs, isHoverOrFocused, hasOverflow, items.length, scrollByStep]);
 
   if (!items || items.length === 0) return null;
 
@@ -181,21 +196,8 @@ export function Carousel<T>({
         ))}
       </div>
 
-      {showControls && items.length > 1 && (
+      {showControls && items.length > 1 && hasOverflow && (
         <div className="mt-2.5 flex items-center justify-end gap-1.5">
-          {autoPlayIntervalMs > 0 && (
-            <button
-              type="button"
-              onClick={() => setIsPaused((prev) => !prev)}
-              aria-label={isPaused ? "Tiếp tục trình chiếu" : "Tạm dừng trình chiếu"}
-              className="min-w-8 min-h-8 px-2.5 inline-flex items-center justify-center gap-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white/90 dark:bg-slate-800/90 text-slate-600 dark:text-slate-300 hover:text-primary hover:border-primary/40 transition-colors cursor-pointer touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-            >
-              {isPaused ? <Play className="size-3.5" aria-hidden="true" /> : <Pause className="size-3.5" aria-hidden="true" />}
-              <span className="text-[11px] font-semibold">
-                {isPaused ? "Phát" : "Tạm dừng"}
-              </span>
-            </button>
-          )}
           <button
             type="button"
             onClick={() => scrollByStep(-1, false)}

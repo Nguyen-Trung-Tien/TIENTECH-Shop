@@ -45,7 +45,7 @@ const OrderStatsHeader = ({ summaryStats }) => {
             <div
               className={`size-9 sm:size-10 rounded-xl flex items-center justify-center shrink-0 ${card.iconClass}`}
             >
-              <Icon className="size-4 sm:size-5" aria-hidden="true" />
+              {React.isValidElement(Icon) ? Icon : (typeof Icon === "function" || Icon?.$$typeof) ? <Icon className="size-4 sm:size-5" aria-hidden="true" /> : null}
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-[10px] sm:text-[11px] font-bold text-slate-400 dark:text-dark-text-secondary uppercase tracking-wider truncate">

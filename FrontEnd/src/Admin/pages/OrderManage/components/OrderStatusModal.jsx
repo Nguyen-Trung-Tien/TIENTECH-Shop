@@ -125,7 +125,7 @@ const OrderStatusModal = ({
                               : "bg-slate-100/50 dark:bg-dark-bg/50 text-slate-400"
                       }`}
                     >
-                      <Icon className="size-4.5" />
+                      {React.isValidElement(Icon) ? Icon : (typeof Icon === "function" || Icon?.$$typeof) ? <Icon className="size-4.5" /> : null}
                     </div>
                     <div className="min-w-0">
                       <p

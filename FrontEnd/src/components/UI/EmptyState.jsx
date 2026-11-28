@@ -25,7 +25,13 @@ export const EmptyState = ({
           isCompact ? "size-12 sm:size-14 mb-3" : "size-16 sm:size-20 mb-4"
         } rounded-2xl bg-slate-100 dark:bg-slate-800/80 flex items-center justify-center text-slate-400 dark:text-slate-500 shadow-inner`}
       >
-        <Icon size={isCompact ? 24 : 32} className="stroke-[1.5]" />
+        {React.isValidElement(Icon) ? (
+          Icon
+        ) : typeof Icon === "function" || Icon?.$$typeof ? (
+          <Icon size={isCompact ? 24 : 32} className="stroke-[1.5]" />
+        ) : (
+          <FiInbox size={isCompact ? 24 : 32} className="stroke-[1.5]" />
+        )}
       </div>
       <h3
         className={`${

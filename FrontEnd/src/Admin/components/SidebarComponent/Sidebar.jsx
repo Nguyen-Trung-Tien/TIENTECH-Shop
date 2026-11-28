@@ -1,6 +1,21 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { FiHome, FiShoppingCart, FiBox, FiUsers, FiLayers, FiLogOut, FiBarChart, FiDollarSign, FiMessageSquare, FiTag, FiChevronDown, FiX, FiSettings, FiMail } from "react-icons/fi";
+import {
+  FiHome,
+  FiShoppingCart,
+  FiBox,
+  FiUsers,
+  FiLayers,
+  FiLogOut,
+  FiBarChart,
+  FiDollarSign,
+  FiMessageSquare,
+  FiTag,
+  FiChevronDown,
+  FiX,
+  FiSettings,
+  FiMail,
+} from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
 import { logoutUserApi } from "../../../api/userApi";
 import { getAdminCounters } from "../../../api/adminApi";
@@ -46,7 +61,12 @@ const MENU_SECTIONS = [
   {
     title: "SẢN PHẨM & KHO",
     items: [
-      { to: "/admin/products", icon: <FiBox />, label: "Sản phẩm", badgeKey: "lowStockCount" },
+      {
+        to: "/admin/products",
+        icon: <FiBox />,
+        label: "Sản phẩm",
+        badgeKey: "lowStockCount",
+      },
       { to: "/admin/categories", icon: <FiLayers />, label: "Danh mục" },
       { to: "/admin/brands", icon: <FiTag />, label: "Thương hiệu" },
     ],
@@ -63,7 +83,11 @@ const MENU_SECTIONS = [
   {
     title: "CẤU HÌNH",
     items: [
-      { to: "/admin/settings", icon: <FiSettings />, label: "Cài đặt hệ thống" },
+      {
+        to: "/admin/settings",
+        icon: <FiSettings />,
+        label: "Cài đặt hệ thống",
+      },
     ],
   },
 ];
@@ -116,14 +140,17 @@ const Sidebar = ({ collapsed, mobileOpen, onCloseMobile }) => {
       document.addEventListener("visibilitychange", handleVisibilityChange);
       return () => {
         clearInterval(interval);
-        document.removeEventListener("visibilitychange", handleVisibilityChange);
+        document.removeEventListener(
+          "visibilitychange",
+          handleVisibilityChange,
+        );
       };
     }
   }, [user]);
 
   const toggleMenu = (label) => {
     setExpandedMenus((prev) =>
-      prev.includes(label) ? prev.filter((l) => l !== label) : [...prev, label]
+      prev.includes(label) ? prev.filter((l) => l !== label) : [...prev, label],
     );
   };
 
@@ -171,13 +198,11 @@ const Sidebar = ({ collapsed, mobileOpen, onCloseMobile }) => {
       >
         {/* Brand Logo Header */}
         <div className="h-16 flex items-center justify-between px-4 border-b border-slate-100 dark:border-dark-border/60 shrink-0 bg-white/40 dark:bg-dark-surface/40 backdrop-blur-sm">
-          <Link to="/admin/dashboard" className="flex items-center gap-2 w-full min-w-0">
+          <Link
+            to="/admin/dashboard"
+            className="flex items-center gap-2 w-full min-w-0"
+          >
             <Logo showText={mobileOpen || !collapsed} size="sm" />
-            {(mobileOpen || !collapsed) && (
-              <span className="text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-md bg-primary/10 text-primary dark:bg-primary/20 dark:text-blue-400 border border-primary/20">
-                PRO
-              </span>
-            )}
           </Link>
           {mobileOpen && (
             <button
@@ -214,10 +239,12 @@ const Sidebar = ({ collapsed, mobileOpen, onCloseMobile }) => {
                   const isSubActive = item.subItems.some((sub) =>
                     sub.to.includes("?")
                       ? currentFullPath === sub.to
-                      : location.pathname === sub.to && !location.search.includes("tab=")
+                      : location.pathname === sub.to &&
+                        !location.search.includes("tab="),
                   );
                   const totalBadges =
-                    counters.cancelRequestedCount + counters.returnRequestedCount;
+                    counters.cancelRequestedCount +
+                    counters.returnRequestedCount;
 
                   return (
                     <div key={item.label} className="space-y-1 relative group">
@@ -288,7 +315,8 @@ const Sidebar = ({ collapsed, mobileOpen, onCloseMobile }) => {
                                   : 0;
                                 const isItemActive = sub.to.includes("?")
                                   ? currentFullPath === sub.to
-                                  : location.pathname === sub.to && !location.search.includes("tab=");
+                                  : location.pathname === sub.to &&
+                                    !location.search.includes("tab=");
                                 return (
                                   <Link
                                     key={sub.to}
@@ -300,7 +328,9 @@ const Sidebar = ({ collapsed, mobileOpen, onCloseMobile }) => {
                                         : "text-slate-500 dark:text-dark-text-secondary hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/60 dark:hover:bg-dark-bg"
                                     }`}
                                   >
-                                    <span className="truncate">{sub.label}</span>
+                                    <span className="truncate">
+                                      {sub.label}
+                                    </span>
                                     {badgeCount > 0 && (
                                       <span className="flex items-center justify-center min-w-[16px] h-[16px] px-1 bg-rose-600 text-white text-[9px] font-mono font-black rounded shadow-xs">
                                         {badgeCount > 99 ? "99+" : badgeCount}
@@ -319,7 +349,9 @@ const Sidebar = ({ collapsed, mobileOpen, onCloseMobile }) => {
 
                 // Regular Single Link
                 const isActive = location.pathname.startsWith(item.to);
-                const itemBadgeCount = item.badgeKey ? counters[item.badgeKey] || 0 : 0;
+                const itemBadgeCount = item.badgeKey
+                  ? counters[item.badgeKey] || 0
+                  : 0;
 
                 return (
                   <div key={item.to} className="relative group">
@@ -394,11 +426,6 @@ const Sidebar = ({ collapsed, mobileOpen, onCloseMobile }) => {
                 <p className="text-xs font-bold text-slate-900 dark:text-white truncate">
                   {user.username || "Admin"}
                 </p>
-                <div className="flex items-center gap-1.5 mt-0.5">
-                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 text-[9px] font-mono font-bold uppercase tracking-wider">
-                    ONLINE // {user.role || "ADMIN"}
-                  </span>
-                </div>
               </div>
             </div>
           )}

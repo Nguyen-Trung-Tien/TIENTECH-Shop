@@ -42,7 +42,11 @@ const StatCard = ({
         <div
           className={`w-11 h-11 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center shrink-0 ${toneClasses}`}
         >
-          <Icon className="w-5 h-5 sm:w-6 sm:h-6" aria-hidden="true" />
+          {React.isValidElement(Icon) ? (
+            Icon
+          ) : typeof Icon === "function" || Icon?.$$typeof ? (
+            <Icon className="w-5 h-5 sm:w-6 sm:h-6" aria-hidden="true" />
+          ) : null}
         </div>
       )}
       <div className="min-w-0 flex-1">

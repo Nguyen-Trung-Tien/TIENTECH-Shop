@@ -93,24 +93,6 @@ const HeroSection = () => {
         <div className="flex flex-col lg:flex-row items-center gap-10 lg:gap-14">
           {/* Left Content */}
           <div className="flex-1 text-center lg:text-left min-w-0">
-            {/* Cyber Pill Tag */}
-            <Motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4 }}
-              className="flex items-center justify-center lg:justify-start"
-            >
-              <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-blue-50 dark:bg-slate-800/80 backdrop-blur-md border border-blue-200 dark:border-cyan-500/40 text-blue-700 dark:text-cyan-300 text-xs font-semibold mb-5 shadow-xs dark:shadow-[0_0_15px_rgba(6,182,212,0.2)]">
-                <span className="relative flex size-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-500 dark:bg-cyan-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full size-2 bg-blue-600 dark:bg-cyan-400"></span>
-                </span>
-                <span className="tracking-wide uppercase text-[11px] font-mono">
-                  Kỷ Nguyên Công Nghệ Flagship &bull; AI-Powered 2025
-                </span>
-              </div>
-            </Motion.div>
-
             {/* Main Headline */}
             <Motion.h1
               initial={{ opacity: 0, y: 16 }}
@@ -238,11 +220,6 @@ const HeroSection = () => {
                       <span className="hidden sm:inline">{item.tag.split(" ")[0]}</span>
                     </button>
                   ))}
-                </div>
-
-                <div className="flex items-center gap-1.5 text-xs text-blue-600 dark:text-cyan-400 font-mono">
-                  <span className="size-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                  <span className="font-semibold text-[11px]">LIVE DEMO</span>
                 </div>
               </div>
 
