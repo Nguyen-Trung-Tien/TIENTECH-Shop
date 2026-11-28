@@ -93,7 +93,6 @@ const ContactPage = () => {
 
   return (
     <PageShell
-      eyebrow="CUSTOMER CARE // CONTACT"
       title="Liên hệ & Hỗ trợ"
       subtitle="Đội ngũ tư vấn kỹ thuật TienTech luôn sẵn sàng hỗ trợ bạn 24/7."
       backTo="/"

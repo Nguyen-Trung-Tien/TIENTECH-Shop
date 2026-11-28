@@ -64,7 +64,6 @@ const OrderTrackingPage = () => {
 
   return (
     <PageShell
-      eyebrow="Dịch vụ khách hàng"
       title="Tra cứu đơn hàng"
       subtitle="Kiểm tra tiến độ xử lý và giao hàng nhanh chóng bằng mã đơn hàng cùng số điện thoại hoặc email đặt hàng."
       backTo="/"

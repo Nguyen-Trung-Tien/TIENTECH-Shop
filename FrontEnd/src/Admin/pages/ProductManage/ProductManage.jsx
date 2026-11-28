@@ -366,7 +366,6 @@ const ProductManage = () => {
 
   return (
     <AdminPageShell
-      eyebrow="INVENTORY CATALOG // AI-ASSISTED"
       title={
         <span className="flex items-center gap-2.5">
           <span className="size-9 rounded-lg bg-primary text-white flex items-center justify-center shadow-xs shrink-0">

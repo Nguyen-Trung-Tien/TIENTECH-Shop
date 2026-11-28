@@ -107,7 +107,6 @@ const Revenue = () => {
 
   return (
     <AdminPageShell
-      eyebrow="FINANCIAL ANALYTICS // REVENUE"
       title={
         <span className="flex items-center gap-3">
           <span className="size-10 rounded-xl bg-primary flex items-center justify-center text-white shadow-md shadow-primary/20 shrink-0">

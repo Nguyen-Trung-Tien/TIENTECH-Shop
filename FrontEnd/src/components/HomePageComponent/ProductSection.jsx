@@ -291,16 +291,8 @@ const ProductSection = ({
         <div className="mb-6 space-y-3.5">
           {/* Row 1: Section Title + Quick Tool Controls */}
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-            {/* Title & Live Counter Badge */}
+            {/* Title */}
             <div className="min-w-0">
-              <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-cyan-500/10 dark:bg-cyan-950/40 border border-cyan-500/30 text-cyan-600 dark:text-cyan-400 text-[10px] font-bold uppercase tracking-wider mb-1.5 font-mono">
-                <FiStar className="text-[10px]" />
-                <span>Tuyển chọn flagship</span>
-                <span className="w-1 h-1 rounded-full bg-cyan-500 animate-pulse" />
-                <span className="text-slate-400 dark:text-slate-500 font-mono">
-                  {displayProducts.length}/{allProducts.length} SP
-                </span>
-              </div>
               <h2 className="text-xl sm:text-2xl md:text-3xl font-black text-slate-900 dark:text-white leading-tight tracking-tight">
                 Sản Phẩm Công Nghệ{" "}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500">

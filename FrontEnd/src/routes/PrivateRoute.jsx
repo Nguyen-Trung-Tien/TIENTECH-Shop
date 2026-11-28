@@ -57,7 +57,7 @@ const PrivateRoute = ({ requiredRole }) => {
 
   if (isForbidden) {
     return (
-      <PageShell title="Không có quyền truy cập" eyebrow="Lỗi 403 Forbidden">
+      <PageShell title="Không có quyền truy cập">
         <ErrorState
           title="403 - Truy cập bị từ chối"
           description="Tài khoản hiện tại không có quyền truy cập vào trang quản trị hoặc tài nguyên này."

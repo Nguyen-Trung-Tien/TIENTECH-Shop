@@ -96,7 +96,6 @@ const WishlistPage = () => {
 
   return (
     <PageShell
-      eyebrow="Bộ sưu tập cá nhân"
       title="Sản phẩm yêu thích"
       backTo="/"
       backLabel="Quay lại trang chủ"

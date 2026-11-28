@@ -10,11 +10,6 @@ const FortuneHeroBanner = ({ allElements, activeElement }) => {
       <div className="absolute -bottom-10 -right-10 w-64 h-64 bg-blue-500/10 dark:bg-blue-500/20 rounded-full blur-3xl pointer-events-none" />
 
       <div className="relative z-10 max-w-3xl min-w-0">
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-primary/10 text-primary border border-primary/20 dark:bg-blue-500/20 dark:text-blue-300 dark:border-blue-400/30 text-xs font-black uppercase tracking-widest mb-6 backdrop-blur-md">
-          <Zap className="size-3.5 text-indigo-500 dark:text-indigo-400" />
-          AI Tech Color &amp; Setup Advisor
-        </div>
-
         <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black tracking-tight leading-[1.15] mb-5 text-slate-900 dark:text-white">
           Chọn Màu Sắc &amp;{" "}
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 dark:from-blue-400 dark:via-indigo-300 dark:to-cyan-300">

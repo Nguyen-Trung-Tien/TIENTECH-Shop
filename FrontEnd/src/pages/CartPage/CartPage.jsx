@@ -154,7 +154,6 @@ const CartPage = () => {
 
   return (
     <PageShell
-      eyebrow="SHOPPING BAG // CHECKOUT READY"
       title="Giỏ hàng của bạn"
       subtitle={
         <span>

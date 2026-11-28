@@ -151,7 +151,6 @@ const PaymentPage = () => {
 
   return (
     <AdminPageShell
-      eyebrow="FINANCIAL TRANSACTIONS // LEDGER"
       title={
         <span className="flex items-center gap-2.5">
           <span className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">

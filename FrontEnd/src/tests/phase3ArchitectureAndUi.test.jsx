@@ -106,7 +106,10 @@ describe("Phase 3: UI Architecture, Carousel A11y, SEO & AI Honesty", () => {
 
     render(<AISmartPicks products={products} />);
 
-    expect(screen.getByText("TIENTECH AI RECOMMENDATIONS")).toBeInTheDocument();
+    expect(screen.getByText("Dành Riêng Cho Bạn")).toBeInTheDocument();
+    expect(
+      screen.queryByText("TIENTECH AI RECOMMENDATIONS"),
+    ).not.toBeInTheDocument();
     expect(screen.queryByText(/99% ACCURACY/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/99% Match/i)).not.toBeInTheDocument();
     expect(screen.getByText("88% Tương đồng")).toBeInTheDocument();

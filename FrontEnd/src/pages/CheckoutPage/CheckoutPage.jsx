@@ -374,7 +374,6 @@ const CheckoutPage = () => {
 
   return (
     <PageShell
-      eyebrow="CHECKOUT // SECURE PAYMENT"
       title="Thanh toán"
       subtitle={
         <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest">

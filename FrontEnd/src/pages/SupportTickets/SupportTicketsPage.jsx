@@ -338,7 +338,6 @@ export const SupportTicketsPage = () => {
   if (!user) {
     return (
       <PageShell
-        eyebrow="SUPPORT & FEEDBACK"
         title="Hỗ Trợ & Phản Hồi"
         subtitle="Trung tâm tiếp nhận và giải quyết yêu cầu kỹ thuật, đơn hàng & khiếu nại"
         backTo="/"
@@ -357,7 +356,6 @@ export const SupportTicketsPage = () => {
 
   return (
     <PageShell
-      eyebrow="CUSTOMER SUPPORT // CRM"
       title="Hỗ Trợ & Phản Hồi"
       subtitle="Theo dõi tiến độ, trao đổi và nhận câu trả lời trực tiếp từ Ban Quản Trị TienTech"
       backTo="/"

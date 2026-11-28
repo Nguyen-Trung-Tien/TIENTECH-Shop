@@ -247,7 +247,6 @@ const OrderPage = () => {
 
   return (
     <PageShell
-      eyebrow="MY ORDERS // TRACKING"
       title="Đơn hàng của tôi"
       subtitle="Theo dõi và quản lý lịch sử mua hàng của bạn."
       backTo="/"

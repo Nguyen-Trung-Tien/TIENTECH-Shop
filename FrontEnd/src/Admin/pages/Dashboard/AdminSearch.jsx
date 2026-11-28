@@ -78,7 +78,6 @@ const AdminSearch = () => {
 
   return (
     <AdminPageShell
-      eyebrow="GLOBAL SEARCH // ADMIN INDEX"
       title={
         <span className="flex items-center gap-3">
           <FiSearch className="text-primary shrink-0" />

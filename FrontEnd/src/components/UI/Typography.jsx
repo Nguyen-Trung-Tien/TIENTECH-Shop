@@ -51,7 +51,6 @@ export const Text = ({
   const variants = {
     body: "text-sm text-surface-700 dark:text-dark-text-primary",
     muted: "text-xs sm:text-sm text-surface-500 dark:text-dark-text-secondary",
-    eyebrow: "text-[11px] font-bold uppercase tracking-widest text-primary dark:text-primary-light",
     caption: "text-xs text-surface-500 dark:text-dark-text-secondary",
   };
 

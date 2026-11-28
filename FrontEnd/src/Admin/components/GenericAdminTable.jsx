@@ -44,7 +44,6 @@ const GenericAdminTable = ({
 
   return (
     <AdminPageShell
-      eyebrow="OPERATIONS DATABASE // RECORD VIEW"
       title={
         <span className="flex items-center gap-2.5">
           {Icon && (

@@ -73,10 +73,6 @@ const CategorySection = React.memo(({ categories: propCategories, loading: propL
       <div className="container-custom relative z-10">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
           <div className="min-w-0">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 dark:bg-cyan-950/40 border border-cyan-500/30 text-cyan-600 dark:text-cyan-400 text-[11px] font-bold uppercase tracking-wider mb-2 font-mono">
-              <FiGrid className="text-xs" />
-              <span>Hệ sinh thái thiết bị</span>
-            </div>
             <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
               Danh Mục Công Nghệ{" "}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-500 to-blue-600">

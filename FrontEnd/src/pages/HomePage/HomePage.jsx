@@ -84,10 +84,6 @@ const HomePage = () => {
           <div className="rounded-3xl bg-gradient-to-br from-surface-900 via-primary-dark to-surface-950 text-white p-6 sm:p-10 shadow-xl border border-surface-800/80 overflow-hidden relative">
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
               <div className="space-y-2 max-w-2xl min-w-0">
-                <span className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-accent-light bg-accent/10 border border-accent/20 px-3 py-1 rounded-full">
-                  <FiCpu className="w-3.5 h-3.5" aria-hidden="true" />
-                  Hệ sinh thái phần cứng TIEN TECH
-                </span>
                 <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
                   Khám phá toàn bộ danh mục & công cụ chọn cấu hình
                 </h2>

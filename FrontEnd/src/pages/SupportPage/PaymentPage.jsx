@@ -44,9 +44,6 @@ const PaymentPage = () => {
       <div className="container-custom mb-12">
         <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-blue-50/90 via-sky-50/60 to-slate-100/80 dark:from-blue-900/80 dark:via-indigo-950 dark:to-slate-900 text-slate-900 dark:text-white border border-blue-100 dark:border-slate-800 p-8 md:p-14 shadow-sm dark:shadow-2xl transition-colors duration-300">
           <div className="relative z-10 max-w-2xl">
-            <span className="px-3.5 py-1 bg-primary/10 text-primary border border-primary/20 dark:bg-white/20 dark:text-white dark:border-transparent backdrop-blur-md text-xs font-black uppercase tracking-widest rounded-full inline-block mb-4">
-              An Toàn & Bảo Mật Tuyệt Đối
-            </span>
             <h1 className="text-3xl md:text-5xl font-black tracking-tight mb-4 text-slate-900 dark:text-white">
               Hướng Dẫn Thanh Toán Trực Tuyến
             </h1>

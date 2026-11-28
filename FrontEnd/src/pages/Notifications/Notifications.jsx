@@ -271,7 +271,6 @@ const Notifications = () => {
 
   return (
     <PageShell
-      eyebrow="Trung tâm thông báo"
       title="Thông báo của bạn"
       subtitle="Cập nhật trạng thái đơn hàng, ưu đãi và cảnh báo bảo mật tài khoản."
       backTo="/"

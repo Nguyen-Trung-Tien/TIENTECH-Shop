@@ -39,11 +39,6 @@ const ProductListPage = () => {
             <div className="mb-3 text-slate-500 dark:text-slate-300">
               <Breadcrumbs />
             </div>
-            <div className="flex items-center gap-3 mb-2">
-              <span className="px-3 py-1 bg-primary/10 border border-primary/20 text-primary dark:bg-blue-500/20 dark:border-blue-400/30 dark:text-blue-300 rounded-full text-[10px] font-black uppercase tracking-widest">
-                TienTech Shop Catalog
-              </span>
-            </div>
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-black text-slate-900 dark:text-white tracking-tight mb-3 uppercase">
               {pageTitle}
             </h1>

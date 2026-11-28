@@ -71,10 +71,6 @@ const AISmartPicks = ({ products, title = "Dành Riêng Cho Bạn" }) => {
         {/* Header with AI Badge */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-5">
           <div className="min-w-0">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-gradient-to-r from-indigo-500/10 to-violet-500/10 dark:from-indigo-950/60 dark:to-violet-950/60 border border-indigo-500/30 text-indigo-600 dark:text-indigo-400 text-xs font-bold font-mono tracking-wider mb-2.5 shadow-xs">
-              <Sparkles className="size-3.5 text-indigo-500 animate-spin" />
-              <span>TIENTECH AI RECOMMENDATIONS</span>
-            </div>
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-3">
               <span>{title}</span>
               <span className="hidden sm:inline-flex items-center text-xs font-semibold px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">

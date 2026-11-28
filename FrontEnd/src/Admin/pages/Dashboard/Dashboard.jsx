@@ -166,10 +166,6 @@ const Dashboard = () => {
 
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5 sm:gap-6">
           <div className="space-y-2 max-w-2xl min-w-0">
-            <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-emerald-500/10 dark:bg-white/10 backdrop-blur-md border border-emerald-500/20 dark:border-white/10 text-[10px] font-mono font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-              <span className="size-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse" />
-              <span>HỆ THỐNG VẬN HÀNH TIÊU CHUẨN // LIVE METRICS</span>
-            </div>
             <h1 className="text-xl sm:text-2xl md:text-3xl font-black tracking-tight text-slate-900 dark:text-white truncate">
               {greeting}, Quản trị viên!
             </h1>

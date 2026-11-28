@@ -207,7 +207,6 @@ const Profile = () => {
 
   return (
     <PageShell
-      eyebrow="ACCOUNT PROFILE // SETTINGS"
       title="Hồ sơ cá nhân"
       subtitle="Quản lý thông tin tài khoản, địa chỉ giao hàng và bảo mật."
       backTo="/"

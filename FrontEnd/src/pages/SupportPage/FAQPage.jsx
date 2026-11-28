@@ -93,9 +93,6 @@ const FAQPage = () => {
     <div className="flex-1 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 transition-colors duration-300 py-12">
       <div className="container-custom mb-12">
         <div className="text-center max-w-2xl mx-auto space-y-4 mb-10">
-          <span className="px-3.5 py-1 bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 text-xs font-black uppercase tracking-widest rounded-full inline-block">
-            Giải Đáp Thắc Mắc
-          </span>
           <h1 className="text-3xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tight">
             Câu Hỏi Thường Gặp (FAQ)
           </h1>

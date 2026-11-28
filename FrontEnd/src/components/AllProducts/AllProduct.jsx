@@ -169,12 +169,6 @@ const AllProducts = React.memo(() => {
         {/* Modern Header Section */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
           <div className="space-y-1">
-            <div className="flex items-center gap-2 text-cyan-600 dark:text-cyan-400 uppercase font-mono">
-              <div className="w-6 h-[2px] bg-cyan-500 rounded-full shadow-[0_0_8px_rgba(6,182,212,0.8)]"></div>
-              <span className="text-[10px] font-bold tracking-[0.2em]">
-                COMMAND CENTER // HỆ THỐNG THIẾT BỊ
-              </span>
-            </div>
             <h2 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white tracking-tight uppercase">
               {filters.search
                 ? `Kết quả cho: "${filters.search}"`

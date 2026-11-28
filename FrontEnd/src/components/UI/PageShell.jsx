@@ -9,7 +9,6 @@ import { FiArrowLeft } from "react-icons/fi";
 const PageShell = ({
   title,
   subtitle,
-  eyebrow,
   backTo,
   backLabel = "Quay lại",
   actions,
@@ -36,11 +35,6 @@ const PageShell = ({
                   </Link>
                 )}
                 <div className="min-w-0 flex-1">
-                  {eyebrow && (
-                    <p className="text-[11px] font-bold uppercase tracking-widest text-primary dark:text-primary-light mb-1 truncate">
-                      {eyebrow}
-                    </p>
-                  )}
                   {title && (
                     <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-surface-900 dark:text-white break-words [overflow-wrap:anywhere]">
                       {title}

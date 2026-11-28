@@ -134,7 +134,6 @@ const ReviewPage = () => {
 
   return (
     <AdminPageShell
-      eyebrow="CUSTOMER FEEDBACK // MODERATION"
       title={
         <span className="flex items-center gap-2.5">
           <span className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">

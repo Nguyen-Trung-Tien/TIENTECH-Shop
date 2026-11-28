@@ -8,7 +8,6 @@ import React from "react";
 const AdminPageShell = ({
   title,
   subtitle,
-  eyebrow,
   actions,
   stats,
   filters,
@@ -20,11 +19,6 @@ const AdminPageShell = ({
       {(title || actions) && (
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 min-w-0">
           <div className="min-w-0 flex-1">
-            {eyebrow && (
-              <p className="text-[11px] font-bold uppercase tracking-widest text-primary dark:text-primary-light mb-1 truncate">
-                {eyebrow}
-              </p>
-            )}
             {title && (
               <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white break-words [overflow-wrap:anywhere]">
                 {title}

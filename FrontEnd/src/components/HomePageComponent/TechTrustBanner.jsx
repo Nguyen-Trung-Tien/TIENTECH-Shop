@@ -45,10 +45,6 @@ const TechTrustBanner = () => {
 
       <div className="container-custom relative z-10">
         <div className="text-center max-w-2xl mx-auto mb-10">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 dark:bg-cyan-950/40 border border-cyan-500/30 text-cyan-600 dark:text-cyan-400 text-[11px] font-bold uppercase tracking-wider mb-2.5 font-mono">
-            <FiLock className="text-xs" />
-            <span>TIENTECH TRUST &amp; PROMISE</span>
-          </div>
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-900 dark:text-white tracking-tight">
             Đặc Quyền An Tâm Khi Mua Sắm Tại{" "}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-500">
